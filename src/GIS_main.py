@@ -111,7 +111,7 @@ def run(inputFilename,
         reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
                                      reminders_util.message_geocoder, True)
 
-        locations = ''
+        locationFiles = []
 
     # START PROCESSING ---------------------------------------------------------------------------------------------------
 
@@ -127,7 +127,7 @@ def run(inputFilename,
 
         NERs = ['COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION']
 
-        locations = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+        locationFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                 outputDir, openOutputFiles, createCharts, chartPackage, 'NER', False,
                                                                 language_var,
                                                                 memory_var,
@@ -138,16 +138,17 @@ def run(inputFilename,
                                                                 date_separator_var=date_separator_var,
                                                                 date_position_var=date_position_var)
 
-        if len(locations)==0:
+        if len(locationFiles)==0:
             mb.showwarning("No locations","There are no NER locations to be geocoded and mapped in the selected input txt file.\n\nPlease, select a different txt file and try again.")
             return
         else:
-            NER_outputFilename = locations[0]
+            filesToOpen.extend(locationFiles)
+            NER_outputFilename = locationFiles[0]
 
         if extract_date_from_text_var or extract_date_from_filename_var:
             datePresent = True
             # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
-            df = pd.read_csv(locations[0], encoding='utf-8', error_bad_lines=False).rename(columns={"Word": "Location"})
+            df = pd.read_csv(locationFiles[0], encoding='utf-8', error_bad_lines=False).rename(columns={"Word": "Location"})
             # if IO_csv_util.rename_header(inputFilename, "Word", "Location") == False:
             #     return
             location_menu_var.set('Location')
@@ -164,7 +165,7 @@ def run(inputFilename,
             # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
             # if IO_csv_util.rename_header(inputFilename, "Word", "Location") == False:
             #     return
-            df = pd.read_csv(locations[0], encoding='utf-8', error_bad_lines=False).rename(columns={"Word": "Location"})
+            df = pd.read_csv(locationFiles[0], encoding='utf-8', error_bad_lines=False).rename(columns={"Word": "Location"})
             location_menu_var.set('Location')
             # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
 
@@ -195,7 +196,7 @@ def run(inputFilename,
         # out_file includes both kml file and Google Earth files
         out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
                         NER_outputFilename,outputDir,
-                        'Nominatim', GIS_package_var,
+                        'Nominatim', GIS_package_var, createCharts, chartPackage,
                         datePresent,
                         country_bias,
                         box_tuple,
@@ -468,9 +469,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 
 #setup a button to open Windows Explorer on the selected input directory
 openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+# place widget with hover-over info
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,openInputFile_button,True, False, True,False, 90, GUI_IO_util.get_open_file_directory_coordinate(), "Open INPUT csv dictionary file")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,openInputFile_button,
+                    True, False, True,False, 90, GUI_IO_util.get_open_file_directory_coordinate(), "Open INPUT csv dictionary file")
 
 csv_file=tk.Entry(window, width=130,textvariable=csv_file_var)
 csv_file.config(state='disabled')

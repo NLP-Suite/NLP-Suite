@@ -858,16 +858,16 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "NER Tag":
                         # plot NER tag (e.g, LOCATION)
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                                                                           outputDir,
-                                                                           columns_to_be_plotted=['NER Tag'],
-                                                                           chartTitle='Frequency Distribution of NER Tags',
-                                                                           # count_var = 1 for columns of alphabetic values
-                                                                           count_var=1, hover_label=[],
-                                                                           outputFileNameType='NER-tag', #'NER_tag_bar',
-                                                                           column_xAxis_label='NER tag',
-                                                                           groupByList=['Document ID','Document'],
-                                                                           plotList=['Frequency'],
-                                                                           chart_title_label='NER tag')
+                                           outputDir,
+                                           columns_to_be_plotted=['NER Tag'],
+                                           chartTitle='Frequency Distribution of NER Tags',
+                                           # count_var = 1 for columns of alphabetic values
+                                           count_var=1, hover_label=[],
+                                           outputFileNameType='NER-tag', #'NER_tag_bar',
+                                           column_xAxis_label='NER tag',
+                                           groupByList=['Document ID','Document'],
+                                           plotList=['Frequency'],
+                                           chart_title_label='NER tag')
                         if chart_outputFilename != None:
                             if len(chart_outputFilename) > 0:
                                 filesToOpen.extend(chart_outputFilename)
@@ -878,16 +878,16 @@ def CoreNLP_annotate(config_filename,inputFilename,
                             ner_tags = str(kwargs['NERs'][0])
                         # plot the words contained in each NER tag (e.g, the word 'Rome' in NER tag LOCATION)
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                                                                           outputDir,
-                                                                           columns_to_be_plotted=['Word'],
-                                                                           chartTitle='Frequency Distribution of Words by NER Tag' +ner_tags,
-                                                                           # count_var = 1 for columns of alphabetic values
-                                                                           count_var=1, hover_label=[],
-                                                                           outputFileNameType='NER-word', #'NER_word_bar',
-                                                                           column_xAxis_label='NER word',
-                                                                           groupByList=['Document ID','Document'],
-                                                                           plotList=['Frequency'],
-                                                                           chart_title_label='NER Words')
+                                                   outputDir,
+                                                   columns_to_be_plotted=['Word'],
+                                                   chartTitle='Frequency Distribution of Words by NER ' + ner_tags,
+                                                   # count_var = 1 for columns of alphabetic values
+                                                   count_var=1, hover_label=[],
+                                                   outputFileNameType='NER-word', #'NER_word_bar',
+                                                   column_xAxis_label='Word',
+                                                   groupByList=['Document ID','Document'],
+                                                   plotList=['Frequency'],
+                                                   chart_title_label='NER Words')
                         if chart_outputFilename != None:
                             if len(chart_outputFilename) > 0:
                                 filesToOpen.extend(chart_outputFilename)

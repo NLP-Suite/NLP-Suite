@@ -55,6 +55,15 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     nDocs = len(inputDocs)
     if nDocs==0:
         return filesToOpen
+    
+    # iterate through kwarg items
+    extract_date_from_text_var = False
+    extract_date_from_filename_var = False
+    for key, value in kwargs.items():
+        if key == 'extract_date_from_text_var' and value == True:
+            extract_date_from_text_var = True
+        if key == 'extract_date_from_filename_var' and value == True:
+            extract_date_from_filename_var = True
 
     # annotating each input file
     docID = 0
@@ -106,6 +115,10 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     for doc in inputDocs:
         docID = docID + 1
         head, tail = os.path.split(doc)
+        # extract date in file_name
+        if extract_date_from_filename_var:
+            global date_str
+            date_str = date_in_filename(doc, **kwargs)
         print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
 
         # open file and extract text
@@ -125,7 +138,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
 
         # SVO extraction if selected
         if "SVO" in annotator_params:
-            temp_svo_df = extractSVO(Spacy_output, docID, inputFilename, inputDir, tail)
+            temp_svo_df = extractSVO(Spacy_output, docID, inputFilename, inputDir, tail, extract_date_from_filename_var)
             svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
 
     # save dataframe to csv
@@ -200,14 +213,17 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
 
 # extract and returns SVO from spaCy doc
 # input: spaCy Document
-def extractSVO(doc, docID, inputFilename, inputDir, tail):
+def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_filename_var):
     # check if the input is a single file or directory
     if inputDir != '':
         inputFilename = inputDir + os.sep + tail
 
-    # TODO MINO
     # output: svo_df
-    svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID'})
+    # TODO MINO add NER tags to columns
+    if extract_date_from_filename_var:
+        svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Date'})
+    else:
+        svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID'})
 
     # subject,verb and object constants
     SUBJECT_DEPS = {"nsubj", "nsubjpass", "csubj", "agent", "expl"}
@@ -264,7 +280,12 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
     # drop empty Verb rows
     svo_df = svo_df.drop(empty_verb_idx)
     # set the S-V-O sequence in order
-    svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Document ID', 'Document']]
+    # TODO MINO: add date from filename
+    if extract_date_from_filename_var:
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Document ID', 'Document', 'Date']]
+        svo_df['Date'] = date_str
+    else:
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Document ID', 'Document']]
 
     return svo_df
 
@@ -279,6 +300,28 @@ def extractNER(word, df, idx, column, NER_bool):
         df.at[idx, column] = word.text
     
     return df, NER_bool
+
+# extract date in filename from Stanford_CoreNLP_util
+def date_in_filename(document, **kwargs):
+    extract_date_from_filename_var = False
+    date_format = ''
+    date_separator_var = ''
+    date_position_var = 0
+    date_str = ''
+    # process the optional values in kwargs
+    for key, value in kwargs.items():
+        if key == 'extract_date_from_filename_var' and value == True:
+            extract_date_from_filename_var = True
+        if key == 'date_format':
+            date_format = value
+        if key == 'date_separator_var':
+            date_separator_var = value
+        if key == 'date_position_var':
+            date_position_var = value
+    if extract_date_from_filename_var:
+        date, date_str = IO_files_util.getDateFromFileName(document, date_separator_var, date_position_var,
+                                                           date_format)
+    return date_str
 
 # Python dictionary of language (values) and their acronyms (keys)
 lang_dict  = dict(constants_util.languages)
