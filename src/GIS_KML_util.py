@@ -158,7 +158,8 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 			if row[3] != 0 and row[2] != 0:
 				pnt = kml.newpoint(coords=[(row[3], row[2])])  # wants to be read in in lng, lat order
 				pnt.style.iconstyle.icon.href = icon_url
-				# TODO Mino GIS if we process South America exported by CoreNLP as 2 separate records
+				# TODO Mino GIS if we process South America exported by CoreNLP as 2 separate records as 1 record
+				#	the code breaks in pin_customizer
 				#	we would need to process inputfile rather inputFilename
 				pnt = GIS_Google_pin_util.pin_customizer(inputFilename, pnt, index, index_list, locationColumnName,
 														 group_var, group_number_var, group_values_entry_var_list,

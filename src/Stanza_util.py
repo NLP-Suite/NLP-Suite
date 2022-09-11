@@ -68,6 +68,15 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                      "The language list is empty.\n\nPlease, select a language and try again.")
         return filesToOpen
 
+    # iterate through kwarg items
+    extract_date_from_text_var = False
+    extract_date_from_filename_var = False
+    for key, value in kwargs.items():
+        if key == 'extract_date_from_text_var' and value == True:
+            extract_date_from_text_var = True
+        if key == 'extract_date_from_filename_var' and value == True:
+            extract_date_from_filename_var = True
+
     output_format_option = {
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
     }
@@ -183,6 +192,10 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         for doc in split_file:
             split_docID = split_docID + 1
             head, tail = os.path.split(doc)
+            # extract date in file_name
+            if extract_date_from_filename_var:
+                global date_str
+                date_str = date_in_filename(doc, **kwargs)
 
             if docName != doc:
                 print("   Processing split file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail)
@@ -225,7 +238,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
             # extract SVO
             if "SVO" in annotator_params:
-                temp_svo_df = extractSVO(Stanza_output, docID, inputFilename, inputDir, tail) if len(language)==1 and 'multilingual' not in language else extractSVOMultilingual(Stanza_output, docID, inputFilename, inputDir, tail)
+                temp_svo_df = extractSVO(Stanza_output, docID, inputFilename, inputDir, tail, extract_date_from_filename_var) if len(language)==1 and 'multilingual' not in language else extractSVOMultilingual(Stanza_output, docID, inputFilename, inputDir, tail, extract_date_from_filename_var)
                 svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
 
     df.to_csv(outputFilename, index=False, encoding=language_encoding)
@@ -393,14 +406,17 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
 
 # extract SVO from Stanza doc (depparse)
 # input: Stanza Document
-def extractSVO(doc, docID, inputFilename, inputDir, tail):
+def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_filename_var):
     # check if the input is a single file or directory
     if inputDir != '':
         inputFilename = inputDir + os.sep + tail
 
     # output: svo_df
     # TODO MINO add NER tags to columns
-    svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID'})
+    if extract_date_from_filename_var:
+        svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Date'})
+    else:
+        svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID'})
     empty_verb_idx = []
     SVO_found = False
     NER_found = False # TODO MINO: add boolean value for NER tags
@@ -418,8 +434,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
     c = 0
     for sentence in doc.sentences:
         sent_dict = sentence.to_dict()
-        w = 0 # TODO MINO: count word index for NER
-        for word in sentence.words:
+        for w,word in enumerate(sentence.words):
             tmp_head = sentence.words[word.head-1].deprel if word.head > 0 else "root"
             if word.deprel in SUBJECT_DEPS or tmp_head in SUBJECT_DEPS:
                 svo_df.at[c, 'Subject (S)'] = word.text
@@ -439,10 +454,9 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
                     svo_df, NER_found = extractNER(token, svo_df, c, 'Person', NER_found)
                 elif token['ner'] in NER_TIME:
                     svo_df, NER_found = extractNER(token, svo_df, c, 'Time', NER_found)
-            w+=1
         # check if SVO is found, then add Sentence ID
         if SVO_found:
-            svo_df.at[c, 'Sentence ID'] =  c
+            svo_df.at[c, 'Sentence ID'] =  c+1
             SVO_found = False
         c+=1
 
@@ -460,8 +474,14 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail):
             empty_verb_idx.append(index)
     # drop empty Verb rows
     svo_df = svo_df.drop(empty_verb_idx)
+    
     # set the S-V-O sequence in order
-    svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Document ID', 'Document']]
+    # TODO MINO: add date from filename
+    if extract_date_from_filename_var:
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Document ID', 'Document', 'Date']]
+        svo_df['Date'] = date_str
+    else:
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Document ID', 'Document']]
 
     return svo_df
 
@@ -487,13 +507,13 @@ def extractNER(word, df, idx, column, NER_bool):
     return df, NER_bool
 
 # extract SVO from multilingual doc
-def extractSVOMultilingual(stanza_doc, docID, inputFilename, inputDir, tail):
+def extractSVOMultilingual(stanza_doc, docID, inputFilename, inputDir, tail, extract_date_from_filename_var):
     # output dataframe
     out_df = pd.DataFrame()
 
     # stanza doc to dict
     for doc in stanza_doc:
-        temp_svo = extractSVO(doc, docID, inputFilename, inputDir, tail)
+        temp_svo = extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_filename_var)
         out_df = out_df.append(temp_svo)
 
     return out_df
@@ -503,6 +523,28 @@ def excludePOS(df, postag={'NUM', 'PUNCT'}):
     for p in postag:
         df = df[df["POStag"].str.contains(p)==False]
     return df
+
+# extract date in filename from Stanford_CoreNLP_util
+def date_in_filename(document, **kwargs):
+    extract_date_from_filename_var = False
+    date_format = ''
+    date_separator_var = ''
+    date_position_var = 0
+    date_str = ''
+    # process the optional values in kwargs
+    for key, value in kwargs.items():
+        if key == 'extract_date_from_filename_var' and value == True:
+            extract_date_from_filename_var = True
+        if key == 'date_format':
+            date_format = value
+        if key == 'date_separator_var':
+            date_separator_var = value
+        if key == 'date_position_var':
+            date_position_var = value
+    if extract_date_from_filename_var:
+        date, date_str = IO_files_util.getDateFromFileName(document, date_separator_var, date_position_var,
+                                                           date_format)
+    return date_str
 
 # Python dictionary of language (values) and their acronyms (keys)
 lang_dict  = dict(constants_util.languages)

@@ -184,7 +184,7 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 					locList.append([row[locationColumnNumber],[index],[0], row['NER Tag']])
 
 	if len(locList)==0:
-		mb.showwarning(title='Locations', message="There are no locations in your input file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.\n\nNo map via Google Earth Pro can be done.")
+		mb.showwarning(title='Locations', message="There are no locations in your input file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.\n\nNo map via Google Earth Pro and Google Maps can be done.")
 		return
 	IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Finished extracting locations from csv file at", True, '', True, startTime, True)
 	# return sorted(locList)

@@ -11,6 +11,7 @@ import IO_files_util
 import IO_csv_util
 import GUI_IO_util
 import reminders_util
+import charts_util
 import GIS_file_check_util
 import GIS_location_util
 import GIS_geocode_util
@@ -71,7 +72,7 @@ def getGoogleAPIkey(Google_config, display_key=False):
 # the list of arguments reflect the order of widgets in the Google_Earth_main GUI
 # processes one file at a time
 def GIS_pipeline(window, config_filename, inputFilename, outputDir,
-                        geocoder, mapping_package,
+                        geocoder, mapping_package, createCharts, chartPackage,
                         datePresent,
                         country_bias,
                         area_var,
@@ -151,7 +152,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
 
     if inputIsGeocoded == False:  # the input file is NOT already geocoded
         geoName = 'geo-' + str(geocoder[:3])
-        geocodedLocationsoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
+        geocodedLocationsOutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
                                                                                   'GIS',
                                                                                   geoName, locationColumnName, '', '',
                                                                                   False,
@@ -161,14 +162,14 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                                                                                   geoName, 'Not-Found',
                                                                                   locationColumnName, '',
                                                                                   False, True)
-        kmloutputFilename = geocodedLocationsoutputFilename.replace('.csv', '.kml')
+        kmloutputFilename = geocodedLocationsOutputFilename.replace('.csv', '.kml')
 
-        geocodedLocationsoutputFilename, locationsNotFoundoutputFilename = GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
+        geocodedLocationsOutputFilename, locationsNotFoundoutputFilename = GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
                                                                                     locationColumnName,geocoder,country_bias,area_var,restrict,encodingValue,split_locations_prefix,split_locations_suffix)
-        if geocodedLocationsoutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
+        if geocodedLocationsOutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
             return
     else:
-        geocodedLocationsoutputFilename = inputFilename
+        geocodedLocationsOutputFilename = inputFilename
         locationsNotFoundoutputFilename = ''
 
     if len(locations) > 0 and inputIsCoNLL == True:
@@ -183,10 +184,13 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
             locations.insert(0, ['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
         IO_csv_util.list_to_csv(window, locations, outputCsvLocationsOnly)
 
-    if locationsNotFoundoutputFilename != '':
-        filesToOpen.append(locationsNotFoundoutputFilename)
-    if geocodedLocationsoutputFilename != '':
-        filesToOpen.append(geocodedLocationsoutputFilename)
+    # the plot of locations frequencies is done in the annotator_util
+    # the plot of location NER Tags frequencies is done in the annotator_util
+    # plot of locations not found while VERY useful is a useless plot since locations not found are only listed once
+
+    if geocodedLocationsOutputFilename != '':
+        filesToOpen.append(geocodedLocationsOutputFilename)
+
 
     # ------------------------------------------------------------------------------------
     # map
@@ -212,7 +216,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
             description_csv_field_var_list = ['Location']
         description_var_list = [1]
 
-        kmloutputFilename = GIS_KML_util.generate_kml(window, inputFilename, geocodedLocationsoutputFilename,
+        kmloutputFilename = GIS_KML_util.generate_kml(window, inputFilename, geocodedLocationsOutputFilename,
                               datePresent,
                               locationColumnName,
                               encodingValue,
@@ -235,7 +239,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                                                                         geocoder, locationColumnName, '', '',
                                                                         False, True)
         coordList = []
-        df = pd.read_csv(geocodedLocationsoutputFilename, encoding='utf-8', error_bad_lines=False)
+        df = pd.read_csv(geocodedLocationsOutputFilename, encoding='utf-8', error_bad_lines=False)
         if 'Latitude' in df and 'Longitude' in df:
             lat = df.Latitude
             lon = df.Longitude
@@ -244,7 +248,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                 coordList.append([lat[i], lon[i]])
         else:
             mb.showwarning('Warning',
-                           'The input csv file\n\n' + geocodedLocationsoutputFilename + '\n\ndoes not contain geocoded data with Latitude or Longitude columns required for Google Maps to produce heat maps.\n\nPlease, select a geocoded csv file in input and try again.')
+                           'The input csv file\n\n' + geocodedLocationsOutputFilename + '\n\ndoes not contain geocoded data with Latitude or Longitude columns required for Google Maps to produce heat maps.\n\nPlease, select a geocoded csv file in input and try again.')
             return
 
         Google_Maps_API = getGoogleAPIkey('Google-Maps-API_config.csv')

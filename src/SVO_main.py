@@ -667,7 +667,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
                                      config_filename, location_filename,
                                      outputDir,
-                                     'Nominatim', 'Google Earth Pro & Google Maps',
+                                     'Nominatim', 'Google Earth Pro & Google Maps', createCharts, chartPackage,
                                      date_present,
                                      country_bias,
                                      area_var,
@@ -787,15 +787,25 @@ def clear(e):
     CoRef_var.set(0)
     manual_Coref_checkbox.configure(state='disabled')
     manual_Coref_var.set(0)
-    filter_subjects_var.set(0)
-    filter_verbs_var.set(0)
+    subjects_checkbox.configure(state='normal')
+    verbs_checkbox.configure(state='normal')
+    objects_checkbox.configure(state='normal')
+    filter_subjects_var.set(1)
+    filter_verbs_var.set(1)
     filter_objects_var.set(0)
-    subjects_dict_var.set('')
-    verbs_dict_var.set('')
-    objects_dict_var.set('')
+    activate_filter_dictionaries()
+    lemmatize_subjects_checkbox.configure(state='normal')
+    lemmatize_verbs_checkbox.configure(state='normal')
+    lemmatize_objects_checkbox.configure(state='normal')
     lemmatize_subjects_var.set(0)
-    lemmatize_verbs_var.set(0)
+    lemmatize_verbs_var.set(1)
     lemmatize_objects_var.set(0)
+    gephi_var.set(1)
+    wordcloud_var.set(1)
+    google_earth_var.set(1)
+    gephi_checkbox.configure(state='normal')
+    wordcloud_checkbox.configure(state='normal')
+    google_earth_checkbox.configure(state='normal')
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -1138,24 +1148,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 
 def activateFilters(*args):
 
-    if package_var.get()=='spaCy' or package_var.get()=='Stanza':
-        mb.showwarning(title='Warning',
-                       message="The selected package " + package_var.get() + " does not currently\n   1. filter SVOs for social actors and social actions;\n   2. produce geographic maps in output.\n\nSorry! But... Watch this space...")
-    gephi_var.set(1)
-    wordcloud_var.set(1)
-    google_earth_var.set(1)
-    gephi_checkbox.configure(state='normal')
-    wordcloud_checkbox.configure(state='normal')
-    google_earth_checkbox.configure(state='normal')
     if package_var.get()!='':
         subjects_checkbox.configure(state='normal')
         verbs_checkbox.configure(state='normal')
         objects_checkbox.configure(state='normal')
-        filter_subjects_var.set(1)
-        filter_verbs_var.set(1)
-        filter_objects_var.set(0)
-        activate_filter_dictionaries()
-
     if package_var.get()=='':
         filter_subjects_var.set(0)
         filter_verbs_var.set(0)
