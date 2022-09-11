@@ -279,7 +279,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         #   plot values are the second item in the list [[7,2]] i.e. 2
         count_var = count_var_SV
         # not all csv output contain the Sentence ID (e.g., line length function)
-        bySent=False
+        # bySent=False
         if bySent:
             # TODO temporary to measure process time
             startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
