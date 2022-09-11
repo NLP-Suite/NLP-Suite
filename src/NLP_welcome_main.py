@@ -20,6 +20,7 @@ from subprocess import call
 
 import GUI_IO_util
 import videos_util
+import NLP_setup_update_util
 
 GUI_size = str(GUI_IO_util.get_GUI_width(1)) + 'x600'
 
@@ -63,7 +64,7 @@ def run_NLP():
 
 def close_NLP():
     global local_release_version, GitHub_release_version
-    GUI_IO_util.exit_window(window, '', 'NLP_welcome_main', [0,0,0,0], [], local_release_version, GitHub_release_version)
+    NLP_setup_update_util.exit_window(window, '', 'NLP_welcome_main', [0,0,0,0], [], local_release_version, GitHub_release_version)
 
 def watch_video(video_button):
     videos_util.get_videos('File manager', {'File manager': 'NLP_File manager.mp4'}, video_button, '')

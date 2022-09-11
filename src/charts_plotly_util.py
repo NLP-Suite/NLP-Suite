@@ -26,6 +26,8 @@ import IO_files_util
 #                        second_y_var=0,
 #                        second_yAxis_label=''):
 # match the excel chart format
+# TODO Tony when plotting bar charts with documents in the X-axis we need to remove the path and just keep the tail
+#   or the display is too messy
 def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_to_plot,
                         column_xAxis_label='',
                         column_yAxis_label='',

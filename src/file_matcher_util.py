@@ -7,6 +7,8 @@ if not IO_libraries_util.install_all_packages(GUI_util.window, "file_matcher_uti
 
 import os
 from pathlib import Path
+from tkinter import messagebox as mb
+
 import IO_files_util
 import IO_csv_util
 
@@ -46,9 +48,9 @@ def run_default(window, in_search_path, outputDir, csv_file, openOutputFiles, pa
     duplicates_output = []
     filesToOpen = []
 
-    matched_output.append(['File_Name', 'Path_To_File', 'File_Name_With_Path', 'Start_Folder'])
-    unmatched_output.append(['File_Name', 'Path_To_File', 'File_Name_With_Path', 'Start_Folder'])
-    duplicates_output.append(['File_Name', 'Path_To_File', 'File_Name_With_Path', 'Start_Folder'])
+    matched_output.append(['File_Name', 'Extension', 'File_Name_With_Path', 'Folder', 'Path_To_File', 'Start_Folder'])
+    unmatched_output.append(['File_Name', 'Extension', 'File_Name_With_Path', 'Folder', 'Path_To_File', 'Start_Folder'])
+    duplicates_output.append(['File_Name', 'Extension', 'File_Name_With_Path', 'Folder', 'Path_To_File', 'Start_Folder'])
 
     # Dictionary to store all found files in the directory given.
     # Groups based on stem
@@ -124,8 +126,12 @@ def run_default(window, in_search_path, outputDir, csv_file, openOutputFiles, pa
                 for path in target_dict[stem][suffix]:
                     if path.match('*.' + in_ext_1):
                         # Only add the duplicates with if the suffix matches our search suffix
-                        duplicates_output.append([path.name, IO_csv_util.dressFilenameForCSVHyperlink(path.parent),
+                        extension = os.path.splitext(path.name)[1]
+                        folder = os.path.basename(os.path.normpath(path.parent))
+                        duplicates_output.append([path.name, extension,
                                                   IO_csv_util.dressFilenameForCSVHyperlink(path),
+                                                  folder,
+                                                  IO_csv_util.dressFilenameForCSVHyperlink(path.parent),
                                                   IO_csv_util.dressFilenameForCSVHyperlink(in_search_path[0])])
 
     # Matched values are those that have more than one suffix for a given stem
@@ -135,8 +141,12 @@ def run_default(window, in_search_path, outputDir, csv_file, openOutputFiles, pa
                 for suffix in target_dict[stem]:
                     for path in target_dict[stem][suffix]:
                         if path.match('*.' + in_ext_2):
-                            matched_output.append([path.name, IO_csv_util.dressFilenameForCSVHyperlink(path.parent),
+                            extension = os.path.splitext(path.name)[1]
+                            folder = os.path.basename(os.path.normpath(path.parent))
+                            matched_output.append([path.name, extension,
                                                    IO_csv_util.dressFilenameForCSVHyperlink(path),
+                                                   folder,
+                                                   IO_csv_util.dressFilenameForCSVHyperlink(path.parent),
                                                    IO_csv_util.dressFilenameForCSVHyperlink(in_search_path[0])])
             else:
                 # Since this is not a search from '*', we want to detect files of in_ext_1 and find matches that are of in_ext_2
@@ -146,8 +156,12 @@ def run_default(window, in_search_path, outputDir, csv_file, openOutputFiles, pa
                         for path in target_dict[stem][suffix]:
                             if path.match('*.' + in_ext_2):
                                 # Should we remove any files that =in_ext_1?
-                                matched_output.append([path.name, IO_csv_util.dressFilenameForCSVHyperlink(path.parent),
+                                extension = os.path.splitext(path.name)[1]
+                                folder = os.path.basename(os.path.normpath(path.parent))
+                                matched_output.append([path.name, extension,
                                                        IO_csv_util.dressFilenameForCSVHyperlink(path),
+                                                       folder,
+                                                       IO_csv_util.dressFilenameForCSVHyperlink(path.parent),
                                                        IO_csv_util.dressFilenameForCSVHyperlink(in_search_path[0])])
 
     # Unmatched values are those that only have one suffix for a given stem
@@ -156,8 +170,12 @@ def run_default(window, in_search_path, outputDir, csv_file, openOutputFiles, pa
             for suffix in target_dict[stem]:
                 for path in target_dict[stem][suffix]:
                     if path.match('*.' + in_ext_1):
-                        unmatched_output.append([path.name, IO_csv_util.dressFilenameForCSVHyperlink(path.parent),
+                        extension = os.path.splitext(path.name)[1]
+                        folder = os.path.basename(os.path.normpath(path.parent))
+                        unmatched_output.append([path.name, extension,
                                                  IO_csv_util.dressFilenameForCSVHyperlink(path),
+                                                 folder,
+                                                 IO_csv_util.dressFilenameForCSVHyperlink(path.parent),
                                                  IO_csv_util.dressFilenameForCSVHyperlink(in_search_path[0])])
 
     # Clean Column A for partial outputs:
@@ -169,13 +187,15 @@ def run_default(window, in_search_path, outputDir, csv_file, openOutputFiles, pa
     start_type = "star" if in_ext_1 == '*' else in_ext_1
     end_type = "star" if in_ext_2 == '*' else in_ext_2
 
-    matched_filename = os.path.join(outputDir, "matched_" + start_type + "_" + end_type + ".csv")
-    unmatched_filename = os.path.join(outputDir, "unmatched_" + start_type + "_" + end_type + ".csv")
-    duplicates_filename = os.path.join(outputDir, "duplicates_" + start_type + "_" + end_type + ".csv")
+    matched_filename= in_search_path[0] + os.sep + os.path.basename(os.path.normpath(in_search_path[0])) + "_matched_" + start_type + "_" + end_type + ".csv"
+    unmatched_filename= in_search_path[0] + os.sep + os.path.basename(os.path.normpath(in_search_path[0])) + "_unmatched_" + start_type + "_" + end_type + ".csv"
+    duplicates_filename= in_search_path[0] + os.sep + os.path.basename(os.path.normpath(in_search_path[0])) + "_duplicates_" + start_type + "_" + end_type + ".csv"
 
     IO_csv_util.list_to_csv(0, matched_output, matched_filename, colnum=0)
     IO_csv_util.list_to_csv(0, unmatched_output, unmatched_filename, colnum=0)
     IO_csv_util.list_to_csv(0, duplicates_output, duplicates_filename, colnum=0)
+
+    mb.showwarning(title='OUTPUT folder',message='For easiness of reading, regardless of your selected OUTPUT folder in I/O Configuration, all three output files for matched, unmatched, and duplicate files have been saved to the INPUT folder\n\n' + str(in_search_path[0]))
 
     if openOutputFiles == True:
         filesToOpen.append(matched_filename)
