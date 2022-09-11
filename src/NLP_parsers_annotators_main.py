@@ -486,12 +486,12 @@ y_multiplier_integer_SV1=y_multiplier_integer
 # else:
 #     available_parsers = 'Parsers'
 #
-parser_checkbox = tk.Checkbutton(window, variable=parser_var, onvalue=1, offvalue=0)
-# place widget with hover-over info
+parser_checkbox = tk.Checkbu# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer_SV1,
                                                parser_checkbox, True, False, False, False, 90,
                                                GUI_IO_util.get_labels_x_coordinate(),
                                                "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
+tton(window, variable=parser_var, onvalue=1, offvalue=0)
 
 available_parsers=''
 parser_lb = tk.Label(window, text=available_parsers)

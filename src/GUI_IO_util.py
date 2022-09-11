@@ -78,7 +78,15 @@ remindersPath = os.path.join(NLPPath, 'reminders')
 # The function places and displays a message for each ? HELP button in the GUIs
 def place_help_button(window,x_coordinate,y_coordinate,text_title,text_info):
     help_button = tk.Button(window, text='? HELP', command=lambda: display_help_button_info(text_title, text_info))
-    y_multiplier_integer = placeWidget(window,x_coordinate,y_coordinate,help_button,False,False,True)
+    # place widget with hover-over info
+    y_multiplier_integer = placeWidget(window, x_coordinate,
+                                                   y_coordinate,
+                                                   help_button, False, False, False, False, 90,
+                                                   help_button_x_coordinate,
+                                                   "Press the ?HELP button to get information about what you can do on this line of the GUI.\n"
+                                                   "Press the Read Me button to get general information about what the algorithms behind this GUI are meant to do.")
+
+    # y_multiplier_integer = placeWidget(window,x_coordinate,y_coordinate,help_button,False,False,True)
     return y_multiplier_integer
 
 # The function displays the info for any bottom (e.g., ? HELP and ReadMe) in the GUIs
@@ -400,47 +408,6 @@ def GUI_settings(IO_setup_display_brief,GUI_width,GUI_height_brief,GUI_height_fu
         increment = increment
     GUI_size = str(GUI_width) + 'x' + str(GUI_height)
     return GUI_size, y_multiplier_integer, increment
-
-#config_filename has no path;
-# config_input_output_numeric_options is set to [0 0,0,0] for GUIs that are placeholders for more specialized GUIs
-#   in these cases (e.g., narrative_analysis_main, there are no I/O options to save
-def exit_window(window,config_filename, scriptName, config_input_output_numeric_options,current_config_input_output_alphabetic_options, local_release_version, GitHub_release_version):
-    import atexit # a Python module
-
-    if IO_libraries_util.install_all_packages(window, "GUI_IO_util.py",
-                                              ['pygit2']) == False:
-        sys.exit(0)
-
-    def exit_handler():
-        from NLP_setup_update_util import update_self
-        try:
-            # set equal to test
-            # local_release_version = GitHub_release_version
-            if GitHub_release_version != local_release_version:
-                errorFound = update_self(window, GitHub_release_version)
-            else:
-                # should test for stack and not print if 'NLP_menu_main' or 'NLP_welcome_main' are open
-                # import psutil
-                # proc = psutil.Process()
-                # print(proc.open_files())
-                # import inspect
-                # inspect.stack() will return the stack information
-                # ScriptName = inspect.stack()
-                # if not "NLP_setup_IO_main.py" in ScriptName:
-                #     print("ScriptName", ScriptName)
-                print(
-                    '\nYour NLP Suite is up-to-date with the latest release available on GitHub (' + GitHub_release_version + ').')
-        except Exception as e:
-            print(str(e))
-    # when closing NLP Suite via terminal
-    atexit.register(exit_handler)
-
-    if not 'NLP_menu_main' in scriptName and 'NLP_welcome_main' not in scriptName:
-        # check and save IO config on CLOSE
-        config_util.save_IO_config(window, config_filename, config_input_output_numeric_options,
-                           current_config_input_output_alphabetic_options)
-    window.destroy()
-    sys.exit(0)
 
 from tkinter import Toplevel
 def Dialog2Display(title: str):

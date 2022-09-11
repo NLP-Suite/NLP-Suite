@@ -440,15 +440,31 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName,silent =
 #__________________________________________________________________________________________________________________
 
 def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
-    IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,scriptName, silent))
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+    IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,scriptName, silent))
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer,
-                                                   IO_setup_button, True)
+                                                   IO_setup_button, True, False, False, False, 90,
+                                                   GUI_IO_util.get_labels_x_coordinate(),
+                                                   "Press the Setup INPUT/OUTPUT configuration button to select the file and/or directory to be used in INPUT and the directory to be used in OUTPUT.\n"
+                                                   "The selected options will apply to the configuration (default or GUI specific) selected in the dropdown menu for configuration.")
+
+    # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+    #                                                y_multiplier_integer,
+    #                                                IO_setup_button, True)
 
     setup_IO_menu_var.set("Default I/O configuration")
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate(),
                                                    y_multiplier_integer,
-                                                   setup_IO_menu,True)
+                                                   setup_IO_menu, True, False, False, False, 90,
+                                                   GUI_IO_util.get_labels_x_coordinate(),
+                                                   "Use the dropdown menu to select the INPUT/OUTPUT configuration you want to use to run the algorithmms behind this GUI.\nThe default configuration is the one that applies to ALL GUIs in the NLP Suite. The GUI-specific configuration applies to this GUI only.\n"
+                                                   "To change either configuration of INPUT/OUTPUT options, selected the desired configuration and then click on the Setup INPUT/OUTPUT configuration button.")
+
+    # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),
+    #                                                y_multiplier_integer,
+    #                                                setup_IO_menu,True)
 
     # setup buttons to open an input file, an input directory, an output directory, and a csv config file
 
@@ -841,9 +857,16 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     #         charts_dropdown_field.set('plotLy')
     # charts_dropdown_field.trace('w',warning_message)
 
-    # readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)
     readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)
-    GUI_IO_util.placeWidget(window,GUI_IO_util.read_button_x_coordinate,y_multiplier_integer,readme_button,True,False,True)
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.read_button_x_coordinate,
+                                                   y_multiplier_integer,
+                                                   readme_button, True, False, False, False, 90,
+                                                   GUI_IO_util.read_button_x_coordinate,
+                                                   "Press the Read Me button to get general information about what the algorithms behind this GUI are meant to do.\n"
+                                                   "Press individual ?HELP buttons to get more specific information about what you can do at each line of the GUI.")
+
+    # GUI_IO_util.placeWidget(window,GUI_IO_util.read_button_x_coordinate,y_multiplier_integer,readme_button,True,False,True)
 
     videos_dropdown_field.set('Watch videos')
     if len(videos_lookup)==1:
@@ -939,38 +962,24 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         config_input_output_alphabetic_options.append(input_secondary_dir_path.get())
         config_input_output_alphabetic_options.append(output_dir_path.get())
         global local_release_version
-        # def exit_handler():
-        #     global local_release_version
-        #     from NLP_setup_update_util import update_self
-        #     # local_release_version is the release on the local machine
-        #     local_release_version = local_release_version.strip('\n')
-        #     # local_release_version = "2.5.3" # used to test
-        #     # GitHub_release_version_var is the release available on GitHub
-        #     GitHub_release_version = GitHub_release_version_var.get()
-        #     GitHub_release_version = GitHub_release_version.strip('\n')
-        #     GitHub_release_version = GitHub_release_version.strip('\r')
-        #     if GitHub_release_version != local_release_version:
-        #         update_self(window, GitHub_release_version)
-        #     else:
-        #         print('\nYour NLP Suite is already up-to-date with the release available on GitHub (' + GitHub_release_version_var.get() + ').')
-        # local_release_version is the release on the local machine
-        # local_release_version = "2.5.3" # used to test
-        # GitHub_release_version_var is the release available on GitHub
         local_release_version = local_release_version.strip('\n')
         GitHub_release_version = GitHub_release_version_var.get()
         GitHub_release_version = GitHub_release_version.strip('\n')
         GitHub_release_version = GitHub_release_version.strip('\r')
 
-        GUI_IO_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options, local_release_version, GitHub_release_version)
-
-        # atexit.register(exit_handler())
-        #
-        # GUI_IO_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options)
+        # hitting the CLOSE button will automatically pull from GitHub the latest release available on GitHub
+        import NLP_setup_update_util
+        NLP_setup_update_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options, local_release_version, GitHub_release_version)
 
     close_button = tk.Button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
-    GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate, y_multiplier_integer, close_button, False, False,
-                            True)
-    #
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
+                                                   y_multiplier_integer,
+                                                   close_button, True, False, False, False, 90,
+                                                   GUI_IO_util.read_button_x_coordinate,
+                                                   "Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
+                                                   "\nYou must be connected to the internet for the auto update to work.")
+
     # Any message should be displayed after the whole GUI has been displayed
 
     # although the release version appears in the top part of the GUI,
