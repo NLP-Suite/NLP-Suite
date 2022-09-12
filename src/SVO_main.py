@@ -1030,8 +1030,11 @@ filter_subjects_var.set(1)
 subjects_checkbox = tk.Checkbutton(window, text='Filter Subject', variable=filter_subjects_var, onvalue=1, offvalue=0,
                                    command=lambda: getDictFile(filter_subjects_var, subjects_dict_var, filter_subjects_var.get(),
                                                                'Subject'))
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               subjects_checkbox, True)
+                                   subjects_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "The option for filtering subjects via WordNet for social actors is available only for the English language.\nBut you can choose a different special-purpose file.")
 
 # setup a button to open Windows Explorer on the subjects file
 openInputFile_subjects_button = tk.Button(window, width=3, text='',
@@ -1048,7 +1051,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 filter_verbs_var.set(1)
 verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=filter_verbs_var, onvalue=1, offvalue=0,
                                 command=lambda: getDictFile(filter_verbs_var, verbs_dict_var, filter_verbs_var.get(), 'Verb'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, verbs_checkbox, True, False, True, False, 90, GUI_IO_util.SVO_2nd_column, "Open csv file containing VERB filters")
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
+                                   verbs_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
+                                   "The option for filtering verbs for social actions via WordNet is available only for the English language.\nBut you can choose a different special-purpose file.")
 
 # setup a button to open Windows Explorer on the verbs file
 openInputFile_verbs_button = tk.Button(window, width=3, text='',
@@ -1065,8 +1072,11 @@ filter_objects_var.set(0)
 objects_checkbox = tk.Checkbutton(window, text='Filter Object', variable=filter_objects_var, onvalue=1, offvalue=0,
                                   command=lambda: getDictFile(filter_objects_var, objects_dict_var, filter_objects_var.get(),
                                                               'Object'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
-                                               objects_checkbox, True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
+                                   objects_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
+                                   "The option for filtering objects for social actors via WordNet is available only for the English language.\nBut you can choose a different special-purpose file.")
 
 # setup a button to open Windows Explorer on the objects file
 openInputFile_objects_button = tk.Button(window, width=3, text='',
@@ -1287,11 +1297,22 @@ def activate_NLP_options(*args):
 
     # after update no display
     error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new=GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
-    if package_display_area_value_new != package_display_area_value:
-        print("different")
     language_list = [language]
     package_var.set(package)
+    if language!='English':
+        filter_subjects_var.set(0)
+        filter_verbs_var.set(0)
+        filter_objects_var.set(0)
+        subjects_dict_var.set('')
+        verbs_dict_var.set('')
+        objects_dict_var.set('')
+    else:
+        filter_subjects_var.set(1)
+        filter_verbs_var.set(1)
+        filter_objects_var.set(1)
+        activate_filter_dictionaries()
 GUI_util.setup_menu.trace('w', activate_NLP_options)
+activate_NLP_options()
 
 # def activate_NLP_options(*args):
 #     global error, package, language_list

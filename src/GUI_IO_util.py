@@ -93,25 +93,41 @@ def place_help_button(window,x_coordinate,y_coordinate,text_title,text_info):
 def display_help_button_info(text_title,text_info):
     mb.showinfo(title=text_title, message=text_info)
 
+def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_info):
+    # background = 'red' sets the whole widget in red
+    e.widget.config(background='red')
+    # TODO Must left justify rather than center the info displayed
+    display_window_lb = tk.Label(window, anchor='w', text=text_info, name='display_window_lb',
+                                 foreground='blue')
+    display_window_lb.place(anchor='w', x=x_coordinate_hover_over, y=y_coordinate)
+
+def delete_display_widget_lb(window, e, text_info):
+    if text_info != '':
+        window.nametowidget('display_window_lb').place_forget()
+    # #f0f0f0 is a very light shade of gray
+    # foreground='red' (or any color) sets the color of a widget wording to a selected color
+    # e.widget.config(background='#F0F0F0', foreground='black', text=label)
+    e.widget.config(background='#F0F0F0', foreground='black')
+
 # https://stackoverflow.com/questions/20399243/display-message-when-hovering-over-something-with-mouse-cursor-in-python
 def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_over_widget=False, whole_widget_red=False, x_coordinate_hover_over= 90, text_info=''):
     if no_hover_over_widget:
         return
-    def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_info):
-        # background = 'red' sets the whole widget in red
-        e.widget.config(background='red')
-        # TODO Must left justify rather than center the info displayed
-        display_window_lb = tk.Label(window, anchor='w', text=text_info, name='display_window_lb',
-                                     foreground='blue')
-        display_window_lb.place(anchor='w', x=x_coordinate_hover_over, y=y_coordinate)
-
-    def delete_display_widget_lb(window, e, text_info):
-        if text_info != '':
-            window.nametowidget('display_window_lb').place_forget()
-        # #f0f0f0 is a very light shade of gray
-        # foreground='red' (or any color) sets the color of a widget wording to a selected color
-        # e.widget.config(background='#F0F0F0', foreground='black', text=label)
-        e.widget.config(background='#F0F0F0', foreground='black')
+    # def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_info):
+    #     # background = 'red' sets the whole widget in red
+    #     e.widget.config(background='red')
+    #     # TODO Must left justify rather than center the info displayed
+    #     display_window_lb = tk.Label(window, anchor='w', text=text_info, name='display_window_lb',
+    #                                  foreground='blue')
+    #     display_window_lb.place(anchor='w', x=x_coordinate_hover_over, y=y_coordinate)
+    #
+    # def delete_display_widget_lb(window, e, text_info):
+    #     if text_info != '':
+    #         window.nametowidget('display_window_lb').place_forget()
+    #     # #f0f0f0 is a very light shade of gray
+    #     # foreground='red' (or any color) sets the color of a widget wording to a selected color
+    #     # e.widget.config(background='#F0F0F0', foreground='black', text=label)
+    #     e.widget.config(background='#F0F0F0', foreground='black')
 
     # scale and text widgets do not have a label and code would break below
     # if 'scale' in str(widget_name) or 'text' in str(widget_name):
@@ -266,8 +282,14 @@ if sys.platform == 'darwin': #Mac OS
     # special internal GUI specific values MAC
     # SVO_main
     SVO_2nd_column = 570
+    SVO_3rd_column = 850
     SVO_2nd_column_top = 450
     SVO_3rd_column_top = 850
+
+    # NLP_setup_package_language_main
+    plus_column = 920
+    reset_column = 960
+    show_column = 1020
 
     # CoNLL_table_analyzer_main
     combobox_position = 210
@@ -305,8 +327,15 @@ else: #windows and anything else
     open_config_file_button_brief = 880
 
     # special internal GUI specific values WINDOWS
+
+    # NLP_setup_package_language_main
+    plus_column = 920
+    reset_column = 960
+    show_column = 1020
+
     # SVO_main
     SVO_2nd_column = 520
+    SVO_3rd_column = 950 # filter options
     SVO_2nd_column_top = 400
     SVO_3rd_column_top = 800
 

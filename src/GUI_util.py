@@ -945,7 +945,9 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         handle_setup_options(y_multiplier_integer, scriptName)
 
     # there is no RUN button when setting up IO information in NLP_setup_IO_main.py
-    if not "IO_setup_main" in scriptName and not "package_language" in scriptName:
+    #   or in any of the GUIs that are ALL options GUIs
+    if not "IO_setup_main" in scriptName \
+            and not "ALL_main" in scriptName:
         GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                 run_button, False, False, True)
 
