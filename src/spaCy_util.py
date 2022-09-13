@@ -24,7 +24,6 @@ import constants_util
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-# TODO MINO
 # list available languages of spaCy
 def list_all_languages():
     languages = ['ca', 'zh', 'hr', 'da', 'nl', 'en', 'fi', 'fr', 'de', 'el', 'it', 'ja', 'ko', 'lt', 'mk', 'xx', 'nb', 'pl', 'pt', 'ro', 'ru', 'es', 'sv', 'uk']
@@ -55,7 +54,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     nDocs = len(inputDocs)
     if nDocs==0:
         return filesToOpen
-    
+
     # iterate through kwarg items
     extract_date_from_text_var = False
     extract_date_from_filename_var = False
@@ -171,6 +170,7 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
         out_df.at[i,'Form'] = token.text
         out_df.at[i,'Lemma'] = token.lemma_
         out_df.at[i,'POStag'] = token.pos_
+        out_df.at[i,'Head'] = token.head.i # add Head index
         out_df.at[i,'DepRel'] = token.dep_
         out_df.at[i, 'is_sent_start'] = token.is_sent_start
         if "sentiment" in annotator_params:
@@ -208,6 +208,7 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
     tmp_lang_lst = [lang_dict[token.lang_] for token in spacy_doc]
     out_df['Language'] = tmp_lang_lst
 
+    out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
 
     return out_df
 
@@ -219,7 +220,6 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
         inputFilename = inputDir + os.sep + tail
 
     # output: svo_df
-    # TODO MINO add NER tags to columns
     if extract_date_from_filename_var:
         svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Date'})
     else:
@@ -229,7 +229,6 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
     SUBJECT_DEPS = {"nsubj", "nsubjpass", "csubj", "agent", "expl"}
     VERB_POS = {"VERB", "AUX"}
     OBJECT_DEPS = {"obj", "iobj", "dobj", "dative", "attr", "oprd"}
-    # TODO MINO
     # NER tags dictionary for location, person and time
     NER_LOCATION = {"GPE", "LOC"}
     NER_PERSON = {"PERSON"}
@@ -238,7 +237,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
     # set-ups to extract SVOs
     c = 0
     SVO_found = False
-    NER_found = False # TODO MINO
+    NER_found = False
     empty_verb_idx = []
     # extract SVOs
     for sent in doc.sents:
@@ -252,7 +251,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
             if token.dep_ in OBJECT_DEPS or token.head.dep_ in OBJECT_DEPS:
                 svo_df.at[c, 'Object (O)'] = token.text
                 SVO_found = True
-            # TODO MINO: extract NER tags
+            # extract NER tags
             if SVO_found is True or NER_found is True:
                 if token.ent_type_ in  NER_LOCATION:
                     svo_df, NER_found = extractNER(token, svo_df, c, 'Location', NER_found)
@@ -280,7 +279,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
     # drop empty Verb rows
     svo_df = svo_df.drop(empty_verb_idx)
     # set the S-V-O sequence in order
-    # TODO MINO: add date from filename
+    # add date from filename
     if extract_date_from_filename_var:
         svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Document ID', 'Document', 'Date']]
         svo_df['Date'] = date_str
@@ -289,7 +288,6 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
 
     return svo_df
 
-# TODO MINO
 # extract NERs
 def extractNER(word, df, idx, column, NER_bool):
     if isinstance(df.at[idx, column], str):
@@ -298,7 +296,7 @@ def extractNER(word, df, idx, column, NER_bool):
         df.at[idx, column] = tempNER + '; ' + currentNER
     else:
         df.at[idx, column] = word.text
-    
+
     return df, NER_bool
 
 # extract date in filename from Stanford_CoreNLP_util

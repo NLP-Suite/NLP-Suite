@@ -1037,14 +1037,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                    "The option for filtering subjects via WordNet for social actors is available only for the English language.\nBut you can choose a different special-purpose file.")
 
 # setup a button to open Windows Explorer on the subjects file
-openInputFile_subjects_button = tk.Button(window, width=3, text='',
+openInputFile_subjects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                           command=lambda: IO_files_util.openFile(window, subjects_dict_var.get()))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 140, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_S_dictionary, y_multiplier_integer,
                                                openInputFile_subjects_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 140, "Open csv file containing SUBJECT filters")
 
 lemmatize_subjects_checkbox = tk.Checkbutton(window, text='Lemmatize Subject', variable=lemmatize_subjects_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.lemmatize_S, y_multiplier_integer,
                                                lemmatize_subjects_checkbox, True)
 
 
@@ -1058,14 +1058,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column
                                    "The option for filtering verbs for social actions via WordNet is available only for the English language.\nBut you can choose a different special-purpose file.")
 
 # setup a button to open Windows Explorer on the verbs file
-openInputFile_verbs_button = tk.Button(window, width=3, text='',
+openInputFile_verbs_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                        command=lambda: IO_files_util.openFile(window, verbs_dict_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 520, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_V_dictionary, y_multiplier_integer,
                                                openInputFile_verbs_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 520, "Open csv file containing VERB filters")
 
 lemmatize_verbs_var.set(1)
 lemmatize_verbs_checkbox = tk.Checkbutton(window, text='Lemmatize Verb', variable=lemmatize_verbs_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+580, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.lemmatize_V, y_multiplier_integer,
                                                lemmatize_verbs_checkbox, True)
 
 filter_objects_var.set(0)
@@ -1079,27 +1079,27 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column
                                    "The option for filtering objects for social actors via WordNet is available only for the English language.\nBut you can choose a different special-purpose file.")
 
 # setup a button to open Windows Explorer on the objects file
-openInputFile_objects_button = tk.Button(window, width=3, text='',
+openInputFile_objects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                          command=lambda: IO_files_util.openFile(window, objects_dict_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 930, y_multiplier_integer,
-                                               openInputFile_objects_button,True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 930, "Open csv file containing OBJECT filters")
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_O_dictionary, y_multiplier_integer,
+                                               openInputFile_objects_button,True, False, True, False, 90, GUI_IO_util.open_O_dictionary, "Open csv file containing OBJECT filters")
 
 lemmatize_objects_checkbox = tk.Checkbutton(window, text='Lemmatize Object', variable=lemmatize_objects_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+990, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.lemmatize_O, y_multiplier_integer,
                                                lemmatize_objects_checkbox)
 
 subjects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
-subjects_dict_entry = tk.Entry(window, width=60, state="disabled", textvariable=subjects_dict_var)
+subjects_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_S_width, state="disabled", textvariable=subjects_dict_var)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                subjects_dict_entry, True)
 
 verbs_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-action-list.csv'))
-verbs_dict_entry = tk.Entry(window, width=60, state="disabled", textvariable=verbs_dict_var)
+verbs_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_V_width, state="disabled", textvariable=verbs_dict_var)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, verbs_dict_entry, True)
 
 objects_dict_var.set('')
-objects_dict_entry = tk.Entry(window, width=60, state="disabled", textvariable=objects_dict_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
+objects_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_O_width, state="disabled", textvariable=objects_dict_var)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
                                                objects_dict_entry)
 
 gender_var.set(0)

@@ -267,7 +267,7 @@ if sys.platform == 'darwin': #Mac OS
     open_TIPS_x_coordinate = 370
     open_reminders_x_coordinate = 570
     open_setup_x_coordinate = 770
-    run_button_x_coordinate = 970
+    run_button_x_coordinate = 940
     close_button_x_coordinate = 1070
 
     open_IO_config_button = 650
@@ -280,16 +280,20 @@ if sys.platform == 'darwin': #Mac OS
     open_config_file_button_brief = 820
 
     # special internal GUI specific values MAC
-    # SVO_main
-    SVO_2nd_column = 570
-    SVO_3rd_column = 850
-    SVO_2nd_column_top = 450
-    SVO_3rd_column_top = 850
+    # SVO_main Mac
+    SVO_1st_column = 150
+    open_S_dictionary = 280
+    lemmatize_S = 340
+    SVO_2nd_column = 558 # filter & dictionary options for Verbs
+    open_V_dictionary = 660
+    SVO_3rd_column = 965 # filter & dictionary options for Objects
+    open_O_dictionary = 1090
 
-    # NLP_setup_package_language_main
-    plus_column = 920
-    reset_column = 960
-    show_column = 1020
+    # Mac NLP_setup_package_language_main
+    language_widget_with=50
+    plus_column = 982
+    reset_column = 1035
+    show_column = 1115
 
     # CoNLL_table_analyzer_main
     combobox_position = 210
@@ -314,7 +318,7 @@ else: #windows and anything else
     open_TIPS_x_coordinate = 350
     open_reminders_x_coordinate = 550
     open_setup_x_coordinate = 750
-    run_button_x_coordinate = 950
+    run_button_x_coordinate = 940
     close_button_x_coordinate = 1050
 
     open_IO_config_button = 820
@@ -328,16 +332,29 @@ else: #windows and anything else
 
     # special internal GUI specific values WINDOWS
 
-    # NLP_setup_package_language_main
+    # Windows NLP_setup_package_language_main
+    language_widget_with=70
     plus_column = 920
     reset_column = 960
     show_column = 1020
 
-    # SVO_main
-    SVO_2nd_column = 520
-    SVO_3rd_column = 950 # filter options
+    # SVO_main Windows
+    SVO_1st_column = 120
+    open_S_dictionary = 260
+    lemmatize_S = 320
+    SVO_2nd_column = 520# filter & dictionary options for Verbs
+    open_V_dictionary = 640
+    lemmatize_V = 700
+    SVO_3rd_column = 920 # filter & dictionary options for Objects
+    open_O_dictionary = 1050
+    lemmatize_O = 1110
+
     SVO_2nd_column_top = 400
     SVO_3rd_column_top = 800
+
+    dictionary_S_width=60
+    dictionary_V_width=60
+    dictionary_O_width=60
 
     # CoNLL_table_analyzer_main
     combobox_position = 200

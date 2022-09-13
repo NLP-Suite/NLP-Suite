@@ -75,7 +75,7 @@ def openConfigFile():
 openInputConfigFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                  command=lambda: openConfigFile())
 # place widget with hover-over info
-x_coordinate_hover_over=1100
+x_coordinate_hover_over=1100 # Mac 1150
 y_multiplier_integer = GUI_IO_util.placeWidget(window,x_coordinate_hover_over, y_multiplier_integer,
                                                openInputConfigFile_button, False, False, True,False, 90, x_coordinate_hover_over-50, "Open csv config file")
 
@@ -105,6 +105,7 @@ def changed_NLP_package_set_parsers(*args):
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer_SV2, parsers_lb, True)
 
+    # mac 70
     parsers_display_area = tk.Label(width=80, height=1, anchor='w', text=', '.join(available_parsers), state='disabled')
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+100,
                                                    y_multiplier_integer_SV2, parsers_display_area)
@@ -147,7 +148,7 @@ def get_available_languages():
     return languages_available
 
 language_var.set('')
-language_menu = ttk.Combobox(window, width=70, textvariable=language_var)
+language_menu = ttk.Combobox(window, width=GUI_IO_util.language_widget_with, textvariable=language_var)
 language_menu['values'] = get_available_languages()
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+100, y_multiplier_integer,

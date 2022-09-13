@@ -248,15 +248,19 @@ def display_release():
 
     release_version_var.set(local_release_version)
 
-    y_multiplier_integer=-.9
+    y_multiplier_integer=-.8
 
     # get the release version available on GitHub
     GitHub_newest_release = get_GitHub_release()
 
     release_display = 'Release ' + str(release_version_var.get().replace('\n','')) + "/" + str(GitHub_newest_release)
     release_lb = tk.Label(window, text=release_display, foreground="red")
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_help_button_x_coordinate(),
-                                                   y_multiplier_integer, release_lb, True)
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_help_button_x_coordinate(),
+                                                   y_multiplier_integer,
+                                                   release_lb, True, False, False, False, 90,
+                                                   GUI_IO_util.get_help_button_x_coordinate(),
+                                                   "Your local NLP Suite release version is displayed on the left of / The release version available on GitHub is displayed on the right of /\nWithout internet the newest release available on GitHub cannnot be retrieved and is displayed as 0.0.0.")
     # check and display a possible warning message
     if GitHub_newest_release != '0.0.0':
         check_GitHub_release(local_release_version)
