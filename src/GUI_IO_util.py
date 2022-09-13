@@ -95,7 +95,6 @@ def display_help_button_info(text_title,text_info):
 
 def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_info):
     # background = 'red' sets the whole widget in red
-    e.widget.config(background='red')
     # TODO Must left justify rather than center the info displayed
     display_window_lb = tk.Label(window, anchor='w', text=text_info, name='display_window_lb',
                                  foreground='blue')
@@ -104,7 +103,7 @@ def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hove
 def delete_display_widget_lb(window, e, text_info):
     if text_info != '':
         window.nametowidget('display_window_lb').place_forget()
-    # #f0f0f0 is a very light shade of gray
+    # #F0F0F0 is a very light shade of gray
     # foreground='red' (or any color) sets the color of a widget wording to a selected color
     # e.widget.config(background='#F0F0F0', foreground='black', text=label)
     e.widget.config(background='#F0F0F0', foreground='black')
@@ -113,30 +112,28 @@ def delete_display_widget_lb(window, e, text_info):
 def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_over_widget=False, whole_widget_red=False, x_coordinate_hover_over= 90, text_info=''):
     if no_hover_over_widget:
         return
-    # def display_widget_info(window, e, x_coordinate, y_coordinate, x_coordinate_hover_over, text_info):
-    #     # background = 'red' sets the whole widget in red
-    #     e.widget.config(background='red')
-    #     # TODO Must left justify rather than center the info displayed
-    #     display_window_lb = tk.Label(window, anchor='w', text=text_info, name='display_window_lb',
-    #                                  foreground='blue')
-    #     display_window_lb.place(anchor='w', x=x_coordinate_hover_over, y=y_coordinate)
-    #
-    # def delete_display_widget_lb(window, e, text_info):
-    #     if text_info != '':
-    #         window.nametowidget('display_window_lb').place_forget()
-    #     # #f0f0f0 is a very light shade of gray
-    #     # foreground='red' (or any color) sets the color of a widget wording to a selected color
-    #     # e.widget.config(background='#F0F0F0', foreground='black', text=label)
-    #     e.widget.config(background='#F0F0F0', foreground='black')
 
-    # scale and text widgets do not have a label and code would break below
-    # if 'scale' in str(widget_name) or 'text' in str(widget_name):
+    # scale, text, and combobox widgets do not have a label and code would break below
+    # label is the text displayed in a widget, e.g., in the CLOSE button, CLOSE is the label
     if 'scale' in str(widget_name) or 'text' in str(widget_name) or 'combobox' in str(widget_name):
             label = ''
     else:
         # label is the wording of the text value displayed in a widget (e.g, RUN, CLOSE,
         #   or, for a menu, the item currently displayed in the menu, e.g., mm/dd/yyyy for a date menu)
         label = widget_name.cget('text')
+    # print('widget_name',widget_name,'label',label)
+    # color of current wording
+    #   needed to reset to correct color upon leaving
+    if label != '':
+        current_color = widget_name.cget('foreground')
+    else:
+        current_color = widget_name.cget('background')
+    if current_color == 'red':
+        foreground_color = 'black'
+    else:
+        foreground_color = current_color
+
+    # print("widget_name current_color",widget_name,current_color,"foreground",widget_name.cget('foreground'),'background',widget_name.cget('background'))
 
 # Enter the widget ----------------------------------------------------------
 
@@ -145,68 +142,94 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
     # background='#F0F0F0' sets the widget in grey
     # foreground='red' (or any color) sets the color of a widget wording to a selected color
     # activeforeground='red' it sets to red the wording in the currently active widget wordings
-    if (text_info == '') and ('scale' in str(widget_name) or 'entry' in str(widget_name)
-                              or ('button' in str(widget_name) and not 'checkbutton' in str(widget_name) and text_info =='')):
-        # background='red' sets the whole widget in red
-        widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
-    # combobox is the ttk menu object
-    elif (text_info == '') and ('label' in str(widget_name) or 'text' in str(widget_name) or 'checkbutton' in str(widget_name) \
-            or 'combobox' in str(widget_name)):
-        # foreground='red' sets a widget wording to red
-        # #f0f0f0 is a very light shade of gray
-        widget_name.bind('<Enter>', lambda e: e.widget.config(background='#F0F0F0',foreground='red'))
-    else: # there is info to be displayed
-        if text_info != '':
-            # these are the y coordinates where the text info is displayed
-            # move up the display if the ino contains line breaks
-            # there should not be more than 2 line breaks
-            number_of_lines = text_info.count('\n')
-            if number_of_lines == 0:
-                y_coordinate = y_coordinate - 20
-            elif number_of_lines == 1:
-                y_coordinate = y_coordinate - 25
-            elif number_of_lines == 2:
-                y_coordinate = y_coordinate - 30
 
-            # combobox is the ttk menu object; the regular config breaks
-            # https://stackoverflow.com/questions/71733010/ttkcombobox-foreground-color-change-doesnt-work-properly-whats-wrong
-            if 'combobox' in str(widget_name):
-                # TODO the widget should be turned red but it is in blue
-                widget_name.bind('<Enter>',
-                     lambda e: (e.widget.config(ttk.Style().map(
-                            'Red.TCombobox',
-                            foreground=[('readonly', 'red')],
-                            selectforeground=[('readonly', 'red')])),
-                                display_widget_info(window, e, x_coordinate,
-                                                    y_coordinate,
-                                                    x_coordinate_hover_over,
-                                                    text_info)))
-            # elif 'optionmenu' in str(widget_name):
-            #     try:
-            #         widget_name.bind('<Enter>',
-            #              lambda e: e.widget.config(activeforeground='red', text=label))
-            #     except:
-            #         print("error 1")
-            #     try:
-            #         # TODO if widget_name is optionmenu it does not enter display_widget_info
-            #         widget_name.bind('<Enter>',
-            #              lambda e: display_widget_info(window, e, x_coordinate,
-            #                                            y_coordinate,
-            #                                            x_coordinate_hover_over,
-            #                                            text_info))
-            #     except:
-            #         print("error 2")
-            #     # this does the above in one go; once we get it to work, we should eliminate the above
-            else:
-                # TODO code breaks when widget_name is optionmenu
-                widget_name.bind('<Enter>',
-                     lambda e: (e.widget.config(activeforeground='red', text=label), display_widget_info(window, e, x_coordinate,
-                                                   y_coordinate,
-                                                   x_coordinate_hover_over,
-                                                   text_info)))
+    # if (text_info == '') and ('scale' in str(widget_name) or 'entry' in str(widget_name)
+    #                           or ('button' in str(widget_name) and not 'checkbutton' in str(widget_name) and text_info =='')):
+    #     # background='red' sets the whole widget in red
+    #     widget_name.bind('<Enter>', lambda e: e.widget.config(background='red'))
 
-        else: # no text info to be displayed
-            widget_name.bind('<Enter>', lambda e: e.widget.config(activeforeground='red', text=label))
+    # no text info to be displayed
+    # widget_name.bind('<Enter>', lambda e: e.widget.config(activeforeground='red', text=label))
+    if text_info == '': # no text info to be displayed
+        if 'scale' in str(widget_name) or 'entry' in str(widget_name) \
+                or 'button' in str(widget_name):
+            # background='red' sets the whole widget in red
+            widget_name.bind('<Enter>', lambda e: e.widget.config(background='red', foreground=foreground_color, text=label))
+        # combobox is the ttk menu object
+        if 'label' in str(widget_name) \
+            or 'text' in str(widget_name) \
+            or 'checkbutton' in str(widget_name) \
+            or 'combobox' in str(widget_name):
+            # foreground='red' sets a widget wording, i.e., label, to red
+            # ##F0F0F0 is a very light shade of gray
+            widget_name.bind('<Enter>', lambda e: e.widget.config(background='#F0F0F0',foreground=foreground_color, text=label))
+    else: # there is text info to be displayed
+        # these are the y coordinates where the text info is displayed
+        # move up the display if the ino contains line breaks
+        # there should not be more than 2 line breaks
+        number_of_lines = text_info.count('\n')
+        if number_of_lines == 0:
+            y_coordinate = y_coordinate - 20
+        elif number_of_lines == 1:
+            y_coordinate = y_coordinate - 25
+        elif number_of_lines == 2:
+            y_coordinate = y_coordinate - 30
+
+        # combobox is the ttk menu object; the regular config breaks
+        # https://stackoverflow.com/questions/71733010/ttkcombobox-foreground-color-change-doesnt-work-properly-whats-wrong
+        color = widget_name.cget('background')
+        # for ttk combox objects
+        #   from tkinter import ttk
+        #   print(ttk.Style().lookup('TButton', 'background'))
+        # print('INFO widget_name',widget_name,'label',label,'color',color)
+        if 'combobox' in str(widget_name):
+            # TODO the widget should be turned red but it is in blue
+            widget_name.bind('<Enter>',
+                 lambda e: (e.widget.config(ttk.Style().map(
+                        'Red.TCombobox',
+                        foreground=[('readonly', 'red')],
+                        selectforeground=[('readonly', 'red')])),
+                            display_widget_info(window, e, x_coordinate,
+                                                y_coordinate,
+                                                x_coordinate_hover_over,
+                                                text_info)))
+        # elif 'optionmenu' in str(widget_name):
+        #     try:
+        #         widget_name.bind('<Enter>',
+        #              lambda e: e.widget.config(activeforeground='red', text=label))
+        #     except:
+        #         print("error 1")
+        #     try:
+        #         # TODO if widget_name is optionmenu it does not enter display_widget_info
+        #         widget_name.bind('<Enter>',
+        #              lambda e: display_widget_info(window, e, x_coordinate,
+        #                                            y_coordinate,
+        #                                            x_coordinate_hover_over,
+        #                                            text_info))
+        #     except:
+        #         print("error 2")
+        #     # this does the above in one go; once we get it to work, we should eliminate the above
+        elif 'scale' in str(widget_name) or 'entry' in str(widget_name) \
+                or 'button' in str(widget_name):
+            # background='red' sets the whole widget in red
+            widget_name.bind('<Enter>',
+                             lambda e: (e.widget.config(background='red', text=label),
+                                        display_widget_info(window, e, x_coordinate,
+                                                            y_coordinate,
+                                                            x_coordinate_hover_over,
+                                                            text_info)))
+        elif 'label' in str(widget_name) \
+                or 'text' in str(widget_name) \
+                or 'checkbutton' in str(widget_name) \
+                or 'optionmenu' in str(widget_name) \
+                or 'combobox' in str(widget_name):
+            # foreground='red' sets a widget wording, i.e., label, to red
+            # ##F0F0F0 is a very light shade of gray
+            widget_name.bind('<Enter>',
+                 lambda e: (e.widget.config(background='#F0F0F0', foreground=foreground_color, text=label), display_widget_info(window, e, x_coordinate,
+                                                y_coordinate,
+                                                x_coordinate_hover_over,
+                                                text_info)))
 
 # Leave the widget ----------------------------------------------------------
     # TODO does not work
@@ -218,15 +241,12 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
     #                         selectforeground=[('readonly', 'red')],
     #                         foreground=[('readonly', 'red')]),
     #                     lambda e: delete_display_widget_lb(window, e, text_info))
-    #     else:
-    #         widget_name.bind('<Leave>',
-    #                     lambda e: ttk.Style().map("myCombobox.TCombobox",
-    #                         selectforeground=[('readonly', '!focus', 'black'), ('readonly', 'focus', 'white')],
-    #                         foreground=[('readonly', '!focus', 'black'), ('readonly', 'focus', 'white')]),
-    #                     lambda e: delete_display_widget_lb(window, e, text_info))
-    # else:
     widget_name.bind('<Leave>',
-                         lambda e: delete_display_widget_lb(window, e, text_info))
+                     # foreground='red' sets a widget wording, i.e., label, to red
+                     # ##F0F0F0 is a very light shade of gray
+                     # upon leaving you want to resume the original colors of the widget
+                     lambda e: (delete_display_widget_lb(window, e, text_info),
+                                e.widget.config(background='#F0F0F0', foreground=current_color, text=label)))
 
 # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
 # widget_name is the name of the widget that needs to be placed in any of the GUI scripts as defined by tk.
