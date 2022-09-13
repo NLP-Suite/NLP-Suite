@@ -195,7 +195,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
                    'Skewness','Kurtosis','25% quantile','50% quantile','75% quantile']
     df_group.columns = headers_stats
     df_group.to_csv(outputFilename, encoding='utf-8')
-    filesToOpen.append(outputFilename, encoding='utf-8')
+    filesToOpen.append(outputFilename)
 
     if createCharts==True:
         column_name_to_be_plotted=headers_stats[1] # Mean

@@ -12,7 +12,7 @@ import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-# There are no commands in the NLP_setup_package_language_main GUI
+# There are no commands to run in the NLP_setup_package_language_main GUI
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
 
@@ -46,13 +46,23 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                y_multiplier_integer, current_package_lb, True)
 
 y_multiplier_integer_SV1=y_multiplier_integer
+
+def clear(e):
+    reset_language_list()
+    GUI_util.clear("Escape")
+window.bind("<Escape>", clear)
+
 def display_available_options():
     global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers
     error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
     # print("display",parsers_display_area)
     package_display_area = tk.Label(width=80, height=1, anchor='w', text=str(package_display_area_value), state='disabled')
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+100,
-                                                   y_multiplier_integer_SV1, package_display_area, True)
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate() + 100,
+                                                   y_multiplier_integer_SV1,
+                                                   package_display_area, True, False, False, False, 90,
+                                                   GUI_IO_util.open_TIPS_x_coordinate,
+                                                   "The text area displays the currently selected options. To change this selection, use the NLP package and/or language dropdown menu,")
 
 def openConfigFile():
     import IO_files_util
@@ -65,7 +75,7 @@ def openConfigFile():
 openInputConfigFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                  command=lambda: openConfigFile())
 # place widget with hover-over info
-x_coordinate_hover_over=1100
+x_coordinate_hover_over=1100 # Mac 1150
 y_multiplier_integer = GUI_IO_util.placeWidget(window,x_coordinate_hover_over, y_multiplier_integer,
                                                openInputConfigFile_button, False, False, True,False, 90, x_coordinate_hover_over-50, "Open csv config file")
 
@@ -95,6 +105,7 @@ def changed_NLP_package_set_parsers(*args):
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer_SV2, parsers_lb, True)
 
+    # mac 70
     parsers_display_area = tk.Label(width=80, height=1, anchor='w', text=', '.join(available_parsers), state='disabled')
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+100,
                                                    y_multiplier_integer_SV2, parsers_display_area)
@@ -107,9 +118,19 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                y_multiplier_integer, package_basics_lb, True)
 package_basics_var.set('Stanza')
 # TODO 'spaCy' will be added as an option for basic tokenizer and lemmatizer
-package_basics_menu = tk.OptionMenu(window, package_basics_var, 'Stanza')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+100,
-                                               y_multiplier_integer, package_basics_menu)
+package_basics_menu = tk.OptionMenu(window, package_basics_var, 'Stanza', 'spaCy')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate() + 100,
+                                               y_multiplier_integer,
+                                               package_basics_menu, False, False, False, False, 90,
+                                               GUI_IO_util.open_TIPS_x_coordinate,
+                                               "Use the dropdown menu to select the package (spaCy, Stanza) to be used for basic NLP operations: sentence splitting, tokenizing, lemmatizing.")
+
+def activate_NLP_basics(*args):
+    if package_basics_var.get()=='spaCy':
+        mb.showwarning(title='Warning',
+                       message='spaCy is not available yet for basic NLP operations.\n\nPlease, select another option.')
+package_basics_var.trace('w', activate_NLP_basics)
 
 language_lb = tk.Label(window,text='Language')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
@@ -126,21 +147,35 @@ def get_available_languages():
         languages_available = Stanza_util.list_all_languages()
     return languages_available
 
-language_var.set('English')
-language_menu = ttk.Combobox(window, width=70, textvariable=language_var)
+language_var.set('')
+language_menu = ttk.Combobox(window, width=GUI_IO_util.language_widget_with, textvariable=language_var)
 language_menu['values'] = get_available_languages()
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+100,
-                                               y_multiplier_integer, language_menu,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+100, y_multiplier_integer,
+                                               language_menu, True, False, False, False, 90,
+                                               GUI_IO_util.open_TIPS_x_coordinate,
+                                               "Use the dropdown menu to select the language your corpus is written in.\nDifferent packages (CoreNLP, spaCy, Stanza) can handle different sets of languages. Only Stanza allows multi-language selection.")
 
 add_language_button = tk.Button(window, text='+', width=2,height=1,state='normal',command=lambda: activate_language_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 560,y_multiplier_integer,add_language_button, True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.plus_column, y_multiplier_integer,
+                                               add_language_button, True, False, False, False, 90,
+                                               GUI_IO_util.open_reminders_x_coordinate,
+                                               "Click on the + button to activate the language dropdown menu where you can select another language to add to the list.\nOnly Stanza allows multi-language selection.")
 
 reset_language_button = tk.Button(window, text='Reset', width=5,height=1,state='normal',command=lambda: reset_language_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 600,y_multiplier_integer,reset_language_button,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.reset_column, y_multiplier_integer,
+                                               reset_language_button, True, False, False, False, 90,
+                                               GUI_IO_util.open_reminders_x_coordinate,
+                                               "Click on the Reset button to clear the list of any previously selected language(s).")
 
 show_language_button = tk.Button(window, text='Show', width=5,height=1,state='normal',command=lambda: show_language_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 660,y_multiplier_integer,show_language_button)
-
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.show_column, y_multiplier_integer,
+                                               show_language_button, False, False, False, False, 90,
+                                               GUI_IO_util.open_reminders_x_coordinate,
+                                               "Click on the Show button to display the list of selected language(s).")
 def save_NLP_config(parsers):
     currently_selected_package_language= {"NLP PACKAGE": package_var.get(), "LEMMATIZER": package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
     print("parsers_display_area",parsers_display_area['text'])
@@ -171,17 +206,18 @@ def check_language(*args):
     else:
         if language_var.get() == '':
             language_menu.configure(state='normal')
+            add_language_button.configure(state='disabled')
+            reset_language_button.configure(state='disabled')
+            show_language_button.configure(state='disabled')
         else:
             language_list.append(language_var.get())
             language_menu.configure(state='disabled')
-        if package_var.get()=='Stanza':
-            add_language_button.configure(state='normal')
             reset_language_button.configure(state='normal')
             show_language_button.configure(state='normal')
+        if package_var.get()=='Stanza':
+            add_language_button.configure(state='normal')
         else:
             add_language_button.configure(state='disabled')
-            # reset_language_button.configure(state='disabled')
-            show_language_button.configure(state='disabled')
 language_var.trace('w', check_language)
 
 check_language()
@@ -201,7 +237,7 @@ changed_NLP_package()
 def reset_language_list():
     language_list.clear()
     language_menu.configure(state='normal')
-    language_var.set('')
+    language_menu.set('')
 
 def show_language_list():
     if len(language_list)==0:
@@ -228,7 +264,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the NLP package to be used as the default package for basic functions, namely, sentence splitter, tokenizer, lemmatizer."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select the language(s) your input txt file(s) are written in. Different NLP packages support a different range of languages.\n\nFor those NLP packages that suport multiple languages (e.g., texts written in both English and Chinese), such as Stanza, hit the + button multiple times to add multiple languages. Since English is the default value, if you hit + English will be added as part of a multi-language selection. If you do not want English to be part of the multi-language selection, hit Reset before hitting + and select and add your languages.\n\nHit the Reset buttons to start fresh.\n\nHit the Show button to display the current language selection.")
+                                  "Please, using the dropdown menu, select the language(s) your input txt file(s) are written in. Different NLP packages support a different range of languages.\n\nFor those NLP packages that suport multiple languages (e.g., texts written in both English and Chinese), such as Stanza, hit the + button multiple times to add multiple languages.\n\nHit the Reset buttons to start fresh.\n\nHit the Show button to display the current language selection.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, hit the SAVE button to save any changes made.")
     y_multiplier_integer = 7.5

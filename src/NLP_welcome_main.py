@@ -147,23 +147,6 @@ def display_text():
 
 
 def display_enter_button():
-    # display CLOSE button
-    enter_button = tk.Button(window, text='CLOSE', width=15, height=1,
-                             font=("Arial", 14),
-                             command=lambda: close_NLP())
-    enter_button.grid(row=9, column=4, columnspan=3, rowspan=2, sticky=(tk.N,tk.W),padx=30)
-
-    # hover-over effect
-    enter_button.bind('<Enter>', lambda e: e.widget.config(background='red'))
-    enter_button.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
-
-    # display Enter NLP button
-    enter_button = tk.Button(window, text='Enter NLP Suite', width=20, height=2, foreground="red",
-                             font=("Arial", 14, "bold"),
-                             command=lambda: run_NLP())
-    # enter_button.grid(row=8, column=4, columnspan=3, rowspan=2, pady=50)
-    enter_button.grid(row=8, column=2, columnspan=2, rowspan=2, pady=50)
-
     roberto_franzosi = tk.Label(window,
                              text='Roberto Franzosi',
                              foreground="black", font=("Arial", 12,"italic"))
@@ -178,6 +161,59 @@ def display_enter_button():
                              command=lambda: watch_video(video_button))
     video_button.configure(state='disabled')
     video_button.grid(row=9, column=1, columnspan=3, sticky=(tk.N,tk.W),padx=30)
+
+    # display Enter NLP button
+    enter_button = tk.Button(window, text='Enter NLP Suite', width=20, height=2, foreground="red",
+                             font=("Arial", 14, "bold"),
+                             command=lambda: run_NLP())
+    # enter_button.grid(row=8, column=4, columnspan=3, rowspan=2, pady=50)
+    enter_button.grid(row=8, column=2, columnspan=2, rowspan=2, pady=50)
+
+    window.update()
+
+    # get the x, y coordinates of the Enter button
+    # https://www.tutorialspoint.com/how-to-get-the-tkinter-widget-s-current-x-and-y-coordinates
+    x_coordinate, y_coordinate = enter_button.winfo_rootx(), enter_button.winfo_rooty()
+    # x_coordinate=500
+    y_coordinate = y_coordinate - 90
+    print("Enter button x_coordinate, y_coordinate", x_coordinate, y_coordinate)
+
+    text_info = "Pressing the Enter button will give you access to all the text analysis options available in the NLP Suite."
+
+    # hover-over effect
+    enter_button.bind('<Enter>', lambda e: (e.widget.config(background='red'),
+                        GUI_IO_util.display_widget_info(window, e, x_coordinate,
+                        y_coordinate,
+                        x_coordinate,
+                        text_info)))
+    enter_button.bind('<Leave>', lambda e: (e.widget.config(background='#F0F0F0'),
+                      GUI_IO_util.delete_display_widget_lb(window, e, text_info)))
+
+    # display close button
+    close_button = tk.Button(window, text='CLOSE', width=15, height=1,
+                             font=("Arial", 14),
+                             command=lambda: close_NLP())
+    close_button.grid(row=9, column=4, columnspan=3, rowspan=2, sticky=(tk.N,tk.W),padx=30)
+
+    window.update()
+
+    # get the x, y coordinates of the Close button
+    # https://www.tutorialspoint.com/how-to-get-the-tkinter-widget-s-current-x-and-y-coordinates
+    x_coordinate1, y_coordinate1 = close_button.winfo_rootx(),  close_button.winfo_rooty()
+    y_coordinate1=y_coordinate1-90
+    print("Close button x_coordinate, y_coordinate",x_coordinate, y_coordinate)
+
+    text_info="Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."\
+                                                   "\nYou must be connected to the internet for the auto update to work."
+    # hover-over effect
+    close_button.bind('<Enter>', lambda e: (e.widget.config(background='red'),
+                        GUI_IO_util.display_widget_info(window, e, x_coordinate1,
+                        y_coordinate1,
+                        x_coordinate1,
+                        text_info)))
+    close_button.bind('<Leave>', lambda e: (e.widget.config(background='#F0F0F0'),
+                      GUI_IO_util.delete_display_widget_lb(window, e, text_info)))
+
 
 
 def update_images():
