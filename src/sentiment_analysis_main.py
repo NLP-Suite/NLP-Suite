@@ -4,13 +4,12 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if not IO_libraries_util.install_all_packages(GUI_util.window,"sentiment_analysis.py",['os','tkinter','subprocess']):
+if not IO_libraries_util.install_all_packages(GUI_util.window,"sentiment_analysis_main.py",['os','tkinter','subprocess']):
     sys.exit(0)
 
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-import subprocess
 from subprocess import call
 
 import IO_files_util
@@ -22,6 +21,7 @@ import sentiment_analysis_hedonometer_util
 import sentiment_analysis_SentiWordNet_util
 import sentiment_analysis_VADER_util
 import sentiment_analysis_ANEW_util
+import sentiment_analysis_roBERTa_util
 import spaCy_util
 import Stanza_util
 import Stanford_CoreNLP_util
@@ -76,6 +76,7 @@ def run(inputFilename,inputDir,outputDir,
     anew_var=0
 
     if SA_algorithm_var=='*':
+        BERT_var=1
         CoreNLP_var=1
         spaCy_var=1
         Stanza_var=1
@@ -83,6 +84,8 @@ def run(inputFilename,inputDir,outputDir,
         hedonometer_var=1
         SentiWordNet_var=1
         vader_var=1
+    elif 'BERT' in SA_algorithm_var:
+        BERT_var = 1
     elif 'spaCy' in SA_algorithm_var:
         spaCy_var = 1
     elif 'Stanford CoreNLP' in SA_algorithm_var:
@@ -116,6 +119,11 @@ def run(inputFilename,inputDir,outputDir,
             filesToOpen.append(outputFiles)
 
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running ANEW Sentiment Analysis at', True, '', True, startTime)
+
+# BERT ---------------------------------------------------------
+
+    if BERT_var==1:
+        tempOutputFiles = sentiment_analysis_roBERTa_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
 # spaCy  _______________________________________________________
 
@@ -387,6 +395,7 @@ def display_reminder(*args):
                                     reminders_util.title_options_SA_SentiWordNet,
                                     reminders_util.message_SA_SentiWordNet,
                                     True)
+
     else:
         return
 SA_algorithm_var.trace('w',display_reminder)
