@@ -2,13 +2,14 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "CoNLL table_analyzer", ['os', 'tkinter']) == False:
+if IO_libraries_util.install_all_packages(GUI_util.window, "CoNLL table_analyzer", ['os', 'tkinter','pandas']) == False:
     sys.exit(0)
 
 import os
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
+import pandas as pd
 
 import GUI_IO_util
 import CoNLL_util
@@ -19,8 +20,8 @@ import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
 import Stanford_CoreNLP_tags_util
-import pandas as pd
 import CoNLL_k_sentences_util
+import reminders_util
 
 # from data_manager_main import extract_from_csv
 
@@ -833,6 +834,10 @@ def activate_options(*args):
         function_words_analysis_checkbox.configure(state='normal')
 
         if all_analyses_var.get():
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_CoreNLP_nn_parser,
+                                         reminders_util.message_CoreNLP_nn_parser,
+                                         True)
             entry_searchField_kw.configure(state='disabled')
 
             clausal_analysis_var.set(1)
@@ -886,6 +891,11 @@ def activate_CoNLL_options(*args):
         co_postag_menu_lb.configure(state='normal')
         co_deprel_menu_lb.configure(state='normal')
 
+    if clausal_analysis_var.get() == True:
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_nn_parser,
+                                     reminders_util.message_CoreNLP_nn_parser,
+                                     True)
 
 clausal_analysis_var.trace('w', activate_CoNLL_options)
 noun_analysis_var.trace('w', activate_CoNLL_options)

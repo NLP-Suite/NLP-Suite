@@ -15,7 +15,7 @@ from subprocess import call
 import GUI_IO_util
 import Stanford_CoreNLP_util
 import IO_files_util
-import IO_user_interface_util
+import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -463,6 +463,9 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 readMe_message="This Python 3 script will extract NER tags from either tetxt file(s) using the Stanford CoreNLP NER annotator.\n\nIn INPUT the algorith expects a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the algorithm exports a csv file of extracted NER values and 2 Excel bar charts (if the checkbox 'Automatically compute Excel chart(s)' is not ticked off)."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+reminders_util.checkReminder(config_filename, reminders_util.title_options_only_CoreNLP_NER,
+                             reminders_util.message_only_CoreNLP_NER, True)
 
 GUI_util.window.mainloop()
 

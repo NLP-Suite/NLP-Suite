@@ -177,6 +177,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.show_column, 
                                                GUI_IO_util.open_reminders_x_coordinate,
                                                "Click on the Show button to display the list of selected language(s).")
 def save_NLP_config(parsers):
+    if language_var.get()=='':
+        mb.showwarning(title='Warning',message='You must select the language your corpus is written in before saving.')
+        return
     currently_selected_package_language= {"NLP PACKAGE": package_var.get(), "LEMMATIZER": package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
     print("parsers_display_area",parsers_display_area['text'])
     config_util.save_NLP_package_language_config(window, currently_selected_package_language, parsers_display_area['text'])

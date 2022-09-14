@@ -420,5 +420,7 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 if input_main_dir_path.get()!='':
     reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
                                  reminders_util.message_CoreNLP_coref, True)
+reminders_util.checkReminder(config_filename, reminders_util.title_options_only_CoreNLP_coref,
+                             reminders_util.message_only_CoreNLP_coref, True)
 
 GUI_util.window.mainloop()

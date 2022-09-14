@@ -129,6 +129,12 @@ message_CoreNLP_Java = 'The Java call to Stanford CoreNLP script uses the proper
 title_options_CoreNLP_coref = ['Stanford CoreNLP coref merged files']
 message_CoreNLP_coref = "The Stanford CoreNLP coref annotator with a corpus of files in a directory in input will create a merged corefed file (with filenames embedded in <@# #@>) in output.\n\nManual coreference resolution will also not be available; depending upon the number of files merged, bringing the files into memory for manual editing may exceed memory capacity. You can always\n   1. manually edit the merged file anyway using the 'Stanford_CoreNLP_coreference_main' GUI;\n   2. split the merged file and then edit the individual coreferenced files, again, using the 'Stanford_CoreNLP_coreference_main' GUI."
 
+title_options_only_CoreNLP_coref = ['Stanford CoreNLP coreference']
+message_only_CoreNLP_coref = "The coreference algorithms in this GUI are based exclusively on Stanford CoreNLP coref annotator.\n\nWatch this space for an extension to spaCy of coreference resolution (Stanza relies on Stanford CoreNLP coreference annotator)."
+
+title_options_only_CoreNLP_NER = ['Stanford CoreNLP NER']
+message_only_CoreNLP_NER = "The NER algorithms in this GUI are based exclusively on Stanford CoreNLP NER annotator.\n\nWatch this space for an extension to spaCy and Stanza of the NER algorithms behind this GUI (the spaCy and Stanza parsers and NER annotators, however, do prooduce NER tags)."
+
 title_options_CoreNLP_shutting_down = ['CoreNLP Server is shutting down']
 message_CoreNLP_shutting_down = "The Stanford CoreNLP, after firing up, will display on command line/prompt the message: CoreNLP Server is shutting down.\n\nIt is NOT a problem. The process will continue..."
 
@@ -145,7 +151,7 @@ title_options_CoreNLP_POS_NER_maxlen = ['CoreNLP POS/NER max sentence length']
 message_CoreNLP_POS_NER_maxlen = "The CoreNLP POS/NER annotators set a maximum sentence length for processing.\n\nSentences longer than your selected max length will be cut and some POS/NER tags in those long sentences may be lost."
 
 title_options_CoreNLP_nn_parser = ['Clause tags with CoreNLP neural network parser']
-message_CoreNLP_nn_parser = "The CoreNLP neural network parser does not produce clause tags. The column 'Clause Tag' in the output csv file will be blank."
+message_CoreNLP_nn_parser = "The CoreNLP neural network parser does not produce clause tags in output. The column 'Clause Tag' in the output csv CoNLL table would contain all blank values."
 
 title_options_CoreNLP_quote_annotator = ['CoreNLP quote annotator']
 message_CoreNLP_quote_annotator = "The CoreNLP quote annotator works with double quotes as default \" rather than with single quotes \'. If your document(s) use single quotes for dialogue, make sure to tick the checkbob \'Include single quotes\'. The Stanford CoreNLP annotator will then process BOTH single AND double quotes, otherwise single quotes for dialogues would be missed (e.g., The user said: 'This NLP Suite sucks.')."
