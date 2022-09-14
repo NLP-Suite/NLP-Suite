@@ -21,7 +21,7 @@ from csv import reader
 import IO_csv_util
 
 # the function associates specific values of a csv file to a specific color
-# append the function to allow multiple wordColNum and catColNum
+# append the function to allow multiple wordColNum and catColNum (cat for categories)
 def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
     dictionary = []
     number_of_items = len(csvValue_color_list)
@@ -66,7 +66,10 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file,
                         csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, fileType='.txt', fileSubc=''):
     writeout = []
     filesToOpen = []
-
+    # TODO needs to check how csv_field1_var is passed when multiple fields are selected
+    #   would need to use split()
+    if isinstance(csv_field1_var,str):
+        csv_field1_var=[csv_field1_var]
     files=IO_files_util.getFileList(inputFile, inputDir, fileType)
     nFile=len(files)
     if nFile==0:

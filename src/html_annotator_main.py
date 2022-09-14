@@ -73,11 +73,11 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
             return
         if csv_field2_var=='':
             csvValue_color_list=[]
-        filesToOpen = html_annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.txt')
+        filesToOpen = html_annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, html_dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.txt')
     elif html_annotator_add_dictionary_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_dictionary_util.py')==False:
             return
-        filesToOpen = html_annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.html')
+        filesToOpen = html_annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, html_dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.html')
     elif html_annotator_extractor==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_extractor_util.py')==False:
             return
@@ -92,18 +92,13 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
         return
 
     if openOutputFiles==True:
-        if filesToOpen==None:
-            if knowledge_graphs_DBpedia_var:
-                print("\nDBpedia exited with error")
-            if knowledge_graphs_YAGO_var:
-                print("\nYAGO exited with error")
-            return
-        nFile=len(filesToOpen)
-        if nFile > 5:
-            mb.showwarning(title='Warning', message='There are too many output files (' + str(nFile) + ') to be opened automatically.\n\nPlease, do not forget to check the HTML files in your selected output directory.')
-            return
-        else:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        if filesToOpen!=None:
+            nFile=len(filesToOpen)
+            if nFile > 5:
+                mb.showwarning(title='Warning', message='There are too many output files (' + str(nFile) + ') to be opened automatically.\n\nPlease, do not forget to check the HTML files in your selected output directory.')
+                return
+            else:
+                IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 #def run(inputFilename,input_main_dir_path,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
@@ -111,9 +106,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
                 GUI_util.output_dir_path.get(),
                 GUI_util.open_csv_output_checkbox.get(),
-                                                GUI_util.create_chart_output_checkbox.get(),
-                                GUI_util.charts_dropdown_field.get(),
-
+                GUI_util.create_chart_output_checkbox.get(),
+                GUI_util.charts_dropdown_field.get(),
                 knowledge_graphs_DBpedia_YAGO_var.get(),
                 knowledge_graphs_WordNet_var.get(),
                 html_gender_annotator_var.get(),
@@ -191,13 +185,11 @@ html_annotator_add_dictionary_var=tk.IntVar() # to add new annotations via dicti
 html_annotator_dictionary_file_var=tk.StringVar() # dictionary file used to annotate
 html_annotator_extractor_var=tk.IntVar() # to extract annotations in csv format from an annotated file
 
-knowledge_graphs_DBpedia_YAGO_var.set(0)
-knowledge_graphs_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text='HTML annotate corpus using the DBpedia & YAGO knowledge graphs (GUI)', variable=knowledge_graphs_DBpedia_YAGO_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,knowledge_graphs_DBpedia_YAGO_checkbox)
+knowledge_graphs_DBpedia_YAGO_button = tk.Button(window, width=70, text='HTML annotate corpus using the DBpedia & YAGO knowledge graphs (Open GUI)', command=lambda: call("python knowledge_graphs_DBpedia_YAGO_main.py", shell=True))
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,knowledge_graphs_DBpedia_YAGO_button)
 
-knowledge_graphs_WordNet_var.set(0)
-knowledge_graphs_WordNet_checkbox = tk.Checkbutton(window, text='HTML annotate corpus using the WordNet knowledge graphs (GUI)', variable=knowledge_graphs_WordNet_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,knowledge_graphs_WordNet_checkbox)
+knowledge_graphs_WordNet_button = tk.Button(window, width=70, text='HTML annotate corpus using the WordNet knowledge graphs (Open GUI)', command=lambda: call("python knowledge_graphs_WordNet_main.py", shell=True))
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,knowledge_graphs_WordNet_button)
 
 # http://yago.r2.enst.fr/
 # http://yago.r2.enst.fr/downloads/yago-4
@@ -211,13 +203,11 @@ def clear_dictionary_list():
     csv_field_value_menu.configure(state='normal')
     csvValue_color_list.clear()
 
-html_gender_annotator_var.set(0)
-html_gender_annotator_checkbox = tk.Checkbutton(window, text='HTML gender annotator (GUI)', variable=html_gender_annotator_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,html_gender_annotator_checkbox)
+html_gender_annotator_button = tk.Button(window, width=70, text='HTML gender annotator (Open GUI)',  command=lambda: call("python html_annotator_gender_main.py", shell=True))
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,html_gender_annotator_button)
 
-html_annotator_dictionary_var.set(0)
-html_annotator_dictionary_checkbox = tk.Checkbutton(window, text='HTML annotate corpus using csv dictionary', variable=html_annotator_dictionary_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,html_annotator_dictionary_checkbox,True)
+html_dictionary_annotator_checkbox = tk.Checkbutton(window, text='HTML annotate corpus using csv dictionary',  variable=html_annotator_dictionary_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,html_dictionary_annotator_checkbox,True)
 
 html_annotator_add_dictionary_var.set(0)
 html_annotator_add_dictionary_checkbox = tk.Checkbutton(window, text='Add annotations to a previously annotated HTML file using csv dictionary', variable=html_annotator_add_dictionary_var, onvalue=1, offvalue=0)
@@ -229,7 +219,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 #setup a button to open Windows Explorer on the selected input directory
 current_y_multiplier_integer=y_multiplier_integer-1
-openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, annotator_dictionary_file_var.get()))
+openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, html_annotator_dictionary_file.get()))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,
@@ -469,9 +459,9 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                   GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox to open the GUI to run the DBpedia and/or YAGO knowledge graphs.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox to open the GUI to run the WordNet knowledge graphs.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to open the gender annotator GUI for annotating text by gender (male/female), either via Stanford CoreNLP gender annotator or various gender databases (US Census, US Social Security, Carnegie Mellon).')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, click on the button to open the GUI to run the DBpedia and/or YAGO knowledge graphs.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, click on the button to open the GUI to run the WordNet knowledge graphs.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, click on the button to open the gender annotator GUI for annotating text by gender (male/female), either via Stanford CoreNLP gender annotator or various gender databases (US Census, US Social Security, Carnegie Mellon).')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox \'HTML annotate corpus using csv dictionary\' if you wish to annotate txt file(s) using a csv dictionary (i.e., a list of words to be annotated).\n\nYou can also tick the checkbox \'Add annotations to a previously annotated HTML file using csv dictionary\' if you wish to annotate a previously annotated file using a csv dictionary.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, click on the \'Select dictionary file\' button to select the csv file that contains dictionary values.\n\nThe button becomes available only when using the dictionary as an annotator (see the widget above \'Annotate corpus (using dictionary)\'.\n\nOnce selected, you can open the dictionary file by clicking on the little square widget.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'The widgets become available only when a csv dictionary file has been selected (via the widget above \'Select dictionary file\').\n\nSelect csv field 1 is the column that contains the values used to annotate the input txt file(s). The FIRST COLUMN of the dictionary file is taken as the default column. YOU CAN SELECT A DIFFERENT COLUMN FROM THE DROPDOWN MENU Select csv field 1.\n\nIf the dictionary file contains more columns, you can select a SECOND COLUMN using the dropdown menu in Select csv field 2 to be used if you wish to use different colors for different items listed in this column. YOU CAN SELECT A DIFFERENT COLUMN FROM THE DROPDOWN MENU Select csv field 2. For example, column 1 contains words to be annotated in different colors by specific categories of field 2 (e.g., \'he\' to be annotated by a \'Gender\' column with the value \'Male\').\n\nThe specific values will have to be selected together with the specific color to be used. YOU CAN ACHIEVE THE SAME RESULT BY ANNOTATING THE SAME HTML FILE MULTIPLE TIMES USING A DIFFERENT DICTIONARY FILE ASSOCIATED EACH TIME TO A DIFFERENT COLOR.\n\n\nPress + for multiple selections.\nPress RESET (or ESCape) to delete all values entered and start fresh.\nPress Show to display all selected values.')
