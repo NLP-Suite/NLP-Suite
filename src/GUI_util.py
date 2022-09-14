@@ -248,7 +248,10 @@ def display_release():
 
     release_version_var.set(local_release_version)
 
-    y_multiplier_integer=-.8
+    if sys.platform == 'darwin':  # Mac OS
+        y_multiplier_integer=-.8
+    else:
+        y_multiplier_integer = -.9
 
     # get the release version available on GitHub
     GitHub_newest_release = get_GitHub_release()
@@ -642,23 +645,47 @@ def display_about_release_team_cite_buttons(scriptName):
             y_multiplier_integer = 0
         about_button = tk.Button(window, text='About', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.about())
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.about_button_x_coordinate, y_multiplier_integer,
-                                                       about_button, True)
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                                       GUI_IO_util.about_button_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       about_button,
+                                                       True, False, False, False, 90,
+                                                       GUI_IO_util.about_button_x_coordinate,
+                                                       "Click on the button to access the About page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
         release_history_button = tk.Button(window, text='Release history', width=15, height=1, foreground='red',
                                            command=lambda: GUI_IO_util.release_history())
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.release_history_button_x_coordinate, y_multiplier_integer,
-                                                       release_history_button, True)
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                                       GUI_IO_util.release_history_button_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       release_history_button,
+                                                       True, False, False, False, 90,
+                                                       GUI_IO_util.about_button_x_coordinate,
+                                                       "Click on the button to access the Release history page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
         team_button = tk.Button(window, text='NLP Suite team', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.list_team())
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.team_button_x_coordinate, y_multiplier_integer,
-                                                       team_button, True)
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                                       GUI_IO_util.team_button_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       team_button,
+                                                       True, False, False, False, 90,
+                                                       GUI_IO_util.release_history_button_x_coordinate,
+                                                       "Click on the button to access the Team page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
         cite_button = tk.Button(window, text='How to cite', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.cite_NLP())
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.cite_button_x_coordinate, y_multiplier_integer,
-                                                       cite_button)
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                                       GUI_IO_util.cite_button_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       cite_button,
+                                                       False, False, False, False, 90,
+                                                       GUI_IO_util.team_button_x_coordinate,
+                                                       "Click on the button to access the How to Cite page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
 
 #__________________________________________________________________________________________________________________

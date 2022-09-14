@@ -330,18 +330,6 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "Verb Modality"])
 
-		# line plots by sentence index
-		chart_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename=verb_file_name,
-															outputDir=outputDir,
-															select_col=['Verb Modality'],
-															group_col=['Sentence ID'],
-															chartTitle="Frequency Distribution of Verb Modality",
-															chartPackage=chartPackage)
-
-		if chart_outputFilename != None:
-			if len(chart_outputFilename) > 0:
-				filesToOpen.append(chart_outputFilename)
-
 
 	return filesToOpen
 
@@ -467,20 +455,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 					  "Verb Tense"])
 
-		# line plots by sentence index
-		chart_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename=verb_file_name,
-													outputDir=outputDir,
-													select_col=['Verb Tense'],
-													group_col=['Sentence ID'],
-													chartTitle="Frequency Distribution of Verb Tense",
-													chartPackage=chartPackage)
-
-		if chart_outputFilename != None:
-			if len(chart_outputFilename) > 0:
-				filesToOpen.append(chart_outputFilename)
-
 	return filesToOpen
-
 
 def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
 	filesToOpen = []  # Store all files that are to be opened once finished

@@ -454,13 +454,23 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
         for i in range(1,len(data.columns)):
             cols_to_be_plotted.append([0,i])
         if series_label is None:
-            Excel_outputFilename = charts_util.run_all(cols_to_be_plotted,name,outputDir,
-                                            "frequency_multi-line_chart", chart_type_list=["line"],
-                                            chart_title=os.path.splitext(os.path.basename(inputFilename))[0]+"_"+chartTitle, column_xAxis_label_var="Sentence ID",chartPackage = chartPackage)
+        #     Excel_outputFilename = charts_util.run_all(cols_to_be_plotted,name,outputDir,
+        #                                     "frequency_multi-line_chart", chart_type_list=["line"],
+        #                                     chart_title=os.path.splitext(os.path.basename(inputFilename))[0]+"_"+chartTitle, column_xAxis_label_var="Sentence ID",chartPackage = chartPackage)
+        # else:
+        #     Excel_outputFilename = charts_util.run_all(cols_to_be_plotted,name,outputDir,
+        #                                     "frequency_multi-line_chart", chart_type_list=["line"],
+        #                                     chart_title=os.path.splitext(os.path.basename(inputFilename))[0]+"_"+chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label, chartPackage = chartPackage)
+            Excel_outputFilename = charts_util.run_all(cols_to_be_plotted, name, outputDir,
+                                                       "frequency_multi-line_chart", chart_type_list=["line"],
+                                                       chart_title=chartTitle,
+                                                       column_xAxis_label_var="Sentence ID", chartPackage=chartPackage)
         else:
-            Excel_outputFilename = charts_util.run_all(cols_to_be_plotted,name,outputDir,
-                                            "frequency_multi-line_chart", chart_type_list=["line"],
-                                            chart_title=os.path.splitext(os.path.basename(inputFilename))[0]+"_"+chartTitle, column_xAxis_label_var="Sentence ID",series_label_list = series_label, chartPackage = chartPackage)
+            Excel_outputFilename = charts_util.run_all(cols_to_be_plotted, name, outputDir,
+                                                       "frequency_multi-line_chart", chart_type_list=["line"],
+                                                       chart_title=chartTitle,
+                                                       column_xAxis_label_var="Sentence ID", series_label_list=series_label,
+                                                       chartPackage=chartPackage)
     return Excel_outputFilename
 
 

@@ -202,95 +202,43 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
         # bar charts -----------------------------------------------------------------------------------------------
 
-        # chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
-        #                                                      data_to_be_plotted=[noun_postag_stats],
-        #                                                      inputFilename=noun_postag_stats_file_name,
-        #                                                      outputDir=outputDir,
-        #                                                      scriptType='Nouns_POS',
-        #                                                      chartTitle="Noun POS Analysis",
-        #                                                      chart_type_list=["bar"])
         columns_to_be_plotted=[[0,1]]
         count_var=0
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted, noun_postag_stats_file_name, outputDir,
 														 outputFileLabel='Nouns_POS',
 														 chartPackage=chartPackage,
 														 chart_type_list=['bar'],
-														 chart_title="Frequency Distribution of Nouns POSTags",
-														 column_xAxis_label_var='Nouns POSTags',
+														 chart_title="Frequency Distribution of Nouns POS Tags",
+														 column_xAxis_label_var='Nouns POS Tag',
 														 hover_info_column_list=[],
 														 count_var=count_var)
 
         if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
-        # chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
-        #                                                      data_to_be_plotted=[noun_deprel_stats],
-        #                                                      inputFilename=noun_deprel_stats_file_name,
-        #                                                      outputDir=outputDir,
-        #                                                      scriptType='Nouns_DEPREL',
-        #                                                      chartTitle="Noun DEPREL Analysis",
-        #                                                      chart_type_list=["bar"])
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted, noun_deprel_stats_file_name, outputDir,
 														 outputFileLabel='Nouns_DEPREL',
 														 chartPackage=chartPackage,
 														 chart_type_list=['bar'],
-														 chart_title="Frequency Distribution of Nouns DEPREL",
-														 column_xAxis_label_var='Nouns DEPREL',
+														 chart_title="Frequency Distribution of Nouns DEPREL Tags",
+														 column_xAxis_label_var='Nouns DEPREL Tag',
 														 hover_info_column_list=[],
 														 count_var=count_var)
 
         if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
-        # chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window,
-        #                                                      data_to_be_plotted=[noun_ner_stats],
-        #                                                      inputFilename=noun_ner_stats_file_name,
-        #                                                      outputDir=outputDir,
-        #                                                      scriptType='Nouns_DEPREL',
-        #                                                      chartTitle="Nouns (NER Tags)",
-        #                                                      chart_type_list=["bar"])
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted, noun_ner_stats_file_name, outputDir,
 														 outputFileLabel='Nouns_NER',
 														 chartPackage=chartPackage,
 														 chart_type_list=['bar'],
-														 chart_title="Frequency Distribution of Nouns NER",
-														 column_xAxis_label_var='Nouns NER',
+														 chart_title="Frequency Distribution of Nouns NER Tags",
+														 column_xAxis_label_var='Nouns NER Tag',
 														 hover_info_column_list=[],
 														 count_var=count_var)
 
         if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
-
-        # return filesToOpen # to avoid code breaking in plot by sentence index
-
-        # line plots by sentence index -----------------------------------------------------------------------------------------------
-        outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=noun_postag_file_name,
-															outputDir=outputDir,
-															select_col=['Noun POS Tags'],
-															group_col=['Sentence ID'],
-                                                            chartPackage=chartPackage,
-                                                            chartTitle="Frequency Distribution of Noun POS Tags")
-        if len(outputFiles)>0:
-            filesToOpen.append(outputFiles)
-
-        outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=noun_deprel_file_name,
-															outputDir=outputDir,
-															select_col=['Noun DEPREL Tags'],
-															group_col=['Sentence ID'],
-                                                            chartPackage=chartPackage,
-                                                            chartTitle="Frequency Distribution of Noun DEPREL Tags")
-        if len(outputFiles)>0:
-            filesToOpen.append(outputFiles)
-
-
-        outputFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=noun_ner_file_name,
-															outputDir=outputDir,
-															select_col=['Noun NER Tags'],
-															group_col=['Sentence ID'],
-                                                            chartPackage=chartPackage,
-                                                            chartTitle="Frequency Distribution of Noun NER Tags")
-        if len(outputFiles)>0:
-            filesToOpen.append(outputFiles)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running NOUN ANALYSES at', True, '', True, startTime, True)
 

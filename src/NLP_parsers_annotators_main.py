@@ -495,7 +495,6 @@ y_multiplier_integer_SV1=y_multiplier_integer
 #     available_parsers = 'Parsers'
 #
 parser_checkbox = tk.Checkbutton(window, variable=parser_var, onvalue=1, offvalue=0)
-
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer_SV1,
                                                parser_checkbox, True, False, False, False, 90,
@@ -503,9 +502,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_
                                                "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
 
 available_parsers=''
-parser_lb = tk.Label(window, text=available_parsers)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+40, y_multiplier_integer,
-                                               parser_lb, True)
+
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+40, y_multiplier_integer,
+#                                                parser_lb, True)
 parser_var.set(1)
 
 parsers=[]
@@ -523,7 +522,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file
 if len(parsers) > 0:
     parser_menu_var.set(parsers[0])
 
-
+# parser_lb = tk.Label(window, text=available_parsers)
+# label = parser_lb.cget('text')
+#
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate()+40, y_multiplier_integer_SV1,
+#                                                parser_lb, True, False, False, False, 90,
+#                                                GUI_IO_util.get_labels_x_coordinate(),
+#                                                "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
+#
 # def display_available_options(*args):
 #     global y_multiplier_integer, y_multiplier_integer_SV1, error, package, parsers, language, package_display_area_value, language_list
 #     error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
@@ -763,9 +770,18 @@ def activate_NLP_options(*args):
         for s in parsers:
             s=s.lstrip() # remove leading blanks since parsers are separated by ,blank
             m.add_command(label=s, command=lambda value=s: parser_menu_var.set(value))
-        parser_lb.config(text=available_parsers)
+        # parser_lb.config(text=available_parsers)
 GUI_util.setup_menu.trace('w', activate_NLP_options)
 activate_NLP_options()
+
+parser_lb = tk.Label(window, text=available_parsers)
+label = parser_lb.cget('text')
+
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate()+40, y_multiplier_integer_SV1,
+                                               parser_lb, True, False, False, False, 90,
+                                               GUI_IO_util.get_labels_x_coordinate(),
+                                               "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
 
 if error:
     mb.showwarning(title='Warning',

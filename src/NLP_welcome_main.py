@@ -173,9 +173,17 @@ def display_bottom_line_buttons():
 
     # get the x, y coordinates of the Enter button
     # https://www.tutorialspoint.com/how-to-get-the-tkinter-widget-s-current-x-and-y-coordinates
-    x_coordinate, y_coordinate = enter_button.winfo_rootx(), enter_button.winfo_rooty()
-    # x_coordinate=500
-    y_coordinate = y_coordinate - 90
+    # TODO tkinter issue the winfo_rootx() and winfo_rootx() and winfo_rootx() and winfo_rooty() DO NOT WORK!
+    # x_coordinate1, y_coordinate1 = enter_button.winfo_rootx(), enter_button.winfo_rooty()
+    # y_coordinate1 = y_coordinate1 - 90
+
+    if sys.platform == 'darwin':  # Mac OS
+        x_coordinate1 = 370
+        y_coordinate1 = 470
+    else:
+        x_coordinate1 = 320
+        y_coordinate1 = 470
+
     label_enter = enter_button.cget('text')
 
     text_info_enter = "Pressing the Enter button will give you access to all the text analysis options available in the NLP Suite."
@@ -188,9 +196,9 @@ def display_bottom_line_buttons():
     # since the foreground color of the enter button is red, must switch the colors around
     # and switch them back to original upon leaving
     enter_button.bind('<Enter>', lambda e: (e.widget.config(background='red', foreground='black', text=label_enter),
-                        GUI_IO_util.display_widget_info(window, e, x_coordinate,
-                        y_coordinate,
-                        x_coordinate,
+                        GUI_IO_util.display_widget_info(window, e, x_coordinate1,
+                        y_coordinate1,
+                        x_coordinate1,
                         text_info_enter)))
     enter_button.bind('<Leave>', lambda e: (GUI_IO_util.delete_display_widget_lb(window, e, text_info_enter),
                                             (e.widget.config(background='#F0F0F0', foreground=current_color_fg_enter, text=label_enter))))
@@ -205,11 +213,17 @@ def display_bottom_line_buttons():
 
     # get the x, y coordinates of the Close button
     # https://www.tutorialspoint.com/how-to-get-the-tkinter-widget-s-current-x-and-y-coordinates
-    x_coordinate1, y_coordinate1 = close_button.winfo_rootx(),  close_button.winfo_rooty()
-    y_coordinate1=y_coordinate1-90
+    # TODO tkinter issue the winfo_rootx() and winfo_rootx() and winfo_rootx() and winfo_rooty() DO NOT WORK!
+    # x_coordinate2, y_coordinate2 = close_button.winfo_rootx(),  close_button.winfo_rooty()
+    # y_coordinate2=y_coordinate2-90
+    if sys.platform == 'darwin':  # Mac OS
+        x_coordinate2 = 100
+        y_coordinate2 = 470
+    else:
+        x_coordinate2 = 150
+        y_coordinate2 = 470
     label_close = close_button.cget('text')
     current_color_close = close_button.cget('foreground') # not used since CLOSE is in black
-    # print("Close button x_coordinate, y_coordinate",x_coordinate, y_coordinate)
 
     text_info_close="Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."\
                                                    "\nYou must be connected to the internet for the auto update to work."
@@ -217,9 +231,9 @@ def display_bottom_line_buttons():
     # e.widget_name.cget('text'),
     # hover-over effect
     close_button.bind('<Enter>', lambda e: (e.widget.config(background='red', text=label_close),
-                        GUI_IO_util.display_widget_info(window, e, x_coordinate1,
-                        y_coordinate1,
-                        x_coordinate1,
+                        GUI_IO_util.display_widget_info(window, e, x_coordinate2,
+                        y_coordinate2,
+                        x_coordinate2,
                         text_info_close)))
     close_button.bind('<Leave>', lambda e: (e.widget.config(background='#F0F0F0', text=label_close),
                       GUI_IO_util.delete_display_widget_lb(window, e, text_info_close)))

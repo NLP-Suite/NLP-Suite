@@ -106,9 +106,10 @@ def delete_display_widget_lb(window, e, text_info):
     # #F0F0F0 is a very light shade of gray
     # foreground='red' (or any color) sets the color of a widget wording to a selected color
     # e.widget.config(background='#F0F0F0', foreground='black', text=label)
-    e.widget.config(background='#F0F0F0', foreground='black')
+    # e.widget.config(background='#F0F0F0', foreground='black')
 
 # https://stackoverflow.com/questions/20399243/display-message-when-hovering-over-something-with-mouse-cursor-in-python
+# called by place_widget which is called in every GUI
 def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_over_widget=False, whole_widget_red=False, x_coordinate_hover_over= 90, text_info=''):
     if no_hover_over_widget:
         return
@@ -121,7 +122,6 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
         # label is the wording of the text value displayed in a widget (e.g, RUN, CLOSE,
         #   or, for a menu, the item currently displayed in the menu, e.g., mm/dd/yyyy for a date menu)
         label = widget_name.cget('text')
-    # print('widget_name',widget_name,'label',label)
     # color of current wording
     #   needed to reset to correct color upon leaving
     if label != '':
@@ -131,7 +131,9 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
     if current_color == 'red':
         foreground_color = 'black'
     else:
-        foreground_color = current_color
+        foreground_color = 'red'
+    # print('.......................  widget_name',widget_name,'label',label,
+    #       'current_color', current_color,'foreground_color',foreground_color)
 
     # print("widget_name current_color",widget_name,current_color,"foreground",widget_name.cget('foreground'),'background',widget_name.cget('background'))
 
@@ -154,15 +156,18 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
         if 'scale' in str(widget_name) or 'entry' in str(widget_name) \
                 or 'button' in str(widget_name):
             # background='red' sets the whole widget in red
-            widget_name.bind('<Enter>', lambda e: e.widget.config(background='red', foreground=foreground_color, text=label))
+            widget_name.bind('<Enter>', lambda e: e.widget.config(background='red', foreground='black'))
         # combobox is the ttk menu object
-        if 'label' in str(widget_name) \
+        elif 'label' in str(widget_name) \
             or 'text' in str(widget_name) \
             or 'checkbutton' in str(widget_name) \
             or 'combobox' in str(widget_name):
             # foreground='red' sets a widget wording, i.e., label, to red
             # ##F0F0F0 is a very light shade of gray
-            widget_name.bind('<Enter>', lambda e: e.widget.config(background='#F0F0F0',foreground=foreground_color, text=label))
+            # print("========================= widget_name, foreground_color",widget_name, foreground_color)
+            widget_name.bind('<Enter>', lambda e: e.widget.config(background='#F0F0F0', foreground='red'))
+
+# text info available
     else: # there is text info to be displayed
         # these are the y coordinates where the text info is displayed
         # move up the display if the ino contains line breaks
@@ -213,7 +218,7 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
                 or 'button' in str(widget_name):
             # background='red' sets the whole widget in red
             widget_name.bind('<Enter>',
-                             lambda e: (e.widget.config(background='red', text=label),
+                             lambda e: (e.widget.config(background='red', foreground='black'),
                                         display_widget_info(window, e, x_coordinate,
                                                             y_coordinate,
                                                             x_coordinate_hover_over,
@@ -226,7 +231,8 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
             # foreground='red' sets a widget wording, i.e., label, to red
             # ##F0F0F0 is a very light shade of gray
             widget_name.bind('<Enter>',
-                 lambda e: (e.widget.config(background='#F0F0F0', foreground=foreground_color, text=label), display_widget_info(window, e, x_coordinate,
+                 lambda e: (e.widget.config(background='#F0F0F0', foreground=foreground_color),
+                            display_widget_info(window, e, x_coordinate,
                                                 y_coordinate,
                                                 x_coordinate_hover_over,
                                                 text_info)))
@@ -244,9 +250,15 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
     widget_name.bind('<Leave>',
                      # foreground='red' sets a widget wording, i.e., label, to red
                      # ##F0F0F0 is a very light shade of gray
-                     # upon leaving you want to resume the original colors of the widget
-                     lambda e: (delete_display_widget_lb(window, e, text_info),
-                                e.widget.config(background='#F0F0F0', foreground=current_color, text=label)))
+                     # upon leaving you want to resume/reset the original colors of the widget
+                     #  as set in current_color
+                     # lambda e: (delete_display_widget_lb(window, e, text_info),
+                     #            e.widget.config(background='#F0F0F0', foreground=current_color)))
+                     lambda e: (e.widget.config(background='#F0F0F0', foreground='black'),
+                                 delete_display_widget_lb(window, e, text_info)))
+
+
+    # e.widget.config(background='#F0F0F0', foreground=current_color)))
 
 # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
 # widget_name is the name of the widget that needs to be placed in any of the GUI scripts as defined by tk.
