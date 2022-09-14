@@ -185,8 +185,8 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
         writer.writeheader()
         if len(inputFilename) > 0:  # handle single file
             if os.path.exists(inputFilename):
-                filesToOpen.append(analyzefile(inputFilename, outputDir, output_file, mode, 1, inputFilename))
-                output_file = analyzefile(inputFilename, outputDir, output_file, mode, 1, inputFilename)
+                filesToOpen.append(analyzefile(inputFilename, outputDir, outputFilename, mode, 1, inputFilename))
+                output_file = analyzefile(inputFilename, outputDir, outputFilename, mode, 1, inputFilename)
             else:
                 print('Input file "' + inputFilename + '" is invalid.')
                 sys.exit(1)

@@ -215,6 +215,7 @@ def check_java_installation(script):
     config_filename = ''
     reminder_title = ''
     reminder_message = ''
+    message = ''
     error_code = 1 # should be 0 if Java is installed
     system_output = '' # This is what you see when you run "java -version" in your command line
 
