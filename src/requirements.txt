@@ -97,6 +97,9 @@ spacytextblob
 # used by Word2Vec
 plotly
 
+# used by Plot plotLy (static)
+kaleido
+
 pandas~=1.2.1
 future~=0.18.2
 numpy
