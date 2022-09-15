@@ -1,3 +1,13 @@
+# list of continents for GIS Nominatim.geocode()
+continents = [
+    'Asia', 'Europe', 'America', 'Africa', 'Antarctica', 'Oceania'
+]
+
+directions = [
+    'East', 'West', 'South', 'North',
+    'Eastern', 'Western', 'Southern', 'Northern'
+]
+
 #  ISO 639-1 language codes
 ISO_language_menu = ''
 # coding: utf8

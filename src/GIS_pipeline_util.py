@@ -1,6 +1,7 @@
 # Cynthia Dong May 2020
 # Cynthia Dong May 2020
 # Roberto Franzosi September 2020
+# Mino Cha September 2022
 
 import os
 import pandas as pd
@@ -11,7 +12,6 @@ import IO_files_util
 import IO_csv_util
 import GUI_IO_util
 import reminders_util
-import charts_util
 import GIS_file_check_util
 import GIS_location_util
 import GIS_geocode_util
@@ -20,6 +20,7 @@ import GIS_Google_Maps_util
 import IO_libraries_util
 import config_util
 import TIPS_util
+import constants_util
 
 # The script is used by SVO_main and by Google_Earth_main to run a csv file that 1. needs geocoding; 2. mapping geocoded location onto Google Earth Pro.
 import IO_user_interface_util
@@ -131,7 +132,6 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
     # ------------------------------------------------------------------------------------
 
     if inputIsCoNLL == True:
-
         outputCsvLocationsOnly = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
                                                                    'NER_locations', '', '', '', False, True)
         locations = GIS_location_util.extract_NER_locations(window, inputFilename, encodingValue,
@@ -141,6 +141,26 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
     else:
         # locations is a list of names of locations
         locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnNumber,encodingValue, datePresent, dateColumnNumber)
+        if geocoder == 'Nominatim':
+            changed = False
+            nom_df = pd.DataFrame(locations, columns=['Location', 'Date','NER']) if len(locations)==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0','NER'])
+            drop_idx = []
+            changed_idx = {}
+            for i,row in nom_df.iterrows():
+                if i!=0 and row[0] in constants_util.continents and nom_df.at[i-1, 'Location'] in constants_util.directions:
+                    nom_df.at[i, 'Location'] = nom_df.at[i-1, 'Location'] + ' ' + row[0]
+                    drop_idx.append(i-1)
+                    changed_idx[i] = nom_df.at[i, 'Location']
+                    changed = True
+            if changed:
+                tmp_df = pd.read_csv(inputFilename)
+                for k,v in changed_idx.items():
+                    tmp_df.at[k, 'Location'] = v
+                tmp_df = tmp_df.drop(drop_idx)
+                tmp_df.to_csv(inputFilename)
+            nom_df = nom_df.drop(drop_idx)
+            nom_df = nom_df.drop_duplicates(subset=['Location'], ignore_index=True)
+            locations = [row.values.tolist() for _,row in nom_df.iterrows()]
 
     if locations == None or len(locations) == 0:
         return
