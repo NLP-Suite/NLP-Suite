@@ -331,6 +331,7 @@ def geocode(window,locations, inputFilename, outputDir,
 						lat, lng, address = 0, 0, " LOCATION NOT FOUND BY " + geocoder
 						locationsNotFound=locationsNotFound+1
 						geowriterNotFound.writerow([itemToGeocode, NER_Tag])
+						nonDistinctNotGeocodedList.append((itemToGeocode, NER_Tag))
 						print(currRecord,"     LOCATION NOT FOUND BY " + geocoder,itemToGeocode)
 				else: #Google
 					try: #use a try/except in case requests do not give results
