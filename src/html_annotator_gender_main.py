@@ -20,6 +20,7 @@ import reminders_util
 import Stanford_CoreNLP_util
 import html_annotator_gender_dictionary_util
 import html_annotator_dictionary_util
+import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -40,7 +41,9 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
     #CoreNLP annotate
     if CoreNLP_gender_annotator_var==True:
         output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
-                                                               outputDir, openOutputFiles, createCharts, chartPackage, 'gender', False, memory_var)
+                                        outputDir, openOutputFiles,
+                                        createCharts, chartPackage, 'gender', False, language, memory_var)
+
         # annotator returns a list and not a string
         # the gender annotator returns 2 Excel charts in addition to the csv file
         if len(output)>0:
@@ -90,7 +93,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
 #def run(inputFilename,input_main_dir_path,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
-                GUI_util.outputDir.get(),
+                GUI_util.output_dir_path.get(),
                 GUI_util.open_csv_output_checkbox.get(),
                                                 GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_dropdown_field.get(),
@@ -385,6 +388,11 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 readMe_message="The Python 3 scripts provide ways of annotating text files for the gender (female/male) of first names found in the text.\n\nTwo different types of gender annotation are applied.\n\n  1. Stanford CoreNLP gender annotator. This annotator requires Coref annotator which only has about 60% accuracy.\n\n  2. A second approach is based on a variety of first name lists (e.g., US Census name lists, Social Security lists, Carnegie Mellon lists). As a point of warning, it should be noted that many first names may be both male or female first names (e.g., Jamie in the US), sometimes depending upon the country (e.g., Andrea is a male name in Italy and a female name in the US).\n\nWhether using CoreNLP or dictionary lists, the algorithms also classify the gender of personal pronouns (he, him, his; she, her, hers as male and female, respectively)."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+global error, language
+error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+language_var = language
+language_list = language
 
 GUI_util.window.mainloop()
 

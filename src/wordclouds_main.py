@@ -299,8 +299,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_i
 
 # width=20,
 select_image_file_button=tk.Button(window, text='Select png image file',command=lambda: get_image(window,'Select INPUT png file', [("png files", "*.png")]))
-#select_image_file_button.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,select_image_file_button,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   select_image_file_button,
+                                   True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to select the png image file")
 
 # setup a button to open Windows Explorer on open the png image file
 openImage_button = tk.Button(window, width=3, text='', state='disabled',

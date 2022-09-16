@@ -307,8 +307,8 @@ def geocode(window,locations, inputFilename, outputDir,
 						itemToGeocode == 'South America':
 						NER_Tag_nominatim='continent'
 						# checking for South or North America is done before this code in GIS_pipeline_util, which edits and overwrites the csv file
-						if itemToGeocode == 'America':
-							itemToGeocode = 'United States'
+						# if itemToGeocode == 'America':
+						# 	itemToGeocode = 'United States'
 					elif itemToGeocode=='North' or itemToGeocode=='South':
 						continue
 					location = nominatim_geocode(geolocator,loc=itemToGeocode,country_bias=country_bias,box_tuple=area,restrict=restrict,featuretype=NER_Tag_nominatim)
