@@ -148,7 +148,18 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
             drop_idx = []
             changed_idx = {}
             for i,row in nom_df.iterrows():
-                if i!=0 and row[0] in constants_util.continents and nom_df.at[i-1, 'Location'] in constants_util.directions:
+                # if i!=0 and row[0] in constants_util.continents and nom_df.at[i-1, 'Location'] in constants_util.directions:
+                if i!=0 and \
+                    (row[0] == 'Africa' or \
+                    row[0] == 'Antarctica' or \
+                    row[0] == 'Asia' or \
+                    row[0] == 'Australia' or \
+                    row[0] == 'Europe' or \
+                    row[0] == 'Oceania' or \
+                    row[0] == 'North America' or \
+                    row[0] == 'South America') and \
+                    (nom_df.at[i - 1, 'Location'] == 'North' or \
+                    nom_df.at[i - 1, 'Location'] == 'South'):
                     nom_df.at[i, 'Location'] = nom_df.at[i-1, 'Location'] + ' ' + row[0]
                     drop_idx.append(i-1)
                     changed_idx[i] = nom_df.at[i, 'Location']

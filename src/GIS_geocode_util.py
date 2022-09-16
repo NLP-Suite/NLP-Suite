@@ -295,13 +295,20 @@ def geocode(window,locations, inputFilename, outputDir,
 				if geocoder=='Nominatim':
 					# CoreNLP NER tag for continents is often wrong and as a result Nominatim geocodes them wrongly
 					#	we should skip them, particularly when they are lowercase
-					cart_prod = [d+' '+c for d in constants_util.directions for c in constants_util.continents]
-					if itemToGeocode in cart_prod or itemToGeocode in constants_util.continents:
+					# continents='Africa, Antarctica, Asia, Australia, Europe, Oceania, North America, South America'
+					if itemToGeocode == 'Africa' or \
+						itemToGeocode == 'Antarctica' or \
+						itemToGeocode == 'Asia' or \
+						itemToGeocode == 'Australia' or \
+						itemToGeocode == 'Europe' or \
+						itemToGeocode == 'Oceania' or \
+						itemToGeocode == 'North America' or \
+						itemToGeocode == 'South America':
 						NER_Tag_nominatim='continent'
 						# checking for South or North America is done before this code in GIS_pipeline_util, which edits and overwrites the csv file
 						if itemToGeocode == 'America':
 							itemToGeocode = 'United States'
-					elif itemToGeocode in constants_util.directions:
+					elif itemToGeocode=='North' or itemToGeocode=='South':
 						continue
 					location = nominatim_geocode(geolocator,loc=itemToGeocode,country_bias=country_bias,box_tuple=area,restrict=restrict,featuretype=NER_Tag_nominatim)
 				else:
