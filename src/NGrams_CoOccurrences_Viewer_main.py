@@ -538,10 +538,18 @@ CoOcc_Viewer_var.trace('w', lambda x, y, z: activate_allOptions())
 activate_allOptions()
 
 open_GUI_Ngrams_button = tk.Button(window, width=50, text='Compute N-grams (Open GUI)',command=lambda: call("python style_analysis_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_GUI_Ngrams_button)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   open_GUI_Ngrams_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 open_GUI_search_button = tk.Button(window, width=50, text='Search words/collocations (Open GUI)',command=lambda: call("python file_search_byWord_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_GUI_search_button)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   open_GUI_search_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

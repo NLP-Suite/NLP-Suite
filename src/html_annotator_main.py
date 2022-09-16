@@ -186,10 +186,18 @@ html_annotator_dictionary_file_var=tk.StringVar() # dictionary file used to anno
 html_annotator_extractor_var=tk.IntVar() # to extract annotations in csv format from an annotated file
 
 knowledge_graphs_DBpedia_YAGO_button = tk.Button(window, width=70, text='HTML annotate corpus using the DBpedia & YAGO knowledge graphs (Open GUI)', command=lambda: call("python knowledge_graphs_DBpedia_YAGO_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,knowledge_graphs_DBpedia_YAGO_button)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   knowledge_graphs_DBpedia_YAGO_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 knowledge_graphs_WordNet_button = tk.Button(window, width=70, text='HTML annotate corpus using the WordNet knowledge graphs (Open GUI)', command=lambda: call("python knowledge_graphs_WordNet_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,knowledge_graphs_WordNet_button)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   knowledge_graphs_WordNet_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 # http://yago.r2.enst.fr/
 # http://yago.r2.enst.fr/downloads/yago-4
@@ -204,7 +212,11 @@ def clear_dictionary_list():
     csvValue_color_list.clear()
 
 html_gender_annotator_button = tk.Button(window, width=70, text='HTML gender annotator (Open GUI)',  command=lambda: call("python html_annotator_gender_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,html_gender_annotator_button)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   html_gender_annotator_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 html_dictionary_annotator_checkbox = tk.Checkbutton(window, text='HTML annotate corpus using csv dictionary',  variable=html_annotator_dictionary_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,html_dictionary_annotator_checkbox,True)
@@ -215,7 +227,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 annotator_dictionary_button=tk.Button(window, width=20, text='Select csv dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT csv dictionary file', [("dictionary files", "*.csv")]))
 annotator_dictionary_button.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20, y_multiplier_integer,annotator_dictionary_button,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                   annotator_dictionary_button,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Click on the button to select the dictionary file")
 
 #setup a button to open Windows Explorer on the selected input directory
 current_y_multiplier_integer=y_multiplier_integer-1
@@ -232,7 +248,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 menu_values=IO_csv_util.get_csvfile_headers(html_annotator_dictionary_file.get())
 
 field_lb = tk.Label(window, text='Select csv field 1')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,field_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,field_lb,True)
 if menu_values!='':
     csv_field1_menu = tk.OptionMenu(window, csv_field1_var, *menu_values)
 else:

@@ -132,6 +132,10 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
         foreground_color = 'black'
     else:
         foreground_color = 'red'
+    if 'optionmenu' in str(widget_name) or 'scale' in str(widget_name):
+        current_color = 'black'
+        foreground_color = 'red'
+
     # print('.......................  widget_name',widget_name,'label',label,
     #       'current_color', current_color,'foreground_color',foreground_color)
 
@@ -156,16 +160,19 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
         if 'scale' in str(widget_name) or 'entry' in str(widget_name) \
                 or 'button' in str(widget_name):
             # background='red' sets the whole widget in red
-            widget_name.bind('<Enter>', lambda e: e.widget.config(background='red', foreground='black'))
+            foreground_color = 'black'
+            widget_name.bind('<Enter>', lambda e: e.widget.config(background='red', foreground=foreground_color))
         # combobox is the ttk menu object
         elif 'label' in str(widget_name) \
             or 'text' in str(widget_name) \
             or 'checkbutton' in str(widget_name) \
+            or 'optionmenu' in str(widget_name) \
             or 'combobox' in str(widget_name):
             # foreground='red' sets a widget wording, i.e., label, to red
             # ##F0F0F0 is a very light shade of gray
             # print("========================= widget_name, foreground_color",widget_name, foreground_color)
-            widget_name.bind('<Enter>', lambda e: e.widget.config(background='#F0F0F0', foreground='red'))
+            # foreground_color = 'red'
+            widget_name.bind('<Enter>', lambda e: e.widget.config(background='#F0F0F0', foreground=foreground_color))
 
 # text info available
     else: # there is text info to be displayed
@@ -254,7 +261,7 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
                      #  as set in current_color
                      # lambda e: (delete_display_widget_lb(window, e, text_info),
                      #            e.widget.config(background='#F0F0F0', foreground=current_color)))
-                     lambda e: (e.widget.config(background='#F0F0F0', foreground='black'),
+                     lambda e: (e.widget.config(background='#F0F0F0', foreground=current_color),
                                  delete_display_widget_lb(window, e, text_info)))
 
 

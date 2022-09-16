@@ -21,6 +21,7 @@ import IO_libraries_util
 import config_util
 import TIPS_util
 import constants_util
+import charts_util
 
 # The script is used by SVO_main and by Google_Earth_main to run a csv file that 1. needs geocoding; 2. mapping geocoded location onto Google Earth Pro.
 import IO_user_interface_util
@@ -159,7 +160,6 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                 tmp_df = tmp_df.drop(drop_idx)
                 tmp_df.to_csv(inputFilename)
             nom_df = nom_df.drop(drop_idx)
-            nom_df = nom_df.drop_duplicates(subset=['Location'], ignore_index=True)
             locations = [row.values.tolist() for _,row in nom_df.iterrows()]
 
     if locations == None or len(locations) == 0:
@@ -184,7 +184,8 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                                                                                   False, True)
         kmloutputFilename = geocodedLocationsOutputFilename.replace('.csv', '.kml')
 
-        geocodedLocationsOutputFilename, locationsNotFoundoutputFilename = GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
+        geocodedLocationsOutputFilename, locationsNotFoundoutputFilename, locationsNotFoundNonDistinctoutputFilename = \
+            GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
                                                                                     locationColumnName,geocoder,country_bias,area_var,restrict,encodingValue,split_locations_prefix,split_locations_suffix)
         if geocodedLocationsOutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
             return
@@ -204,12 +205,44 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
             locations.insert(0, ['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
         IO_csv_util.list_to_csv(window, locations, outputCsvLocationsOnly)
 
-    # the plot of locations frequencies is done in the annotator_util
-    # the plot of location NER Tags frequencies is done in the annotator_util
-    # plot of locations not found while VERY useful is a useless plot since locations not found are only listed once
+    # the plot of locations frequencies is done in the CoreNLP_annotator_util
+    # the plot of location NER Tags frequencies is done in the CoreNLP_annotator_util
+    # need to plot locations geocoded and not geocoded
 
     if geocodedLocationsOutputFilename != '':
         filesToOpen.append(geocodedLocationsOutputFilename)
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
+                                                           outputDir,
+                                                           columns_to_be_plotted=['Location'],
+                                                           chartTitle='Frequency Distribution of Locations Found by ' + geocoder,
+                                                           # count_var = 1 for columns of alphabetic values
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='found',  # 'NER_tag_bar',
+                                                           column_xAxis_label='Locations',
+                                                           groupByList=[],
+                                                           plotList=[],
+                                                           chart_title_label='')
+    if chart_outputFilename != None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
+
+    if locationsNotFoundNonDistinctoutputFilename != '':
+        filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
+                                                               outputDir,
+                                                               columns_to_be_plotted=['Location'],
+                                                               chartTitle='Frequency Distribution of Locations not Found by ' + geocoder,
+                                                               # count_var = 1 for columns of alphabetic values
+                                                               count_var=1, hover_label=[],
+                                                               outputFileNameType='not-found',  # 'NER_tag_bar',
+                                                               column_xAxis_label='Locations',
+                                                               groupByList=[],
+                                                               plotList=[],
+                                                               chart_title_label='')
+    if chart_outputFilename != None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
+
 
 
     # ------------------------------------------------------------------------------------

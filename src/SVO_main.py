@@ -840,9 +840,12 @@ google_earth_var = tk.IntVar()
 def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
 
-pre_processing_button = tk.Button(window, text='Pre-processing tools (file checking & cleaning GUI)',width=50,command=open_GUI)
+pre_processing_button = tk.Button(window, text='Pre-processing tools (Open file checking & cleaning GUI)',width=50,command=open_GUI)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               pre_processing_button)
+                                   pre_processing_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 # NLP packages & languages ------------------------------------------------------------------------------------------------------
 

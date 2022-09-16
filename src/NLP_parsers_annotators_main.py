@@ -391,9 +391,12 @@ annotators_menu_var = tk.StringVar()
 quote_var = tk.IntVar()
 y_multiplier_integer_SV=0 # used to set the quote_var widget on the proper GUI line
 
-pre_processing_button = tk.Button(window, width=50, text='Pre-processing tools (Open file checking & cleaning GUI)',command=lambda: call('python file_checker_converter_cleaner_main.py'))
+pre_processing_button = tk.Button(window, width=50, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: call('python file_checker_converter_cleaner_main.py'))
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               pre_processing_button)
+                                   pre_processing_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 # memory options
 
@@ -756,7 +759,7 @@ readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName, False)
 
 def activate_NLP_options(*args):
-    global error, parsers, available_parsers, parser_lb, package, package_display_area_value, language, language_list
+    global error, parsers, available_parsers, parser_lb, package, package_display_area_value, language, language_list, y_multiplier_integer
     error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new = GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
     if package != '':
         available_parsers = 'Parsers for ' + package + '                          '
@@ -770,18 +773,26 @@ def activate_NLP_options(*args):
         for s in parsers:
             s=s.lstrip() # remove leading blanks since parsers are separated by ,blank
             m.add_command(label=s, command=lambda value=s: parser_menu_var.set(value))
-        # parser_lb.config(text=available_parsers)
+    parser_lb = tk.Label(window, text=available_parsers)
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate() + 40,
+                                                   y_multiplier_integer_SV1,
+                                                   parser_lb, True, False, False, False, 90,
+                                                   GUI_IO_util.get_labels_x_coordinate(),
+                                                   "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
+    # parser_lb.config(text=available_parsers)
+    print("available parsers",available_parsers)
 GUI_util.setup_menu.trace('w', activate_NLP_options)
 activate_NLP_options()
 
-parser_lb = tk.Label(window, text=available_parsers)
-label = parser_lb.cget('text')
-
+# parser_lb = tk.Label(window, text=available_parsers)
+# parser_lb.config(text=available_parsers)
+# label = parser_lb.cget('text')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate()+40, y_multiplier_integer_SV1,
-                                               parser_lb, True, False, False, False, 90,
-                                               GUI_IO_util.get_labels_x_coordinate(),
-                                               "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
+# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate() + 40,
+#                                                y_multiplier_integer_SV1,
+#                                                parser_lb, True, False, False, False, 90,
+#                                                GUI_IO_util.get_labels_x_coordinate(),
+#                                                "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
 
 if error:
     mb.showwarning(title='Warning',

@@ -60,23 +60,47 @@ GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_di
 
 y_multiplier_integer = 0
 
-open_CoNLL_search_GUI_button = tk.Button(window, text='Open GUI for CoNLL table searches',width=40,command=lambda: call("python CoNLL_table_analyzer_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_CoNLL_search_GUI_button)
+open_CoNLL_search_GUI_button = tk.Button(window, text='CoNLL table searches (Open GUI)',width=40,command=lambda: call("python CoNLL_table_analyzer_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   open_CoNLL_search_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
-open_word_search_GUI_button = tk.Button(window, text='Open GUI for words/collocations searches',width=40,command=lambda: call("python file_search_byWord_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_word_search_GUI_button)
+open_word_search_GUI_button = tk.Button(window, text='Words/collocations searches (Open GUI)',width=40,command=lambda: call("python file_search_byWord_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   open_word_search_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
-open_nGram_VIEWER_search_GUI_button = tk.Button(window, text='Open GUI for N-grams/co-occurrences searches',width=40,command=lambda: call("python NGrams_CoOccurrences_Viewer_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_nGram_VIEWER_search_GUI_button)
+open_nGram_VIEWER_search_GUI_button = tk.Button(window, text='N-grams/co-occurrences searches (Open GUI)',width=40,command=lambda: call("python NGrams_CoOccurrences_Viewer_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   open_nGram_VIEWER_search_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
-open_WordNet_search_GUI_button = tk.Button(window, text='Open GUI for WordNet searches',width=40,command=lambda: call("python knowledge_graphs_WordNet_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_WordNet_search_GUI_button)
+open_WordNet_search_GUI_button = tk.Button(window, text='WordNet searches (Open GUI)',width=40,command=lambda: call("python knowledge_graphs_WordNet_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   open_WordNet_search_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
-open_file_search_GUI_button = tk.Button(window, text='Open GUI for file searches',width=40,command=lambda: call("python file_manager_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_file_search_GUI_button)
+open_file_search_GUI_button = tk.Button(window, text='File searches (Open GUI)',width=40,command=lambda: call("python file_manager_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   open_file_search_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
-export_csv_field_GUI_button = tk.Button(window, text='Export csv field content to csv/txt file',width=40,command=lambda: call("python data_manager_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,export_csv_field_GUI_button)
+export_csv_field_GUI_button = tk.Button(window, text='Export csv field content to csv/txt file (Open GUI)',width=40,command=lambda: call("python data_manager_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   export_csv_field_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
