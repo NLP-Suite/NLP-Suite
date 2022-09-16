@@ -296,6 +296,7 @@ def geocode(window,locations, inputFilename, outputDir,
 					# CoreNLP NER tag for continents is often wrong and as a result Nominatim geocodes them wrongly
 					#	we should skip them, particularly when they are lowercase
 					# continents='Africa, Antarctica, Asia, Australia, Europe, Oceania, North America, South America'
+					# TODO MINO GIS
 					if itemToGeocode == 'Africa' or \
 						itemToGeocode == 'Antarctica' or \
 						itemToGeocode == 'Asia' or \

@@ -147,6 +147,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
             nom_df = pd.DataFrame(locations, columns=['Location', 'Date','NER']) if len(locations)==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0','NER'])
             drop_idx = []
             changed_idx = {}
+            # TODO MINO GIS
             for i,row in nom_df.iterrows():
                 # if i!=0 and row[0] in constants_util.continents and nom_df.at[i-1, 'Location'] in constants_util.directions:
                 if i!=0 and \
