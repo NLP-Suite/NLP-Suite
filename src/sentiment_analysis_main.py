@@ -124,6 +124,10 @@ def run(inputFilename,inputDir,outputDir,
 
     if BERT_var==1:
         tempOutputFiles = sentiment_analysis_roBERTa_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
+        if tempOutputFiles == None:
+            return
+        if len(tempOutputFiles) > 0:
+            filesToOpen.extend(tempOutputFiles)
 
 # spaCy  _______________________________________________________
 

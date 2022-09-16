@@ -1,6 +1,7 @@
 # Cynthia Dong May 2020
 # Cynthia Dong May 2020
 # Roberto Franzosi September 2020
+# Mino Cha September 2022
 
 import os
 import pandas as pd
@@ -11,7 +12,6 @@ import IO_files_util
 import IO_csv_util
 import GUI_IO_util
 import reminders_util
-import charts_util
 import GIS_file_check_util
 import GIS_location_util
 import GIS_geocode_util
@@ -20,6 +20,8 @@ import GIS_Google_Maps_util
 import IO_libraries_util
 import config_util
 import TIPS_util
+import constants_util
+import charts_util
 
 # The script is used by SVO_main and by Google_Earth_main to run a csv file that 1. needs geocoding; 2. mapping geocoded location onto Google Earth Pro.
 import IO_user_interface_util
@@ -131,7 +133,6 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
     # ------------------------------------------------------------------------------------
 
     if inputIsCoNLL == True:
-
         outputCsvLocationsOnly = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
                                                                    'NER_locations', '', '', '', False, True)
         locations = GIS_location_util.extract_NER_locations(window, inputFilename, encodingValue,
@@ -141,6 +142,37 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
     else:
         # locations is a list of names of locations
         locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnNumber,encodingValue, datePresent, dateColumnNumber)
+        if geocoder == 'Nominatim':
+            changed = False
+            nom_df = pd.DataFrame(locations, columns=['Location', 'Date','NER']) if len(locations)==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0','NER'])
+            drop_idx = []
+            changed_idx = {}
+            # TODO MINO GIS
+            for i,row in nom_df.iterrows():
+                # if i!=0 and row[0] in constants_util.continents and nom_df.at[i-1, 'Location'] in constants_util.directions:
+                if i!=0 and \
+                    (row[0] == 'Africa' or \
+                    row[0] == 'Antarctica' or \
+                    row[0] == 'Asia' or \
+                    row[0] == 'Australia' or \
+                    row[0] == 'Europe' or \
+                    row[0] == 'Oceania' or \
+                    row[0] == 'North America' or \
+                    row[0] == 'South America') and \
+                    (nom_df.at[i - 1, 'Location'] == 'North' or \
+                    nom_df.at[i - 1, 'Location'] == 'South'):
+                    nom_df.at[i, 'Location'] = nom_df.at[i-1, 'Location'] + ' ' + row[0]
+                    drop_idx.append(i-1)
+                    changed_idx[i] = nom_df.at[i, 'Location']
+                    changed = True
+            if changed:
+                tmp_df = pd.read_csv(inputFilename)
+                for k,v in changed_idx.items():
+                    tmp_df.at[k, 'Location'] = v
+                tmp_df = tmp_df.drop(drop_idx)
+                tmp_df.to_csv(inputFilename)
+            nom_df = nom_df.drop(drop_idx)
+            locations = [row.values.tolist() for _,row in nom_df.iterrows()]
 
     if locations == None or len(locations) == 0:
         return
@@ -164,7 +196,8 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                                                                                   False, True)
         kmloutputFilename = geocodedLocationsOutputFilename.replace('.csv', '.kml')
 
-        geocodedLocationsOutputFilename, locationsNotFoundoutputFilename = GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
+        geocodedLocationsOutputFilename, locationsNotFoundoutputFilename, locationsNotFoundNonDistinctoutputFilename = \
+            GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
                                                                                     locationColumnName,geocoder,country_bias,area_var,restrict,encodingValue,split_locations_prefix,split_locations_suffix)
         if geocodedLocationsOutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
             return
@@ -184,12 +217,44 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
             locations.insert(0, ['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
         IO_csv_util.list_to_csv(window, locations, outputCsvLocationsOnly)
 
-    # the plot of locations frequencies is done in the annotator_util
-    # the plot of location NER Tags frequencies is done in the annotator_util
-    # plot of locations not found while VERY useful is a useless plot since locations not found are only listed once
+    # the plot of locations frequencies is done in the CoreNLP_annotator_util
+    # the plot of location NER Tags frequencies is done in the CoreNLP_annotator_util
+    # need to plot locations geocoded and not geocoded
 
     if geocodedLocationsOutputFilename != '':
         filesToOpen.append(geocodedLocationsOutputFilename)
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
+                                                           outputDir,
+                                                           columns_to_be_plotted=['Location'],
+                                                           chartTitle='Frequency Distribution of Locations Found by ' + geocoder,
+                                                           # count_var = 1 for columns of alphabetic values
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='found',  # 'NER_tag_bar',
+                                                           column_xAxis_label='Locations',
+                                                           groupByList=[],
+                                                           plotList=[],
+                                                           chart_title_label='')
+    if chart_outputFilename != None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
+
+    if locationsNotFoundNonDistinctoutputFilename != '':
+        filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
+                                                               outputDir,
+                                                               columns_to_be_plotted=['Location'],
+                                                               chartTitle='Frequency Distribution of Locations not Found by ' + geocoder,
+                                                               # count_var = 1 for columns of alphabetic values
+                                                               count_var=1, hover_label=[],
+                                                               outputFileNameType='not-found',  # 'NER_tag_bar',
+                                                               column_xAxis_label='Locations',
+                                                               groupByList=[],
+                                                               plotList=[],
+                                                               chart_title_label='')
+    if chart_outputFilename != None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
+
 
 
     # ------------------------------------------------------------------------------------

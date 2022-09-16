@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "sentiment_analysis_roBERTa", ['os', 'transformers','csv', 'argparse', 'tkinter', 'time', 'stanza']) == False:
+if IO_libraries_util.install_all_packages(GUI_util.window, "sentiment_analysis_roBERTa_util", ['os', 'transformers','csv', 'argparse', 'tkinter', 'time', 'stanza']) == False:
     sys.exit(0)
 
 from transformers import pipeline
@@ -133,7 +133,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                                                            columns_to_be_plotted=['Sentiment score'],
                                                            chartTitle='Frequency of roBERTa Sentiment Scores',
                                                            count_var=0, hover_label=[],
-                                                           outputFileNameType='roBERTa',  # 'line_bar',
+                                                           outputFileNameType='roBERTa_scores',  # 'line_bar',
                                                            column_xAxis_label='Sentiment score',
                                                            column_yAxis_label='Scores',
                                                            groupByList=['Document ID', 'Document'],
@@ -148,7 +148,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                                                            columns_to_be_plotted=['Sentiment label'],
                                                            chartTitle='Frequency of roBERTa Sentiment Labels',
                                                            count_var=1, hover_label=[],
-                                                           outputFileNameType='roBERTa',  # 'line_bar',
+                                                           outputFileNameType='roBERTa_labels',  # 'line_bar',
                                                            column_xAxis_label='Sentiment label',
                                                            column_yAxis_label='Frequency',
                                                            groupByList=['Document ID', 'Document'],

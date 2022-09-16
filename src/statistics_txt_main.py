@@ -98,31 +98,19 @@ n_grams_list=[]
 
 bySentenceIndex_var=tk.IntVar()
 
-corpus_statistics_var = tk.IntVar()
+n_grams_button = tk.Button(window, width=70, text='Compute N-Grams (Open GUI)',  command=lambda: call("python html_annotator_gender_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   n_grams_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
-# n-grams
-n_grams_var = tk.IntVar()
-
-n_grams_var.set(0)
-n_grams_checkbox = tk.Checkbutton(window, text='Compute N-Grams (Open GUI)', variable=n_grams_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,n_grams_checkbox)
-
-corpus_statistics_var.set(0)
-corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute document(s) statistics (Open GUI)", variable=corpus_statistics_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,corpus_statistics_checkbox)
-
-def activate_options(*args):
-    if n_grams_var.get() == True:
-        corpus_statistics_checkbox.configure(state='disabled')
-    elif corpus_statistics_var.get() == True:
-        n_grams_checkbox.configure(state='disabled')
-    else:
-        n_grams_checkbox.configure(state='normal')
-        corpus_statistics_checkbox.configure(state='normal')
-n_grams_var.trace('w',activate_options)
-corpus_statistics_var.trace('w',activate_options)
-
-activate_options()
+corpus_statistics_button = tk.Button(window, width=70, text='Compute document(s) statistics (Open GUI)',  command=lambda: call("python html_annotator_gender_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   corpus_statistics_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

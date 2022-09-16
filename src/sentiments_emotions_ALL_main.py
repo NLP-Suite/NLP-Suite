@@ -64,23 +64,47 @@ window.bind("<Escape>", clear)
 
 y_multiplier_integer = 0
 
-open_YAGO_GUI_button = tk.Button(window, text='Open GUI for YAGO searches (Emotion ontology class)',width=60,command=lambda: call("python knowledge_graphs_DBpedia_YAGO_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_YAGO_GUI_button)
+open_YAGO_GUI_button = tk.Button(window, text='YAGO searches (Emotion ontology class) (Open GUI)',width=60,command=lambda: call("python knowledge_graphs_DBpedia_YAGO_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   open_YAGO_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
-open_WordNet_GUI_button = tk.Button(window, text='Open GUI for WordNet searches (NOUN: feeling; VERB: emotion)',width=60,command=lambda: call("python knowledge_graphs_WordNet_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_WordNet_GUI_button)
+open_WordNet_GUI_button = tk.Button(window, text='WordNet searches (NOUN: feeling; VERB: emotion) (Open GUI)',width=60,command=lambda: call("python knowledge_graphs_WordNet_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   open_WordNet_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
-open_sentiment_analysis_GUI_button = tk.Button(window, text='Open GUI for Sentiment Analysis (ALL options)',width=60,command=lambda: call("python sentiment_analysis_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_sentiment_analysis_GUI_button)
+open_sentiment_analysis_GUI_button = tk.Button(window, text='Sentiment Analysis (Open GUI)',width=60,command=lambda: call("python sentiment_analysis_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   open_sentiment_analysis_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
-open_shape_of_stories_GUI_button = tk.Button(window, text='Open GUI for Shape of Stories',width=60,command=lambda: call("python shape_of_stories_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_shape_of_stories_GUI_button)
+open_shape_of_stories_GUI_button = tk.Button(window, text='Shape of Stories (Open GUI)',width=60,command=lambda: call("python shape_of_stories_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   open_shape_of_stories_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
-open_rhetoric_GUI_button = tk.Button(window, text='Open GUI for Vocabulary Analysis (punctuation and repetition)',width=60,command=lambda: call("python style_analysis_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_rhetoric_GUI_button)
+open_rhetoric_GUI_button = tk.Button(window, text='Vocabulary Analysis (punctuation and repetition) (Open GUI)',width=60,command=lambda: call("python style_analysis_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   open_rhetoric_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
-search_GUI_button = tk.Button(window, text='Open GUI for searching corpus for words of emotions/sentiment',width=60,command=lambda: call("python file_search_ALL_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,search_GUI_button)
+search_GUI_button = tk.Button(window, text='Search corpus for words of emotions/sentiment (Open GUI)',width=60,command=lambda: call("python file_search_ALL_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   search_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

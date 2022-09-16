@@ -840,14 +840,14 @@ google_earth_var = tk.IntVar()
 def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
 
-pre_processing_button = tk.Button(window, text='Pre-processing tools (file checking & cleaning GUI)',width=50,command=open_GUI)
+pre_processing_button = tk.Button(window, text='Pre-processing tools (Open file checking & cleaning GUI)',width=50,command=open_GUI)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               pre_processing_button)
+                                   pre_processing_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 # NLP packages & languages ------------------------------------------------------------------------------------------------------
-
-# package_button = tk.Button(window, text='Setup NLP package and corpus language', width=50, state='normal',command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,package_button, True)
 
 error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
 language_var.set(language)
@@ -1283,17 +1283,6 @@ warnUser()
 
 def activate_NLP_options(*args):
     global error, package, language_list, y_multiplier_integer
-    # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
-    # language_var = language
-    # language_list = [language]
-    # package_var.set(package)
-    # y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value_new = GUI_util.display_setup_hover_over(
-    #     y_multiplier_integer)
-    # language_list = [language]
-    # package_var.set(package)
-
-    # global error, parsers, available_parsers, parser_lb, package, package_display_area_value, language_list
-    # error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new = GUI_util.handle_setup_options(y_multiplier_integer, scriptName, GUI_util.setup_menu.get())
 
     # after update no display
     error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new=GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
@@ -1313,16 +1302,6 @@ def activate_NLP_options(*args):
         activate_filter_dictionaries()
 GUI_util.setup_menu.trace('w', activate_NLP_options)
 activate_NLP_options()
-
-# def activate_NLP_options(*args):
-#     global error, package, language_list
-#     # if GUI_util.setup_menu.get() == 'Setup NLP package and corpus language':
-#     error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
-#     language_var = language
-#     language_list = language
-#     package_var.set(package)
-# GUI_util.setup_menu.trace('w', activate_NLP_options)
-# activate_NLP_options()
 
 if error:
     mb.showwarning(title='Warning',

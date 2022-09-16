@@ -97,7 +97,10 @@ def get_file(window,title,fileType):
 y_multiplier_integer= y_multiplier_integer +.5
 
 sample_by_documentID_button = tk.Button(window, text='Sample files by Document ID in csv file',width=70,command=lambda: get_file(window,'Select INPUT csv file', [("csv files", "*.csv")]))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_by_documentID_button,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               sample_by_documentID_button, True, False, True, False, 90,
+                                               GUI_IO_util.get_labels_x_coordinate(), "Click on the button to select the input csv file")
 
 # setup a button to open Windows Explorer on open the csv file
 openFile_button = tk.Button(window, width=3, text='',
@@ -120,7 +123,11 @@ def activate_options():
 
 extract_sentences_var.set(0)
 sample_sentences_button = tk.Button(window, text='Sample files by search word(s) (extract sentences) (Open GUI)',width=70,command=lambda: call("python file_search_byWord_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_sentences_button)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   sample_sentences_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
 #                                                sample_sentences_button, True)
@@ -132,13 +139,21 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 #                                                search_words_entry)
 
 sample_sentences_by_documentID_button = tk.Button(window, text='Sample sentences by Document ID and other fields values in csv file (Open GUI)',width=70,command=lambda: call("python data_manager_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_sentences_by_documentID_button)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   sample_sentences_by_documentID_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 sample_by_date_button = tk.Button(window, text='Sample files by date in filename',width=70,command=lambda: option_not_available())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_by_date_button)
 
 export_csv_field_GUI_button = tk.Button(window, text='Export csv field content in csv file to csv/txt file (Open GUI)',width=70,command=lambda: call("python data_manager_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,export_csv_field_GUI_button)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   export_csv_field_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

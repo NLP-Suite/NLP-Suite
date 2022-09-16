@@ -759,18 +759,19 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
 def get_hover_over_info(package_display_area_value):
 
     if package_display_area_value != '':
-        NLP_current_settings = "Current settings - " + package_display_area_value
+        NLP_current_settings = "Current NLP settings - " + package_display_area_value
     else:
-        NLP_current_settings = ''
-    if NLP_current_settings == '':
-        hover_over_x_coordinate = GUI_IO_util.read_button_x_coordinate + 300
-    else:
-        hover_over_x_coordinate = GUI_IO_util.read_button_x_coordinate
+        NLP_current_settings = 'There are no currently selected options. You will not be able to run many of the NLP algorithms.'
+    # if NLP_current_settings == '':
+    #     hover_over_x_coordinate = GUI_IO_util.read_button_x_coordinate # + 300
+    # else:
+    #     hover_over_x_coordinate = GUI_IO_util.read_button_x_coordinate
+    hover_over_x_coordinate = GUI_IO_util.read_button_x_coordinate
 
-    hover_over_info = "Using the dropdown menu, select one of these options:\n" \
-                      "'Setup NLP package and corpus language' to open the GUI to enter default NLP package (spaCy, CoreNLP, Stanza) and language. " + \
-                        NLP_current_settings + "\n" \
-                      "'Setup external software' to open the GUI to download and install all external software (e.g., Stanford CoreNLP, Gephi)"
+    hover_over_info = "Select: " \
+                      "1. 'Setup NLP package and corpus language' to select NLP package (spaCy, CoreNLP, Stanza) and corpus language; " + \
+                      "  2. 'Setup external software' to download/install all external software.\n" + \
+                      NLP_current_settings
     return hover_over_x_coordinate, hover_over_info
 
 def display_setup_hover_over(y_multiplier_integer):
@@ -784,25 +785,14 @@ def display_setup_hover_over(y_multiplier_integer):
     setup_menu_lb = tk.OptionMenu(window, setup_menu, "Setup NLP package and corpus language",
                                   "Setup external software")
 
-    if y_multiplier_integer_SV==0:
-        # the widget has not been placed yet on the GUI
-        y_multiplier_integer_SV=y_multiplier_integer
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate,
-                                                       y_multiplier_integer_SV,
-                                                       setup_menu_lb, True, False, False, False, 90,
-                                                       hover_over_x_coordinate,
-                                                       hover_over_info)
-    else:
-        GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer_SV, setup_menu_lb, False,
-                          False, 90, hover_over_info)
-        # setup_menu.set('Setup')
-        # setup_menu_lb.place_forget()
-
-    # # place widget with hover-over info
-    # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer_SV,
-    #                                                 setup_menu_lb, True, False, False, False, 90, hover_over_x_coordinate,
-    #                                                 hover_over_info)
+    if y_multiplier_integer_SV == 0:
+        y_multiplier_integer_SV = y_multiplier_integer
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate,
+                                                   y_multiplier_integer_SV,
+                                                   setup_menu_lb, True, False, False, False, 90,
+                                                   hover_over_x_coordinate,
+                                                   hover_over_info)
 
     # y_multiplier_integer=y_multiplier_integer-1
     return y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value

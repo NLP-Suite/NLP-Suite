@@ -348,7 +348,10 @@ def display_txt_file_options(*args):
                 geocode_locations = True
                 map_locations_var.set(1)
                 map_locations = True
-        return cannotRun
+        else:
+            location_menu_var.set('')
+            location_field.config(state='disabled')
+    return cannotRun
 inputFilename.trace('w',display_txt_file_options)
 input_main_dir_path.trace('w',display_txt_file_options)
 
@@ -368,7 +371,7 @@ def check_csv_file_headers(csv_file):
         location_menu_var.set('NER')
         location_menu='NER'
         location_field.config(state='disabled')
-    if ('Location' in headers  and not 'Latitude' in headers) or "Word" in headers:
+    if ('Location' in headers and not 'Latitude' in headers) or "Word" in headers:
         geocode_locations_var.set(1)
         geocode_locations_checkbox.configure(state='disabled')
         if "Word" in headers:
