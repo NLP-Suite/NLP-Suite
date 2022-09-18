@@ -163,7 +163,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
     if searchField_kw != 'e.g.: father':
         if ' ' in searchField_kw:
             mb.showwarning(title='Search error',
-                           message="The CoNLL table search can only contain one word.\n\nPlease, enter a different word and try again")
+                           message="The CoNLL table search can only contain one token/word since the table has one record for each token/word.\n\nPlease, enter a different word and try again.\n\nIf you need to search your corpus for collocations, i.e., multi-word expressions, you need to use the 'N-grams/Co-occurrence searches' or the 'Words/collocations searches' in the ALL searches GUI.")
             return
         if searchedCoNLLField.lower() not in ['lemma', 'form']:
             searchedCoNLLField = 'FORM'
@@ -455,6 +455,7 @@ all_analyses_var = tk.IntVar()
 
 buildString = ''
 menu_values = []
+error = False
 
 postag_menu = '*', 'JJ* - Any adjective', 'NN* - Any noun', 'VB* - Any verb', *sorted([k + " - " + v for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()])
 deprel_menu = '*', *sorted([k + " - " + v for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()])
@@ -589,6 +590,13 @@ def reset_all_values():
 
 
 def changed_filename(tracedInputFile):
+    global error
+    if os.path.isfile(tracedInputFile):
+        if not CoNLL_util.check_CoNLL(tracedInputFile):
+            error = True
+            return
+        else:
+            error = False
     menu_values = []
     if tracedInputFile != '':
         numColumns = IO_csv_util.get_csvfile_numberofColumns(tracedInputFile)
@@ -792,7 +800,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 
 all_analyses_var.set(0)
 all_analyses_checkbox = tk.Checkbutton(window,
-                                       text="ALL anayses: Clauses, nouns, verbs, function words ('junk/stop' words)",
+                                       text="ALL analyses: Clauses, nouns, verbs, function words ('junk/stop' words)",
                                        variable=all_analyses_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
                                                all_analyses_checkbox)
@@ -804,6 +812,39 @@ y_multiplier_integer = y_multiplier_integer_bottom
 
 #
 def activate_options(*args):
+    global error
+    # if there is an error everything is disabled
+    if error:
+        entry_searchField_kw.configure(state='disabled')
+        searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
+        postag_menu_lb.configure(state='disabled')
+        deprel_menu_lb.configure(state='disabled')
+        co_postag_menu_lb.configure(state='disabled')
+        co_deprel_menu_lb.configure(state='disabled')
+        all_analyses_checkbox.configure(state='disabled')
+        clausal_analysis_checkbox.configure(state='disabled')
+        noun_analysis_checkbox.configure(state='disabled')
+        verb_analysis_checkbox.configure(state='disabled')
+        function_words_analysis_checkbox.configure(state='disabled')
+
+        sentence_table_checkbox.configure(state='disabled')
+        extract_checkbox.configure(state='disabled')
+        k_sentences_checkbox.configure(state='disabled')
+
+        return
+
+    entry_searchField_kw.configure(state='normal')
+
+    all_analyses_checkbox.configure(state='normal')
+    clausal_analysis_checkbox.configure(state='normal')
+    noun_analysis_checkbox.configure(state='normal')
+    verb_analysis_checkbox.configure(state='normal')
+    function_words_analysis_checkbox.configure(state='normal')
+
+    sentence_table_checkbox.configure(state='normal')
+    extract_checkbox.configure(state='normal')
+    k_sentences_checkbox.configure(state='normal')
+
     if searchField_kw.get() != 'e.g.: father':
 
         all_analyses_var.set(0)
@@ -1033,10 +1074,14 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 if GUI_util.input_main_dir_path.get()!='':
     GUI_util.run_button.configure(state='disabled')
     mb.showwarning(title='Input file',
-                   message="The CoNLL Table Analyzer scripts require in input a csv CoNLL table created by the Stanford CoreNLP parser (not the spaCy and Stanza parsers).\n\nThe RUN button is disabled until the expected CoNLL file is seleted in input.\n\nPlease, select in input a CoNLL file created by the Stanford CoreNLP parser.")
+                   message="The CoNLL Table Analyzer scripts require in input a csv CoNLL table created by the Stanford CoreNLP parser (not the spaCy and Stanza parsers).\n\nAll options and RUN button are disabled until the expected CoNLL file is seleted in input.\n\nPlease, select in input a CoNLL file created by the Stanford CoreNLP parser.")
+    error = True
+    activate_options()
 else:
     GUI_util.run_button.configure(state='normal')
     if inputFilename.get()!='':
-        CoNLL_util.check_CoNLL(inputFilename.get())
+        if not CoNLL_util.check_CoNLL(inputFilename.get()):
+            error = True
+            activate_options()
 
 GUI_util.window.mainloop()

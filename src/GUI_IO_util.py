@@ -134,7 +134,9 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
     # scale, text, and combobox widgets do not have a label and code would break below
     # wording is the wording of the text value displayed in a widget (e.g, RUN, CLOSE,
     #   or, for a menu, the item currently displayed in the menu, e.g., mm/dd/yyyy for a date menu)
-    if 'scale' in str(widget_name) or 'text' in str(widget_name) or 'combobox' in str(widget_name):
+    if 'scale' in str(widget_name) or \
+        'text' in str(widget_name) or \
+        'combobox' in str(widget_name):
         wording = ''
     else:
         wording = widget_name.cget('text')
@@ -149,6 +151,7 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
         foreground_color = 'black'
     else:
         foreground_color = widget_name.cget('foreground')
+
     original_foreground_color = foreground_color
     if foreground_color == 'black':
         change_foreground_color = 'red'
@@ -166,17 +169,23 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
         if wording == '':
             background_color = 'red'
 
+    # # the background_color is always set to red if the parameter is true
+    # # all buttons are also turned red unless disabled
+    if (whole_widget_red or ('button' in str(widget_name))) and (widget_name.cget('state') == 'normal'):
+        background_color = 'red'
+        change_foreground_color = 'black'
+
+    # TODO unfortunately widget_name.cget('state') is measured when it is placed on the GUI
+    #   any change to the widget state because of user's actions in the GUI
+    #   will not be reflected in the colors displayed
+    #   thus, if a checkbutton is normal when placed on the GUI and displayed in red when hovering over
+    #       it will always be displayed in red, and not in sea green, if user's actions disables the widget
     # labels and disabled widgets are set to green to distinguish them from all other widgets
     if 'label' in str(widget_name) or widget_name.cget('state') == 'disabled':
         background_color = 'light sea green'
         # the next command does not seem to work as it does not display the wording of the widget
         change_foreground_color = 'black'
 
-    # the background_color is always set to red if the parameter is true
-    # all buttons are also turned red unless disabled
-    if (whole_widget_red or 'button' in str(widget_name)) and widget_name.cget('state') == 'normal':
-        background_color = 'red'
-        change_foreground_color = 'black'
 
 # Enter the widget ----------------------------------------------------------
 
@@ -220,9 +229,17 @@ def hover_over_widget(window, x_coordinate, y_coordinate, widget_name, no_hover_
                                                 y_coordinate,
                                                 x_coordinate_hover_over,
                                                 text_info)))
-        else:
+        elif 'optionmenu' in str(widget_name):
+            # activeforeground sems to available only for optionmenu
             widget_name.bind('<Enter>',
                  lambda e: (e.widget.config(background=background_color, activeforeground=change_foreground_color, foreground=change_foreground_color),
+                            display_widget_info(window, e, x_coordinate,
+                                                y_coordinate,
+                                                x_coordinate_hover_over,
+                                                text_info)))
+        else:
+            widget_name.bind('<Enter>',
+                 lambda e: (e.widget.config(background=background_color, foreground=change_foreground_color),
                             display_widget_info(window, e, x_coordinate,
                                                 y_coordinate,
                                                 x_coordinate_hover_over,
@@ -258,7 +275,7 @@ def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False
     # use the following command to change the color of any label to any value
     # widget_name.config(foreground='red')
 
-    # when a widget has hover-over effects, thea parameter no_hover_over_widget is set to False
+    # when a widget has hover-over effects, the parameter no_hover_over_widget is set to False
     hover_over_widget(window,x_coordinate, basic_y_coordinate + y_step*y_multiplier_integer,widget_name, no_hover_over_widget, whole_widget_red, x_coordinate_hover_over, text_info)
 
     if sameY==False:
