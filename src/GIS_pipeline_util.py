@@ -7,6 +7,7 @@ import os
 import pandas as pd
 import tkinter.messagebox as mb
 import tkinter as tk
+import csv
 
 import IO_files_util
 import IO_csv_util
@@ -108,14 +109,14 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
 
     inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
 
-    locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName)
+    locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName, inputFilename)
 
     if locationColumnNumber == None:
         return
 
     dateColumnNumber = -1
     if datePresent == True:
-        dateColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,"Date")
+        dateColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,"Date", inputFilename)
 
     outputCsvLocationsOnly = ''
 
@@ -147,7 +148,6 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
             nom_df = pd.DataFrame(locations, columns=['Location', 'Date','NER']) if len(locations)==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0','NER'])
             drop_idx = []
             changed_idx = {}
-            # TODO MINO GIS
             for i,row in nom_df.iterrows():
                 # if i!=0 and row[0] in constants_util.continents and nom_df.at[i-1, 'Location'] in constants_util.directions:
                 if i!=0 and \
@@ -157,12 +157,16 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                     row[0] == 'Australia' or \
                     row[0] == 'Europe' or \
                     row[0] == 'Oceania' or \
-                    row[0] == 'North America' or \
-                    row[0] == 'South America') and \
+                    row[0] == 'America') and \
                     (nom_df.at[i - 1, 'Location'] == 'North' or \
                     nom_df.at[i - 1, 'Location'] == 'South'):
                     nom_df.at[i, 'Location'] = nom_df.at[i-1, 'Location'] + ' ' + row[0]
                     drop_idx.append(i-1)
+                    changed_idx[i] = nom_df.at[i, 'Location']
+                    changed = True
+                # TODO special case for 'America' without 'North' or 'South' in front: convert it to 'United States'
+                elif row[0] == 'America':
+                    nom_df.at[i, 'Location'] = 'United States'
                     changed_idx[i] = nom_df.at[i, 'Location']
                     changed = True
             if changed:
@@ -170,7 +174,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                 for k,v in changed_idx.items():
                     tmp_df.at[k, 'Location'] = v
                 tmp_df = tmp_df.drop(drop_idx)
-                tmp_df.to_csv(inputFilename)
+                tmp_df.to_csv(inputFilename, index=False) # TODO: drop a index column, which will produce error with producing KML (if selected).
             nom_df = nom_df.drop(drop_idx)
             locations = [row.values.tolist() for _,row in nom_df.iterrows()]
 
@@ -221,40 +225,72 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
     # the plot of location NER Tags frequencies is done in the CoreNLP_annotator_util
     # need to plot locations geocoded and not geocoded
 
-    if geocodedLocationsOutputFilename != '':
+    # -1 to account for header record
+    nRecordsFound = IO_csv_util.GetNumberOfRecordInCSVFile(geocodedLocationsOutputFilename) -1
+    if geocodedLocationsOutputFilename != '' and nRecordsFound >0:
         filesToOpen.append(geocodedLocationsOutputFilename)
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted=['Location'],
-                                                           chartTitle='Frequency Distribution of Locations Found by ' + geocoder,
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='found',  # 'NER_tag_bar',
-                                                           column_xAxis_label='Locations',
-                                                           groupByList=[],
-                                                           plotList=[],
-                                                           chart_title_label='')
-    if chart_outputFilename != None:
-        if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
-
-    if locationsNotFoundNonDistinctoutputFilename != '':
-        filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
+        if createCharts:
+            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted=['Location'],
-                                                               chartTitle='Frequency Distribution of Locations not Found by ' + geocoder,
+                                                               chartTitle='Frequency Distribution of Locations Found by ' + geocoder,
                                                                # count_var = 1 for columns of alphabetic values
                                                                count_var=1, hover_label=[],
-                                                               outputFileNameType='not-found',  # 'NER_tag_bar',
+                                                               outputFileNameType='found',  # 'NER_tag_bar',
                                                                column_xAxis_label='Locations',
                                                                groupByList=[],
                                                                plotList=[],
                                                                chart_title_label='')
-    if chart_outputFilename != None:
-        if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
+            if chart_outputFilename != None:
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
 
+    # -1 to account for header record
+    nRecordsNotFound = IO_csv_util.GetNumberOfRecordInCSVFile(locationsNotFoundNonDistinctoutputFilename) -1
+    if locationsNotFoundNonDistinctoutputFilename != '' and nRecordsNotFound>0:
+        filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
+        if createCharts:
+            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
+                                                                   outputDir,
+                                                                   columns_to_be_plotted=['Location'],
+                                                                   chartTitle='Frequency Distribution of Locations not Found by ' + geocoder,
+                                                                   # count_var = 1 for columns of alphabetic values
+                                                                   count_var=1, hover_label=[],
+                                                                   outputFileNameType='not-found',  # 'NER_tag_bar',
+                                                                   column_xAxis_label='Locations',
+                                                                   groupByList=[],
+                                                                   plotList=[],
+                                                                   chart_title_label='')
+            if chart_outputFilename != None:
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
+
+    if createCharts:
+        # save to csv file and run visualization
+        outputFilename= IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv','found-notFound')
+        with open(outputFilename, "w", newline="", encoding='utf-8', errors='ignore') as csvFile:
+            writer = csv.writer(csvFile)
+            writer.writerow(
+                ["Number of Distinct Locations Found by Geocoder ", "Number of Distinct Locations NOT Found by Geocoder"])
+            writer.writerow([nRecordsFound, nRecordsNotFound])
+            csvFile.close()
+        # no need to display since the chart will contain the values
+        # return_files.append(outputFilename)
+        columns_to_be_plotted = ["Number of Distinct Locations Found by Geocoder ", "Number of Distinct Locations NOT Found by Geocoder"]
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                           outputDir,
+                                                           columns_to_be_plotted=columns_to_be_plotted,
+                                                           chartTitle='Number of DISTINCT Locations Found and not Found by Geocoder',
+                                                           # count_var = 1 for columns of alphabetic values
+                                                           count_var=0, hover_label=[],
+                                                           outputFileNameType='',
+                                                           column_xAxis_label='Geocoder results',
+                                                           groupByList=[],
+                                                           plotList=[],
+                                                           chart_title_label='')
+        if chart_outputFilename != None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
 
     # ------------------------------------------------------------------------------------

@@ -52,7 +52,7 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
                             if row[wordColNum[i]] not in dictionary[c]:
                                 dictionary[c].append(row[wordColNum[i]])
             else:
-                for i in range(wordColNum):
+                for i in range(len(wordColNum)):
                     dictionary.append(row[wordColNum[i]])
 
     return dictionary, color_list
@@ -83,7 +83,7 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file,
         headers=IO_csv_util.get_csvfile_headers(dict_file)
         wordColNum = []
         for field in csv_field1_var:
-            col = IO_csv_util.get_columnNumber_from_headerValue(headers,field)
+            col = IO_csv_util.get_columnNumber_from_headerValue(headers,field, dict_file)
             if col == None:
                 mb.showerror(title='Input file error',
                              message="The selected dictionary file\n\n" + dict_file + "\n\ndoes not contain the expected header \'" + csv_field1_var + "\'\n\nPlease, select a different dictionary file and try again.")
@@ -92,7 +92,7 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file,
         catColNum = []
         if len(csvValue_color_list) > 0:
             for field in csvValue_color_list[0]:
-                catColNum.append(IO_csv_util.get_columnNumber_from_headerValue(headers, field))
+                catColNum.append(IO_csv_util.get_columnNumber_from_headerValue(headers, field, dict_file))
 
     dictionary, color_list = readCsv(wordColNum, catColNum, dict_file, csvValue_color_list)
     reserved_dictionary = ['bold', 'color', 'font', 'span', 'style', 'weight', 'black', 'blue', 'green', 'pink', 'yellow', 'red']
@@ -119,7 +119,8 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file,
             term_intextID=0
             for term in terms:
                 termID=termID+1
-                print("Processing dictionary field '" + csv_field1_var + "' " + str(termID) + "/" + str(len(terms)) + " " + term)
+                #print("Processing dictionary field '" + csv_field1_var + "' " + str(termID) + "/" + str(len(terms)) + " " + term)
+                print(f"Processing dictionary field '{csv_field1_var}' {termID}/{len(terms)} term")
                 if re.search(r'\b' + term + r'\b', text)==None:
                     continue
                 for term1 in reserved_dictionary:

@@ -278,10 +278,7 @@ def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_ma
     else:
         initialFolder=''
     #get the file
-    if IsInputFile==True:
-        filename = IO_files_util.selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, None, initialFolder)
-    else:
-        filename = IO_files_util.selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outputFilename, None, initialFolder)
+    filename = IO_files_util.selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, None, initialFolder)
     if len(filename)==0:
         return
         # filename=currentFilename
@@ -762,10 +759,6 @@ def get_hover_over_info(package_display_area_value):
         NLP_current_settings = "Current NLP settings - " + package_display_area_value
     else:
         NLP_current_settings = 'There are no currently selected options. You will not be able to run many of the NLP algorithms.'
-    # if NLP_current_settings == '':
-    #     hover_over_x_coordinate = GUI_IO_util.read_button_x_coordinate # + 300
-    # else:
-    #     hover_over_x_coordinate = GUI_IO_util.read_button_x_coordinate
     hover_over_x_coordinate = GUI_IO_util.read_button_x_coordinate
 
     hover_over_info = "Select: " \
@@ -969,8 +962,14 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     #   or in any of the GUIs that are ALL options GUIs
     if not "IO_setup_main" in scriptName \
             and not "ALL_main" in scriptName:
-        GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
-                                run_button, False, False, True)
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate,
+                                                       y_multiplier_integer_SV,
+                                                       run_button, True, False, False, False, 90,
+                                                       GUI_IO_util.open_setup_x_coordinate,
+                                                       'Click on the button to run the algorithm(s) behind the selected option(s)')
+        # GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
+        #                         run_button, False, False, True)
 
     def _close_window():
         if 'Default' in setup_IO_menu_var.get(): #GUI_util.setup_IO_menu_var.get()

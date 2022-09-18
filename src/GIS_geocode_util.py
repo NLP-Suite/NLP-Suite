@@ -282,21 +282,28 @@ def geocode(window,locations, inputFilename, outputDir,
 			# 	location already in list
 			if itemToGeocode in distinctGeocodedList:
 				location = itemToGeocode
+				# TODO: special case for 'America': convert to 'United States'
+				if itemToGeocode == 'America':
+					itemToGeocode = 'United States'
 				if itemToGeocode in nonDistinctNotGeocodedList:
 					nonDistinctNotGeocodedList.append(itemToGeocode)
 					nonDistinctNotGeocodedFull.append((itemToGeocode,NER_Tag))
+					lat = lng = 0 # TODO set 0 for lat and lng since itemToGeocode is in notGeocodedList
 				else:
 					lat = distinctGeocodedLocations[itemToGeocode][0]
 					lng = distinctGeocodedLocations[itemToGeocode][1]
 					address = distinctGeocodedLocations[itemToGeocode][2]
 			else:
 				print("   Geocoding DISTINCT location: " + itemToGeocode)
+				# TODO special case for 'America': convert to 'United States', so that 'United States' is appended to distinctGeocodedList
+				if itemToGeocode == 'America':
+					itemToGeocode = 'United States'
 				distinctGeocodedList.append(itemToGeocode)
 				if geocoder=='Nominatim':
+					NER_Tag_nominatim = ''
 					# CoreNLP NER tag for continents is often wrong and as a result Nominatim geocodes them wrongly
 					#	we should skip them, particularly when they are lowercase
 					# continents='Africa, Antarctica, Asia, Australia, Europe, Oceania, North America, South America'
-					# TODO MINO GIS
 					if itemToGeocode == 'Africa' or \
 						itemToGeocode == 'Antarctica' or \
 						itemToGeocode == 'Asia' or \
@@ -306,9 +313,7 @@ def geocode(window,locations, inputFilename, outputDir,
 						itemToGeocode == 'North America' or \
 						itemToGeocode == 'South America':
 						NER_Tag_nominatim='continent'
-						# checking for South or North America is done before this code in GIS_pipeline_util, which edits and overwrites the csv file
-						# if itemToGeocode == 'America':
-						# 	itemToGeocode = 'United States'
+					# checking for South or North America is done before this code in GIS_pipeline_util, which edits and overwrites the csv file
 					elif itemToGeocode=='North' or itemToGeocode=='South':
 						continue
 					location = nominatim_geocode(geolocator,loc=itemToGeocode,country_bias=country_bias,box_tuple=area,restrict=restrict,featuretype=NER_Tag_nominatim)

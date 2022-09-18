@@ -123,7 +123,7 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, cre
             inputFile_headers=IO_csv_util.get_csvfile_headers(inputFilename)
             # get maximum number of documents in Document ID iff there is a Document ID field
             if 'Document ID' in inputFile_headers:
-                docIDColumn=IO_csv_util.get_columnNumber_from_headerValue(inputFile_headers,'Document ID')
+                docIDColumn=IO_csv_util.get_columnNumber_from_headerValue(inputFile_headers,'Document ID', inputFilename)
                 nDocs=df.iloc[:, docIDColumn].max()
             else:
                 nDocs=1
@@ -477,8 +477,8 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
 # written by Roberto June 2022
 def get_columns_to_be_plotted(outputFilename,col):
     headers = IO_csv_util.get_csvfile_headers(outputFilename)
-    col1_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, col)
-    col2_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Frequency')
+    col1_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, col, outputFilename)
+    col2_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Frequency', outputFilename)
     columns_to_be_plotted=[[col1_nunmber, col2_nunmber]]
     return columns_to_be_plotted
 

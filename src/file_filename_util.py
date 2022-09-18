@@ -74,7 +74,7 @@ def purge_duplicate_rows_byFilename(window, inputFilename, outputDir, openOutput
     with open(inputFilename, 'r', encoding="utf-8", errors='ignore') as read_obj:
         csv_reader = csv.reader(read_obj)
         header = next(csv_reader)
-        filenameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, filenameCol)
+        filenameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, filenameCol, inputFilename)
         if header is not None:
             for row in csv_reader:
                 head, fName = os.path.split(row[filenameColNum])
@@ -141,8 +141,8 @@ def purge_partial_matches(window, inputFilename, outputDir, openOutputFiles, nam
     with open(inputFilename, 'r', encoding="utf-8", errors='ignore') as read_obj:
         csv_reader = csv.reader(read_obj)
         header = next(csv_reader)
-        nameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, nameCol)
-        filenameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, filenameCol)
+        nameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, nameCol, inputFilename)
+        filenameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, filenameCol, inputFilename)
         print(nameColNum, filenameColNum)
         if header is not None:
             for row in csv_reader:

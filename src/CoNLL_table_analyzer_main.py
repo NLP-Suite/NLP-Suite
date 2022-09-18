@@ -161,6 +161,10 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
 
 # left-hand side SEARCH
     if searchField_kw != 'e.g.: father':
+        if ' ' in searchField_kw:
+            mb.showwarning(title='Search error',
+                           message="The CoNLL table search can only contain one word.\n\nPlease, enter a different word and try again")
+            return
         if searchedCoNLLField.lower() not in ['lemma', 'form']:
             searchedCoNLLField = 'FORM'
         if postag != '*':

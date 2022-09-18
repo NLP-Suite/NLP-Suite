@@ -62,7 +62,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
     inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable=GIS_file_check_util.CoNLL_checker(inputFilename)
 
     if withHeader==True:
-        locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName)
+        locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName, inputFilename)
 
     # Word is the header from Stanford CoreNLP NER annotator
     if not 'Location' in headers and not 'Word' in headers and not 'NER' in headers:

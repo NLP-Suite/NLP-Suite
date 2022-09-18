@@ -180,7 +180,10 @@ def save_NLP_config(parsers):
     if language_var.get()=='':
         mb.showwarning(title='Warning',message='You must select the language your corpus is written in before saving.')
         return
-    currently_selected_package_language= {"NLP PACKAGE": package_var.get(), "LEMMATIZER": package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
+
+    # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
+    #   several times in config_util.py
+    currently_selected_package_language= {'MAIN NLP PACKAGE': package_var.get(), 'LEMMATIZER PACKAGE': package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
     print("parsers_display_area",parsers_display_area['text'])
     config_util.save_NLP_package_language_config(window, currently_selected_package_language, parsers_display_area['text'])
     display_available_options()

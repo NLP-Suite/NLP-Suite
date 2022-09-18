@@ -238,11 +238,11 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 
 			index = 0
 			inputfile = csv.reader(open(inputGeocodedCsvFile, 'r', encoding=encodingValue, errors='ignore'))
+			numberOfRecords = IO_csv_util.GetNumberOfRecordInCSVFile(inputGeocodedCsvFile, encodingValue)
 			for row in inputfile:
 				for b in range(len(values_row_num)):
 					if index - 1 == values_row_num[b]:
-						currRecord = str(index - 1) + "/" + str(
-							IO_csv_util.GetNumberOfRecordInCSVFile(inputGeocodedCsvFile, encodingValue))
+						currRecord = str(index - 1) + "/" + str(numberOfRecords)
 						# we do not want to print the name of the location or the map becomes unreadable
 						# pnt = kml.newpoint(name=row[0], coords=[(row[3],row[2])])  # wants to be read in in lng, lat order
 						pnt = kml.newpoint(coords=[(row[locationColumnNumber + 2], row[

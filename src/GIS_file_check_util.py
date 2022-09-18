@@ -85,7 +85,7 @@ def restrictions_checker(inputFilename, inputIsCoNLL, withHeader, headers,
     # Check location columns for string values -------------------------------------------------
 
     encodingValue = 'utf-8'
-    locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnValue)
+    locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnValue, inputFilename)
     if inputIsCoNLL == False:
         if len(locationColumnValue) > 0:
             # check that location column is a column of strings
