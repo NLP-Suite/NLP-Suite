@@ -251,7 +251,7 @@ def run(inputDir, outputDir,
     # _________________________________________________________________________________________________________________________________________________
     if selectedCsvFile_var != '':
         if noHeaders==False:
-            selectedCsvFile_colNum=IO_csv_util.get_columnNumber_from_headerValue(headers, selectedCsvFile_colName)
+            selectedCsvFile_colNum=IO_csv_util.get_columnNumber_from_headerValue(headers, selectedCsvFile_colName, selectedCsvFile_var)
         else:
             # No headers, we assume the first column
             selectedCsvFile_colNum=0

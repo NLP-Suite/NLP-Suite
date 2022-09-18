@@ -322,8 +322,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=480, # height at brief display
-                             GUI_height_full=560, # height at full display
+                             GUI_height_brief=520, # height at brief display
+                             GUI_height_full=600, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -395,6 +395,13 @@ pre_processing_button = tk.Button(window, width=50, text='Pre-processing tools: 
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                    pre_processing_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
+
+coreference_button = tk.Button(window, width=50, text='Coreference resolution (Open GUI)',command=lambda: call('python Stanford_CoreNLP_coreference_main.py'))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   coreference_button,
                                    False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
                                    "Click on the button to open the GUI")
 
@@ -733,6 +740,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Please, click on the 'Coreference resolution' button to open the GUI where you will be able to perform coreference resolution of your input document(s).")
     # y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
     #                               "Please, click on the 'Setup' button to open the GUI that will allow you to select the NLP package to be used (e.g., spaCy, Stanford CoreNLP, Stanza).\n\nDifferent NLP packages support a different range of languages. The Setup GUI will also allow you to select the language of your input txt file(s).\n\nTHE CURRENT NLP PACKAGE AND LANGUAGE SELECTION IS DISPLAYED IN THE TEXT WIDGET."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -780,7 +789,7 @@ def activate_NLP_options(*args):
                                                    GUI_IO_util.get_labels_x_coordinate(),
                                                    "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
     # parser_lb.config(text=available_parsers)
-    print("available parsers",available_parsers)
+    # print("available parsers",available_parsers)
 GUI_util.setup_menu.trace('w', activate_NLP_options)
 activate_NLP_options()
 

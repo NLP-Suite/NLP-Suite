@@ -124,11 +124,15 @@ def write_external_software_config_file(window, config_filename, currently_selec
 
     config_filename_path=os.path.join(GUI_IO_util.configPath, config_filename)
     try:
+        # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
+        #   several times in this scripts (search for instance for MAIN NLP PACKAGE and change
+        #   they also need to be changed in one line in NLP_setup_package_language_main.py
         csv_file = pd.DataFrame()
-        csv_file.at[0, 'Software'] = currently_selected_options['NLP PACKAGE']
+        csv_file.at[0, 'Software'] = currently_selected_options['MAIN NLP PACKAGE']
         csv_file.at[0, 'Path'] = {currently_selected_parsers}
-        csv_file.at[0, 'Download_link)'] = currently_selected_options['LEMMATIZER']
+        csv_file.at[0, 'Download_link)'] = currently_selected_options['LEMMATIZER PACKAGE']
 
+        csv_file.to_csv(config_filename_path, encoding='utf-8', index=False)
         csv_file.to_csv(config_filename_path, encoding='utf-8', index=False)
 
         IO_user_interface_util.timed_alert(window, 2000, 'Warning',
@@ -146,7 +150,10 @@ def save_external_software_config(window, currently_selected_options, currently_
         saved_NLP_package_language_options = ''
         save_config = True
     else:
-        saved_NLP_package_language_options= {"NLP PACKAGE": package, "LEMMATIZER": package_basics, "LANGUAGE(S)": language}
+        # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
+        #   several times in this scripts (search for instance for MAIN NLP PACKAGE and change
+        #   they also need to be changed in one line in NLP_setup_package_language_main.py
+        saved_NLP_package_language_options= {'MAIN NLP PACKAGE': package, 'LEMMATIZER PACKAGE': package_basics, 'LANGUAGE(S)': language}
         save_config=False
     if saved_NLP_package_language_options!='' and currently_selected_options!=saved_NLP_package_language_options:
         save_config = mb.askyesno("Save external software options",
@@ -168,7 +175,10 @@ def read_NLP_package_language_config():
         parsers = dataset.iat[0, 1].split(',')
         basics_package = dataset.iat[0, 2]
         language = dataset.iat[0, 3]
-        package_display_area_value = f"NLP PACKAGE: {package}, LEMMATIZER: {basics_package}, LANGUAGE(S): {language}"
+        # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
+        #   several times in this scripts (search for instance for MAIN NLP PACKAGE and change
+        #   they also need to be changed in one line in NLP_setup_package_language_main.py
+        package_display_area_value = f"MAIN NLP PACKAGE: {package}, LEMMATIZER PACKAGE: {basics_package}, LANGUAGE(S): {language}"
     except:
         error = True
         # error must be set to true to display the next message after the entire GUI has been displayed
@@ -189,10 +199,13 @@ def write_NLP_package_language_config_file(window, config_filename, currently_se
 
     config_filename_path=os.path.join(GUI_IO_util.configPath, config_filename)
     try:
+        # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
+        #   several times in this scripts (search for instance for MAIN NLP PACKAGE and change
+        #   they also need to be changed in one line in NLP_setup_package_language_main.py
         csv_file = pd.DataFrame()
-        csv_file.at[0, 'Parser & annotators'] = currently_selected_options['NLP PACKAGE']
+        csv_file.at[0, 'Parser & annotators'] = currently_selected_options['MAIN NLP PACKAGE']
         csv_file.at[0, 'Parsers'] = {currently_selected_parsers}
-        csv_file.at[0, 'Basic functions (tokenizer/lemmatizer)'] = currently_selected_options['LEMMATIZER']
+        csv_file.at[0, 'Basic functions (tokenizer/lemmatizer)'] = currently_selected_options['LEMMATIZER PACKAGE']
         csv_file.at[0, 'Corpus language'] = currently_selected_options['LANGUAGE(S)']
 
         csv_file.to_csv(config_filename_path, encoding='utf-8', index=False)
@@ -213,7 +226,10 @@ def save_NLP_package_language_config(window, currently_selected_options, current
         saved_NLP_package_language_options = ''
         save_config = True
     else:
-        saved_NLP_package_language_options= {"NLP PACKAGE": package, "LEMMATIZER": package_basics, "LANGUAGE(S)": language}
+        # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
+        #   several times in this scripts (search for instance for MAIN NLP PACKAGE and change
+        #   they also need to be changed in one line in NLP_setup_package_language_main.py
+        saved_NLP_package_language_options= {'MAIN NLP PACKAGE': package, 'LEMMATIZER PACKAGE': package_basics, "LANGUAGE(S)": language}
         save_config=False
     if saved_NLP_package_language_options!='' and currently_selected_options!=saved_NLP_package_language_options:
         save_config = mb.askyesno("Save NLP package and language options",

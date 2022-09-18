@@ -81,7 +81,7 @@ def get_csvfile_headers_pandas(inputFilename):
 
 # convert header alphabetic value for CSV files with or without headers to its numeric column value
 # column numbers start at 0
-def get_columnNumber_from_headerValue(headers,header_value):
+def get_columnNumber_from_headerValue(headers,header_value, inputFilename):
     column_number = None
     for i in range(len(headers)):
         if header_value == headers[i]:
@@ -89,7 +89,7 @@ def get_columnNumber_from_headerValue(headers,header_value):
             break
     if column_number==None:
         IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Wrong header value',
-                                           'The header value "' + str(header_value) + '" was not found among the csv file headers ' + str(headers),False,'',True)
+                                           'csv filename: ' + inputFilename + '\n  Header "' + str(header_value) + '" not found among file headers ' + str(headers),False,'',True)
     return column_number
 
 # convert header alphabetic value for CSV files with or without headers to its numeric column value
@@ -115,7 +115,7 @@ def get_csv_field_values(inputFilename, column_name):
         csvreader = csv.reader(f)
         fields = next(csvreader)
         # from the column header get the column number that we want to extract
-        col_num = get_columnNumber_from_headerValue(fields, column_name)
+        col_num = get_columnNumber_from_headerValue(fields, column_name, inputFilename)
         if col_num==None:
             return ['']
         for row in csvreader:
@@ -153,14 +153,13 @@ def GetNumberOfDocumentsInCSVfile(inputFilename,algorithm='',columnHeader='Docum
         reader = csv.reader(f)
         next(reader) # skip header row
         headers=get_csvfile_headers(inputFilename)
-        if not columnHeader in str(headers):
+        if (columnHeader!= '') and (not columnHeader in str(headers)):
             if algorithm!='':
-                msg = "\n\nThe '" + algorithm + "' algorithm requires in input a csv file with a \'Document ID\' column."
+                msg = "\n\nThe '" + algorithm + "' algorithm requires in input a csv file with a '" + columnHeader + "' column."
             mb.showwarning(title='csv file error',
                            message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + columnHeader + msg + "\n\nPlease, select a different csv file in input and try again!")
             return 0
-        columnNumber=get_columnNumber_from_headerValue(headers,columnHeader)
-
+        columnNumber=get_columnNumber_from_headerValue(headers,columnHeader, inputFilename)
         val_list = list()
         for column in reader:
             try:
@@ -184,7 +183,7 @@ def GetNumberOfSentencesInCSVfile(inputFilename,algorithm,columnHeader='Sentence
             mb.showwarning(title='csv file error',
                            message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + columnHeader + "\n\nThe '" + algorithm + "' algorithm requires in input a csv file with a \'Sentence ID\' column.\n\nPlease, select a different csv file in input and try again!")
             return 0
-        columnNumber = get_columnNumber_from_headerValue(headers, columnHeader)
+        columnNumber = get_columnNumber_from_headerValue(headers, columnHeader, inputFilename)
 
         val_list = list()
         for column in reader:
@@ -358,7 +357,7 @@ def rename_header(inputFilename, header1, header2):
         if header2 == header:  # the file already contains the header2
             return True
         if header1 == header:
-            ID=get_columnNumber_from_headerValue(headers, header1)
+            ID=get_columnNumber_from_headerValue(headers, header1, inputFilename)
             # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
             temp = pd.read_csv(inputFilename)
             if temp.columns[ID] == header1:

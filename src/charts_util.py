@@ -73,13 +73,18 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
     return data_to_be_plotted
 
 
+# TODO columns_to_be_plotted comes in a single list to be exported to run_all as double list
 # columns_to_be_plotted, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc
 #   all double lists [[]]
+#   BUT they are passed by calling functions as single lists []
+#       and converted to double lists for run_all
+#       e.g., columns_to_be_plotted=['Sentiment score (Median)', 'Arousal score (Median)', 'Dominance score (Median)']
+#       e.g., columns_to_be_plotted=['Yngve score', 'Frazier score']
+#       e.g., columns_to_be_plotted=['Yngve score']
 # the variable groupByList,plotList, chart_title_label are used to compute column statistics
 #   groupByList is typically the list ['Document ID', 'Document']
 #   plotList is the list of fields that want to be plotted
 #   chart_title_label is used as part of the chart_title when plotting the fields statistics
-# TODO columns_to_be_plotted comes in a single list to be exported to run_all as double list
 def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     columns_to_be_plotted,
                     chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,
@@ -108,23 +113,21 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         return filesToOpen
     for i in range(0,len(columns_to_be_plotted)):
         # get numeric value of header, necessary for run_all
-        field_number = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted[i])
+        field_number = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted[i], inputFilename)
         if field_number==None:
             return filesToOpen
-        columns_to_be_plotted_numeric.append(field_number)
-    # the run_all always expects a double list with 2 values, e.g., [[0,0]]
-    #   so, when only one field is passed, we add the same field twice
-    if len(columns_to_be_plotted_numeric)==1:
-        columns_to_be_plotted_numeric.append(field_number)
-    columns_to_be_plotted_numeric=[columns_to_be_plotted_numeric]
+        # the run_all always expects a double list with 2 values, e.g., [[0,0], [1,1]
+        #   so, when only one field is passed, we add the same field twice
+        columns_to_be_plotted_numeric.append([field_number, field_number])
+
     if "Document ID" in headers:
-        docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID')
+        docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID', inputFilename)
         columns_to_be_plotted_byDoc = [[docCol, docCol + 1]]
         byDoc = True
     else:
         byDoc = False
     if "Sentence ID" in headers:
-        sentCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Sentence ID')
+        sentCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Sentence ID', inputFilename)
         bySent = True
     else:
         bySent = False

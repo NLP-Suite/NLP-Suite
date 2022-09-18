@@ -121,8 +121,9 @@ def computePairwiseDistances(window,inputFilename,outputDir,createCharts, header
             filesToOpen.append('')
             return filesToOpen
         geowriter.writerow(['Location 1','Latitude 1','Longitude 1','Location 2','Latitude 2','Longitude 2','Geodesic distance in miles','Geodesic distance in Km','Great circle distance in miles','Great circle distance in Km'])
+        numberOfRecords = IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename, encodingValue)
         for index, row in dt.iterrows():
-            currRecord=str(index) + "/" + str(IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename,encodingValue))
+            currRecord=str(index) + "/" + str(numberOfRecords)
             currentLocation1=str(row[locationColumnNumber])
             currentLocation2=str(row[locationColumnNumber2])
             if (str(currentLocation1)!='' and str(currentLocation1)!='nan' and str(currentLocation2)!='' and str(currentLocation2)!='nan'): #nan Not A Numeric value SHOULD NOT BE NECESSARY!!!

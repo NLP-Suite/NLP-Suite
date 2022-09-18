@@ -273,7 +273,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
     csvname = os.path.join(outputDir, csvname)
     # generate CSV file
     df = generate_csv()
-    df.to_csv((csvname), encoding='utf-8', index=False)
+    df.to_csv((csvname), index=False)
     filesToOpen.append(csvname)
     clear_cache()
 

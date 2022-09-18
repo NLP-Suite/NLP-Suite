@@ -102,9 +102,9 @@ def run(inputFilename,outputDir, openOutputFiles, createCharts, chartPackage,
     locationColumnNumber2 = 0
 
     if withHeader==True:
-        locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumn)
+        locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumn, inputFilename)
         if len(locationColumn2)>0:
-            locationColumnNumber2=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumn2)
+            locationColumnNumber2=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumn2, inputFilename)
 
     encodingValue='utf-8'
 
