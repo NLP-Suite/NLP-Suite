@@ -333,7 +333,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     # tempOutputFiles[0] is the filename with lemmatized SVO values
                     # we want to aggregate with WordNet the verbs in column 'V'
                     # check that SVO output file contains records
-                    if IO_csv_util.GetNumberOfRecordInCSVFile(tempOutputFiles[0], encodingValue='utf-8') > 1:
+                    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tempOutputFiles[0], encodingValue='utf-8')
+                    if nRecords > 1:
                         outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Verb (V)'])
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'VERB',
                                                                openOutputFiles, createCharts, chartPackage, language_var)
@@ -564,7 +565,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 # tempOutputFiles[0] is the filename with lemmatized SVO values
                 # we want to aggregate with WordNet the verbs in column 'V'
                 # check that SVO output file contains records
-                if IO_csv_util.GetNumberOfRecordInCSVFile(tempOutputFiles[0], encodingValue='utf-8') > 1:
+                nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tempOutputFiles[0], encodingValue='utf-8')
+                if nRecords > 1:
                     outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Verb (V)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
                                                                              config_filename, 'VERB',
@@ -595,19 +597,21 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if gephi_var:
             # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
             if inputFilename[-4:] == ".csv":
-                if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1:  # including headers; file is empty
+                nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue='utf-8')
+                if nRecords > 1:   # including headers; file is empty
                     gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputDir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
                                                        "Sentence ID")
                     filesToOpen.append(gexf_file)
                 else:
-                    if IO_csv_util.GetNumberOfRecordInCSVFile(
-                            svo_result_list[0]) > 1:  # including headers; file is empty
+                    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_result_list[0])
+                    if nRecords > 1:  # including headers; file is empty
                         gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputDir, svo_result_list[0],
                                                            "Subject (S)", "Verb (V)", "Object (O)", "Sentence ID")
                         filesToOpen.append(gexf_file)
             else:  # txt input file
                 for f in svo_result_list:
-                    if IO_csv_util.GetNumberOfRecordInCSVFile(f) > 1:  # including headers; file is empty
+                    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
+                    if nRecords > 1:  # including headers; file is empty
                         gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], outputDir, f, "Subject (S)", "Verb (V)", "Object (O)",
                                                            "Sentence ID")
                         if "CoreNLP" in f or "SENNA_SVO" in f or "SpaCy" in f or "Stanza" in f:
@@ -623,15 +627,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if wordcloud_var:
             if inputFilename[-4:] == ".csv":
-                if IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename) > 1:  # including headers; file is empty
-                    myfile = IO_files_util.openCSVFile(inputFilename, 'r')
-                    #CYNTHIA
-                    out_file = wordclouds_util.SVOWordCloud(myfile, inputFilename, outputDir, "", prefer_horizontal=.9)
-                    myfile.close()
-                    filesToOpen.append(out_file)
+                nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
+                if nRecords > 1:  # including headers; file is empty
+                    if IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename) > 1:  # including headers; file is empty
+                        myfile = IO_files_util.openCSVFile(inputFilename, 'r')
+                        #CYNTHIA
+                        out_file = wordclouds_util.SVOWordCloud(myfile, inputFilename, outputDir, "", prefer_horizontal=.9)
+                        myfile.close()
+                        filesToOpen.append(out_file)
             else:
                 for f in svo_result_list:
-                    if IO_csv_util.GetNumberOfRecordInCSVFile(f) > 1:  # including headers; file is empty
+                    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
+                    if nRecords > 1:  # including headers; file is empty
                         myfile = IO_files_util.openCSVFile(f, "r")
                         #CYNTHIA
                         out_file = wordclouds_util.SVOWordCloud(myfile, f, outputDir, "", prefer_horizontal=.9)

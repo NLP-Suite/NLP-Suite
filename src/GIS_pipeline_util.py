@@ -88,13 +88,6 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                         bold_var_list, italic_var_list,
                         description_var_list=[], description_csv_field_var_list=[]):
 
-    # if inputFilename.endswith('.txt'):
-    # 	if NER_extractor2_var == False:
-    # 		GIS_GUI.NER_extractor_var.set(1)
-    # 		NER_extractor_var = True
-    # if inputFilename.endswith('.csv'):
-    # 	inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(
-    # 		inputFilename)
 
     filesToOpen=[]
 
@@ -226,8 +219,8 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
     # need to plot locations geocoded and not geocoded
 
     # -1 to account for header record
-    nRecordsFound = IO_csv_util.GetNumberOfRecordInCSVFile(geocodedLocationsOutputFilename) -1
-    if geocodedLocationsOutputFilename != '' and nRecordsFound >0:
+    nRecordsFound, nColumns  = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(geocodedLocationsOutputFilename)
+    if geocodedLocationsOutputFilename != '' and nRecordsFound-1 >0:
         filesToOpen.append(geocodedLocationsOutputFilename)
         if createCharts:
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
@@ -246,8 +239,8 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                     filesToOpen.extend(chart_outputFilename)
 
     # -1 to account for header record
-    nRecordsNotFound = IO_csv_util.GetNumberOfRecordInCSVFile(locationsNotFoundNonDistinctoutputFilename) -1
-    if locationsNotFoundNonDistinctoutputFilename != '' and nRecordsNotFound>0:
+    nRecordsNotFound, nColumns  = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(locationsNotFoundNonDistinctoutputFilename)
+    if locationsNotFoundNonDistinctoutputFilename != '' and nRecordsNotFound -1>0:
         filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
         if createCharts:
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,

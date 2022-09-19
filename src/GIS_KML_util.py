@@ -44,6 +44,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 				 name_var_list, scale_var_list, color_var_list, color_style_var_list,
 				 bold_var_list, italic_var_list,
 				 description_var_list, description_csv_field_var_list, colorize=True):
+
 	startTime = IO_user_interface_util.timed_alert(window, 3000, 'GIS kml generator', 'Started running KML algorithm at',
 												   True, '', True, '', silent=True)
 
@@ -99,11 +100,11 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 	if len(index_list) == 0:
 		return ''
 	if group_number_var <= 1:
-		numberOfRecords = IO_csv_util.GetNumberOfRecordInCSVFile(inputGeocodedCsvFile, encodingValue)
-		print("Processing geocoded record for kml:", '1' + "/" + str(numberOfRecords) + ' header record skipped')
+		nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputGeocodedCsvFile, encodingValue)
+		print("Processing geocoded record for kml:", '1' + "/" + str(nRecords) + ' header record skipped')
 		for row in inputfile:
 			index = index + 1
-			currRecord = str(index + 1) + "/" + str(numberOfRecords)
+			currRecord = str(index + 1) + "/" + str(nRecords)
 			print("Processing geocoded record for kml:", currRecord)
 			GGPdateFormat = ''
 			# if inputIsCoNLL==True:
@@ -158,7 +159,6 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 			if row[3] != 0 and row[2] != 0:
 				pnt = kml.newpoint(coords=[(row[3], row[2])])  # wants to be read in in lng, lat order
 				pnt.style.iconstyle.icon.href = icon_url
-				# TODO Mino GIS if we process South America exported by CoreNLP as 2 separate records as 1 record
 				#	the code breaks in pin_customizer
 				#	we would need to process inputfile rather inputFilename
 				pnt = GIS_Google_pin_util.pin_customizer(inputFilename, pnt, index, index_list, locationColumnName,
@@ -238,11 +238,11 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 
 			index = 0
 			inputfile = csv.reader(open(inputGeocodedCsvFile, 'r', encoding=encodingValue, errors='ignore'))
-			numberOfRecords = IO_csv_util.GetNumberOfRecordInCSVFile(inputGeocodedCsvFile, encodingValue)
+			nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputGeocodedCsvFile, encodingValue)
 			for row in inputfile:
 				for b in range(len(values_row_num)):
 					if index - 1 == values_row_num[b]:
-						currRecord = str(index - 1) + "/" + str(numberOfRecords)
+						currRecord = str(index - 1) + "/" + str(nRecords)
 						# we do not want to print the name of the location or the map becomes unreadable
 						# pnt = kml.newpoint(name=row[0], coords=[(row[3],row[2])])  # wants to be read in in lng, lat order
 						pnt = kml.newpoint(coords=[(row[locationColumnNumber + 2], row[

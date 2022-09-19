@@ -133,14 +133,14 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 
     # TODO depends on how many documents we have
     if byDoc:
-        n_documents = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename)
+        n_documents = IO_csv_util.GetMaxValueInCSVField(inputFilename,'visualize_charts_util','Document ID')
     # when pivoting data
     # columns_to_be_plotted_bySent = []
     # for i in range(1, n_documents):
     #     columns_to_be_plotted_bySent.append([0, i])
     count_var_SV = count_var
 
-    nRecords = IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename)
+    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
 
     print("\n\n\nRecords in inputfile",nRecords, '  ', inputFilename)
 # standard bar chart ------------------------------------------------------------------------------

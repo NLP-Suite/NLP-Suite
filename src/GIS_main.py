@@ -57,6 +57,13 @@ def run(inputFilename,
         GIS_package_var,
         GIS_package2_var):
 
+
+    # create a subdirectory of the output directory
+    outputGISDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
+                                                              silent=True)
+
+    outputDir = outputGISDir
+
     filesToOpen = []
     locationColumnName=''
 
@@ -456,7 +463,7 @@ def get_csv_file(window,title,fileType,annotate):
     filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
 
     if len(filePath)>0:
-        nRecords=IO_csv_util.GetNumberOfRecordInCSVFile(filePath, 'utf-8')
+        nRecords, nColumns =IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
         if nRecords==0:
             mb.showwarning(title='Warning',
                            message="The selected input csv file is empty.\n\nPlease, select a different file and try again.")

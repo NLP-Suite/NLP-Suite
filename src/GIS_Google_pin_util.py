@@ -11,7 +11,7 @@ import simplekml
 import tkinter.messagebox as mb
 
 import IO_csv_util
-
+import IO_user_interface_util
 
 # icon_type are the different types of icon, like pushpin, paddle teardrop, paddle square....
 # 	Expected input will be a string, for example: icon_type == "pushpin"
@@ -591,6 +591,9 @@ def pin_customizer(inputFilename, pnt, geo_index, index_list, locationColumnName
 		withHeader_var = IO_csv_util.csvFile_has_header(inputFilename)  # check if the file has header
 		data, headers = IO_csv_util.get_csv_data(inputFilename, withHeader_var)  # get the data and header
 
+	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS kml pin customizer', 'Started running kml pin customizer at',
+												   True, '', True, '', silent=True)
+
 	# Assign description
 	if description_var_list[j] == 1:
 		if len(description_csv_field_var_list[j]) == 0:
@@ -606,13 +609,18 @@ def pin_customizer(inputFilename, pnt, geo_index, index_list, locationColumnName
 								   j + 1) + '".')
 				new_label = "Group " + str(j + 1)
 				group_labels[j] = new_label
+
 		pnt = pin_description(inputFilename, pnt, data, headers, geo_index, index_list, locationColumnName, group_var,
 							  group_values, group_labels, j, name_var_list[j], description_csv_field_var_list[j],
 							  italic_var_list[j], bold_var_list[j])
 	# Assign name
 	if name_var_list[j] == 1:
-		pnt = pin_name(pnt, data, headers, geo_index, description_location_var_name, scale_var_list[j],
+		pnt = pin_name(pnt, data, headers, geo_index, description_csv_field_var_list[j], scale_var_list[j],
 					   color_var_list[j], color_style_var_list[j])
+
+	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS kml pin customizer', 'Finished running kml pin customizer at', True, '',
+									   True, startTime, silent=True)
+
 	return pnt
 
 
@@ -631,7 +639,7 @@ def pin_description(inputFilename, pnt, data, headers, geo_index, index_list, de
 					group_values, group_labels, j, name_var, description_csv_field_var, italic_var, bold_var):
 	# # TODO if the inputFilename contains more than one document then the document name should be listed in descriptions
 	if 'Document ID' in headers:
-		nDocs = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename, 'GIS_Google_pin', 'Document ID')
+		nDocs = IO_csv_util.GetMaxValueInCSVField(inputFilename, 'GIS_Google_pin', 'Document ID')
 
 	if description_location_var_name=='NER':
 		description_location_var_name='Location'

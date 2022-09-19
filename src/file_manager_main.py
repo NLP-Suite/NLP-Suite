@@ -518,7 +518,8 @@ def get_additional_csvFile(window,title,fileType):
         selectedCsvFile_var.set(filePath)
         if IO_csv_util.get_csvfile_headers(filePath,True)=='':
             noHeaders=True
-            menu_values=range(1, IO_csv_util.get_csvfile_numberofColumns(filePath)+1)
+            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath)
+            menu_values=range(1, nColumns+1)
         else:
             data, headers = IO_csv_util.get_csv_data(filePath,True)
             menu_values=headers

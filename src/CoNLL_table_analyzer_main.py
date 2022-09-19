@@ -560,11 +560,11 @@ def changed_filename(tracedInputFile):
             error = False
     menu_values = []
     if tracedInputFile != '':
-        numColumns = IO_csv_util.get_csvfile_numberofColumns(tracedInputFile)
-        if numColumns == 0 or numColumns is None:
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tracedInputFile)
+        if nColumns == 0 or nColumns is None:
             return False
         if IO_csv_util.csvFile_has_header(tracedInputFile) == False:
-            menu_values = range(1, numColumns + 1)
+            menu_values = range(1, nColumns + 1)
         else:
             data, headers = IO_csv_util.get_csv_data(tracedInputFile, True)
             menu_values = headers

@@ -132,26 +132,26 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                Gephi_checkbox)
 
 if GUI_util.inputFilename.get() != '':
-    numColumns = IO_csv_util.get_csvfile_numberofColumns(GUI_util.inputFilename.get())
+    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(GUI_util.inputFilename.get())
     if IO_csv_util.csvFile_has_header(GUI_util.inputFilename.get()) == False:
-        menu_values = range(1, numColumns + 1)
+        menu_values = range(1, nColumns + 1)
     else:
         data, headers = IO_csv_util.get_csv_data(GUI_util.inputFilename.get(), True)
         menu_values = headers
 else:
-    numColumns = 0
+    nColumns = 0
     menu_values = " "
-if numColumns == -1:
+if nColumns == -1:
     pass
 
 def changed_filename(tracedInputFile):
     menu_values = []
     if tracedInputFile != '':
-        numColumns = IO_csv_util.get_csvfile_numberofColumns(tracedInputFile)
-        if numColumns == 0 or numColumns == None:
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tracedInputFile)
+        if nColumns == 0 or nColumns == None:
             return False
         if IO_csv_util.csvFile_has_header(tracedInputFile) == False:
-            menu_values = range(1, numColumns + 1)
+            menu_values = range(1, nColumns + 1)
         else:
             data, headers = IO_csv_util.get_csv_data(tracedInputFile, True)
             menu_values = headers

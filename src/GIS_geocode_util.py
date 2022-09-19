@@ -195,6 +195,8 @@ def geocode(window,locations, inputFilename, outputDir,
 	locationsNotFoundNonDistinctoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
 																			geoName, 'Not-Found-Non-Distinct', locationColumnName, '',
 																			False, True)
+	# TODO create kml file output name
+
 	if locations=='':
 		outputCsvLocationsOnly = ''
 		if inputIsCoNLL == True:
@@ -354,6 +356,7 @@ def geocode(window,locations, inputFilename, outputDir,
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, date])
 					else:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address])
+			# TODO create kml record
 	[geowriterNotFoundNonDistinct.writerow([item[0], item[1]]) for item in nonDistinctNotGeocodedFull]
 	csvfile.close()
 	csvfileNotFound.close()

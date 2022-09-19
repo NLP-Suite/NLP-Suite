@@ -36,7 +36,9 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 		if len(input_dictionary_file) == 0:
 			return
 
-	if IO_csv_util.get_csvfile_numberofColumns(input_dictionary_file) == 2:
+	nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(input_dictionary_file)
+
+	if nColumns == 2:
 		dic = pd.read_csv(input_dictionary_file, encoding='utf-8', error_bad_lines=False)
 		dic_value = dic.iloc[:, 0].tolist()
 		dic_sec_value = dic.iloc[:, 1].tolist()

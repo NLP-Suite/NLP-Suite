@@ -310,16 +310,17 @@ if __name__ == '__main__':
     if GUI_util.inputFilename.get() != '':
         if selectedCsvFile_var.get() == '':
             selectedCsvFile_var.set(GUI_util.inputFilename.get())
-        numColumns = IO_csv_util.get_csvfile_numberofColumns(GUI_util.inputFilename.get())
+
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(GUI_util.inputFilename.get())
         if IO_csv_util.csvFile_has_header(GUI_util.inputFilename.get()) == False:
-            menu_values = range(1, numColumns + 1)
+            menu_values = range(1, nColumns + 1)
         else:
             data, headers = IO_csv_util.get_csv_data(GUI_util.inputFilename.get(), True)
             menu_values = headers
     else:
-        numColumns = 0
+        nColumns = 0
         menu_values = " "
-    if numColumns == -1:
+    if nColumns == -1:
         pass
     # return
 
@@ -844,11 +845,11 @@ if __name__ == '__main__':
                          message="The Data manager functions expect in input a csv file.\n\nPlease, select a csv file for your Default orGUI-specific I/O configuration and try again.\n\nThe RUN button is disabled until the required Input/Output option is entered.")
         menu_values = []
         if tracedInputFile != '':
-            numColumns = IO_csv_util.get_csvfile_numberofColumns(tracedInputFile)
-            if numColumns == 0 or numColumns == None:
+            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tracedInputFile)
+            if nColumns == 0 or nColumns == None:
                 return False
             if IO_csv_util.csvFile_has_header(tracedInputFile) == False:
-                menu_values = range(1, numColumns + 1)
+                menu_values = range(1, nColumns + 1)
             else:
                 data, headers = IO_csv_util.get_csv_data(tracedInputFile, True)
                 menu_values = headers
