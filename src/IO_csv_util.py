@@ -199,9 +199,10 @@ def GetNumberOfSentencesInCSVfile(inputFilename,algorithm,columnHeader='Sentence
 
 
 # triggered by a df.to_csv
+# headers is a list []
 def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, language_encoding='utf-8'):
     try:
-        data_frame.to_csv(outputFilename, columns=headers, index=False, encoding=language_encoding)
+        data_frame.to_csv(outputFilename, columns=headers, header=None, index=False, encoding=language_encoding)
         return outputFilename
     except IOError:
         mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
@@ -211,19 +212,22 @@ def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, lang
 # path_output is the name of the outputfile with path
 # returns True when an error is found
 def list_to_csv(window,list_output,path_output,colnum=0, encoding='utf-8'):
+    error = False
     if not isinstance(list_output, list):
         return True
-    try:
-        #if a specific column number is given, generate only the colnum columns as output
-        if colnum!=0:
-            list_output = [i[:colnum] for i in list_output]
-        #when writing a csv file newline='' prevents writing an extra blank line after every record
-        #bad non utf-8 characters may be exported in lines when checking for non utf-8 characters
-        with open(path_output,'w',newline='', encoding=encoding,errors='surrogateescape') as csvFile:
-        # with open(path_output,'w',newline='', encoding='utf-8',errors='ignore') as csvFile: #bad non utf-8 characters may be exported in lines when checking for non utf-8 characters
-            writer = csv.writer(csvFile)
-            # saving the case of a single list, for example
-            # ['inheriting', 'instilled', 'interacting', 'looked', 'loved', 'nyc', 'paused', 'seemed']
+    #if a specific column number is given, generate only the colnum columns as output
+    if colnum!=0:
+        list_output = [i[:colnum] for i in list_output]
+    #when writing a csv file newline='' prevents writing an extra blank line after every record
+    #bad non utf-8 characters may be exported in lines when checking for non utf-8 characters
+    with open(path_output,'w',newline='', encoding=encoding,errors='surrogateescape') as csvFile:
+    # with open(path_output,'w',newline='', encoding='utf-8',errors='ignore') as csvFile: #bad non utf-8 characters may be exported in lines when checking for non utf-8 characters
+        writer = csv.writer(csvFile)
+        # saving the case of a single list, for example
+        # ['inheriting', 'instilled', 'interacting', 'looked', 'loved', 'nyc', 'paused', 'seemed']
+        # https://stackoverflow.com/questions/26621634/python-adding-a-blank-empty-column-csv
+        # TODO this seems much ado about nothing
+        try:
             if isinstance(list_output[0], list):
                 # case of list of list, for example
                 # [['PRONOUN ANALYSIS','FREQUENCY'], ['PRP', 105],...]
@@ -232,18 +236,19 @@ def list_to_csv(window,list_output,path_output,colnum=0, encoding='utf-8'):
                 current = list_output
                 for item in current:
                     writer.writerow([item])
-        csvFile.close()
-        return False
-    except OSError as e:
-        if 'Invalid argument' in str(e):
-            mb.showwarning(title='Output file error',
-                           message="Could not write the file\n\n" + path_output + "\n\nThe filename contains an invalid argument. Please, check the filename and try again!")
-        elif 'Permission denied' in str(e):
-            mb.showwarning(title='Output file error', message="Could not write the file " + path_output + "\n\nA file with the same name is already open. Please, close the csv file and try again!")
-        else:
-            mb.showwarning(title='Output file error',
-                           message="Could not write the file " + path_output + "\n\nThe following error occurred while opening the file in output:\n\n" + str(e) + "\n\nPlease, close the Excel file and try again!")
-        return True
+        except OSError as e:
+            if 'Invalid argument' in str(e):
+                mb.showwarning(title='Output file error',
+                               message="Could not write the file\n\n" + path_output + "\n\nThe filename contains an invalid argument. Please, check the filename and try again!")
+            elif 'Permission denied' in str(e):
+                mb.showwarning(title='Output file error', message="Could not write the file " + path_output + "\n\nA file with the same name is already open. Please, close the csv file and try again!")
+            else:
+                mb.showwarning(title='Output file error',
+                               message="Could not write the file " + path_output + "\n\nThe following error occurred while opening the file in output:\n\n" + str(e) + "\n\nPlease, close the Excel file and try again!")
+            error = True
+    csvFile.close()
+    return error
+
 
 def openCSVOutputFile(outputCSVFilename, IO='w', encoding='utf-8',errors='ignore', newline=''):
 

@@ -135,6 +135,15 @@ message_only_CoreNLP_coref = "The coreference algorithms in this GUI are based e
 title_options_only_CoreNLP_NER = ['Stanford CoreNLP NER']
 message_only_CoreNLP_NER = "The NER algorithms in this GUI are based exclusively on Stanford CoreNLP NER annotator.\n\nWatch this space for an extension to spaCy and Stanza of the NER algorithms behind this GUI (the spaCy and Stanza parsers and NER annotators, however, do prooduce NER tags)."
 
+lemma_frequencies = ['Lemma frequency']
+message_lemma_frequencies = "A blank is likely to be a frequent lemma in your corpus. It is likely to 'mask' all other values. If that is the case, when the chart is displayed you may want to delete rows containing a blank lemma to have a better view of all other values."
+
+NER_frequencies = ['NER tags frequency']
+message_NER_frequencies = "O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag to have a better view of all other tags."
+
+DepRel_frequencies = ['DepRel tags frequency']
+message_DepRel_frequencies = "punct (punctuation) and det (determiner/article) are likely to be the most frequent DepRel tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the rows containing the 'punct' and 'det' tags to have a better view of all other tags."
+
 title_options_CoreNLP_shutting_down = ['CoreNLP Server is shutting down']
 message_CoreNLP_shutting_down = "The Stanford CoreNLP, after firing up, will display on command line/prompt the message: CoreNLP Server is shutting down.\n\nIt is NOT a problem. The process will continue..."
 

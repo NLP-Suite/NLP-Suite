@@ -69,30 +69,16 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
 
         pronouns_list,pronouns_stats, pronouns_data = stats_pronouns_output(data,data_divided_sents)
         pronouns_list = pronouns_data
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,pronouns_list, function_words_list_file_name)
-        #errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('PRONOUNS',pronouns_list), function_words_list_file_name)
-        if errorFound==True:
-            return filesToOpen
-        filesToOpen.append(function_words_list_file_name)
 
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,pronouns_stats,function_words_stats_file_name)
-        if errorFound==True:
-            return filesToOpen
-        filesToOpen.append(function_words_stats_file_name)
+        df = pd.DataFrame(pronouns_stats)
+        IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
+                              language_encoding='utf-8')
+        # filesToOpen.append(function_words_stats_file_name)
 
-        df = pd.read_csv(function_words_list_file_name, header=None, encoding='utf-8', error_bad_lines=False)
-        df.to_csv(function_words_list_file_name,
-				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-					  "PRONOUNS"])
+          # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+          #     "PRONOUNS"])
 
         if createCharts==True:
-            # chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
-            #                               data_to_be_plotted=[pronouns_stats],
-            #                               inputFilename=function_words_stats_file_name,
-            #                               outputDir=outputDir,
-            #                               scriptType='FuncWords_pron',
-            #                               chartTitle="Pronoun Analysis",
-            #                               chart_type_list=["pie"])
             columns_to_be_plotted=[[0,1]]
             count_var=0
             chart_outputFilename = charts_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
@@ -102,8 +88,8 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
                                                             chart_title="Frequency Distribution of Pronouns",
                                                             column_xAxis_label_var='Pronoun',
                                                             hover_info_column_list=[],
-                                                            count_var=count_var)
-
+                                                            count_var=count_var,
+                                                            complete_sid=False)  # TODO to be changed
 
             if chart_outputFilename != None:
                 filesToOpen.append(chart_outputFilename)
@@ -134,30 +120,14 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
 
         prepositions_list,prepositions_stats, preposition_data = stats_prepositions_output(data,data_divided_sents)
         prepositions_list = preposition_data
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,prepositions_list, function_words_list_file_name)
-        #errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('PREPOSITIONS',prepositions_list), function_words_list_file_name)
-        if errorFound==True:
-            return filesToOpen
-        filesToOpen.append(function_words_list_file_name)
+        df = pd.DataFrame(prepositions_stats)
+        IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
+                              language_encoding='utf-8')
 
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,prepositions_stats,function_words_stats_file_name)
-        if errorFound==True:
-            return filesToOpen
-        filesToOpen.append(function_words_stats_file_name)
-
-        df = pd.read_csv(function_words_list_file_name, header=None, encoding='utf-8', error_bad_lines=False)
-        df.to_csv(function_words_list_file_name,
-				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-					  "PREPOSITIONS"])
+          # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+          #     "PREPOSITIONS"])
 
         if createCharts==True:
-            # chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
-            #                               data_to_be_plotted=[prepositions_stats],
-            #                               inputFilename=function_words_stats_file_name,
-            #                               outputDir=outputDir,
-            #                               scriptType='FuncWords_prep',
-            #                               chartTitle="Preposition Analysis",
-            #                               chart_type_list=["pie"])
             columns_to_be_plotted=[[0,1]]
             count_var=0
             chart_outputFilename = charts_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
@@ -167,8 +137,11 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
                                                             chart_title="Frequency Distribution of Prepositions",
                                                             column_xAxis_label_var='Preposition',
                                                             hover_info_column_list=[],
-                                                            count_var=count_var)
+                                                            count_var=count_var,
+                                                            complete_sid=False)  # TODO to be changed
 
+            if chart_outputFilename != None:
+                filesToOpen.append(chart_outputFilename)
     return filesToOpen
 
 def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createCharts, chartPackage):
@@ -196,21 +169,12 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
         # output files
         article_list,article_stats,article_data =  stats_articles_output(data,data_divided_sents)
         article_list = article_data
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,article_list, function_words_list_file_name)
-        # errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('ARTICLES',article_list), function_words_list_file_name)
-        if errorFound==True:
-            return filesToOpen
-        filesToOpen.append(function_words_list_file_name)
+          # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+          #     "ARTICLES"])
 
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,article_stats,function_words_stats_file_name)
-        if errorFound==True:
-            return filesToOpen
-        filesToOpen.append(function_words_stats_file_name)
-
-        df = pd.read_csv(function_words_list_file_name, header=None, encoding='utf-8', error_bad_lines=False)
-        df.to_csv(function_words_list_file_name,
-				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-					  "ARTICLES"])
+        df = pd.DataFrame(article_stats)
+        IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
+                              language_encoding='utf-8')
 
         if createCharts==True:
             columns_to_be_plotted=[[0,1]]
@@ -222,12 +186,11 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
                                                             chart_title="Frequency Distribution of Articles/Determiners",
                                                             column_xAxis_label_var='Article/Determiner',
                                                             hover_info_column_list=[],
-                                                            count_var=count_var)
+                                                            count_var=count_var,
+                                                            complete_sid=False)  # TODO to be changed
 
             if chart_outputFilename != None:
                 filesToOpen.append(chart_outputFilename)
-
-
     return filesToOpen
 
 def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutputFiles,createCharts, chartPackage):
@@ -252,21 +215,11 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
 
         conjunction_list,conjunction_stats,conjunction_data =  stats_conjunctions_output(data,data_divided_sents)
         conjunction_list = conjunction_data
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,conjunction_list, function_words_list_file_name)
-        #errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('CONJUNCTIONS',conjunction_list), function_words_list_file_name)
-        if errorFound==True:
-            return filesToOpen
-        filesToOpen.append(function_words_list_file_name)
-
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,conjunction_stats,function_words_stats_file_name)
-        if errorFound==True:
-            return filesToOpen
-        filesToOpen.append(function_words_stats_file_name)
-
-        df = pd.read_csv(function_words_list_file_name, header=None, encoding='utf-8', error_bad_lines=False)
-        df.to_csv(function_words_list_file_name,
-				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-					  "CONJUNCTIONS"])
+        df = pd.DataFrame(conjunction_stats)
+        IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
+                              language_encoding='utf-8')
+        # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+          #     "CONJUNCTIONS"])
 
         if createCharts==True:
             columns_to_be_plotted=[[0,1]]
@@ -278,8 +231,8 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
                                                             chart_title="Frequency Distribution of Conjunctions",
                                                             column_xAxis_label_var='Conjunctions',
                                                             hover_info_column_list=[],
-                                                            count_var=count_var)
-
+                                                            count_var=count_var,
+                                                            complete_sid=False)  # TODO to be changed
 
             if chart_outputFilename != None:
                 filesToOpen.append(chart_outputFilename)
@@ -312,21 +265,11 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
             return filesToOpen
         auxiliary_list,auxiliary_stats,auxiliary_data =  stats_auxiliaries_output(data,data_divided_sents)
         auxiliary_list = auxiliary_data
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,auxiliary_list, function_words_list_file_name)
-        # errorFound=IO_csv_util.list_to_csv(GUI_util.window,CoNLL_util.sort_output_list('AUXILIARIES',auxiliary_list), function_words_list_file_name)
-        if errorFound==True:
-            return filesToOpen
-        filesToOpen.append(function_words_list_file_name)
-
-        errorFound=IO_csv_util.list_to_csv(GUI_util.window,auxiliary_stats,function_words_stats_file_name)
-        if errorFound==True:
-            return filesToOpen
-        filesToOpen.append(function_words_stats_file_name)
-
-        df = pd.read_csv(function_words_list_file_name, header=None, encoding='utf-8', error_bad_lines=False)
-        df.to_csv(function_words_list_file_name,
-				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-					  "AUXILIARIES"])
+          # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+          #     "AUXILIARIES"])
+        df = pd.DataFrame(auxiliary_stats)
+        IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
+                              language_encoding='utf-8')
 
         if createCharts==True:
             columns_to_be_plotted=[[0,1]]
@@ -338,12 +281,11 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
                                                             chart_title="Frequency Distribution of Auxiliary Verbs",
                                                             column_xAxis_label_var='Auxiliary Verbs',
                                                             hover_info_column_list=[],
-                                                            count_var=count_var)
+                                                            count_var=count_var,
+                                                            complete_sid=False)  # TODO to be changed
 
             if chart_outputFilename != None:
                 filesToOpen.append(chart_outputFilename)
-
-            # return filesToOpen  # to avoid code breaking in plot by sentence index
 
             return filesToOpen
 
@@ -459,29 +401,29 @@ def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openO
     outputFiles = article_stats(inputFilename, outputDir, data, data_divided_sents,
                                                                    openOutputFiles, createCharts, chartPackage)
     if outputFiles != None:
-        filesToOpen.append(outputFiles)
+        filesToOpen.extend(outputFiles)
 
     outputFiles = auxiliary_stats(inputFilename, outputDir, data, data_divided_sents,
                                                                      openOutputFiles, createCharts, chartPackage)
     if outputFiles != None:
-        filesToOpen.append(outputFiles)
+        filesToOpen.extend(outputFiles)
 
     outputFiles = conjunction_stats(inputFilename, outputDir, data,
                                                                        data_divided_sents, openOutputFiles,
                                                                        createCharts, chartPackage)
     if outputFiles != None:
-        filesToOpen.append(outputFiles)
+        filesToOpen.extend(outputFiles)
 
     outputFiles = preposition_stats(inputFilename, outputDir, data,
                                                                        data_divided_sents, openOutputFiles,
                                                                        createCharts, chartPackage)
     if outputFiles != None:
-        filesToOpen.append(outputFiles)
+        filesToOpen.extend(outputFiles)
 
     outputFiles = pronoun_stats(inputFilename, outputDir, data, data_divided_sents,
                                                                    openOutputFiles, createCharts, chartPackage)
     if outputFiles != None:
-        filesToOpen.append(outputFiles)
+        filesToOpen.extend(outputFiles)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running FUNCTION WORDS ANALYSES at', True, '', True, startTime, True)
 

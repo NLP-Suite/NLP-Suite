@@ -145,7 +145,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
         locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnNumber,encodingValue, datePresent, dateColumnNumber)
         if geocoder == 'Nominatim':
             changed = False
-            nom_df = pd.DataFrame(locations, columns=['Location', 'Date','NER']) if len(locations)==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0','NER'])
+            nom_df = pd.DataFrame(locations, columns=['Location', 'Date','NER']) if len(locations[0])==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0','NER'])
             drop_idx = []
             changed_idx = {}
             for i,row in nom_df.iterrows():

@@ -127,7 +127,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
     #output file names
     #clausal_analysis_file_name contains all the CoNLL table records that have a clausal tag
     clausal_analysis_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clause tags', 'list')
-    filesToOpen.append(clausal_analysis_file_name)
+    # filesToOpen.append(clausal_analysis_file_name)
     #clausal_analysis_stats_file_name will contain a data sheet with the frequency distribution of all available clausal tags and a chart sheet with the pie chart visualization of the data
 
 
@@ -145,18 +145,10 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
 
     clausal_analysis_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clause tags', 'stats')
     clause_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'CA', 'Clause tags', 'list')
-    errorFound=IO_csv_util.list_to_csv(GUI_util.window,clausal_stats,clausal_analysis_stats_file_name)
-    if errorFound==True:
-        return
-    errorFound=IO_csv_util.list_to_csv(GUI_util.window,clausal_list,clause_file_name)
-    if errorFound==True:
-        return
-
-    df = pd.read_csv(clause_file_name, header=None, encoding='utf-8',error_bad_lines=False)
-    df.to_csv(clause_file_name,
-				header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-						"Clause Tags"])
-
+    # convert list to dataframe and save
+    # headers=['Clause Tags','Frequencies']
+    df = pd.DataFrame(clausal_stats)
+    IO_csv_util.df_to_csv(GUI_util.window, df, clausal_analysis_stats_file_name, headers=None, index=False, language_encoding='utf-8')
 
     if createCharts==True:
         columns_to_be_plotted=[[0,1]]
@@ -168,7 +160,8 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
                                                         chart_title="Frequency Distribution of Clause Types",
                                                         column_xAxis_label_var='Clause Type',
                                                         hover_info_column_list=[],
-                                                        count_var=count_var)
+                                                        count_var=count_var,
+                                                        complete_sid=False)  # TODO to be changed
         if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 

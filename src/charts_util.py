@@ -531,7 +531,9 @@ def get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,colu
                 specific_column_value=specific_column_value_list[k]
             #get all the values in the selected column
             try:
-                column_list = [i[1] for i in data_list[k]] # here is the problem   TODO TONY the datalist is like [['NN','NN'], ...]
+                #  TODO the datalist is like [['NN','NN'], ...] so the code produces bad results
+                #       when multiple series side-by-side (e.g., form and lemma values) need to be plotted
+                column_list = [i[1] for i in data_list[k]]
             except IndexError:
                 continue
             counts = Counter(column_list).most_common()
