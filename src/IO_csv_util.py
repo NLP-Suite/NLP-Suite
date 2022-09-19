@@ -202,7 +202,10 @@ def GetNumberOfSentencesInCSVfile(inputFilename,algorithm,columnHeader='Sentence
 # headers is a list []
 def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, language_encoding='utf-8'):
     try:
-        data_frame.to_csv(outputFilename, columns=headers, header=None, index=False, encoding=language_encoding)
+        if headers!=None:
+            data_frame.to_csv(outputFilename, columns=headers, index=False, encoding=language_encoding)
+        else:
+            data_frame.to_csv(outputFilename, columns=headers, header=None, index=False, encoding=language_encoding)
         return outputFilename
     except IOError:
         mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")

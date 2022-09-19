@@ -70,6 +70,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
         pronouns_list,pronouns_stats, pronouns_data = stats_pronouns_output(data,data_divided_sents)
         pronouns_list = pronouns_data
 
+        # convert list to dataframe
         df = pd.DataFrame(pronouns_stats)
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
                               language_encoding='utf-8')
@@ -120,6 +121,8 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
 
         prepositions_list,prepositions_stats, preposition_data = stats_prepositions_output(data,data_divided_sents)
         prepositions_list = preposition_data
+
+        # convert list to dataframe
         df = pd.DataFrame(prepositions_stats)
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
                               language_encoding='utf-8')
@@ -172,6 +175,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
           # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
           #     "ARTICLES"])
 
+        # convert list to dataframe
         df = pd.DataFrame(article_stats)
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
                               language_encoding='utf-8')
@@ -215,6 +219,8 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
 
         conjunction_list,conjunction_stats,conjunction_data =  stats_conjunctions_output(data,data_divided_sents)
         conjunction_list = conjunction_data
+
+        # convert list to dataframe
         df = pd.DataFrame(conjunction_stats)
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
                               language_encoding='utf-8')
@@ -267,6 +273,8 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
         auxiliary_list = auxiliary_data
           # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
           #     "AUXILIARIES"])
+
+        # convert list to dataframe
         df = pd.DataFrame(auxiliary_stats)
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
                               language_encoding='utf-8')

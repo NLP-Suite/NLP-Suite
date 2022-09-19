@@ -50,7 +50,6 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
         # TODO hover_over_values not being passed, neither are any potential aggregate columns
         #   get_data_to_be_plotted_with_counts is less general than
         data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange)
-        # IO_csv_util.list_to_csv(GUI_util.window, data_to_be_plotted[0], outputFilename)
     else:
         try:
             data = pd.read_csv(inputFilename,encoding='utf-8',error_bad_lines=False)
