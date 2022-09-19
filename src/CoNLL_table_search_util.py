@@ -18,6 +18,7 @@ import tkinter.messagebox as mb
 
 import Stanford_CoreNLP_tags_util
 import CoNLL_util
+import IO_csv_util
 
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
@@ -433,6 +434,7 @@ def search_related_words3(sentence: dict, filters: List[CoNLLFilter]):
 def search_CoNLL_table(list_sentences, form_of_token, _field_='FORM', related_token_POSTAG="*",
                        related_token_DEPREL="*",
                        Sentence_ID="*", _tok_postag_='*', _tok_deprel_='*'):
+    header = ["Searched Token/Word", "IF of Searched Token/Word", "POS Tag of Searched Token/Word", "DepRel of Searched Token/Word" , "Co-occurring Token/Word", " ID of Co-occurring Token/Word", "POS Tag of Co-occurring Token/Word", "DepRel of Co-occurring Token/Word", "Head ID", "Sentence ID", "Sentence", "Document ID", "Document"]
     list_queried = []
     deprel_list_queried = []
     for sent in list_sentences:
@@ -461,28 +463,33 @@ def search_CoNLL_table(list_sentences, form_of_token, _field_='FORM', related_to
             whole_sent += token[1] + " "
         whole_sent = whole_sent.strip()
         for node in list_word_indices:
-            ind = node[0]
+            co_token_ID = node[0]
             is_head = node[1]
             keyword = node[2]
-            row = sent[int(ind) - 1]
+            searched_token_ID = keyword[0]
+            row = sent[int(co_token_ID) - 1]
             if _field_ == 'FORM':
                 tok_form = row[1]
-            else:
+            else: # LEMMA
                 tok_form = row[2]
             tok_postag = row[3]
             tok_deprel = row[6]
             tok_Sentence_ID = row[10]
             tok_Document_ID = row[11]
             tok_Document = row[12]
+            # TODO what is token_id?
             token_id = str(tok_Document_ID)[:-2] + str("-" + tok_Sentence_ID)
 
             if _field_ == "FORM":
                 searched_keyword = keyword[1]
             else:
                 searched_keyword = keyword[2]
-            list_queried.append((tok_form, tok_postag, tok_deprel, is_head, tok_Document_ID,
-                                 tok_Sentence_ID, tok_Document,
-                                 whole_sent, searched_keyword, keyword[3], keyword[6]))
+            list_queried.append((searched_keyword, searched_token_ID, keyword[3], keyword[6], tok_form, co_token_ID, tok_postag,
+                                 tok_deprel, is_head,
+                                 tok_Sentence_ID, whole_sent, tok_Document_ID,
+                                 tok_Document
+                                 ))
+    list_queried.insert(0,header)
 
     # filter the output list
     deprel_list_queried = filter_output_list(list_queried, related_token_DEPREL, Sentence_ID, related_token_POSTAG)
@@ -570,7 +577,7 @@ def output_list(list_queried, searchedCoNLLField, documentId_position):
     return output_list
 
 
-# %%	
+# %%
 
 """
 def check_searchField(*args):

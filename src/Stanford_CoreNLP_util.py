@@ -668,13 +668,15 @@ def CoreNLP_annotate(config_filename,inputFilename,
 # Lemma ________________________________________________________________
 
                 if "Lemma" in str(annotator_params) and 'Lemma' in outputFilename:
+                    # reminders_util.checkReminder(config_filename, reminders_util.lemma_frequencies,
+                    #                              reminders_util.message_lemma_frequencies, True)
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['Lemma'],
-                                                                       chartTitle='Frequency Distribution of Lemma Values',
+                                                                       columns_to_be_plotted=['Form','Lemma'],
+                                                                       chartTitle='Frequency Distribution of Form & Lemma Values',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
-                                                                       outputFileNameType='lemma', #'POS_bar',
+                                                                       outputFileNameType='form-lemma', #'POS_bar',
                                                                        column_xAxis_label='Lemma values',
                                                                        groupByList=['Document ID','Document'],
                                                                        plotList=['Frequency'],
@@ -781,15 +783,18 @@ def CoreNLP_annotate(config_filename,inputFilename,
 # generate visualization output ----------------------------------------------------------------
 # parser ________________________________________________________________
 
-                elif 'parse' in str(annotator_params) and 'parse' in outputFilename:
+                elif 'parse' in str(annotator_params) and 'CoNLL' in outputFilename:
+
                     # Form & Lemma values
+                    # reminders_util.checkReminder(config_filename, reminders_util.lemma_frequencies,
+                    #                              reminders_util.message_lemma_frequencies, True)
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
                                                                        columns_to_be_plotted=['Form','Lemma'],
                                                                        chartTitle='Frequency Distribution of FORM & LEMMA Values',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
-                                                                       outputFileNameType='Form',
+                                                                       outputFileNameType='form-lemma',
                                                                        column_xAxis_label='FORM & LEMMA values',
                                                                        groupByList=['Document ID', 'Document'],
                                                                        plotList=['Frequency'],
@@ -816,8 +821,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
                             filesToOpen.extend(chart_outputFilename)
 
 # generate visualization output ----------------------------------------------------------------
-# NER Tags  in CoNLL table _____________________________________________________________________
-
+# NER Tags in CoNLL table _____________________________________________________________________
+                    reminders_util.checkReminder(config_filename, reminders_util.NER_frequencies,
+                                                 reminders_util.message_NER_frequencies, True)
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
                                                                        columns_to_be_plotted=['NER'],
@@ -835,6 +841,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
 # generate visualization output ----------------------------------------------------------------
 # DEPrel values in CoNLL table
+                    reminders_util.checkReminder(config_filename, reminders_util.DepRel_frequencies,
+                                                 reminders_util.message_DepRel_frequencies, True)
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
                                                                        columns_to_be_plotted=['DepRel'],
@@ -873,6 +881,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
 # NER ________________________________________________________________
 
                 elif 'NER' in str(annotator_params) and 'NER' in outputFilename:
+                    reminders_util.checkReminder(config_filename, reminders_util.NER_frequencies,
+                                                 reminders_util.message_NER_frequencies, True)
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[1] == "NER Tag":
                         # plot NER tag (e.g, LOCATION)
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,

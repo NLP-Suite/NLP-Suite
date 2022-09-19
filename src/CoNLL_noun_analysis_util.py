@@ -138,65 +138,29 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                                   'NER_stats')
 
     # save csv files -------------------------------------------------------------------------------------------------
+    # POS tags
 
-    # errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-    #                                      CoNLL_util.sort_output_list('Noun POS Tags', noun_postag),
-    #                                      noun_postag_file_name)
-    errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-                                          noun_postag,
-                                          noun_postag_file_name)
-    if errorFound == True:
-        return filesToOpen
-    df = pd.read_csv(noun_postag_file_name, header=None, encoding='utf-8',error_bad_lines=False)
-    df.to_csv(noun_postag_file_name,
-				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-					  "Noun POS Tags"])
-    filesToOpen.append(noun_postag_file_name)
+    df = pd.DataFrame(noun_postag_stats)
+    IO_csv_util.df_to_csv(GUI_util.window, df, noun_postag_stats_file_name, headers=None, index=False,
+                          language_encoding='utf-8')
 
-    # errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-    #                                      CoNLL_util.sort_output_list('Noun DEPREL Tags', noun_deprel),
-    #                                      noun_deprel_file_name)
-    errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-                                          noun_deprel,
-                                          noun_deprel_file_name)
-    if errorFound == True:
-        return filesToOpen
-    df = pd.read_csv(noun_deprel_file_name, header=None, encoding='utf-8',error_bad_lines=False)
-    df.to_csv(noun_deprel_file_name,
-				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-					  "Noun DEPREL Tags"])
-    filesToOpen.append(noun_deprel_file_name)
+    # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+    #       "Noun POS Tags"])
 
-    # errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-    #                                      CoNLL_util.sort_output_list('Noun NER Tags', noun_ner),
-    #                                      noun_ner_file_name)
-    errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-                                          noun_ner,
-                                          noun_ner_file_name)
-    if errorFound == True:
-        return filesToOpen
-    df = pd.read_csv(noun_ner_file_name, header=None, encoding='utf-8',error_bad_lines=False)
-    df.to_csv(noun_ner_file_name,
-				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-					  "Noun NER Tags"])
-    filesToOpen.append(noun_ner_file_name)
+    # DepRel
 
-    # save csv frequency files ----------------------------------------------------------------------------------------
+    df = pd.DataFrame(noun_deprel_stats)
+    IO_csv_util.df_to_csv(GUI_util.window, df, noun_deprel_stats_file_name, headers=None, index=False,
+                          language_encoding='utf-8')
 
-    errorFound = IO_csv_util.list_to_csv(GUI_util.window, noun_postag_stats,noun_postag_stats_file_name)
-    if errorFound == True:
-        return filesToOpen
-    filesToOpen.append(noun_postag_stats_file_name)
+    # NER
 
-    errorFound = IO_csv_util.list_to_csv(GUI_util.window, noun_deprel_stats, noun_deprel_stats_file_name)
-    if errorFound == True:
-        return filesToOpen
-    filesToOpen.append(noun_deprel_stats_file_name)
+    df = pd.DataFrame(noun_ner_stats)
+    IO_csv_util.df_to_csv(GUI_util.window, df, noun_ner_stats_file_name, headers=None, index=False,
+                          language_encoding='utf-8')
 
-    errorFound = IO_csv_util.list_to_csv(GUI_util.window, noun_ner_stats, noun_ner_stats_file_name)
-    if errorFound == True:
-        return filesToOpen
-    filesToOpen.append(noun_ner_stats_file_name)
+    # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+    #   "Noun DEPREL Tags"])
 
     if createCharts == True:
 
@@ -205,13 +169,14 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         columns_to_be_plotted=[[0,1]]
         count_var=0
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted, noun_postag_stats_file_name, outputDir,
-														 outputFileLabel='Nouns_POS',
-														 chartPackage=chartPackage,
-														 chart_type_list=['bar'],
-														 chart_title="Frequency Distribution of Nouns POS Tags",
-														 column_xAxis_label_var='Nouns POS Tag',
-														 hover_info_column_list=[],
-														 count_var=count_var)
+                                     outputFileLabel='Nouns_POS',
+                                     chartPackage=chartPackage,
+                                     chart_type_list=['bar'],
+                                     chart_title="Frequency Distribution of Nouns POS Tags",
+                                     column_xAxis_label_var='Nouns POS Tag',
+                                     hover_info_column_list=[],
+                                     count_var=count_var,
+                                     complete_sid=False)  # TODO to be changed
 
         if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
@@ -223,19 +188,21 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 														 chart_title="Frequency Distribution of Nouns DEPREL Tags",
 														 column_xAxis_label_var='Nouns DEPREL Tag',
 														 hover_info_column_list=[],
-														 count_var=count_var)
+														 count_var=count_var,
+                                                         complete_sid=False)  # TODO to be changed
 
         if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted, noun_ner_stats_file_name, outputDir,
-														 outputFileLabel='Nouns_NER',
-														 chartPackage=chartPackage,
-														 chart_type_list=['bar'],
-														 chart_title="Frequency Distribution of Nouns NER Tags",
-														 column_xAxis_label_var='Nouns NER Tag',
-														 hover_info_column_list=[],
-														 count_var=count_var)
+                                     outputFileLabel='Nouns_NER',
+                                     chartPackage=chartPackage,
+                                     chart_type_list=['bar'],
+                                     chart_title="Frequency Distribution of Nouns NER Tags",
+                                     column_xAxis_label_var='Nouns NER Tag',
+                                     hover_info_column_list=[],
+                                     count_var=count_var,
+                                     complete_sid=False)  # TODO to be changed
 
         if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)

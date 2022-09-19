@@ -160,60 +160,30 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	# print ("\nRun verb voice analysis")
 	data_prep = verb_voice_data_preparation(data)
 
-	verb_voice_list, voice_stats, vocie_pass, voice_aux, vocie_act = voice_output(data_prep, data_divided_sents)
+	verb_voice_list, voice_stats, voice_pass, voice_aux, voice_act = voice_output(data_prep, data_divided_sents)
 	# output file names
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice',
 																'list')
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
 																	'Verb Voice', 'stats')
 
-	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-											verb_voice_list,
-											verb_file_name)
-	if errorFound == True:
-		return
-	filesToOpen.append(verb_file_name)
-
-	# modified by Siyan Pu November 2021
-	# temporary headers added, not sure why the verb_voice_list doesn't have headers
-	df = pd.read_csv(verb_file_name, header=None, encoding='utf-8', error_bad_lines=False)
-	df.to_csv(verb_file_name,
-				header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-						"Verb Voice"])
-	errorFound = IO_csv_util.list_to_csv(GUI_util.window, voice_stats, verb_stats_file_name)
-	if errorFound == True:
-		return filesToOpen
-	# filesToOpen.append(verb_stats_file_name)
-
+	# convert list to dataframe and save
+	df = pd.DataFrame(voice_stats)
+	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
+						  language_encoding='utf-8')
 	if createCharts == True:
-		columns_to_be_plotted=[[0,1]]
-		count_var=0
+		columns_to_be_plotted = [[0, 1]]
+		count_var = 0
 		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
-														 outputFileLabel='verb_voice',
-														 chartPackage=chartPackage,
-														 chart_type_list=['bar'],
-														 chart_title="Frequency Distribution of Verb Voice",
-														 column_xAxis_label_var='Verb Voice',
-														 hover_info_column_list=[],
-														 count_var=count_var)
+												   outputFileLabel='verb_stats',
+												   chartPackage=chartPackage,
+												   chart_type_list=['bar'],
+												   chart_title="Frequency Distribution of Verb Voice",
+												   column_xAxis_label_var='Verb voice',
+												   hover_info_column_list=[],
+												   count_var=count_var)
 		if chart_outputFilename != None:
-			if len(chart_outputFilename) > 0:
-				filesToOpen.append(chart_outputFilename)
-
-		columns_to_be_plotted=[[11,14]] # sentence ID field comes first [11
-		count_var=0
-		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, verb_file_name, outputDir,
-														 outputFileLabel='verb_voice',
-														 chartPackage=chartPackage,
-														 chart_type_list=['line'],
-														 chart_title="Frequency Distribution of Verb Voice by Sentence Index",
-														 column_xAxis_label_var='Verb Voice',
-														 hover_info_column_list=[],
-														 count_var=count_var,
-														 complete_sid=True)
-		if chart_outputFilename != None:
-			if len(chart_outputFilename) > 0:
-				filesToOpen.append(chart_outputFilename)
+			filesToOpen.append(chart_outputFilename)
 
 	return filesToOpen
 
@@ -294,42 +264,23 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
 																   'Verb Modality', 'stats')
 
-	# errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-	# 								 CoNLL_util.sort_output_list('Verb Modality', modality_list),
-	# 								 verb_file_name)
-	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-										 obligation_list,
-										 verb_file_name)
-	if errorFound == True:
-		return filesToOpen
-	filesToOpen.append(verb_file_name)
-
-	errorFound = IO_csv_util.list_to_csv(GUI_util.window, modality_stats, verb_stats_file_name)
-	if errorFound == True:
-		return filesToOpen
-	filesToOpen.append(verb_stats_file_name)
-
+	df = pd.DataFrame(modality_stats)
+	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
+						  language_encoding='utf-8')
 	if createCharts == True:
-		columns_to_be_plotted=[[0,1]]
-		count_var=0
+		columns_to_be_plotted = [[0, 1]]
+		count_var = 0
 		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
-														 outputFileLabel='verb_modality',
-														 chartPackage=chartPackage,
-														 chart_type_list=['bar'],
-														 chart_title="Frequency Distribution of Verb Modality",
-														 column_xAxis_label_var='Verb Modality',
-														 hover_info_column_list=[],
-														 count_var=count_var)
+												   outputFileLabel='verb_mod',
+												   chartPackage=chartPackage,
+												   chart_type_list=['bar'],
+												   chart_title="Frequency Distribution of Verb Modality",
+												   column_xAxis_label_var='Verb modality',
+												   hover_info_column_list=[],
+												   count_var=count_var,
+												   complete_sid=False)  # TODO to be changed
 		if chart_outputFilename != None:
-			if len(chart_outputFilename) > 0:
-				filesToOpen.append(chart_outputFilename)
-
-		# temporary headers added, not sure why the verb_voice_list doesn't have headers
-		df = pd.read_csv(verb_file_name, header=None, encoding='utf-8', error_bad_lines=False)
-		df.to_csv(verb_file_name,
-				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-					  "Verb Modality"])
-
+			filesToOpen.append(chart_outputFilename)
 
 	return filesToOpen
 
@@ -419,20 +370,9 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
 																   'Verb Tense', 'stats')
 
-	# errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-	# 								 CoNLL_util.sort_output_list('Verb Tense', tense_list),
-	# 								 verb_file_name)
-	errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-										 verb_tense_list,
-										 verb_file_name)
-	if errorFound == True:
-		return filesToOpen
-	filesToOpen.append(verb_file_name)
-
-	errorFound = IO_csv_util.list_to_csv(GUI_util.window, verb_tense_stats, verb_stats_file_name)
-	if errorFound == True:
-		return filesToOpen
-	filesToOpen.append(verb_stats_file_name)
+	df = pd.DataFrame(verb_tense_stats)
+	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
+						  language_encoding='utf-8')
 
 	if createCharts == True:
 		columns_to_be_plotted=[[0,1]]
@@ -442,19 +382,20 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 														 chartPackage=chartPackage,
 														 chart_type_list=['bar'],
 														 chart_title="Frequency Distribution of Verb Tense",
-														 column_xAxis_label_var='Verb Tense',
+														 column_xAxis_label_var='Verb tense',
 														 hover_info_column_list=[],
-														 count_var=count_var)
+														 count_var=count_var,
+												   		 complete_sid=False)  # TODO to be changed
 		if chart_outputFilename != None:
 			if len(chart_outputFilename) > 0:
 				filesToOpen.append(chart_outputFilename)
 
 		# # temporary headers added, not sure why the verb_voice_list doesn't have headers
-		df = pd.read_csv(verb_file_name, header=None, encoding='utf-8', error_bad_lines=False)
-		df.to_csv(verb_file_name,
-				  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-					  "Verb Tense"])
-
+		# df = pd.read_csv(verb_file_name, header=None, encoding='utf-8', error_bad_lines=False)
+		# df.to_csv(verb_file_name,
+		# 		  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+		# 			  "Verb Tense"])
+		#
 	return filesToOpen
 
 def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
@@ -468,17 +409,17 @@ def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sen
 								   openOutputFiles, createCharts, chartPackage)
 
 	if outputFiles != None:
-		filesToOpen.append(outputFiles)
+		filesToOpen.extend(outputFiles)
 
 	outputFiles = verb_modality_stats(config_filename, inputFilename, outputDir, data, data_divided_sents,
 									  openOutputFiles, createCharts, chartPackage)
 	if outputFiles != None:
-		filesToOpen.append(outputFiles)
+		filesToOpen.extend(outputFiles)
 
 	outputFiles = verb_tense_stats(inputFilename, outputDir, data, data_divided_sents,
 								   openOutputFiles, createCharts, chartPackage)
 	if outputFiles != None:
-		filesToOpen.append(outputFiles)
+		filesToOpen.extend(outputFiles)
 
 	IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running VERB ANALYSES at', True,
 									   '', True, startTime, True)
