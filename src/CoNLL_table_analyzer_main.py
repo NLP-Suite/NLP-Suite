@@ -39,6 +39,10 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         verb_analysis_var,
         function_words_analysis_var):
 
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='GISCoNLL_anlz',
+                                                              silent=True)
+
     global recordID_position, documentId_position, data, data_divided_sents
     recordID_position = 9 # NEW CoNLL_U
     documentId_position = 11 # NEW CoNLL_U

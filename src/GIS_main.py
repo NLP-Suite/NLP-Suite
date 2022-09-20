@@ -58,12 +58,6 @@ def run(inputFilename,
         GIS_package2_var):
 
 
-    # create a subdirectory of the output directory
-    outputGISDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
-                                                              silent=True)
-
-    outputDir = outputGISDir
-
     filesToOpen = []
     locationColumnName=''
 
@@ -202,7 +196,7 @@ def run(inputFilename,
         #   any changes to the columns will result in error
         # out_file includes both kml file and Google Earth files
         out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
-                        NER_outputFilename,outputDir,
+                        NER_outputFilename, inputDir, outputDir,
                         'Nominatim', GIS_package_var, createCharts, chartPackage,
                         datePresent,
                         country_bias,

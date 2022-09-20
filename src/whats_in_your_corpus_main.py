@@ -532,7 +532,7 @@ def run(inputFilename,inputDir, outputDir,
         # locationColumnName where locations to be geocoded (or geocoded) are stored in the csv file;
         #   any changes to the columns will result in error
         out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
-                        NER_outputFilename,outputDir_what_else,
+                        NER_outputFilename,inputDir, outputDir_what_else,
                         geocoder, GIS_package_var, createCharts, chartPackage,
                         datePresent,
                         country_bias,

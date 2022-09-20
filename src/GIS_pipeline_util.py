@@ -74,7 +74,7 @@ def getGoogleAPIkey(Google_config, display_key=False):
 
 # the list of arguments reflect the order of widgets in the Google_Earth_main GUI
 # processes one file at a time
-def GIS_pipeline(window, config_filename, inputFilename, outputDir,
+def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                         geocoder, mapping_package, createCharts, chartPackage,
                         datePresent,
                         country_bias,
@@ -88,6 +88,9 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                         bold_var_list, italic_var_list,
                         description_var_list=[], description_csv_field_var_list=[]):
 
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
+                                                              silent=True)
 
     filesToOpen=[]
 
@@ -201,6 +204,7 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
     else:
         geocodedLocationsOutputFilename = inputFilename
         locationsNotFoundoutputFilename = ''
+        locationsNotFoundNonDistinctoutputFilename = ''
 
     if len(locations) > 0 and inputIsCoNLL == True:
         # locations contains the following values:
@@ -239,26 +243,27 @@ def GIS_pipeline(window, config_filename, inputFilename, outputDir,
                     filesToOpen.extend(chart_outputFilename)
 
     # -1 to account for header record
-    nRecordsNotFound, nColumns  = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(locationsNotFoundNonDistinctoutputFilename)
-    if locationsNotFoundNonDistinctoutputFilename != '' and nRecordsNotFound -1>0:
-        filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
-        if createCharts:
-            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
-                                                                   outputDir,
-                                                                   columns_to_be_plotted=['Location'],
-                                                                   chartTitle='Frequency Distribution of Locations not Found by ' + geocoder,
-                                                                   # count_var = 1 for columns of alphabetic values
-                                                                   count_var=1, hover_label=[],
-                                                                   outputFileNameType='not-found',  # 'NER_tag_bar',
-                                                                   column_xAxis_label='Locations',
-                                                                   groupByList=[],
-                                                                   plotList=[],
-                                                                   chart_title_label='')
-            if chart_outputFilename != None:
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
+    if locationsNotFoundNonDistinctoutputFilename!='':
+        nRecordsNotFound, nColumns  = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(locationsNotFoundNonDistinctoutputFilename)
+        if nRecordsNotFound -1>0:
+            filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
+            if createCharts:
+                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
+                                                                       outputDir,
+                                                                       columns_to_be_plotted=['Location'],
+                                                                       chartTitle='Frequency Distribution of Locations not Found by ' + geocoder,
+                                                                       # count_var = 1 for columns of alphabetic values
+                                                                       count_var=1, hover_label=[],
+                                                                       outputFileNameType='not-found',  # 'NER_tag_bar',
+                                                                       column_xAxis_label='Locations',
+                                                                       groupByList=[],
+                                                                       plotList=[],
+                                                                       chart_title_label='')
+                if chart_outputFilename != None:
+                    if len(chart_outputFilename) > 0:
+                        filesToOpen.extend(chart_outputFilename)
 
-    if createCharts:
+    if createCharts and locationsNotFoundNonDistinctoutputFilename!='':
         # save to csv file and run visualization
         outputFilename= IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv','found-notFound')
         with open(outputFilename, "w", newline="", encoding='utf-8', errors='ignore') as csvFile:

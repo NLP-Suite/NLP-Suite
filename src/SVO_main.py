@@ -672,7 +672,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     restrict = False
                     for location_filename in outputLocations:
                         out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
-                                     config_filename, location_filename,
+                                     config_filename, location_filename, inputDir,
                                      outputDir,
                                      'Nominatim', 'Google Earth Pro & Google Maps', createCharts, chartPackage,
                                      date_present,
