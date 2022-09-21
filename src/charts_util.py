@@ -117,10 +117,18 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
             return filesToOpen
         # the run_all always expects a double list with 2 values, e.g., [[0,0], [1,1]
         #   so, when only one field is passed, we add the same field twice
-        columns_to_be_plotted_numeric.append([field_number, field_number])
+        if len(columns_to_be_plotted)==1:
+            columns_to_be_plotted_numeric.append([field_number, field_number])
+        else:
+            columns_to_be_plotted_numeric.append(field_number)
+
+    # run_all requires a double list
+    if len(columns_to_be_plotted) > 1:
+        columns_to_be_plotted_numeric=[columns_to_be_plotted_numeric]
 
     if "Document ID" in headers:
         docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID', inputFilename)
+        # both Document ID and Document
         columns_to_be_plotted_byDoc = [[docCol, docCol + 1]]
         byDoc = True
     else:
@@ -133,14 +141,14 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 
     # TODO depends on how many documents we have
     if byDoc:
-        n_documents = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename)
+        n_documents = IO_csv_util.GetMaxValueInCSVField(inputFilename,'visualize_charts_util','Document ID')
     # when pivoting data
     # columns_to_be_plotted_bySent = []
     # for i in range(1, n_documents):
     #     columns_to_be_plotted_bySent.append([0, i])
     count_var_SV = count_var
 
-    nRecords = IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename)
+    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
 
     print("\n\n\nRecords in inputfile",nRecords, '  ', inputFilename)
 # standard bar chart ------------------------------------------------------------------------------
@@ -243,14 +251,19 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     new_inputFilename=inputFilename
                     # when plotting numeric values (count_var=0) get the columns to be plotted
                     #   from the values passed for standard bar and using the Document column number
-                    for i in range(len(columns_to_be_plotted_numeric)):
-                        try:
-                            item = [columns_to_be_plotted_byDoc[0][1], columns_to_be_plotted_numeric[i][0]]
-                        except:
-                            break
-                        columns_to_be_plotted_byDoc_expanded.append(item)
-                    columns_to_be_plotted_byDoc=columns_to_be_plotted_byDoc_expanded
-
+                    # TODO Roby temporary
+                    # for i in range(len(columns_to_be_plotted_numeric)):
+                    #     try:
+                    #         item = [columns_to_be_plotted_byDoc[0][1], columns_to_be_plotted_numeric[i][0]]
+                    #     except:
+                    #         break
+                    #     columns_to_be_plotted_byDoc_expanded.append(item)
+                    # columns_to_be_plotted_byDoc=columns_to_be_plotted_byDoc_expanded
+                    # remove first item in list, the X-axis label substituted by doc
+                    columns_to_be_plotted_numeric[0].pop(0)
+                    columns_to_be_plotted_numeric[0].insert(0,docCol+1)
+                    columns_to_be_plotted_byDoc = columns_to_be_plotted_numeric
+                # columns_to_be_plotted_byDoc=[[5,0,2,0,3]]
                 if outputFileNameType != '':
                     outputFileLabel = 'byDoc_' + outputFileNameType
                 else:

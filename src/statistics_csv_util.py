@@ -99,8 +99,8 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, cre
     if columnNumber > -1:
         loopValue=[columnNumber]
     else:
-        numberOfColumns= IO_csv_util.get_csvfile_numberofColumns(inputFilename)
-        loopValue=range(numberOfColumns)
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
+        loopValue=range(nColumns)
     # insert headers
     headers=['Column header','Number of documents',
              'Count','Mean','Mode','Median','Standard deviation','Minimum','Maximum',

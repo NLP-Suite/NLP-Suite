@@ -237,8 +237,8 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
 
     filesToOpen = []
 
-    if IO_csv_util.GetNumberOfRecordInCSVFile(svo_file_name,encodingValue='utf-8')>1:
-
+    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_file_name)
+    if nRecords>1:
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
                                                            outputDir,
                                                            columns_to_be_plotted=['Subject (S)'],

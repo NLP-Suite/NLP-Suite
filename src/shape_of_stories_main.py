@@ -118,7 +118,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             return
 
     if hierarchical_clustering or SVD or NMF or best_topic_estimation:
-        nSAscoreFiles = IO_csv_util.GetNumberOfDocumentsInCSVfile(sentiment_scores_input, 'Shape of Stories')
+        nSAscoreFiles = IO_csv_util.GetMaxValueInCSVField(sentiment_scores_input, 'Shape of Stories', 'Document ID')
 
         # step 2: vectorize
         # the sentiment_scores_input can either be a single merged csv file or a directory with multiple SA scores files
@@ -435,7 +435,7 @@ def check_IO_requirements(inputFilename, inputDir):
 
         computeSAScores = False
 
-        nSAscoreFiles = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename,'Shape of Stories')
+        nSAscoreFiles = IO_csv_util.GetMaxValueInCSVField(inputFilename,'Shape of Stories','Document ID')
         if nSAscoreFiles == 0:
             return
 
@@ -483,7 +483,7 @@ def check_IO_requirements(inputFilename, inputDir):
     # check input file that must be a csv file containing sentiment analysis score of any data reduction options are ticked
     if inputFilename!='' and sentiment_analysis_var.get() == False and corpus_analysis_var.get() == False and (
             hierarchical_clustering_var.get() == True or SVD_var.get() == True or NMF_var.get() == True):
-        nSAscoreFiles = IO_csv_util.GetNumberOfDocumentsInCSVfile(inputFilename,'Shape of Stories')
+        nSAscoreFiles = IO_csv_util.GetMaxValueInCSVField(inputFilename,'Shape of Stories','Document ID')
         if nSAscoreFiles == 0:
             Error = True
             return Error

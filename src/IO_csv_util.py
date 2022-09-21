@@ -86,10 +86,12 @@ def get_columnNumber_from_headerValue(headers,header_value, inputFilename):
     for i in range(len(headers)):
         if header_value == headers[i]:
             column_number = i
-            break
-    if column_number==None:
-        IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Wrong header value',
-                                           'csv filename: ' + inputFilename + '\n  Header "' + str(header_value) + '" not found among file headers ' + str(headers),False,'',True)
+            if column_number == None:
+                IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Wrong header value',
+                                                   'csv filename: ' + inputFilename + '\n  Header values "' + str(
+                                                       header_value) + '" not found among file headers ' + str(headers),
+                                                   False, '', True)
+                break
     return column_number
 
 # convert header alphabetic value for CSV files with or without headers to its numeric column value
@@ -125,83 +127,33 @@ def get_csv_field_values(inputFilename, column_name):
         # the list is sorted with proper names, with capital initial first, then the improper names
     return list(sorted_unique_values)
 
-# get the number of columns of a csv file
-def get_csvfile_numberofColumns (csvFile):
-    countColumns=0
-    if csvFile!='':
-        with open(csvFile,'r',encoding="utf-8",errors='ignore') as f:
-            reader = csv.reader(f)
-            try:
-                first_row=next(reader)
-            except:
-                mb.showwarning(title='Warning', message='The csv file\n\n' + str(csvFile) + '\n\nis empty.')
-                return
-            countColumns = len(first_row)
-            f.seek(0)
-    return countColumns
-
-
-def GetNumberOfRecordInCSVFile(inputFilename,encodingValue='utf-8'):
-    with open(inputFilename,'r',encoding=encodingValue,errors='ignore') as f:
-        return sum(1 for line in f)
+# get the number of records and columns of a csv file
+def GetNumberOf_Records_Columns_inCSVFile(inputFilename,encodingValue='utf-8'):
+    maxnum = pd.read_csv(inputFilename, encoding=encodingValue).shape
+    return maxnum # tuple with first value number of records, second value number of columns
 
 # inputFile has path
-def GetNumberOfDocumentsInCSVfile(inputFilename,algorithm='',columnHeader='Document ID',encodingValue='utf-8'):
-    msg = ""
-    maxnum = 0
-    with open(inputFilename,encoding=encodingValue,errors='ignore') as f:
-        reader = csv.reader(f)
-        next(reader) # skip header row
-        headers=get_csvfile_headers(inputFilename)
-        if (columnHeader!= '') and (not columnHeader in str(headers)):
-            if algorithm!='':
-                msg = "\n\nThe '" + algorithm + "' algorithm requires in input a csv file with a '" + columnHeader + "' column."
-            mb.showwarning(title='csv file error',
-                           message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + columnHeader + msg + "\n\nPlease, select a different csv file in input and try again!")
-            return 0
-        columnNumber=get_columnNumber_from_headerValue(headers,columnHeader, inputFilename)
-        val_list = list()
-        for column in reader:
-            try:
-                val_list.append(int(float(column[columnNumber].replace(',', ''))))
-            except:
-                pass
-        if len(val_list)>0:
-            maxnum = max(val_list)
-            # the following line would break in the presence of a blank field in column
-            # maxnum = max(int(column[columnNumber].replace(',', '')) for column in reader)
-        f.close()
-    return maxnum
-
-# inputFile has path
-def GetNumberOfSentencesInCSVfile(inputFilename,algorithm,columnHeader='Sentence ID',encodingValue='utf-8'):
-    with open(inputFilename,encoding=encodingValue,errors='ignore') as f:
-        reader = csv.reader(f)
-        next(reader) # skip header row
-        headers=get_csvfile_headers(inputFilename)
-        if not columnHeader in str(headers):
-            mb.showwarning(title='csv file error',
-                           message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + columnHeader + "\n\nThe '" + algorithm + "' algorithm requires in input a csv file with a \'Sentence ID\' column.\n\nPlease, select a different csv file in input and try again!")
-            return 0
-        columnNumber = get_columnNumber_from_headerValue(headers, columnHeader, inputFilename)
-
-        val_list = list()
-        for column in reader:
-            try:
-                val_list.append(int(float(column[columnNumber].replace(',', ''))))
-            except:
-                pass
-        maxnum = max(val_list)
-        # the following line would break in the presence of a blank field in column
-        # maxnum = max(int(column[columnNumber].replace(',', '')) for column in reader)
-        f.close()
-    return maxnum
+def GetMaxValueInCSVField(inputFilename,algorithm='',columnHeader='Document ID',encodingValue='utf-8'):
+    df = pd.read_csv(inputFilename)
+    try:
+        column = df[columnHeader]
+    except:
+        if algorithm != '':
+            msg = "\n\nThe '" + algorithm + "' algorithm requires in input a csv file with a '" + columnHeader + "' column."
+        mb.showwarning(title='csv file error',
+                       message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + columnHeader + msg + "\n\nPlease, select a different csv file in input and try again!")
+        return 0
+    maxvalue = column.max()
+    return maxvalue
 
 
 # triggered by a df.to_csv
 # headers is a list []
 def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, language_encoding='utf-8'):
     try:
+        # when the dataframe already includes headers (e.g., in all CoNLL table analyzer functions)
+        #   you do not want to add a header then header=None;
+        #   however, if you pass a header, then you cannot have header=None or a header will never be saved
         if headers!=None:
             data_frame.to_csv(outputFilename, columns=headers, index=False, encoding=language_encoding)
         else:
@@ -212,44 +164,21 @@ def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, lang
         return ''
 
 # list_output has the following type format [['PRONOUN ANALYSIS','FREQUENCY'], ['PRP', 105], ['PRP$', 11], ['WP', 5], ['WP$', 0]]
-# path_output is the name of the outputfile with path
+# output_filename is the name of the outputfile with path
 # returns True when an error is found
-def list_to_csv(window,list_output,path_output,colnum=0, encoding='utf-8'):
+
+# TODO this is a quick way to still use the old-fashioned way of saving a csv fle
+def list_to_csv(window,list_output,output_filename,colnum=0, encoding='utf-8'):
     error = False
     if not isinstance(list_output, list):
         return True
     #if a specific column number is given, generate only the colnum columns as output
     if colnum!=0:
         list_output = [i[:colnum] for i in list_output]
-    #when writing a csv file newline='' prevents writing an extra blank line after every record
-    #bad non utf-8 characters may be exported in lines when checking for non utf-8 characters
-    with open(path_output,'w',newline='', encoding=encoding,errors='surrogateescape') as csvFile:
-    # with open(path_output,'w',newline='', encoding='utf-8',errors='ignore') as csvFile: #bad non utf-8 characters may be exported in lines when checking for non utf-8 characters
-        writer = csv.writer(csvFile)
-        # saving the case of a single list, for example
-        # ['inheriting', 'instilled', 'interacting', 'looked', 'loved', 'nyc', 'paused', 'seemed']
-        # https://stackoverflow.com/questions/26621634/python-adding-a-blank-empty-column-csv
-        # TODO this seems much ado about nothing
-        try:
-            if isinstance(list_output[0], list):
-                # case of list of list, for example
-                # [['PRONOUN ANALYSIS','FREQUENCY'], ['PRP', 105],...]
-                writer.writerows(list_output)
-            else:
-                current = list_output
-                for item in current:
-                    writer.writerow([item])
-        except OSError as e:
-            if 'Invalid argument' in str(e):
-                mb.showwarning(title='Output file error',
-                               message="Could not write the file\n\n" + path_output + "\n\nThe filename contains an invalid argument. Please, check the filename and try again!")
-            elif 'Permission denied' in str(e):
-                mb.showwarning(title='Output file error', message="Could not write the file " + path_output + "\n\nA file with the same name is already open. Please, close the csv file and try again!")
-            else:
-                mb.showwarning(title='Output file error',
-                               message="Could not write the file " + path_output + "\n\nThe following error occurred while opening the file in output:\n\n" + str(e) + "\n\nPlease, close the Excel file and try again!")
-            error = True
-    csvFile.close()
+
+    # convert list to dataframe
+    df = pd.DataFrame(list_output)
+    df_to_csv(GUI_util.window, df, output_filename)
     return error
 
 

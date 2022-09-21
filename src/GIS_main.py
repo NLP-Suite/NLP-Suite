@@ -57,6 +57,10 @@ def run(inputFilename,
         GIS_package_var,
         GIS_package2_var):
 
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
+                                                              silent=True)
+
     filesToOpen = []
     locationColumnName=''
 
@@ -195,7 +199,7 @@ def run(inputFilename,
         #   any changes to the columns will result in error
         # out_file includes both kml file and Google Earth files
         out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
-                        NER_outputFilename,outputDir,
+                        NER_outputFilename, inputDir, outputDir,
                         'Nominatim', GIS_package_var, createCharts, chartPackage,
                         datePresent,
                         country_bias,
@@ -456,7 +460,7 @@ def get_csv_file(window,title,fileType,annotate):
     filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
 
     if len(filePath)>0:
-        nRecords=IO_csv_util.GetNumberOfRecordInCSVFile(filePath, 'utf-8')
+        nRecords, nColumns =IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
         if nRecords==0:
             mb.showwarning(title='Warning',
                            message="The selected input csv file is empty.\n\nPlease, select a different file and try again.")

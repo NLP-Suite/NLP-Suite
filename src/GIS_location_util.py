@@ -19,6 +19,10 @@ import IO_user_interface_util
 # InputCodedCsvFile is the geocoded file
 # the function matches the records of the location file, with sentences, and the geocoded data with lat and long
 def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_name):
+
+	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS extract_index ', 'Started running extract_index algorithm at',
+												   True, '', True, '', silent=True)
+
 	geo_index = 0
 	index = 0
 	index_list = {}
@@ -60,7 +64,11 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 					break
 		index_list[index] = True
 
-	return [i + 1 for i in index_list.keys()], data, headers, location_num
+	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS extract_index', 'Finished running extract_index algorithm at', True, '',
+									   True, startTime, silent=True)
+
+	list_to_return=[i + 1 for i in index_list.keys()], data, headers, location_num
+	return list_to_return
 
 #the CoNLL table includes the filename; the position in the table varies with old and new CoNLL
 # returns filename, location, sentence, date (if present)

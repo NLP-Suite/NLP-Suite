@@ -306,7 +306,7 @@ corefed_txt_file_button=tk.Button(window, width=GUI_IO_util.select_file_director
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                    corefed_txt_file_button,
                                    True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
-                                   "Click on the butto to select a previosuly coreferenced txt file for further manual coreference")
+                                   "Click on the button to select a previosuly coreferenced txt file for further manual coreference")
 
 #setup a button to open Windows Explorer on the selected input directory
 openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, corefed_txt_file_var.get()))

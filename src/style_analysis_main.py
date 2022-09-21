@@ -90,11 +90,19 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
 
         # word n-grams
         if ngrams_word_var or bySentenceIndex_word_var:
-            statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
+            # create a subdirectory of the output directory
+            outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='Ngrams',
+                                                               silent=True)
+            outputFiles = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, ngrams_size, normalize,
                                                               excludePunctuation, 1, 0, openOutputFiles,
                                                               createCharts, chartPackage,
+
                                                               bySentenceIndex_word_var)
+            if outputFiles!=None:
+                if len(outputFiles) > 0:
+                    filesToOpen.append(outputFiles)
+
         # character n-grams
         if ngrams_character_var or bySentenceIndex_character_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
