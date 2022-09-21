@@ -177,7 +177,8 @@ def geocode(window,locations, inputFilename, outputDir,
 
 	geolocator = get_geolocator(geocoder,Google_API)
 
-	inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
+	inputIsCoNLL, inputIsGeocoded, withHeader, \
+		headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
 
 	startTime=IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Started geocoding locations via the online service '" + geocoder + "' at",
 												 True, '', True,'',True)
@@ -195,8 +196,6 @@ def geocode(window,locations, inputFilename, outputDir,
 	locationsNotFoundNonDistinctoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
 																			geoName, 'Not-Found-Non-Distinct', locationColumnName, '',
 																			False, True)
-	# TODO create kml file output name
-
 	if locations=='':
 		outputCsvLocationsOnly = ''
 		if inputIsCoNLL == True:
@@ -356,7 +355,25 @@ def geocode(window,locations, inputFilename, outputDir,
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, date])
 					else:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address])
-			# TODO create kml record
+
+				# # TODO create kml record
+				# TODO for date see above
+				# we must get the sentence
+				# import simplekml
+				# import GIS_Google_pin_util
+				# kml = simplekml.Kml()
+				# # Icon selection
+				# icon_url = 'http://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png'
+				#
+				# pnt = kml.newpoint(coords=[(lng, lat)])  # wants to be read in in lng, lat order
+				# pnt.style.iconstyle.icon.href = icon_url
+				# #	the code breaks in pin_customizer
+				# #	we would need to process inputfile rather inputFilename
+				# index_list=[]
+				# index_list=GIS_location_util.extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_name)
+				# pnt = GIS_Google_pin_util.pin_customizer(inputFilename, pnt, index, index_list,
+				# 								 locationColumnName,sentence)
+
 	[geowriterNotFoundNonDistinct.writerow([item[0], item[1]]) for item in nonDistinctNotGeocodedFull]
 	csvfile.close()
 	csvfileNotFound.close()

@@ -93,6 +93,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     country_bias = ''
     area_var = ''
     restrict = False
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
+                                                            silent=True)
+
     filesToOpen = GIS_pipeline_util.GIS_pipeline(GUI_util.window,config_filename,
                                        inputFilename, inputDir, outputDir,
                                        geocoder, 'Google Earth Pro', createCharts, chartPackage,

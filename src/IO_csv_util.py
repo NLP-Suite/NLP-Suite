@@ -86,10 +86,12 @@ def get_columnNumber_from_headerValue(headers,header_value, inputFilename):
     for i in range(len(headers)):
         if header_value == headers[i]:
             column_number = i
-            break
-    if column_number==None:
-        IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Wrong header value',
-                                           'csv filename: ' + inputFilename + '\n  Header "' + str(header_value) + '" not found among file headers ' + str(headers),False,'',True)
+            if column_number == None:
+                IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Wrong header value',
+                                                   'csv filename: ' + inputFilename + '\n  Header values "' + str(
+                                                       header_value) + '" not found among file headers ' + str(headers),
+                                                   False, '', True)
+                break
     return column_number
 
 # convert header alphabetic value for CSV files with or without headers to its numeric column value

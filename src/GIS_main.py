@@ -57,6 +57,9 @@ def run(inputFilename,
         GIS_package_var,
         GIS_package2_var):
 
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
+                                                              silent=True)
 
     filesToOpen = []
     locationColumnName=''

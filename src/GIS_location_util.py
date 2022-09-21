@@ -67,7 +67,8 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS extract_index', 'Finished running extract_index algorithm at', True, '',
 									   True, startTime, silent=True)
 
-	return [i + 1 for i in index_list.keys()], data, headers, location_num
+	list_to_return=[i + 1 for i in index_list.keys()], data, headers, location_num
+	return list_to_return
 
 #the CoNLL table includes the filename; the position in the table varies with old and new CoNLL
 # returns filename, location, sentence, date (if present)

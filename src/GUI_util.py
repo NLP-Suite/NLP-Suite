@@ -960,7 +960,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # there is no RUN button when setting up IO information in NLP_setup_IO_main.py
     #   or in any of the GUIs that are ALL options GUIs
-    if not "IO_setup_main" in scriptName \
+    if not "NLP_setup_" in scriptName \
             and not "ALL_main" in scriptName:
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate,

@@ -43,7 +43,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='GISCoNLL_anlz',
                                                               silent=True)
 
-    global recordID_position, documentId_position, data, data_divided_sents
+    global recordID_position, documentId_position, data, all_CoNLL_records
     recordID_position = 9 # NEW CoNLL_U
     documentId_position = 11 # NEW CoNLL_U
 
@@ -62,10 +62,10 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
     data, header = IO_csv_util.get_csv_data(inputFilename, withHeader)
     if len(data) == 0:
         return
-    data_divided_sents = CoNLL_util.sentence_division(data)
-    if data_divided_sents == None:
+    all_CoNLL_records = CoNLL_util.CoNLL_record_division(data)
+    if all_CoNLL_records == None:
         return
-    if len(data_divided_sents) == 0:
+    if len(all_CoNLL_records) == 0:
         return
 
     right_hand_side = False
@@ -97,7 +97,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         import CoNLL_clause_analysis_util
         outputFiles = CoNLL_clause_analysis_util.clause_stats(inputFilename, '', outputDir,
                                                               data,
-                                                              data_divided_sents,
+                                                              all_CoNLL_records,
                                                               openOutputFiles, createCharts,chartPackage)
         if outputFiles != None:
             filesToOpen.extend(outputFiles)
@@ -106,7 +106,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
 
     if noun_analysis_var:
         import CoNLL_noun_analysis_util
-        outputFiles = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, data_divided_sents,
+        outputFiles = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, all_CoNLL_records,
                                                           openOutputFiles, createCharts, chartPackage)
         if outputFiles != None:
             filesToOpen.extend(outputFiles)
@@ -116,7 +116,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
     if verb_analysis_var == True:
         import CoNLL_verb_analysis_util
 
-        outputFiles = CoNLL_verb_analysis_util.verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents,
+        outputFiles = CoNLL_verb_analysis_util.verb_stats(config_filename, inputFilename, outputDir, data, all_CoNLL_records,
                                                           openOutputFiles, createCharts, chartPackage)
 
         if outputFiles != None:
@@ -128,7 +128,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         import CoNLL_function_words_analysis_util
 
         outputFiles = CoNLL_function_words_analysis_util.function_words_stats(inputFilename, outputDir, data,
-                                                                              data_divided_sents, openOutputFiles,
+                                                                              all_CoNLL_records, openOutputFiles,
                                                                               createCharts, chartPackage)
         if outputFiles != None:
             filesToOpen.extend(outputFiles)
@@ -204,12 +204,12 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                                message="The CoNLL table is ill formed. You may have tinkered with it. Please, rerun the Stanford CoreNLP parser since many scripts rely on the CoNLL table.")
                 return
 
-        if len(data) == 0:
-            return
-        all_sents = CoNLL_util.sentence_division(data)
-        if len(all_sents) == 0:
-            return
-        queried_list = CoNLL_table_search_util.search_CoNLL_table(all_sents, searchField_kw, searchedCoNLLField,
+        # if len(data) == 0:
+        #     return
+        # all_CoNLL_records = CoNLL_util.sentence_division(data)
+        # if len(all_CoNLL_records) == 0:
+        #     return
+        queried_list = CoNLL_table_search_util.search_CoNLL_table(all_CoNLL_records, searchField_kw, searchedCoNLLField,
                                                                   related_token_POSTAG=co_postag,
                                                                   related_token_DEPREL=co_deprel, _tok_postag_=postag,
                                                                   _tok_deprel_=deprel)
@@ -467,7 +467,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
     y_multiplier_integer,
     entry_searchField_kw,
     False, False, False, False, 90, GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position,
-    "Enter the string that you wuld like to search. All searches are done WITHIN EACH SENTENCE.")
+    "Enter the CASE SENSITIVE word that you would like to search (* for any word). All searches are done WITHIN EACH SENTENCE for the EXACT word.")
 
 # Search type var (FORM/LEMMA)
 searchedCoNLLField.set('FORM')
@@ -1005,7 +1005,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "ON THE LEFT-HAND SIDE, please, enter the token (i.e., word) to be searched. ENTER * TO SEARCH FOR ANY TOKEN/WORD.\n\nTHE SELECT OUTPUT BUTTON IS DISABLED UNTIL A SEARCHED TOKEN HAS BEEN ENTERED.\n\nDO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN. n\nThe program will search all the tokens related to this token in the CoNLL table. For example, if the the token wife is entered, the program will search in each dependency tree (i.e., each sentence) all the tokens whose head is the token wife, and the head of the token wife." + right_msg + GUI_IO_util.msg_Esc)
+                                  "ON THE LEFT-HAND SIDE, please, enter the CASE SENSITIVE token (i.e., word) to be searched (enter * for any word). ENTER * TO SEARCH FOR ANY TOKEN/WORD. The EXACT word will be searched (e.g., if you enter 'American', any instances of 'America' will not be found).\n\nTHE SELECT OUTPUT BUTTON IS DISABLED UNTIL A SEARCHED TOKEN HAS BEEN ENTERED.\n\nDO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN. n\nThe program will search all the tokens related to this token in the CoNLL table. For example, if the the token wife is entered, the program will search in each dependency tree (i.e., each sentence) all the tokens whose head is the token wife, and the head of the token wife." + right_msg + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "ON THE LEFT-HAND SIDE, please, select the CoNLL field to be used for the search (FORM or LEMMA).\n\nFor example, if brother is entered as the searched token, and FORM is entered as search field, the program will first search all occurrences of the FORM brother. Note that in this case brothers will NOT be considered. Otherwise, if LEMMA is entered as search field, the program will search all occurences of the LEMMA brother. In this case, tokens with form brother and brothers will all be considered." + right_msg + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

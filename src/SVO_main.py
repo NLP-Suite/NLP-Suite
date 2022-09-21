@@ -671,6 +671,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     area_var = ''
                     restrict = False
                     for location_filename in outputLocations:
+                        # create a subdirectory of the output directory
+                        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                                           label='GIS',
+                                                                           silent=True)
+
                         out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
                                      config_filename, location_filename, inputDir,
                                      outputDir,
