@@ -117,10 +117,11 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
              result = mb.askyesno("Excel charts","You have " + str(nFile) + " files for which to compute Excel charts.\n\nTHIS WILL TAKE A LONG TIME.\n\nAre you sure you want to do that?")
              if result==False:
                  pass
-        columns_to_be_plotted=[[2,2]]
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[2,2]]
         hover_label=['']
         inputFilename=outputFilename
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                    outputFileLabel='NLTK_spell',
                                                    chart_type_list=["bar"],
                                                    chart_title='Misspelled/Unusual Words Frequency',
@@ -844,11 +845,12 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 message=msg+ '\n\nFaulty files are listed in command line/terminal. Please, search for \'File read error\' and inspect each file carefully.')
     filesToOpen.append(outputFilenameCSV)
     if createCharts:
-        columns_to_be_plotted=[[1, 1],[4,4],[7,7]]
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[1, 1],[4,4],[7,7]]
         chart_title='Frequency of Languages Detected by 3 Algorithms'
         hover_label=['LANGDETECT', 'SPACY', 'LANGID']
         inputFilename = outputFilenameCSV
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel='_bar_chart',
                                                   chart_type_list=["bar"],
                                                   chart_title=chart_title,

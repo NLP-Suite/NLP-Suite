@@ -241,7 +241,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
     if nRecords>1:
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
                                                            outputDir,
-                                                           columns_to_be_plotted=['Subject (S)'],
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Subject (S)'],
                                                            chartTitle='Frequency Distribution of Subjects (filtered)',
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='S-filtr',  # 'POS_bar',
@@ -255,7 +255,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
                                                            outputDir,
-                                                           columns_to_be_plotted=['Verb (V)'],
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Verb (V)'],
                                                            chartTitle='Frequency Distribution of Verbs (filtered)',
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='V-filtr',  # 'POS_bar',
@@ -269,7 +269,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
                                                            outputDir,
-                                                           columns_to_be_plotted=['Object (O)'],
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Object (O)'],
                                                            chartTitle='Frequency Distribution of Objects (filtered)',
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='O-filtr',  # 'POS_bar',

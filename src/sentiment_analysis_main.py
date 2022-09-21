@@ -67,6 +67,7 @@ def run(inputFilename,inputDir,outputDir,
     elif mean_var==True and median_var==True:
         mode = "both"
 
+    BERT_var = 0
     SentiWordNet_var=0
     CoreNLP_var=0
     Stanza_var=0

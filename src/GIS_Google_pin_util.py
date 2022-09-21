@@ -675,7 +675,7 @@ def pin_description(inputFilename, pnt, data, headers, geo_index, index_list,
 			if description_location_var_name == headers[a]:
 				location_num = a
 
-		# TODO for LARGE data the routine is very slow since the loop loops through each record
+		# TODO MINO GIS for LARGE data the routine is very slow since the loop loops through each record
 		# TODO data is a list of lists
 		# TODO If data were a numpy array or dataframe,there is a simple one-liner that extracts all descriptions:
 		# TODO description = data[:, column_num]

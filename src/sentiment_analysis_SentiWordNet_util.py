@@ -212,7 +212,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
         # sentiWordNet computes a single sentiment score; does not compute separate mean and median values
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                   columns_to_be_plotted=['Sentiment score'],
+                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment score'],
                                                    chartTitle='Frequency of SentiWordNet Sentiment Scores',
                                                    count_var=0, hover_label=[],
                                                    outputFileNameType='SentiWordNet',  # 'line_bar',

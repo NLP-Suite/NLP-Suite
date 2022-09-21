@@ -213,7 +213,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         filesToOpen.append(n_grams_outputFile)
         xAxis = temporal_aggregation_var
         chartTitle = 'N-Grams Viewer'
-        columns_to_be_plotted = []
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[]
         # it will iterate through i = 0, 1, 2, …., n-1
         # this assumes the data are in this format: temporal_aggregation, frequency of search-word_1, frequency of search-word_2, ...
         i = 0
@@ -250,7 +251,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if xAxis == 'Document':
 
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, xlsxFilename, outputDir,
-                                                               columns_to_be_plotted=['CO-Occurrence'],
+                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['CO-Occurrence'],
                                                                chartTitle='Frequency Distribution of Co-Occurring Words',
                                                                count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                                hover_label=[],

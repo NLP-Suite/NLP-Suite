@@ -378,25 +378,25 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
 
     if createCharts == True:
         if mode == "both":
-            columns_to_be_plotted=['Sentiment score (Mean)', 'Arousal score (Mean)', 'Dominance score (Mean)',
+            columns_to_be_plotted_yAxis=['Sentiment score (Mean)', 'Arousal score (Mean)', 'Dominance score (Mean)',
                                 'Sentiment score (Median)', 'Arousal score (Median)', 'Dominance score (Median)']
             # hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
         elif mode == "mean":
-            columns_to_be_plotted=['Sentiment score (Mean)', 'Arousal score (Mean)', 'Dominance score (Mean)']
+            columns_to_be_plotted_yAxis=['Sentiment score (Mean)', 'Arousal score (Mean)', 'Dominance score (Mean)']
             # hover_label = ['Sentence', 'Sentence', 'Sentence']
         elif mode == "median":
-            columns_to_be_plotted=['Sentiment score (Median)', 'Arousal score (Median)', 'Dominance score (Median)']
+            columns_to_be_plotted_yAxis=['Sentiment score (Median)', 'Arousal score (Median)', 'Dominance score (Median)']
             # hover_label = ['Sentence', 'Sentence', 'Sentence']
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                   columns_to_be_plotted=columns_to_be_plotted,
+                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
                                                    chartTitle='Frequency of ANEW Sentiment Scores',
                                                    count_var=0, hover_label=[],
                                                    outputFileNameType='',
                                                    column_xAxis_label='Sentiment score',
                                                    column_yAxis_label='Scores',
                                                    groupByList=['Document ID', 'Document'],
-                                                   plotList=columns_to_be_plotted,
+                                                   plotList=columns_to_be_plotted_yAxis,
                                                    chart_title_label='Measures of ANEW Sentiment Scores')
 
         if chart_outputFilename != None:

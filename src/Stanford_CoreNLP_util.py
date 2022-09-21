@@ -631,7 +631,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                                  'CoreNLP_NER_'+outputFilename_tag)
             elif "parser" in annotator_chosen:
-                outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CoreNLP', 'CoNLL')
+                if "pcfg" in annotator_chosen:
+                    parser_label = 'PCFG'
+                else:
+                    parser_label = 'nn'
+                outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CoreNLP', parser_label, 'CoNLL')
 
             elif output_format != 'text':
                 # TODO any changes in the way the CoreNLP_annotator generates output filenames for sentiment analysis
@@ -676,7 +680,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     #                              reminders_util.message_lemma_frequencies, True)
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['Form','Lemma'],
+                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Form','Lemma'],
                                                                        chartTitle='Frequency Distribution of Form & Lemma Values',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -695,7 +699,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 elif 'All POS' in str(annotator_params) and 'All POS' in outputFilename:
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['POStag'],
+                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['POStag'],
                                                                        chartTitle='Frequency Distribution of POS Tag Values',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -714,7 +718,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 elif 'date' in str(annotator_params) and 'date' in outputFilename:
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['Normalized date'],
+                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Normalized date'],
                                                                        chartTitle='Frequency Distribution of Normalized Dates',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -729,7 +733,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['Date type'],
+                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date type'],
                                                                        chartTitle='Frequency Distribution of Date Types',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -748,7 +752,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 elif 'gender' in str(annotator_params) and 'gender' in outputFilename:
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['Gender'],
+                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Gender'],
                                                                        chartTitle='Frequency Distribution of Gender Values',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -772,7 +776,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 elif 'quote' in str(annotator_params) and 'quote' in outputFilename:
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['Speakers'],
+                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Speakers'],
                                                                        chartTitle='Frequency Distribution of Speakers',
                                                                        count_var=1, hover_label=[],
                                                                        outputFileNameType='quote', #'quote_bar',
@@ -794,7 +798,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     #                              reminders_util.message_lemma_frequencies, True)
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['Form','Lemma'],
+                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Form','Lemma'],
                                                                        chartTitle='Frequency Distribution of FORM & LEMMA Values',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -811,7 +815,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
 # POStag values in CoNLL table
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['POStag'],
+                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['POStag'],
                                                                        chartTitle='Frequency Distribution of POS (Part of Speech) Tags',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -830,7 +834,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                  reminders_util.message_NER_frequencies, True)
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['NER'],
+                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['NER'],
                                                                        chartTitle='Frequency Distribution of NER (Named Entity Recognition) Tags',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -849,7 +853,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                                  reminders_util.message_DepRel_frequencies, True)
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['DepRel'],
+                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['DepRel'],
                                                                        chartTitle='Frequency Distribution of DEP Rel (Dependency Relations) Values',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -869,7 +873,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     if IO_csv_util.get_csvfile_headers(filesToVisualize[j], False)[0] == "Sentiment score":
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                            outputDir,
-                                                                           columns_to_be_plotted=['Sentiment label'], # sentiment score
+                                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment label'], # sentiment score
                                                                            chartTitle='Frequency Distribution of Sentiment Scores',
                                                                            count_var=1, hover_label=[],
                                                                            outputFileNameType='sent', #'senti_bar',
@@ -891,7 +895,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         # plot NER tag (e.g, LOCATION)
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                            outputDir,
-                                           columns_to_be_plotted=['NER Tag'],
+                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['NER Tag'],
                                            chartTitle='Frequency Distribution of NER Tags',
                                            # count_var = 1 for columns of alphabetic values
                                            count_var=1, hover_label=[],
@@ -911,7 +915,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         # plot the words contained in each NER tag (e.g, the word 'Rome' in NER tag LOCATION)
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                    outputDir,
-                                                   columns_to_be_plotted=['Word'],
+                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Word'],
                                                    chartTitle='Frequency Distribution of Words by NER ' + ner_tags,
                                                    # count_var = 1 for columns of alphabetic values
                                                    count_var=1, hover_label=[],
@@ -932,7 +936,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # plot Subjects
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['Subject (S)'],
+                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Subject (S)'],
                                                                        chartTitle='Frequency Distribution of Subjects (unfiltered)',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -948,7 +952,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # plot Verbs
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['Verb (V)'],
+                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Verb (V)'],
                                                                        chartTitle='Frequency Distribution of Verbs (unfiltered)',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -964,7 +968,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # plot Objects
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['Object (O)'],
+                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Object (O)'],
                                                                        chartTitle='Frequency Distribution of Objects (unfiltered)',
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -1006,7 +1010,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     if "coref table" in str(annotator_params):
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, filesToVisualize[j],
                                                                            outputDir,
-                                                                           columns_to_be_plotted=['Pronoun'],
+                                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Pronoun'],
                                                                            chartTitle='Frequency Distribution of Pronouns',
                                                                            # count_var = 1 for columns of alphabetic values
                                                                            count_var=1, hover_label=[],
@@ -1021,7 +1025,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
                         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, filesToVisualize[j],
                                                                            outputDir,
-                                                                           columns_to_be_plotted=['Reference'],
+                                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Reference'],
                                                                            chartTitle='Frequency Distribution of Coreferences',
                                                                            # count_var = 1 for columns of alphabetic values
                                                                            count_var=1, hover_label=[],
@@ -2235,10 +2239,11 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
             # return_files.append(outputFilename)
 
             if createCharts:
-                columns_to_be_plotted = ["Number of Pronouns", "Number of Coreferenced Pronouns", "Pronouns Coreference Rate"]
+                columns_to_be_plotted_xAxis=[]
+                columns_to_be_plotted_yAxis=["Number of Pronouns", "Number of Coreferenced Pronouns", "Pronouns Coreference Rate"]
                 chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                    outputDir,
-                                                                   columns_to_be_plotted=columns_to_be_plotted,
+                                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
                                                                    chartTitle='Coreferenced Pronouns',
                                                                    # count_var = 1 for columns of alphabetic values
                                                                    count_var=0, hover_label=[],

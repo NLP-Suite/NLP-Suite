@@ -258,16 +258,17 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
     if createCharts:
         # the MALLET files do not have headers to be able to use charts_util.visualize_chart
 
-        columns_to_be_plotted = []
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[]
         for i in range(2, numTopics):
-            columns_to_be_plotted.append([1, i])
+            columns_to_be_plotted_yAxis.append([1, i])
 
         hover_label=[]
         chartTitle = 'Mallet Topics (Topic Contribution to Document)'
         xAxis = 'Document'
         yAxis = 'Topic weight in document'
 
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, Composition_FileName, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, Composition_FileName, outputDir,
                                                   'Mallet_TM',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
@@ -280,13 +281,14 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
         if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
-        columns_to_be_plotted=[[0, 1]]
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[0, 1]]
         hover_label=[2]
         chartTitle = 'Mallet Topics (Topic Weight by Topic)'
         xAxis = 'Topic #'
         yAxis = 'Topic weight'
 
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, Keys_FileName, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, Keys_FileName, outputDir,
                                                   'Mallet_TM',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],

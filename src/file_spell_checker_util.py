@@ -121,7 +121,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
                  pass
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                   columns_to_be_plotted=['Misspelled/unusual word'],
+                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Misspelled/unusual word'],
                                                    chartTitle='Frequency of Misspelled/Unusual Words',
                                                    count_var=1, hover_label=[],
                                                    outputFileNameType='',  # 'line_bar',
@@ -180,7 +180,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
 
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename, outputDir,
-                                                           columns_to_be_plotted=['Typo?'],
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Typo?'],
                                                            chartTitle='Frequency of Potential Typos',
                                                            count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                            hover_label=[],
@@ -483,7 +483,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                'Finished running Word similarity at', True, '', True, startTime, True)
 
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFileName_simple, outputDir,
-                                                               columns_to_be_plotted=['Typo?'],
+                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Typo?'],
                                                                chartTitle='Frequency of Potential Typos',
                                                                count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                                hover_label=[],
@@ -945,7 +945,8 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                                        'Finished running Language Detection at', True,'Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.', True, startTime, True)
     print('Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.')
     if createCharts:
-        columns_to_be_plotted=[[1, 1]]
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[1, 1]]
         chart_title='Frequency of Languages Detected by LANGDETECT, LANGID, spaCy, and Stanza'
         hover_label=[]
         inputFilename = outputFilenameCSV
