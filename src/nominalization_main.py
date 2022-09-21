@@ -44,7 +44,7 @@ import GUI_IO_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-#first_section is to extract the word from "syns". 
+#first_section is to extract the word from "syns".
 # syns.name() of "intention" is "purpose.n.01". So "first_section" gets everything before the first period: "purpose"
 
 #params: sent > string
@@ -107,7 +107,7 @@ def nominalized_verb_detection(docID,doc,sent):
                     noun_cnt[word] += 1
                     continue
                 if wn.lemmas(word):
-                    for lemma in wn.lemmas(word): 
+                    for lemma in wn.lemmas(word):
                         derive = lemma.derivationally_related_forms()
                         if derive not in derivationals and derive:
                             derivationals.append(derive)
@@ -181,7 +181,7 @@ def list_to_csv(output_filename, lists):
     IO_csv_util.list_to_csv(GUI_util.window,lists,output_filename,colnum=0)
 
 def write_dir_csv(output_filename, lists, file_name):
-    parts = file_name.split(os.path.sep) 
+    parts = file_name.split(os.path.sep)
     file_name = parts[-1]
     for list_ in lists:
         list_.append(file_name)
@@ -339,9 +339,10 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 # bar chart of nominalized verbs
 
                 inputFilename = output_filename_dir_nominalized_frequencies
-                columns_to_be_plotted=[[0, 1]]
+                columns_to_be_plotted_xAxis=[]
+                columns_to_be_plotted_yAxis=[[0, 1]]
 
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                                  outputFileLabel='NOM_verb',
                                                                  chartPackage=chartPackage,
                                                                  chart_type_list=['bar'],
@@ -362,9 +363,10 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 # bar chart of nouns
 
                 inputFilename = output_filename_dir_noun_frequencies
-                columns_to_be_plotted=[[0, 1]]
+                columns_to_be_plotted_xAxis=[]
+                columns_to_be_plotted_yAxis=[[0, 1]]
 
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                                  outputFileLabel='NOM_noun',
                                                                  chartPackage=chartPackage,
                                                                  chart_type_list=['bar'],

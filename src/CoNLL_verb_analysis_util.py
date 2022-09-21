@@ -172,7 +172,8 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
 						  language_encoding='utf-8')
 	if createCharts == True:
-		columns_to_be_plotted = [[0, 1]]
+		columns_to_be_plotted_xAxis=[]
+		columns_to_be_plotted_yAxis=[[0, 1]]
 		count_var = 0
 		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
 												   outputFileLabel='verb_stats',
@@ -268,7 +269,8 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
 						  language_encoding='utf-8')
 	if createCharts == True:
-		columns_to_be_plotted = [[0, 1]]
+		columns_to_be_plotted_xAxis=[]
+		columns_to_be_plotted_yAxis=[[0, 1]]
 		count_var = 0
 		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
 												   outputFileLabel='verb_mod',

@@ -250,7 +250,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dic
         filesToOpen.append(outputFilename)
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                           columns_to_be_plotted=['Search word(s)'],
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Search word(s)'],
                                                            chartTitle=chartTitle,
                                                            count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                            hover_label=[],

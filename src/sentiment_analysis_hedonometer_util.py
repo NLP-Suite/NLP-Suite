@@ -262,17 +262,20 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
 
     if createCharts == True:
         if mode == "both":
-            columns_to_be_plotted = ['Sentiment score (Mean)', 'Sentiment score (Median)']
+            columns_to_be_plotted_xAxis=[]
+            columns_to_be_plotted_yAxis=['Sentiment score (Mean)', 'Sentiment score (Median)']
             # hover_label = ['Sentence', 'Sentence']
         elif mode == "mean":
-            columns_to_be_plotted = ['Sentiment score (Mean)']
+            columns_to_be_plotted_xAxis=[]
+            columns_to_be_plotted_yAxis=['Sentiment score (Mean)']
             # hover_label = ['Sentence']
         elif mode == "median":
-            columns_to_be_plotted = ['Sentiment score (Median)']
+            columns_to_be_plotted_xAxis=[]
+            columns_to_be_plotted_yAxis=['Sentiment score (Median)']
         # inputFilename = outputFilename
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                   columns_to_be_plotted=columns_to_be_plotted,
+                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
                                                    chartTitle='Frequency of Hedonometer Sentiment Scores',
                                                    count_var=0, hover_label=[],
                                                    outputFileNameType='Hedo',  # 'line_bar',

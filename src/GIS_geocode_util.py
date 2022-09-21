@@ -1,4 +1,7 @@
 import sys
+
+import pandas as pd
+
 import GUI_util
 import IO_libraries_util
 
@@ -356,7 +359,7 @@ def geocode(window,locations, inputFilename, outputDir,
 					else:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address])
 
-				# # TODO create kml record
+				# TODO MINO GIS create kml record
 				# TODO for date see above
 				# we must get the sentence
 				# import simplekml
@@ -371,6 +374,10 @@ def geocode(window,locations, inputFilename, outputDir,
 				# #	we would need to process inputfile rather inputFilename
 				# index_list=[]
 				# index_list=GIS_location_util.extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_name)
+				# TODO MINO GIS if you can get the index_list from the next couple of lines, when completed
+				#	we are in business!!!
+				# df = pd.read_csv(inputFilename)
+				# index_list = df[]
 				# pnt = GIS_Google_pin_util.pin_customizer(inputFilename, pnt, index, index_list,
 				# 								 locationColumnName,sentence)
 

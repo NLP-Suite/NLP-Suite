@@ -130,7 +130,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
     if createCharts == True:
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                           columns_to_be_plotted=['Sentiment score'],
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment score'],
                                                            chartTitle='Frequency of roBERTa Sentiment Scores',
                                                            count_var=0, hover_label=[],
                                                            outputFileNameType='roBERTa_scores',  # 'line_bar',
@@ -145,7 +145,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                 filesToOpen.extend(chart_outputFilename)
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                           columns_to_be_plotted=['Sentiment label'],
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment label'],
                                                            chartTitle='Frequency of roBERTa Sentiment Labels',
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='roBERTa_labels',  # 'line_bar',

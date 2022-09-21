@@ -264,7 +264,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
 
         # number of sentences in input
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                           columns_to_be_plotted=['Number of Sentences in Document'],
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Number of Sentences in Document'],
                                                            chartTitle='Frequency of Number of Sentences',
                                                            count_var=0, hover_label=[],
                                                            outputFileNameType='sent',
@@ -279,7 +279,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
 
         # number of words in input
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                           columns_to_be_plotted=['Number of Words in Document'],
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Number of Words in Document'],
                                                            chartTitle='Frequency of Number of Words',
                                                            count_var=0, hover_label=[],
                                                            outputFileNameType='word',
@@ -294,7 +294,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
 
         # number of syllables in input
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                           columns_to_be_plotted=['Number of Syllables in Document'],
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Number of Syllables in Document'],
                                                            chartTitle='Frequency of Number of Syllables',
                                                            count_var=0,
                                                            hover_label=[],
@@ -388,7 +388,7 @@ def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir,
     filesToOpen.append(outputFilename)
 
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                       columns_to_be_plotted=['Sentence length (in words)'],
+                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentence length (in words)'],
                                                        chartTitle='Frequency of Sentence Lengths',
                                                        count_var=1, hover_label=[],
                                                        outputFileNameType='Sent', #'line_bar',
@@ -460,7 +460,7 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
 
     # produce all charts
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                              columns_to_be_plotted=['Line length (in words)'],
+                                              columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Line length (in words)'],
                                               chartTitle='Frequency Distribution of Line Length',
                                               count_var=1, hover_label=[],
                                               outputFileNameType='', #'line_bar', column_xAxis_label='Line length',
@@ -692,11 +692,12 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
                 corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Punctuation',
                                              'Frequency in Document', 'Frequency in Corpus',
                                              'Document ID', 'Document'])
+
+        columns_to_be_plotted_xAxis=[str(gram) + '-grams' + hapax_header]
         if inputDir == '':
-            columns_to_be_plotted = [str(gram) + '-grams' + hapax_header,'Frequency in Document']
+            columns_to_be_plotted_yAxis=['Frequency in Document']
         else:
-            # columns_to_be_plotted = [str(gram) + '-grams' + hapax_header, 'Frequency in Document', str(gram) + '-grams' + hapax_header, 'Frequency in Corpus']
-            columns_to_be_plotted = [str(gram) + '-grams' + hapax_header, 'Frequency in Document', 'Frequency in Corpus']
+            columns_to_be_plotted_yAxis=['Frequency in Document', 'Frequency in Corpus']
         # save output file after each n-gram value in the range
         # code in next line breaks
         # corpus_ngramsList = sorted(corpus_ngramsList, key=lambda x: x[1])
@@ -710,7 +711,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
             filesToOpen.append(csv_outputFilename)
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, csv_outputFilename,
                                                                outputDir,
-                                                               columns_to_be_plotted=columns_to_be_plotted,
+                                                               columns_to_be_plotted_xAxis=columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
                                                                chartTitle='Frequency of ' + str(gram) + '-gram' + hapax_header,
                                                                count_var=0, hover_label=[], #hover_label,
                                                                # outputFileNameType='n-grams_'+str(gram), # +'_'+ tail,
@@ -837,7 +838,8 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     punctuation_docs=[]
     header=[]
     fileLabel = ''
-    columns_to_be_plotted=[[]]
+    columns_to_be_plotted_xAxis=[]
+    columns_to_be_plotted_yAxis=[]
     chart_title_label=''
     column_xAxis_label=''
     hover_label=''
@@ -900,7 +902,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     select_col = ['Short words (<4 characters)']
                     fileLabel='short_words'
                     fileLabel_byDocID = 'vowel_words_byDoc'
-                    columns_to_be_plotted = ['Short words (<4 characters)'] # bar chart
+                    columns_to_be_plotted_yAxis=['Short words (<4 characters)'] # bar chart
                     chart_title_label = 'Frequency of Short Words (<4 Characters)'
                     chart_title_byDocID='Frequency of Short Words by Document'
                     chart_title_bySentID ='Frequency of Short Words by Sentence Index'
@@ -917,7 +919,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     select_col = ['Initial-capital words']
                     fileLabel='init_cap_words'
                     fileLabel_byDocID = '' # 'capital_words_byDoc'
-                    columns_to_be_plotted = ['Initial-capital words'] # bar chart
+                    columns_to_be_plotted_yAxis=['Initial-capital words'] # bar chart
                     chart_title_label = 'Frequency of Initial-Capital Words'
                     chart_title_byDocID ='Frequency of Initial-Capital Words by Document'
                     chart_title_bySentID ='Frequency of Initial-Capital Words by Sentence Index'
@@ -934,7 +936,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     select_col = ['Initial-vowel words']
                     fileLabel='vowel_words'
                     fileLabel_byDocID = 'vowel_words_byDoc'
-                    columns_to_be_plotted = ['Initial vowel'] # bar chart
+                    columns_to_be_plotted_yAxis=['Initial vowel'] # bar chart
                     chart_title_label = 'Frequency of Initial-Vowel Words'
                     chart_title_byDocID='Frequency of Initial-Vowel Words by Document'
                     chart_title_bySentID = 'Frequency of Initial-Vowel Words by Sentence Index'
@@ -948,7 +950,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     select_col = ['Punctuation symbols of pathos (?!)'] # line chart by sentence index
                     fileLabel = 'punctuation'
                     fileLabel_byDocID = 'punctuation_byDoc'
-                    columns_to_be_plotted = ['Punctuation symbols of pathos (?!)'] # bar chart
+                    columns_to_be_plotted_yAxis=['Punctuation symbols of pathos (?!)'] # bar chart
                     chart_title_label = 'Frequency of Punctuation Symbols of Pathos (?!)'
                     chart_title_byDocID='Frequency of Punctuation Symbols of Pathos (?!) by Document'
                     chart_title_bySentID='Frequency of Punctuation Symbols of Pathos (?!) by Sentence Index'
@@ -997,7 +999,7 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
         filesToOpen.append(outputFilename)
 
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                               columns_to_be_plotted=columns_to_be_plotted,
+                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
                                                chartTitle=chart_title_label,
                                                count_var=1, hover_label=[],
                                                outputFileNameType='',  # 'line_bar',
@@ -1085,6 +1087,10 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
 def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
     filesToOpen = []
     documentID = 0
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='readability',
+                                                              silent=True)
 
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt')
     nFile = len(files)
@@ -1328,7 +1334,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                 hover_label = []
                 chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                    outputDir,
-                                                                   columns_to_be_plotted=['Overall readability consensus'],
+                                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Overall readability consensus'],
                                                                    chartTitle='Text Readability\nFrequencies of Overall Readability Consensus',
                                                                    count_var=1, hover_label=[],
                                                                    outputFileNameType='cons',  # 'READ_bar',
@@ -1343,14 +1349,14 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                 # 0 (Flesch Reading Ease) has a different scale and 3 (SMOG) is often 0
                 #	do NOT plot on the same chart these two measures
                 #	plot all other 6 measures
-                columns_to_be_plotted = ['Flesch-Kincaid Grade Level','Fog Scale (Gunning FOG Formula)','Automated Readability Index','Coleman-Liau Index','Linsear Write Formula','Dale-Chall Readability Score']
+                columns_to_be_plotted_yAxis=['Flesch-Kincaid Grade Level','Fog Scale (Gunning FOG Formula)','Automated Readability Index','Coleman-Liau Index','Linsear Write Formula','Dale-Chall Readability Score']
                 # multiple lines with hover-over effects the sample line chart produces wrong results
                 # hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
                 hover_label = []
 
                 chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                    outputDir,
-                                                                   columns_to_be_plotted=columns_to_be_plotted,
+                                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
                                                                    chartTitle='Text Readability\nFrequencies of 6 Readability Measures',
                                                                    count_var=0, hover_label=[],
                                                                    outputFileNameType='',  # 'READ_bar',
@@ -1366,7 +1372,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                 hover_label = []
                 chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                    outputDir,
-                                                                   columns_to_be_plotted=['Grade level'],
+                                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Grade level'],
                                                                    chartTitle='Text Readability\nFrequencies of Overall Grade Level',
                                                                    count_var=0, hover_label=[],
                                                                    outputFileNameType='grade',  # 'READ_bar',
@@ -1455,6 +1461,10 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
     documentID = []
     document = []
     documentName = []
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='complexity',
+                                                              silent=True)
 
     all_input_docs = {}
     dId = 0
@@ -1560,7 +1570,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
     filesToOpen.append(outputFilename)
     # TODO we need an X-axis to plot these scores against
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                       columns_to_be_plotted=['Sentence ID', 'Yngve score', 'Frazier score'],
+                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Yngve score', 'Frazier score'],
                                                        chartTitle='Frequency Distribution of Complexity Scores\n(Yngve & Frazier)',
                                                        count_var=0, # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                        hover_label=[],

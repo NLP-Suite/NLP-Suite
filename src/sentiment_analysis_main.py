@@ -49,6 +49,12 @@ def run(inputFilename,inputDir,outputDir,
         mb.showwarning('Warning',"No option has been selected.\n\nPlease, select a Sentiment analysis option and try again.")
         return
 
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment',
+                                                        silent=True)
+    if outputDir == '':
+        return
+
     if len(inputFilename)>3:
         usefile = True
         usedir = False
@@ -67,6 +73,7 @@ def run(inputFilename,inputDir,outputDir,
     elif mean_var==True and median_var==True:
         mode = "both"
 
+    BERT_var = 0
     SentiWordNet_var=0
     CoreNLP_var=0
     Stanza_var=0

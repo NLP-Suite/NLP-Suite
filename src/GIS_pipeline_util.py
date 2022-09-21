@@ -226,7 +226,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         if createCharts:
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
                                                                outputDir,
-                                                               columns_to_be_plotted=['Location'],
+                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
                                                                chartTitle='Frequency Distribution of Locations Found by ' + geocoder,
                                                                # count_var = 1 for columns of alphabetic values
                                                                count_var=1, hover_label=[],
@@ -246,7 +246,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
             if createCharts:
                 chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
                                                                        outputDir,
-                                                                       columns_to_be_plotted=['Location'],
+                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
                                                                        chartTitle='Frequency Distribution of Locations not Found by ' + geocoder,
                                                                        # count_var = 1 for columns of alphabetic values
                                                                        count_var=1, hover_label=[],
@@ -269,10 +269,10 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                 csvFile.close()
             # no need to display since the chart will contain the values
             # return_files.append(outputFilename)
-            columns_to_be_plotted = ["Number of Distinct Locations Found by Geocoder ", "Number of Distinct Locations NOT Found by Geocoder"]
+            columns_to_be_plotted_yAxis=["Number of Distinct Locations Found by Geocoder ", "Number of Distinct Locations NOT Found by Geocoder"]
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                outputDir,
-                                                               columns_to_be_plotted=columns_to_be_plotted,
+                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
                                                                chartTitle='Number of DISTINCT Locations Found and not Found by Geocoder',
                                                                # count_var = 1 for columns of alphabetic values
                                                                count_var=0, hover_label=[],

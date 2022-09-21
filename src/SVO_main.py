@@ -672,13 +672,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     restrict = False
                     for location_filename in outputLocations:
                         # create a subdirectory of the output directory
-                        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                        outputGISDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputSVODir,
                                                                            label='GIS',
                                                                            silent=True)
 
                         out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
                                      config_filename, location_filename, inputDir,
-                                     outputDir,
+                                     outputGISDir,
                                      'Nominatim', 'Google Earth Pro & Google Maps', createCharts, chartPackage,
                                      date_present,
                                      country_bias,

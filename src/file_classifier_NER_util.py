@@ -1,8 +1,8 @@
 #coding=utf-8
 
-#Edited by Elaine Dong, Jan 30, 2021. 
+#Edited by Elaine Dong, Jan 30, 2021.
 
-# this version uses cosine similarity. 
+# this version uses cosine similarity.
 import sys
 import GUI_util
 import IO_libraries_util
@@ -39,7 +39,7 @@ def load_soc_actors():
     return my_soc_actors
 
 #CM soc_acts is the input. I filtered out all social actors in dir_path
-# Version 2: when we need to filter out NERs. 
+# Version 2: when we need to filter out NERs.
 def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, printing):
     my_files = glob(dir_path+'*.txt')
     num_doc = 0
@@ -60,7 +60,7 @@ def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, printing):
                 # lemma_word = lemmatizer.lemmatize(word.lower())
                 lemma_word = lemmatize_stanza(stanzaPipeLine(word.lower()))
                 if lemma_word in soc_acts:
-                    #add into the list. 
+                    #add into the list.
                     if lemma_word in keywords[fileName]:
                         keywords[fileName][lemma_word] = keywords[fileName][lemma_word] + 1
                         # reduce the size that is needed to detect NER. save time
@@ -156,13 +156,13 @@ def find(doc_dir, soc_acts, nlp, compare, sim_base, f, terminal_output):
             num_class += 1
         if num_target_dir == 2:
             print(print_content)
-        if num_target_dir >1: 
+        if num_target_dir >1:
             num_multiclass += 1
-    
+
     return num_doc, num_unclass, num_class, num_multiclass
 
 # CoreNLPDir: the path to stanfordCoreNLP folder. example name is "stanford-corenlp-4.2.0"
-# inputDir: the path to a folder that stores ungrouped documents in txt format. 
+# inputDir: the path to a folder that stores ungrouped documents in txt format.
 # inputTargetDir: the path to a folder that stores several folders which contains several documents of the same target
 def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCharts, chartPackage, relativity_threshold):
 
@@ -192,7 +192,7 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
         sys.stdout = terminal_output
         return filesToOpen
 
-    nlp = StanfordCoreNLP(CoreNLPDir) 
+    nlp = StanfordCoreNLP(CoreNLPDir)
     compare = {}
     num_folder = 0
     sys.stdout = terminal_output
@@ -220,10 +220,11 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
     f.close()
 
     if createCharts == True:
-        columns_to_be_plotted=[[3, 3]]
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[3, 3]]
         hover_label=''
         inputFilename = outputFilename
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel='SSR_NER_home',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["pie"],

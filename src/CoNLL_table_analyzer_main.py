@@ -240,7 +240,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
             """
             # if createCharts == True:
             #
-            #     columns_to_be_plotted=[[0,1]]
+            #     columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[[0,1]]
             #     count_var=1
             #
             #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name, outputDir,

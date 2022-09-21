@@ -50,8 +50,9 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
         chartTitle = 'Geodesic distance in miles'
     else:
         chartTitle = 'Geodesic distance in miles from ' + baselineLocation
-    columns_to_be_plotted=[[3,6]]
-    chart_outputFilename = charts_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+    columns_to_be_plotted_xAxis=[]
+    columns_to_be_plotted_yAxis=[[3,6]]
+    chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                               '',
                                               chartPackage=chartPackage,
                                               chart_type_list=["bar"],
@@ -78,8 +79,9 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
         chartTitle = 'Great circle distance in miles'
     else:
         chartTitle = 'Great circle distance in miles from ' + baselineLocation
-    columns_to_be_plotted=[[3,8]]
-    chart_outputFilename = charts_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+    columns_to_be_plotted_xAxis=[]
+    columns_to_be_plotted_yAxis=[[3,8]]
+    chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                               '',
                                               chartPackage=chartPackage,
                                               chart_type_list=["bar"],

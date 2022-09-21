@@ -36,6 +36,7 @@ import IO_files_util
 # TODO ROBY
 def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, chart_type_list,
                                count_var=0, column_yAxis_field_list = []):
+    # TODO change to pandas half of this function relies on csv half on pandas, reading in data twice!
     # TODO temporary to measure process time
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Excel prepare_data_to_be_plotted_inExcel at',
                                                  True, '', True, '', True)
@@ -77,24 +78,36 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
 #   all double lists [[]]
 #   BUT they are passed by calling functions as single lists []
 #       and converted to double lists for run_all
-#       e.g., columns_to_be_plotted=['Sentiment score (Median)', 'Arousal score (Median)', 'Dominance score (Median)']
-#       e.g., columns_to_be_plotted=['Yngve score', 'Frazier score']
-#       e.g., columns_to_be_plotted=['Yngve score']
+#       e.g., columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment score (Median)', 'Arousal score (Median)', 'Dominance score (Median)']
+#       e.g., columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Yngve score', 'Frazier score']
+#       e.g., columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Yngve score']
 # the variable groupByList,plotList, chart_title_label are used to compute column statistics
 #   groupByList is typically the list ['Document ID', 'Document']
 #   plotList is the list of fields that want to be plotted
 #   chart_title_label is used as part of the chart_title when plotting the fields statistics
+
+# X-axis
+
 def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
-                    columns_to_be_plotted,
+                    columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
                     chartTitle, count_var, hover_label, outputFileNameType, column_xAxis_label,
                     groupByList,plotList, chart_title_label, column_yAxis_label='Frequencies', pivot = False):
     filesToOpen=[]
     columns_to_be_plotted_numeric=[]
+    columns_to_be_plotted_byDoc=[]
+    columns_to_be_plotted_bySent=[]
 
     if createCharts == True:
         chart_outputFilenameSV=''
     else:
         return
+
+        # the run_all always expects a double list with 2 values, e.g., [[0,0], [1,1]
+        #   so, when only one field is passed, we add the same field twice
+        # TODO
+        # columns_to_be_plotted_numeric = [[1, 1], [3, 3]]  # for complexity scores; duplicates columns gives right plot
+        # columns_to_be_plotted_numeric = [[1, 3]]  # for complexity scores; duplicates columns gives right plot
+        # columns_to_be_plotted_numeric = [[0, 2], [0, 3]]  # for ngrams
 
 # pivot = True will list for every document all the separate values of the selected item to be plotted
 #       = False will sum all the individual values
@@ -104,32 +117,19 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     #   the first item is the column of numeric values
     #   the second item is the X-axis
     #   see the example of call in get_ngramlist
-
+    # if we
     headers = IO_csv_util.get_csvfile_headers_pandas(inputFilename)
     if len(headers)==0:
         mb.showwarning(title='Empty file', message='The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.')
         print('The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.')
         return filesToOpen
-    for i in range(0,len(columns_to_be_plotted)):
-        # get numeric value of header, necessary for run_all
-        field_number = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted[i], inputFilename)
-        if field_number==None:
-            return filesToOpen
-        # the run_all always expects a double list with 2 values, e.g., [[0,0], [1,1]
-        #   so, when only one field is passed, we add the same field twice
-        if len(columns_to_be_plotted)==1:
-            columns_to_be_plotted_numeric.append([field_number, field_number])
-        else:
-            columns_to_be_plotted_numeric.append(field_number)
-
-    # run_all requires a double list
-    if len(columns_to_be_plotted) > 1:
-        columns_to_be_plotted_numeric=[columns_to_be_plotted_numeric]
-
+    field_number_xAxis = None
+    if len(columns_to_be_plotted_xAxis) == 1:
+        field_number_xAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_xAxis[0],
+                                                                          inputFilename)
     if "Document ID" in headers:
         docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID', inputFilename)
-        # both Document ID and Document
-        columns_to_be_plotted_byDoc = [[docCol, docCol + 1]]
+        docCol = docCol +1 # we need to visualize the doc filename
         byDoc = True
     else:
         byDoc = False
@@ -138,6 +138,37 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         bySent = True
     else:
         bySent = False
+
+    for i in range(0,len(columns_to_be_plotted_yAxis)):
+        # get numeric value of header, necessary for run_all
+        field_number_yAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_yAxis[i], inputFilename)
+        if field_number_yAxis==None:
+            return filesToOpen
+
+        if len(columns_to_be_plotted_xAxis)==0: # no x-Axis field
+            columns_to_be_plotted_numeric.append([field_number_yAxis,field_number_yAxis])
+        else: # there is an X-Axis (e.g., ngrams values)
+            columns_to_be_plotted_numeric.append([field_number_xAxis, field_number_yAxis])
+
+        if byDoc:
+            columns_to_be_plotted_byDoc.append([docCol, field_number_yAxis])
+        if bySent:
+            columns_to_be_plotted_bySent.append([sentCol, field_number_yAxis])
+
+        # remove first item in list, the X-axis label substituted by doc
+        # columns_to_be_plotted_numeric[0].pop(0)
+        # columns_to_be_plotted_numeric[0].insert(0, docCol + 1)
+        # columns_to_be_plotted_byDoc = columns_to_be_plotted_numeric
+
+        # TODO Naman for numeric data build classes of values, rather than individual values, to be displayed in the X-axis
+        # https://stackoverflow.com/questions/49382207/how-to-map-numeric-data-into-categories-bins-in-pandas-dataframe
+        # if count_var == 0: # numeric variable
+        #     import pandas as pd
+        #     df = pd.read_csv(inputFilename)
+        #     column_data =df[columns_to_be_plotted[i]]
+        #     # create classes of values, for instance 5
+        #     x_axis_labels = ['bin-1', 'bin-2', 'bin-3', 'bin-4', 'bin-5']
+        #     print(pd.cut(df[columns_to_be_plotted[i]], column_data, labels=x_axis_labels))
 
     # TODO depends on how many documents we have
     if byDoc:
@@ -247,11 +278,11 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     # reset the original value to be used in charts by sentence index
 # by DOCUMENT NOT counting quantitative values ---------------------------------------------------------------------------
                 else:
-                    columns_to_be_plotted_byDoc_expanded=[]
                     new_inputFilename=inputFilename
                     # when plotting numeric values (count_var=0) get the columns to be plotted
                     #   from the values passed for standard bar and using the Document column number
                     # TODO Roby temporary
+                    # columns_to_be_plotted_byDoc_expanded=[]
                     # for i in range(len(columns_to_be_plotted_numeric)):
                     #     try:
                     #         item = [columns_to_be_plotted_byDoc[0][1], columns_to_be_plotted_numeric[i][0]]
@@ -259,10 +290,10 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     #         break
                     #     columns_to_be_plotted_byDoc_expanded.append(item)
                     # columns_to_be_plotted_byDoc=columns_to_be_plotted_byDoc_expanded
-                    # remove first item in list, the X-axis label substituted by doc
-                    columns_to_be_plotted_numeric[0].pop(0)
-                    columns_to_be_plotted_numeric[0].insert(0,docCol+1)
-                    columns_to_be_plotted_byDoc = columns_to_be_plotted_numeric
+                    # # remove first item in list, the X-axis label substituted by doc
+                    # columns_to_be_plotted_numeric[0].pop(0)
+                    # columns_to_be_plotted_numeric[0].insert(0,docCol+1)
+                    # columns_to_be_plotted_byDoc = columns_to_be_plotted_numeric
                 # columns_to_be_plotted_byDoc=[[5,0,2,0,3]]
                 if outputFileNameType != '':
                     outputFileLabel = 'byDoc_' + outputFileNameType

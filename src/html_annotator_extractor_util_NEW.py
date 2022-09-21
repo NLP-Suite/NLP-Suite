@@ -146,7 +146,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCha
 
     # if createCharts==True:
     #     chartTitle='HTML extractor'
-    #     columns_to_be_plotted = [2,2]
+    #     columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[2,2]
     #     hover_label=['']
     #     chartType='bar'
     #     fileNameType='html_extr'
