@@ -252,15 +252,17 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                         for i in range(columns_to_be_plotted_byDoc_len,len(headers)):
                             columns_to_be_plotted_byDoc.append([columns_to_be_plotted_byDoc_len-1,i])
                     else:
-                        # 1 is the Document with no-hyperlinks,
-                        # 3 is Frequency,
-                        # 2 is the column plotted (e.g., Gender) in temp_outputFilename
+                        # 0 is the Document with no-hyperlinks,
+                        # 2 is Frequency,
+                        # 1 is the column plotted (e.g., Gender) in temp_outputFilename
                         # TODO TONY we should ask the same type of question for columns that are already in quantitative form if we want to compute a single MEAN value
                         sel_column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,2)
+                        # columns_to_be_plotted_byDoc = [[0, 2]] # will give one bar
+                        columns_to_be_plotted_byDoc = [[0, 2, 1]] # will give different bars for each value
+                        # columns_to_be_plotted_byDoc = [[0, 1, 2]] # No!!!!!!!!!!!
                         if chartPackage=="Excel":
                             column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,1)
                             number_column_entries = len(IO_csv_util.get_csv_field_values(new_inputFilename, column_name))
-                            columns_to_be_plotted_byDoc = [[1, 3]]
                             # TODO temporarily disconnected until we figure out a way to not repeat this questions several times
                             # if number_column_entries > 1:
                             #     answer = tk.messagebox.askyesno("Warning", "For the chart of '" + sel_column_name + "' by document, do you want to:\n\n  (Y) sum the values across all " + str(number_column_entries) + " '" + column_name + "';\n  (N) use all " + str(number_column_entries) + " distinct column values.")
@@ -271,30 +273,10 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                             #         # [[1, 3, 2]] will give different bars for each value
                             #         # Document, Field to be plotted (e.g., POStag), Sentence ID
                             #         columns_to_be_plotted_byDoc = [[1, 3, 2]]
-                        else:
-                            # [[1, 3, 2]] will give different bars for each value
-                            # Document, Field to be plotted (e.g., POStag), Sentence ID
-                            columns_to_be_plotted_byDoc = [[1, 3, 2]]
                     # reset the original value to be used in charts by sentence index
 # by DOCUMENT NOT counting quantitative values ---------------------------------------------------------------------------
                 else:
                     new_inputFilename=inputFilename
-                    # when plotting numeric values (count_var=0) get the columns to be plotted
-                    #   from the values passed for standard bar and using the Document column number
-                    # TODO Roby temporary
-                    # columns_to_be_plotted_byDoc_expanded=[]
-                    # for i in range(len(columns_to_be_plotted_numeric)):
-                    #     try:
-                    #         item = [columns_to_be_plotted_byDoc[0][1], columns_to_be_plotted_numeric[i][0]]
-                    #     except:
-                    #         break
-                    #     columns_to_be_plotted_byDoc_expanded.append(item)
-                    # columns_to_be_plotted_byDoc=columns_to_be_plotted_byDoc_expanded
-                    # # remove first item in list, the X-axis label substituted by doc
-                    # columns_to_be_plotted_numeric[0].pop(0)
-                    # columns_to_be_plotted_numeric[0].insert(0,docCol+1)
-                    # columns_to_be_plotted_byDoc = columns_to_be_plotted_numeric
-                # columns_to_be_plotted_byDoc=[[5,0,2,0,3]]
                 if outputFileNameType != '':
                     outputFileLabel = 'byDoc_' + outputFileNameType
                 else:
