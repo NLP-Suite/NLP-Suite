@@ -94,6 +94,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     groupByList,plotList, chart_title_label, column_yAxis_label='Frequencies', pivot = False):
     filesToOpen=[]
     columns_to_be_plotted_numeric=[]
+    columns_to_be_plotted_byDoc=[]
+    columns_to_be_plotted_bySent=[]
 
     if createCharts == True:
         chart_outputFilenameSV=''
@@ -125,6 +127,18 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     if len(columns_to_be_plotted_xAxis) == 1:
         field_number_xAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_xAxis[0],
                                                                           inputFilename)
+    if "Document ID" in headers:
+        docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID', inputFilename)
+        docCol = docCol +1 # we need to visualize the doc filename
+        byDoc = True
+    else:
+        byDoc = False
+    if "Sentence ID" in headers:
+        sentCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Sentence ID', inputFilename)
+        bySent = True
+    else:
+        bySent = False
+
     for i in range(0,len(columns_to_be_plotted_yAxis)):
         # get numeric value of header, necessary for run_all
         field_number_yAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_yAxis[i], inputFilename)
@@ -136,6 +150,16 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         else: # there is an X-Axis (e.g., ngrams values)
             columns_to_be_plotted_numeric.append([field_number_xAxis, field_number_yAxis])
 
+        if byDoc:
+            columns_to_be_plotted_byDoc.append([docCol, field_number_yAxis])
+        if bySent:
+            columns_to_be_plotted_bySent.append([sentCol, field_number_yAxis])
+
+        # remove first item in list, the X-axis label substituted by doc
+        # columns_to_be_plotted_numeric[0].pop(0)
+        # columns_to_be_plotted_numeric[0].insert(0, docCol + 1)
+        # columns_to_be_plotted_byDoc = columns_to_be_plotted_numeric
+
         # TODO Naman for numeric data build classes of values, rather than individual values, to be displayed in the X-axis
         # https://stackoverflow.com/questions/49382207/how-to-map-numeric-data-into-categories-bins-in-pandas-dataframe
         # if count_var == 0: # numeric variable
@@ -145,19 +169,6 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         #     # create classes of values, for instance 5
         #     x_axis_labels = ['bin-1', 'bin-2', 'bin-3', 'bin-4', 'bin-5']
         #     print(pd.cut(df[columns_to_be_plotted[i]], column_data, labels=x_axis_labels))
-
-    if "Document ID" in headers:
-        docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID', inputFilename)
-        # both Document ID and Document
-        columns_to_be_plotted_byDoc = [[docCol, docCol + 1]]
-        byDoc = True
-    else:
-        byDoc = False
-    if "Sentence ID" in headers:
-        sentCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Sentence ID', inputFilename)
-        bySent = True
-    else:
-        bySent = False
 
     # TODO depends on how many documents we have
     if byDoc:
@@ -279,10 +290,10 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     #         break
                     #     columns_to_be_plotted_byDoc_expanded.append(item)
                     # columns_to_be_plotted_byDoc=columns_to_be_plotted_byDoc_expanded
-                    # remove first item in list, the X-axis label substituted by doc
-                    columns_to_be_plotted_numeric[0].pop(0)
-                    columns_to_be_plotted_numeric[0].insert(0,docCol+1)
-                    columns_to_be_plotted_byDoc = columns_to_be_plotted_numeric
+                    # # remove first item in list, the X-axis label substituted by doc
+                    # columns_to_be_plotted_numeric[0].pop(0)
+                    # columns_to_be_plotted_numeric[0].insert(0,docCol+1)
+                    # columns_to_be_plotted_byDoc = columns_to_be_plotted_numeric
                 # columns_to_be_plotted_byDoc=[[5,0,2,0,3]]
                 if outputFileNameType != '':
                     outputFileLabel = 'byDoc_' + outputFileNameType
