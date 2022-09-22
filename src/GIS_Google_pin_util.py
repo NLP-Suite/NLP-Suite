@@ -9,6 +9,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "GIS_Google_pin_util"
 import os
 import simplekml
 import tkinter.messagebox as mb
+import pandas as pd
 
 import IO_csv_util
 import IO_user_interface_util
@@ -674,24 +675,13 @@ def pin_description(inputFilename, pnt, data, headers, geo_index, index_list,
 				column_num = a
 			if description_location_var_name == headers[a]:
 				location_num = a
-
-		# TODO MINO GIS for LARGE data the routine is very slow since the loop loops through each record
-		# TODO data is a list of lists
-		# TODO If data were a numpy array or dataframe,there is a simple one-liner that extracts all descriptions:
-		# TODO description = data[:, column_num]
-		# TODO The “:” here means “all elements in that column”.
-		# TODO For this approach, however, data has to be a numpy array or dataframe.
-
-		for b in range(len(data)):
-			names.append(data[b][location_num])
-			try:
-				description.append(data[b][column_num])
-			except:
-				description.append("Empty value for this field")
-				continue
-			docName = IO_csv_util.undressFilenameForCSVHyperlink((data)[b][document_num])
-			head, tail = os.path.split(docName)
-			documents.append(tail)
+		# TODO MINO Pandas
+		data = pd.read_csv(inputFilename)
+		names = data['Location'].values.tolist()
+		description = data['Sentence'].values.tolist()
+		documents = data['Document'].apply(IO_csv_util.undressFilenameForCSVHyperlink)
+		documents = documents.apply(os.path.split)
+		documents = [item[1] for _,item in documents.items()]
 
 	index = index_list[geo_index - 1]
 

@@ -153,6 +153,9 @@ message_CoreNLP_NER_tags = "The CoNLL table produced by the CoreNLP parser has a
 title_options_CoreNLP_website = ['CoreNLP language/annotator options website']
 message_CoreNLP_website = "You will be asked next if you want to open the Stanford CoreNLP language website to get a list of available annotators for each supported language.\n\nIf you do not want to be asked again to open the website, just hit 'No' below."
 
+title_options_CoreNLP_Json = ['CoreNLP exporting Json files']
+message_CoreNLP_Json = "Stanford CoreNLP can export in output Json files for the selected annotator(s)). Json files may give expert users checks against the NLP Suite performance about some CoreNLP annotators.\n\nIf you do not wish to produce these files, simply turn OFF this reminder by replying No to wanting to see this reminder again. And like for any reminder, you can always turn it back ON, and export Json files, at any time by using the 'Open reminders' dropdown menu at at the bottom of this GUI."
+
 title_options_TIPS_file = ['Open TIPS file']
 message_TIPS_file = "You will be asked next if you want to open a TIPS file for help.\n\nIf you do not want to be asked again to open the TIPS file, just hit 'No' below."
 
@@ -384,8 +387,8 @@ def displayReminder(df,row_num,title, message, event, currentStatus, question, s
 # routine is a string
 # title_options is a list [] of all Routine values
 # * in the Routine column are used for reminders that apply to any GUI
-
-def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_event=False):
+# set silent to True if you just want to check the status of the reminder ON or OFF without asking the question
+def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_event=False, silent=False):
     # * denotes messages that apply to ALL scripts
     status=''
     if config_filename=='*':
@@ -408,8 +411,9 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
         # mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory was not found. If this is your first time running NLP Suite, do not worry. A default reminders.csv has been automatically generated for you.")
         return checkReminder(config_filename, title_options, message, triggered_by_GUI_event)
     except Exception:
-        mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory is ill formed. Most likely, it contains extra , in one of the three fields (Routine, Title, Message).\n\nPlease, let the NLP Suite development team know the problem so it can be fixed.\n\nIf any of the fields contain , the field content must be enclosed in \"\".")
-        return None # open_message
+        if not silent:
+            mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory is ill formed. Most likely, it contains extra , in one of the three fields (Routine, Title, Message).\n\nPlease, let the NLP Suite development team know the problem so it can be fixed.\n\nIf any of the fields contain , the field content must be enclosed in \"\".")
+            return None # open_message
     # get the row number of the routine that we are looking at
     silent = False
     for title in title_options:
@@ -452,7 +456,7 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
                     # title_options is the value you originally came in with (i.e., [title]) and that was inserted
                     checkReminder(config_filename, title_options, message,
                                   triggered_by_GUI_event)
-    return status # Yes for ON or No for OFF
+    return status # returns Yes for ON or No for OFF
 
 # called from a GUI when a reminder is selected from the reminder dropdown menu
 # title is a string, the reminders option selected in the GUI dropdown menu

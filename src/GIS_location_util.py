@@ -23,52 +23,23 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS extract_index ', 'Started running extract_index algorithm at',
 												   True, '', True, '', silent=True)
-
-	geo_index = 0
-	index = 0
-	index_list = {}
-
-	inputfile = csv.reader(open(InputCodedCsvFile,'r',encoding=encodingValue,errors='ignore'))
-	input_coded_csv_file = [line for line in inputfile] # reminder to skip the header here
-	# first_row = next(inputfile) #skip header
-
-	# withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
-	withHeader_var = not any(cell.isdigit() for cell in input_coded_csv_file[0])
-
-	data, headers = IO_csv_util.get_csv_data(inputFilename, withHeader_var) # get the data and header
-
-	# geo_withHeader_var = IO_csv_util.csvFile_has_header(InputCodedCsvFile) # check if the file has header
-	geo_withHeader_var = withHeader_var
-	# geo_data, geo_headers = IO_csv_util.get_csv_data(InputCodedCsvFile,geo_withHeader_var) # get the data and header
-	geo_data, geo_headers = input_coded_csv_file[1 if geo_withHeader_var else 0:], input_coded_csv_file[0] if geo_withHeader_var else ''
-
-	if len(geo_data)==0:
+	# TODO MINO PANDAS
+	inputfile = pd.read_csv(InputCodedCsvFile, encoding=encodingValue)
+	data = pd.read_csv(inputFilename, encoding=encodingValue)
+	headers = data.columns.values.tolist()
+	if len(inputfile)==0:
 		return []
-
-	names = []
 	location_num=0
 	for m in range(len(headers)):
 		if location_var_name == headers[m]:
 			location_num = m
-
-	for n in range(len(data)):
-		names.append(data[n][location_num])
-
-	for row in input_coded_csv_file[1:]:
-		geo_index += 1
-		geo_name = geo_data[geo_index-1][0]
-
-		for l in range(len(names)):
-			if geo_name == names[l]:
-				index = l
-				if index not in index_list:
-					break
-		index_list[index] = True
+	index_list = inputfile['Location'].isin(data['Location'])
+	index_list = [i+1 for i,bool in enumerate(index_list) if bool]
+	data = data.values.tolist()
 
 	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS extract_index', 'Finished running extract_index algorithm at', True, '',
 									   True, startTime, silent=True)
-
-	list_to_return=[i + 1 for i in index_list.keys()], data, headers, location_num
+	list_to_return = index_list, data, headers, location_num
 	return list_to_return
 
 #the CoNLL table includes the filename; the position in the table varies with old and new CoNLL

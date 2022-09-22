@@ -69,7 +69,7 @@ GUI_label = 'Graphical User Interface (GUI) for Setting Up Input/Output, I/O, Op
 # define variables
 y_multiplier_integer = 0
 # GUI_size is reset many times in the script
-GUI_size = '1200x240'
+GUI_size = '1200x24w0'
 
 # either input file or dir (for corpus) and no secondary dir
 if ((config_input_output_numeric_options[0] == 0 and config_input_output_numeric_options[1] != 0)
@@ -188,7 +188,7 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordi
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the Input/Output information necessary to run the NLP-Suite scripts, namely the INPUT files to be used - a single file or a set of files in a directory - and the OUTPUT directory where the files produced by the NLP Suite scripts will be saved - txt, csv, html, kml, jpg.\n\nThe selected I/O configuration will be saved in config files in the config subdirectory. The NLP_default_IO_config.csv file will be used for all NLP Suite scripts unless a different configuraton is selected for a specific script by selecting the 'Alternative I/O configuation'. When opening the GUI with the option 'Alternative I/O configuation' a configuration file will be saved under the config subdirectory with the specif name of the calling script (e.g., Stanford-CoreNLP_config.csv).\n\nWhen clicking the CLOSE button, the script will give the option to save the currently selected configuration IF different from the previously saved configuration."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, False, 'IO_setup_main')
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, False, 'NLP_setup_IO_main')
 
 if msg!="":
     mb.showwarning(title='Warning', message=msg)

@@ -213,7 +213,7 @@ def run(inputFilename,inputDir,outputDir,
                                                       openOutputFiles,
                                                       createCharts, chartPackage,
                                                       annotator, False,
-                                                      language_var,
+                                                      [language_var], # Stanza_util takes language_var as a list
                                                       memory_var, document_length_var, limit_sentence_length_var,
                                                       extract_date_from_filename_var=0,
                                                       date_format='',

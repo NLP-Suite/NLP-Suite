@@ -252,6 +252,7 @@ def geocode(window,locations, inputFilename, outputDir,
 			tmp_loc.append(item)
 	locations = tmp_loc
 	skipNext = False
+	index_list = []
 	for item in locations:
 		index=index+1 #items in locations are NOT DISTINCT
 		if skipNext:
@@ -367,17 +368,18 @@ def geocode(window,locations, inputFilename, outputDir,
 				# kml = simplekml.Kml()
 				# # Icon selection
 				# icon_url = 'http://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png'
-				#
+
 				# pnt = kml.newpoint(coords=[(lng, lat)])  # wants to be read in in lng, lat order
 				# pnt.style.iconstyle.icon.href = icon_url
-				# #	the code breaks in pin_customizer
-				# #	we would need to process inputfile rather inputFilename
-				# index_list=[]
 				# index_list=GIS_location_util.extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_name)
 				# TODO MINO GIS if you can get the index_list from the next couple of lines, when completed
-				#	we are in business!!!
 				# df = pd.read_csv(inputFilename)
 				# index_list = df[]
+				# pnt = GIS_Google_pin_util.pin_customizer(inputFilename, pnt, index, index_list,
+				# 								 locationColumnName,sentence)
+				# if itemToGeocode not in nonDistinctNotGeocodedList:
+				# 	index_list.append(index)
+				# sentence=''
 				# pnt = GIS_Google_pin_util.pin_customizer(inputFilename, pnt, index, index_list,
 				# 								 locationColumnName,sentence)
 
