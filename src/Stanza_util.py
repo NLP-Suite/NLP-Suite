@@ -17,6 +17,7 @@ import GUI_util
 import GUI_IO_util
 import IO_user_interface_util
 import constants_util
+import NLP_parsers_annotators_visualization_util
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -271,42 +272,23 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                                                     'Stanza_' + 'Lemma_Vocab')
         vocab_df.to_csv(vocab_df_outputFilename, index=False, encoding=language_encoding)
         filesToOpen.append(vocab_df_outputFilename)
-
-
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Form'],
-                                                           chartTitle='Frequency Distribution of Form Values',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='Form',  # 'POS_bar',
-                                                           column_xAxis_label='Form values',
-                                                           groupByList=['Document ID', 'Document'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='Form Values')
-
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                # chart_outputFilename is a list must use extend and not append
-                filesToOpen.extend(chart_outputFilename)
-
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Lemma'],
-                                                           chartTitle='Frequency Distribution of Lemma Values',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='Lemma',  # 'POS_bar',
-                                                           column_xAxis_label='Lemma values',
-                                                           groupByList=['Document ID', 'Document'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='Lemma Values')
-
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
-
+    
+    filesToVisualize=filesToOpen
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, False)
+    # TODO MINO
+    for j in range(len(filesToVisualize)):
+        #02/27/2021; eliminate the value error when there's no information from certain annotators
+        if filesToVisualize[j][-4:] == ".csv":
+            file_df = pd.read_csv(filesToVisualize[j])
+            if not file_df.empty:
+                outputFilename = filesToVisualize[j]
+                chart_outputFilename = NLP_parsers_annotators_visualization_util.parsers_annotators_visualization(
+                    config_filename, inputFilename, inputDir, outputDir,
+                    outputFilename, annotator_params, kwargs, createCharts,
+                    chartPackage)
+                if chart_outputFilename!=None:
+                    if len(chart_outputFilename) > 0:
+                        filesToOpen.append(chart_outputFilename)
 
     return filesToOpen
 

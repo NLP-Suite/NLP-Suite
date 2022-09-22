@@ -124,7 +124,7 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
 # generate visualization output ----------------------------------------------------------------
 # parser ________________________________________________________________
 
-    elif 'parse' in str(annotator_params) and 'CoNLL' in outputFilename:
+    elif ('parse' in str(annotator_params) and 'CoNLL' in outputFilename) or ('depparse' in str(annotator_params)): # TODO MINO: add 'depparse' for Stanza and spaCy
 
         # Form & Lemma values
         # reminders_util.checkReminder(config_filename, reminders_util.lemma_frequencies,

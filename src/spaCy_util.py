@@ -21,6 +21,7 @@ import GUI_util
 import GUI_IO_util
 import IO_user_interface_util
 import constants_util
+import NLP_parsers_annotators_visualization_util
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -148,6 +149,22 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     if "SVO" in annotator_params:
         svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
         filesToOpen.append(svo_df_outputFilename)
+
+    #TODO MINO
+    filesToVisualize=filesToOpen
+    for j in range(len(filesToVisualize)):
+        #02/27/2021; eliminate the value error when there's no information from certain annotators
+        if filesToVisualize[j][-4:] == ".csv":
+            file_df = pd.read_csv(filesToVisualize[j])
+            if not file_df.empty:
+                outputFilename = filesToVisualize[j]
+                chart_outputFilename = NLP_parsers_annotators_visualization_util.parsers_annotators_visualization(
+                    config_filename, inputFilename, inputDir, outputDir,
+                    outputFilename, annotator_params, kwargs, createCharts,
+                    chartPackage)
+                if chart_outputFilename!=None:
+                    if len(chart_outputFilename) > 0:
+                        filesToOpen.append(chart_outputFilename)
 
     return filesToOpen
 
