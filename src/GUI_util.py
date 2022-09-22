@@ -838,7 +838,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     #   in this case config_input_output_numeric_options = [0,0,0,0]
     if config_input_output_numeric_options!= [0,0,0,0] and \
             not 'NLP_menu_main' in scriptName and \
-            not "IO_setup_main" in scriptName:
+            not "NLP_setup_" in scriptName:
         #open output csv files widget defined above since it is used earlier
         open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Automatically open ALL output files", "Do NOT automatically open ALL output files"))
         open_csv_output_label.configure(text="Automatically open ALL output files")
@@ -958,7 +958,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
         handle_setup_options(y_multiplier_integer, scriptName)
 
-    # there is no RUN button when setting up IO information in NLP_setup_IO_main.py
+    # there is no RUN button when setting up IO information in any of the NLP_setup scripts
     #   or in any of the GUIs that are ALL options GUIs
     if not "NLP_setup_" in scriptName \
             and not "ALL_main" in scriptName:

@@ -1,5 +1,4 @@
 # Written by Roberto Franzosi May, September 2020
-# Written by Roberto Franzosi May, September 2020
 # Written by Roberto Franzosi September 2021
 
 import sys
