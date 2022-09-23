@@ -34,7 +34,7 @@ import file_filename_util
 
 # extra parameters passed to uniform the funct call
 def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, openOutputFiles,createCharts=False,chartPackage='Excel'):
-    result=file_filename_util.backup_files(inputFilename, inputDir)
+    result=file_filename_util.backup_files(inputFilename, inputDir,'Add full-stops to paragraphs')
     if result==False:
         return
 
@@ -236,7 +236,7 @@ def remove_characters_between_characters(window,inputFilename,inputDir, outputDi
 
 # inputFilename contains path
 def remove_blank_lines(window,inputFilename,inputDir, outputDir='',openOutputFiles=False,createCharts=False,chartPackage='Excel'):
-    result=file_filename_util.backup_files(inputFilename, inputDir)
+    result=file_filename_util.backup_files(inputFilename, inputDir,"Remove blank lines")
     if result==False:
         return
 
@@ -460,7 +460,7 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles,cre
 # Needs special handling https://stackoverflow.com/questions/6067673/urldecoder-illegal-hex-characters-in-escape-pattern-for-input-string
 # https://stackoverflow.com/questions/7395789/replacing-a-weird-single-quote-with-blank-string-in-python
 def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
-    result=file_filename_util.backup_files(inputFilename, inputDir)
+    result=file_filename_util.backup_files(inputFilename, inputDir,"Convert non-ASCII quotes")
     if result==False:
         return False
 
@@ -549,7 +549,7 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
 def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFiles=True,string_IN=[],string_OUT=[],silent=False):
     #edited by Claude Hu 02/2021
     #string_IN=[],string_OUT=[], in the form as list so that running this function can finish replacement of multiple strings without open one file repetitively
-    result=file_filename_util.backup_files(inputFilename, inputDir)
+    result=file_filename_util.backup_files(inputFilename, inputDir,"Find and replace string")
     if result==False:
         return
 

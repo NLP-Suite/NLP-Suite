@@ -95,8 +95,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     restrict = False
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
-                                                            silent=True)
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS-GEP',
+                                                            silent=False)
+    if outputDir == '':
+        return
 
     filesToOpen = GIS_pipeline_util.GIS_pipeline(GUI_util.window,config_filename,
                                        inputFilename, inputDir, outputDir,

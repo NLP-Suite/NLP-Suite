@@ -169,7 +169,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0,1]]
         count_var=0
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, noun_postag_stats_file_name, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, noun_postag_stats_file_name, outputDir,
                                      outputFileLabel='Nouns_POS',
                                      chartPackage=chartPackage,
                                      chart_type_list=['bar'],
@@ -182,7 +182,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, noun_deprel_stats_file_name, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, noun_deprel_stats_file_name, outputDir,
 														 outputFileLabel='Nouns_DEPREL',
 														 chartPackage=chartPackage,
 														 chart_type_list=['bar'],
@@ -195,7 +195,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, noun_ner_stats_file_name, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, noun_ner_stats_file_name, outputDir,
                                      outputFileLabel='Nouns_NER',
                                      chartPackage=chartPackage,
                                      chart_type_list=['bar'],

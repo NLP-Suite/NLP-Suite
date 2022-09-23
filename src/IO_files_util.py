@@ -76,7 +76,23 @@ def make_output_subdirectory(inputFilename, inputDir, outputDir, label, silent=T
         # processing a directory
         inputDirBase = os.path.basename(inputDir)
         outputSubDir = os.path.join(outputDir, label + "_" + inputDirBase)
-    outputSubDir = make_directory(outputSubDir)
+    if os.path.exists(outputSubDir):
+        if not silent:
+            result = mb.askyesno('Directory already exists',
+                                        'The algorithms will create a new directory\n\n' + outputSubDir + '\n\nA directory by the same name already exists and it will be replaced.\n\nAre you sure you want to continue?')
+            if not result:
+                # createDir = False
+                # return createDir
+                return ''
+        shutil.rmtree(outputSubDir)
+    try:
+        os.chmod(Path(outputSubDir).parent.absolute(), 0o755)
+        os.mkdir(outputSubDir, 0o755)
+    except Exception as e:
+        print("error: ", e.__doc__)
+        # createDir = False
+        outputSubDir=''
+
     return outputSubDir
 
 

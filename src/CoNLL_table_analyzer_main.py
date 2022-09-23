@@ -39,10 +39,6 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         verb_analysis_var,
         function_words_analysis_var):
 
-    # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='GISCoNLL_anlz',
-                                                              silent=True)
-
     global recordID_position, documentId_position, data, all_CoNLL_records
     recordID_position = 9 # NEW CoNLL_U
     documentId_position = 11 # NEW CoNLL_U
@@ -148,6 +144,10 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
 
 # left-hand side SEARCH
     if searchField_kw != 'e.g.: father':
+        # # create a subdirectory of the output directory
+        # outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_search',
+        #                                                    silent=True)
+
         if ' ' in searchField_kw:
             mb.showwarning(title='Search error',
                            message="The CoNLL table search can only contain one token/word since the table has one record for each token/word.\n\nPlease, enter a different word and try again.\n\nIf you need to search your corpus for collocations, i.e., multi-word expressions, you need to use the 'N-grams/Co-occurrence searches' or the 'Words/collocations searches' in the ALL searches GUI.")

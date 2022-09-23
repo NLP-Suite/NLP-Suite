@@ -539,6 +539,14 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             chartName1 += chartName2
 
             ws_chart.add_chart(chartName1, "A1")
+
+    # move chart sheet to first in Excel, so as to open Excel directly on the Chart worksheet rather on the Data worksheet
+    # https://stackoverflow.com/questions/51082458/move-a-worksheet-in-a-workbook-using-openpyxl-or-xl-or-xlsxwriter
+    sheets = wb._sheets
+    from_loc = len(sheets) - 1
+    to_loc = 0
+    sheet = sheets.pop(from_loc)
+    sheets.insert(to_loc, sheet)
     # errorFound=False
     try:
         wb.save(chart_outputFilename)
@@ -548,6 +556,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     #     errorFound=True
     # if errorFound==True:
     #     chart_outputFilename=''
+
     IO_user_interface_util.timed_alert(window, 2000, 'Excel charts', 'Finished preparing Excel chart at',
                                        True, '', True, startTime, silent=True)
     return chart_outputFilename

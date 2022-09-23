@@ -164,7 +164,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
                     chartPackage)
                 if chart_outputFilename!=None:
                     if len(chart_outputFilename) > 0:
-                        filesToOpen.append(chart_outputFilename)
+                        filesToOpen.extend(chart_outputFilename)
 
     return filesToOpen
 

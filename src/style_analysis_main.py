@@ -90,9 +90,6 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
 
         # word n-grams
         if ngrams_word_var or bySentenceIndex_word_var:
-            # create a subdirectory of the output directory
-            outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='Ngrams',
-                                                               silent=True)
             outputFiles = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, ngrams_size, normalize,
                                                               excludePunctuation, 1, 0, openOutputFiles,
@@ -563,6 +560,7 @@ videos_options='No videos available'
 
 TIPS_lookup = {'Style analysis':'TIPS_NLP_Style analysis.pdf',
                'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
+               'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf',
                'Clause analysis':'TIPS_NLP_Clause analysis.pdf',
                'Sentence complexity':'TIPS_NLP_Sentence complexity.pdf',
                'Text readability':'TIPS_NLP_Text readability.pdf',
@@ -581,7 +579,7 @@ TIPS_lookup = {'Style analysis':'TIPS_NLP_Style analysis.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
 
-TIPS_options='Style analysis', 'English Language Benchmarks', 'Clause analysis', 'Sentence complexity', 'Text readability','Nominalization','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Language concreteness','Yule measures of vocabulary richness','The world of emotions and sentiments','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
+TIPS_options='Style analysis', 'English Language Benchmarks','Things to do with words: Overall view', 'Clause analysis', 'Sentence complexity', 'Text readability','Nominalization','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Language concreteness','Yule measures of vocabulary richness','The world of emotions and sentiments','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -616,6 +614,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+
+'English Language Benchmarks', 'Things to do with words: Overall view',
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts analyze different aspects of style, from the analysis of CoNLL table tags (POSTAG, DEPREL, NER), to sentence complexity and readability, vocabulary analysis (short and vowel words, abstract/concrete words, unusual words, vocabulary richness (Yule\'s K)), N-grams."

@@ -12,16 +12,20 @@ import IO_files_util
 import IO_user_interface_util
 import csv
 import tkinter.messagebox as mb
+import os # TODO MINO GIS create kml record
 
 from geopy import Nominatim
 from geopy.geocoders import GoogleV3
 from geopy.exc import GeocoderTimedOut
+import simplekml # TODO MINO GIS create kml record
+import pandas as pd # TODO MINO GIS create kml record
 
 import GIS_location_util
 import GIS_file_check_util
 import IO_internet_util
 import GIS_pipeline_util
-import constants_util
+import GIS_Google_pin_util # TODO MINO GIS create kml record
+import IO_csv_util # TODO MINO GIS create kml record
 
 filesToOpen = []
 
@@ -179,9 +183,12 @@ def geocode(window,locations, inputFilename, outputDir,
 		Google_API=''
 
 	geolocator = get_geolocator(geocoder,Google_API)
+	kml = simplekml.Kml()
+	icon_url = GIS_Google_pin_util.pin_icon_select(['Pushpins'], ['red'])
 
 	inputIsCoNLL, inputIsGeocoded, withHeader, \
 		headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
+	input_df = pd.read_csv(inputFilename, encoding=encodingValue)
 
 	startTime=IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Started geocoding locations via the online service '" + geocoder + "' at",
 												 True, '', True,'',True)
@@ -199,6 +206,9 @@ def geocode(window,locations, inputFilename, outputDir,
 	locationsNotFoundNonDistinctoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
 																			geoName, 'Not-Found-Non-Distinct', locationColumnName, '',
 																			False, True)
+	# TODO MINO GIS create kml record
+	kmloutputFilename = geocodedLocationsOutputFilename.replace('.csv', '.kml')
+
 	if locations=='':
 		outputCsvLocationsOnly = ''
 		if inputIsCoNLL == True:
@@ -257,9 +267,10 @@ def geocode(window,locations, inputFilename, outputDir,
 		index=index+1 #items in locations are NOT DISTINCT
 		if skipNext:
 			continue
-		print("Processing location " + str(index) + "/" + str(len(locations)) + ": " + item[0])
 		if str(item)!='nan' and str(item)!='':
 			currRecord=str(index) + "/" + str(len(locations))
+			print("Processing location " + currRecord + " for geocoding: "
+				  + str(item[0]) + " (NER tag: " + str(item[len(item) - 1]) + ")")
 			#for CoNLL tables as input rows & columns
 			#   refer to the four fields exported by the NER locator
 			if inputIsCoNLL==True: #the filename was exported in GIS_location_util
@@ -361,32 +372,38 @@ def geocode(window,locations, inputFilename, outputDir,
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address])
 
 				# TODO MINO GIS create kml record
-				# TODO for date see above
-				# we must get the sentence
-				# import simplekml
-				# import GIS_Google_pin_util
-				# kml = simplekml.Kml()
-				# # Icon selection
-				# icon_url = 'http://maps.google.com/mapfiles/kml/pushpin/red-pushpin.png'
-
-				# pnt = kml.newpoint(coords=[(lng, lat)])  # wants to be read in in lng, lat order
-				# pnt.style.iconstyle.icon.href = icon_url
-				# index_list=GIS_location_util.extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_name)
-				# TODO MINO GIS if you can get the index_list from the next couple of lines, when completed
-				# df = pd.read_csv(inputFilename)
-				# index_list = df[]
-				# pnt = GIS_Google_pin_util.pin_customizer(inputFilename, pnt, index, index_list,
-				# 								 locationColumnName,sentence)
-				# if itemToGeocode not in nonDistinctNotGeocodedList:
-				# 	index_list.append(index)
-				# sentence=''
-				# pnt = GIS_Google_pin_util.pin_customizer(inputFilename, pnt, index, index_list,
-				# 								 locationColumnName,sentence)
+				pnt = kml.newpoint(coords=[(lng, lat)])
+				pnt.style.iconstyle.icon.href = icon_url
+				pnt.name = itemToGeocode
+				pnt.style.labelstyle.scale = '1'
+				# pnt.style.labelstyle.color = simplekml.Color.rgb(int(r_value), int(g_value), int(b_value))
+				sentence = input_df.at[index-1, 'Sentence']
+				document = input_df.at[index-1, 'Document']
+				document = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document))[1]
+				pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
+									"<i><b>Sentence</b></i>: " + sentence + "<br/><br/>" + \
+									"<i><b>Document</b></i>: " + document
 
 	[geowriterNotFoundNonDistinct.writerow([item[0], item[1]]) for item in nonDistinctNotGeocodedFull]
 	csvfile.close()
 	csvfileNotFound.close()
 	csvfileNotFoundNonDistinct.close()
+	# TODO MINO GIS create kml record
+	try:
+		kml.save(kmloutputFilename)
+	except:
+		mb.showwarning(title='kml file save failure',
+					   message="Saving the kml file failed. A typical cause of failure is is bad characters in the input text/csv file(s) (e.g, 'LINE TABULATION' or 'INFORMATION SEPARATOR ONE' characters).\n\nThe GIS KML script will now try to automattically clean the kml file, save it in safe mode, and open the kml file in Google Earth Pro.\n\nIf the file cleaning was successful, the map will display correctly. If not, Google Earth Pro will open exactly on the bad character position. Remove the character and save the file. But, you should really clean the original input txt/csv file.")
+		# Save kml regardless of validity. Let the user find any bad characters.
+		kml.save(kmloutputFilename, False)
+		# Clean out any "LINE TABULATION" and "INFORMATION SEPARATOR ONE" characters from the input (causes error with KML).
+		with open(kmloutputFilename, 'r+', encoding='utf_8', errors='ignore') as kmlfile:
+			content = kmlfile.read()
+			content = content.replace(u"\u000B", "")
+			content = content.replace(u"\u001F", "")
+			kmlfile.seek(0)
+			kmlfile.write(content)
+			kmlfile.truncate()
 
 	if locationsNotFound==0:
 		locationsNotFoundoutputFilename='' #used NOT to open the file since there are NO errors
@@ -394,5 +411,5 @@ def geocode(window,locations, inputFilename, outputDir,
 		if locationsNotFound==index:
 			geocodedLocationsOutputFilename='' #used NOT to open the file since there are no records
 			# this warning is already given
-	IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime, True)
-	return geocodedLocationsOutputFilename, locationsNotFoundoutputFilename, locationsNotFoundNonDistinctoutputFilename
+	IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding " + str(len(locations)) + " locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime, True)
+	return geocodedLocationsOutputFilename, locationsNotFoundoutputFilename, locationsNotFoundNonDistinctoutputFilename, kmloutputFilename

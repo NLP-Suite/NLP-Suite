@@ -485,6 +485,8 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                                   normalize=False, excludePunctuation=True, wordgram=None,
                                   frequency = 0, openOutputFiles=False,
                                   createCharts=True, chartPackage='Excel', bySentenceID=None):
+    # hapax have ngramsNumber = 1 and frequency = 1
+
     filesToOpen = []
     container = []
     if inputFilename=='' and inputDir=='':
@@ -498,6 +500,17 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt')
     nFile=len(files)
     if nFile==0:
+        return
+
+    if ngramsNumber == 1 and frequency == 1: # hapax
+        hapax_label = "_hapax"
+    else:
+        hapax_label = ''
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='Ngrams'+hapax_label,
+                                                       silent=False)
+    if outputDir == '':
         return
 
     if wordgram==None:
@@ -614,7 +627,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
         ngramsList = []
         corpus_ngramsList = []
         corpus_tokens = []
-        print("Processing " + gram_type_label_full + " n-gram " + str(gram) + "/" + str(ngramsNumber))
+        print("Processing " + gram_type_label_full + " n-grams " + str(gram) + "/" + str(ngramsNumber))
         for file in files:
             head, tail = os.path.split(file)
             documentID += 1
@@ -865,6 +878,30 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
         startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                'Started running ' + processType + ' at', True)
 
+    # process separately outside the loop through documents which is carried out inside compute_character_word_ngrams
+    if processType == '' or "N-grams" in processType or \
+            "hapax" in processType.lower() or "unigrams" in processType.lower():
+        if "hapax" in processType.lower():
+            ngramsNumber = 1
+            frequency = 1  # hapax
+        elif "unigrams" in processType.lower():
+            ngramsNumber = 1
+            frequency = 0
+        else:
+            ngramsNumber = 3  # TODO ROBY
+            frequency = 0  # N-grams
+        normalize = False
+        excludePunctuation = True
+        wordgram = True
+        bySentenceID = False
+        tempOutputFiles = compute_character_word_ngrams(window, inputFilename, inputDir, outputDir, ngramsNumber,
+                                                        normalize, excludePunctuation,
+                                                        wordgram, frequency,
+                                                        openOutputFiles, createCharts, chartPackage,
+                                                        bySentenceID)
+        # Excel charts are generated in compute_character_word_ngrams; return to exit here
+        return tempOutputFiles
+
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         documentID = documentID + 1
@@ -968,28 +1005,8 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                         question_punctuation=question_punctuation+1
 
 # N-GRAMS & HAPAX --------------------------------------------------------------------------
-                if processType == '' or "N-grams" in processType or \
-                        "hapax" in processType.lower() or "unigrams" in processType.lower():
-                    if "hapax" in processType.lower():
-                        ngramsNumber = 1
-                        frequency = 1  # hapax
-                    elif "unigrams" in processType.lower():
-                        ngramsNumber = 1
-                        frequency = 0
-                    else:
-                        ngramsNumber = 3 # TODO ROBY
-                        frequency = 0  # N-grams
-                    normalize = False
-                    excludePunctuation = True
-                    wordgram = True
-                    bySentenceID = False
-                    tempOutputFiles = compute_character_word_ngrams(window, inputFilename, inputDir, outputDir, ngramsNumber,
-                                                                    normalize, excludePunctuation,
-                                                                    wordgram, frequency,
-                                                                    openOutputFiles, createCharts, chartPackage,
-                                                                    bySentenceID)
-                    # Excel charts are generated in compute_character_word_ngrams; return to exit here
-                    return tempOutputFiles
+        # hapax and ngrams are processed above outside the for doc loop
+        #    a for doc loop is already carried out in the function compute_character_word_ngrams
 
     word_list.insert(0, header)
 
@@ -1090,7 +1107,9 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='readability',
-                                                              silent=True)
+                                                              silent=False)
+    if outputDir == '':
+        return
 
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt')
     nFile = len(files)
@@ -1464,7 +1483,9 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='complexity',
-                                                              silent=True)
+                                                              silent=False)
+    if outputDir == '':
+        return
 
     all_input_docs = {}
     dId = 0

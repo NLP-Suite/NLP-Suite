@@ -303,8 +303,20 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {"Narrative analysis":"TIPS_NLP_Things to do with words Narrative analysis.pdf",'WordNet':'TIPS_NLP_WordNet.pdf','Stanford CoreNLP date extractor (NER normalized date)':'TIPS_NLP_Stanford CoreNLP date extractor.pdf',"SVO (Subject-Verb-Object extractor)":"TIPS_NLP_SVO extraction and visualization.pdf",'Shape of stories':"TIPS_NLP_Shape of stories.pdf","Annotator":"TIPS_NLP_Annotator.pdf","DBpedia":"TIPS_NLP_Annotator DBpedia.pdf","YAGO":"TIPS_NLP_Annotator YAGO.pdf",'DBpedia ontology classes':'TIPS_NLP_Annotator DBpedia ontology classes.pdf','YAGO (schema.org) ontology classes':'TIPS_NLP_Annotator YAGO (schema.org) ontology classes.pdf',"Annotator (via dictionary)":"TIPS_NLP_Annotator dictionary.pdf","Gender annotator":"TIPS_NLP_Gender annotator.pdf"}
-TIPS_options='Narrative analysis', 'Stanford CoreNLP date extractor (NER normalized date)','WordNet','Annotator','DBpedia','DBpedia ontology classes','YAGO','YAGO (schema.org) ontology classes','Gender annotator','Annotator (via dictionary)','SVO (Subject-Verb-Object extractor)', 'Shape of stories'
+TIPS_lookup = {"Narrative analysis":"TIPS_NLP_Things to do with words Narrative analysis.pdf",
+               'WordNet':'TIPS_NLP_WordNet.pdf',
+               'Stanford CoreNLP date extractor (NER normalized date)':'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
+               "SVO (Subject-Verb-Object extractor)":"TIPS_NLP_SVO extraction and visualization.pdf",
+               'Shape of stories':"TIPS_NLP_Shape of stories.pdf",
+               "Annotator":"TIPS_NLP_Annotator.pdf",
+               "DBpedia":"TIPS_NLP_Annotator DBpedia.pdf","YAGO":"TIPS_NLP_Annotator YAGO.pdf",
+               'DBpedia ontology classes':'TIPS_NLP_Annotator DBpedia ontology classes.pdf',
+               'YAGO (schema.org) ontology classes':'TIPS_NLP_Annotator YAGO (schema.org) ontology classes.pdf',
+               "Annotator (via dictionary)":"TIPS_NLP_Annotator dictionary.pdf",
+               "Gender annotator":"TIPS_NLP_Gender annotator.pdf",
+               'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
+               'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf'}
+TIPS_options='Narrative analysis', 'Stanford CoreNLP date extractor (NER normalized date)','WordNet','Annotator','DBpedia','DBpedia ontology classes','YAGO','YAGO (schema.org) ontology classes','Gender annotator','Annotator (via dictionary)','SVO (Subject-Verb-Object extractor)', 'Shape of stories','English Language Benchmarks', 'Things to do with words: Overall view'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

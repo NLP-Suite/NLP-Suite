@@ -656,7 +656,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     chartPackage)
                 if chart_outputFilename!=None:
                     if len(chart_outputFilename) > 0:
-                        filesToOpen.append(chart_outputFilename)
+                        filesToOpen.extend(chart_outputFilename)
 
     CoreNLP_nlp.kill()
     # print("Length of Files to Open after visualization: ", len(filesToOpen))

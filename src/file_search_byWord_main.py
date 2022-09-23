@@ -311,8 +311,9 @@ activate_allOptions()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'No TIPS available':''}
-TIPS_options='No TIPS available'
+TIPS_lookup = {'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
+                'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf'}
+TIPS_options='English Language Benchmarks', 'Things to do with words: Overall view'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

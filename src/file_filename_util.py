@@ -21,13 +21,13 @@ import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
 
-def backup_files (inputFilename,inputDir,fileType='.txt',silent=False):
+def backup_files (inputFilename,inputDir,scripName, fileType='.txt',silent=False):
     if inputFilename != "":
         temp_inputDir, tail = os.path.split(inputFilename)
     else:
         temp_inputDir = inputDir
     backup_path = os.path.join(temp_inputDir, 'backup')
-    answer=mb.askyesnocancel("Backup files!","The function will modify your input file(s).\n\nDo you want to backup your file(s)?")
+    answer=mb.askyesnocancel("Backup files!","The function '" + scripName + "' will modify your input file(s).\n\nDo you want to backup your file(s)?")
     if answer==None: # Cancel
         return False
     if answer:
