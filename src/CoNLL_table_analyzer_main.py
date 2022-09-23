@@ -76,7 +76,9 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         # print(csv_file_field_list)
         # outputFiles: list = IO_csv_util.extract_from_csv(path=[inputFilename], output_path=outputDir, data_files=data_files,
         #                                          csv_file_field_list=csv_file_field_list)
-        outputFiles: list = IO_csv_util.extract_from_csv(inputFilename,outputDir, data_files,csv_file_field_list)
+        # TODO csv_file_field_list is not set properly
+        # TODO must pass to extract_from_csv not just the columns but the values selected
+        outputFiles: list = IO_csv_util.extract_from_csv(inputFilename,outputDir, data_files, csv_file_field_list)
         if outputFiles != None:
             filesToOpen.append(outputFiles)
 

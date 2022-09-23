@@ -247,7 +247,7 @@ message_SA_SentiWordNet = 'SentiWordNet does not compute sentence mean and media
 title_options_NGrams = ['subprocess.call(cmd) error']
 message_NGrams = 'subprocess.call(cmd) error\n\nIf the VIEWER you are running exits with an error code about a file not found, most likely your selected INPUT & OUTPUT directory options are too long for Windows to handle.\n\nYou may need to move your input and output folders so as to have a shorter path (e.g., desktop).'
 
-title_options_GIS_GUI = ['GIS GUI options']
+title_options_GIS_GUI = ['GIS default GUI options']
 message_GIS_GUI = 'The options available on the GUI have been automatically set for you depending upon the type of input file selected: txt or csv.\n\nWith a TXT file, NER extraction via Stanford CoreNLP must be first performed.\n\nWith a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.'
 
 title_options_GIS_default = ['GIS default visualization options']
@@ -357,11 +357,83 @@ def getReminders_list(config_filename,silent=False):
 
 # when displaying messages the message field is '' since the actual message is not known until the csv file is read
 def displayReminder(df,row_num,title, message, event, currentStatus, question, seeMsgAgain=False) -> object:
+
+    # https://stackoverflow.com/questions/30235587/closing-tkmessagebox-after-some-time-in-python?rq=1    def enter_value_widget(masterTitle, textCaption):
+    #     import tkinter as tk
+    #     from tkinter import Toplevel
+    #     window=GUI_util.window
+    #     class App():
+    #         def __init__(self, master):
+    #             top = self.top = Toplevel()
+    #             top.wm_title(textCaption)
+    #             top.focus_force()
+    #             self.label = tk.Label(top, width=len(textCaption))
+    #             self.label.pack()
+    #
+    #             self.label.grid(row=0, column=1)  # , sticky=W)
+    #             # self.callback = callback
+    #
+    #             YES_button = tk.Button(self.top, text='YES', command=self.get_value)
+    #             YES_button.grid(row=0, column=1)
+    #             NO_button = tk.Button(self.top, text='NO', command=self.get_value, sticky=tk.CENTER)
+    #             NO_button.grid(row=0, column=1)
+    #
+    #             # top.after(10000, top.destroy)
+    #
+    #         def get_value(self):
+    #             val = self.label.get()
+    #             self.top.destroy()
+    #             # callback(val)
+    #
+    #     App(window)
+
+        # master = tk.Tk()
+        # master.focus_force()
+        #
+        #
+        # # tk.Label(master, width=len(message), text=message).grid(row=0)
+        #
+        # master(text = title, padx = 20, pady = 20).pack()
+        # master.after(10000, master.destroy)
+        #
+        # master.title(title)
+        # # the width in tk.Entry determines the overall width of the widget;
+        # #   MUST be entered
+        # #   + 30 to add room for - [] and X in a widget window
+        # master.focus_force()
+        #
+        # tk.Button(master,
+        #           text='YES',
+        #           command=master.quit).grid(row=3,
+        #                                     column=0,
+        #                                     sticky=tk.W,
+        #                                     pady=4)
+        # tk.Button(master,
+        #           text='NO',
+        #           command=master.quit).grid(row=3,
+        #                                     column=1,
+        #                                     sticky=tk.W,
+        #                                     pady=4)
+        # master.mainloop()
+        # master.destroy()
+        # # convert to list; value1 is checked for length in calling function
+        # #   so do not convert if empty or its length will be the length of ['']
+        # # if value1!='':
+        # #     value1=list(value1.split(" "))
+        # # TODO temp get answer
+        # answer=0
+        # return answer
+
+    # enter_value_widget("Enter the single start character",message)
+
     try:
         message = df.at[row_num, "Message"].replace("\\n", os.linesep)
     except:
         pass
     if message == '':
+        import GUI_IO_util
+        GUI_IO_util.enter_value_widget_TEMP("Enter the number of sentences, K, to be analyzed", 'K',
+                                                           1, '', '', '')
         answer = mb.askquestion(title="Reminder: " + df.at[row_num, "Title"],
                                 message=message+question)
     else:
