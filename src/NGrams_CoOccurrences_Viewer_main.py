@@ -223,13 +223,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             if temporal_aggregation_var=="quarter" or temporal_aggregation_var=="month":
                 if i == 0:
                     j=j+3
-                columns_to_be_plotted.append([0, j])
+                columns_to_be_plotted_yAxis.append([0, j])
             else:
-                columns_to_be_plotted.append([0, i + 1])
+                columns_to_be_plotted_yAxis.append([0, i + 1])
             i += 1
             j += 1
         hover_label = []
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                                   'n-grams_viewer',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["line"],
@@ -559,11 +559,13 @@ TIPS_lookup = {'N-Grams (word & character)':"TIPS_NLP_Ngram (word & character).p
                'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
                'NLP Suite Ngram and Word Co-Occurrence Viewer':"TIPS_NLP_Ngram and Word Co-Occurrence Viewer.pdf",
                'Style analysis':'TIPS_NLP_Style analysis.pdf',
+               'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
+               'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures':'TIPS_NLP_Statistical measures.pdf'}
     #,'Java download install run':'TIPS_NLP_Java download install run.pdf'}
-TIPS_options='N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Style analysis','Excel smoothing data series','csv files - Problems & solutions','Statistical measures'
+TIPS_options='N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Style analysis','English Language Benchmarks', 'Things to do with words: Overall view','Excel smoothing data series','csv files - Problems & solutions','Statistical measures'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

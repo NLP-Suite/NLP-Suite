@@ -202,11 +202,13 @@ def openCSVOutputFile(outputCSVFilename, IO='w', encoding='utf-8',errors='ignore
 
 def extract_from_csv(inputFilename, outputDir, data_files, columns_to_export=None):
     import IO_files_util
+    # TODO must check for data_files passed
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
                                                              'extract',
                                                              '', '', '', '', False, True)
 
     df = pd.DataFrame(pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False))
+    # TODO must extract columns by specific values passed
     df.to_csv(outputFilename, encoding='utf-8', columns=columns_to_export, index=False)
     return outputFilename
 

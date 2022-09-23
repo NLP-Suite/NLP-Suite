@@ -193,8 +193,9 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         kmloutputFilename = geocodedLocationsOutputFilename.replace('.csv', '.kml')
 
         geocodedLocationsOutputFilename, \
-            locationsNotFoundoutputFilename, \
-            locationsNotFoundNonDistinctoutputFilename = \
+        locationsNotFoundoutputFilename, \
+        locationsNotFoundNonDistinctoutputFilename, \
+        kmloutputFilename = \
             GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
                 locationColumnName,geocoder,country_bias,area_var,restrict,encodingValue,split_locations_prefix,split_locations_suffix)
         if geocodedLocationsOutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
@@ -203,6 +204,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         geocodedLocationsOutputFilename = inputFilename
         locationsNotFoundoutputFilename = ''
         locationsNotFoundNonDistinctoutputFilename = ''
+        kmloutputFilename = ''
 
     if len(locations) > 0 and inputIsCoNLL == True:
         # locations contains the following values:
@@ -217,7 +219,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         IO_csv_util.list_to_csv(window, locations, outputCsvLocationsOnly)
 
     # the plot of locations frequencies is done in the CoreNLP_annotator_util
-    # the plot of location NER Tags frequencies is done in the CoreNLP_annotator_util
+    # the plot of location NER Tags frequencies is done in the function CoreNLP_annotator_util
     # need to plot locations geocoded and not geocoded
 
     nRecordsFound, nColumns  = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(geocodedLocationsOutputFilename)
@@ -295,33 +297,35 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     # ------------------------------------------------------------------------------------
 
     if 'Google Earth Pro' in mapping_package:
-        reminders_util.checkReminder(config_filename,
-                          reminders_util.title_options_Google_Earth_Pro_download,
-                          reminders_util.message_Google_Earth_Pro_download)
+        # TODO MINO GIS
+        if kmloutputFilename == '':
+            reminders_util.checkReminder(config_filename,
+                            reminders_util.title_options_Google_Earth_Pro_download,
+                            reminders_util.message_Google_Earth_Pro_download)
 
-        if inputIsCoNLL==True:
-            inputFilename=outputCsvLocationsOnly
-        headers=IO_csv_util.get_csvfile_headers(inputFilename)
-        for header in headers:
-            if 'Sentence' == header:
-                if len(description_csv_field_var_list)==0:
-                    description_csv_field_var_list = ['Sentence']
-        if not 'Sentence' in description_csv_field_var_list:
-            description_csv_field_var_list = ['Location']
-        description_var_list = [1]
+            if inputIsCoNLL==True:
+                inputFilename=outputCsvLocationsOnly
+            headers=IO_csv_util.get_csvfile_headers(inputFilename)
+            for header in headers:
+                if 'Sentence' == header:
+                    if len(description_csv_field_var_list)==0:
+                        description_csv_field_var_list = ['Sentence']
+            if not 'Sentence' in description_csv_field_var_list:
+                description_csv_field_var_list = ['Location']
+            description_var_list = [1]
 
-        kmloutputFilename = GIS_KML_util.generate_kml(window, inputFilename, geocodedLocationsOutputFilename,
-                              datePresent,
-                              locationColumnName,
-                              encodingValue,
-                              group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
-                              icon_var_list, specific_icon_var_list,
-                              name_var_list, scale_var_list, color_var_list, color_style_var_list,
-                              bold_var_list, italic_var_list,
-                              description_var_list, description_csv_field_var_list)
+            kmloutputFilename = GIS_KML_util.generate_kml(window, inputFilename, geocodedLocationsOutputFilename,
+                                datePresent,
+                                locationColumnName,
+                                encodingValue,
+                                group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
+                                icon_var_list, specific_icon_var_list,
+                                name_var_list, scale_var_list, color_var_list, color_style_var_list,
+                                bold_var_list, italic_var_list,
+                                description_var_list, description_csv_field_var_list)
 
-        if kmloutputFilename!='':
-            filesToOpen.append(kmloutputFilename)
+            if kmloutputFilename!='':
+                filesToOpen.append(kmloutputFilename)
 
     # ------------------------------------------------------------------------------------
     # Google Maps

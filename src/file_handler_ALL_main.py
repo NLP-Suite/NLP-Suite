@@ -60,7 +60,7 @@ GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_di
 
 y_multiplier_integer = 0
 
-open_CoNLL_search_GUI_button = tk.Button(window, text='General file manager (Open GUI)',width=40,command=lambda: call("python CoNLL_table_analyzer_main.py", shell=True))
+open_CoNLL_search_GUI_button = tk.Button(window, text='General file manager (Open GUI)',width=40,command=lambda: call("python file_manager_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                    open_CoNLL_search_GUI_button,

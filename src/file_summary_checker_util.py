@@ -399,7 +399,7 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
                        'List of Summary Filenames for Type of Error',
                        'List of Summary Filenames for Type of Error']
         inputFilename = outputFilename
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel=fileType,
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],

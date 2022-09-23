@@ -175,7 +175,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0, 1]]
 		count_var = 0
-		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
+		chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
 												   outputFileLabel='verb_stats',
 												   chartPackage=chartPackage,
 												   chart_type_list=['bar'],
@@ -272,7 +272,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0, 1]]
 		count_var = 0
-		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
+		chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
 												   outputFileLabel='verb_mod',
 												   chartPackage=chartPackage,
 												   chart_type_list=['bar'],
@@ -379,7 +379,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	if createCharts == True:
 		columns_to_be_plotted=[[0,1]]
 		count_var=0
-		chart_outputFilename = charts_util.run_all(columns_to_be_plotted, verb_stats_file_name, outputDir,
+		chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
 														 outputFileLabel='verb_tense',
 														 chartPackage=chartPackage,
 														 chart_type_list=['bar'],
