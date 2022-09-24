@@ -493,8 +493,53 @@ from tkinter import Toplevel
 def Dialog2Display(title: str):
     Dialog2 = Toplevel(height=1000, width=1000)
 
-# creating popup menu in tkinter
+# creating popup message box in tkinter
+# buttonType='OK displays an OK button
+# buttonType='Yes-No' displays Yes/ and No buttons
+# buttonType='Yes-No-Cancel' displays Yes, No, and Cancel buttons
+def message_box_widget(window, message_title, message_text, buttonType='OK', timeout=6000):
+    # top_message = tk.Toplevel(window)
+    top_message = tk.Toplevel()
+    top_message.title(message_title)
+    # windowHeight=len(message_text)
+    # print("windowHeight",windowHeight)
+    # TODO can the window size (windowSize) be made dynamic,
+    #   i.e. change windowHeight with the size of message_text passed?
+    windowHeight = 200
+    windowSize = '400x200'  # +str(windowHeight)
+    top_message.geometry(windowSize)
 
+    mbox = tk.Message(top_message, text=message_text, padx=20, pady=20, width=260)
+    top_message.attributes('-topmost', 'true')
+    mbox.after(timeout, top_message.destroy)
+    mbox.pack()
+    # TODO can we either have an OK button or Yes No Cancel buttons and return the selection?
+    if buttonType=='OK':
+        button = tk.Button(top_message, text="OK", command=top_message.destroy)
+        button.pack()
+    # TODO top_message.destroy must be changed to selecting the value and returning it
+    elif buttonType=='Yes-No':
+        # TODO must place Yes No widgets on the same line
+        Yes = tk.Button(top_message, text="Yes", command=top_message.destroy)
+        Yes.pack()
+        No = tk.Button(top_message, text="No", command=top_message.destroy)
+        No.pack()
+        return # TODO must return the selected option yes, no
+    elif buttonType=='Yes-No-Cancel':
+        # TODO must place Yes No Cancel widgets on the same line
+        Yes = tk.Button(top_message, text="Yes", command=top_message.destroy) # top_message.destroy must be changed
+        Yes.pack()
+        No = tk.Button(top_message, text="No", command=top_message.destroy)
+        No.pack()
+        Cancel = tk.Button(top_message, text="Cancel", command=top_message.destroy)
+        Cancel.pack()
+        return # TODO must return the selected option yes, no, or cancel
+
+    top_message.wait_window()
+    if window != '':  # set to '' in NLP_setup_update_util since the GUI.window has already been closed
+        window.focus_force()
+
+# creating popup menu in tkinter
 def dropdown_menu_widget(window,textCaption, menu_values, default_value, callback):
 
     class App():

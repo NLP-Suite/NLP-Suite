@@ -216,6 +216,24 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         save_intermediate_file = False
         isFile = False
 
+    if package_var:
+        # create a subdirectory of the output directory
+        #     # remove NLP_CoreNLP_ from filename (could have been added to filename in case of coref)
+        #     # the replace will be ignored when there is no NLP_CoreNLP_ in the filename
+
+        label = ''
+        if package_var=='Stanford CoreNLP':
+            label='SVO_CoreNLP'
+        else:
+            label = 'SVO_' + package_var
+
+    # create an SVO subdirectory of the output directory
+    outputSVODir = IO_files_util.make_output_subdirectory(inputFilename.replace("NLP_CoreNLP_", ""), inputDir, outputDir, label=label,
+                                                        silent=False)
+    outputDir = outputSVODir
+    if outputDir == '':
+        return
+
 # CoRef _____________________________________________________
 
     # field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'LOCATION', 'PERSON', 'TIME', 'TIME_STAMP', 'Sentence']
@@ -231,6 +249,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # THE SUBSCRIPT _coref_ IS CHECKED BELOW
 
         # create a subdirectory of the output directory
+        # since coref files can be used by other algorithms, the output dir is placed as a subdirectory f the main output directory rather than the SVO subdirectory
+
         outputCorefedDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='coref',
                                                             silent=True)
         if outputCorefedDir == '':
@@ -264,23 +284,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                  'normalized-date', False, language_var,  memory_var, document_length_var, limit_sentence_length_var)
         filesToOpen.append(files)
 
-    if package_var:
-        # create a subdirectory of the output directory
-        #     # remove NLP_CoreNLP_ from filename (could have been added to filename in case of coref)
-        #     # the replace will be ignored when there is no NLP_CoreNLP_ in the filename
-
-        label = ''
-        if package_var=='Stanford CoreNLP':
-            label='SVO_CoreNLP'
-        else:
-            label = 'SVO_' + package_var
-
-        outputSVODir = IO_files_util.make_output_subdirectory(inputFilename.replace("NLP_CoreNLP_", ""), inputDir, outputDir, label=label,
-                                                            silent=True)
-        outputDir = outputSVODir
-        if outputDir == '':
-            return
-
+        #
     if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
         WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('SVO_main',
                                                                                             'WordNet')
@@ -335,15 +339,19 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     # check that SVO output file contains records
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tempOutputFiles[0], encodingValue='utf-8')
                     if nRecords > 1:
+                        # create a subdirectory of the output directory
+                        outputWNDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputSVODir,
+                                                                           label='WordNet',
+                                                                           silent=True)
                         outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Verb (V)'])
-                        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'VERB',
+                        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir, config_filename, 'VERB',
                                                                openOutputFiles, createCharts, chartPackage, language_var)
                         os.remove(outputFilename)
                         if output != None:
                             filesToOpen.append(output)
 
                         outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
-                        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir, config_filename, 'NOUN',
+                        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir, config_filename, 'NOUN',
                                                                openOutputFiles, createCharts, chartPackage, language_var)
                         os.remove(outputFilename)
                         if output != None:
@@ -352,6 +360,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
                                                      reminders_util.message_no_SVO_records, True)
             filesToOpen.extend(tempOutputFiles)
+
             if gender_var:
                 filesToOpen.append(gender_filename)
             if quote_var:
@@ -1286,11 +1295,11 @@ def warnUser(*args):
     if GUI_util.input_main_dir_path.get() != '':
         reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_corpus,
                                      reminders_util.message_SVO_corpus, True)
-        # manual_Coref_var.set(0)
-        # manual_Coref_checkbox.configure(state='disabled')
-
-
 GUI_util.input_main_dir_path.trace('w', warnUser)
+
+# outside trace since it is not dependent on corpus type
+reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_output,
+                             reminders_util.message_SVO_output, True)
 
 warnUser()
 

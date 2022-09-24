@@ -83,9 +83,9 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
             filesToOpen.append(outputFiles)
 
     if k_sentences_var:
-        outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename,outputDir)
+        outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename,outputDir, createCharts, chartPackage)
         if outputFiles != None:
-            filesToOpen.append(outputFiles)
+            filesToOpen.extend(outputFiles)
 
     if clausal_analysis_var or noun_analysis_var or verb_analysis_var or function_words_analysis_var:
         startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running CoNLL table analyses at',
@@ -566,6 +566,9 @@ def changed_filename(tracedInputFile):
             error = False
     menu_values = []
     if tracedInputFile != '':
+        if inputFilename.get() != '':
+            reminders_util.checkReminder(config_filename, reminders_util.title_options_only_CoreNLP_CoNLL_analyzer,
+                                         reminders_util.message_only_CoreNLP_CoNLL_analyzer, True)
         nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tracedInputFile)
         if nColumns == 0 or nColumns is None:
             return False

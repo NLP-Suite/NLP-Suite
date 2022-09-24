@@ -11,8 +11,6 @@ import os
 import tkinter.messagebox as mb
 import pandas as pd
 import csv
-import GUI_util
-from csv import writer
 
 # reminders content for specific GUIs are set in the csv file reminders
 # check if the user wants tadded the release_version.txt fio see the message again
@@ -54,7 +52,7 @@ title_options_SVO_corpus = ['SVO with corpus data']
 message_SVO_corpus = 'You have selected to work with a set of txt files in a directory (your corpus).\n\nBeware that SVO extraction is computationally demanding. Furthermore, depending upon the options you choose (manual coreference editing, GIS maps), it may require manual input on each input file processed.\n\nDepending upon corpus size, manual coreference editing may also not be possible, due to memory requirements.'
 
 title_options_SVO_output = ['SVO output']
-message_SVO_output = 'Depending upon the options you select, the SVO pipeline will produce in output different types of files: cvf files, wordcloud image, Google Earth Pro map, and Gephi network graph.\n\nWhile cvf and png files are easy to read, less so are Google Earth Pro kml files and, particularly, Gephi gexf files.\n\nPLEASE, read the Gephi TIPS file before you run the SVO pipeline.'
+message_SVO_output = 'The SVO pipeline will create in output an SVO subdirectory inside the main output directory.\n\nDepending upon the options you select it will also create different subdirectories (e.g., GIS, WordNet) inside the SVO subdirectory. Contrary to this, the creference resolution option will create a subdirectory inside the main output directory rather than the SVO subdirectory, since coreferenced files can then be used as input to any NLP algorithms.\n\nDepending upon the options you select, the SVO pipeline will produce different types of files: cvf files, wordcloud image, Google Earth Pro map, and Gephi network graph.\n\nWhile cvf and png files are easy to read, less so are Google Earth Pro kml files and, particularly, Gephi gexf files.\n\nPLEASE, read the Gephi TIPS file before you run the SVO pipeline.'
 
 title_options_SVO_default = ['SVO default visualization options']
 message_SVO_default = 'The SVO algorithms use default settings for visualizing results in Python Wordclouds and Google Earth Pro. If you want to customize the visualization options, please, use the Wordclouds GUI and the GIS Google Earth GUI with the csv files produced by SVO in input.'
@@ -134,6 +132,9 @@ message_only_CoreNLP_coref = "The coreference algorithms in this GUI are based e
 
 title_options_only_CoreNLP_NER = ['Stanford CoreNLP NER']
 message_only_CoreNLP_NER = "The NER algorithms in this GUI are based exclusively on Stanford CoreNLP NER annotator.\n\nWatch this space for an extension to spaCy and Stanza of the NER algorithms behind this GUI (the spaCy and Stanza parsers and NER annotators, however, do prooduce NER tags)."
+
+title_options_only_CoreNLP_CoNLL_analyzer = ['CoNLL table analyzer']
+message_only_CoreNLP_CoNLL_analyzer = "The CoNLL table analyzer algorithms in this GUI are based exclusively on Stanford CoreNLP parser.\n\nWatch this space for an extension to spaCy and Stanza of the NER algorithms behind this GUI."
 
 lemma_frequencies = ['Lemma frequency']
 message_lemma_frequencies = "A blank is likely to be a frequent lemma in your corpus. It is likely to 'mask' all other values. If that is the case, when the chart is displayed you may want to delete rows containing a blank lemma to have a better view of all other values."
@@ -358,6 +359,7 @@ def getReminders_list(config_filename,silent=False):
 # when displaying messages the message field is '' since the actual message is not known until the csv file is read
 def displayReminder(df,row_num,title, message, event, currentStatus, question, seeMsgAgain=False) -> object:
 
+    GUI_IO_util.message_box_widget(1, title, message, buttonType='Yes-No', timeout=6000)
     # https://stackoverflow.com/questions/30235587/closing-tkmessagebox-after-some-time-in-python?rq=1    def enter_value_widget(masterTitle, textCaption):
     #     import tkinter as tk
     #     from tkinter import Toplevel
@@ -431,7 +433,6 @@ def displayReminder(df,row_num,title, message, event, currentStatus, question, s
     except:
         pass
     if message == '':
-        import GUI_IO_util
         GUI_IO_util.enter_value_widget_TEMP("Enter the number of sentences, K, to be analyzed", 'K',
                                                            1, '', '', '')
         answer = mb.askquestion(title="Reminder: " + df.at[row_num, "Title"],
@@ -562,13 +563,14 @@ def resetReminder(config_filename,title):
                            message="The reminders.csv file saved in the reminders subdirectory does not contain the reminder '" + title + "'.\n\nPlease, let the NLP Suite development team know the problem so it can be fixed.")
             return
 
+        message = df.at[row_num, "Message"]
         event = df.at[row_num, "Event"]
         status = df.at[row_num, "Status"]
         if status == "No" or status == "OFF":  # 'No' the old way of saving reminders
             question = '\n\nNow this reminder is turned OFF. Do you want to turn it ON?'
         else:
             question = '\n\nNow this reminder is turned ON. Do you want to turn it OFF?'
-        displayReminder(df, row_num, title, '', event, status, question, False)
+        displayReminder(df, row_num, title, message, event, status, question, False)
 
 
 # update do_not_show_message.csv so that we don't show the message box again
