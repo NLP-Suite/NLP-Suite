@@ -77,7 +77,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             else:
                 bySentenceIndex_character_var = True
 
-        if '*' in str(ngrams_list) or 'Repetition' in str(ngrams_list) or 'POSTAG' in ngrams_menu_var or 'DEPREL' in str(ngrams_list) or 'NER' in str(ngrams_list):
+        if '*' in str(ngrams_list) or 'Repetition across' in str(ngrams_list) or 'POSTAG' in ngrams_menu_var or 'DEPREL' in str(ngrams_list) or 'NER' in str(ngrams_list):
             mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!')
             if 'Repetition' in ngrams_menu_var:
                 mb.showwarning('Warning',
@@ -158,9 +158,10 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         if vocabulary_analysis_menu_var=='':
             mb.showwarning('Warning', 'No option has been selected for Vocabulary analysis.\n\nPlease, select an option and try again.')
             return
-        if 'Repetition' in vocabulary_analysis_menu_var:
+        if 'Repetition across' in vocabulary_analysis_menu_var:
             mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!\n\nDo check out the repetition finder algorithm in the CoNLL Table Analyzer GUI.')
             return
+
         if '*' == vocabulary_analysis_menu_var:
             outputDir_style = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
                                                                    label='style',
@@ -179,6 +180,20 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         if '*' in vocabulary_analysis_menu_var or 'Hapax legomena' in vocabulary_analysis_menu_var:
             output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'Hapax legomena')
+            if output != None:
+                filesToOpen.append(output)
+
+        if '*' in vocabulary_analysis_menu_var or 'Repetition: Words' in vocabulary_analysis_menu_var:
+            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
+                                                       openOutputFiles, createCharts,
+                                                       chartPackage,'Repetition: Words in first K and last K sentences')
+            if output != None:
+                filesToOpen.append(output)
+
+        if '*' in vocabulary_analysis_menu_var or 'Repetition: Last' in vocabulary_analysis_menu_var:
+            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
+                                                       openOutputFiles, createCharts,
+                                                       chartPackage,'Repetition: Last K words of a sentence/First K words of next sentence')
             if output != None:
                 filesToOpen.append(output)
 
@@ -382,7 +397,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_di
 
 ngrams_options_menu_lb = tk.Label(window, text='N-grams options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,ngrams_options_menu_lb,True)
-ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax legomena (once-occurring words/unigrams)','Normalize n-grams', 'Exclude punctuation (word n-grams only)','By sentence index','Repetition of words (last N words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
+ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax legomena (once-occurring words/unigrams)','Normalize n-grams', 'Exclude punctuation (word n-grams only)','By sentence index','Repetition of words (last K words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,ngrams_options_menu,True)
 
 add_ngrams_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_ngrams_analysis_var())
@@ -487,7 +502,8 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Unusual words (via NLTK)',
                                          'Hapax legomena (once-occurring words/unigrams)',
                                          'Language detection',
-                                         'Repetition: Last N words of a sentence/First N words of next sentence',
+                                         'Repetition: Last K words of a sentence/First K words of next sentence',
+                                         'Repetition: Words in first K and last K sentences',
                                          'Repetition across sentences (special ngrams)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400, y_multiplier_integer,vocabulary_analysis_menu)
 

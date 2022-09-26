@@ -932,6 +932,14 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
             # words = fullText.translate(string.punctuation).split()
             for wordID, word in enumerate(filtered_words):
 
+# REPEATED WORDS END OF SENTENCE/BEGINNING NEXT SENTENCE  --------------------------------------------------------------------------
+                if processType == 'Repetition: Words':
+                    mb.showwarning("Naman","Naman, this for you!")
+
+# REPEATED WORDS FIRST K SENTENCES/LAST K SENTENCES  --------------------------------------------------------------------------
+                if processType == 'Repetition: Last':
+                    mb.showwarning("Naman", "Naman, this for you!")
+
 # SHORT WORDS --------------------------------------------------------------------------
 
                 if processType=='' or "short" in processType.lower():
@@ -1590,8 +1598,9 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
     IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, 'utf-8')
     filesToOpen.append(outputFilename)
     # TODO we need an X-axis to plot these scores against
+    # , 'Frazier score'
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Yngve score', 'Frazier score'],
+                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Yngve score'],
                                                        chartTitle='Frequency Distribution of Complexity Scores\n(Yngve & Frazier)',
                                                        count_var=0, # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                        hover_label=[],

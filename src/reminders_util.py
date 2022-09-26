@@ -359,7 +359,7 @@ def getReminders_list(config_filename,silent=False):
 # when displaying messages the message field is '' since the actual message is not known until the csv file is read
 def displayReminder(df,row_num,title, message, event, currentStatus, question, seeMsgAgain=False) -> object:
 
-    GUI_IO_util.message_box_widget(1, title, message, buttonType='Yes-No', timeout=6000)
+    # GUI_IO_util.message_box_widget(1, title, message, buttonType='Yes-No', timeout=6000)
     # https://stackoverflow.com/questions/30235587/closing-tkmessagebox-after-some-time-in-python?rq=1    def enter_value_widget(masterTitle, textCaption):
     #     import tkinter as tk
     #     from tkinter import Toplevel

@@ -89,11 +89,26 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                                                            chartTitle='Frequency Distribution of Gender Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
-                                                           outputFileNameType='gender', #'gender_bar',
+                                                           outputFileNameType='gender-values', #'gender_bar',
                                                            column_xAxis_label='Gender values',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Statistical Measures for Gender')
+        if chart_outputFilename!=None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
+
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                           outputDir,
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Word'],
+                                                           chartTitle='Frequency Distribution of Gendered Words',
+                                                           # count_var = 1 for columns of alphabetic values
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='gender-words', #'gender_bar',
+                                                           column_xAxis_label='Gender words',
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Frequency'],
+                                                           chart_title_label='Statistical Measures for Genedered Words')
         if chart_outputFilename!=None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)

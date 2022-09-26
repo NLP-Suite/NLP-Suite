@@ -120,6 +120,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         return
 
 
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='nGrams-VIEWER',
+                                                       silent=False)
+    if outputDir == '':
+        return
 
 # VIEWER ____________________________________________________________________________________________
 

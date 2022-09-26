@@ -17,10 +17,11 @@ import IO_csv_util
 import IO_files_util
 import charts_util
 
-model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"
+model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
 
-sentiment_task = pipeline("sentiment-analysis",
-                          model=model_path, tokenizer=model_path, max_length=512, truncation=True)
+#sentiment_task = pipeline("sentiment-analysis",
+                        #  model=model_path, tokenizer=model_path, max_length=512, truncation=True)
+sentiment_task = pipeline("sentiment-analysis", model=model_path, tokenizer=model_path, truncation=True)
 
 
 def analyzefile(inputFilename, outputDir, outputFilename, mode, Document_ID, Document):

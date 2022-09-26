@@ -51,6 +51,12 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
         reminders_util.checkReminder(config_filename, reminders_util.title_options_topic_modelling_number_of_topics,
                                      reminders_util.message_topic_modelling_number_of_topics, True)
 
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='TM-MALLET',
+                                                       silent=False)
+    if outputDir == '':
+        return
+
     filesToOpen = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                                                  OptimizeInterval, numTopics)
 

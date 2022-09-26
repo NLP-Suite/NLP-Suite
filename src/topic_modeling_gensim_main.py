@@ -40,6 +40,7 @@ import GUI_IO_util
 import topic_modeling_gensim_util
 import IO_internet_util
 import reminders_util
+import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -59,6 +60,12 @@ def run(inputDir, outputDir, openOutputFiles,createCharts,chartPackage, num_topi
     if num_topics==20:
         reminders_util.checkReminder(config_filename, reminders_util.title_options_topic_modelling_number_of_topics,
                                      reminders_util.message_topic_modelling_number_of_topics, True)
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='TM-Gensim',
+                                                       silent=False)
+    if outputDir == '':
+        return
 
     topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics,
                                           remove_stopwords_var, lemmatize_var, nounsOnly_var, Mallet_var, openOutputFiles,createCharts, chartPackage)

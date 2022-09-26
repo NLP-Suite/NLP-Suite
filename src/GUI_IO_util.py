@@ -497,34 +497,82 @@ def Dialog2Display(title: str):
 # buttonType='OK displays an OK button
 # buttonType='Yes-No' displays Yes/ and No buttons
 # buttonType='Yes-No-Cancel' displays Yes, No, and Cancel buttons
-def message_box_widget(window, message_title, message_text, buttonType='OK', timeout=6000):
+def message_box_widget(window, message_title, message_text, buttonType='OK', timeout=2000):
+    global answer
+    answer = False
+    # timeout = 6000 # testing
     # top_message = tk.Toplevel(window)
+    message_title = 'Reminder: ' + message_title
     top_message = tk.Toplevel()
     top_message.title(message_title)
     # windowHeight=len(message_text)
     # print("windowHeight",windowHeight)
     # TODO can the window size (windowSize) be made dynamic,
     #   i.e. change windowHeight with the size of message_text passed?
+    # windowHeight = 200
+    # for count, line in enumerate(message_text):
+    #     pass
+    # print('Total Lines', count + 1,"message_text",message_text)
+    # # count each \n
     windowHeight = 200
-    windowSize = '400x200'  # +str(windowHeight)
+    count = sum(buffer.count('\n') for buffer in message_text)
+    # print('Total lines:', count + 1)
+    if count == 1:
+        windowHeight = 80
+    elif count > 1 and count <4:
+        windowHeight = 150
+    elif count > 2 and count < 5:
+        windowHeight = 250
+    elif count > 3 and count <6:
+        windowHeight = 280
+    elif count > 4 and count < 7:
+        windowHeight = 250
+    elif count > 5 and count < 8:
+        windowHeight = 250
+    else:
+        windowHeight = 250
+    # windowHeight = int(200 + (count * 2))
+    # windowSize = '400x' + str(windowHeight)  # +str(windowHeight)
+    windowWidth = 500
+    windowSize = str(windowWidth) + 'x' + str(windowHeight)
     top_message.geometry(windowSize)
 
-    mbox = tk.Message(top_message, text=message_text, padx=20, pady=20, width=260)
+    mbox = tk.Message(top_message, text=message_text, padx=10, pady=10, width=windowWidth-10)
     top_message.attributes('-topmost', 'true')
     mbox.after(timeout, top_message.destroy)
     mbox.pack()
     # TODO can we either have an OK button or Yes No Cancel buttons and return the selection?
+
+    def wait_for_answer(top_message,button_type, timeout):
+        global answer
+        if button_type=='OK':
+            top_message.destroy
+        elif button_type=='Yes':
+            answer = True
+            return answer
+        elif button_type=='No':
+            answer = False
+            return answer
+
+    # buttonType = 'Yes-No' # testing
     if buttonType=='OK':
         button = tk.Button(top_message, text="OK", command=top_message.destroy)
-        button.pack()
+        button.pack() # this places the widget
     # TODO top_message.destroy must be changed to selecting the value and returning it
     elif buttonType=='Yes-No':
-        # TODO must place Yes No widgets on the same line
-        Yes = tk.Button(top_message, text="Yes", command=top_message.destroy)
-        Yes.pack()
-        No = tk.Button(top_message, text="No", command=top_message.destroy)
-        No.pack()
+        Yes = tk.Button(top_message, text="Yes", command=wait_for_answer(top_message,'Yes', timeout))
+        No = tk.Button(top_message, text="No", command=wait_for_answer(top_message,'No', timeout))
+        Yes.place(x=10, y=windowHeight-40)
+        No.place(x=50, y=windowHeight-40)
+        print(answer)
+        #
+        # # TODO must place Yes No widgets on the same line
+        # Yes = tk.Button(top_message, text="Yes", command=top_message.destroy)
+        # Yes.pack()
+        # No = tk.Button(top_message, text="No", command=top_message.destroy)
+        # No.pack()
         return # TODO must return the selected option yes, no
+    # TODO this needs to be completed
     elif buttonType=='Yes-No-Cancel':
         # TODO must place Yes No Cancel widgets on the same line
         Yes = tk.Button(top_message, text="Yes", command=top_message.destroy) # top_message.destroy must be changed
