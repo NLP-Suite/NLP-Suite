@@ -35,6 +35,7 @@ import tkinter as tk
 import pandas as pd
 import time
 import Stanford_CoreNLP_clause_util
+import csv
 
 import IO_csv_util
 import file_splitter_ByLength_util
@@ -44,6 +45,7 @@ import IO_user_interface_util
 import Stanford_CoreNLP_SVO_enhanced_dependencies_util # Enhanced++ dependencies
 import reminders_util
 import NLP_parsers_annotators_visualization_util
+import charts_util
 
 # when multiple annotators are selected (e.g., quote, gender, normalized-date)
 #   output must go to the appropriate subdirectory
@@ -54,12 +56,9 @@ def create_output_directory(inputFilename, inputDir, outputDirSV, config_filenam
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDirSV,
                                                        label="CoreNLP_" + annotator,
                                                        silent=False)
-    if outputDir == '':
-        return outputDir, outputJsonDir, export_json_toTxt
-
     # Json_question_already_asked to avoid repeating the reminders question when multiple annotators are used
-    if export_json_toTxt and not Json_question_already_asked:
-        # # check reminder
+    if (outputDir !='') and (export_json_toTxt and not Json_question_already_asked):
+        # check reminder
         reminder_status = reminders_util.checkReminder(config_filename,
                                                        reminders_util.title_options_CoreNLP_Json,
                                                        reminders_util.message_CoreNLP_Json,
@@ -381,6 +380,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
             # when multiple annotators are selected (e.g., quote, gender, normalized-date)
             #   output must go to the appropriate subdirectory and added to routine_list
             output_dir, outputJsonDir, export_json_toTxt = create_output_directory(inputFilename, inputDir, outputDirSV, config_filename, export_json_toTxt, annotator, silent, Json_question_already_asked)
+            if output_dir == '':
+                return filesToOpen
             # when running the SVO annotator in combination with gender and quote,
             #   you want to put the gender and quote folders inside the SVO folder
             if 'SVO' in annotator and ("gender" in annotator_params or "quote" in annotator_params):
@@ -596,7 +597,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 if output_format == 'text':
                     #count pronouns number:
                     all_pronouns += count_pronouns(CoreNLP_output)
-                    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt',
+                    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,
+                                                                             outputDir_chosen, '.txt',
                                                                              'CoreNLP_'+ str(annotator_chosen))
                     with open(outputFilename, "a+", encoding=language_encoding, errors='ignore') as output_text_file:
                         # insert the separators <@# #@> in the the output file so that the file can then be split on the basis of these characters
@@ -674,14 +676,15 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         outputFilename_tag = 'DATES'
                     # else:
                     #     outputFilename_tag = 'Multi-tags'
-                outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir_chosen, '.csv',
                                                                                  'CoreNLP_NER_'+outputFilename_tag)
             elif "parser" in annotator_chosen:
                 if "pcfg" in annotator_chosen:
                     parser_label = 'PCFG'
                 else:
                     parser_label = 'nn'
-                outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CoreNLP', parser_label, 'CoNLL')
+                outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,
+                                                    outputDir_chosen, '.csv', 'CoreNLP', parser_label, 'CoNLL')
 
             elif output_format != 'text':
                 # TODO any changes in the way the CoreNLP_annotator generates output filenames for sentiment analysis
@@ -696,8 +699,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 if extract_date_from_text_var or extract_date_from_filename_var:
                     # 'Date' added at the end of the column list for SVO, for instance
                     output_format.append("Date")
-                # if NER_sentence_var == 1:
-                #     df = charts_Excel_util.add_missing_IDs(df)
                 # save csv file with the expected header (i.e., output_format)
                 df = pd.DataFrame(run_output, columns=output_format)
                 IO_csv_util.df_to_csv(GUI_util.window, df, outputFilename, headers=output_format, index=True)
@@ -1822,9 +1823,10 @@ def exportJson(export_json_toTxt, inputFilename, outputJsonDir, CoreNLP_output,
                language_encoding, annotator_params):
         if not export_json_toTxt:
             return
-        jsonFilename = os.path.join(outputJsonDir, inputFilename[:-4] + "_" + str(annotator_params) + ".txt")
-        with open(jsonFilename, "a+", encoding=language_encoding, errors='ignore') as json_out_nn:
-            json.dump(CoreNLP_output, json_out_nn, indent=4, ensure_ascii=False)
+        if outputJsonDir!='':
+            jsonFilename = os.path.join(outputJsonDir, inputFilename[:-4] + "_" + str(annotator_params) + ".txt")
+            with open(jsonFilename, "a+", encoding=language_encoding, errors='ignore') as json_out_nn:
+                json.dump(CoreNLP_output, json_out_nn, indent=4, ensure_ascii=False)
         # no need to open the Json file
         # if jsonFilename not in filesToOpen:
         #     filesToOpen.append(jsonFilename)

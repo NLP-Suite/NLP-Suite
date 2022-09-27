@@ -507,9 +507,9 @@ def Dialog2Display(title: str):
 # buttonType='Yes-No' displays Yes/ and No buttons
 # buttonType='Yes-No-Cancel' displays Yes, No, and Cancel buttons
 def message_box_widget(window, message_title, message_text, buttonType='OK', timeout=2000):
-    global answer
-    answer = False
-    timeout = 6000 # testing
+    global ys_no_button
+    ys_no_button  = "NOTHING"
+    # timeout = 6000 # testing
     # top_message = tk.Toplevel(window)
     message_title = 'Reminder: ' + message_title
     top_message = tk.Toplevel()
@@ -549,33 +549,48 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
 
     mbox = tk.Message(top_message, text=message_text, padx=10, pady=10, width=windowWidth-10)
     top_message.attributes('-topmost', 'true')
-    mbox.after(timeout, top_message.destroy)
-    mbox.pack()
+    mbox.pack()  # put the widget on the window
+
+    # # timer
+    # mbox.after(timeout, top_message.destroy)
+    # mbox.pack() # put the widget on the window
     # TODO can we either have an OK button or Yes No Cancel buttons and return the selection?
 
-    def wait_for_answer(top_message,button_type, timeout):
-        global answer
-        if button_type=='OK':
-            top_message.destroy
-        elif button_type=='Yes':
-            answer = True
-            return answer
+    def wait_for_answer(top_message,button_type, timeout, mbox):
+        global ys_no_button
+        # mbox.pack() # put the widget on the window
+        if button_type=='Yes':
+            # mb.showwarning(title="Yes",message='I pressed YES')
+            # timer
+            # timeout = 6000  # testing
+            ys_no_button = "Happy to tell you that  pressed YES!!!!!!!!!!!!!!!!"
+            # return ys_no_button
+            # mbox.after(timeout, top_message.destroy)
         elif button_type=='No':
-            answer = False
-            return answer
+            # mb.showwarning(title="No",message='I pressed NO')
+            ys_no_button  = "NOTHING to tell you that  pressed NO!!!!!!!!!!!!!!!!"
+
 
     # buttonType = 'Yes-No' # testing
-    # timeout=6000
     if buttonType=='OK':
         button = tk.Button(top_message, text="OK", command=top_message.destroy)
-        button.pack() # this places the widget
+        button.pack() # put the widget on the window
+        # timer
+        mbox.after(timeout, top_message.destroy)
     # TODO top_message.destroy must be changed to selecting the value and returning it
     elif buttonType=='Yes-No':
-        Yes = tk.Button(top_message, text="Yes", command=wait_for_answer(top_message,'Yes', timeout))
-        No = tk.Button(top_message, text="No", command=wait_for_answer(top_message,'No', timeout))
+        # mbox.pack() # put the widget on the window
+        Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer(top_message,'Yes', timeout, mbox))
+        No = tk.Button(top_message, text="No", command=lambda: wait_for_answer(top_message,'No', timeout, mbox))
         Yes.place(x=10, y=windowHeight-40)
         No.place(x=50, y=windowHeight-40)
-        print(answer)
+        # # timer
+        # timeout = 6000  # testing
+        mbox.after(timeout, top_message.destroy)
+        if "Happy" in ys_no_button:
+            print("HAPPY")
+            top_message.destroy
+        # mb.showwarning(title="Answer", message=ys_no_button )
         #
         # # TODO must place Yes No widgets on the same line
         # Yes = tk.Button(top_message, text="Yes", command=top_message.destroy)
@@ -587,11 +602,11 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
     elif buttonType=='Yes-No-Cancel':
         # TODO must place Yes No Cancel widgets on the same line
         Yes = tk.Button(top_message, text="Yes", command=top_message.destroy) # top_message.destroy must be changed
-        Yes.pack()
+        Yes.pack() # put the widget on the window
         No = tk.Button(top_message, text="No", command=top_message.destroy)
-        No.pack()
+        No.pack() # put the widget on the window
         Cancel = tk.Button(top_message, text="Cancel", command=top_message.destroy)
-        Cancel.pack()
+        Cancel.pack() # put the widget on the window
         return # TODO must return the selected option yes, no, or cancel
 
     top_message.wait_window()
@@ -608,7 +623,7 @@ def dropdown_menu_widget(window,textCaption, menu_values, default_value, callbac
             top.focus_force()
             self.menuButton = ttk.Combobox(top, width=len(textCaption)+30)
             self.menuButton['values'] = menu_values
-            self.menuButton.pack()
+            self.menuButton.pack() # put the widget on the window
 
             self.menuButton.grid(row=0, column=1) # , sticky=W)
             self.callback = callback
@@ -637,7 +652,7 @@ def dropdown_menu_widget2(window,textCaption, menu_values, default_value, callba
     top.focus_force()
     menuButton = ttk.Combobox(top, width=len(textCaption)+30)
     menuButton['values'] = menu_values
-    menuButton.pack()
+    menuButton.pack() # put the widget on the window
 
     menuButton.grid(row=0, column=1) # , sticky=W)
     callback = callback
@@ -652,10 +667,10 @@ def dropdown_menu_widget2(window,textCaption, menu_values, default_value, callba
 def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
     top = tk.Toplevel(window)
     l = tk.Label(top, text= textCaption)
-    l.pack()
+    l.pack() # put the widget on the window
     s = tk.Scale(top, from_= lower_bound, to=upper_bound, orient=tk.HORIZONTAL)
     s.set(default_value)
-    s.pack()
+    s.pack() # put the widget on the window
 
     def get_value():
         global val

@@ -885,7 +885,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     videos_dropdown_field.set('Watch videos')
     if len(videos_lookup)==1:
         if videos_options == "No videos available":
-            videos_menu_lb = tk.OptionMenu(window,videos_dropdown_field,videos_options)
+            videos_menu_lb = tk.OptionMenu(window, videos_dropdown_field, videos_options)
         else:
             videos_menu_lb = tk.OptionMenu(window, videos_dropdown_field, videos_options)
             videos_menu_lb.configure(foreground="red")
@@ -899,7 +899,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     tips_dropdown_field.set('Open TIPS files')
     if len(TIPS_lookup)==1:
         if TIPS_options == "No TIPS available":
-            tips_menu_lb = tk.OptionMenu(window,tips_dropdown_field,TIPS_options)
+            tips_menu_lb = tk.OptionMenu(window, tips_dropdown_field, TIPS_options)
         else:
             tips_menu_lb = tk.OptionMenu(window, tips_dropdown_field, TIPS_options)
             tips_menu_lb.configure(foreground="red")

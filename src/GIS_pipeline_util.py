@@ -47,10 +47,10 @@ def getGoogleAPIkey(Google_config, display_key=False):
                 message = message + '\n\nWithout a Google geocoder API key you can only geocode locations with Nominatim.'
             if 'Maps' in Google_config:
                 message = message + '\n\nWithout a Google Maps API key you can only map locations in Google Earth Pro.'
-            message = message + '\n\nPlease, read the TIPS file TIPS_NLP_Google API Key.pdf on how to obtain free Google API keys.\n\nWould you like to open the TIPS file now?'
+            message = message + '\n\nPlease, read the TIPS file TIPS_NLP_GIS_Google API Key.pdf on how to obtain free Google API keys.\n\nWould you like to open the TIPS file now?'
             answer = tk.messagebox.askyesno("Warning",message)
             if answer:
-                TIPS_util.open_TIPS('TIPS_NLP_Google API Key.pdf')
+                TIPS_util.open_TIPS('TIPS_NLP_GIS_Google API Key.pdf')
         if 'Maps' in Google_config:
             config_type='Maps'
         else:
