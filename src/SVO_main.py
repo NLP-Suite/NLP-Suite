@@ -364,6 +364,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if len(tempOutputFiles)==0:
             return
         else:
+            SVO_filename=tempOutputFiles[0]
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
                 output = SVO_util.filter_svo(window,tempOutputFiles[0],
                                     subjects_dict_var, verbs_dict_var, objects_dict_var,
@@ -472,6 +473,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                        date_position_var=date_position_var)
 
         if tempOutputFiles != None:
+            SVO_filename=tempOutputFiles[0]
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[1])
 
@@ -504,6 +506,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                     date_position_var=date_position_var)
 
         if tempOutputFiles != None:
+            SVO_filename=tempOutputFiles[0]
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[1])
 
@@ -530,6 +533,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                 createCharts, chartPackage)
         if len(svo_SENNA_file) > 0:
             svo_SENNA_file = svo_SENNA_file[0]
+            SVO_filename=svo_SENNA_file[0]
 
         if save_intermediate_file:
             for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
@@ -597,6 +601,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                            location_filename = location_filename)
 
         if len(tempOutputFiles)>0:
+            SVO_filename = tempOutputFiles[0]
             if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
                 output = SVO_util.filter_svo(window,tempOutputFiles[0],
                                     subjects_dict_var, verbs_dict_var, objects_dict_var,
@@ -747,7 +752,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                 filesToOpen = filesToOpen + out_file
 
     if openOutputFiles == True and len(filesToOpen) > 0:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        filesToOpenSubset = []
+        # add the SVO main file
+        filesToOpenSubset.append(SVO_filename)
+        # filesToOpenSubset.append(location_filename)
+        for file in filesToOpen:
+            # open all charts, all Google Earth and Google Maps maps, Gephi gexf network graph, html files, and wordclouds png files
+            if file[-4:] == '.kml' or file[-5:] == '.html' or file[-4:] == '.png' or file[-5:] == '.gexf' or \
+                file[-5:] == '.xlsx':
+                filesToOpenSubset.append(file)
+        filesToOpenSubset_string = ", \n   ".join(filesToOpenSubset)
+        print("Subset of the " + str(len(filesToOpenSubset)) + " SVO files from the different subfolders to be opened:\n   " + str(filesToOpenSubset_string))
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
 
     if len(inputDir) > 1 and len(filesToOpen) > 0 and outputSVODir!='':  # when processing a directory, the output changes
         # not a good idea to change the IO widget output because if you run the script again without first closing the GUI

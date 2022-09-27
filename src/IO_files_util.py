@@ -359,7 +359,7 @@ def openFile(window, inputFilename):
 
 
 # open a set of output files (csv, txt,...) stored as a list in filesToOpen []
-def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir):
+def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName='', filesToOpenSubset=[]):
     if filesToOpen == None:
         return
     if len(filesToOpen) == 0:
@@ -371,10 +371,27 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir):
         else:
             filesToOpen = list(filesToOpen)
     if len(filesToOpen)>10:
-        mb.showwarning(title='Too many files to open',message='There are ' + str(len(filesToOpen)) + ' files to be opened. This is way too many files.\n\nFor your convenience, you will be placed next in the output directory\n\n'+outputDir+'\n\nYou can select there the files you want/need to open.')
+        if len(filesToOpenSubset)> 0:
+            subDirs=next(os.walk(outputDir))[1]
+            listOfFiles = list()
+            for (dirpath, dirnames, filenames) in os.walk(outputDir):
+                listOfFiles += [os.path.join(dirpath, file) for file in filenames]
+            nFiles=len(listOfFiles)
+            nSubDirs = len(subDirs)
+            subDirs=", \n   ".join(subDirs)
+            label=''
+            if nSubDirs>0:
+                label = " organized in " + str(nSubDirs) + " different subfolders:\n\n   " + subDirs
+            mb.showwarning(title="Output files subset",message="The " + scriptName + " has generated " +
+                        str(nFiles) + " files in output" + label +
+                        "\n\nThe NLP Suite will open next a subset of " +
+                        str(len(filesToOpenSubset)) + " most relevant output files from the different subfolders: all charts and main csv files.\n" +
+                        "\n\nFor your convenience, the NLP Suite will also place you in the main output subdirectory where you can select  any other files you want/need to open:\n\n"+outputDir)
+            filesToOpen=filesToOpenSubset
+        # mb.showwarning(title='Too many files to open',message='There are ' + str(len(filesToOpen)) + ' files to be opened. This is way too many files.\n\nFor your convenience, you will be placed next in the output directory\n\n'+outputDir+'\n\nYou can select there the files you want/need to open.')
         # open outputDir
         openExplorer(window, outputDir)
-        return
+        # return
     if len(filesToOpen) == 1:
         singularPlural = 'file'
     else:

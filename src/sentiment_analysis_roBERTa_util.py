@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "sentiment_analysis_roBERTa_util", ['os', 'transformers','csv', 'argparse', 'tkinter', 'time', 'stanza']) == False:
+if IO_libraries_util.install_all_packages(GUI_util.window, "sentiment_analysis_roBERTa_util", ['os', 'transformers','csv', 'argparse', 'tkinter', 'time', 'stanza','sentencepiece','tensorflow']) == False:
     sys.exit(0)
 
 from transformers import pipeline

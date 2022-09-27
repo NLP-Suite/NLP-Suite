@@ -315,13 +315,22 @@ if sys.platform == 'darwin': #Mac OS
 
     # special internal GUI specific values MAC
     # SVO_main Mac
-    SVO_1st_column = 150
-    open_S_dictionary = 280
-    lemmatize_S = 340
-    SVO_2nd_column = 558 # filter & dictionary options for Verbs
-    open_V_dictionary = 660
-    SVO_3rd_column = 965 # filter & dictionary options for Objects
-    open_O_dictionary = 1090
+    SVO_1st_column = 120
+    open_S_dictionary = 260
+    lemmatize_S = 320
+    SVO_2nd_column = 520# filter & dictionary options for Verbs
+    open_V_dictionary = 640
+    lemmatize_V = 700
+    SVO_3rd_column = 920 # filter & dictionary options for Objects
+    open_O_dictionary = 1050
+    lemmatize_O = 1110
+
+    SVO_2nd_column_top = 400
+    SVO_3rd_column_top = 800
+
+    dictionary_S_width=60
+    dictionary_V_width=60
+    dictionary_O_width=60
 
     # Mac NLP_setup_package_language_main
     language_widget_with=50
@@ -500,7 +509,7 @@ def Dialog2Display(title: str):
 def message_box_widget(window, message_title, message_text, buttonType='OK', timeout=2000):
     global answer
     answer = False
-    # timeout = 6000 # testing
+    timeout = 6000 # testing
     # top_message = tk.Toplevel(window)
     message_title = 'Reminder: ' + message_title
     top_message = tk.Toplevel()
@@ -516,19 +525,20 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
     # # count each \n
     windowHeight = 200
     count = sum(buffer.count('\n') for buffer in message_text)
-    # print('Total lines:', count + 1)
+    count = count + 1
+    print('Total lines:', count + 1)
     if count == 1:
-        windowHeight = 80
+        windowHeight = 100
     elif count > 1 and count <4:
-        windowHeight = 150
+        windowHeight = 120
     elif count > 2 and count < 5:
-        windowHeight = 250
+        windowHeight = 140
     elif count > 3 and count <6:
-        windowHeight = 280
+        windowHeight = 200
     elif count > 4 and count < 7:
-        windowHeight = 250
+        windowHeight = 220
     elif count > 5 and count < 8:
-        windowHeight = 250
+        windowHeight = 230
     else:
         windowHeight = 250
     # windowHeight = int(200 + (count * 2))
@@ -555,6 +565,7 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
             return answer
 
     # buttonType = 'Yes-No' # testing
+    # timeout=6000
     if buttonType=='OK':
         button = tk.Button(top_message, text="OK", command=top_message.destroy)
         button.pack() # this places the widget

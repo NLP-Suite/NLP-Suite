@@ -76,12 +76,13 @@ def run(inputFilename,inputDir,outputDir,
     vader_var=0
     anew_var=0
 
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_'+SA_algorithm_var.lstrip(),
+                                                       silent=False)
+    if outputDir == '':
+        return
+
     if SA_algorithm_var=='*':
-        # create a subdirectory of the output directory
-        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment',
-                                                           silent=False)
-        if outputDir == '':
-            return
         BERT_var=1
         CoreNLP_var=1
         spaCy_var=1

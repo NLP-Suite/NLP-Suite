@@ -125,7 +125,7 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Speakers'],
-                                                           chartTitle='Frequency Distribution of Speakers',
+                                                           chartTitle='Frequency Distribution of Speakers\n(CoreNLP Quote Annotator)',
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='quote', #'quote_bar',
                                                            column_xAxis_label='Speakers',
