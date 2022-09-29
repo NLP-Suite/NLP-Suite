@@ -3,7 +3,7 @@ import GUI_util
 import IO_libraries_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "Ngrams-CoOccurrence_Viewer",
-                                ['subprocess', 'os', 'tkinter', 'datetime','pandas','csv','glob','nltk','numpy']) == False:
+                                ['subprocess', 'os', 'tkinter', 'datetime','pandas','csv','glob','numpy']) == False:
     sys.exit(0)
 
 import os
@@ -18,7 +18,7 @@ import IO_user_interface_util
 import GUI_IO_util
 import IO_files_util
 import charts_util
-import statistics_txt_util
+import config_util
 import reminders_util
 import IO_csv_util
 import NGrams_CoOccurrences_Viewer_util
@@ -57,8 +57,6 @@ def validate(date_text):
 
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
-        n_grams_var,
-        n_grams_menu_var,
         n_grams_list,
         n_grams_viewer_var,
         CoOcc_Viewer_var,
@@ -72,6 +70,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # print(date_options, temporal_aggregation_var, date_format, date_separator_var, date_position_var)
     filesToOpen = []
 
+    print("language_list",language_list)
 
     total_file_number = 0
     error_file_number = 0
@@ -111,7 +110,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         df = pd.DataFrame(error_filenames, columns=['File with date not in position ' + str(date_position_var)])
         error_output = IO_files_util.generate_output_file_name('',inputDir, outputDir, '.csv',
                                                          'Date_position_errors_file')
-        df.to_csv(error_output, index=False)
+        df.to_csv(error_output, encoding='utf-8', index=False)
         mb.showwarning(title='Warning',
                        message='There are ' + str(error_file_number) + ' files out of ' + str(
                            total_file_number) + ' processed in the selected input directory with errors in either the date format or the date position. \n\nThe selected date format is '+ str(date_format)+' and the selected date position is ' + str(date_position_var) + '.\n\nClick OK to open a csv file with a list of files with erroneous dates. Check carefully, both date format and date position. Any erroneous file will need to be fixed or removed from the input directory before processing. You may also simply need to select a different date format and/or date position.')
@@ -121,49 +120,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         return
 
 
-
-# COMPUTE Ngrams ______________________________________________________________________________
-
-    if n_grams_var:
-        n_grams_word_var = False
-        n_grams_character_var = False
-        normalize = False
-        case_sensitive = False
-        n_grams_size = 3  # default number of n_grams
-        excludePunctuation = False
-        bySentenceIndex_word_var = False
-        bySentenceIndex_character_var = False
-        if n_grams_menu_var=="Word":
-            n_grams_word_var=True
-        else:
-            n_grams_character_var=True
-        bySentenceIndex_character_var = False
-        if 'Hapax' in str(n_grams_list):
-            n_grams_size = 1
-        if 'punctuation' in str(n_grams_list):
-            excludePunctuation=True
-        if 'sentence index' in str(n_grams_list):
-            if n_grams_menu_var == "Word":
-                bySentenceIndex_word_var=True
-            else:
-                bySentenceIndex_character_var=True
-
-        if n_grams_word_var or n_grams_character_var or bySentenceIndex_word_var or bySentenceIndex_character_var:
-            if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
-                return
-
-        if n_grams_word_var or bySentenceIndex_word_var:
-            statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, n_grams_size, normalize,
-                                                              excludePunctuation, 1, openOutputFiles,
-                                                              createCharts, chartPackage,
-                                                              bySentenceIndex_word_var)
-        if n_grams_character_var or bySentenceIndex_character_var:
-            statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, n_grams_size, normalize,
-                                                              excludePunctuation, 0, openOutputFiles,
-                                                              createCharts, chartPackage,
-                                                              bySentenceIndex_character_var)
 
 # VIEWER ____________________________________________________________________________________________
 
@@ -224,12 +180,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             return
         ngram_list = processSearchWords(search_words)
         ngram_list = ['-checkNGrams'] + ngram_list
-        # cmd.extend(ngram_list)
+        # cmd.append(ngram_list)
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences start',
-                        'Started running N-Grams Word Co-Occurrences Viewer at', True,
-                        'VIEWER options: ' + str(viewer_options_list)+'\nSEARCH words: '+search_words,True,'',True)
-
+    # startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences start',
+    #                     'Started running N-Grams Word Co-Occurrences Viewer at', True,
+    #                     'VIEWER options: ' + str(viewer_options_list)+'\nSEARCH words: '+search_words,True,'',True)
+    #
     reminders_util.checkReminder(config_filename,
                                  reminders_util.title_options_NGrams,
                                  reminders_util.message_NGrams,
@@ -257,7 +213,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         filesToOpen.append(n_grams_outputFile)
         xAxis = temporal_aggregation_var
         chartTitle = 'N-Grams Viewer'
-        columns_to_be_plotted = []
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[]
         # it will iterate through i = 0, 1, 2, …., n-1
         # this assumes the data are in this format: temporal_aggregation, frequency of search-word_1, frequency of search-word_2, ...
         i = 0
@@ -266,19 +223,19 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             if temporal_aggregation_var=="quarter" or temporal_aggregation_var=="month":
                 if i == 0:
                     j=j+3
-                columns_to_be_plotted.append([0, j])
+                columns_to_be_plotted_yAxis.append([0, j])
             else:
-                columns_to_be_plotted.append([0, i + 1])
+                columns_to_be_plotted_yAxis.append([0, i + 1])
             i += 1
             j += 1
         hover_label = []
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                                   'n-grams_viewer',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["line"],
                                                   chart_title=chartTitle, column_xAxis_label_var=xAxis,
                                                   hover_info_column_list=hover_label)
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
     # plot co-occurrences
@@ -294,11 +251,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if xAxis == 'Document':
 
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, xlsxFilename, outputDir,
-                                                               columns_to_be_plotted_bar=[[1, 1]],
-                                                               columns_to_be_plotted_bySent=[[]],
-                                                               columns_to_be_plotted_byDoc=[[3, 1]],
+                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['CO-Occurrence'],
                                                                chartTitle='Frequency Distribution of Co-Occurring Words',
-                                                               count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                               count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                                hover_label=[],
                                                                outputFileNameType='',
                                                                column_xAxis_label='Co-occurring word',
@@ -307,10 +262,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                chart_title_label='')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
+                    filesToOpen.append(chart_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences end',
-                        'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime,True)
+    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences end',
+    #                     'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime,True)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -321,8 +276,6 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_ma
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_dropdown_field.get(),
-                                 n_grams_var.get(),
-                                 n_grams_menu_var.get(),
                                  n_grams_list,
                                  n_grams_viewer_var.get(),
                                  CoOcc_Viewer_var.get(),
@@ -341,8 +294,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=520, # height at brief display
-                                                 GUI_height_full=570, # height at full display
+                                                 GUI_height_brief=480, # height at brief display
+                                                 GUI_height_full=530, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1) # to be added for full display
@@ -377,8 +330,6 @@ viewer_options_list=[]
 
 n_grams_var= tk.IntVar()
 n_grams_menu_var= tk.StringVar()
-# bySentenceIndex_var = tk.IntVar()
-# normalize_var= tk.IntVar()
 n_grams_options_menu_var= tk.StringVar()
 
 n_grams_viewer_var = tk.IntVar()
@@ -401,63 +352,6 @@ normalize = tk.IntVar()
 scaleData = tk.IntVar()
 useLemma = tk.IntVar()
 fullInfo = tk.IntVar()
-
-n_grams_var.set(0)
-n_grams_checkbox = tk.Checkbutton(window, text='Compute n-grams', variable=n_grams_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,n_grams_checkbox,True)
-
-n_grams_menu_var.set('Word')
-n_grams_menu_lb = tk.Label(window, text='N-grams type')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,n_grams_menu_lb,True)
-n_grams_menu = tk.OptionMenu(window, n_grams_menu_var, 'Character', 'Word') #,'DEPREL','POSTAG')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,n_grams_menu)
-
-n_grams_options_menu_lb = tk.Label(window, text='N-grams options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,n_grams_options_menu_lb,True)
-n_grams_options_menu = tk.OptionMenu(window, n_grams_options_menu_var, 'Hapax legomena (once-occurring words/unigrams)','Normalize n-grams', 'Exclude punctuation (word n-grams only)','By sentence index','Repetition of words (last N words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,n_grams_options_menu,True)
-
-add_n_grams_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_n_grams_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+300,y_multiplier_integer,add_n_grams_button, True)
-
-reset_n_grams_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_n_grams_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+340,y_multiplier_integer,reset_n_grams_button,True)
-
-show_n_grams_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_n_grams_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400,y_multiplier_integer,show_n_grams_button)
-
-def reset_n_grams_list():
-    n_grams_list.clear()
-    n_grams_options_menu_var.set('')
-    n_grams_options_menu.configure(state='normal')
-
-def show_n_grams_list():
-    if len(n_grams_list)==0:
-        mb.showwarning(title='Warning', message='There are no currently selected n-grams options.')
-    else:
-        mb.showwarning(title='Warning', message='The currently selected n-grams options are:\n\n' + ','.join(n_grams_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
-
-def activate_n_grams_var():
-    # Disable the + after clicking on it and enable the class menu
-    add_n_grams_button.configure(state='disabled')
-    n_grams_options_menu.configure(state='normal')
-
-def activate_n_grams_options(*args):
-    if n_grams_options_menu_var.get()!='':
-        if n_grams_options_menu_var.get() in n_grams_list:
-            mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
-            return
-        n_grams_list.append(n_grams_options_menu_var.get())
-        n_grams_options_menu.configure(state="disabled")
-        add_n_grams_button.configure(state='normal')
-        reset_n_grams_button.configure(state='normal')
-        show_n_grams_button.configure(state='normal')
-    else:
-        add_n_grams_button.configure(state='disabled')
-        reset_n_grams_button.configure(state='disabled')
-        show_n_grams_button.configure(state='disabled')
-        n_grams_options_menu.configure(state="normal")
-n_grams_options_menu_var.trace('w',activate_n_grams_options)
 
 n_grams_viewer_var.set(0)
 Ngrams_checkbox = tk.Checkbutton(window, text='N-grams VIEWER', variable=n_grams_viewer_var, onvalue=1, offvalue=0)
@@ -558,9 +452,6 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 viewer_options_menu = tk.OptionMenu(window, viewer_options_menu_var, 'Case sensitive (default)', 'Case insensitive', 'Exact match (default)','Partial match','Normalize results','Scale results', 'Lemmatize words')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,viewer_options_menu)
 
-open_GUI_button = tk.Button(window, text='Open GUI for word/collocation searches',command=lambda: call("python file_search_byWord_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_GUI_button)
-
 def reset_viewer_options_list():
     viewer_options_list.clear()
     viewer_options_menu_var.set('Case sensitive')
@@ -582,7 +473,7 @@ def activate_viewer_options(*args):
         if viewer_options_menu_var.get() in viewer_options_list:
             mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
             return
-        if 'match' in viewer_options_menu_var.get() or \
+        if 'Partial match' in viewer_options_menu_var.get() or \
                 'Lemmatize' in viewer_options_menu_var.get() or \
                 'Normalize' in viewer_options_menu_var.get() or \
                 'Scale' in viewer_options_menu_var.get():
@@ -617,8 +508,6 @@ def clear_n_grams_list():
 
 def clear(e):
     n_grams_list.clear()
-    n_grams_menu_var.set('Word')
-    n_grams_options_menu_var.set('')
     search_words_var.set('')
     viewer_options_list.clear()
     viewer_options_menu_var.set('Case sensitive')
@@ -632,35 +521,36 @@ window.bind("<Escape>", clear)
 n_grams_list=[]
 
 def activate_allOptions():
-    if n_grams_var.get() == 1:
-        n_grams_menu.configure(state='normal')
-        n_grams_options_menu.configure(state='normal')
-        Ngrams_checkbox.configure(state='disabled')
-        CoOcc_checkbox.configure(state='disabled')
-        search_words_entry.configure(state='disabled')
-        date_options_checkbox.config(state='disabled')
-    else:
-        n_grams_menu.configure(state='disabled')
-        n_grams_options_menu.configure(state='disabled')
-        Ngrams_checkbox.configure(state='normal')
-        CoOcc_checkbox.configure(state='normal')
-        search_words_entry.configure(state='normal')
-        date_options_checkbox.config(state='normal')
+    Ngrams_checkbox.configure(state='normal')
+    CoOcc_checkbox.configure(state='normal')
+    search_words_entry.configure(state='normal')
+    date_options_checkbox.config(state='normal')
     if n_grams_viewer_var.get() or CoOcc_Viewer_var.get():
-        n_grams_checkbox.configure(state='disabled')
         search_words_entry.configure(state='normal')
         date_options_checkbox.config(state='normal')
         viewer_options_menu.config(state='normal')
     else:
-        n_grams_checkbox.configure(state='normal')
         search_words_entry.configure(state='disabled')
         date_options_checkbox.config(state='disabled')
         viewer_options_menu.config(state='disabled')
-n_grams_var.trace('w', lambda x, y, z: activate_allOptions())
 n_grams_viewer_var.trace('w', lambda x, y, z: activate_allOptions())
 CoOcc_Viewer_var.trace('w', lambda x, y, z: activate_allOptions())
 
 activate_allOptions()
+
+open_GUI_Ngrams_button = tk.Button(window, width=50, text='Compute N-grams (Open GUI)',command=lambda: call("python style_analysis_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   open_GUI_Ngrams_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
+
+open_GUI_search_button = tk.Button(window, width=50, text='Search words/collocations (Open GUI)',command=lambda: call("python file_search_byWord_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   open_GUI_search_button,
+                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to open the GUI")
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -669,13 +559,15 @@ TIPS_lookup = {'N-Grams (word & character)':"TIPS_NLP_Ngram (word & character).p
                'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf',
                'NLP Suite Ngram and Word Co-Occurrence Viewer':"TIPS_NLP_Ngram and Word Co-Occurrence Viewer.pdf",
                'Style analysis':'TIPS_NLP_Style analysis.pdf',
+               'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
+               'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures':'TIPS_NLP_Statistical measures.pdf'}
     #,'Java download install run':'TIPS_NLP_Java download install run.pdf'}
-TIPS_options='N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Style analysis','Excel smoothing data series','csv files - Problems & solutions','Statistical measures'
+TIPS_options='N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Style analysis','English Language Benchmarks', 'Things to do with words: Overall view','Excel smoothing data series','csv files - Problems & solutions','Statistical measures'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
@@ -686,12 +578,16 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the \'Compute n-grams\' checkbox if you wish to compute n-grams.\n\nN-grams can be computed for character and word values. Use the dropdown menu to select the desired option.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word n-grams between 1 and 3.\n\nWhen n-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, use the dropdown menu to select various options that can be applied to n-grams. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nThe default number of n-grams computed is 3, unless you select the Hapax legomena option for unigrams (and then select once-occurring words).\n\nN-grams can be normalized, i.e., their frequency values are divided by the number of words in a document.\n\nPunctuation can be excluded when computing n-grams (Google, for instance, exclude punctuation from its Ngram Viewer (https://books.google.com/ngrams).\n\nN-grams can be computed by sentence index.\n\nFinally, you can run a special type of n-grams that computes the last 2 words in a sentence and the first 2 words of the next sentence, a rhetorical figure of repetition for the analysis of style.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer Java script.\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer Java script.\n\nYou can run both Viewers at the same time.\n\nThe NGrams part of the algorithm requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872).\n\nFor both viewers, results will be visualized in Excel line plots.\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, enter the comma-separated list of words for which you want to know N-Gram statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences.\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: group of years, year, quarter, month.\n\nPlease, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2).')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, use the dropdown menu to select various options that can be applied to the VIEWER. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nYou can make your searches CASE SENSITIVE.\n\nYou can NORMALIZE results. Only works for N-Grams. Formula: search word frequency / total number of all words e.g: word "nurse" occurs once in year 1892, and year 1892 has a total of 1000 words. Then the normalized frequency will be 1/1000.\n\nYou can SCALE results. Only works for N-Grams. It applies the min-max normalization to frequency of search words. After the min-max normalization is done, each column of data (i.e., each search word) will fall in the same range.\n\nYou can LEMMATIZE words for your searches (e.g., be instead of being, is, was). The routine relies on the Stanford CoreNLP for lemmatizing words.\n\nFinally, you can select to display minimal information or full information.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer Java script.\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer Java script.\n\nYou can run both Viewers at the same time.\n\nThe NGrams part of the algorithm requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872).\n\nFor both viewers, results will be visualized in Excel line plots.\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, enter the comma-separated list of single words or collocations (i.e., sets of words such as coming out, beautiful sunny day) for which you want to know N-Grams/Co-occurrences statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences.\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: group of years, year, quarter, month.\n\nPlease, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2).')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, use the dropdown menu to select various options that can be applied to the VIEWER. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nYou can make your searches CASE SENSITIVE.\n\nYou can NORMALIZE results. Only works for N-Grams. Formula: search word frequency / total number of all words e.g: word "nurse" occurs once in year 1892, and year 1892 has a total of 1000 words. Then the normalized frequency will be 1/1000.\n\nYou can SCALE results. Only works for N-Grams. It applies the min-max normalization to frequency of search words. After the min-max normalization is done, each column of data (i.e., each search word) will fall in the same range.\n\nYou can LEMMATIZE words for your searches (e.g., be instead of being, is, was). The routine relies on the Stanford CoreNLP for lemmatizing words.\n\nFinally, you can select to display minimal information or full information.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, click on the button to open the GUI where you can compute n-grams.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                               'Please, click on the button to open a GUI with more options for word/collocation searches.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
@@ -709,7 +605,23 @@ The NGrams_CoOccurrences script allows searches for Ngrams or word co-occurrence
 \n\nNGRAMS and CO-OCCURRING words DO NOT MAKE MUCH SENSE WITH A SINGLE FILE!
 """
 
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName, False)
+
+def activate_NLP_options(*args):
+    global error, package_basics, package, language_list
+    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
+GUI_util.setup_menu.trace('w', activate_NLP_options)
+activate_NLP_options()
+
+if error:
+    mb.showwarning(title='Warning',
+               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup widget at the bottom of this GUI.")
+
+title=["NLP setup options"]
+message="Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " + ', '.join(language_list) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " + package_basics + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
+reminders_util.checkReminder(config_filename, title, message)
 
 GUI_util.window.mainloop()

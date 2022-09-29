@@ -7,8 +7,7 @@ import pandas as pd
 import csv
 import numpy as np
 import pprint
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-from nltk.tokenize import sent_tokenize, word_tokenize
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 import IO_files_util
 import IO_csv_util
@@ -114,7 +113,7 @@ def run(inputDir="relative_path_here",
             f.close()
             if not case_sensitive:
                 docText = docText.lower()
-            tokens_ = word_tokenize(docText)
+            tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
             for collocationIndex in range(len(tokens_)):
                 token = tokens_[collocationIndex]
                 for search_word in search_word_list:
@@ -198,7 +197,7 @@ def run(inputDir="relative_path_here",
             f.close()
             if not case_sensitive:
                 docText = docText.lower()
-            tokens_ = word_tokenize(docText)
+            tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
             for collocationIndex in range(len(tokens_)):
                 token = tokens_[collocationIndex]
                 for search_word in search_word_list:
@@ -279,7 +278,7 @@ def run(inputDir="relative_path_here",
                 f.close()
                 if not case_sensitive:
                     docText = docText.lower()
-                tokens_ = word_tokenize(docText)
+                tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
                 coOcc_results = {}
                 for collocationIndex in range(len(tokens_)):
                     if coOcc_results_binary[file]["CO-Occurrence"] == "YES":
@@ -310,7 +309,6 @@ def run(inputDir="relative_path_here",
                                     coOcc_results[search_word] = 2
                             else:
                                 if search_word == token:
-                                    # print(search_word, 'FOUND!!!!!', file)
                                     coOcc_results[search_word] = 1
                         co_occurrence_checker = True
                         for word in search_word_list:
@@ -337,7 +335,7 @@ def run(inputDir="relative_path_here",
     # pprint.pprint(coOcc_results_binary)
     NgramsFileName, coOccFileName = save(NgramsFileName, coOccFileName, ngram_results, coOcc_results_binary, aggregateBy, temporal_aggregation)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Word/Characters N-Grams at', True, '', True, startTime, False)
 
     return NgramsFileName, coOccFileName
@@ -406,7 +404,7 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
         newdf.to_csv(NgramsFileName, encoding='utf-8', index=False)
     if len(coOcc_results)>0:
         # with open(os.path.join(WCOFileName, outputDir), 'w', encoding='utf-8') as f:
-        with open(coOccFileName, 'w', newline='', encoding='utf-8') as f:
+        with open(coOccFileName, 'w', newline='', encoding='utf-8', errors='ignore') as f:
             writer = csv.writer(f)
             writer.writerow(["Search Word(s)", "CO-Occurrence", "Document ID", "Document"])
             for label, res in coOcc_results.items():

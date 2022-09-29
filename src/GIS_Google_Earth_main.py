@@ -35,14 +35,14 @@ import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-# ISO 3166-1 defines two-letter, three-letter, and three-digit country codes. 
-# python-iso3166 is a self-contained module that converts between these codes 
+# ISO 3166-1 defines two-letter, three-letter, and three-digit country codes.
+# python-iso3166 is a self-contained module that converts between these codes
 #   and the corresponding country name.
 # import iso3166 #pip install
 # from iso3166 import countries
 
 
-def run(inputFilename, outputDir, openOutputFiles,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
             encoding_var,
             locationColumnName,
             date_var, date_format_var,
@@ -62,7 +62,7 @@ def run(inputFilename, outputDir, openOutputFiles,
     inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable=GIS_file_check_util.CoNLL_checker(inputFilename)
 
     if withHeader==True:
-        locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName)
+        locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnName, inputFilename)
 
     # Word is the header from Stanford CoreNLP NER annotator
     if not 'Location' in headers and not 'Word' in headers and not 'NER' in headers:
@@ -93,9 +93,16 @@ def run(inputFilename, outputDir, openOutputFiles,
     country_bias = ''
     area_var = ''
     restrict = False
-    filesToOpen, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window,config_filename,
-                                       inputFilename, outputDir,
-                                       geocoder, 'Google Earth Pro',
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS-GEP',
+                                                            silent=False)
+    if outputDir == '':
+        return
+
+    filesToOpen = GIS_pipeline_util.GIS_pipeline(GUI_util.window,config_filename,
+                                       inputFilename, inputDir, outputDir,
+                                       geocoder, 'Google Earth Pro', createCharts, chartPackage,
                                        datePresent,
                                        country_bias,
                                        area_var,
@@ -108,9 +115,9 @@ def run(inputFilename, outputDir, openOutputFiles,
                                        bold_var_list, italic_var_list,
                                        description_var_list, description_csv_field_var_list)
 
-    filesToOpen.append(kmloutputFilename)
-    if len(filesToOpen) == 0:
-            return
+    if filesToOpen!=None:
+        if len(filesToOpen) == 0:
+                return
 
     # # always open the kml file
     # IO_files_util.open_kmlFile(kmloutputFilename)
@@ -127,7 +134,11 @@ def run(inputFilename, outputDir, openOutputFiles,
 #             description_csv_field_var, bold_var_list, italic_var_list,
 #             description_var_list, description_csv_field_var_list):
 
-run_script_command=lambda: run(GUI_util.inputFilename.get(),GUI_util.output_dir_path.get(),GUI_util.open_csv_output_checkbox.get(),
+run_script_command=lambda: run(GUI_util.inputFilename.get(),
+                GUI_util.input_main_dir_path.get(),
+                GUI_util.output_dir_path.get(),GUI_util.open_csv_output_checkbox.get(),
+                GUI_util.create_chart_output_checkbox.get(),
+                GUI_util.charts_dropdown_field.get(),
                 encoding_var.get(),
                 location_var.get(),
                 date_var.get(),date_format_var.get(),
@@ -161,9 +172,9 @@ config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
-        # 1 for CoNLL file 
-        # 2 for TXT file 
-        # 3 for csv file 
+        # 1 for CoNLL file
+        # 2 for TXT file
+        # 3 for csv file
         # 4 for any type of file
         # 5 for txt or html
         # 6 for txt or csv
@@ -1000,7 +1011,7 @@ TIPS_options = 'utf-8 encoding', 'Geocoding', 'Geocoding: How to Improve Nominat
 def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     if not IO_setup_display_brief:
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      'Please, select an input csv file for the GIS Geogle Earth Pro script. Two types of csv files are acceptable:\n  1. a file containing a first column of location names that need to be geocoded (e.g., New York);\n2.  a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script Stanford_CoreNLP_main.py (the script parses text documents using the Stanford CoreNLP parser).')
+                                      'Please, select an input csv file for the GIS Geogle Earth Pro script. Two types of csv files are acceptable:\n  1. a file containing a first column of location names that need to be geocoded (e.g., New York);\n2.  a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script NLP_parsers_annotators_main.py (the script parses text documents using the Stanford CoreNLP parser).')
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_outputDirectory)
     else:
@@ -1029,7 +1040,7 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordi
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script relies on the Python Geopy library to geocode locations, i.e., finding a locaton latitude and longitude so that it can be mapped using Google Earth Pro.\n\nYOU MUST DOWNLOAD AND INSTALL THE FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro.\n\nIn INPUT, the script can either take:\n   1. A CoNLL table produced by Stanford CoreNLP parser and use the NER (Named Entity Recognition) values of LOCATION, CITY, STATE-OR-PROVINCE, COUNTRY, values for geocoding;\n   2. a csv file, however created (e.g., CoreNLP NER annotator), containing a list of locations to be geocoded (e.g., Chicago);\n   2. a csv file that contains geocoded location names with latitude and longitude.\n\ncsv files, except for the CoNLL table, must have a column header 'Location' (the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location').\n\nWhen a CoNLL file is used, if the file contains a date, the script can automatically process a wide variety of date formats: day, month, and year in numeric form and in different order, year in 2 or 4 digit form, and month in numeric or alphabetic form and, in the latter case, in 3 or full characters (e.g., Jan or January).\n\nThe current release of the script relies on Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe script prepares the kml file to be displayed in Google Earth Pro.\n\nThe script can also be used to compute geographic distances between locations, in both kilometers and miles, by either geodesic distance or by great circle distance. Distances will be visualized in Excel charts."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 if errorDisplayed==False:

@@ -27,6 +27,7 @@ languages = [
     ('bs', 'Bosnian'),
     ('br', 'Breton'),
     ('bg', 'Bulgarian'),
+    ('bxr', 'Buryat'),
     ('my', 'Burmese'),
     ('ca', 'Catalan; Valencian'),
     ('cs', 'Czech'),
@@ -80,6 +81,7 @@ languages = [
     ('hi', 'Hindi'),
     ('ho', 'Hiri Motu'),
     ('hr', 'Croatian'),
+    ('hsb', 'Upper Sorbian'),
     ('hu', 'Hungarian'),
     ('hy', 'Armenian'),
 	('hyw', 'Western Armenian'),
@@ -104,6 +106,7 @@ languages = [
     ('kk', 'Kazakh'),
     ('km', 'Central Khmer'),
     ('ki', 'Kikuyu; Gikuyu'),
+    ('kmr', 'Kurmanji'),
     ('rw', 'Kinyarwanda'),
     ('ky', 'Kirghiz; Kyrgyz'),
     ('kv', 'Komi'),
@@ -115,6 +118,7 @@ languages = [
     ('la', 'Latin'),
     ('lv', 'Latvian'),
     ('li', 'Limburgan; Limburger; Limburgish'),
+    ('lij', 'Limburgan; Limburger; Limburgish'),
     ('ln', 'Lingala'),
     ('lt', 'Lithuanian'),
     ('lb', 'Luxembourgish; Letzeburgesch'),
@@ -134,7 +138,7 @@ languages = [
     ('mn', 'Mongolian'),
     ('mi', 'Maori'),
     ('ms', 'Malay'),
-	('multilingual', 'multilingual'),
+	('multilingual', 'Multilingual'),
     ('my', 'Burmese'),
     ('na', 'Nauru'),
     ('nv', 'Navajo; Navaho'),
@@ -215,6 +219,7 @@ languages = [
     ('wa', 'Walloon'),
     ('wo', 'Wolof'),
     ('xh', 'Xhosa'),
+    ('xx', 'Multi-language'),
     ('yi', 'Yiddish'),
     ('yo', 'Yoruba'),
     ('za', 'Zhuang; Chuang'),
@@ -541,26 +546,27 @@ YAGO_ontology_class_menu= 'BioChemEntity','Gene','MolecularEntity','Taxon','Bran
 
 NLP_Suite_visualization_tools_menu = 'Excel charts', 'Geographic maps: Geocoding & maps', \
 'Geographic maps: Google Earth Pro', 'Geographic distances between locations', \
-'HTML annotator - dictionary, gender, DBpedia, YAGO - (All options GUI)', 'Network graphs (Gephi)', \
-'Sentence visualization: Dependency tree viewer (png graphs)', 'Word clouds'
+'HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)', 'Network graphs (Gephi)', \
+'Sentence visualization: Dependency tree viewer (png graphs)', 'Wordclouds (ALL options GUI)'
 
-NLP_Suite_data_file_handling_tools_menu = 'Data manager (csv files via Pandas)', \
+NLP_Suite_data_file_handling_tools_menu = 'File handler (ALL options GUI)', 'Sample data (ALL options GUI)', \
+'Search (ALL options GUI)', \
+'Data manager (csv files via Pandas)', \
 'File checker (file name)', \
 'File classifier (dumb classifier via embedded date) (file name)', \
 'File-type converter (csv, docx, pdf, rtf --> txt)', \
 'File matcher (file name)',\
-'File manager (List, Rename, Copy, Move, Delete, Count, Split)', 'SQL database (via SQLite)', \
-'Sample data (ALL options GUI)', \
-'Search (ALL options GUI)'
+'File manager (List, Rename, Copy, Move, Delete, Count, Split)', 'SQL database (via SQLite)'
 
-NLP_Suite_pre_processing_tools_menu = 'File checker (file content)', \
+NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample data (ALL options GUI)', 'Search (ALL options GUI)',\
+'File checker (file content)', \
 'File checker (file content utf-8 encoding)', 'File checker (file name)', \
 'File cleaner (Change to ASCII non-ASCII apostrophes & quotes and % to percent)', \
 'File cleaner (Find & Replace string)', 'File cleaner (Remove blank lines from txt file(s))', \
-'File cleaner (Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation)', \
+'File cleaner (Add full stop . at the end of paragraphs without end-of-paragraph punctuation)', \
 'File cleaner (Pronominal resolution via CoreNLP)', 'File finder (file name)', \
 'File merger (file content)', 'File splitter (file content)', 'File splitter (file name)', \
-'Search (ALL options GUI)', 'File search (file content for n-grams & co-occurrences; N-grams viewer)', \
+'File search (file content for n-grams & co-occurrences; N-grams viewer)', \
 'File search (file content for words/collocations)', 'File-type converter (csv, docx, pdf, rtf --> txt)', \
 'Find non-related documents', 'Language detection', 'Newspaper article/Document titles', \
 'Similarities between documents (via Java Lucene)', 'Similarities between documents (via Python difflib)', \
@@ -580,17 +586,17 @@ NLP_Suite_corpus_tools_menu = 'Co-Occurrences viewer', 'N-grams viewer', \
 'Similarities between documents (via Java Lucene)', 'Topic modeling (via Gensim)', \
 'Topic modeling (via MALLET)'
 
-NLP_Suite_corpus_document_tools_menu = 'WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW', 'Corpus/document(s) statistics (Sentences, words, lines)', 'Stanford CoreNLP', 'Stanza', 'spaCy', 'CoNLL table analyzer - Search the CoNLL table', \
+NLP_Suite_corpus_document_tools_menu = 'WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW', 'Corpus/document(s) statistics (Sentences, words, lines)', 'NLP parsers & annotators (CoreNLP, spaCy, Stanza)', 'CoNLL table analyzer - Search the CoNLL table', \
 'CoNLL table analyzer - Clause, noun, verb, function words frequencies', 'CoreNLP annotator - date (NER normalized date)', \
 'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)', 'CoreNLP annotator - quote', \
-'CoreNLP annotator - coreference (pronominal)', 'CoreNLP annotator - SVO (Subject-Verb-Object) extractor & visualization', 'Knowledge graphs: DBpedia & YAGO', \
+'CoreNLP annotator - coreference (pronominal)', 'SVO (Subject-Verb-Object) extractor & visualization', 'Knowledge graphs: DBpedia & YAGO', \
 'HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)', 'Annotator - hedge/uncertainty', 'Narrative analysis (ALL options GUI)', 'Style analysis (ALL options GUI)', \
 'Sentiment analysis', 'Sentiments/emotions (ALL options GUI)', 'Gender guesser', 'Geographic maps: From texts to maps', 'Geographic maps: Google Earth Pro', \
 'NER (Named Entity Recognition) extractor', 'N-grams (word & character)', 'Nominalization', 'Search (ALL options GUI)', 'Search CoNLL table', \
 'Search text file(s) for n-grams & co-occurrences (N-grams viewer)', 'Search text file(s) for words/collocations', 'Sentence complexity', \
 'Sentence/text readability (via textstat)', 'Similarities between words (Levenshtein distance)', 'Spelling checkers', \
 'Spelling checker cleaner (Find & Replace string)', 'Semantic analysis (via TensorFlow)', 'SRL Semantic Role Labeling', \
-'Word clouds (ALL options GUI)', 'WordNet', 'Word2Vec (via Gensim)'
+'Wordclouds (ALL options GUI)', 'WordNet', 'Word2Vec (via Gensim)'
 
 # 'Spelling checker/Unusual words (via NLTK)',
 # 'Spelling checker (via autocorrect)',

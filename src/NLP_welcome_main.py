@@ -20,6 +20,7 @@ from subprocess import call
 
 import GUI_IO_util
 import videos_util
+import NLP_setup_update_util
 
 GUI_size = str(GUI_IO_util.get_GUI_width(1)) + 'x600'
 
@@ -63,7 +64,7 @@ def run_NLP():
 
 def close_NLP():
     global local_release_version, GitHub_release_version
-    GUI_IO_util.exit_window(window, '', 'NLP_welcome_main', [0,0,0,0], [], local_release_version, GitHub_release_version)
+    NLP_setup_update_util.exit_window(window, '', 'NLP_welcome_main', [0,0,0,0], [], local_release_version, GitHub_release_version)
 
 def watch_video(video_button):
     videos_util.get_videos('File manager', {'File manager': 'NLP_File manager.mp4'}, video_button, '')
@@ -145,24 +146,7 @@ def display_text():
     welcome_line4.grid(row=2, column=0, columnspan=6)
 
 
-def display_enter_button():
-    # display CLOSE button
-    enter_button = tk.Button(window, text='CLOSE', width=15, height=1,
-                             font=("Arial", 14),
-                             command=lambda: close_NLP())
-    enter_button.grid(row=9, column=4, columnspan=3, rowspan=2, sticky=(tk.N,tk.W),padx=30)
-
-    # hover-over effect
-    enter_button.bind('<Enter>', lambda e: e.widget.config(background='red'))
-    enter_button.bind('<Leave>', lambda e: e.widget.config(background='#F0F0F0'))
-
-    # display Enter NLP button
-    enter_button = tk.Button(window, text='Enter NLP Suite', width=20, height=2, foreground="red",
-                             font=("Arial", 14, "bold"),
-                             command=lambda: run_NLP())
-    # enter_button.grid(row=8, column=4, columnspan=3, rowspan=2, pady=50)
-    enter_button.grid(row=8, column=2, columnspan=2, rowspan=2, pady=50)
-
+def display_bottom_line_buttons():
     roberto_franzosi = tk.Label(window,
                              text='Roberto Franzosi',
                              foreground="black", font=("Arial", 12,"italic"))
@@ -178,6 +162,81 @@ def display_enter_button():
     video_button.configure(state='disabled')
     video_button.grid(row=9, column=1, columnspan=3, sticky=(tk.N,tk.W),padx=30)
 
+    # display Enter NLP button
+    enter_button = tk.Button(window, text='Enter NLP Suite', width=20, height=2, foreground="red",
+                             font=("Arial", 14, "bold"),
+                             command=lambda: run_NLP())
+    # enter_button.grid(row=8, column=4, columnspan=3, rowspan=2, pady=50)
+    enter_button.grid(row=8, column=2, columnspan=2, rowspan=2, pady=50)
+
+    window.update()
+
+    # get the x, y coordinates of the Enter button
+    # https://www.tutorialspoint.com/how-to-get-the-tkinter-widget-s-current-x-and-y-coordinates
+    # TODO tkinter issue the winfo_rootx() and winfo_rootx() and winfo_rootx() and winfo_rooty() DO NOT WORK!
+    # x_coordinate1, y_coordinate1 = enter_button.winfo_rootx(), enter_button.winfo_rooty()
+    # y_coordinate1 = y_coordinate1 - 90
+
+    if sys.platform == 'darwin':  # Mac OS
+        x_coordinate1 = 370
+        y_coordinate1 = 470
+    else:
+        x_coordinate1 = 320
+        y_coordinate1 = 470
+
+    label_enter = enter_button.cget('text')
+
+    text_info_enter = "Pressing the Enter button will give you access to all the text analysis options available in the NLP Suite."
+
+    # widget label, i.e., words displayed in the widget
+    # e.widget_name.cget('text'),
+    # hover-over effect
+    current_color_bg_enter = enter_button.cget('background')
+    current_color_fg_enter = enter_button.cget('foreground')
+    # since the foreground color of the enter button is red, must switch the colors around
+    # and switch them back to original upon leaving
+    enter_button.bind('<Enter>', lambda e: (e.widget.config(background='red', foreground='black', text=label_enter),
+                        GUI_IO_util.display_widget_info(window, e, x_coordinate1,
+                        y_coordinate1,
+                        x_coordinate1,
+                        text_info_enter)))
+    enter_button.bind('<Leave>', lambda e: (GUI_IO_util.delete_display_widget_lb(window, e, text_info_enter),
+                                            (e.widget.config(background='#F0F0F0', foreground=current_color_fg_enter, text=label_enter))))
+
+    # display close button
+    close_button = tk.Button(window, text='CLOSE', width=15, height=1,
+                             font=("Arial", 14),
+                             command=lambda: close_NLP())
+    close_button.grid(row=9, column=4, columnspan=3, rowspan=2, sticky=(tk.N,tk.W),padx=30)
+
+    window.update()
+
+    # get the x, y coordinates of the Close button
+    # https://www.tutorialspoint.com/how-to-get-the-tkinter-widget-s-current-x-and-y-coordinates
+    # TODO tkinter issue the winfo_rootx() and winfo_rootx() and winfo_rootx() and winfo_rooty() DO NOT WORK!
+    # x_coordinate2, y_coordinate2 = close_button.winfo_rootx(),  close_button.winfo_rooty()
+    # y_coordinate2=y_coordinate2-90
+    if sys.platform == 'darwin':  # Mac OS
+        x_coordinate2 = 100
+        y_coordinate2 = 470
+    else:
+        x_coordinate2 = 150
+        y_coordinate2 = 470
+    label_close = close_button.cget('text')
+    current_color_close = close_button.cget('foreground') # not used since CLOSE is in black
+
+    text_info_close="Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."\
+                                                   "\nYou must be connected to the internet for the auto update to work."
+    # widget label, i.e., words displayed in the widget
+    # e.widget_name.cget('text'),
+    # hover-over effect
+    close_button.bind('<Enter>', lambda e: (e.widget.config(background='red', text=label_close),
+                        GUI_IO_util.display_widget_info(window, e, x_coordinate2,
+                        y_coordinate2,
+                        x_coordinate2,
+                        text_info_close)))
+    close_button.bind('<Leave>', lambda e: (e.widget.config(background='#F0F0F0', text=label_close),
+                      GUI_IO_util.delete_display_widget_lb(window, e, text_info_close)))
 
 def update_images():
     img = next(photos1)
@@ -209,18 +268,19 @@ def place_banner():
 
 
 run_slides()
-update_images()  # this MUST be before  displaying logo, text, and buttons
+update_images()  # this MUST be before displaying logo, text, and buttons
 
 GUI_util.display_logo()
 display_text()
 
+# The release versions are displayed in GUI_util
 # GUI_util.display_release()
 
 scriptName = 'NLP_welcome_main.py'
 GUI_util.display_about_release_team_cite_buttons(scriptName)
 
 place_banner()
-display_enter_button()
+display_bottom_line_buttons()
 
 window.rowconfigure(6, weight=1)
 window.rowconfigure(7, weight=1)

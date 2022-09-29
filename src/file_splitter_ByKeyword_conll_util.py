@@ -17,7 +17,7 @@ import csv
 import os
 import pandas as pd
 
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza
 
 
 
@@ -33,7 +33,7 @@ def run(inputCoNLL, outputPath, keyword, first_occurrence):
         directory_name = directory_name.replace('_mergedCoNLL', '')
     outputPath = head+os.sep+directory_name+"_subfiles&csv"#a directory will be built in the path of input conll table no matter what input outputPath is 
     os.mkdir(outputPath)
-    df = pd.read_csv(inputCoNLL, encoding = "ISO-8859-1")#problem of utf-8 enconding when read csv file: 
+    df = pd.read_csv(inputCoNLL, encoding="ISO-8859-1")#problem of utf-8 enconding when read csv file: 
     #https://stackoverflow.com/questions/18171739/unicodedecodeerror-when-reading-csv-file-in-pandas-with-python
     subfileindex = 1#record the number of subfles generated
     # kwtoken = word_tokenize(keyword)

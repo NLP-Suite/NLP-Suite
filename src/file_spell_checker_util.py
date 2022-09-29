@@ -17,7 +17,7 @@ if not IO_libraries_util.install_all_packages(GUI_util.window,"spell_checker_uti
 
 import os
 from tkinter import filedialog
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 import nltk
 import pandas
 import pandas as pd
@@ -85,7 +85,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
                                                  True, '', True, '', True)
 
     # already shown in NLP.py
-    # IO_util.timed_alert(GUI_util.window,3000,'Analysis start','Started running NLTK unusual words at',True,'You can follow NLTK unusual words in command line.')
+    # IO_util.timed_alert(GUI_util.window,2000,'Analysis start','Started running NLTK unusual words at',True,'You can follow NLTK unusual words in command line.')
     for file in files:
         documentID=documentID+1
         head, tail = os.path.split(file)
@@ -102,8 +102,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
         unusual=list(unusual)
         #sort the list
         unusual.sort()
-        unusual = [[word,documentID, IO_csv_util.dressFilenameForCSVHyperlink(file)] for word in unusual]
-        container.extend(unusual)
+        [container.append([word, documentID, IO_csv_util.dressFilenameForCSVHyperlink(file)]) for word in unusual]
     container.insert(0, ['Misspelled/unusual word','Document ID', 'Document'])
     if len(container)>0:
         if IO_csv_util.list_to_csv(window,container,outputFilename): return
@@ -122,9 +121,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
                  pass
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                   columns_to_be_plotted_bar=[[0, 0]],
-                                                   columns_to_be_plotted_bySent=[[]], # no sent in NLTK unusual
-                                                   columns_to_be_plotted_byDoc=[[1,2]],
+                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Misspelled/unusual word'],
                                                    chartTitle='Frequency of Misspelled/Unusual Words',
                                                    count_var=1, hover_label=[],
                                                    outputFileNameType='',  # 'line_bar',
@@ -134,10 +131,11 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
                                                    chart_title_label='')
 
         if chart_outputFilename != None:
-            filesToOpen.extend(chart_outputFilename)
+            if len(chart_outputFilename)> 0:
+                filesToOpen.extend(chart_outputFilename)
 
     if openOutputFiles==True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen=[] # do not open twice, hee and calling function
     # already shown in NLP.py
     # IO_util.timed_alert(GUI_util.window,3000,'Analysis end','Finished running NLTK unusual words at',True)
@@ -150,9 +148,14 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
 def generate_simple_csv(Dataframe):
     pass
 
-
 # check within subdirectory
 def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, NERs, similarity_value, by_all_tokens_var,spelling_checker_var=False):
+    outputFileName_complete = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
+                                                                      str(similarity_value), 'Edit_dist_algo',
+                                                                      'NERs', 'Full-table')
+    outputFileName_simple = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
+                                                                    str(similarity_value), 'Edit_dist_algo', 'NERs',
+                                                                    'Concise-table')
     filesToOpen=[]
     if inputDir=='':
         return
@@ -169,19 +172,17 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
         df_simple_list = [df[1] for df in df_list]
         df_complete = pd.concat(df_complete_list, ignore_index=True)
         df_simple = pd.concat(df_simple_list, ignore_index=True)
-        df_simple.to_csv(outputFileName_simple, index=False)
-        df_complete.to_csv(outputFileName_complete, index=False)
+        df_simple.to_csv(outputFileName_simple, encoding='utf-8', index=False)
+        df_complete.to_csv(outputFileName_complete, encoding='utf-8', index=False)
 
         filesToOpen.append(outputFileName_simple)
         filesToOpen.append(outputFileName_complete)
 
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename, outputDir,
-                                                           columns_to_be_plotted_bar=[[10, 10]],
-                                                           columns_to_be_plotted_bySent=[[]],
-                                                           columns_to_be_plotted_byDoc=[[]],
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Typo?'],
                                                            chartTitle='Frequency of Potential Typos',
-                                                           count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                           count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                            hover_label=[],
                                                            outputFileNameType='Leven_spell',
                                                            column_xAxis_label='Typo',
@@ -470,8 +471,8 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                                         str(similarity_value), 'Edit_dist_algo', 'NERs',
                                                                             'Concise-table')
     if len(df_simple) > 0 and len(df_complete) > 0:
-            df_simple.to_csv(outputFileName_simple, index=False)
-            df_complete.to_csv(outputFileName_complete, index=False)
+            df_simple.to_csv(outputFileName_simple, encoding='utf-8', index=False)
+            df_complete.to_csv(outputFileName_complete, encoding='utf-8', index=False)
             filesToOpen.append(outputFileName_simple)
             filesToOpen.append(outputFileName_complete)
 
@@ -482,11 +483,9 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                'Finished running Word similarity at', True, '', True, startTime, True)
 
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFileName_simple, outputDir,
-                                                               columns_to_be_plotted_bar=[[10, 10]],
-                                                               columns_to_be_plotted_bySent=[[]],
-                                                               columns_to_be_plotted_byDoc=[[]],
+                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Typo?'],
                                                                chartTitle='Frequency of Potential Typos',
-                                                               count_var=1,  # to be used for byDoc, 0 for numeric field
+                                                               count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                                hover_label=[],
                                                                outputFileNameType='Leven_spell',
                                                                column_xAxis_label='Typo',
@@ -495,7 +494,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                                chart_title_label='')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
+                    filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -513,7 +512,7 @@ def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutp
     csv_spelling_file = filedialog.askopenfilename(title='Select INPUT csv spelling file (with \'Original\' and \'Corrected\' headers)', filetypes=[("csv files", "*.csv")]) #https://docs.python.org/3/library/dialog.html
     if csv_spelling_file=='':
         return
-    df = pd.read_csv(csv_spelling_file)
+    df = pd.read_csv(csv_spelling_file, encoding='utf-8', error_bad_lines=False)
     try:#make sure the csv have two columns of "original" and "corrected"
         original = df['Original']
         corrected = df['Corrected']
@@ -729,8 +728,8 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
         # else:
         #     print("  Processing file:", filename)
         fileID = fileID + 1
-        # input_files_path = os.path.join(folder, filename)
-        # with open(input_files_path, 'r', encoding='utf-8', errors='ignore') as opened_file:
+        # inputFilenames_path = os.path.join(folder, filename)
+        # with open(inputFilenames_path, 'r', encoding='utf-8', errors='ignore') as opened_file:
         with open(filename, 'r', encoding='utf-8', errors='ignore') as opened_file:
             print("  Processing file:", filename)
             originalText = opened_file.read()
@@ -776,6 +775,7 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
 # function implements three different approaches to language detection: langdetect, spacy, langid
 # https://towardsdatascience.com/benchmarking-language-detection-for-nlp-8250ea8b67c
 # TODO print all languages and their probabilities in a csv file, with Language, Probability, Document ID, Document (with hyperlink)
+
 def language_detection(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
 
     folderID = 0
@@ -792,16 +792,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
     if IO_csv_util.openCSVOutputFile(outputFilenameCSV):
         return
 
-    fieldnames = ['LANGDETECT',
-                  'Language',
-                  'Probability',
-                  'SPACY',
-                  'Language',
-                  'Probability',
-                  'LANGID',
-                  'Language',
-                  'Probability',
-                  'Stanza',
+    fieldnames = ['NLP Language Package',
                   'Language',
                   'Probability',
                   'Document ID',
@@ -813,7 +804,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                                  reminders_util.message_language_detection,
                                  True)
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                        'Started running language detection algorithms at',
                                                  True, '', True, '', True)
 
@@ -855,7 +846,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
 # LANGDETECT ----------------------------------------------------------
 
             value=str(value[0]).split(':')
-            # TODO MINO get the value from the list in constants_util 
+            # TODO MINO get the value from the list in constants_util
             language=value[0]
             language = lang_dict.get(language)
             probability=round(float(value[1]),2)
@@ -867,40 +858,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             # ISO codes https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
             print('   LANGDETECT', language, probability)
             # print('   LANGDETECT',value[0],value[1])  # [cs:0.7142840957132709, pl:0.14285810606233737, sk:0.14285779665739756]
-            currentLine = ['LANGDETECT', language, probability]
-
-# spaCY ----------------------------------------------------------
-            nlp_spacy = spacy.load('en_core_web_sm')
-            Language.factory("language_detector", func=get_lang_detector)
-            nlp_spacy.add_pipe('language_detector', last=True)
-            try:
-                doc = nlp_spacy(text)
-            except:
-                if filename!=filenameSV: # do not count the same document twice in this and the other algorithm that follows
-                    docErrors_unknown = docErrors_unknown + 1
-                    filenameSV=filename
-                print("  Unknown file read error.")
-                continue
-            value = doc._.language
-            language=value['language']
-            # TODO MINO get the value from the list in constants_util
-            language = lang_dict.get(language)
-            probability=round(float(value['score']),2)
-            # probability=round(value['score'],2)
-            #
-            print('   SPACY', language, probability)  # {'language': 'en', 'score': 0.9999978351575265}
-            currentLine.extend(['SPACY', language, probability])
-
-            lang_identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
-            try:
-                value=lang_identifier.classify(text)
-            except:
-                if filename!=filenameSV:
-                    docErrors_unknown = docErrors_unknown + 1
-                    filenameSV=filename
-                print("  Unknown file read error.")
-                continue
-            # TODO MINO get the value from the list in constants_util
+            currentLine = [['LANGDETECT', language, probability, fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)]]
 
 # LANGID ----------------------------------------------------------
 
@@ -921,21 +879,51 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             # sr, sv, sw, ta, te, th, tl, tr, ug, uk,
             # ur, vi, vo, wa, xh, zh, zu
             print('   LANGID', language, probability)  # ('en', 0.999999999999998)
-            currentLine.extend(['LANGID',  language, probability])
+            currentLine.append(['LANGID',  language, probability, fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
+
+# spaCY ----------------------------------------------------------
+            nlp_spacy = spacy.load('en_core_web_sm')
+            Language.factory("language_detector", func=get_lang_detector)
+            nlp_spacy.add_pipe('language_detector', last=True)
+            try:
+                doc = nlp_spacy(text)
+            except:
+                if filename!=filenameSV: # do not count the same document twice in this and the other algorithm that follows
+                    docErrors_unknown = docErrors_unknown + 1
+                    filenameSV=filename
+                print("  spaCy Unknown file read error.")
+                break # continue
+            value = doc._.language
+            language=value['language']
+            language = lang_dict.get(language)
+            probability=round(float(value['score']),2)
+            # probability=round(value['score'],2)
+            #
+            print('   SPACY', language, probability)  # {'language': 'en', 'score': 0.9999978351575265}
+            currentLine.append(['spaCy', language, probability, fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
+
+            lang_identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
+            try:
+                value=lang_identifier.classify(text)
+            except:
+                if filename!=filenameSV:
+                    docErrors_unknown = docErrors_unknown + 1
+                    filenameSV=filename
+                print("  spaCy Unknown file read error.")
+                break # continue
 
 # Stanza  ----------------------------------------------------------
 
             doc = nlp_stanza(text)
             language = doc.lang
             language = lang_dict.get(language)
-            probability = ''
+            probability = float(1)
             print('   Stanza', language, probability)
-            currentLine.extend(['Stanza',  language, probability])
+            currentLine.append(['Stanza',  language, probability, fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
 
-            currentLine.extend([fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
-
+            # currentLine.append([fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
             writer = csv.writer(csvfile)
-            writer.writerows([currentLine])
+            writer.writerows(currentLine)
             filenameSV=filename
     csvfile.close()
     msg=''
@@ -957,11 +945,11 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                                        'Finished running Language Detection at', True,'Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.', True, startTime, True)
     print('Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.')
     if createCharts:
-        columns_to_be_plotted = [[1, 1],[4,4],[7,7]]
-        chart_title='Frequency of Languages Detected by 3 Algorithms'
-        hover_label=['LANGDETECT', 'SPACY', 'LANGID']
+        columns_to_be_plotted_yAxis=[[1, 1]]
+        chart_title='Frequency of Languages Detected by LANGDETECT, LANGID, spaCy, and Stanza'
+        hover_label=[]
         inputFilename = outputFilenameCSV
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel='_bar_chart',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
@@ -975,6 +963,5 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
     # if openOutputFiles:
     #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
     return filesToOpen
-
 def get_lang_detector(nlp, name):
     return LanguageDetector()

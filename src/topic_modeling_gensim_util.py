@@ -41,7 +41,7 @@ import matplotlib.pyplot as plt
 #enable logging for gensim
 import logging
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.ERROR)
-import warnings 
+import warnings
 warnings.filterwarnings("ignore",category=DeprecationWarning)
 
 import IO_files_util
@@ -91,17 +91,17 @@ except:
 
 # find the optimal number of topics for LDA
 def compute_coherence_values(MalletDir, dictionary, corpus, texts, start, limit, step):
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started computing the coherence value for each topic')
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started computing the coherence value for each topic')
     coherence_values = []
     model_list = []
     for num_topics in range(start, limit, step):
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                            'Computing coherence value for topic number ' + str(num_topics))
         model = gensim.models.wrappers.LdaMallet(MalletDir,corpus=corpus, num_topics=num_topics, id2word=dictionary)
         model_list.append(model)
         coherencemodel = CoherenceModel(model=model, texts=texts, dictionary=dictionary, coherence='c_v')
         coherence_values.append(coherencemodel.get_coherence())
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished computing the coherence value for each topic')
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished computing the coherence value for each topic')
     return model_list, coherence_values
 
 # Finding the Dominance Topic in each sentence
@@ -129,7 +129,7 @@ def format_topics_sentences(ldamodel, corpus, texts):
     return sent_topics_df
 
 def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2word,data_lemmatized, lda_model, data):
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Mallet LDA topic modeling at',True)
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Mallet LDA topic modeling at',True)
     config_filename='topic_modeling_gensim_config.csv'
     try:
         ldamallet = gensim.models.wrappers.LdaMallet(MalletDir, corpus=corpus, num_topics=num_topics, id2word=id2word)
@@ -152,11 +152,11 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
 
     # Compute Coherence value
     coherence_model_ldamallet = CoherenceModel(model=ldamallet, texts=data_lemmatized, dictionary=id2word, coherence='c_v')
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Compute Mallet LDA coherence values for each topic.\n\nPlease, be patient...')
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Compute Mallet LDA coherence values for each topic.\n\nPlease, be patient...')
     coherence_ldamallet = coherence_model_ldamallet.get_coherence()
     print('\nCoherence value: ', coherence_ldamallet)
     model_list, coherence_values = compute_coherence_values(MalletDir, dictionary=id2word, corpus=corpus, texts=data_lemmatized, start=2, limit=limit, step=6)
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Compute graph of optimal topics number.')
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Compute graph of optimal topics number.')
     limit=limit; start=2; step=6;
     x = range(start, limit, step)
     plt.plot(x, coherence_values)
@@ -200,10 +200,10 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
 
     # Save csv file
     fileName=os.path.join(outputDir, "NLP_Gensim_dominant_topic.csv")
-    df_dominant_topic.to_csv(fileName, index=False)
+    df_dominant_topic.to_csv(fileName, encoding='utf-8', index=False)
     filesToOpen.append(fileName)
 
-    # columns_to_be_plotted = [[1, 3]]
+    # columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[[1, 3]]
     # hover_label = 'Topic_Keywords'
     # inputFilename = fileName
     # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
@@ -213,7 +213,7 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     #                                           column_xAxis_label_var='Topic number',
     #                                           hover_info_column_list=hover_label)
     #
-    # if chart_outputFilename != "":
+    # if chart_outputFilename != None:
     #     filesToOpen.append(chart_outputFilename)
 
     # Find the most representative document for each topic
@@ -235,21 +235,22 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
 
     # Save csv file
     fileName=os.path.join(outputDir, "NLP_Gensim_representative_document.csv")
-    sent_topics_sorteddf_mallet.to_csv(fileName,index=False)
+    sent_topics_sorteddf_mallet.to_csv(fileName,encoding='utf-8', index=False)
     filesToOpen.append(fileName)
 
-    # columns_to_be_plotted = [[1, 2]]
-    # hover_label = 'Topic keywords'
-    # inputFilename = fileName
-    # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
-    #                                           outputFileLabel='TM_Gensim',
-    #                                           chart_type_list=["bar"],
-    #                                           chart_title='Percentage Contribution of Each Topic',
-    #                                           column_xAxis_label_var='Topic number',
-    #                                           hover_info_column_list=hover_label)
-    #
-    # if chart_outputFilename != "":
-    #     filesToOpen.append(chart_outputFilename)
+    columns_to_be_plotted_xAxis=[]
+    columns_to_be_plotted_yAxis=[[1, 2]]
+    hover_label = 'Topic keywords'
+    inputFilename = fileName
+    chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+                                              outputFileLabel='TM_Gensim',
+                                              chart_type_list=["bar"],
+                                              chart_title='Percentage Contribution of Each Topic',
+                                              column_xAxis_label_var='Topic number',
+                                              hover_info_column_list=hover_label)
+
+    if chart_outputFilename != None:
+        filesToOpen.append(chart_outputFilename)
 
     # Topic distribution across documents
     # Number of Documents for Each Topic
@@ -259,7 +260,7 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     print("Type of topic count: ")
     print(type(topic_counts))
     print()
-    
+
     # Percentage of Documents for Each Topic
     topic_contribution = round(topic_counts/topic_counts.sum(), 4)
     print("Topic contribution: ")
@@ -267,16 +268,16 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     print("Type of topic contribution: ")
     print(type(topic_contribution))
     print()
-    
+
     # Topic Number and Keywords
     topic_num_keywords = df_topic_sents_keywords[['Dominant topic', 'Topic keywords']]
 
     # Concatenate Column wise
 # 	df_dominant_topics = pd.concat([topic_num_keywords, topic_counts, topic_contribution], axis=1)
-    
+
     # Change Column names
 
-    df_dominant_topics = topic_num_keywords 
+    df_dominant_topics = topic_num_keywords
 
     num_row = df_dominant_topics.shape[0]
     topic_order_list = df_dominant_topics["Dominant topic"]
@@ -301,10 +302,10 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     print("Number of columns of topic_distribution.csv: ", df_dominant_topics.shape[1])
     # Save csv file
     fileName=os.path.join(outputDir, "NLP_Gensim_topic_distribution.csv")
-    df_dominant_topics.to_csv(fileName, index=False)
+    df_dominant_topics.to_csv(fileName, encoding='utf-8', index=False)
     filesToOpen.append(fileName)
 
-    # columns_to_be_plotted = [[1, 2]]
+    # columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[[1, 2]]
     # hover_label = 'Topic keywords'
     # inputFilename = fileName
     # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
@@ -314,11 +315,11 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     #                                           column_xAxis_label_var='Topic number',
     #                                           hover_info_column_list=hover_label)
     #
-    # if chart_outputFilename != "":
+    # if chart_outputFilename != None:
     #     filesToOpen.append(chart_outputFilename)
 
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Mallet LDA topic modeling at',True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Mallet LDA topic modeling at',True, '', True, startTime)
 
 def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
                                       lemmatize, nounsOnly, run_Mallet, openOutputFiles,createCharts, chartPackage):
@@ -363,9 +364,9 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
 
     stop_words = stopwords.words('english')
     # TODO: (optional) add more stop words that are common but unncesseary for topic modeling
-    # stop_words.extend(['','']
+    # stop_words.append(['','']
     # 	stop_words = stopwords.words('english')
-    stop_words.extend(['from', 'subject', 're', 'edu', 'use'])
+    stop_words.append(['from', 'subject', 're', 'edu', 'use'])
 
     # TODO: import data
 
@@ -495,7 +496,7 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
         mb.showerror(title='Output html file error', message='Gensim failed to generate the html output file.')
         return
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Gensim topic modeling at',True,'\n\nThe file ' + outputFilename + ' was created. The results will display shortly on the web browser.')
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Gensim topic modeling at',True,'\n\nThe file ' + outputFilename + ' was created. The results will display shortly on the web browser.')
     # \n\nYou now need to exit the server.\n\nAt command prompt, enter Ctrl+C, perhaps repeatedly, to exit the server.'
 
     # open and display on web
@@ -518,7 +519,7 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
         # building LDA Mallet Model
         malletModelling(MalletDir, outputDir, createCharts, corpus, num_topics, id2word, data_lemmatized,
                                                    lda_model, data)
-    
+
     if openOutputFiles==True:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
             filesToOpen=[] # to avoid opening files twice, here and in calling function

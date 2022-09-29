@@ -15,7 +15,7 @@ from tkinter import *
 import re
 
 import IO_user_interface_util
-import Stanford_CoreNLP_annotator_util
+import Stanford_CoreNLP_util
 import reminders_util
 
 # part of the code about search text function is adapted from 
@@ -324,7 +324,7 @@ def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, ope
     # if errorFound:
     #     return filesToOpen, errorFound
     #
-    if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py') == False:
+    if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
         return
     # with only one input file
     if len(inputFilename)>0:
@@ -335,7 +335,7 @@ def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, ope
         reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
                                      reminders_util.message_CoreNLP_coref, True)
 
-    corefed_file = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
+    corefed_file = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
                                                                     output_dir_path, openOutputFiles, createCharts, chartPackage,
                                                                     ['coref', 'coref table'], False,
                                                                     language_var, memory_var)

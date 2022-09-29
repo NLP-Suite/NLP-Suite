@@ -8,13 +8,13 @@ if not IO_libraries_util.install_all_packages(GUI_util.window,"Stanford_CoreNLP_
 import os
 import pandas as pd
 from tkinter import messagebox as mb
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import csv
 
 import GUI_IO_util
 import IO_files_util
 import IO_csv_util
-import Stanford_CoreNLP_annotator_util
+import Stanford_CoreNLP_util
 
 # put the script of generate two big csvs into this file
 
@@ -59,7 +59,7 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
     date_separator_var = ''
     date_position_var = ''
 
-    tempOutputFiles = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
+    tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                         openOutputFiles, createCharts, chartPackage,
                                                         'NER',
                                                         NERs=['PERSON'],
@@ -112,7 +112,7 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
             print(person)
     annotated = pd.DataFrame(people,columns=['Name','Gender','Sentence','SentenceID','DocumentID','Document'])
     output_dir = IO_files_util.generate_output_file_name('',inputDir, outputDir, '.csv', 'gender', 'annotated')
-    annotated.to_csv(output_dir)
+    annotated.to_csv(output_dir, encoding='utf-8')
     return tempOutputFiles
 
 
@@ -127,7 +127,7 @@ def SSA_annotate(year_state_var,firstName_entry_var,outputDir):
         target1 = target1.drop(columns=['Year'])
         group1 = target1.groupby(['State', 'Gender']).sum()
         group1.insert(0, 'Name', firstName_entry_var)
-        group1.reset_index().to_csv(output_path, index=False)
+        group1.reset_index().to_csv(output_path, encoding='utf-8', index=False)
         return [output_path]
     elif year_state_var == 'Year':
         output_path = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,
@@ -135,27 +135,26 @@ def SSA_annotate(year_state_var,firstName_entry_var,outputDir):
         target1 = target1.drop(columns=['State'])
         group1 = target1.groupby(['Year', 'Gender']).sum()
         group1.insert(0, 'Name', firstName_entry_var)
-        group1.reset_index().to_csv(output_path, index=False)
+        group1.reset_index().to_csv(output_path, encoding='utf-8', index=False)
         return [output_path]
     elif year_state_var == 'State & Year':
         output_path = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,
 															  firstName_entry_var)
-        target1.to_csv(output_path, index=False)
+        target1.to_csv(output_path, encoding='utf-8', index=False)
         return [output_path]
     elif year_state_var == 'Year of birth':
         output_path = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,
 															  firstName_entry_var)
-        target2.to_csv(output_path, index=False)
+        target2.to_csv(output_path, encoding='utf-8', index=False)
         return [output_path]
     else:
         output_path1 = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,
 															   firstName_entry_var,'state_year')
         output_path2 = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,
 															   firstName_entry_var,'yob')
-        target1.to_csv(output_path1,index=False)
-        target2.to_csv(output_path2,index=False)
+        target1.to_csv(output_path1,encoding='utf-8', index=False)
+        target2.to_csv(output_path2,encoding='utf-8', index=False)
         return [output_path1, output_path2]
-
 
 def build_dictionary_yob(source_file_path):
     result = []
@@ -177,7 +176,7 @@ def build_dictionary_yob(source_file_path):
     df = pd.DataFrame(result, columns=['Name', 'Gender', 'Frequency', 'YearOfBirth'])
     if os.path.exists('../lib/namesGender/SS_yearOfBirth.csv'):
         os.remove('../lib/namesGender/SS_yearOfBirth.csv')
-    df.to_csv('../lib/namesGender'+os.sep+'SS_yearOfBirth.csv', index=False)
+    df.to_csv('../lib/namesGender'+os.sep+'SS_yearOfBirth.csv', encoding='utf-8', index=False)
 
 
 def build_dictionary_state_year(source_file_path):
@@ -199,7 +198,7 @@ def build_dictionary_state_year(source_file_path):
     df = pd.DataFrame(result, columns=['State', 'Gender', 'Year', 'Name', 'Frequency'])
     if os.path.exists('../lib/namesGender/SS_state_year.csv'):
         os.remove('../lib/namesGender/SS_state_year.csv')
-    df.to_csv('../lib/namesGender' + os.sep + 'SS_state_year.csv', index=False)
+    df.to_csv('../lib/namesGender' + os.sep + 'SS_state_year.csv', encoding='utf-8', index=False)
 
 
 def get_date():

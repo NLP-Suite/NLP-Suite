@@ -8,7 +8,7 @@ import sys
 import IO_libraries_util
 import GUI_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_dictionary_util",['os','re','csv','tkinter'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"html_annotator_dictionary_util",['os','re','csv','tkinter'])==False:
     sys.exit(0)
 
 import os
@@ -21,7 +21,7 @@ from csv import reader
 import IO_csv_util
 
 # the function associates specific values of a csv file to a specific color
-# extend the function to allow multiple wordColNum and catColNum
+# append the function to allow multiple wordColNum and catColNum (cat for categories)
 def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
     dictionary = []
     number_of_items = len(csvValue_color_list)
@@ -52,7 +52,7 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
                             if row[wordColNum[i]] not in dictionary[c]:
                                 dictionary[c].append(row[wordColNum[i]])
             else:
-                for i in range(wordColNum):
+                for i in range(len(wordColNum)):
                     dictionary.append(row[wordColNum[i]])
 
     return dictionary, color_list
@@ -62,15 +62,19 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
 # returns list of a list of terms with appropriate annotations for each file
 # annotation allows custom tagging style (via csv, etc.)
 # NOTICE: csv_field1_var and first entry of csvValue_color_list should be a list
-def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, fileType='.txt'):
+def dictionary_annotate(inputFile, inputDir, outputDir, dict_file,
+                        csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, fileType='.txt', fileSubc=''):
     writeout = []
     filesToOpen = []
-
+    # TODO needs to check how csv_field1_var is passed when multiple fields are selected
+    #   would need to use split()
+    if isinstance(csv_field1_var,str):
+        csv_field1_var=[csv_field1_var]
     files=IO_files_util.getFileList(inputFile, inputDir, fileType)
     nFile=len(files)
     if nFile==0:
         return
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Dictionary annotator at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Dictionary annotator at',
                                                  True, '', True, '', True)
     i=0
     wordColNum = [0]
@@ -79,7 +83,7 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
         headers=IO_csv_util.get_csvfile_headers(dict_file)
         wordColNum = []
         for field in csv_field1_var:
-            col = IO_csv_util.get_columnNumber_from_headerValue(headers,field)
+            col = IO_csv_util.get_columnNumber_from_headerValue(headers,field, dict_file)
             if col == None:
                 mb.showerror(title='Input file error',
                              message="The selected dictionary file\n\n" + dict_file + "\n\ndoes not contain the expected header \'" + csv_field1_var + "\'\n\nPlease, select a different dictionary file and try again.")
@@ -88,7 +92,7 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
         catColNum = []
         if len(csvValue_color_list) > 0:
             for field in csvValue_color_list[0]:
-                catColNum.append(IO_csv_util.get_columnNumber_from_headerValue(headers, field))
+                catColNum.append(IO_csv_util.get_columnNumber_from_headerValue(headers, field, dict_file))
 
     dictionary, color_list = readCsv(wordColNum, catColNum, dict_file, csvValue_color_list)
     reserved_dictionary = ['bold', 'color', 'font', 'span', 'style', 'weight', 'black', 'blue', 'green', 'pink', 'yellow', 'red']
@@ -115,7 +119,8 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
             term_intextID=0
             for term in terms:
                 termID=termID+1
-                print("Processing dictionary field '" + csv_field1_var + "' " + str(termID) + "/" + str(len(terms)) + " " + term)
+                #print("Processing dictionary field '" + csv_field1_var + "' " + str(termID) + "/" + str(len(terms)) + " " + term)
+                print(f"Processing dictionary field '{csv_field1_var}' {termID}/{len(terms)} term")
                 if re.search(r'\b' + term + r'\b', text)==None:
                     continue
                 for term1 in reserved_dictionary:
@@ -189,9 +194,9 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
             outputFilename=file
     else:
         if inputDir!='':
-            outputFilename=os.path.join(outputDir,"NLP_dict_annotated_" + os.path.basename(os.path.normpath(inputDir)) + '.html')
+            outputFilename=os.path.join(outputDir,"NLP_dict_annotated_" + fileSubc + "_" + os.path.basename(os.path.normpath(inputDir)) + '.html')
         else:
-            outputFilename=os.path.join(outputDir,"NLP_dict_annotated_" + os.path.basename(os.path.normpath(file))[:-4] + '.html')
+            outputFilename=os.path.join(outputDir,"NLP_dict_annotated_" + fileSubc + "_" + os.path.basename(os.path.normpath(file))[:-4] + '.html')
     filesToOpen.append(outputFilename)
     with open(outputFilename, 'w+',encoding='utf-8',errors='ignore') as f:
         f.write('<html>\n<body>\n<div>\n')
@@ -200,6 +205,6 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file, csv_field1_va
         f.write('\n</div>\n</body>\n</html>')
     f.close()
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Dictionary annotator at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Dictionary annotator at', True, '', True, startTime)
     return filesToOpen
 

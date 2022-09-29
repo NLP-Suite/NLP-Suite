@@ -67,20 +67,20 @@ def missing_character(CoreNLPdir, inputDir, input_secondary_dir_path, outputDir,
         return
     Excel_outputFile=file_summary_checker_util.main(CoreNLPdir, inputDir,input_secondary_dir_path,outputDir,openOutputFiles, createCharts, chartPackage, checkNER)
     if Excel_outputFile!="":
-        filesToOpen.extend(Excel_outputFile)
+        filesToOpen.append(Excel_outputFile)
 
 def intruder(CoreNLPdir,inputDir, outputDir, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var):
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_find_non_related_documents_util.py') == False:
         return
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running INTRUDER at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running INTRUDER at',
                                                  True, '', True, '', True)
     # Windows...
     outputFiles=file_find_non_related_documents_util.main(CoreNLPdir, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, similarityIndex_Intruder_var)
 
     if outputFiles!='':
-        filesToOpen.extend(outputFiles)
+        filesToOpen.append(outputFiles)
     # Nothing to plot; only one line in the output csv file
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running INTRUDER at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running INTRUDER at', True, '', True, startTime, True)
 
 
 def ancestor(inputDir, outputDir):
@@ -157,7 +157,7 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
     lib_stopwords = lib_util.check_lib_stopwords()
 
     if len(lib_stopwords) != 0:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running PLAGIARIST at',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running PLAGIARIST at',
                                            True)
         errorFound, error_code, system_output = IO_libraries_util.check_java_installation('Lucene')
         if errorFound:
@@ -188,33 +188,35 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
         # Lucene_classes_freq.csv; outputFilenameCSV_1
         outputDir=outputDir
         inputFilename = outputFilenameCSV_1
-        columns_to_be_plotted = [[0, 1]]
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[0, 1]]
         hover_label = ['List of Documents in Category']
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel='SSR_plagiar',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   chart_title='Frequency of Plagiarism by Classes of % Duplication',
                                                   column_xAxis_label_var='Classes of percentage duplication',
                                                   hover_info_column_list=hover_label)
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
         # Plot Lucene_classes_time_freq.csv line plot (temporal plot); outputFilenameCSV_2
         if fileName_embeds_date:
-            # columns_to_be_plotted = [[0,1], [0,2], [0,3], [0,4], [0,5], [0,6],[0,7], [0,8], [0,9],[0,10]]
+            # columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[[0,1], [0,2], [0,3], [0,4], [0,5], [0,6],[0,7], [0,8], [0,9],[0,10]]
             # hover_label=['','','','','','','','','','']
             inputFilename = outputFilenameCSV_2
-            columns_to_be_plotted = [[0, 1], [0, 2], [0, 3]]
+            columns_to_be_plotted_xAxis=[]
+            columns_to_be_plotted_yAxis=[[0, 1], [0, 2], [0, 3]]
             hover_label = ['', '', '']
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                       outputFileLabel='SSR_plagiar',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["line"],
                                                       chart_title='Frequency of Plagiarism by Year',
                                                       column_xAxis_label_var='Year',
                                                       hover_info_column_list=hover_label)
-            if chart_outputFilename != "":
+            if chart_outputFilename != None:
                 filesToOpen.append(chart_outputFilename)
 
         # No plot for Lucene_document_classes_freq.csv
@@ -223,20 +225,21 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
 
 
         # Lucene_Document_classes_freq.csv; outputFilenameCSV_4
-        columns_to_be_plotted = [[0, 1],[0, 2],[0, 3]]
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[0, 1],[0, 2],[0, 3]]
         hover_label = ['']
         inputFilename = outputFilenameCSV_4
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel='SSR_plagiar',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   chart_title='Frequency of Plagiarism by Document Name & Classes',
                                                   column_xAxis_label_var='',
                                                   hover_info_column_list=hover_label)
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running PLAGIARIST at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running PLAGIARIST at', True, '', True, startTime)
 
 def Levenshtein():
     if IO_libraries_util.check_inputPythonJavaProgramFile('file_spell_checker_main.py') == False:
@@ -757,7 +760,7 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordi
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for a set of NLP tools, written in Java and Python 3, that can be of use in a variety of social science research projects based on documents.\n\nIn INPUT the scripts expect a main drectory where txt files to be analyzed are stored and, depending upon the type of tools run, a secondary directory where further txt files are stored.\n\nIn OUTPUT, the scripts will save the csv files and Excel charts written by the various scripts."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

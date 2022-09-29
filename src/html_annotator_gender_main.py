@@ -17,8 +17,10 @@ import GUI_util
 import GUI_IO_util
 import IO_files_util
 import reminders_util
-import Stanford_CoreNLP_annotator_util
+import Stanford_CoreNLP_util
+import html_annotator_gender_dictionary_util
 import html_annotator_dictionary_util
+import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -38,44 +40,46 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
         return
     #CoreNLP annotate
     if CoreNLP_gender_annotator_var==True:
-        output = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
-                                                               outputDir, openOutputFiles, createCharts, chartPackage, 'gender', False, memory_var)
+        output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
+                                        outputDir, openOutputFiles,
+                                        createCharts, chartPackage, 'gender', False, language, memory_var)
+
         # annotator returns a list and not a string
         # the gender annotator returns 2 Excel charts in addition to the csv file
         if len(output)>0:
             # output=output[0]
-            filesToOpen.extend(output)
+            filesToOpen.append(output)
 
     #dict annotate
     elif annotator_dictionary_var==True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('annotator_gender_dictionary_util.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_gender_dictionary_util.py')==False:
             return
         import annotator_gender_dictionary_util
         # csvValue_color_list, bold_var, tagAnnotations, '.txt'
-        output= annotator_gender_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, annotator_dictionary_file_var,personal_pronouns_var)
+        fileSubsc='gender'
+        output= html_annotator_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, annotator_dictionary_file_var,personal_pronouns_var,fileSubsc)
         if len(output)>0:
             # output=output[0]
-            filesToOpen.extend(output)
+            filesToOpen.append(output)
 
     #plot annotate
     elif plot_var==True:
-        import annotator_gender_dictionary_util
         if len(new_SS_folders)>0:
             print(new_SS_folders)
             try:
-                annotator_gender_dictionary_util.build_dictionary_state_year(new_SS_folders[0])
-                annotator_gender_dictionary_util.build_dictionary_yob(new_SS_folders[1])
+                html_annotator_gender_dictionary_util.build_dictionary_state_year(new_SS_folders[0])
+                html_annotator_gender_dictionary_util.build_dictionary_yob(new_SS_folders[1])
             except:
-                annotator_gender_dictionary_util.build_dictionary_state_year(new_SS_folders[1])
-                annotator_gender_dictionary_util.build_dictionary_yob(new_SS_folders[0])
+                html_annotator_gender_dictionary_util.build_dictionary_state_year(new_SS_folders[1])
+                html_annotator_gender_dictionary_util.build_dictionary_yob(new_SS_folders[0])
         if (year_state_var=='' or firstName_entry_var==''):
             mb.showwarning(title='Warning', message="The plot option requires both 'By year/state' value and first name(s) in the 'Enter firt name(s)' widget.\n\nPlease, enter the required information and try again.")
             return
         else:
-            output = annotator_gender_dictionary_util.SSA_annotate(year_state_var,firstName_entry_var,outputDir)
+            output = html_annotator_gender_dictionary_util.SSA_annotate(year_state_var,firstName_entry_var,outputDir)
             if len(output)>0:
                 # output=output[0]
-                filesToOpen.extend(output)
+                filesToOpen.append(output)
 
     if openOutputFiles==True:
         nFile=len(filesToOpen)
@@ -89,7 +93,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
 #def run(inputFilename,input_main_dir_path,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
-                GUI_util.outputDir.get(),
+                GUI_util.output_dir_path.get(),
                 GUI_util.open_csv_output_checkbox.get(),
                                                 GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_dropdown_field.get(),
@@ -382,8 +386,13 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide ways of annotating text files for the gender (female/male) of first names found in the text.\n\nTwo different types of gender annotation are applied.\n\n  1. Stanford CoreNLP gender annotator. This annotator requires Coref annotator which only has about 60% accuracy.\n\n  2. A second approach is based on a variety of first name lists (e.g., US Census name lists, Social Security lists, Carnegie Mellon lists). As a point of warning, it should be noted that many first names may be both male or female first names (e.g., Jamie in the US), sometimes depending upon the country (e.g., Andrea is a male name in Italy and a female name in the US).\n\nWhether using CoreNLP or dictionary lists, the algorithms also classify the gender of personal pronouns (he, him, his; she, her, hers as male and female, respectively)."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+global error, language
+error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+language_var = language
+language_list = language
 
 GUI_util.window.mainloop()
 

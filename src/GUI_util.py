@@ -7,7 +7,6 @@ import sys
 # pip install requests[security]
 import requests
 
-# import GUI_util
 import IO_libraries_util
 
 # Creates a circular dependent imports
@@ -56,8 +55,8 @@ def set_window(size, label, config, config_option):
 # scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 # listbox = tk.Listbox(window, yscrollcommand=scrollbar.set)
 # for line in range(1000):
-# 	# listbox.insert(tk.END, "This is line number " + str(line))
-# 	listbox.insert(tk.END)
+#   # listbox.insert(tk.END, "This is line number " + str(line))
+#   listbox.insert(tk.END)
 # #listbox.pack(side=tk.LEFT, fill=tk.BOTH)
 # scrollbar.config(command=listbox.yview)
 
@@ -66,16 +65,17 @@ def clear(e):
     videos_dropdown_field.set('Watch videos')
     tips_dropdown_field.set('Open TIPS files')
     reminders_dropdown_field.set('Open reminders')
+    setup_menu.set('Setup')
 window.bind("<Escape>", clear)
 
 
 #IO widgets
 
-IO_setup_menu_var = tk.StringVar()
-IO_setup_menu = tk.OptionMenu(window, IO_setup_menu_var, 'Default I/O configuration', 'GUI-specific I/O configuration')
+setup_IO_menu_var = tk.StringVar()
+setup_IO_menu = tk.OptionMenu(window, setup_IO_menu_var, 'Default I/O configuration', 'GUI-specific I/O configuration')
 IO_setup_var = tk.StringVar()
 
-select_input_file_button=tk.Button()
+select_inputFilename_button=tk.Button()
 select_input_main_dir_button=tk.Button()
 select_input_secondary_dir_button=tk.Button()
 select_output_dir_button=tk.Button()
@@ -99,6 +99,7 @@ charts_dropdown_field = tk.StringVar()
 videos_dropdown_field = tk.StringVar()
 tips_dropdown_field = tk.StringVar()
 reminders_dropdown_field = tk.StringVar()
+setup_menu = tk.StringVar()
 
 run_button = tk.Button(window, text='RUN', width=10,height=2)
 
@@ -114,13 +115,14 @@ offText = None
 # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI; changed below
 answer = True
 run_button_state='disabled'
+y_multiplier_integer_SV=0
 
 # tracer when the checkbox has a separate label widget (label_local) attached to the checkbox widget (checkbox_local)
 #For the labels to change the text with the ON/OFF value of the checkbox the command=lambda must be included in the definition of the tk.button
-#	For example (see the example in this script):
-#	create_Excel_chart_output_label = tk.Checkbutton(window, variable= create_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label,  create_chart_output_checkbox, "Automatically compute Excel charts", "NOT automatically compute Excel charts"))
-#	The next line must always be included to dsplay te label the first time the GUI is opened
-#	create_Excel_chart_output_label.configure(text="Automatically open output Excel charts for inspection")
+#   For example (see the example in this script):
+#   create_Excel_chart_output_label = tk.Checkbutton(window, variable= create_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label,  create_chart_output_checkbox, "Automatically compute Excel charts", "NOT automatically compute Excel charts"))
+#   The next line must always be included to display te label the first time the GUI is opened
+#   create_Excel_chart_output_label.configure(text="Automatically open output Excel charts for inspection")
 
 def trace_checkbox(label_local, checkbox_local, local_onText, local_offText):
     if checkbox_local.get() == 1:
@@ -129,17 +131,17 @@ def trace_checkbox(label_local, checkbox_local, local_onText, local_offText):
         label_local.config(text=local_offText)
 
 # tracer when the checkbox has a separate label widget (label_local) attached to the checkbox widget (checkbox_local)
-# an exampple is in geocoder_Google_Earth and file_handling; here are the lines from file_handling
-# 	matching_checkbox = tk.Checkbutton(window, variable=matching_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(matching_var, matching_checkbox, "Exact match", "Partial match"))
-# 	matching_checkbox.config(text="Exact match",state='disabled')
+# an example is in geocoder_Google_Earth and file_handling; here are the lines from file_handling
+#   matching_checkbox = tk.Checkbutton(window, variable=matching_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(matching_var, matching_checkbox, "Exact match", "Partial match"))
+#   matching_checkbox.config(text="Exact match",state='disabled')
 # checkbox_var and checkbox_text are the var and checkbox widgets
 # onText, offText the texts to be displayed on 1 or 0
 
 #For the labels to change the text with the ON/OFF value of the checkbox the command=lambda must be included in the definition of the tk.button
-#	For example (see the example in geocoder_Google_eart_GUI or in WordNet_GUI):
-#	geoCodedFile_checkbox = tk.Checkbutton(window, variable=geoCodedFile_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(geoCodedFile_var, geoCodedFile_checkbox, "File contains geocoded data with Latitude and Longitude", "File does NOT contain geocoded data with Latitude and Longitude"))
-#	The next line must always be included to display the label the first time the GUI is opened
-#	geoCodedFile_checkbox.config(text="File does NOT contain geocoded data with Latitude and Longitude")
+#   For example (see the example in geocoder_Google_eart_GUI or in WordNet_GUI):
+#   geoCodedFile_checkbox = tk.Checkbutton(window, variable=geoCodedFile_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(geoCodedFile_var, geoCodedFile_checkbox, "File contains geocoded data with Latitude and Longitude", "File does NOT contain geocoded data with Latitude and Longitude"))
+#   The next line must always be included to display the label the first time the GUI is opened
+#   geoCodedFile_checkbox.config(text="File does NOT contain geocoded data with Latitude and Longitude")
 
 def trace_checkbox_NoLabel(checkbox_var, checkbox_text, onText, offText):
     if checkbox_var.get() == 1:
@@ -241,19 +243,27 @@ def display_release():
     release_version_file = GUI_IO_util.libPath + os.sep + "release_version.txt"
 
     if os.path.isfile(release_version_file):
-        with open(release_version_file,'r') as file:
+        with open(release_version_file,'r', encoding='utf-8', errors='ignore') as file:
             local_release_version = file.read()
 
     release_version_var.set(local_release_version)
 
-    y_multiplier_integer=-.7
+    if sys.platform == 'darwin':  # Mac OS
+        y_multiplier_integer=-.8
+    else:
+        y_multiplier_integer = -.9
 
     # get the release version available on GitHub
     GitHub_newest_release = get_GitHub_release()
-    release_display = str(release_version_var.get()) + "/" + str(GitHub_newest_release)
-    release_lb = tk.Label(window, text='Release ' + release_display,foreground="red")
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_help_button_x_coordinate(),
-                                                   y_multiplier_integer, release_lb, True)
+
+    release_display = 'Release ' + str(release_version_var.get().replace('\n','')) + "/" + str(GitHub_newest_release)
+    release_lb = tk.Label(window, text=release_display, foreground="red")
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_help_button_x_coordinate(),
+                                                   y_multiplier_integer,
+                                                   release_lb, True, False, False, False, 90,
+                                                   GUI_IO_util.get_help_button_x_coordinate(),
+                                                   "The two sets of numbers, separated by /, refer to the NLP Suite release on your machine (left) and the release available on GitHub (right)\nWithout internet the newest release available on GitHub cannnot be retrieved and is displayed as 0.0.0.")
     # check and display a possible warning message
     if GitHub_newest_release != '0.0.0':
         check_GitHub_release(local_release_version)
@@ -268,10 +278,7 @@ def selectFile_set_options(window, IsInputFile,checkCoNLL,inputFilename,input_ma
     else:
         initialFolder=''
     #get the file
-    if IsInputFile==True:
-        filename = IO_files_util.selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, None, initialFolder)
-    else:
-        filename = IO_files_util.selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outputFilename, None, initialFolder)
+    filename = IO_files_util.selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, None, initialFolder)
     if len(filename)==0:
         return
         # filename=currentFilename
@@ -324,8 +331,8 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
     dirName = ''
     y_multiplier_integer=1
     # temp_config_filename is used to check the existence of the default or GUI specific config
-    if 'Default' in IO_setup_menu_var.get():
-        temp_config_filename='default_config.csv'
+    if 'Default' in setup_IO_menu_var.get():
+        temp_config_filename='NLP_default_IO_config.csv'
     else:
         temp_config_filename=config_filename
     silent=False
@@ -390,7 +397,7 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
             # check input directory
             if str(config_input_output_alphabetic_options[1]) != '':
                 inputDirName = config_input_output_alphabetic_options[1]
-                IO_setup_display_string = "INPUT DIR: " + str(inputDirName)
+                IO_setup_display_string = "INPUT DIR: " + str(os.path.basename(os.path.normpath(inputDirName)))
 
         # both filename [1] and input Dir [2] are empty
         if (config_input_output_alphabetic_options[0] == '') and (
@@ -399,8 +406,9 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
 
         outputDirName = config_input_output_alphabetic_options[3]
 
-        IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(outputDirName)
+        IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(os.path.normpath(outputDirName)))
         IO_setup_brief_display_area = tk.Text(width=60, height=2)
+        # place the display area for brief
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+250,
                                                        0, IO_setup_brief_display_area)
         IO_setup_brief_display_area.delete(0.1, tk.END)
@@ -416,7 +424,7 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
     if run_button_state=='disabled':
         setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent)
 
-# config_filename can be either the Default value or the GUI_specific value depending on IO_setup_menu_var.get()
+# config_filename can be either the Default value or the GUI_specific value depending on setup_IO_menu_var.get()
 def activateRunButton(config_filename,IO_setup_display_brief,scriptName,silent = False):
     global run_button_state, answer
     if config_input_output_numeric_options == [0,0,0,0]:
@@ -432,19 +440,35 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName,silent =
     return run_button_state, answer
 
 #GUI top widgets ALL IO widgets
-#	 input filename, input dir, secondary input dir, output dir
+#    input filename, input dir, secondary input dir, output dir
 #__________________________________________________________________________________________________________________
 
 def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
-    IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width,text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,scriptName, silent))
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+    IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,scriptName, silent))
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(),
                                                    y_multiplier_integer,
-                                                   IO_setup_button, True)
+                                                   IO_setup_button, True, False, False, False, 90,
+                                                   GUI_IO_util.get_labels_x_coordinate(),
+                                                   "Press the Setup INPUT/OUTPUT configuration button to select the file and/or directory to be used in INPUT and the directory to be used in OUTPUT.\n"
+                                                   "The selected options will apply to the configuration (default or GUI specific) selected in the dropdown menu for configuration.")
 
-    IO_setup_menu_var.set("Default I/O configuration")
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),
+    # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+    #                                                y_multiplier_integer,
+    #                                                IO_setup_button, True)
+
+    setup_IO_menu_var.set("Default I/O configuration")
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate(),
                                                    y_multiplier_integer,
-                                                   IO_setup_menu,True)
+                                                   setup_IO_menu, True, False, False, False, 90,
+                                                   GUI_IO_util.get_labels_x_coordinate(),
+                                                   "Use the dropdown menu to select the INPUT/OUTPUT configuration you want to use to run the algorithmms behind this GUI.\nThe default configuration is the one that applies to ALL GUIs in the NLP Suite. The GUI-specific configuration applies to this GUI only.\n"
+                                                   "To change either configuration of INPUT/OUTPUT options, selected the desired configuration and then click on the Setup INPUT/OUTPUT configuration button.")
+
+    # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),
+    #                                                y_multiplier_integer,
+    #                                                setup_IO_menu,True)
 
     # setup buttons to open an input file, an input directory, an output directory, and a csv config file
 
@@ -452,6 +476,7 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
     # setup a button to open an input file
     openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: IO_files_util.openFile(window, inputFilename.get()))
+    # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_file_button_brief, y_multiplier_integer,
                                                    openInputFile_button, True, False, True, False, 90, x_coordinate_hover_over, "Open INPUT file")
 
@@ -467,18 +492,20 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
     # setup a button to open Windows Explorer on the selected INPUT directory
     openInputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: open_directory())
+    # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_inputDir_button_brief, y_multiplier_integer,
                                                    openInputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open INPUT files directory")
 
     # setup a button to open Windows Explorer on the selected OUTPUT directory
     openOutputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
+    # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_outputDir_button_brief, y_multiplier_integer,
                                                    openOutputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open OUTPUT files directory")
 
     def openConfigFile(scriptName):
-        if 'Default' in IO_setup_menu_var.get():  # GUI_util.GUI_util.IO_setup_menu_var.get()
-            temp_config_filename = 'default_config.csv'
+        if 'Default' in setup_IO_menu_var.get():  # GUI_util.GUI_util.setup_IO_menu_var.get()
+            temp_config_filename = 'NLP_default_IO_config.csv'
         else:
             temp_config_filename = config_filename
         IO_files_util.openFile(window, GUI_IO_util.configPath + os.sep + temp_config_filename)
@@ -489,41 +516,42 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
 
     openInputConfigFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: openConfigFile(scriptName))
+    # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_config_file_button_brief, y_multiplier_integer,
                                                    openInputConfigFile_button, True, False, True,False, 90, x_coordinate_hover_over, "Open csv config file")
 
 def IO_config_setup_full (window, y_multiplier_integer):
-    if 'Default' in IO_setup_menu_var.get():
-        config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file('default_config.csv', config_input_output_numeric_options)
+    if 'Default' in setup_IO_menu_var.get():
+        config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file('NLP_default_IO_config.csv', config_input_output_numeric_options)
     else:
         config_input_output_alphabetic_options, config_input_output_full_options, missingIO=config_util.read_config_file(config_filename, config_input_output_numeric_options)
 
     # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
-    global select_input_file_button, select_input_main_dir_button, \
+    global select_inputFilename_button, select_input_main_dir_button, \
         select_input_secondary_dir_button, select_output_dir_button
     if config_input_output_numeric_options[0]>0:
         # buttons are set to normal or disabled in selectFile_set_options
         if config_input_output_numeric_options[0]==1: #single CoNLL file
             # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CoNLL table', command=lambda: selectFile_set_options(window,True,True,inputFilename,input_main_dir_path,'Select INPUT CoNLL table (csv file)',[('CoNLL csv file','.csv')],".csv"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CoNLL table', command=lambda: selectFile_set_options(window,True,True,inputFilename,input_main_dir_path,'Select INPUT CoNLL table (csv file)',[('CoNLL csv file','.csv')],".csv"))
         elif config_input_output_numeric_options[0]==2: #single txt file:
             # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT TXT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT TXT file',[('text file','.txt')],".txt"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT TXT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT TXT file',[('text file','.txt')],".txt"))
         elif config_input_output_numeric_options[0]==3: #single csv file:
             # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT csv file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT csv file',[('csv file','.csv')],".csv"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT csv file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT csv file',[('csv file','.csv')],".csv"))
         if config_input_output_numeric_options[0]==4: #any type file (used in NLP.py)
             # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (any file type: pdf, docx, html, txt, csv, conll); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv"),("pdf file","*.pdf"),("docx file","*.docx"),("html file","*.html"),("CoNLL table","*.conll")], "*.*"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (any file type: pdf, docx, html, txt, csv, conll); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv"),("pdf file","*.pdf"),("docx file","*.docx"),("html file","*.html"),("CoNLL table","*.conll")], "*.*"))
         if config_input_output_numeric_options[0]==5: #txt/html
             # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, html); switch extension type below near File name:',[("txt file","*.txt"),("html file","*.html")], "*.*"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, html); switch extension type below near File name:',[("txt file","*.txt"),("html file","*.html")], "*.*"))
         if config_input_output_numeric_options[0]==6: #txt/csv
             # buttons are set to normal or disabled in selectFile_set_options
-            select_input_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
 
         # place the INPUT file widget
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_input_file_button,True)
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_inputFilename_button,True)
 
         #setup a button to open Windows Explorer on the selected input file
         openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, inputFilename.get()))
@@ -590,19 +618,19 @@ def IO_config_setup_full (window, y_multiplier_integer):
                                                        y_multiplier_integer, outputDir_lb)
 
 def setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent):
-    if 'Default' in IO_setup_menu_var.get(): # GUI_util.GUI_util.IO_setup_menu_var.get()
-        temp_config_filename = 'default_config.csv'
+    if 'Default' in setup_IO_menu_var.get(): # GUI_util.GUI_util.setup_IO_menu_var.get()
+        temp_config_filename = 'NLP_default_IO_config.csv'
     else:
         temp_config_filename=config_filename
-    # 2 arguments are passed to python IO_setup_main.py:
+    # 2 arguments are passed to python NLP_setup_IO_main.py:
     #   1. config_input_output_numeric_options (i.e., the list of GUI specific IO options setup in every _main [1,0,0,1])
     #       when passing a default config, this list will be checked in IO_setup_main against the GUI specific IO list
     #       if you have a specific GUI requiring only input Dir, rather than filename, and the default option specifies an inputfile
     #       a warning will be raised
     #   2. temp_config_filename, either as default or GUI-specific config
-    # same call to IO_setup_main.py in NLP_menu_main
-    if not 'IO_setup_main' in scriptName:
-        call("python IO_setup_main.py --config_option " + str(config_input_output_numeric_options).replace('[', '"').replace(']', '"') + " --config_filename " + temp_config_filename, shell=True)
+    # same call to NLP_setup_IO_main.py in NLP_menu_main
+    if not 'NLP_setup_IO_main' in scriptName:
+        call("python NLP_setup_IO_main.py --config_option " + str(config_input_output_numeric_options).replace('[', '"').replace(']', '"') + " --config_filename " + temp_config_filename, shell=True)
         # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
         display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_numeric_options, scriptName,silent)
 
@@ -614,23 +642,50 @@ def display_about_release_team_cite_buttons(scriptName):
             y_multiplier_integer = 0
         about_button = tk.Button(window, text='About', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.about())
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.about_button_x_coordinate, y_multiplier_integer,
-                                                       about_button, True)
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                                       GUI_IO_util.about_button_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       about_button,
+                                                       True, False, False, False, 90,
+                                                       GUI_IO_util.about_button_x_coordinate,
+                                                       "Click on the button to access the About page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
         release_history_button = tk.Button(window, text='Release history', width=15, height=1, foreground='red',
                                            command=lambda: GUI_IO_util.release_history())
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.release_history_button_x_coordinate, y_multiplier_integer,
-                                                       release_history_button, True)
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                                       GUI_IO_util.release_history_button_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       release_history_button,
+                                                       True, False, False, False, 90,
+                                                       GUI_IO_util.about_button_x_coordinate,
+                                                       "Click on the button to access the Release history page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
         team_button = tk.Button(window, text='NLP Suite team', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.list_team())
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.team_button_x_coordinate, y_multiplier_integer,
-                                                       team_button, True)
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                                       GUI_IO_util.team_button_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       team_button,
+                                                       True, False, False, False, 90,
+                                                       GUI_IO_util.release_history_button_x_coordinate,
+                                                       "Click on the button to access the Team page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
         cite_button = tk.Button(window, text='How to cite', width=15, height=1, foreground="red",
                                 command=lambda: GUI_IO_util.cite_NLP())
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.cite_button_x_coordinate, y_multiplier_integer,
-                                                       cite_button)
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                                       GUI_IO_util.cite_button_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       cite_button,
+                                                       False, False, False, False, 90,
+                                                       GUI_IO_util.team_button_x_coordinate,
+                                                       "Click on the button to access the How to Cite page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
+
+
+#__________________________________________________________________________________________________________________
 
 # scriptName is typically blank; it is the name of the calling script; for now it is only used by IO_setup_main
 #   it can be used for handling GUIs with special treatment (e.g., IO_setup_main which does not have a RUN button)
@@ -642,7 +697,7 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     from PIL import Image, ImageTk
 
     # global so that they are recognized wherever they are used (e.g., select_input_secondary_dir_button in shape_of_stories_GUI)
-    global select_input_file_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_dir_button
+    global select_inputFilename_button, select_input_main_dir_button, select_input_secondary_dir_button, select_output_dir_button
     global config_input_output_alphabetic_options
 
     # No top help lines displayed when opening the license agreement GUI
@@ -661,7 +716,7 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     #__________________________________________________________________________________________________________________
     # INPUT options widgets
     # config_input_output_alphabetic_options contains the .get() value for each IO widget
-    #	e.g.,  ['C:/Program Files (x86)/NLP_backup/WordNet-3.0', '', '', '', '', 'C:/Program Files (x86)/NLP_backup/Output']
+    #   e.g.,  ['C:/Program Files (x86)/NLP_backup/WordNet-3.0', '', '', '', '', 'C:/Program Files (x86)/NLP_backup/Output']
     # config_input_output_alphabetic_options will contain the specific user SAVED values for the script
 
     # there should only be one case of
@@ -669,12 +724,12 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
     #   in NLP_GUI (NLP_config.csv) since no IO lines are displayed
 
     #file input file option ______________________________________________
-    #	1 for CoNLL file,
-    #	2 for txt file,
-    #	3 for csv file,
-    #	4 for any type file
-    #	5 for txt, html (used in annotator)
-    #	6 for txt, csv (used in SVO)
+    #   1 for CoNLL file,
+    #   2 for txt file,
+    #   3 for csv file,
+    #   4 for any type file
+    #   5 for txt, html (used in annotator)
+    #   6 for txt, csv (used in SVO)
 
     if not 'NLP_menu_main' in scriptName and config_input_output_numeric_options!=[0,0,0,0]:
         if not IO_setup_display_brief:
@@ -694,13 +749,77 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
         # The error message is displayed at the end of the script after the whole GUI has been displayed
         global noLicenceError
         noLicenceError=True
-
-#__________________________________________________________________________________________________________________
 # GUI bottom buttons widgets (ReadMe, Videos, TIPS, RUN, CLOSE)
 # silent is set to True in those GUIs where the selected default I/O configuration does not confirm to the expected input
 #   For example, you need a csv file but the default is a Directory, e.g., data_manager_main
+
+def get_hover_over_info(package_display_area_value):
+
+    if package_display_area_value != '':
+        NLP_current_settings = "Current NLP settings - " + package_display_area_value
+    else:
+        NLP_current_settings = 'There are no currently selected options. You will not be able to run many of the NLP algorithms.'
+    hover_over_x_coordinate = GUI_IO_util.read_button_x_coordinate
+
+    hover_over_info = "Select: " \
+                      "1. 'Setup NLP package and corpus language' to select NLP package (spaCy, CoreNLP, Stanza) and corpus language; " + \
+                      "  2. 'Setup external software' to download/install all external software.\n" + \
+                      NLP_current_settings
+    return hover_over_x_coordinate, hover_over_info
+
+def display_setup_hover_over(y_multiplier_integer):
+    global y_multiplier_integer_SV
+
+    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+
+    hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
+
+    # lay the setup widget
+    setup_menu_lb = tk.OptionMenu(window, setup_menu, "Setup NLP package and corpus language",
+                                  "Setup external software")
+
+    if y_multiplier_integer_SV == 0:
+        y_multiplier_integer_SV = y_multiplier_integer
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate,
+                                                   y_multiplier_integer_SV,
+                                                   setup_menu_lb, True, False, False, False, 90,
+                                                   hover_over_x_coordinate,
+                                                   hover_over_info)
+
+    # y_multiplier_integer=y_multiplier_integer-1
+    return y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value
+
+def handle_setup_options(y_multiplier_integer, scriptName):
+    global setup_menu_lb
+    package_display_area_value_new=''
+    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+
+    y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value = display_setup_hover_over(y_multiplier_integer)
+
+    # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    if setup_menu.get()=='Setup NLP package and corpus language':
+        # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+        call("python NLP_setup_package_language_main.py", shell=True)
+        # this will display the correct hover-over info after the python call, in case options were changed
+        y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value_new = display_setup_hover_over(y_multiplier_integer)
+        setup_menu.set('Setup')
+        # unfortunately the next lines do not Enter/Leave the previous Setup
+        # hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
+        # GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer_SV, setup_menu_lb, False,
+        #                               False, 90, hover_over_info)
+    if setup_menu.get()=='Setup external software':
+        call("python NLP_setup_external_software_main.py", shell=True)
+    # currently not used
+    if setup_menu.get() == 'I/O configuration':
+        import GUI_util
+        GUI_util.setup_IO_configuration_options(False, scriptName, True)
+
+    setup_menu.set("Setup")
+    return error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new
+
 def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
-               videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName='', silent=False):
+               videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName='', silent=False, package_display_area_value=''):
 
     # No bottom lines (README, TIPS, RUN, CLOSE) displayed when opening the license agreement GUI
     if config_filename=='license_config.csv':
@@ -711,7 +830,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     #   display options for opening more specialized GUIs
     #   do NOT display the next two sets of widgets
     #   since there is no output to display
-    # if config_input_output_numeric_options!=[0,0,0,0] and config_filename!='default_config.csv':
+    # if config_input_output_numeric_options!=[0,0,0,0] and config_filename!='NLP_default_IO_config.csv':
 
     # "IO_setup_main" has no Excel display
     # GUIs that serve only as frontend GUIs for more specialized GUIs should NOT display Open ooutput and Excel tickboxes
@@ -719,7 +838,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     #   in this case config_input_output_numeric_options = [0,0,0,0]
     if config_input_output_numeric_options!= [0,0,0,0] and \
             not 'NLP_menu_main' in scriptName and \
-            not "IO_setup_main" in scriptName:
+            not "NLP_setup_" in scriptName:
         #open output csv files widget defined above since it is used earlier
         open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Automatically open ALL output files", "Do NOT automatically open ALL output files"))
         open_csv_output_label.configure(text="Automatically open ALL output files")
@@ -737,7 +856,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
         create_chart_output_checkbox.set(1)
         # y_multiplier_integer=y_multiplier_integer+1
-        charts_options = ['Excel','Python plotLy']
+        # y_multiplier_integer=y_multiplier_integer+1
+        charts_options = ['Excel','Python plotLy (dynamic)','Python plotLy (static)']
         charts_dropdown_field.set('Excel')
         charts_menu_lb = tk.OptionMenu(window,charts_dropdown_field,*charts_options)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+620,
@@ -751,9 +871,16 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     #         charts_dropdown_field.set('plotLy')
     # charts_dropdown_field.trace('w',warning_message)
 
-    # readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)
     readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)
-    GUI_IO_util.placeWidget(window,GUI_IO_util.read_button_x_coordinate,y_multiplier_integer,readme_button,True,False,True)
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.read_button_x_coordinate,
+                                                   y_multiplier_integer,
+                                                   readme_button, True, False, False, False, 90,
+                                                   GUI_IO_util.read_button_x_coordinate,
+                                                   "Press the Read Me button to get general information about what the algorithms behind this GUI are meant to do.\n"
+                                                   "Press individual ?HELP buttons to get more specific information about what you can do at each line of the GUI.")
+
+    # GUI_IO_util.placeWidget(window,GUI_IO_util.read_button_x_coordinate,y_multiplier_integer,readme_button,True,False,True)
 
     videos_dropdown_field.set('Watch videos')
     if len(videos_lookup)==1:
@@ -792,7 +919,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # get the list of titles available for a given GUI
     if 'NLP_menu_main' in scriptName:
         # config_filename='NLP_config.csv'
-        config_filename = 'default_config.csv'
+        config_filename = 'NLP_default_IO_config.csv'
     reminder_options = reminders_util.getReminders_list(config_filename, True)
     # None returned for a faulty reminders.csv
     reminders_error = False
@@ -823,14 +950,30 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             reminders_util.resetReminder(config_filename,reminders_dropdown_field.get())
     reminders_dropdown_field.trace('w', trace_reminders_dropdown)
 
-    # there is no RUN button when setting up IO information in IO_setup_main.py
-    if not "IO_setup_main" in scriptName:
-        GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer, run_button, False, False,
-                                True)
+    # do not lay Setup widget in NLP_menu_main and in NLP_setup_package_language_main
+
+    y_multiplier_integer_SV = y_multiplier_integer
+    if not 'package_language' in config_filename and not 'NLP_menu_main' in scriptName:
+        # window.nametowidget(setup_menu_lb)
+        # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+        handle_setup_options(y_multiplier_integer, scriptName)
+
+    # there is no RUN button when setting up IO information in any of the NLP_setup scripts
+    #   or in any of the GUIs that are ALL options GUIs
+    if not "NLP_setup_" in scriptName \
+            and not "ALL_main" in scriptName:
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate,
+                                                       y_multiplier_integer_SV,
+                                                       run_button, True, False, False, False, 90,
+                                                       GUI_IO_util.open_setup_x_coordinate,
+                                                       'Click on the button to run the algorithm(s) behind the selected option(s)')
+        # GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
+        #                         run_button, False, False, True)
 
     def _close_window():
-        if 'Default' in IO_setup_menu_var.get(): #GUI_util.IO_setup_menu_var.get()
-            temp_config_filename = 'default_config.csv'
+        if 'Default' in setup_IO_menu_var.get(): #GUI_util.setup_IO_menu_var.get()
+            temp_config_filename = 'NLP_default_IO_config.csv'
         else:
             temp_config_filename = config_filename
         config_input_output_alphabetic_options=[]
@@ -841,38 +984,24 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         config_input_output_alphabetic_options.append(input_secondary_dir_path.get())
         config_input_output_alphabetic_options.append(output_dir_path.get())
         global local_release_version
-        # def exit_handler():
-        #     global local_release_version
-        #     from NLP_setup_update_util import update_self
-        #     # local_release_version is the release on the local machine
-        #     local_release_version = local_release_version.strip('\n')
-        #     # local_release_version = "2.5.3" # used to test
-        #     # GitHub_release_version_var is the release available on GitHub
-        #     GitHub_release_version = GitHub_release_version_var.get()
-        #     GitHub_release_version = GitHub_release_version.strip('\n')
-        #     GitHub_release_version = GitHub_release_version.strip('\r')
-        #     if GitHub_release_version != local_release_version:
-        #         update_self(window, GitHub_release_version)
-        #     else:
-        #         print('\nYour NLP Suite is already up-to-date with the release available on GitHub (' + GitHub_release_version_var.get() + ').')
-        # local_release_version is the release on the local machine
-        # local_release_version = "2.5.3" # used to test
-        # GitHub_release_version_var is the release available on GitHub
         local_release_version = local_release_version.strip('\n')
         GitHub_release_version = GitHub_release_version_var.get()
         GitHub_release_version = GitHub_release_version.strip('\n')
         GitHub_release_version = GitHub_release_version.strip('\r')
 
-        GUI_IO_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options, local_release_version, GitHub_release_version)
-
-        # atexit.register(exit_handler())
-        #
-        # GUI_IO_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options)
+        # hitting the CLOSE button will automatically pull from GitHub the latest release available on GitHub
+        import NLP_setup_update_util
+        NLP_setup_update_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options, local_release_version, GitHub_release_version)
 
     close_button = tk.Button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
-    GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate, y_multiplier_integer, close_button, False, False,
-                            True)
-    #
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
+                                                   y_multiplier_integer,
+                                                   close_button, True, False, False, False, 90,
+                                                   GUI_IO_util.read_button_x_coordinate,
+                                                   "Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
+                                                   "\nYou must be connected to the internet for the auto update to work.")
+
     # Any message should be displayed after the whole GUI has been displayed
 
     # although the release version appears in the top part of the GUI,
@@ -883,24 +1012,28 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         mb.showwarning(title='Fatal error', message="The licence agreement file 'LICENSE-NLP-1.0.txt' could not be found in the 'lib' subdirectory of your main NLP Suite directory\n" + GUI_IO_util.NLPPath + "\n\nPlease, make sure to copy this file in the 'lib' subdirectory.\n\nThe NLP Suite will now exit.")
         sys.exit()
 
-    if 'Default' in IO_setup_menu_var.get():  # GUI_util.IO_setup_menu_var.get()
-        temp_config_filename = 'default_config.csv'
+    if 'Default' in setup_IO_menu_var.get():  # GUI_util.setup_IO_menu_var.get()
+        temp_config_filename = 'NLP_default_IO_config.csv'
     else:
         temp_config_filename = config_filename
 
     global IO_setup_config_SV
     IO_setup_config_SV=''
 
-    def changed_IO_setup_config(*args):
+    def changed_setup_IO_config(*args):
         global IO_setup_config_SV
-        if IO_setup_menu_var.get()!=IO_setup_config_SV:
-            IO_setup_config_SV=IO_setup_menu_var.get()
+        if setup_IO_menu_var.get()!=IO_setup_config_SV:
+            IO_setup_config_SV=setup_IO_menu_var.get()
             # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
             display_IO_setup(window, IO_setup_display_brief, config_filename,
                                              config_input_output_numeric_options, scriptName, silent)
 
-    IO_setup_menu_var.trace("w",changed_IO_setup_config)
-    changed_IO_setup_config()
+    setup_IO_menu_var.trace("w",changed_setup_IO_config)
+    changed_setup_IO_config()
+
+    # avoid tracing again since tracing is already done at the bottom of those scripts
+    if scriptName!='SVO_main.py' and scriptName!='NLP_parsers_annotators_main.py':
+        setup_menu.trace('w',lambda x, y, z: handle_setup_options(y_multiplier_integer, scriptName))
 
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
     # run_button_state, answer = activateRunButton(temp_config_filename, IO_setup_display_brief, scriptName, silent)
@@ -927,4 +1060,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # check_GitHub_release(local_release_version)
 
     window.protocol("WM_DELETE_WINDOW", _close_window)
+
+    return package_display_area_value
+
 

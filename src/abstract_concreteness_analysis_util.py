@@ -15,8 +15,8 @@ Parameters:
     --out [path of directory]
         specifies directory to create output files
 Uses concreteness measures by Brysbaert, Marc, Amy Beth Warriner, and Victor Kuperman. 2014.
-	“Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas.” 
-	Behavioral Research Methods, Vol. 46, No. 3, pp. 904–911.  
+	“Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas.”
+	Behavioral Research Methods, Vol. 46, No. 3, pp. 904–911.
 
 #a 5-point rating scale going from abstract to concrete
 
@@ -44,7 +44,7 @@ import tkinter.messagebox as mb
 import IO_user_interface_util
 import lib_util
 
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 import GUI_IO_util
 import IO_csv_util
@@ -164,7 +164,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 	elif len(inputFilename) == 0 and len(inputDir) == 0:  # empty input
 		print('No input specified. Please give either a single file or a directory of files to analyze.')
 		sys.exit(1)
-	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+	startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
 	                                               'Started running CONCRETENESS Analysis at', True,silent=True)
 	outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
 																			   '.csv', 'abstr-concret-vocab', 'stats')
@@ -214,11 +214,10 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 		# IO_csv_util.sort_csvFile_by_columns(outputFilename, outputFilename, ['Document ID', 'Sentence ID'])
 
 	chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-													   columns_to_be_plotted_bar=[[0,0]],
-													   columns_to_be_plotted_byDoc=[[10, 0]],
-													   columns_to_be_plotted_bySent= [[10, 7, 0]],
+													   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Concreteness (Mean score)'],
+													   # columns_to_be_plotted_bySent= [[10, 7, 0]],
 													   chartTitle='Frequency Distribution of Abstract/Concrete Scores',
-													   count_var=0, # to be used for byDoc, 0 for numeric field
+													   count_var=0, # 0 for numeric field
 													   hover_label=[],
 													   outputFileNameType='',
 													   column_xAxis_label='Concreteness scores',
@@ -230,7 +229,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 			filesToOpen.extend(chart_outputFilename)
 
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+	IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
 	                                       'Finished running CONCRETENESS Analysis at', True, '', True, startTime, True)
 
 	return filesToOpen

@@ -1,4 +1,7 @@
 import sys
+
+import pandas as pd
+
 import GUI_util
 import IO_libraries_util
 
@@ -9,23 +12,27 @@ import IO_files_util
 import IO_user_interface_util
 import csv
 import tkinter.messagebox as mb
+import os # TODO MINO GIS create kml record
 
-from geopy import Nominatim 
+from geopy import Nominatim
 from geopy.geocoders import GoogleV3
 from geopy.exc import GeocoderTimedOut
+import simplekml # TODO MINO GIS create kml record
+import pandas as pd # TODO MINO GIS create kml record
 
 import GIS_location_util
 import GIS_file_check_util
 import IO_internet_util
-import IO_csv_util
 import GIS_pipeline_util
+import GIS_Google_pin_util # TODO MINO GIS create kml record
+import IO_csv_util # TODO MINO GIS create kml record
 
 filesToOpen = []
 
 # TODO
 # geocode(query, exactly_one=True, timeout=DEFAULT_SENTINEL, limit=None, addressdetails=False, language=False, geometry=None, extratags=False, country_codes=None, viewbox=None, bounded=None)
 # Return a location point by address.
-# Parameters: 
+# Parameters:
 # query (dict or str) –
 # The address, query or a structured query you wish to geocode.
 # Changed in version 1.0.0: For a structured query, provide a dictionary whose keys are one of: street, city, county, state, country, or postalcode. For more information, see Nominatim’s documentation for structured requests:
@@ -73,7 +80,7 @@ def get_geolocator(geocoder,Google_API=''):
 	return geolocator
 
 # Country specification; uses 2-digit lowercase ISO_3166 country codes
-def nominatim_geocode(geolocator,loc,country_bias='',box_tuple='',restrict=False,timeout=4):
+def nominatim_geocode(geolocator,loc,country_bias='',box_tuple='',restrict=False,timeout=4, featuretype=None):
 	# https://geopy.readthedocs.io/en/stable/#geopy.geocoders.options
 	# this will renew the SSL certificate indefinitely
 	# pip install pyOpenSSL
@@ -120,17 +127,19 @@ def nominatim_geocode(geolocator,loc,country_bias='',box_tuple='',restrict=False
 		# 					30.770444751951388, -81.5219744485591 (lower right)
 
 	try:
-		return geolocator.geocode(loc,language='en',country_codes=country_bias,viewbox=box_tuple, bounded=restrict, timeout=timeout)
+		return geolocator.geocode(loc,language='en',country_codes=country_bias,viewbox=box_tuple, bounded=restrict, timeout=timeout, featuretype=featuretype)
 		# https: // gis.stackexchange.com / questions / 173569 / avoid - time - out - error - nominatim - geopy - openstreetmap
-	except GeocoderTimedOut:
-		print("********************************************TIMEOUT",timeout)
+	except:
+		print("******************************************** Nominatim TIMEOUT",timeout)
 		if timeout<20:
 			# try again, adding timeout
-			return nominatim_geocode(geolocator,loc,country_bias,box_tuple,restrict,timeout + 2)# add 2 second for the next round
+			try:
+				return nominatim_geocode(geolocator,loc=loc,country_codes=country_bias,box_tuple=box_tuple,bounded=restrict,timeout=timeout + 2, featuretype=featuretype)# add 2 second for the next round
+			except:
+				return None
 		else:
 			print("Maximum number of retries to access Nominatim server exceeded in geocoding " + loc)
-		raise
-		# return None
+			raise
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
 # console.developers.google.com/apis
@@ -163,7 +172,8 @@ def geocode(window,locations, inputFilename, outputDir,
 
 	distinctGeocodedLocations= {}
 	distinctGeocodedList=[]
-	#distinctGeocodedList=set()
+	nonDistinctNotGeocodedList=[]
+	nonDistinctNotGeocodedFull=[]
 	locationsNotFound=0
 	index=0
 
@@ -173,8 +183,12 @@ def geocode(window,locations, inputFilename, outputDir,
 		Google_API=''
 
 	geolocator = get_geolocator(geocoder,Google_API)
+	kml = simplekml.Kml()
+	icon_url = GIS_Google_pin_util.pin_icon_select(['Pushpins'], ['red'])
 
-	inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
+	inputIsCoNLL, inputIsGeocoded, withHeader, \
+		headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
+	input_df = pd.read_csv(inputFilename, encoding=encodingValue)
 
 	startTime=IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Started geocoding locations via the online service '" + geocoder + "' at",
 												 True, '', True,'',True)
@@ -183,12 +197,18 @@ def geocode(window,locations, inputFilename, outputDir,
 	# 	reminders_util.checkReminder(config_filename,["GIS Nominatim geocoder"],'',True)
 
 	geoName = 'geo-' + str(geocoder[:3])
-	geocodedLocationsoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
+	geocodedLocationsOutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
 																			  geoName, locationColumnName, '', '', False,
 																			  True)
 	locationsNotFoundoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
 																			  geoName, 'Not-Found', locationColumnName, '',
 																			  False, True)
+	locationsNotFoundNonDistinctoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
+																			geoName, 'Not-Found-Non-Distinct', locationColumnName, '',
+																			False, True)
+	# TODO MINO GIS create kml record
+	kmloutputFilename = geocodedLocationsOutputFilename.replace('.csv', '.kml')
+
 	if locations=='':
 		outputCsvLocationsOnly = ''
 		if inputIsCoNLL == True:
@@ -202,30 +222,34 @@ def geocode(window,locations, inputFilename, outputDir,
 		if locations == None or len(locations) == 0:
 			return '', ''  # empty output files
 
-	csvfile = IO_files_util.openCSVFile(geocodedLocationsoutputFilename, 'w', encodingValue)
+	csvfile = IO_files_util.openCSVFile(geocodedLocationsOutputFilename, 'w', encodingValue)
 	if csvfile=='': # permission error
-		return '', '' 
+		return '', ''
 	csvfileNotFound = IO_files_util.openCSVFile(locationsNotFoundoutputFilename, 'w', encodingValue)
 	if csvfileNotFound=='': # permission error
-		return '', '' 
-
+		return '', ''
+	csvfileNotFoundNonDistinct = IO_files_util.openCSVFile(locationsNotFoundNonDistinctoutputFilename, 'w', encodingValue)
+	if csvfileNotFoundNonDistinct=='': # permission error
+			return '', ''
 	geowriter = csv.writer(csvfile)
 	geowriterNotFound = csv.writer(csvfileNotFound)
+	geowriterNotFoundNonDistinct = csv.writer(csvfileNotFoundNonDistinct)
 
 	if inputIsCoNLL==True: #the filename, sentence, date were exported
 		if datePresent==True:
 			# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
-			geowriter.writerow(['Location','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document','Date'])
+			geowriter.writerow(['Location','NER Tag','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document','Date'])
 		else:
 			# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
-			geowriter.writerow(['Location','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document'])
+			geowriter.writerow(['Location','NER Tag','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document'])
 	else:
 		# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
 		if datePresent==True:
-			geowriter.writerow(['Location','Latitude','Longitude','Address', 'Date'])
+			geowriter.writerow(['Location','NER Tag','Latitude','Longitude','Address', 'Date'])
 		else:
-			geowriter.writerow(['Location', 'Latitude', 'Longitude', 'Address'])
-
+			geowriter.writerow(['Location','NER Tag','Latitude', 'Longitude', 'Address'])
+	geowriterNotFound.writerow(['Location','NER Tag'])
+	geowriterNotFoundNonDistinct.writerow(['Location','NER Tag'])
 	# CYNTHIA
 	# ; added in SVO list of locations in SVO output (e.g., Los Angeles; New York; Washington)
 	tmp_loc = []
@@ -237,13 +261,17 @@ def geocode(window,locations, inputFilename, outputDir,
 		else:
 			tmp_loc.append(item)
 	locations = tmp_loc
-
+	skipNext = False
+	index_list = []
 	for item in locations:
 		index=index+1 #items in locations are NOT DISTINCT
-		print("Processing location " + str(index) + "/" + str(len(locations)) + ": " + item[0])
+		if skipNext:
+			continue
 		if str(item)!='nan' and str(item)!='':
 			currRecord=str(index) + "/" + str(len(locations))
-			#for CoNLL tables as input rows & columns 
+			print("Processing location " + currRecord + " for geocoding: "
+				  + str(item[0]) + " (NER tag: " + str(item[len(item) - 1]) + ")")
+			#for CoNLL tables as input rows & columns
 			#   refer to the four fields exported by the NER locator
 			if inputIsCoNLL==True: #the filename was exported in GIS_location_util
 				itemToGeocode = item[0] # location in FORM
@@ -254,29 +282,67 @@ def geocode(window,locations, inputFilename, outputDir,
 				if datePresent==True:
 					date = item[5]
 			else:
-				# itemToGeocode =[item[0]]
 				itemToGeocode =item[0]
+				NER_Tag = item[len(item)-1]
+				if NER_Tag == 'COUNTRY':
+					NER_Tag_nominatim = 'country'
+				elif NER_Tag == 'STATE_OR_PROVINCE':
+					NER_Tag_nominatim = 'state'
+				elif NER_Tag == 'CITY':
+					NER_Tag_nominatim = 'city'
+
 				if datePresent==True:
 					date=item[1]
 
-			# avoid repetition; location already in list
+			# avoid repetition so as not to access the geocoder service several times for the same location;
+			# 	location already in list
 			if itemToGeocode in distinctGeocodedList:
 				location = itemToGeocode
+				# TODO: special case for 'America': convert to 'United States'
+				if itemToGeocode == 'America':
+					itemToGeocode = 'United States'
+				if itemToGeocode in nonDistinctNotGeocodedList:
+					nonDistinctNotGeocodedList.append(itemToGeocode)
+					nonDistinctNotGeocodedFull.append((itemToGeocode,NER_Tag))
+					lat = lng = 0 # TODO set 0 for lat and lng since itemToGeocode is in notGeocodedList
+				else:
+					lat = distinctGeocodedLocations[itemToGeocode][0]
+					lng = distinctGeocodedLocations[itemToGeocode][1]
+					address = distinctGeocodedLocations[itemToGeocode][2]
 			else:
 				print("   Geocoding DISTINCT location: " + itemToGeocode)
+				# TODO special case for 'America': convert to 'United States', so that 'United States' is appended to distinctGeocodedList
+				if itemToGeocode == 'America':
+					itemToGeocode = 'United States'
 				distinctGeocodedList.append(itemToGeocode)
 				#distinctGeocodedList.add(itemToGeocode)
 				if geocoder=='Nominatim':
-					location = nominatim_geocode(geolocator,itemToGeocode,country_bias,area,restrict)
+					NER_Tag_nominatim = ''
+					# CoreNLP NER tag for continents is often wrong and as a result Nominatim geocodes them wrongly
+					#	we should skip them, particularly when they are lowercase
+					# continents='Africa, Antarctica, Asia, Australia, Europe, Oceania, North America, South America'
+					if itemToGeocode == 'Africa' or \
+						itemToGeocode == 'Antarctica' or \
+						itemToGeocode == 'Asia' or \
+						itemToGeocode == 'Australia' or \
+						itemToGeocode == 'Europe' or \
+						itemToGeocode == 'Oceania' or \
+						itemToGeocode == 'North America' or \
+						itemToGeocode == 'South America':
+						NER_Tag_nominatim='continent'
+					location = nominatim_geocode(geolocator,loc=itemToGeocode,country_bias=country_bias,box_tuple=area,restrict=restrict,featuretype=NER_Tag_nominatim)
 				else:
 					location = google_geocode(geolocator,itemToGeocode,country_bias)
+				# location is None when not found
 				if geocoder=='Nominatim':
 					try:
 						lat, lng, address = location.latitude, location.longitude, location.address
 					except Exception as e:
 						lat, lng, address = 0, 0, " LOCATION NOT FOUND BY " + geocoder
 						locationsNotFound=locationsNotFound+1
-						geowriterNotFound.writerow([itemToGeocode])
+						geowriterNotFound.writerow([itemToGeocode, NER_Tag])
+						nonDistinctNotGeocodedList.append(itemToGeocode)
+						nonDistinctNotGeocodedFull.append((itemToGeocode,NER_Tag))
 						print(currRecord,"     LOCATION NOT FOUND BY " + geocoder,itemToGeocode)
 				else: #Google
 					try: #use a try/except in case requests do not give results
@@ -284,7 +350,9 @@ def geocode(window,locations, inputFilename, outputDir,
 					except:
 						lat, lng, address = 0, 0, " LOCATION NOT FOUND BY " + geocoder
 						locationsNotFound=locationsNotFound+1
-						geowriterNotFound.writerow([itemToGeocode])
+						geowriterNotFound.writerow([itemToGeocode, NER_Tag])
+						nonDistinctNotGeocodedList.append(itemToGeocode)
+						nonDistinctNotGeocodedFull.append((itemToGeocode,NER_Tag))
 						print(currRecord,"     LOCATION NOT FOUND BY " + geocoder,itemToGeocode)
 				if lat!=0 and lng!=0:
 					distinctGeocodedLocations[itemToGeocode] = (lat, lng, address)
@@ -295,22 +363,54 @@ def geocode(window,locations, inputFilename, outputDir,
 			if lat!=0 and lng!=0:
 				if inputIsCoNLL==True:
 					if datePresent==True:
-						geowriter.writerow([itemToGeocode, lat, lng, address, sentenceID, sentence, documentID, filename, date])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, sentenceID, sentence, documentID, filename, date])
 					else:
-						geowriter.writerow([itemToGeocode, lat, lng, address, sentenceID, sentence, documentID, filename])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, sentenceID, sentence, documentID, filename])
 				else:
 					if datePresent==True:
-						geowriter.writerow([itemToGeocode, lat, lng, address, date])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, date])
 					else:
-						geowriter.writerow([itemToGeocode, lat, lng, address])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address])
+
+				# TODO MINO GIS create kml record
+				pnt = kml.newpoint(coords=[(lng, lat)])
+				pnt.style.iconstyle.icon.href = icon_url
+				pnt.name = itemToGeocode
+				pnt.style.labelstyle.scale = '1'
+				# pnt.style.labelstyle.color = simplekml.Color.rgb(int(r_value), int(g_value), int(b_value))
+				sentence = input_df.at[index-1, 'Sentence']
+				document = input_df.at[index-1, 'Document']
+				document = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document))[1]
+				pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
+									"<i><b>Sentence</b></i>: " + sentence + "<br/><br/>" + \
+									"<i><b>Document</b></i>: " + document
+
+	[geowriterNotFoundNonDistinct.writerow([item[0], item[1]]) for item in nonDistinctNotGeocodedFull]
 	csvfile.close()
 	csvfileNotFound.close()
-	
+	csvfileNotFoundNonDistinct.close()
+	# TODO MINO GIS create kml record
+	try:
+		kml.save(kmloutputFilename)
+	except:
+		mb.showwarning(title='kml file save failure',
+					   message="Saving the kml file failed. A typical cause of failure is is bad characters in the input text/csv file(s) (e.g, 'LINE TABULATION' or 'INFORMATION SEPARATOR ONE' characters).\n\nThe GIS KML script will now try to automattically clean the kml file, save it in safe mode, and open the kml file in Google Earth Pro.\n\nIf the file cleaning was successful, the map will display correctly. If not, Google Earth Pro will open exactly on the bad character position. Remove the character and save the file. But, you should really clean the original input txt/csv file.")
+		# Save kml regardless of validity. Let the user find any bad characters.
+		kml.save(kmloutputFilename, False)
+		# Clean out any "LINE TABULATION" and "INFORMATION SEPARATOR ONE" characters from the input (causes error with KML).
+		with open(kmloutputFilename, 'r+', encoding='utf_8', errors='ignore') as kmlfile:
+			content = kmlfile.read()
+			content = content.replace(u"\u000B", "")
+			content = content.replace(u"\u001F", "")
+			kmlfile.seek(0)
+			kmlfile.write(content)
+			kmlfile.truncate()
+
 	if locationsNotFound==0:
 		locationsNotFoundoutputFilename='' #used NOT to open the file since there are NO errors
 	else:
 		if locationsNotFound==index:
-			geocodedLocationsoutputFilename='' #used NOT to open the file since there are no records
-			# this warning is already given 
-	IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime, True)
-	return geocodedLocationsoutputFilename, locationsNotFoundoutputFilename
+			geocodedLocationsOutputFilename='' #used NOT to open the file since there are no records
+			# this warning is already given
+	IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding " + str(len(locations)) + " locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime, True)
+	return geocodedLocationsOutputFilename, locationsNotFoundoutputFilename, locationsNotFoundNonDistinctoutputFilename, kmloutputFilename

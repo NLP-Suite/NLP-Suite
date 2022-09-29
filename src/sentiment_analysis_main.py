@@ -4,26 +4,27 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if not IO_libraries_util.install_all_packages(GUI_util.window,"sentiment_analysis.py",['os','tkinter','subprocess']):
+if not IO_libraries_util.install_all_packages(GUI_util.window,"sentiment_analysis_main.py",['os','tkinter','subprocess']):
     sys.exit(0)
 
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-import subprocess
 from subprocess import call
 
 import IO_files_util
 import IO_user_interface_util
-import charts_util
 import lib_util
 import GUI_IO_util
 import reminders_util
-import Stanford_CoreNLP_annotator_util
 import sentiment_analysis_hedonometer_util
 import sentiment_analysis_SentiWordNet_util
 import sentiment_analysis_VADER_util
 import sentiment_analysis_ANEW_util
+import sentiment_analysis_roBERTa_util
+import spaCy_util
+import Stanza_util
+import Stanford_CoreNLP_util
 import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -35,13 +36,10 @@ def run(inputFilename,inputDir,outputDir,
         mean_var,
         median_var,
         SA_algorithm_var,
-        language_var,
         memory_var,
         sentence_index_var,
         shape_of_stories_var):
 
-    #if GUI_util.check_missingIO()==True:
-    #    return
     usefile = False
     usedir = False
     flag="" #used by CoreNLP
@@ -69,31 +67,108 @@ def run(inputFilename,inputDir,outputDir,
     elif mean_var==True and median_var==True:
         mode = "both"
 
+    BERT_var = 0
     SentiWordNet_var=0
     CoreNLP_var=0
+    Stanza_var=0
+    spaCy_var=0
     hedonometer_var=0
     vader_var=0
     anew_var=0
 
     if SA_algorithm_var=='*':
-        SentiWordNet_var=1
+        # create a subdirectory of the output directory
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment',
+                                                           silent=False)
+        if outputDir == '':
+            return
+        BERT_var=1
         CoreNLP_var=1
-        hedonometer_var=1
-        vader_var=1
+        spaCy_var=1
+        Stanza_var=1
         anew_var=1
-    elif SA_algorithm_var=='Stanford CoreNLP (Neural Network)':
-        CoreNLP_var=1
-    elif SA_algorithm_var=='SentiWordNet':
+        hedonometer_var=1
         SentiWordNet_var=1
-    elif SA_algorithm_var=='ANEW':
-        anew_var=1
-    elif SA_algorithm_var=='hedonometer':
-        hedonometer_var=1
-    elif SA_algorithm_var=='VADER':
         vader_var=1
+    elif 'BERT' in SA_algorithm_var:
+        BERT_var = 1
+    elif 'spaCy' in SA_algorithm_var:
+        spaCy_var = 1
+    elif 'Stanford CoreNLP' in SA_algorithm_var:
+        CoreNLP_var = 1
+    elif 'Stanza' in SA_algorithm_var:
+        Stanza_var=1
+    elif 'SentiWordNet' in SA_algorithm_var:
+        SentiWordNet_var=1
+    elif 'ANEW' in SA_algorithm_var:
+        anew_var=1
+    elif 'hedonometer' in SA_algorithm_var:
+        hedonometer_var=1
+    elif 'VADER' in SA_algorithm_var:
+        vader_var=1
+    else:
+        mb.showwarning('Warning',
+                SA_algorithm_var.lstrip() + " is not available yet. Sorry!\n\nPlease, select another option and try again.")
+        return
+    #ANEW _______________________________________________________
+    if anew_var==1 and (mean_var or median_var):
+        if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'EnglishShortenedANEW.csv', 'sentiment_analysis_ANEW')==False:
+            return
+        if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_ANEW_util.py')==False:
+            return
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running ANEW Sentiment Analysis at',
+                                                     True, '', True, '', False)
 
-    #CORENLP  _______________________________________________________
-    if CoreNLP_var==1 and (mean_var or median_var):
+        outputFiles=sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
+
+        if len(outputFiles)>0:
+            filesToOpen.append(outputFiles)
+
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running ANEW Sentiment Analysis at', True, '', True, startTime)
+
+# BERT ---------------------------------------------------------
+
+    if BERT_var==1:
+        tempOutputFiles = sentiment_analysis_roBERTa_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
+        if tempOutputFiles == None:
+            return
+        if len(tempOutputFiles) > 0:
+            filesToOpen.extend(tempOutputFiles)
+
+# spaCy  _______________________________________________________
+
+    if SA_algorithm_var == '*' or spaCy_var == 1 and (mean_var or median_var):
+        # check internet connection
+        import IO_internet_util
+        if not IO_internet_util.check_internet_availability_warning('spaCy Sentiment Analysis'):
+            return
+        #     flag="true" do NOT produce individual output files when processing a directory; only merged file produced
+        #     flag="false" or flag="" ONLY produce individual output files when processing a directory; NO  merged file produced
+
+        annotator = ['sentiment']
+        document_length_var = 1
+        limit_sentence_length_var = 1000
+        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
+                                                    outputDir,
+                                                    openOutputFiles,
+                                                    createCharts, chartPackage,
+                                                    annotator, False,
+                                                    language_var,
+                                                    memory_var, document_length_var, limit_sentence_length_var,
+                                                    extract_date_from_filename_var=0,
+                                                    date_format='',
+                                                    date_separator_var='',
+                                                    date_position_var=0)
+
+        if tempOutputFiles == None:
+            return
+
+        if len(tempOutputFiles) > 0:
+            filesToOpen.extend(tempOutputFiles)
+
+# Stanford CORENLP  _______________________________________________________
+
+    if SA_algorithm_var=='*' or CoreNLP_var==1 and (mean_var or median_var):
         #check internet connection
         import IO_internet_util
         if not IO_internet_util.check_internet_availability_warning('Stanford CoreNLP Sentiment Analysis'):
@@ -103,349 +178,121 @@ def run(inputFilename,inputDir,outputDir,
 
         flag = "false" # the true option does not seem to work
 
-        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_annotator_util.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
             return
         # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Stanford CoreNLP Sentiment Analysis',
         #                                    'Started running Stanford CoreNLP Sentiment Analysis at', True,
         #                                    'You can follow CoreNLP in command line.')
-        
+
         #@ need an additional variable CoreNLP dir and memory_var @
         # set memory_var if not there
         if memory_var==0:
             memory_var=4
-        outputFilename = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+        outputFilename = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                           outputDir, openOutputFiles, createCharts, chartPackage,'sentiment', False,
                                                                           language_var,
                                                                           memory_var)
         # outputFilename=outputFilename[0] # annotators return a list and not a string
-        if len(outputFilename)>0:
+        if SA_algorithm_var!='*' and len(outputFilename)>0:
             filesToOpen.extend(outputFilename)
-        #@ not longer need to call java subprocess @
-        # subprocess.call(['java', '-jar', 'Stanford_CoreNLP_sentiment_analysis.jar', inputDir, inputFilename, outputDir, flag])
-        # if not usedir:
-            # if createCharts==True:
-                # # CoreNLP only computes mean values
-                # columns_to_be_plotted = [[2,0]]
-                # hover_label=['Sentence']
-                # # inputFilename = outputFilename
-                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                #                                           outputFileLabel='CoreNLP_sent',
-                #                                           chartPackage=chartPackage,
-                #                                           chart_type_list=["line"],
-                #                                           chart_title='Stanford CoreNLP - Sentiment Scores by Sentence Index',
-                #                                           column_xAxis_label_var='Sentence index',
-                #                                           hover_info_column_list=hover_label,
-                #                                           count_var=0,
-                #                                           column_yAxis_label_var='Scores')
-                # if chart_outputFilename != "":
-                #     filesToOpen.append(chart_outputFilename)
-                #
-                # columns_to_be_plotted = [[0,0]]
-                # hover_label=[]
-                # # inputFilename = inputFilename
-                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                #                                           outputFileLabel='CoreNLP_SA',
-                #                                           chartPackage=chartPackage,
-                #                                           chart_type_list=["bar"],
-                #                                           chart_title='Stanford CoreNLP - Sentiment Scores',
-                #                                           column_xAxis_label_var='Sentiment score',
-                #                                           hover_info_column_list=hover_label,
-                #                                           count_var=1,
-                #                                           column_yAxis_label_var='Frequencies')
-                #
-                # if chart_outputFilename != "":
-                #     filesToOpen.append(chart_outputFilename)
 
-        if shape_of_stories_var:
-            if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py') == False:
-                return
+# Stanza  _______________________________________________________
 
-            # open the shape of stories GUI  having saved the new SA output in config so that it opens the right input file
-            config_filename_temp = 'shape_of_stories_config.csv'
-            config_input_output_numeric_options = [3, 1, 0, 1]
-            config_input_output_alphabetic_options = [outputFilename, '','',outputDir]
-            config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
+    if SA_algorithm_var == '*' or Stanza_var == 1 and (mean_var or median_var):
+        # check internet connection
+        import IO_internet_util
+        if not IO_internet_util.check_internet_availability_warning('Stanza Sentiment Analysis'):
+            return
 
-            reminders_util.checkReminder(config_filename,
-                                         reminders_util.title_options_shape_of_stories,
-                                         reminders_util.message_shape_of_stories,
-                                         True)
-            call("python shape_of_stories_main.py", shell=True)
+        annotator = 'sentiment'
+        document_length_var = 1
+        limit_sentence_length_var = 1000
+        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+                                                      outputDir,
+                                                      openOutputFiles,
+                                                      createCharts, chartPackage,
+                                                      annotator, False,
+                                                      [language_var], # Stanza_util takes language_var as a list
+                                                      memory_var, document_length_var, limit_sentence_length_var,
+                                                      extract_date_from_filename_var=0,
+                                                      date_format='',
+                                                      date_separator_var='',
+                                                      date_position_var=0)
 
-                # outputFilenameXlsm1 = charts_util.run_all(columns_to_be_plotted,inputFilename,outputDir, outputQuotefilePath, chart_type_list = ["bar"], chart_title=
-                # "Stanford CoreNLP (Sentiment Value)", column_xAxis_label_var = 'Sentiment value',
-                # column_yAxis_label_var = 'Frequency of sentiment value',outputExtension = '.xlsm',
-                # label1='SC',label2='CoreNLP_Sentiment',label3='bar',label4='chart',label5='',
-                # useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[''], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
+        if tempOutputFiles == None:
+            return
 
-        # else:
-        #     #open only the merged file
-        #     lastPart=os.path.basename(os.path.normpath(inputDir))
-        #     outputFilename = IO_files_util.generate_output_file_name(lastPart, outputDir, '.csv', 'SC', 'Sentiment CoreNLP', '', '', '', False, True)
-        #     filesToOpen.append(outputFilename)
+        if len(tempOutputFiles) > 0:
+            filesToOpen.extend(tempOutputFiles)
 
-        # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CoreNLP Sentiment Analysis at', True)
+# shape of stories ------------------------------------------------------------------------
 
-    #HEDONOMETER _______________________________________________________
-    if hedonometer_var==1 and (mean_var or median_var):
+    if (spaCy_var or CoreNLP_var or Stanza_var) and shape_of_stories_var:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py') == False:
+            return
+
+        # open the shape of stories GUI  having saved the new SA output in config so that it opens the right input file
+        config_filename_temp = 'shape_of_stories_config.csv'
+        config_input_output_numeric_options = [3, 1, 0, 1]
+        config_input_output_alphabetic_options = [outputFilename, '','',outputDir]
+        config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
+
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_shape_of_stories,
+                                     reminders_util.message_shape_of_stories,
+                                     True)
+        call("python shape_of_stories_main.py", shell=True)
+
+#HEDONOMETER _______________________________________________________
+
+    if SA_algorithm_var=='*' or hedonometer_var==1 and (mean_var or median_var):
         if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'hedonometer.json', 'sentiment_analysis_hedonometer_util.py')==False:
             return
         if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_hedonometer_util.py')==False:
             return
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running HEDONOMETER Sentiment Analysis at',
-                                                     True, '', True, '', True)
 
-        if len(inputFilename)>0:
-            fileNamesToPass = []  # LINE ADDED
-            outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SC', 'Hedonometer', '', '', '', False, True)
-        else:
-            outputFilename = IO_files_util.generate_output_file_name(inputDir, inputDir,  outputDir, '.csv', 'SC_dir', 'Hedonometer', '', '', '', False, True)
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running HEDONOMETER Sentiment Analysis at',
+                                                     True, '', True, '', False)
 
-        sentiment_analysis_hedonometer_util.main(inputFilename, inputDir, outputDir, outputFilename, mode)
+        outputFiles = sentiment_analysis_hedonometer_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
-        #tkinter filedialog.askdirectory ALWAYS returns forward slashes / if you use os.sep you end up mixing the slashes
-        # subprocess.call(['python', 'sentiment_analysis_hedonometer_util.py', '--file', inputFilename, "--out", outputDir+os.sep
-        #                  , "--mode", mode])
-        filesToOpen.append(outputFilename)
+        if SA_algorithm_var!='*' and len(outputFiles)>0:
+            filesToOpen.append(outputFiles)
 
-        if createCharts==True:
-            if mode == "both":
-                columns_to_be_plotted = [[6,0],[6,2]]
-                hover_label=['Sentence','Sentence']
-            else:
-                columns_to_be_plotted = [[6,0]]
-                hover_label=['Sentence']
-            # inputFilename = outputFilename
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                      outputFileLabel='Hedo_sent',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["line"],
-                                                      chart_title='Hedonometer - Sentiment Scores by Sentence Index',
-                                                      column_xAxis_label_var='Sentence index',
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=0,
-                                                      column_yAxis_label_var='Scores')
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running HEDONOMETER Sentiment Analysis at', True, '', True, startTime)
 
-            columns_to_be_plotted = [[0,0]]
-            hover_label=[]
-            # inputFilename = outputFilename
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                      outputFileLabel='Hedo_sent',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["bar"],
-                                                      chart_title='Hedonometer - Sentiment Scores',
-                                                      column_xAxis_label_var='Sentiment score',
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=1,
-                                                      column_yAxis_label_var='Scores')
+#SentiWordNet _______________________________________________________
 
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
-
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running HEDONOMETER Sentiment Analysis at', True, '', True, startTime)
-
-    #SentiWordNet _______________________________________________________
-    if SentiWordNet_var==1 and (mean_var or median_var):
+    if SA_algorithm_var=='*' or SentiWordNet_var==1 and (mean_var or median_var):
         if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_SentiWordNet_util.py')==False:
             return
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running SentiWordNet Sentiment Analysis at',
-                                                     True, '', True, '', True)
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running SentiWordNet Sentiment Analysis at',
+                                                     True, '', True, '', False)
 
-        if len(inputFilename)>0:
-            outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SC', 'SentiWordNet', '', '', '', False, True)
-        else:
-            outputFilename = IO_files_util.generate_output_file_name(inputDir, inputDir, outputDir, '.csv', 'SC_dir', 'SentiWordNet', '', '', '', False, True)
+        outputFiles = sentiment_analysis_SentiWordNet_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
-        sentiment_analysis_SentiWordNet_util.main(inputFilename, inputDir, outputDir, outputFilename, mode)
+        if SA_algorithm_var!='*' and len(outputFiles)>0:
+            filesToOpen.append(outputFiles)
 
-        filesToOpen.append(outputFilename)
-        if createCharts==True:
-            # sentiWordNet compute a single sentiment score
-            columns_to_be_plotted = [[2,0]]
-            hover_label=['Sentence']
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running SentiWordNet Sentiment Analysis at', True, '', True, startTime)
 
-            # inputFilename = outputFilename
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                      outputFileLabel='SentiWordNet_sent',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["line"],
-                                                      chart_title='SentiWordNet - Sentiment Scores by Sentence Index',
-                                                      column_xAxis_label_var='Sentence index',
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=0,
-                                                      column_yAxis_label_var='Scores')
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
+#VADER _______________________________________________________
 
-            columns_to_be_plotted = [[0,0]]
-            hover_label=[]
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                      outputFileLabel='SentiWordNet_sent',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["bar"],
-                                                      chart_title='SentiWordNet - Sentiment Scores',
-                                                      column_xAxis_label_var='Sentiment score',
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=1,
-                                                      column_yAxis_label_var='Scores')
-
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
-
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running SentiWordNet Sentiment Analysis at', True, '', True, startTime)
-
-    #VADER _______________________________________________________
-    if vader_var==1 and (mean_var or median_var):
+    if SA_algorithm_var=='*' or vader_var==1 and (mean_var or median_var):
         if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'vader_lexicon.txt', 'sentiment_analysis_VADER_util.py')==False:
             return
         if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_VADER_util.py')==False:
             return
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running VADER Sentiment Analysis at',
-                                                     True, '', True, '', True)
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running VADER Sentiment Analysis at',
+                                                     True, '', True, '', False)
+        outputFiles = sentiment_analysis_VADER_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
-        if len(inputFilename)>0:
-            outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,  outputDir, '.csv', 'SC', 'VADER', '', '', '', False, True)
-        else:
-            outputFilename = IO_files_util.generate_output_file_name(inputDir, inputDir, outputDir, '.csv', 'SC_dir', 'VADER', '', '', '', False, True)
+        if len(outputFiles)>0:
+            filesToOpen.append(outputFiles)
 
-        sentiment_analysis_VADER_util.main(inputFilename, inputDir, outputDir, outputFilename, mode)
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running VADER Sentiment Analysis at', True, '', True, startTime)
 
-        filesToOpen.append(outputFilename)
-        if createCharts==True:
-            # VADER does not compute separate mean and median values
-            columns_to_be_plotted = [[2,0]]
-            hover_label=['Sentence']
-            # inputFilename = outputFilename
-
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                      outputFileLabel='VADER_sent',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["line"],
-                                                      chart_title='VADER - Sentiment Scores by Sentence Index',
-                                                      column_xAxis_label_var='Sentence index',
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=0,
-                                                      column_yAxis_label_var='Scores')
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
-
-            columns_to_be_plotted = [[0,0]]
-            hover_label=[]
-            # inputFilename = outputFilename
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                      outputFileLabel='VADER_sent',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["bar"],
-                                                      chart_title='VADER - Sentiment Scores',
-                                                      column_xAxis_label_var='Sentiment score',
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=1,
-                                                      column_yAxis_label_var='Scores')
-
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running VADER Sentiment Analysis at', True, '', True, startTime)
-
-    #ANEW _______________________________________________________
-    if anew_var==1 and (mean_var or median_var):
-        if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'EnglishShortenedANEW.csv', 'sentiment_analysis_ANEW')==False:
-            return
-        if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_ANEW_util.py')==False:
-            return
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running ANEW Sentiment Analysis at',
-                                                     True, '', True, '', True)
-
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SC', 'ANEW', '', '', '', False, True)
-
-        sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, outputFilename, mode)
-        if createCharts==True:
-            # # sentiment by sentence index
-            if mode == "both":
-                columns_to_be_plotted = [[13,0],[13,6],[13,8],[13,10],[13,12],[13,14]]
-                hover_label=['Sentence','Sentence','Sentence','Sentence','Sentence','Sentence']
-            else:
-                columns_to_be_plotted = [[13,4],[13,6],[13,8]]
-                hover_label=['Sentence','Sentence','Sentence']
-
-            # inputFilename = outputFilename
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                      outputFileLabel='ANEW_sent',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["line"],
-                                                      chart_title='ANEW - Sentiment Scores by Sentence Index',
-                                                      column_xAxis_label_var='Sentence index',
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=0,
-                                                      column_yAxis_label_var='Scores')
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
-
-            # sentiment bar chart
-            if mode == "both":
-                columns_to_be_plotted = [[5,5],[7,7]]
-            else:
-                columns_to_be_plotted = [[5,5]]
-            hover_label=[]
-            # inputFilename = outputFilename
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                      outputFileLabel='ANEW_sent',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["bar"],
-                                                      chart_title='ANEW - Sentiment Scores',
-                                                      column_xAxis_label_var='Sentiment score',
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=1,
-                                                      column_yAxis_label_var='Scores')
-
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
-
-            # arousal
-            if mode == "both":
-                columns_to_be_plotted = [[9,9],[11,11]]
-            else:
-                columns_to_be_plotted = [[7,7]]
-            hover_label=[]
-            # inputFilename = outputFilename
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                      outputFileLabel='ANEW_arous',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["bar"],
-                                                      chart_title='ANEW - Arousal Scores',
-                                                      column_xAxis_label_var='Arousal score',
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=1,
-                                                      column_yAxis_label_var='Scores')
-
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
-
-            # dominance
-            if mode == "both":
-                columns_to_be_plotted = [[13,13],[15,15]]
-            else:
-                columns_to_be_plotted = [[9,9]]
-            hover_label=[]
-            # inputFilename = outputFilename
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                      outputFileLabel='ANEW_dom',
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=["bar"],
-                                                      chart_title='ANEW - Dominance Scores',
-                                                      column_xAxis_label_var='Dominance score',
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=1,
-                                                      column_yAxis_label_var='Scores')
-
-            if chart_outputFilename != "":
-                filesToOpen.append(chart_outputFilename)
-
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running ANEW Sentiment Analysis at', True, '', True, startTime)
-
-    if openOutputFiles==True:
-        # IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Warning', 'All csv output files have been saved to ' + outputDir)
+    if len(filesToOpen)>0:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
@@ -458,7 +305,6 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                mean_var.get(),
                                median_var.get(),
                                SA_algorithm_var.get(),
-                               language_var.get(),
                                memory_var.get(),
                                sentence_index_var.get(),
                                shape_of_stories_var.get())
@@ -509,9 +355,6 @@ GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_di
 mean_var = tk.IntVar()
 median_var = tk.IntVar()
 SA_algorithm_var = tk.StringVar()
-language_var = tk.StringVar()
-language_var_lb = tk.Label(window, text='Language')
-# language_menu = tk.OptionMenu()
 memory_var = tk.IntVar()
 memory_var_lb = tk.Label(window, text='Memory ')
 
@@ -536,12 +379,18 @@ median_checkbox = tk.Checkbutton(window, text='Calculate sentence median', varia
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200,y_multiplier_integer,median_checkbox)
 
 def display_reminder(*args):
-    if SA_algorithm_var.get()=='Stanford CoreNLP (Neural Network)':
+    if 'Neural network' in SA_algorithm_var.get() or 'Dictionar' in SA_algorithm_var.get():
+        mb.showwarning('Warning', SA_algorithm_var.get() + " is only a label. Please, select one of the indented sentiment analysis options and try again.")
+        return
+    if SA_algorithm_var.get()=='':
+        mb.showwarning('Warning',"The selected option is only a spacer. Please, select one of the indented sentiment analysis options and try again.")
+        return
+    if 'Stanford CoreNLP' in SA_algorithm_var.get():
         reminders_util.checkReminder(config_filename,
                                      reminders_util.title_options_SA_CoreNLP_system_requirements,
                                      reminders_util.message_SA_CoreNLP_system_requirements,
                                      True)
-    elif SA_algorithm_var.get()=='VADER':
+    elif 'VADER' in SA_algorithm_var.get():
         reminders_util.checkReminder(config_filename,
                                      reminders_util.title_options_SA_VADER,
                                      reminders_util.message_SA_VADER,
@@ -551,16 +400,17 @@ def display_reminder(*args):
                                          reminders_util.title_options_VADER_MeanMedian,
                                          reminders_util.message_VADER_MeanMedian,
                                          True)
-    elif SA_algorithm_var.get() == 'SentiWordNet':
+    elif 'SentiWordNet' in SA_algorithm_var.get():
         reminders_util.checkReminder(config_filename,
                                     reminders_util.title_options_SA_SentiWordNet,
                                     reminders_util.message_SA_SentiWordNet,
                                     True)
+
     else:
         return
 SA_algorithm_var.trace('w',display_reminder)
 
-SA_algorithms=['*','Stanford CoreNLP (Neural Network)','ANEW','hedonometer','SentiWordNet','VADER']
+SA_algorithms=['*','Neural networks:','   BERT','   spaCy','   Stanford CoreNLP','   Stanza','','Dictionaries:','   ANEW','   hedonometer','   SentiWordNet','   VADER']
 
 SA_algorithm_var.set('*')
 SA_algorithm_lb = tk.Label(window, text='Select sentiment analysis algorithm')
@@ -572,16 +422,8 @@ y_multiplier_integerSV=y_multiplier_integer-1
 
 def activate_memory_var(*args):
 
-    global language_var, memory_var, y_multiplier_integer, language_menu
-    if SA_algorithm_var.get()=='Stanford CoreNLP (Neural Network)' or SA_algorithm_var.get()=='*':
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+590, y_multiplier_integerSV,
-                                                       language_var_lb, True)
-        language_var.set('English')
-        language_menu = tk.OptionMenu(window, language_var, 'Arabic', 'Chinese', 'English', 'German', 'Hungarian',
-                                      'Italian', 'Spanish')
-        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate() + 680,
-                                                       y_multiplier_integerSV, language_menu,True)
-
+    global memory_var, y_multiplier_integer, language_menu
+    if 'spaCy' in SA_algorithm_var.get() or 'Stanford CoreNLP' in SA_algorithm_var.get() or 'Stanza' in SA_algorithm_var.get() or SA_algorithm_var.get()=='*':
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+850, y_multiplier_integerSV,
                                                        memory_var_lb, True)
 
@@ -591,10 +433,8 @@ def activate_memory_var(*args):
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+920,
                                                        y_multiplier_integerSV, memory_var)
     else:
-        language_var_lb.place_forget() #invisible
         memory_var_lb.place_forget() #invisible
         try:
-            language_menu.place_forget()  # invisible
             memory_var.place_forget() #invisible
         except:
             return
@@ -615,7 +455,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 def activate_SOS(*args):
     # the Shape of Stories is only available when processing a directory and using oreNLP
-    if input_main_dir_path.get()=='' or (SA_algorithm_var.get()!='Stanford CoreNLP (Neural Network)' and SA_algorithm_var.get()!='*'):
+    if input_main_dir_path.get()=='' or (SA_algorithm_var.get()!='Stanford CoreNLP' and SA_algorithm_var.get()!='*'):
         shape_of_stories_checkbox.config(state='disabled')
     else:
         shape_of_stories_checkbox.config(state='normal')
@@ -669,7 +509,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkboxes for either Mean or Median in output csv files. BY DEFAULT, BOTH VALUES ARE COMPUTED.\n\nStanford CoreNLP Sentiment Analysis only computes mean values for each sentence.\n\nVADER only computes 'compound' values for each sentence.\n\nSentiWordNet as well does not provide sentence mean/median values.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, using the dropdown menu, select the algorithm to be used for computing sentiment analysis.\n\nSelect * to run ALL algorithms.\n\nStanford CoreNLP neural network approach to Sentiment Analysis typically achieves better results than dictionary-based approaches.\n\nCoreNLP computes mean values only for each sentence on a scale 0-4 (minimum-maximum).\n\nANEW (Affective Norms for English Words) computes sentiment/arousal/dominance mean/median values for each sentence using the ANEW ratings for SENTIMENT (VALENCE), AROUSAL, and DOMINANCE (CONTROL) by Bradley, M.M. & Lang, P.J. (2017). Affective Norms for English Words (ANEW): Instruction manual and affective ratings. Technical Report C-3. Gainesville, FL:UF Center for the Study of Emotion and Attention.\n\nContrary to all other approaches, the ANEW script computes three different measures, for SENTIMENT, AROUSAL, and DOMINANCE:\nSENTIMENT or VALENCE measures how pleasant/unpleasant a word makes us feel;\nAROUSAL measures how calm/excited a word makes us feel;\nDOMINANCE or CONTROL measures how dominated/in control a word makes us feel.\n\nTHE SCRIPT EXPECTS TO FIND THE FILE EnglishShortenedANEW.csv IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE Sentiment_Analysis_ANEW.py SCRIPT IS STORED.\n\nIn OUTPUT, the script creates a csv file containing the calculated mean/median sentiment values for each sentence, where each rating can have a total of maximum 9 points.\n\nValues for sentiment, arousal, and dominance are classified on a scale 0-9, grouped in 5 categories: <3, >=3 and < 5, 5 (neutral), >5 and <8, >=8 and <=9.\n\nThe hedonometer algorithm uses the hedonometer.org rated dictionary to compute sentiment mean/median values for each sentence.\n\nThe script has been shown to work best with social media texts (e.g., Twitter), New York Times editorials, movie reviews, and product reviews.\n\nTHE SCRIPT EXPECTS TO FIND THE FILE hedonometer.json IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE Sentiment_Analysis_Hedonometer.py SCRIPT IS STORED.\n\nIn OUTPUT, the script creates a csv file containing the calculated mean/median sentiment values for each sentence.\n\nSentiment values are classified on a scale 0-10, grouped in 3 categories: negative (>=0 and <4), neutral (>=4 and <=6), and positive (>6 and <=10).\n\nThe NLTK VADER (VADER, Valence Aware Dictionary and sEntiment Reasoner) uses the NLTK rated dictionary to compute sentiment mean/median values for each sentence.\n\nThe script has been shown to work best with social media texts (e.g., Twitter).\n\nIn INPUT the script expects either a single text file or a set of text files stored in a directory. THE SCRIPT ALSO EXPECTS TO FIND THE VADER RATED DICTIONARY FILE vader_lexicon.txt IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE Sentiment_Analysis_VADER.py SCRIPT IS STORED.\n\nIn OUTPUT, the script creates a csv file containing the calculated 'compound' sentiment values for each sentence.\n\nMean and Median calculations are not available for VADER; VADER computes 'compound' values for each sentence.\n\nSentiment values are classified on a scale -1 (most negative) to 1 as (most positive) grouped in 3 categories: negative (<-0.05), neutral (>=-0.05 and <=0.05), and positive (>0.05 and <=1).\n\nVADER heavily relies on a number of NLTK libraries. If VADER fails to run, make sure that in command line you run\n   python -m nltk.downloader all")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, using the dropdown menu, select the algorithm to be used for computing sentiment analysis.\n\nSelect * to run ALL algorithms.\n\nspaCy, Stanford CoreNLP, Stanza neural network approach to Sentiment Analysis typically achieves better results than dictionary-based approaches.\n\nCoreNLP computes mean values only for each sentence on a scale 0-4 (minimum-maximum).\n\nANEW (Affective Norms for English Words) computes sentiment/arousal/dominance mean/median values for each sentence using the ANEW ratings for SENTIMENT (VALENCE), AROUSAL, and DOMINANCE (CONTROL) by Bradley, M.M. & Lang, P.J. (2017). Affective Norms for English Words (ANEW): Instruction manual and affective ratings. Technical Report C-3. Gainesville, FL:UF Center for the Study of Emotion and Attention.\n\nContrary to all other approaches, the ANEW script computes three different measures, for SENTIMENT, AROUSAL, and DOMINANCE:\nSENTIMENT or VALENCE measures how pleasant/unpleasant a word makes us feel;\nAROUSAL measures how calm/excited a word makes us feel;\nDOMINANCE or CONTROL measures how dominated/in control a word makes us feel.\n\nTHE SCRIPT EXPECTS TO FIND THE FILE EnglishShortenedANEW.csv IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE Sentiment_Analysis_ANEW.py SCRIPT IS STORED.\n\nIn OUTPUT, the script creates a csv file containing the calculated mean/median sentiment values for each sentence, where each rating can have a total of maximum 9 points.\n\nValues for sentiment, arousal, and dominance are classified on a scale 0-9, grouped in 5 categories: <3, >=3 and < 5, 5 (neutral), >5 and <8, >=8 and <=9.\n\nThe hedonometer algorithm uses the hedonometer.org rated dictionary to compute sentiment mean/median values for each sentence.\n\nThe script has been shown to work best with social media texts (e.g., Twitter), New York Times editorials, movie reviews, and product reviews.\n\nTHE SCRIPT EXPECTS TO FIND THE FILE hedonometer.json IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE Sentiment_Analysis_Hedonometer.py SCRIPT IS STORED.\n\nIn OUTPUT, the script creates a csv file containing the calculated mean/median sentiment values for each sentence.\n\nSentiment values are classified on a scale 0-10, grouped in 3 categories: negative (>=0 and <4), neutral (>=4 and <=6), and positive (>6 and <=10).\n\nThe NLTK VADER (VADER, Valence Aware Dictionary and sEntiment Reasoner) uses the NLTK rated dictionary to compute sentiment mean/median values for each sentence.\n\nThe script has been shown to work best with social media texts (e.g., Twitter).\n\nIn INPUT the script expects either a single text file or a set of text files stored in a directory. THE SCRIPT ALSO EXPECTS TO FIND THE VADER RATED DICTIONARY FILE vader_lexicon.txt IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE Sentiment_Analysis_VADER.py SCRIPT IS STORED.\n\nIn OUTPUT, the script creates a csv file containing the calculated 'compound' sentiment values for each sentence.\n\nMean and Median calculations are not available for VADER; VADER computes 'compound' values for each sentence.\n\nSentiment values are classified on a scale -1 (most negative) to 1 as (most positive) grouped in 3 categories: negative (<-0.05), neutral (>=-0.05 and <=0.05), and positive (>0.05 and <=1).\n\nVADER heavily relies on a number of NLTK libraries. If VADER fails to run, make sure that in command line you run\n   python -m nltk.downloader all")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to display a line plot of sentiment scores by sentence index across a specific document.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to open the 'Shape of stories' GUI. The 'Shape of stories' algorithms will compute and visualize the \'shape of stories\' of a set of sentiment scores across different documents using different data reduction methods: Hiererchical Clustering, Singular Value Decomposition, Non-Negative Matrix Factorization.\n\nThe 'Shape of stories' GUI is only available when computing sentiment scores via Stanford CoreNLP on a corpus of txt files in an input directory.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
@@ -680,7 +520,24 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 
 # change the value of the readMe_message
 readMe_message="The Python 3 Dictionary-based Analyses scripts calculate the mean/median values for various aspects of the language used in a text: sentiment, arousal, dominance.\n\nIn INPUT the scripts expect either a single text file or a set of text files stored in a directory. THE hedonometer, ANEW, AND VADER SCRIPTS ALSO EXPECT TO FIND DICTIONARY FILES IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE PYTHON SCRIPTS ARE STORED.\n\nIn OUTPUT, the scripts create csv files containing the calculated mean/median values for each sentence."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
+def activate_NLP_options(*args):
+    global error, package_basics, package, language_var, language_list
+    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
+GUI_util.setup_menu.trace('w', activate_NLP_options)
+activate_NLP_options()
+
+if error:
+    mb.showwarning(title='Warning',
+               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup widget at the bottom of this GUI.")
+
+title=["NLP setup options"]
+message="Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " + ', '.join(language_list) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " + package_basics + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
+reminders_util.checkReminder(config_filename, title, message)
+
 GUI_util.window.mainloop()
+reminders_util.checkReminder

@@ -20,7 +20,7 @@ import IO_files_util
 import GUI_IO_util
 import IO_csv_util
 import reminders_util
-import wordclouds_util
+import config_util
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'#for mac users to solve one error: https://stackoverflow.com/questions/53014306/error-15-initializing-libiomp5-dylib-but-found-libiomp5-dylib-already-initial
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -299,8 +299,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_i
 
 # width=20,
 select_image_file_button=tk.Button(window, text='Select png image file',command=lambda: get_image(window,'Select INPUT png file', [("png files", "*.png")]))
-#select_image_file_button.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,select_image_file_button,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   select_image_file_button,
+                                   True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to select the png image file")
 
 # setup a button to open Windows Explorer on open the png image file
 openImage_button = tk.Button(window, width=3, text='', state='disabled',
@@ -541,7 +544,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","\n\nThe filter options are only available when selecting Python as the wordcloud service to use. When available,\n\n   1. tick the 'Horizonal' checkbox if you wish to display words in the wordcloud horizonally only;\n   2. select the preferred font;\n   3. enter the maximum number of words to be displayed;\n   4. tick the 'Lemmas' checkbox if you wish to lemmatize the words in the input file(s);\n   5. tick the 'Stopwords' checkbox if you wish to exclude from processing stopwords present in the input file(s);\n   6. tick the 'Punctuation' checkbox if you wish to exclude from processing punctuation symbols present in the input file(s);\n   7. tick the 'Lowercase' checkbox if you wish to convert all words to lowercase to avoid having some words capitalized simly because they are the first words in a sentence;\n   8. tick the 'Collocation' checkbox if you wish to keep together common combinations of words (South Carolina; White House);\n   9. tick the 'Different colors for different POS tags' checkbox if you wish to display different POSTAG values (namely, nouns, verbs, adjectives, and adverbs) in different colors (RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, and GREY for ADVERBS; YELLOW for any other POS tags). For greater control over the use of different colors for different items, you can use the csv file option below with a CoNLL table as input. You will then be able to use NER or DEPREL and not just POSTAG (or more POSTAG values).\n\nStanford CoreNLP STANZA will be used to tokenize sentences, lemmatize words, and compute POS tags. Depending upon the number of files processed and length of files, the process can be time consuming. Please, be patient.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to open the web service Removebg (https://www.remove.bg/) that will prepare an image for use in the Python wordcloud algorithm, removing all image background and turning it into white.\n\nYou can then use the output png image file to create the wordcloud (see the widget 'Select png image' file).\n\nYOU MUST BE CONNECTED TO THE INTERNET.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select a png image file to be used to dislay the word cloud in the image.\n\nThe image must have a white background.\n\nYou can use the image file created via removebg (see the widget 'Prepare image').\n\nClick on the button to the right of the widget 'Select png image file' to open the file.\n\nTick the checkbox 'Use image contour only' if you want to use the contour of the image rather than the full image.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to run the Python 3 Andreas Mueller's package WordCloud (https://amueller.github.io/word_cloud/) and assign different colors to the values of different columns of a csv file.\n\nThus, if, from a file, you have extracted SVOs (Subjects, Verbs, Objects) or POSTAG values (nouns, verbs, and adjectives), saving these values in in different columns, this function will allow you to display the values in the different columns in different, user-selected colors (e.g., RED for the column of NOUNS, BLUE for the column of VERBS).\n\nThe wordcloud algorithm can color all the values of a column differently from all the values of another column. The algorithm is NOT setup to color differently the different values within a column (to accomplish this goal, you would need to manipulate first the csv file; for instance, if the input file is a CoNLL table, you could extract all the NER values COUNTRY, CITY, and STATE_OR_PROVINCE and the NER value PERSON and ORGANIZATION, save them as two separate columns, and then use this new csv file in the current wordcloud algorithm).\n\nIn INPUT the algorithm expects a single csv file (e.g., a CoNLL table) rather than a text file or a directory.\n\nIn OUTPUT the algorithm creates a word cloud image file.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to run the Python 3 Andreas Mueller's package WordCloud (https://amueller.github.io/word_cloud/) and assign different colors to the values of different columns of a csv file.\n\nThus, if, from a file, you have extracted SVOs (Subjects, Verbs, Objects) or POSTAG values (nouns, verbs, and adjectives), saving these values in in different columns, this function will allow you to display the values in the different columns in different, user-selected colors (e.g., RED for the column of NOUNS, BLUE for the column of VERBS).\n\nThe wordcloud algorithm can color all the values of a column differently from all the values of another column. The algorithm is NOT setup to color differently the different values within a column (to accomplish this goal, you would need to manipulate first the csv file; for instance, if the input file is a CoNLL table, you could extract all the NER values COUNTRY, CITY, and STATE_OR_PROVINCE and the NER tag PERSON and ORGANIZATION, save them as two separate columns, and then use this new csv file in the current wordcloud algorithm).\n\nIn INPUT the algorithm expects a single csv file (e.g., a CoNLL table) rather than a text file or a directory.\n\nIn OUTPUT the algorithm creates a word cloud image file.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Pease, select the sets of csv file fields and colors.\n\nPress the + button to add more csv file fields.\n\nPress the RESET button (or simply ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, untick the checkbox if you want to create intermediate image files for every txt file in a directory when processing all the txt files in a directory. These image files will be in addition to the final file which will include the words from all files in the directory (so, if there is 1 file in the directory, this will lead to 2 files, although in this case, the image utput will be exactly the same for each of he 2 files).\n\nWARNING! Unticking the checkbox may result in a very large number of intermediate files (1 word cloud image file for every txt file in the directory).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
@@ -550,7 +553,24 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 
 # change the value of the readMe_message
 readMe_message="The Python 3 script and online services display the content of text files as word cloud.\n\nA word cloud, also known as text cloud or tag cloud, is a collection of words depicted visually in different sizes (and colors). The bigger and bolder the word appears, the more often it’s mentioned within a given text and the more important it is.\n\nDifferent, freeware, word cloud applications are available: 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle'. These applications require internet connection.\n\nThe script also provides Python word clouds (via Andreas Mueller's Python package WordCloud https://amueller.github.io/word_cloud/) for which no internet connection is required.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files or a csv file (e.g., a CoNLL table).\n\nIn OUTPUT the algorithms create word cloud image file(s)."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+
+def activate_NLP_options(*args):
+    global error, package_basics, package, language_list
+    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
+GUI_util.setup_menu.trace('w', activate_NLP_options)
+activate_NLP_options()
+
+if error:
+    mb.showwarning(title='Warning',
+               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup widget at the bottom of this GUI.")
+
+title=["NLP setup options"]
+message="Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " + ', '.join(language_list) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " + package_basics + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
+reminders_util.checkReminder(config_filename, title, message)
 
 GUI_util.window.mainloop()

@@ -1,7 +1,7 @@
 import pandas as pd
 import IO_libraries_util
 import GUI_util
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 # import stanza
 # stanza.download('en')
@@ -100,7 +100,7 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
                                          'Total SV']), ignore_index=True)
     freq_output_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                'SENNA_CoreNLP_SVO_FREQ')
-    df.to_csv(freq_output_name, index=False)
+    df.to_csv(freq_output_name, encoding='utf-8', index=False)
 
     # Listing all same and diff SV and SVOs
     compare_df = pd.DataFrame(columns=['Same', 'S', 'V', 'O', 'Different', 'S', 'V', 'O'])
@@ -123,9 +123,9 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
         diff.append((s, v, o, tool))
 
     if len(same) < max(len(same), len(diff)):
-        same.extend([('', '', '')] * (len(diff) - len(same)))
+        same.append([('', '', '')] * (len(diff) - len(same)))
     elif len(diff) < max(len(same), len(diff)):
-        diff.extend([('', '', '')] * (len(same) - len(diff)))
+        diff.append([('', '', '')] * (len(same) - len(diff)))
 
     for svo1, svo2 in zip(same, diff):
         compare_df = compare_df.append(pd.DataFrame([['', svo1[0], svo1[1], svo1[2], svo2[3], svo2[0], svo2[1], svo2[2]]],
@@ -134,7 +134,7 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
     # Outputting the file
     compare_outout_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                   'SENNA_CoreNLP_SVO_COMPARE')
-    compare_df.to_csv(compare_outout_name, index=False)
+    compare_df.to_csv(compare_outout_name, encoding='utf-8', index=False)
 
     return [freq_output_name, compare_outout_name]
 
@@ -163,7 +163,7 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
     combined_df.sort_values(by=['Document ID', 'Sentence ID'], inplace=True)
     output_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                           'SENNA_CoreNLP_SVO_COMBINE')
-    combined_df.to_csv(output_name, index=False)
+    combined_df.to_csv(output_name, encoding='utf-8', index=False)
 
     return output_name
 
@@ -181,7 +181,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                    'Started running the SVO filter algorithm at',
                                                    True, '', True)
 
-    df = pd.read_csv(svo_file_name)
+    df = pd.read_csv(svo_file_name, encoding='utf-8',error_bad_lines=False)
     unfiltered_svo = df.to_dict('index')
     filtered_svo = {}
     num_rows = df.shape[0]
@@ -233,22 +233,18 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                        startTime, True)
 
     # Replacing the original csv file
-    pd.DataFrame.from_dict(filtered_svo, orient='index').to_csv(svo_file_name, index=False)
+    pd.DataFrame.from_dict(filtered_svo, orient='index').to_csv(svo_file_name, encoding='utf-8', index=False)
 
     filesToOpen = []
 
-    if IO_csv_util.GetNumberOfRecordInCSVFile(svo_file_name,encodingValue='utf-8')>1:
-
+    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_file_name)
+    if nRecords>1:
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
                                                            outputDir,
-                                                           columns_to_be_plotted_bar=[[0, 0]],
-                                                           # columns_to_be_plotted_bySent=[[4, 2]],
-                                                           # the fields must be numeric?
-                                                           columns_to_be_plotted_bySent=[[]],
-                                                           columns_to_be_plotted_byDoc=[[]],
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Subject (S)'],
                                                            chartTitle='Frequency Distribution of Subjects (filtered)',
                                                            count_var=1, hover_label=[],
-                                                           outputFileNameType='',  # 'POS_bar',
+                                                           outputFileNameType='S-filtr',  # 'POS_bar',
                                                            column_xAxis_label='Subjects (filtered)',
                                                            groupByList=[],
                                                            plotList=[],
@@ -259,14 +255,10 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
                                                            outputDir,
-                                                           columns_to_be_plotted_bar=[[1, 1]],
-                                                           # columns_to_be_plotted_bySent=[[4, 2]],
-                                                           # the fields must be numeric?
-                                                           columns_to_be_plotted_bySent=[[]],
-                                                           columns_to_be_plotted_byDoc=[[]],
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Verb (V)'],
                                                            chartTitle='Frequency Distribution of Verbs (filtered)',
                                                            count_var=1, hover_label=[],
-                                                           outputFileNameType='',  # 'POS_bar',
+                                                           outputFileNameType='V-filtr',  # 'POS_bar',
                                                            column_xAxis_label='Verbs (filtered)',
                                                            groupByList=[],
                                                            plotList=[],
@@ -277,14 +269,10 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
                                                            outputDir,
-                                                           columns_to_be_plotted_bar=[[2, 2]],
-                                                           # columns_to_be_plotted_bySent=[[4, 2]],
-                                                           # the fields must be numeric?
-                                                           columns_to_be_plotted_bySent=[[]],
-                                                           columns_to_be_plotted_byDoc=[[]],
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Object (O)'],
                                                            chartTitle='Frequency Distribution of Objects (filtered)',
                                                            count_var=1, hover_label=[],
-                                                           outputFileNameType='',  # 'POS_bar',
+                                                           outputFileNameType='O-filtr',  # 'POS_bar',
                                                            column_xAxis_label='Objects (filtered)',
                                                            groupByList=[],
                                                            plotList=[],

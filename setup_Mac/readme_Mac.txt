@@ -148,6 +148,10 @@ Useful Anaconda & pip commands
 			pip uninstall pandas
 
 			will uninstall a package (e.g., pandas)
+			
+			To force a re-installment of a package with all its dependencies, use the command
+			
+			pip install --upgrade --force-reinstall pandas
 
 		4. install a Python package version  
 
@@ -157,7 +161,7 @@ Useful Anaconda & pip commands
 
 			pip install pandas~=1.2.1
 
-			will install a specific version of a package (e.g., pandas 1.2.1)
+			will install a specific version of a package (e.g., pandas 1.2.1 or higher)
 
 		5. Permission error with pip install
 

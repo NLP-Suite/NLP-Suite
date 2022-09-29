@@ -1,28 +1,68 @@
 """
 Author: David Dai December 22nd, 2021
-Edited Roberto Franzosi February 2022
+Edited Roberto Franzosi February/September 2022
 """
 
 import sys
-import requests
-import webbrowser
-import tkinter as tk
-import subprocess
-
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"NLP_setup_update_util.py",['os','pygit2'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window, "NLP_setup_update_main.py",
+                                          ['pygit2']) == False:
     sys.exit(0)
 
+import atexit  # a Python module
+# from NLP_setup_update_util import update_self
+from pygit2 import Repository
+import sys
 import os
 import stat
-from pygit2 import Repository
 import tkinter.messagebox as mb
 import shutil
+import subprocess
 
 import IO_user_interface_util
+import config_util
 
+#config_filename has no path;
+# config_input_output_numeric_options is set to [0 0,0,0] for GUIs that are placeholders for more specialized GUIs
+#   in these cases (e.g., narrative_analysis_main, there are no I/O options to save
+def exit_window(window,config_filename, scriptName, config_input_output_numeric_options,current_config_input_output_alphabetic_options, local_release_version, GitHub_release_version):
+    # if IO_libraries_util.install_all_packages(window, "GUI_IO_util.py",
+    #                                           ['pygit2']) == False:
+    #     sys.exit(0)
+
+    def exit_handler():
+        try:
+            # set equal to test
+            # local_release_version = GitHub_release_version
+            if GitHub_release_version != local_release_version:
+                errorFound = update_self(window, GitHub_release_version)
+            else:
+                # should test for stack and not print if 'NLP_menu_main' or 'NLP_welcome_main' are open
+                # import psutil
+                # proc = psutil.Process()
+                # print(proc.open_files())
+                # import inspect
+                # inspect.stack() will return the stack information
+                # ScriptName = inspect.stack()
+                # if not "NLP_setup_IO_main.py" in ScriptName:
+                #     print("ScriptName", ScriptName)
+                print(
+                    '\nYour NLP Suite is up-to-date with the latest release available on GitHub (' + GitHub_release_version + ').')
+        except Exception as e:
+            print(str(e))
+    # when closing NLP Suite via terminal
+    atexit.register(exit_handler)
+
+    if not 'NLP_menu_main' in scriptName and 'NLP_welcome_main' not in scriptName:
+        # check and save IO config on CLOSE
+        config_util.save_IO_config(window, config_filename, config_input_output_numeric_options,
+                           current_config_input_output_alphabetic_options)
+    window.destroy()
+    sys.exit(0)
+
+# called by exit_window
 # returns True when error found
 def update_self(window,GitHub_release_version):
     """

@@ -40,9 +40,9 @@ def select_csv(files,cols=None):
     for file in files:
         try:
             if cols==None:
-                df = pd.read_csv(file) # gives error on CoNLL table ,on_bad_lines='error')
+                df = pd.read_csv(file, encoding='utf-8', error_bad_lines=False) # gives error on CoNLL table ,on_bad_lines='error')
             else:
-                df = pd.read_csv(file,usecols=cols)
+                df = pd.read_csv(file,usecols=cols, encoding='utf-8', error_bad_lines=False)
         except:
             # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html
             mb.showwarning(title='Missing field(s)',
@@ -111,13 +111,13 @@ def merge(outputDir, operation_results_text_list):
 
     size = len(csv_lst)
     try:
-        df1 = pd.read_csv(csv_lst[0])
-        df2 = pd.read_csv(csv_lst[1])
+        df1 = pd.read_csv(csv_lst[0], encoding='utf-8', error_bad_lines=False)
+        df2 = pd.read_csv(csv_lst[1], encoding='utf-8', error_bad_lines=False)
         df = pd.merge(df1, df2, on=param_lst, how='inner', suffixes=('', '_'))
         df = drop_suffixCol(df)
         if (size > 2):
             for i in range(2, size):
-                tdf = pd.read_csv(csv_lst[i])
+                tdf = pd.read_csv(csv_lst[i], encoding='utf-8', error_bad_lines=False)
                 df = pd.merge(df, tdf, on=param_lst, how='inner', suffixes=('', '_'))
                 df = drop_suffixCol(df)
     except (ValueError, TypeError) as err:
@@ -130,7 +130,7 @@ def merge(outputDir, operation_results_text_list):
                                                              '.csv', 'merge',
                                                              '', '', '', '', False, True)
 
-    df.to_csv(outputFilename, index=False)
+    df.to_csv(outputFilename, encoding='utf-8', index=False)
 
     return outputFilename
 
@@ -162,7 +162,7 @@ def append(outputDir, operation_results_text_list):
         return ''
     sep = ','
     df_append = pd.concat(data_cols, axis=0)
-    df_append.to_csv(outputFilename, header=[listToString(headers, sep)],index=False)
+    df_append.to_csv(outputFilename, encoding='utf-8', header=[listToString(headers, sep)],index=False)
     return outputFilename
 
 # filePath = [s.split(',')[0] for s in operation_results_text_list]  # file filePath
@@ -213,7 +213,7 @@ def concatenate(outputDir,operation_results_text_list):
     if data_cols == []:
         return ''
     df_concat = concat(data_cols, sep)
-    df_concat.to_csv(outputFilename, header=[listToString(headers, sep)],index=False)
+    df_concat.to_csv(outputFilename, header=[listToString(headers, sep)],encoding='utf-8', index=False)
     return outputFilename
 
 # extract/export csv/txt ---------------------------------------------------------------------------------------------
@@ -266,6 +266,7 @@ def export_csv_to_csv_txt(outputDir,operation_results_text_list,export_type='.cs
 
         if sign == "''" and value == "''":
             df_list.append(df[[header]])
+            # queryStr = header + '==' + '\'' + '*' + '\''
         else:
             if sign == '':
                 mb.showwarning(title='Missing sign condition',
@@ -304,11 +305,11 @@ def export_csv_to_csv_txt(outputDir,operation_results_text_list,export_type='.cs
         else:
             pass
     if export_type == '.csv':
-        df_extract.to_csv(outputFilename, index=False)
+        df_extract.to_csv(outputFilename, encoding='utf-8', index=False)
     else: # .txt
-        text = df_extract.to_csv(index=False)
+        text = df_extract.to_csv(encoding='utf-8', index=False)
         text = text.replace(",", " ")
-        with open(outputFilename, "w", newline='') as text_file:
+        with open(outputFilename, "w", encoding='utf-8', errors='ignore', newline='') as text_file:
             text_file.write(text)
     return outputFilename
 

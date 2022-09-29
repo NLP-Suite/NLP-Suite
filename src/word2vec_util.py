@@ -76,7 +76,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     filesToOpen = []
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running Word2Vec at', True)
 
     if len(inputFilename)>0:
@@ -144,8 +144,8 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         doc = nlp(" ".join(word_in_sent))
         if lemmatize_var == True:
             sentences_out.append([token.lemma_ for token in doc])
-            unlemmatized_word.extend([token for token in doc])
-            lemmatized_word.extend([token.lemma_ for token in doc])
+            unlemmatized_word.append([token for token in doc])
+            lemmatized_word.append([token.lemma_ for token in doc])
         else:
             sentences_out.append([token for token in doc])
 
@@ -225,7 +225,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                                                    '"' + keyword + '" keyword not in the corpus. Keyword skipped...')
                 continue
             sim_words = append_list(sim_words, keyword)
-            result_word.extend(sim_words)
+            result_word.append(sim_words)
         if len(result_word)==0:
             mb.showwarning(title="No words found",message="None of the keywords entered were found in the corpus.\n\nRoutine aborted.")
             return
@@ -303,10 +303,10 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     # write csv file
     outputFilename = outputFilename.replace(".html", ".csv")
-    result_df.to_csv(outputFilename, index=False)
+    result_df.to_csv(outputFilename, encoding='utf-8', index=False)
     filesToOpen.append(outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Word2Vec at', True, '', True, startTime)
 
     return filesToOpen

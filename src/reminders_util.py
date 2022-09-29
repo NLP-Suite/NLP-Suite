@@ -65,8 +65,17 @@ message_no_SVO_records = 'The SVO algorithms have not extracted any SVOs. If you
 title_options_SVO_someone = ['SVO Someone?']
 message_SVO_someone = 'The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., "A beautiful car was bought"), a subject is automatically added as Someone?.'
 
-title_options_CoreNLP_pronouns = ['CoreNLP pronouns']
+title_options_CoreNLP_pronouns = ['CoreNLP pronouns detected']
 message_CoreNLP_pronouns = 'The CoreNLP algorithms have detected the presence of pronouns (e.g., he, she). You should run the coreference annotator to resolve the coreferences.'
+
+title_options_CoreNLP_gender = ['CoreNLP gender annotator']
+message_CoreNLP_gender = 'The gender annotator is only available for the Stanford CoreNLP package and the English language.'
+
+title_options_CoreNLP_quote = ['CoreNLP quote/speaker annotator']
+message_CoreNLP_quote = 'The quote/speaker annotator is only available for the Stanford CoreNLP package and the English language.'
+
+title_options_Stanza_languages = ['Stanza languages']
+message_Stanza_languages = 'Pressing + with the default language option "English" displayed in the dropdown menu, will add "English" to the list of languages processed by Stanza. If you do not wish to include "English," please, click the Reset button first then add the languages to be processed one at a time.'
 
 title_options_GIS_Nominatim = ['GIS Nominatim geocoder']
 message_GIS_Nominatim = "If the Nominatim geocoder service exits with the error 'too many requests', you can break up the csv location file and process each subfile for geocoding as normal csv files."
@@ -80,8 +89,8 @@ message_VADER = 'VADER heavily relies on a number of NLTK libraries. If VADER fa
 title_options_WordNet_system_requirements = ['WordNet system requirements']
 message_WordNet_system_requirements = 'The scripts in this GUI require the FREEWARE WordNet on your machine. You can download WordNet at https://wordnet.princeton.edu/download/current-version.'
 
-title_options_WordNet_input_file_button = ['WordNet input file button']
-message_WordNet_input_file_button = 'The Select INPUT file button is disabled (grayed out) when you open WordNet. Different options require either no file or different file types.\n\nPlease, tick a checkbox to activate the button.'
+title_options_WordNet_inputFilename_button = ['WordNet input file button']
+message_WordNet_inputFilename_button = 'The Select INPUT file button is disabled (grayed out) when you open WordNet. Different options require either no file or different file types.\n\nPlease, tick a checkbox to activate the button.'
 
 title_options_WordNet_verb_aggregation = ['WordNet VERB aggregation']
 message_WordNet_verb_aggregation = "CAVEAT!\n\nFor VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.\n\nThe WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts."
@@ -120,6 +129,21 @@ message_CoreNLP_Java = 'The Java call to Stanford CoreNLP script uses the proper
 title_options_CoreNLP_coref = ['Stanford CoreNLP coref merged files']
 message_CoreNLP_coref = "The Stanford CoreNLP coref annotator with a corpus of files in a directory in input will create a merged corefed file (with filenames embedded in <@# #@>) in output.\n\nManual coreference resolution will also not be available; depending upon the number of files merged, bringing the files into memory for manual editing may exceed memory capacity. You can always\n   1. manually edit the merged file anyway using the 'Stanford_CoreNLP_coreference_main' GUI;\n   2. split the merged file and then edit the individual coreferenced files, again, using the 'Stanford_CoreNLP_coreference_main' GUI."
 
+title_options_only_CoreNLP_coref = ['Stanford CoreNLP coreference']
+message_only_CoreNLP_coref = "The coreference algorithms in this GUI are based exclusively on Stanford CoreNLP coref annotator.\n\nWatch this space for an extension to spaCy of coreference resolution (Stanza relies on Stanford CoreNLP coreference annotator)."
+
+title_options_only_CoreNLP_NER = ['Stanford CoreNLP NER']
+message_only_CoreNLP_NER = "The NER algorithms in this GUI are based exclusively on Stanford CoreNLP NER annotator.\n\nWatch this space for an extension to spaCy and Stanza of the NER algorithms behind this GUI (the spaCy and Stanza parsers and NER annotators, however, do prooduce NER tags)."
+
+lemma_frequencies = ['Lemma frequency']
+message_lemma_frequencies = "A blank is likely to be a frequent lemma in your corpus. It is likely to 'mask' all other values. If that is the case, when the chart is displayed you may want to delete rows containing a blank lemma to have a better view of all other values."
+
+NER_frequencies = ['NER tags frequency']
+message_NER_frequencies = "O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag to have a better view of all other tags."
+
+DepRel_frequencies = ['DepRel tags frequency']
+message_DepRel_frequencies = "punct (punctuation) and det (determiner/article) are likely to be the most frequent DepRel tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the rows containing the 'punct' and 'det' tags to have a better view of all other tags."
+
 title_options_CoreNLP_shutting_down = ['CoreNLP Server is shutting down']
 message_CoreNLP_shutting_down = "The Stanford CoreNLP, after firing up, will display on command line/prompt the message: CoreNLP Server is shutting down.\n\nIt is NOT a problem. The process will continue..."
 
@@ -129,14 +153,17 @@ message_CoreNLP_NER_tags = "The CoNLL table produced by the CoreNLP parser has a
 title_options_CoreNLP_website = ['CoreNLP language/annotator options website']
 message_CoreNLP_website = "You will be asked next if you want to open the Stanford CoreNLP language website to get a list of available annotators for each supported language.\n\nIf you do not want to be asked again to open the website, just hit 'No' below."
 
+title_options_CoreNLP_Json = ['CoreNLP exporting Json files']
+message_CoreNLP_Json = "Stanford CoreNLP can export in output Json files for the selected annotator(s)). Json files may give expert users checks against the NLP Suite performance about some CoreNLP annotators.\n\nIf you do not wish to produce these files, simply turn OFF this reminder by replying No to wanting to see this reminder again. And like for any reminder, you can always turn it back ON, and export Json files, at any time by using the 'Open reminders' dropdown menu at at the bottom of this GUI."
+
 title_options_TIPS_file = ['Open TIPS file']
 message_TIPS_file = "You will be asked next if you want to open a TIPS file for help.\n\nIf you do not want to be asked again to open the TIPS file, just hit 'No' below."
 
 title_options_CoreNLP_POS_NER_maxlen = ['CoreNLP POS/NER max sentence length']
 message_CoreNLP_POS_NER_maxlen = "The CoreNLP POS/NER annotators set a maximum sentence length for processing.\n\nSentences longer than your selected max length will be cut and some POS/NER tags in those long sentences may be lost."
 
-title_options_CoreNLP_nn_parser = ['CoreNLP neural network parser']
-message_CoreNLP_nn_parser = "The CoreNLP neural network parser does not produce clause tags. The column 'Clause Tag' in the output csv file will be blank."
+title_options_CoreNLP_nn_parser = ['Clause tags with CoreNLP neural network parser']
+message_CoreNLP_nn_parser = "The CoreNLP neural network parser does not produce clause tags in output. The column 'Clause Tag' in the output csv CoNLL table would contain all blank values."
 
 title_options_CoreNLP_quote_annotator = ['CoreNLP quote annotator']
 message_CoreNLP_quote_annotator = "The CoreNLP quote annotator works with double quotes as default \" rather than with single quotes \'. If your document(s) use single quotes for dialogue, make sure to tick the checkbob \'Include single quotes\'. The Stanford CoreNLP annotator will then process BOTH single AND double quotes, otherwise single quotes for dialogues would be missed (e.g., The user said: 'This NLP Suite sucks.')."
@@ -190,7 +217,7 @@ title_options_shape_of_stories_best_topic = ['Best topic estimation']
 message_shape_of_stories_best_topic = 'The function that estimates the best topics is VERY slow and may take an hour or longer. You can follow its progress in command line.'
 
 title_options_language_detection = ['Language detection']
-message_language_detection = 'Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.\n\nPlease, arm yourself with patience, depennding upon the number and size of documents processed.\n\nStanza, contrary to the other algorithms, does not compute the probability of language detection.'
+message_language_detection = 'Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.\n\nPlease, arm yourself with patience, depending upon the number and size of documents processed.\n\nStanza, contrary to the other algorithms, does not compute the probability of language detection.'
 
 title_options_SSdata = ['Time to download new US SS data']
 message_SSdata = 'It has been more than two years since the US Social Security gender data have been downloaded to your machine.\n\nCheck on the US Social Security website whether more current data are available at US Social Security website\n\nhttps://www.ssa.gov/oact/babynames/limits.html'
@@ -220,11 +247,14 @@ message_SA_SentiWordNet = 'SentiWordNet does not compute sentence mean and media
 title_options_NGrams = ['subprocess.call(cmd) error']
 message_NGrams = 'subprocess.call(cmd) error\n\nIf the VIEWER you are running exits with an error code about a file not found, most likely your selected INPUT & OUTPUT directory options are too long for Windows to handle.\n\nYou may need to move your input and output folders so as to have a shorter path (e.g., desktop).'
 
-title_options_GIS_GUI = ['GIS GUI options']
+title_options_GIS_GUI = ['GIS default GUI options']
 message_GIS_GUI = 'The options available on the GUI have been automatically set for you depending upon the type of input file selected: txt or csv.\n\nWith a TXT file, NER extraction via Stanford CoreNLP must be first performed.\n\nWith a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.'
 
 title_options_GIS_default = ['GIS default visualization options']
 message_GIS_default = 'The Google Earth Pro visualization options in the GIS GUI are set by default. If you want to customize Google Earth Pro, please, use the GIS Google Earth GUI with the list of locations or of geocoded locations produced by the GIS pipeline as csv files.'
+
+title_options_GIS_OpenIE_SENNA = ["GIS with OpenIE & SENNA"]
+message_GIS_OpenIE_SENNA = 'OpenIE and SENNA do not extract geocodable locations that can be mapped. Please, use another option if you want to produce maps.'
 
 title_options_geocoder = ["GIS geocoder"]
 message_geocoder = 'After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.'
@@ -315,8 +345,9 @@ def getReminders_list(config_filename,silent=False):
     title_options = df[df['Routine'] == '*']['Title'].tolist()
     # now check among the specific routines
     temp=df[df["Routine"] == routine]['Title'].tolist()
-    if len(temp)>0:
-        title_options.extend(temp)
+    if len(temp) > 0:
+        for t in temp:
+            title_options.append(t)
     if len(title_options)==0:
         title_options = ['Open reminders']
     return title_options
@@ -326,11 +357,83 @@ def getReminders_list(config_filename,silent=False):
 
 # when displaying messages the message field is '' since the actual message is not known until the csv file is read
 def displayReminder(df,row_num,title, message, event, currentStatus, question, seeMsgAgain=False) -> object:
+
+    # https://stackoverflow.com/questions/30235587/closing-tkmessagebox-after-some-time-in-python?rq=1    def enter_value_widget(masterTitle, textCaption):
+    #     import tkinter as tk
+    #     from tkinter import Toplevel
+    #     window=GUI_util.window
+    #     class App():
+    #         def __init__(self, master):
+    #             top = self.top = Toplevel()
+    #             top.wm_title(textCaption)
+    #             top.focus_force()
+    #             self.label = tk.Label(top, width=len(textCaption))
+    #             self.label.pack()
+    #
+    #             self.label.grid(row=0, column=1)  # , sticky=W)
+    #             # self.callback = callback
+    #
+    #             YES_button = tk.Button(self.top, text='YES', command=self.get_value)
+    #             YES_button.grid(row=0, column=1)
+    #             NO_button = tk.Button(self.top, text='NO', command=self.get_value, sticky=tk.CENTER)
+    #             NO_button.grid(row=0, column=1)
+    #
+    #             # top.after(10000, top.destroy)
+    #
+    #         def get_value(self):
+    #             val = self.label.get()
+    #             self.top.destroy()
+    #             # callback(val)
+    #
+    #     App(window)
+
+        # master = tk.Tk()
+        # master.focus_force()
+        #
+        #
+        # # tk.Label(master, width=len(message), text=message).grid(row=0)
+        #
+        # master(text = title, padx = 20, pady = 20).pack()
+        # master.after(10000, master.destroy)
+        #
+        # master.title(title)
+        # # the width in tk.Entry determines the overall width of the widget;
+        # #   MUST be entered
+        # #   + 30 to add room for - [] and X in a widget window
+        # master.focus_force()
+        #
+        # tk.Button(master,
+        #           text='YES',
+        #           command=master.quit).grid(row=3,
+        #                                     column=0,
+        #                                     sticky=tk.W,
+        #                                     pady=4)
+        # tk.Button(master,
+        #           text='NO',
+        #           command=master.quit).grid(row=3,
+        #                                     column=1,
+        #                                     sticky=tk.W,
+        #                                     pady=4)
+        # master.mainloop()
+        # master.destroy()
+        # # convert to list; value1 is checked for length in calling function
+        # #   so do not convert if empty or its length will be the length of ['']
+        # # if value1!='':
+        # #     value1=list(value1.split(" "))
+        # # TODO temp get answer
+        # answer=0
+        # return answer
+
+    # enter_value_widget("Enter the single start character",message)
+
     try:
         message = df.at[row_num, "Message"].replace("\\n", os.linesep)
     except:
         pass
     if message == '':
+        import GUI_IO_util
+        GUI_IO_util.enter_value_widget_TEMP("Enter the number of sentences, K, to be analyzed", 'K',
+                                                           1, '', '', '')
         answer = mb.askquestion(title="Reminder: " + df.at[row_num, "Title"],
                                 message=message+question)
     else:
@@ -356,8 +459,8 @@ def displayReminder(df,row_num,title, message, event, currentStatus, question, s
 # routine is a string
 # title_options is a list [] of all Routine values
 # * in the Routine column are used for reminders that apply to any GUI
-
-def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_event=False):
+# set silent to True if you just want to check the status of the reminder ON or OFF without asking the question
+def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_event=False, silent=False):
     # * denotes messages that apply to ALL scripts
     status=''
     if config_filename=='*':
@@ -380,8 +483,9 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
         # mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory was not found. If this is your first time running NLP Suite, do not worry. A default reminders.csv has been automatically generated for you.")
         return checkReminder(config_filename, title_options, message, triggered_by_GUI_event)
     except Exception:
-        mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory is ill formed. Most likely, it contains extra , in one of the three fields (Routine, Title, Message).\n\nPlease, let the NLP Suite development team know the problem so it can be fixed.\n\nIf any of the fields contain , the field content must be enclosed in \"\".")
-        return None # open_message
+        if not silent:
+            mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory is ill formed. Most likely, it contains extra , in one of the three fields (Routine, Title, Message).\n\nPlease, let the NLP Suite development team know the problem so it can be fixed.\n\nIf any of the fields contain , the field content must be enclosed in \"\".")
+            return None # open_message
     # get the row number of the routine that we are looking at
     silent = False
     for title in title_options:
@@ -424,7 +528,7 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
                     # title_options is the value you originally came in with (i.e., [title]) and that was inserted
                     checkReminder(config_filename, title_options, message,
                                   triggered_by_GUI_event)
-    return status # Yes for ON or No for OFF
+    return status # returns Yes for ON or No for OFF
 
 # called from a GUI when a reminder is selected from the reminder dropdown menu
 # title is a string, the reminders option selected in the GUI dropdown menu
@@ -474,7 +578,7 @@ def saveReminder(df,row_num, message, event, status):
     df.at[row_num, "Message"] = message # change it to yes or no
     df.at[row_num, "Event"] = event # change it to yes or no
     df.at[row_num, "Status"] = status # change it to yes or no
-    df.to_csv(remindersFile, index=False, header=True)
+    df.to_csv(remindersFile, encoding='utf-8', index=False, header=True)
 
 def insertReminder(routine,title, message, event, status):
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')

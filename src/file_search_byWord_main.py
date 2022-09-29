@@ -9,6 +9,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"file_search_byWord_ma
 
 import os
 import tkinter as tk
+from tkinter import ttk
 import tkinter.messagebox as mb
 from subprocess import call
 
@@ -16,6 +17,9 @@ import GUI_IO_util
 import IO_files_util
 import file_search_byWord_util
 import IO_user_interface_util
+import reminders_util
+import constants_util
+import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -29,7 +33,7 @@ def run(inputFilename,inputDir, outputDir,
     search_by_keyword,
     search_keyword_values,
     extract_sentences_var,
-    extract_sentences_search_words_var):
+    extract_sentences_search_words_var_str):
 
     filesToOpen = []
 
@@ -48,12 +52,12 @@ def run(inputFilename,inputDir, outputDir,
 
     if search_by_keyword:
         filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dictionary,
-                                                  search_by_keyword, search_keyword_values, search_options_list,
+                                                  search_by_keyword, search_keyword_values, search_options_list, language,
                                                   createCharts, chartPackage)
 
     if extract_sentences_var:
         file_search_byWord_util.search_extract_sentences(window, inputFilename, inputDir, outputDir,
-                                                 extract_sentences_search_words_var, search_options_list,
+                                                 extract_sentences_search_words_var_str, search_options_list,
                                                  createCharts, chartPackage)
         extract_sentences_search_words_var.set('')
         extract_sentences_search_words_entry.configure(state='disabled')
@@ -120,6 +124,8 @@ outputDir =GUI_util.output_dir_path
 
 GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
 
+language_list = []
+
 search_options_menu_var=tk.StringVar()
 search_by_dictionary_var=tk.IntVar()
 selectedCsvFile_var=tk.StringVar()
@@ -144,17 +150,17 @@ window.bind("<Escape>", clear)
 search_options_menu_var.set('Case sensitive (default)')
 search_options_menu_lb = tk.Label(window, text='Search options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,search_options_menu_lb,True)
-search_options_menu = tk.OptionMenu(window, search_options_menu_var, 'Case sensitive (default)','Case insensitive','Exact match (default)','Partial match','Search within sentence (default)', 'Search within document','Lemmatize')
+search_options_menu = tk.OptionMenu(window, search_options_menu_var, 'Case sensitive (default)','Case insensitive','Exact match','Partial match (default)','Search within sentence (default)', 'Search within document','Lemmatize')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,search_options_menu, True)
 
 add_search_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_search_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+300,y_multiplier_integer,add_search_button, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 410,y_multiplier_integer,add_search_button, True)
 
 reset_search_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_search_options_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+340,y_multiplier_integer,reset_search_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+450,y_multiplier_integer,reset_search_button,True)
 
 show_search_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_search_options_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400,y_multiplier_integer,show_search_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+510,y_multiplier_integer,show_search_button)
 
 def reset_search_options_list():
     search_options_list.clear()
@@ -182,7 +188,7 @@ def activate_search_options(*args):
             search_options_list.remove('Case sensitive (default)')
         if 'sensitive' in search_options_menu_var.get() and 'insensitive' in str(search_options_list):
             search_options_list.remove('Case insensitive')
-        if search_options_menu_var.get()=='Lemmatize' or search_options_menu_var.get()=='Partial match':
+        if search_options_menu_var.get()=='Lemmatize' or search_options_menu_var.get()=='Exact match':
             mb.showwarning(title='Warning', message='The option is not available yet.\n\nSorry!')
             # search_options_menu_var.set('')
             if len(search_options_list) > 0:
@@ -206,14 +212,6 @@ def activate_search_options(*args):
 search_options_menu_var.trace('w',activate_search_options)
 
 activate_search_options()
-
-# lemmatize_var.set(0)
-# lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,lemmatize_checkbox,True)
-#
-# within_sentence_var.set(0)
-# within_sentence_checkbox = tk.Checkbutton(window, text='Within sentence', variable=within_sentence_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,within_sentence_checkbox,True)
 
 search_by_dictionary_var.set(0)
 search_by_dictionary_checkbox = tk.Checkbutton(window, text='Search corpus by dictionary value', variable=search_by_dictionary_var, onvalue=1, offvalue=0)
@@ -313,8 +311,9 @@ activate_allOptions()
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'No TIPS available':''}
-TIPS_options='No TIPS available'
+TIPS_lookup = {'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf',
+                'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf'}
+TIPS_options='English Language Benchmarks', 'Things to do with words: Overall view'
 
 # add all the lines lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -329,12 +328,12 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, use the dropdown menu to set up the search criteria. Multiple criteria can be selected by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nWhen lemmatizing, the scripts would search 'coming out' in all its lemmatized forms: 'coming out', 'come out', 'comes out', 'came out'.\n\nWhen searching 'Within sentence' combinations of words or collocations will be searched and displayed within SENTENCE otherwise within DOCUMENT.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, use the dropdown menu to set up the search criteria. Multiple criteria can be selected by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nWhen running the search as case sensitive, a sentence containing the word 'King' will not be selected in output if you search for 'King')\n\nWhen lemmatizing, the scripts would search 'coming out' in all its lemmatized forms: 'coming out', 'come out', 'comes out', 'came out'.\n\nWhen searching 'Within sentence' combinations of words or collocations will be searched and displayed within SENTENCE otherwise within DOCUMENT.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to search input txt file(s) using the values contained in a csv dictionary file.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click to select a csv file containing a list of values to be used as a dictionary for searching the input file(s).\n\nEntries in the file, one per line, can be single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe little square button to the right will allow you to open the selected csv file.\n\nThe csv filename will be displayed in the entry widget to the right.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nSeveral words/collocations can also be entered, comma separated (e.g, coming out, standing in line, boyfriend).\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe widget where you can enter your words/collocations will become available once you select the option. Enter there the comma-separated words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words).\n\nThe widget 'Words in sentence' will become available once you select the option. You will need to enter there the words/set of words that a sentence must contain in order to be extracted from input and saved in output. Words/set of words must be entered in quotes (e.g., \"The New York Times\") and comma separated (e.g., \"The New York Times\" , \"The Boston Globe\"). When running the script, the script will ask you if you want to process the search word(s) as case sensitive (thus, if you opt for case sensitive searches, a sentence containing the word 'King' will not be selected in output if in the widget 'Word(s) in sentence' you have entered 'king').\n\nIn INPUT, the script expects a single txt file or a directory of txt files.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract.txt and containing, for each input file, all the sentences that have the search word(s);\n2. files ending with _extract_minus.txt and containing, for each input file, the sentences that do NOT have the search word(s)." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words, such as coming out, falling in love).\n\nThe widget where you can enter your words/collocations will become available once you select the option. Enter there the comma-separated words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nIn INPUT, the script expects a single txt file or a directory of txt files.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract_with_searchword.txt and containing, for each input file, all the sentences that have the search word(s) in them;\n2. files ending with _extract_wo_searchword.txt and containing, for each input file, the sentences that do NOT have the search word(s) in them." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open a GUI with more options for an N-grams/Co_occurrences VIEWER similar to Google Ngrams Viewer (https://books.google.com/ngrams) but applied to your own corpus.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
@@ -343,11 +342,25 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 
 # change the value of the readMe_message
 readMe_message="These Python 3 scripts provide various options for searching txt files for specific values."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 # a reminder is in file_manager_merger_splitter_main
-#	reminders_util.checkReminder("Split output files")
+#   reminders_util.checkReminder("Split output files")
+
+def activate_NLP_options(*args):
+    global error, package_basics, package, language
+    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+GUI_util.setup_menu.trace('w', activate_NLP_options)
+activate_NLP_options()
+
+if error:
+    mb.showwarning(title='Warning',
+               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup widget at the bottom of this GUI.")
+
+title=["NLP setup options"]
+message="Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " + ', '.join(language_list) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " + package_basics + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
+reminders_util.checkReminder(config_filename, title, message)
 
 GUI_util.window.mainloop()
 

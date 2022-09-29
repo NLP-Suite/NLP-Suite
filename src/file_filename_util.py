@@ -21,13 +21,13 @@ import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
 
-def backup_files (inputFilename,inputDir,fileType='.txt',silent=False):
+def backup_files (inputFilename,inputDir,scripName, fileType='.txt',silent=False):
     if inputFilename != "":
         temp_inputDir, tail = os.path.split(inputFilename)
     else:
         temp_inputDir = inputDir
     backup_path = os.path.join(temp_inputDir, 'backup')
-    answer=mb.askyesnocancel("Backup files!","The function will modify your input file(s).\n\nDo you want to backup your file(s)?")
+    answer=mb.askyesnocancel("Backup files!","The function '" + scripName + "' will modify your input file(s).\n\nDo you want to backup your file(s)?")
     if answer==None: # Cancel
         return False
     if answer:
@@ -74,7 +74,7 @@ def purge_duplicate_rows_byFilename(window, inputFilename, outputDir, openOutput
     with open(inputFilename, 'r', encoding="utf-8", errors='ignore') as read_obj:
         csv_reader = csv.reader(read_obj)
         header = next(csv_reader)
-        filenameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, filenameCol)
+        filenameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, filenameCol, inputFilename)
         if header is not None:
             for row in csv_reader:
                 head, fName = os.path.split(row[filenameColNum])
@@ -141,8 +141,8 @@ def purge_partial_matches(window, inputFilename, outputDir, openOutputFiles, nam
     with open(inputFilename, 'r', encoding="utf-8", errors='ignore') as read_obj:
         csv_reader = csv.reader(read_obj)
         header = next(csv_reader)
-        nameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, nameCol)
-        filenameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, filenameCol)
+        nameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, nameCol, inputFilename)
+        filenameColNum = IO_csv_util.get_columnNumber_from_headerValue(header, filenameCol, inputFilename)
         print(nameColNum, filenameColNum)
         if header is not None:
             for row in csv_reader:
@@ -178,7 +178,7 @@ def purge_partial_matches(window, inputFilename, outputDir, openOutputFiles, nam
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
-def writeOutput(inputPath, input_filename, outputPath, output_filename, fieldnames,
+def writeOutput(inputPath, inputFilenamename, outputPath, output_filename, fieldnames,
                 by_creation_date_var, creation_date, modification_date,
                 by_author_var, author,
                 string_entry_var,
@@ -187,14 +187,14 @@ def writeOutput(inputPath, input_filename, outputPath, output_filename, fieldnam
                 fileName_embeds_date, date, dateStr,
                 split_string):
 
-    if not os.path.isdir(os.path.join(inputPath, input_filename)):
+    if not os.path.isdir(os.path.join(inputPath, inputFilenamename)):
         printLine = {}
         with open(outputPath + os.sep + output_filename, 'a', errors='ignore', newline='') as csvfile:
             # write file headers
             writer = csv.DictWriter(csvfile, fieldnames)
-            head, tail = os.path.split(input_filename)
+            head, tail = os.path.split(inputFilenamename)
             printLine = {'File_Name': tail, 'Path_To_File': IO_csv_util.dressFilenameForCSVHyperlink(inputPath),
-                         'File_Name_With_Path': IO_csv_util.dressFilenameForCSVHyperlink(input_filename)}
+                         'File_Name_With_Path': IO_csv_util.dressFilenameForCSVHyperlink(inputFilenamename)}
             if by_creation_date_var == 1:
                 printLine['Creation_date'] = creation_date
                 printLine['Modification_date'] = modification_date

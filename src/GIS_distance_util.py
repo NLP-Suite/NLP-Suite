@@ -50,8 +50,9 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
         chartTitle = 'Geodesic distance in miles'
     else:
         chartTitle = 'Geodesic distance in miles from ' + baselineLocation
-    columns_to_be_plotted = [[3,6]]
-    chart_outputFilename = charts_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+    columns_to_be_plotted_xAxis=[]
+    columns_to_be_plotted_yAxis=[[3,6]]
+    chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                               '',
                                               chartPackage=chartPackage,
                                               chart_type_list=["bar"],
@@ -78,8 +79,9 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
         chartTitle = 'Great circle distance in miles'
     else:
         chartTitle = 'Great circle distance in miles from ' + baselineLocation
-    columns_to_be_plotted = [[3,8]]
-    chart_outputFilename = charts_util.run_all(columns_to_be_plotted, xlsxFilename, outputDir,
+    columns_to_be_plotted_xAxis=[]
+    columns_to_be_plotted_yAxis=[[3,8]]
+    chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                               '',
                                               chartPackage=chartPackage,
                                               chart_type_list=["bar"],
@@ -110,19 +112,20 @@ def computePairwiseDistances(window,inputFilename,outputDir,createCharts, header
         distanceoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', locationColumnName, locationColumnName2, 'ALL', False, True)
     filesToOpen.append(distanceoutputFilename)
 
-    #with open(distanceoutputFilename, 'w',newline='',encoding = "utf-8",errors='ignore') as csvfile:
+    #with open(distanceoutputFilename, 'w',newline='',encoding="utf-8",errors='ignore') as csvfile:
     #latin-1
-    with open(inputFilename, 'r',newline='',encoding = encodingValue,errors='ignore') as inputFile, open(distanceoutputFilename, 'w',newline='',encoding = encodingValue,errors='ignore') as outputFile:
+    with open(inputFilename, 'r',newline='',encoding=encodingValue,errors='ignore') as inputFile, open(distanceoutputFilename, 'w',newline='',encoding=encodingValue,errors='ignore') as outputFile:
         geowriter = csv.writer(outputFile)
         try:
-            dt = pd.read_csv(inputFile,encoding = encodingValue)
+            dt = pd.read_csv(inputFile,encoding=encodingValue, error_bad_lines=False)
         except:
             mb.showerror(title='Input file error', message="There was an error in the function 'Compute GIS distance' reading the input file\n" + str(inputFile) + "\nMost likely, the error is due to an encoding error. Your current encoding value is " + encodingValue + ".\n\nSelect a different encoding value and try again.")
             filesToOpen.append('')
             return filesToOpen
         geowriter.writerow(['Location 1','Latitude 1','Longitude 1','Location 2','Latitude 2','Longitude 2','Geodesic distance in miles','Geodesic distance in Km','Great circle distance in miles','Great circle distance in Km'])
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue)
         for index, row in dt.iterrows():
-            currRecord=str(index) + "/" + str(IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename,encodingValue))
+            currRecord=str(index) + "/" + str(nRecords)
             currentLocation1=str(row[locationColumnNumber])
             currentLocation2=str(row[locationColumnNumber2])
             if (str(currentLocation1)!='' and str(currentLocation1)!='nan' and str(currentLocation2)!='' and str(currentLocation2)!='nan'): #nan Not A Numeric value SHOULD NOT BE NECESSARY!!!
@@ -184,8 +187,8 @@ def computePairwiseDistances(window,inputFilename,outputDir,createCharts, header
     return filesToOpen
 
 # The function computes the distance between a pre-selected city and all cities in a list
-#   distances are calculated in miles and Km 
-#   distances are calculated using both geodesic and Great Circle algorithms   
+#   distances are calculated in miles and Km
+#   distances are calculated using both geodesic and Great Circle algorithms
 #   If the list contains previously geocoded values the function will NOT geocode the values
 #       otherwise it will geocode the location names
 
@@ -228,7 +231,7 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createCh
         geocodedLocationsoutputFilename, locationsNotFoundFilename = GIS_geocode_util.geocode(window,locations,inputFilename, outputDir, locationColumnName,geocoder,'',encodingValue)
 
         try:
-            dt = pd.read_csv(geocodedLocationsoutputFilename,encoding = encodingValue)
+            dt = pd.read_csv(geocodedLocationsoutputFilename,encoding=encodingValue, error_bad_lines=False)
         except:
             mb.showerror(title='File error', message="There was an error in the function 'Compute GIS distance from specific location' reading the output file\n" + str(geocodedLocationsoutputFilename) + "\nwith non geocoded input. Most likely, the error is due to an encoding error. Your current encoding value is " + encodingValue + ".\n\nSelect a different encoding value and try again.")
             filesToOpen.append('')
@@ -247,7 +250,7 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createCh
     # geocoded input
     else:
         try:
-            dt = pd.read_csv(inputFilename,encoding = encodingValue)
+            dt = pd.read_csv(inputFilename,encoding=encodingValue, error_bad_lines=False)
         except:
             mb.showerror(title='Input file error', message="There was an error in the function 'Compute GIS distance from specific location' reading the input file\n" + str(inputFilename) + "\nwith geocoded input. Most likely, the error is due to an encoding error. Your current encoding value is " + encodingValue + ".\n\nSelect a different encoding value and try again.")
             filesToOpen.append('')
@@ -262,14 +265,15 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createCh
             return filesToOpen
         waypoints1 = [location.latitude, location.longitude] #, location.address]
 
-    # with open(inputFilename, 'r',newline='',encoding = encodingValue,errors='ignore') as inputFile, open(distanceoutputFilename, 'w',newline='',encoding = encodingValue,errors='ignore') as outputFile:
-    with open(distanceoutputFilename, 'w',newline='',encoding = encodingValue,errors='ignore') as outputFile:
+    # with open(inputFilename, 'r',newline='',encoding=encodingValue,errors='ignore') as inputFile, open(distanceoutputFilename, 'w',newline='',encoding=encodingValue,errors='ignore') as outputFile:
+    with open(distanceoutputFilename, 'w',newline='',encoding=encodingValue,errors='ignore') as outputFile:
         geowriter = csv.writer(outputFile)
         geowriter.writerow(['Location 1','Latitude 1','Longitude 1','Location 2','Latitude 2','Longitude 2','Geodesic distance in miles','Geodesic distance in Km','Great circle distance in miles','Great circle distance in Km'])
         # loop through for the waypoints of the second location
         for index, row in dt.iterrows():
             currentLocation=str(row[locationColumnNumber])
-            currRecord=str(index) + "/" + str(IO_csv_util.GetNumberOfRecordInCSVFile(inputFilename,encodingValue))
+            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue)
+            currRecord = str(index) + "/" + str(nRecords)
             if currentLocation!='' and currentLocation!='nan': #nan Not A Numeric value SHOULD NOT BE NECESSARY!!!
                 try:
                     float(row[locationColumnNumber+1])

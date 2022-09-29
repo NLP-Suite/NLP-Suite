@@ -177,7 +177,7 @@ def run(inputDir, outputDir,
 
     # ------------------------------------------------------------------------------------------------------------------------------------------------
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Manager at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running File Manager at',
                                                  True, '', True, '', True)
 
     if list_var==1:
@@ -251,7 +251,7 @@ def run(inputDir, outputDir,
     # _________________________________________________________________________________________________________________________________________________
     if selectedCsvFile_var != '':
         if noHeaders==False:
-            selectedCsvFile_colNum=IO_csv_util.get_columnNumber_from_headerValue(headers, selectedCsvFile_colName)
+            selectedCsvFile_colNum=IO_csv_util.get_columnNumber_from_headerValue(headers, selectedCsvFile_colName, selectedCsvFile_var)
         else:
             # No headers, we assume the first column
             selectedCsvFile_colNum=0
@@ -355,7 +355,7 @@ def run(inputDir, outputDir,
                         if fileFound:
                             i=i+1
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File manager at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running File manager at', True, '', True, startTime)
 
     if i > 0:
         if rename_var==1:
@@ -518,7 +518,8 @@ def get_additional_csvFile(window,title,fileType):
         selectedCsvFile_var.set(filePath)
         if IO_csv_util.get_csvfile_headers(filePath,True)=='':
             noHeaders=True
-            menu_values=range(1, IO_csv_util.get_csvfile_numberofColumns(filePath)+1)
+            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath)
+            menu_values=range(1, nColumns+1)
         else:
             data, headers = IO_csv_util.get_csv_data(filePath,True)
             menu_values=headers
@@ -1017,7 +1018,7 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide several ways of handling files in a directory:\n\nLIST, RENAME, COPY, MOVE, DELETE, COUNT, SPLIT files in a directory (and subdirectories), by a variety of filename filters.\n\nMore specialized file managment options based on the filename are available as separate tools (e.g., Filename checker, File matcher, File classifier)\n\nAll these tools deal with the name of a file, rather than its content. A number of other tools deal with file content (e.g., File merger, File splitter, File type converter, File utf-8 encoding checker)."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

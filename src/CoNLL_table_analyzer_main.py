@@ -2,13 +2,14 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "CoNLL table_analyzer", ['os', 'tkinter']) == False:
+if IO_libraries_util.install_all_packages(GUI_util.window, "CoNLL table_analyzer", ['os', 'tkinter','pandas']) == False:
     sys.exit(0)
 
 import os
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
+import pandas as pd
 
 import GUI_IO_util
 import CoNLL_util
@@ -19,8 +20,8 @@ import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
 import Stanford_CoreNLP_tags_util
-import pandas as pd
 import CoNLL_k_sentences_util
+import reminders_util
 
 # from data_manager_main import extract_from_csv
 
@@ -38,7 +39,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         verb_analysis_var,
         function_words_analysis_var):
 
-    global recordID_position, documentId_position, data, data_divided_sents
+    global recordID_position, documentId_position, data, all_CoNLL_records
     recordID_position = 9 # NEW CoNLL_U
     documentId_position = 11 # NEW CoNLL_U
 
@@ -50,17 +51,17 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         if not compute_sentence_var.get() and not extract_var.get():
             if clausal_analysis_var==False and noun_analysis_var==False and verb_analysis_var==False and function_words_analysis_var==False and k_sentences_var==False:
                 mb.showwarning(title='No option selected',
-                           message="No option has been selected.\n\nPlease, select an option and try again.")
+                           message="No option has been selected. The 'Searched token' field must be different from 'e.g.: father' or you must select at least one of analyses on the right-hand side.\n\nPlease, select an option and try again.")
                 return  # breaks loop
 
     withHeader = True
     data, header = IO_csv_util.get_csv_data(inputFilename, withHeader)
     if len(data) == 0:
         return
-    data_divided_sents = CoNLL_util.sentence_division(data)
-    if data_divided_sents == None:
+    all_CoNLL_records = CoNLL_util.CoNLL_record_division(data)
+    if all_CoNLL_records == None:
         return
-    if len(data_divided_sents) == 0:
+    if len(all_CoNLL_records) == 0:
         return
 
     right_hand_side = False
@@ -70,14 +71,16 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         filesToOpen.append(tempOutputFile)
 
     if extract_var.get():
-        df = pd.read_csv(inputFilename)
+        df = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False)
         data_files = [df]
         # print(csv_file_field_list)
         # outputFiles: list = IO_csv_util.extract_from_csv(path=[inputFilename], output_path=outputDir, data_files=data_files,
         #                                          csv_file_field_list=csv_file_field_list)
-        outputFiles: list = IO_csv_util.extract_from_csv(inputFilename,outputDir, data_files,csv_file_field_list)
+        # TODO csv_file_field_list is not set properly
+        # TODO must pass to extract_from_csv not just the columns but the values selected
+        outputFiles: list = IO_csv_util.extract_from_csv(inputFilename,outputDir, data_files, csv_file_field_list)
         if outputFiles != None:
-            filesToOpen.extend(outputFiles)
+            filesToOpen.append(outputFiles)
 
     if k_sentences_var:
         outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename,outputDir)
@@ -85,47 +88,37 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
             filesToOpen.append(outputFiles)
 
     if clausal_analysis_var or noun_analysis_var or verb_analysis_var or function_words_analysis_var:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CoNLL table analyses at',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running CoNLL table analyses at',
                                                      True, '', True, '', False)
 
     if clausal_analysis_var:
         import CoNLL_clause_analysis_util
         outputFiles = CoNLL_clause_analysis_util.clause_stats(inputFilename, '', outputDir,
                                                               data,
-                                                              data_divided_sents,
+                                                              all_CoNLL_records,
                                                               openOutputFiles, createCharts,chartPackage)
-        # if outputFiles != None:
-        #     # only open the chart files
-        #     if len(outputFiles) > 0:
-        #         filesToOpen.append(outputFiles[1])
-        #     if len(outputFiles) > 2:
-        #         filesToOpen.append(outputFiles[2])
+        if outputFiles != None:
+            filesToOpen.extend(outputFiles)
 
         right_hand_side = True
 
     if noun_analysis_var:
         import CoNLL_noun_analysis_util
-        outputFiles = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, data_divided_sents,
+        outputFiles = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, all_CoNLL_records,
                                                           openOutputFiles, createCharts, chartPackage)
-        # if outputFiles != None:
-        #     # only open the chart files
-        #     filesToOpen.append(outputFiles[6])
-        #     filesToOpen.append(outputFiles[7])
-        #     filesToOpen.append(outputFiles[8])
+        if outputFiles != None:
+            filesToOpen.extend(outputFiles)
 
         right_hand_side = True
 
     if verb_analysis_var == True:
         import CoNLL_verb_analysis_util
 
-        outputFiles = CoNLL_verb_analysis_util.verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents,
+        outputFiles = CoNLL_verb_analysis_util.verb_stats(config_filename, inputFilename, outputDir, data, all_CoNLL_records,
                                                           openOutputFiles, createCharts, chartPackage)
 
-        # # only open the chart files
-        # if outputFiles != None:
-        #     filesToOpen.append(outputFiles[2])
-        #     filesToOpen.append(outputFiles[5])
-        #     filesToOpen.append(outputFiles[7])
+        if outputFiles != None:
+            filesToOpen.extend(outputFiles)
 
         right_hand_side = True
 
@@ -133,32 +126,34 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         import CoNLL_function_words_analysis_util
 
         outputFiles = CoNLL_function_words_analysis_util.function_words_stats(inputFilename, outputDir, data,
-                                                                              data_divided_sents, openOutputFiles,
+                                                                              all_CoNLL_records, openOutputFiles,
                                                                               createCharts, chartPackage)
-        # only open the chart files
-        # if outputFiles != None:
-        #     filesToOpen.append(outputFiles[2])
-        #     filesToOpen.append(outputFiles[5])
-        #     filesToOpen.append(outputFiles[8])
-        #     filesToOpen.append(outputFiles[11])
-        #     filesToOpen.append(outputFiles[14])
+        if outputFiles != None:
+            filesToOpen.extend(outputFiles)
 
         right_hand_side = True
 
     if right_hand_side == True:
         if clausal_analysis_var or noun_analysis_var or verb_analysis_var or function_words_analysis_var:
-            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+            IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                                'Finished running CoNLL table analyses at',
                                                True, '', True, startTime, False)
         if openOutputFiles == True:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-            mb.showwarning(title='Output files',
-                           message="The analysis of the CoNLL table for clauses, nouns, verbs, and function words produces too many files to open them all automatically.\n\nPlease, check your output directory for file output. All chart files are listed with extension xlsx or xlxm (for hover-over effects).")
         filesToOpen = []  # Store all files that are to be opened once finished
         outputFiles = []
         return
 
+# left-hand side SEARCH
     if searchField_kw != 'e.g.: father':
+        # # create a subdirectory of the output directory
+        # outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_search',
+        #                                                    silent=True)
+
+        if ' ' in searchField_kw:
+            mb.showwarning(title='Search error',
+                           message="The CoNLL table search can only contain one token/word since the table has one record for each token/word.\n\nPlease, enter a different word and try again.\n\nIf you need to search your corpus for collocations, i.e., multi-word expressions, you need to use the 'N-grams/Co-occurrence searches' or the 'Words/collocations searches' in the ALL searches GUI.")
+            return
         if searchedCoNLLField.lower() not in ['lemma', 'form']:
             searchedCoNLLField = 'FORM'
         if postag != '*':
@@ -182,12 +177,13 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         else:
             co_deprel = '*'
 
-        if (not os.path.isfile(inputFilename.strip())) and (not inputFilename.strip()[-6:] == '.conll') and (
-                not inputFilename.strip()[-4:] == '.csv'):
+        if (not os.path.isfile(inputFilename.strip())) and \
+                ('CoNLL' not in inputFilename) and \
+                (not inputFilename.strip()[-4:] == '.csv'):
             mb.showwarning(title='INPUT File Path Error',
                            message='Please, check INPUT FILE PATH and try again. The file must be a CoNLL table (extension .conll with Stanford CoreNLP no clausal tags, extension .csv with Stanford CoreNLP with clausal tags)')
             return
-        if searchField_kw == 'e.g.: father':
+        if 'e.g.: father' in searchField_kw:
             msg = "Please, check the \'Searched token\' field and try again.\n\nThe value entered must be different from the default value (e.g.: father)."
             mb.showwarning(title='Searched Token Input Error', message=msg)
             return  # breaks loop
@@ -196,7 +192,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
             mb.showwarning(title='Searched Token Input Error', message=msg)
             return  # breaks loop
 
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CoNLL search at',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running CoNLL search at',
                                                      True, '', True, '', True)
 
         withHeader = True
@@ -210,12 +206,12 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                                message="The CoNLL table is ill formed. You may have tinkered with it. Please, rerun the Stanford CoreNLP parser since many scripts rely on the CoNLL table.")
                 return
 
-        if len(data) == 0:
-            return
-        all_sents = CoNLL_util.sentence_division(data)
-        if len(all_sents) == 0:
-            return
-        queried_list = CoNLL_table_search_util.search_CoNLL_table(all_sents, searchField_kw, searchedCoNLLField,
+        # if len(data) == 0:
+        #     return
+        # all_CoNLL_records = CoNLL_util.sentence_division(data)
+        # if len(all_CoNLL_records) == 0:
+        #     return
+        queried_list = CoNLL_table_search_util.search_CoNLL_table(all_CoNLL_records, searchField_kw, searchedCoNLLField,
                                                                   related_token_POSTAG=co_postag,
                                                                   related_token_DEPREL=co_deprel, _tok_postag_=postag,
                                                                   _tok_deprel_=deprel)
@@ -227,11 +223,13 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                 srcField_kw = searchField_kw
             output_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'QC',
                                                                        srcField_kw, searchedCoNLLField)
-            errorFound = IO_csv_util.list_to_csv(GUI_util.window,
-                                                 CoNLL_table_search_util.output_list(queried_list, searchedCoNLLField,
-                                                                                     documentId_position), output_file_name)
-            if errorFound == True:
-                return
+
+            # convert list to dataframe and save
+            df = pd.DataFrame(queried_list)
+            # headers=['list_queried, related_token_DEPREL, Sentence_ID, related_token_POSTAG']
+            IO_csv_util.df_to_csv(GUI_util.window, df, output_file_name, headers=None, index=False,
+                                  language_encoding='utf-8')
+
             filesToOpen.append(output_file_name)
 
             """
@@ -242,133 +240,81 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                 item[9] keyword[3]/SEARCHED TOKEN POSTAG, 
                 item[10] keyword[6]/'SEARCHED TOKEN DEPREL'))
             """
-            if createCharts == True:
-
-                # line plot by sentence index
-                if searchedCoNLLField == 'FORM':
-                    tempFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=output_file_name,
-															outputDir=outputDir,
-															select_col=['SEARCHED TOKEN POSTAG-DESCRIPTION'],
-															group_col=['Document ID'],
-                                                            chartPackage=chartPackage,
-                                                            chartTitle="Frequency Distribution of SEARCHED TOKEN (FORM)",
-                                                            complete_sid=False)
-                    # tempFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
-                    #                                                       [[11, 5], [11, 7], [11, 9]],
-                    #                                                       ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
-                    #                                                       ['SEARCHED TOKEN (FORM)', 'Sentence ID','Sentence'],
-                    #                                                       ['Document ID', 'Document'],
-                    #                                                       openOutputFiles, createCharts, chartPackage, 'QC', 'line')
-                else:
-                    tempFiles = statistics_csv_util.compute_csv_column_frequencies(inputFilename=output_file_name,
-															outputDir=outputDir,
-															select_col=['SEARCHED TOKEN POSTAG-DESCRIPTION'],
-															group_col=['Document ID'],
-                                                            chartPackage=chartPackage,
-                                                            chartTitle="Frequency Distribution of SEARCHED TOKEN (LEMMA)",
-                                                            complete_sid=False)
-                    # tempFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window, output_file_name, '', outputDir,
-                    #                                                       [[11, 5], [11, 7], [11, 9]],
-                    #                                                       ['SEARCHED TOKEN POSTAG-DESCRIPTION'],
-                    #                                                       ['SEARCHED TOKEN (LEMMA)', 'Sentence ID','Sentence'],
-                    #                                                       ['Document ID', 'Document'],
-                    #                                                       openOutputFiles, createCharts, chartPackage, 'QC', 'line')
-                filesToOpen.extend(tempFiles)
-
-                columns_to_be_plotted=[[0,1]]
-                count_var=0
-
-                output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
-                                                                                'kw_postag', 'stats_pie_chart')
-                column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 9,
-                                                                             "Searched token Postag Values (" + searchField_kw + ")",
-                                                                             "POSTAG")
-                errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
-                if errorFound == True:
-                    return
-                # output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename,
-                #                                                       outputDir, "QueryCoNLL_POS",
-                #                                                       "Searched token POStag Values (" + searchField_kw + ")",
-                #                                                       ["pie"])
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
-                                                                outputFileLabel='QueryCoNLL_POS (' + searchField_kw + ')',
-                                                                chartPackage=chartPackage,
-                                                                chart_type_list=['bar'],
-                                                                chart_title="QueryCoNLL_POS",
-                                                                column_xAxis_label_var='Searched token POS Values',
-                                                                hover_info_column_list=[],
-                                                                count_var=count_var)
-                filesToOpen.append(chart_outputFilename)
-
-                output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
-                                                                                'kw_deprel', 'stats_pie_chart')
-                column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 10,
-                                                                             "Searched token Deprel values (" + searchField_kw + ")",
-                                                                             "DEPREL")
-                errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
-                if errorFound == True:
-                    return
-                # output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
-                #                                                       "QueryCoNLL_DepRel",
-                #                                                       "Searched token DEPrel Values (" + searchField_kw + ")",
-                #                                                       ["pie"])
-                
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
-                                                                outputFileLabel='QueryCoNLL_DepRel (' + searchField_kw + ')',
-                                                                chartPackage=chartPackage,
-                                                                chart_type_list=['bar'],
-                                                                chart_title="QueryCoNLL_DepRel",
-                                                                column_xAxis_label_var='Searched token DEPrel Values',
-                                                                hover_info_column_list=[],
-                                                                count_var=count_var)
-                filesToOpen.append(chart_outputFilename)
-
-                output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
-                                                                                'co_kw_postag', 'stats_pie_chart')
-                column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 1,
-                                                                             "Co-token Postag values (" + searchField_kw + ")",
-                                                                             "POSTAG")
-                errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
-                if errorFound == True:
-                    return
-                # output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
-                #                                                       "QueryCoNLL_CoOcc_POS",
-                #                                                       "Co-token POStag Values (" + searchField_kw + ")",
-                #                                                       ["pie"])
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
-                                                                outputFileLabel='QueryCoNLL_CoOcc_POS (' + searchField_kw + ')',
-                                                                chartPackage=chartPackage,
-                                                                chart_type_list=['bar'],
-                                                                chart_title="QueryCoNLL_CoOcc_POS",
-                                                                column_xAxis_label_var='Searched token CoOcc_POS Values',
-                                                                hover_info_column_list=[],
-                                                                count_var=count_var)
-                filesToOpen.append(chart_outputFilename)
-
-                output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
-                                                                                'co_kw_deprel', 'stats_pie_chart')
-                column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 2,
-                                                                             "Co-token Deprel values (" + searchField_kw + ")",
-                                                                             "DEPREL")
-                errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
-                if errorFound:
-                    return
-
-                # output_file_name_xlsx = charts_Excel_util.create_excel_chart(GUI_util.window, [column_stats], inputFilename, outputDir,
-                #                                                       "QueryCoNLL_CoOcc_DEP",
-                #                                                       "Co-token DEPrel Values (" + searchField_kw + ")",
-                #                                                       ["pie"])
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name_xlsx, outputDir,
-                                                                outputFileLabel='QueryCoNLL_CoOcc_DEP (' + searchField_kw + ')',
-                                                                chartPackage=chartPackage,
-                                                                chart_type_list=['bar'],
-                                                                chart_title="QueryCoNLL_CoOcc_DEP",
-                                                                column_xAxis_label_var='Searched token CoOcc_DEP Values',
-                                                                hover_info_column_list=[],
-                                                                count_var=count_var)
-                filesToOpen.append(chart_outputFilename)
-                IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
-                                                   'Finished running CoNLL search at', True, '', True, startTime)
+            # if createCharts == True:
+            #
+            #     columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[[0,1]]
+            #     count_var=1
+            #
+            #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name, outputDir,
+            #                             outputFileLabel='QueryCoNLL_POS (' + searchField_kw + ')',
+            #                             chartPackage=chartPackage,
+            #                             chart_type_list=['bar'],
+            #                             chart_title="Frequency of Searched Token POS Tags",
+            #                             column_xAxis_label_var='Searched token POS tag',
+            #                             hover_info_column_list=[],
+            #                             count_var=count_var,
+            #                             complete_sid=False)  # TODO to be changed
+            #
+            #     if chart_outputFilename != None:
+            #         filesToOpen.append(chart_outputFilename)
+            #
+                # output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
+                #                                                                 'kw_deprel', 'stats_pie_chart')
+                # column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 10,
+                #                                                              "Searched token Deprel values (" + searchField_kw + ")",
+                #                                                              "DEPREL")
+                # errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
+                # if errorFound == True:
+                #     return
+                #
+                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name, outputDir,
+                #                         outputFileLabel='QueryCoNLL_DepRel (' + searchField_kw + ')',
+                #                         chartPackage=chartPackage,
+                #                         chart_type_list=['bar'],
+                #                         chart_title="Frequency of Searched Token DepRel Tags",
+                #                         column_xAxis_label_var='Searched token DepRel tag',
+                #                         hover_info_column_list=[],
+                #                         count_var=count_var)
+                # filesToOpen.append(chart_outputFilename)
+                #
+                # output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
+                #                                                                 'co_kw_postag', 'stats_pie_chart')
+                # column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 1,
+                #                                                              "Co-token Postag values (" + searchField_kw + ")",
+                #                                                              "POSTAG")
+                # errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name)
+                # if errorFound == True:
+                #     return
+                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name, outputDir,
+                #                         outputFileLabel='QueryCoNLL_CoOcc_POS (' + searchField_kw + ')',
+                #                         chartPackage=chartPackage,
+                #                         chart_type_list=['bar'],
+                #                         chart_title="Frequency of Searched Token Co-occurring POS Tags",
+                #                         column_xAxis_label_var='Searched token CoOcc_POS tag',
+                #                         hover_info_column_list=[],
+                #                         count_var=count_var)
+                # filesToOpen.append(chart_outputFilename)
+                #
+                # output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
+                #                                                                 'co_kw_deprel', 'stats_pie_chart')
+                # column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 2,
+                #                                                              "Co-token Deprel values (" + searchField_kw + ")",
+                #                                                              "DEPREL")
+                # errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
+                # if errorFound:
+                #     return
+                #
+                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name, outputDir,
+                #                         outputFileLabel='QueryCoNLL_CoOcc_DEP (' + searchField_kw + ')',
+                #                         chartPackage=chartPackage,
+                #                         chart_type_list=['bar'],
+                #                         chart_title="Frequency of Searched Token Co-Occurring DepRel Tags",
+                #                         column_xAxis_label_var='Searched token CoOcc_DEP tag',
+                #                         hover_info_column_list=[],
+                #                         count_var=count_var)
+                # filesToOpen.append(chart_outputFilename)
+            IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
+                                               'Finished running CoNLL search at', True, '', True, startTime)
 
             # if openOutputFiles:
             #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -476,6 +422,7 @@ all_analyses_var = tk.IntVar()
 
 buildString = ''
 menu_values = []
+error = False
 
 postag_menu = '*', 'JJ* - Any adjective', 'NN* - Any noun', 'VB* - Any verb', *sorted([k + " - " + v for k, v in Stanford_CoreNLP_tags_util.dict_POSTAG.items()])
 deprel_menu = '*', *sorted([k + " - " + v for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()])
@@ -509,7 +456,7 @@ def custom_sort(s):
 
 searchToken_lb = tk.Label(window, text='Searched token')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
-                                                   y_multiplier_integer, searchToken_lb,True)
+                                                    y_multiplier_integer, searchToken_lb,True)
 
 searchField_kw.set('e.g.: father')
 
@@ -517,8 +464,12 @@ searchField_kw.set('e.g.: father')
 y_multiplier_integer_top = y_multiplier_integer
 
 entry_searchField_kw = tk.Entry(window, textvariable=searchField_kw)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
-                                               entry_searchField_kw)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position,
+    y_multiplier_integer,
+    entry_searchField_kw,
+    False, False, False, False, 90, GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position,
+    "Enter the CASE SENSITIVE word that you would like to search (* for any word). All searches are done WITHIN EACH SENTENCE for the EXACT word.")
 
 # Search type var (FORM/LEMMA)
 searchedCoNLLField.set('FORM')
@@ -606,13 +557,20 @@ def reset_all_values():
 
 
 def changed_filename(tracedInputFile):
+    global error
+    if os.path.isfile(tracedInputFile):
+        if not CoNLL_util.check_CoNLL(tracedInputFile):
+            error = True
+            return
+        else:
+            error = False
     menu_values = []
     if tracedInputFile != '':
-        numColumns = IO_csv_util.get_csvfile_numberofColumns(tracedInputFile)
-        if numColumns == 0 or numColumns is None:
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tracedInputFile)
+        if nColumns == 0 or nColumns is None:
             return False
         if IO_csv_util.csvFile_has_header(tracedInputFile) == False:
-            menu_values = range(1, numColumns + 1)
+            menu_values = range(1, nColumns + 1)
         else:
             data, headers = IO_csv_util.get_csv_data(tracedInputFile, True)
             menu_values = headers
@@ -809,7 +767,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 
 all_analyses_var.set(0)
 all_analyses_checkbox = tk.Checkbutton(window,
-                                       text="ALL anayses: Clauses, nouns, verbs, function words ('junk/stop' words)",
+                                       text="ALL analyses: Clauses, nouns, verbs, function words ('junk/stop' words)",
                                        variable=all_analyses_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
                                                all_analyses_checkbox)
@@ -821,6 +779,39 @@ y_multiplier_integer = y_multiplier_integer_bottom
 
 #
 def activate_options(*args):
+    global error
+    # if there is an error everything is disabled
+    if error:
+        entry_searchField_kw.configure(state='disabled')
+        searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
+        postag_menu_lb.configure(state='disabled')
+        deprel_menu_lb.configure(state='disabled')
+        co_postag_menu_lb.configure(state='disabled')
+        co_deprel_menu_lb.configure(state='disabled')
+        all_analyses_checkbox.configure(state='disabled')
+        clausal_analysis_checkbox.configure(state='disabled')
+        noun_analysis_checkbox.configure(state='disabled')
+        verb_analysis_checkbox.configure(state='disabled')
+        function_words_analysis_checkbox.configure(state='disabled')
+
+        sentence_table_checkbox.configure(state='disabled')
+        extract_checkbox.configure(state='disabled')
+        k_sentences_checkbox.configure(state='disabled')
+
+        return
+
+    entry_searchField_kw.configure(state='normal')
+
+    all_analyses_checkbox.configure(state='normal')
+    clausal_analysis_checkbox.configure(state='normal')
+    noun_analysis_checkbox.configure(state='normal')
+    verb_analysis_checkbox.configure(state='normal')
+    function_words_analysis_checkbox.configure(state='normal')
+
+    sentence_table_checkbox.configure(state='normal')
+    extract_checkbox.configure(state='normal')
+    k_sentences_checkbox.configure(state='normal')
+
     if searchField_kw.get() != 'e.g.: father':
 
         all_analyses_var.set(0)
@@ -855,6 +846,10 @@ def activate_options(*args):
         function_words_analysis_checkbox.configure(state='normal')
 
         if all_analyses_var.get():
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_CoreNLP_nn_parser,
+                                         reminders_util.message_CoreNLP_nn_parser,
+                                         True)
             entry_searchField_kw.configure(state='disabled')
 
             clausal_analysis_var.set(1)
@@ -908,6 +903,11 @@ def activate_CoNLL_options(*args):
         co_postag_menu_lb.configure(state='normal')
         co_deprel_menu_lb.configure(state='normal')
 
+    if clausal_analysis_var.get() == True:
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_nn_parser,
+                                     reminders_util.message_CoreNLP_nn_parser,
+                                     True)
 
 clausal_analysis_var.trace('w', activate_CoNLL_options)
 noun_analysis_var.trace('w', activate_CoNLL_options)
@@ -1007,7 +1007,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "ON THE LEFT-HAND SIDE, please, enter the token (i.e., word) to be searched. ENTER * TO SEARCH FOR ANY TOKEN/WORD.\n\nTHE SELECT OUTPUT BUTTON IS DISABLED UNTIL A SEARCHED TOKEN HAS BEEN ENTERED.\n\nDO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN. n\nThe program will search all the tokens related to this token in the CoNLL table. For example, if the the token wife is entered, the program will search in each dependency tree (i.e., each sentence) all the tokens whose head is the token wife, and the head of the token wife." + right_msg + GUI_IO_util.msg_Esc)
+                                  "ON THE LEFT-HAND SIDE, please, enter the CASE SENSITIVE token (i.e., word) to be searched (enter * for any word). ENTER * TO SEARCH FOR ANY TOKEN/WORD. The EXACT word will be searched (e.g., if you enter 'American', any instances of 'America' will not be found).\n\nTHE SELECT OUTPUT BUTTON IS DISABLED UNTIL A SEARCHED TOKEN HAS BEEN ENTERED.\n\nDO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN. n\nThe program will search all the tokens related to this token in the CoNLL table. For example, if the the token wife is entered, the program will search in each dependency tree (i.e., each sentence) all the tokens whose head is the token wife, and the head of the token wife." + right_msg + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "ON THE LEFT-HAND SIDE, please, select the CoNLL field to be used for the search (FORM or LEMMA).\n\nFor example, if brother is entered as the searched token, and FORM is entered as search field, the program will first search all occurrences of the FORM brother. Note that in this case brothers will NOT be considered. Otherwise, if LEMMA is entered as search field, the program will search all occurences of the LEMMA brother. In this case, tokens with form brother and brothers will all be considered." + right_msg + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -1033,7 +1033,7 @@ y_multiplier_integer = y_multiplier_integer = help_buttons(window, GUI_IO_util.g
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script will allow you to analyze in depth the contents of the CoNLL table (CoNLL U format), the table produced by Stanford CoreNLP parser. You can do two things in this GUI, depending upon whether you use the tools on the left-hand side (a search tool) or the tools on the right-hand side (statistical frequency tools).\n\nON THE LEFT-HAND SIDE, you can search all the tokens (i.e., words) related to a user-supplied keyword, found in either FORM or LEMMA of a user-supplied CoNLL table.\n\nYou can filter results by specific POSTAG and DEPREL values for both searched and co-occurring tokens (e.g., POSTAG ‘NN for nouns, DEPREL nsubjpass for passive nouns that are subjects.)\n\nIn INPUT the script expects a CoNLL table generated by the python script StanfordCoreNLP.py. \n\nIn OUTPUT the script creates a tab-separated csv file with a user-supplied filename and path.\n\nThe script also displays the same infomation in the command line.\n\nON THE RIGHT-HAND SIDE, the tools provide frequency distributions of various types of linguistic objects: clauses, nouns, verbs, and function words." + GUI_IO_util.msg_multipleDocsCoNLL
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 scriptName=os.path.basename(__file__)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName,True)
@@ -1041,10 +1041,14 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 if GUI_util.input_main_dir_path.get()!='':
     GUI_util.run_button.configure(state='disabled')
     mb.showwarning(title='Input file',
-                   message="The CoNLL Table Analyzer scripts require in input a csv CoNLL table.\n\nThe RUN button is disabled until the expected CoNLL file is seleted in input.\n\nPlease, select in input a CoNLL file.")
+                   message="The CoNLL Table Analyzer scripts require in input a csv CoNLL table created by the Stanford CoreNLP parser (not the spaCy and Stanza parsers).\n\nAll options and RUN button are disabled until the expected CoNLL file is seleted in input.\n\nPlease, select in input a CoNLL file created by the Stanford CoreNLP parser.")
+    error = True
+    activate_options()
 else:
     GUI_util.run_button.configure(state='normal')
     if inputFilename.get()!='':
-        CoNLL_util.check_CoNLL(inputFilename.get())
+        if not CoNLL_util.check_CoNLL(inputFilename.get()):
+            error = True
+            activate_options()
 
 GUI_util.window.mainloop()

@@ -1,6 +1,6 @@
 #coding=utf-8
 
-#Edited by Elaine Dong, Feb 18, 2020. 
+#Edited by Elaine Dong, Feb 18, 2020.
 # The command line should be:
 #Arguments: 1. path of the lynching folder 2. path of compilation folder 3.output path 4. path of stanfordcorenlp 5. whether or not you want to use NER to detect Named Entity Recognition (1 for yes, 0 for no)
 
@@ -39,7 +39,7 @@ def load_soc_actors(fName):
     return my_soc_actors
 
 #CM soc_acts is the input. Filter out all social actors in dir_path
-#Version 1: when we do not need to filter out the NERs 
+#Version 1: when we do not need to filter out the NERs
 def get_article_soc_actors(dir_path, soc_acts, nlp):
     my_files = glob(dir_path+'*.txt')
     #store all social actors in the artActors
@@ -57,19 +57,19 @@ def get_article_soc_actors(dir_path, soc_acts, nlp):
             if (pos == 'NN' or pos == 'NNS'):
                 word = lemmatizer.lemmatize(word.lower())
                 nouns.append(word)
-        # Store all the social actors in the filtered nouns into a set called "artActors" 
+        # Store all the social actors in the filtered nouns into a set called "artActors"
         for noun in nouns:
             if noun in soc_acts:
-                artActors.add((noun, file.split(os.path.sep)[-1]))          
+                artActors.add((noun, file.split(os.path.sep)[-1]))
     return artActors
 
-# Version 2: when we need to filter out NERs. 
+# Version 2: when we need to filter out NERs.
 def get_article_soc_actors_NER(dir_path, soc_acts, nlp):
     my_files = glob(dir_path+'*.txt')
 
     # Store all the social actors in the filtered nouns into a set called "artActors"
     artActors = set()
-    #Interested: NER values of Location, Date, Person, Organization 
+    #Interested: NER values of Location, Date, Person, Organization
     art_location = set()
     art_date = set()
     art_person = set()
@@ -89,7 +89,7 @@ def get_article_soc_actors_NER(dir_path, soc_acts, nlp):
                 # lemma_word to check if is social actor
                 lemma_word = lemmatizer.lemmatize(word.lower())
                 if lemma_word in soc_acts:
-                    #add into the list. 
+                    #add into the list.
                     artActors.add((lemma_word, fileName))
         for wordNER, pos in nlp.ner(fcontent):
             wordNER = lemmatizer.lemmatize(wordNER.lower())
@@ -101,7 +101,7 @@ def get_article_soc_actors_NER(dir_path, soc_acts, nlp):
                 if (wordNER, fileName) not in art_date and (wordNER, fileName) not in artActors:
                     art_date.add((wordNER, fileName))
             if (pos == 'ORGANIZATION'):
-                if (wordNER, fileName) not in art_org and (wordNER, fileName) not in artActors: 
+                if (wordNER, fileName) not in art_org and (wordNER, fileName) not in artActors:
                     art_org.add((wordNER, fileName))
                     #art_org.add((wordNER.encode("Windows-1252").decode("UTF-8", "ignore"), fileName))
             if (pos == 'PERSON'):
@@ -120,7 +120,7 @@ def get_comp_soc_actors(id, soc_acts, c_path, nlp, checkNER):
         print("   Error: There is no compilation for event ID",id)
         print("")
         return set(), set(), set()
-    # Do the same as the article, store all social actors in compActors (No need to filter out nouns) 
+    # Do the same as the article, store all social actors in compActors (No need to filter out nouns)
     tokens = nlp.word_tokenize(fcontent)
     compActors = set()
     #store all NERs.
@@ -130,7 +130,7 @@ def get_comp_soc_actors(id, soc_acts, c_path, nlp, checkNER):
     reduce_token = []
     #lemma token is a no repeat word list. is used to compare with article's ner
     lemma_token = []
-    for token in tokens: 
+    for token in tokens:
         lemma = lemmatizer.lemmatize(token.lower())
         if lemma in soc_acts:
             # add social actor
@@ -138,7 +138,7 @@ def get_comp_soc_actors(id, soc_acts, c_path, nlp, checkNER):
             # reduce the range of checking NER
             reduce_token.append(token)
         elif lemma not in lemma_token:
-            # store the non-social-actor words. 
+            # store the non-social-actor words.
             lemma_token.append(lemma)
     if (checkNER == 1):
         #need lemmatize and lower case in order to compare with Article's ones
@@ -154,7 +154,7 @@ def get_comp_soc_actors(id, soc_acts, c_path, nlp, checkNER):
     else:
         return compActors
 
-#This method alllows me to add only distinct missing words. Combine the article sources. 
+#This method alllows me to add only distinct missing words. Combine the article sources.
 def addDistinct(addTargetTuple,missings, encode_wrong, article, comp_id,freq_miss, miss_list, id_miss,id):
     repeat = -1
     oldtuple = ()
@@ -172,7 +172,7 @@ def addDistinct(addTargetTuple,missings, encode_wrong, article, comp_id,freq_mis
             miss_list.append(article)
     else:
         missings.append(addTargetTuple)
-        ## for evaluation 
+        ## for evaluation
         ##
         freq_miss +=1
         if article not in miss_list:
@@ -186,7 +186,7 @@ def addDistinct(addTargetTuple,missings, encode_wrong, article, comp_id,freq_mis
 
 
 def check(dir_path, soc_acts, nlp, compilation_path, checkNER, freq_act_miss, act_miss_list, id_act_miss, freq_loc_miss, loc_miss_list, id_loc_miss, freq_org_miss, org_miss_list, id_org_miss, freq_per_miss, per_miss_list, id_per_miss, freq_date_miss, date_miss_list, id_date_miss):
-    
+
     if_act = False
     if_loc = False
     if_per = False
@@ -194,10 +194,10 @@ def check(dir_path, soc_acts, nlp, compilation_path, checkNER, freq_act_miss, ac
     if_date = False
 
     csv_out = sys.stdout
-    parts = dir_path.split(os.path.sep) 
+    parts = dir_path.split(os.path.sep)
     id = parts[-2]
     comp_id = str(id)+'.txt'
-    # get the social actors from article and compilation 
+    # get the social actors from article and compilation
     sys.stdout = terminal_out
     if (checkNER == 1):
         article_actors, a_loc, a_date, a_org, a_per = get_article_soc_actors_NER(dir_path, soc_acts, nlp)
@@ -235,8 +235,8 @@ def check(dir_path, soc_acts, nlp, compilation_path, checkNER, freq_act_miss, ac
                 if_per = True
                 missings, freq_per_miss, per_miss_list , id_per_miss = addDistinct(Persons, missings, 0, article, comp_id, freq_per_miss, per_miss_list , id_per_miss,id)
     my_files = glob(dir_path + '*.txt')
-    sorted_missing = sorted(missings, key=lambda x:x[0]) 
-    #print out the results. 
+    sorted_missing = sorted(missings, key=lambda x:x[0])
+    #print out the results.
     my_files = '\n            '.join(map(lambda x: x.split(os.path.sep)[-1], my_files))
     sys.stdout = csv_out
     if article_actors == set():
@@ -264,7 +264,7 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
     compilations_path = input_secondary_dir_path # summaries folder
     filesToOpen=[]
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running MISSING CHARACTER at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running MISSING CHARACTER at',
                                        True, '', True, '', True)
 
     if len(articles_path)==0:
@@ -283,7 +283,7 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
         compilations_path = compilations_path[:-1]
     if outputDir[-1] == os.sep:
         outputDir = outputDir[:-1]
-    
+
     #############################
     ##This is just for evaluation purposes
     freq_act_miss = 0
@@ -308,7 +308,7 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
     id_date_miss = []
     ##End of evaluation
     #############################
-    #write the output csv. 
+    #write the output csv.
 
 
     if checkNER == 1:
@@ -393,19 +393,20 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
         else:
             fileType='SSR_summary'
 
-        columns_to_be_plotted = [[0, 1], [0, 2], [0, 3]]
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[0, 1], [0, 2], [0, 3]]
         hover_label = ['List of Summary Filenames for Type of Error',
                        'List of Summary Filenames for Type of Error',
                        'List of Summary Filenames for Type of Error']
         inputFilename = outputFilename
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel=fileType,
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   chart_title='Missing Character (File Summaries in Error)',
                                                   column_xAxis_label_var='Type of Error',
                                                   hover_info_column_list=hover_label)
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
 
@@ -413,7 +414,7 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen=[] # avoid opening twice in the calling function
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running MISSING CHARACTER at',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running MISSING CHARACTER at',
                                        True,'',True,startTime,True)
 
     return filesToOpen

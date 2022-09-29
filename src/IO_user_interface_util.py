@@ -57,6 +57,7 @@ def convert_time(time):
                 message = message + str(seconds) + second_label
     return hours, minutes, seconds, message
 
+# silent will not display the message as a box
 def timed_alert(window, timeout, message_title, message_text, time_needed=False, extraLine='', printInCommandLine=True, startTime='', silent=False):
     if time_needed == True:
         # time has year [0], month [1], dat [2], hour [3], minute [4], second [5] & more

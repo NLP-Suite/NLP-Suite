@@ -18,7 +18,7 @@ import os
 #from nltk.stem import WordNetLemmatizer
 from tkinter import filedialog
 #from nltk import tokenize
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 import nltk
 # IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
 import pandas
@@ -81,7 +81,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
                                        '',True,'',True)
 
     # already shown in NLP.py
-    # IO_util.timed_alert(GUI_util.window,3000,'Analysis start','Started running NLTK unusual words at',True,'You can follow NLTK unusual words in command line.')
+    # IO_util.timed_alert(GUI_util.window,2000,'Analysis start','Started running NLTK unusual words at',True,'You can follow NLTK unusual words in command line.')
     for file in files:
         documentID=documentID+1
         head, tail = os.path.split(file)
@@ -100,8 +100,8 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
         unusual.sort()
         # unusual = [[documentID, file, word] for word in unusual]
         unusual = [[documentID, IO_csv_util.dressFilenameForCSVHyperlink(file), word] for word in unusual]
-        container.extend(unusual)
-    container.insert(0, ['Document ID', 'Document', 'Misspelled/unusual word'])
+        container.append(unusual)
+    container.insert(0, ['Misspelled/unusual word', 'Document ID', 'Document'])
     if len(container)>0:
         if IO_csv_util.list_to_csv(window,container,outputFilename): return
     else:
@@ -117,17 +117,18 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
              result = mb.askyesno("Excel charts","You have " + str(nFile) + " files for which to compute Excel charts.\n\nTHIS WILL TAKE A LONG TIME.\n\nAre you sure you want to do that?")
              if result==False:
                  pass
-        columns_to_be_plotted = [[2,2]]
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[2,2]]
         hover_label=['']
         inputFilename=outputFilename
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                    outputFileLabel='NLTK_spell',
                                                    chart_type_list=["bar"],
                                                    chart_title='Misspelled/Unusual Words Frequency',
                                                    column_xAxis_label_var='',
                                                    hover_info_column_list=hover_label,
                                                    count_var=1)
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
              filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles==True:
@@ -443,7 +444,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
             if createCharts:
                 chart_outputFilename=createChart(outputFileName_simple, outputDir, [[10, 10]], '')
 
-                if chart_outputFilename != "":
+                if chart_outputFilename != None:
                     filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles == True:
@@ -462,7 +463,7 @@ def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutp
     csv_spelling_file = filedialog.askopenfilename(title='Select INPUT csv spelling file (with \'Original\' and \'Corrected\' headers)', filetypes=[("csv files", "*.csv")]) #https://docs.python.org/3/library/dialog.html
     if csv_spelling_file=='':
         return
-    df = pd.read_csv(csv_spelling_file)
+    df = pd.read_csv(csv_spelling_file, encoding='utf-8', errors='ignore')
     try:#make sure the csv have two columns of "original" and "corrected"
     	original = df['Original']
     	corrected = df['Corrected']
@@ -480,7 +481,7 @@ def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutp
            input_original.append(original[i])
            input_corrected.append(corrected[i])
     file_cleaner_util.find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFiles,input_original,input_corrected,False)
-        
+
 
 
 def spellchecking_autocorrect(text: str, inputFilename) -> (str, DataFrame):
@@ -646,7 +647,7 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
     fileID = 0
 
     autocorrect_df = pd.DataFrame({'Original': [],
-                                    'Corrected': [],      
+                                    'Corrected': [],
                                     "Document ID":[],
                                     "Document": []})
 
@@ -675,8 +676,8 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
         # else:
         #     print("  Processing file:", filename)
         fileID = fileID + 1
-        # input_files_path = os.path.join(folder, filename)
-        # with open(input_files_path, 'r', encoding='utf-8', errors='ignore') as opened_file:
+        # inputFilenames_path = os.path.join(folder, filename)
+        # with open(inputFilenames_path, 'r', encoding='utf-8', errors='ignore') as opened_file:
         with open(filename, 'r', encoding='utf-8', errors='ignore') as opened_file:
             print("  Processing file:", filename)
             originalText = opened_file.read()
@@ -753,10 +754,10 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
     config_filename = 'file_spell_checker_config.csv'
     reminders_util.checkReminder(config_filename,
                                  ['Language detection'],
-                                 'Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.\n\nPlease, arm yourself with patience, depennding upon the number and size of documents processed.',
+                                 'Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.\n\nPlease, arm yourself with patience, depending upon the number and size of documents processed.',
                                  True)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                        'Started running language detection algorithms at', True,
                                        'You can follow the algorithms in command line.')
 
@@ -806,7 +807,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             language=value['language']
             probability=value['score']
             print('   SPACY', language, probability)  # {'language': 'en', 'score': 0.9999978351575265}
-            currentLine.extend(['SPACY', language, probability])
+            currentLine.append(['SPACY', language, probability])
 
             lang_identifier = LanguageIdentifier.from_modelstring(model, norm_probs=True)
             try:
@@ -821,8 +822,8 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
             probability=value[1]
             print('   LANGID', language, probability)  # ('en', 0.999999999999998)
             print()
-            currentLine.extend(['LANGID',  language, probability])
-            currentLine.extend([fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
+            currentLine.append(['LANGID',  language, probability])
+            currentLine.append([fileID, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
 
             writer = csv.writer(csvfile)
             writer.writerows([currentLine])
@@ -844,11 +845,12 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                 message=msg+ '\n\nFaulty files are listed in command line/terminal. Please, search for \'File read error\' and inspect each file carefully.')
     filesToOpen.append(outputFilenameCSV)
     if createCharts:
-        columns_to_be_plotted = [[1, 1],[4,4],[7,7]]
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[1, 1],[4,4],[7,7]]
         chart_title='Frequency of Languages Detected by 3 Algorithms'
         hover_label=['LANGDETECT', 'SPACY', 'LANGID']
         inputFilename = outputFilenameCSV
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel='_bar_chart',
                                                   chart_type_list=["bar"],
                                                   chart_title=chart_title,

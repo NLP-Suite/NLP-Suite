@@ -9,7 +9,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "sentence_analysis_ut
 import tkinter as tk
 import collections
 import os
-from stanza_functions import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import pandas as pd
 import IO_csv_util
 import IO_files_util
@@ -36,8 +36,10 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 		if len(input_dictionary_file) == 0:
 			return
 
-	if IO_csv_util.get_csvfile_numberofColumns(input_dictionary_file) == 2:
-		dic = pd.read_csv(input_dictionary_file)
+	nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(input_dictionary_file)
+
+	if nColumns == 2:
+		dic = pd.read_csv(input_dictionary_file, encoding='utf-8', error_bad_lines=False)
 		dic_value = dic.iloc[:, 0].tolist()
 		dic_sec_value = dic.iloc[:, 1].tolist()
 		dic = [(dic_value[i], dic_sec_value[i]) for i in range(len(dic_value))]
@@ -66,7 +68,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 							break
 						else:
 							continue
-				container.extend(In)
+				container.append(In)
 
 			ctr = collections.Counter(Extract(container))
 			for word in container:
@@ -78,7 +80,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 			DictionaryList.insert(0, ['Dict_value', 'Dict_second_value', 'Frequency', 'Sentence ID', 'Sentence',
 									  'Document ID', 'Document'])
 	else:
-		dic = pd.read_csv(input_dictionary_file)
+		dic = pd.read_csv(input_dictionary_file, encoding='utf-8', error_bad_lines=False)
 		dic_value = dic.iloc[:, 0].tolist()
 		if chartTitle == '':
 			chartTitle = "Dictionary value"
@@ -105,7 +107,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 							break
 						else:
 							continue
-				container.extend(In)
+				container.append(In)
 
 			ctr = collections.Counter(Extract(container))
 			for word in container:

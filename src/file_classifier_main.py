@@ -61,7 +61,7 @@ def run(input_main_dir_path, input_secondary_dir_path, outputDir,
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running the File Classifier at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the File Classifier at', True, '', True, startTime)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
@@ -208,7 +208,7 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 
 # change the value of the readMe_message
 readMe_message="The Python 3 script provides a way to classify unsorted files into the proper subdirectory using either a naive approach based on dates embedded in the filenames or a more sophisticated approach based on social actors and CoreNLP NER values of location, date, person, organization.\n\nThe NER classifier \n\nThe script will first build a dictionary of NER values for the documents in each subfolder, then process each unclassified document.\n\nIn INPUT the script takes two directories:\n  1. a main directory containing a list of SOURCE files with a date embedded in the filename;\n  2. a secondary directory containing a set of TARGET subdirectories, each with a set of files also with embedded dates.\n\nIn OUTPUT the sript produces a 2-columns csv file with: SOURCE filename; TARGET subdirectory.\n\nThe csv output file, after inspection, can be used to move the SOURCE files to the TARGET subdirectory.\n\nThe script processes each file in the SOURCE directory against each file in each sub-directory in the TARGET directory to compare embedded dates."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

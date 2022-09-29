@@ -1,5 +1,4 @@
 # Written by Roberto Franzosi May, September 2020
-# Written by Roberto Franzosi May, September 2020
 # Written by Roberto Franzosi September 2021
 
 import sys
@@ -27,7 +26,7 @@ import IO_csv_util
 import GIS_pipeline_util
 import GIS_file_check_util
 import IO_files_util
-import Stanford_CoreNLP_annotator_util
+import Stanford_CoreNLP_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -111,7 +110,7 @@ def run(inputFilename,
         reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
                                      reminders_util.message_geocoder, True)
 
-        locations = ''
+        locationFiles = []
 
     # START PROCESSING ---------------------------------------------------------------------------------------------------
 
@@ -124,10 +123,15 @@ def run(inputFilename,
 
     # checking for txt: NER=='LOCATION', provide a csv output with column: [Locations]
     if NER_extractor and csv_file=='':
+        # create a subdirectory of the output directory
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
+                                                           silent=False)
+        if outputDir == '':
+            return
 
         NERs = ['COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION']
 
-        locations = Stanford_CoreNLP_annotator_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+        locationFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                 outputDir, openOutputFiles, createCharts, chartPackage, 'NER', False,
                                                                 language_var,
                                                                 memory_var,
@@ -138,20 +142,21 @@ def run(inputFilename,
                                                                 date_separator_var=date_separator_var,
                                                                 date_position_var=date_position_var)
 
-        if len(locations)==0:
+        if len(locationFiles)==0:
             mb.showwarning("No locations","There are no NER locations to be geocoded and mapped in the selected input txt file.\n\nPlease, select a different txt file and try again.")
             return
         else:
-            NER_outputFilename = locations[0]
+            filesToOpen.extend(locationFiles)
+            NER_outputFilename = locationFiles[0]
 
         if extract_date_from_text_var or extract_date_from_filename_var:
             datePresent = True
             # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
-            df = pd.read_csv(locations[0]).rename(columns={"Word": "Location"})
+            df = pd.read_csv(locationFiles[0], encoding='utf-8', error_bad_lines=False).rename(columns={"Word": "Location"})
             # if IO_csv_util.rename_header(inputFilename, "Word", "Location") == False:
             #     return
             location_menu_var.set('Location')
-            # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
+            # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
             # Fill in empty dates with most recent valid date and save to the locations file
             saved_date = ""
             for index, row in df.iterrows():
@@ -164,17 +169,17 @@ def run(inputFilename,
             # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
             # if IO_csv_util.rename_header(inputFilename, "Word", "Location") == False:
             #     return
-            df = pd.read_csv(locations[0]).rename(columns={"Word": "Location"})
+            df = pd.read_csv(locationFiles[0], encoding='utf-8', error_bad_lines=False).rename(columns={"Word": "Location"})
             location_menu_var.set('Location')
-            # 'NER': ['Word', 'NER Value', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
+            # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
 
         # Clean dataframe, remove any 'DATE' or non-location rows
         del_list = []
         for index, row in df.iterrows():
-            if df['NER Value'][index] not in ['COUNTRY','STATE_OR_PROVINCE','CITY','LOCATION']:
+            if df['NER Tag'][index] not in ['COUNTRY','STATE_OR_PROVINCE','CITY','LOCATION']:
                 del_list.append(index)
         df = df.drop(del_list)
-        df.to_csv(NER_outputFilename, index=False)
+        df.to_csv(NER_outputFilename, encoding='utf-8', index=False)
         csv_file_var.set(NER_outputFilename)
         filesToOpen.append(NER_outputFilename)
         locationColumnName = 'Location'
@@ -192,9 +197,10 @@ def run(inputFilename,
 
         # locationColumnName where locations to be geocoded (or geocoded) are stored in the csv file;
         #   any changes to the columns will result in error
-        out_file, kmloutputFilename = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
-                        NER_outputFilename,outputDir,
-                        'Nominatim', GIS_package_var,
+        # out_file includes both kml file and Google Earth files
+        out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
+                        NER_outputFilename, inputDir, outputDir,
+                        'Nominatim', GIS_package_var, createCharts, chartPackage,
                         datePresent,
                         country_bias,
                         box_tuple,
@@ -206,10 +212,9 @@ def run(inputFilename,
                         [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
                         [1],[1]) # bold_var_list, italic_var_list)
 
-        if len(out_file)>0:
-            filesToOpen.extend(out_file)
-        if kmloutputFilename!='':
-            filesToOpen.append(kmloutputFilename)
+        if out_file!=None:
+            if len(out_file)>0:
+                filesToOpen.extend(out_file)
         if len(filesToOpen)>0:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
     else:
@@ -347,7 +352,10 @@ def display_txt_file_options(*args):
                 geocode_locations = True
                 map_locations_var.set(1)
                 map_locations = True
-        return cannotRun
+        else:
+            location_menu_var.set('')
+            location_field.config(state='disabled')
+    return cannotRun
 inputFilename.trace('w',display_txt_file_options)
 input_main_dir_path.trace('w',display_txt_file_options)
 
@@ -367,7 +375,7 @@ def check_csv_file_headers(csv_file):
         location_menu_var.set('NER')
         location_menu='NER'
         location_field.config(state='disabled')
-    if ('Location' in headers  and not 'Latitude' in headers) or "Word" in headers:
+    if ('Location' in headers and not 'Latitude' in headers) or "Word" in headers:
         geocode_locations_var.set(1)
         geocode_locations_checkbox.configure(state='disabled')
         if "Word" in headers:
@@ -452,7 +460,7 @@ def get_csv_file(window,title,fileType,annotate):
     filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
 
     if len(filePath)>0:
-        nRecords=IO_csv_util.GetNumberOfRecordInCSVFile(filePath, 'utf-8')
+        nRecords, nColumns =IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
         if nRecords==0:
             mb.showwarning(title='Warning',
                            message="The selected input csv file is empty.\n\nPlease, select a different file and try again.")
@@ -468,9 +476,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 
 #setup a button to open Windows Explorer on the selected input directory
 openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+# place widget with hover-over info
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,openInputFile_button,True, False, True,False, 90, GUI_IO_util.get_open_file_directory_coordinate(), "Open INPUT csv dictionary file")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,openInputFile_button,
+                    True, False, True,False, 90, GUI_IO_util.get_open_file_directory_coordinate(), "Open INPUT csv dictionary file")
 
 csv_file=tk.Entry(window, width=130,textvariable=csv_file_var)
 csv_file.config(state='disabled')
@@ -726,7 +736,7 @@ TIPS_options='utf-8 encoding','csv files - Problems & solutions','Statistical me
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if IO_setup_display_brief==False:
-        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, select an input file for the GIS script. Two two types of files are acceptable: txt or csv.\n\nTXT FILE. When a txt file is selected, the script will use the NER values from Stanford CoreNLP to obtain a list of locations saved as a csv file. The script will then process this file the same way as it would process a csv file in input containing location names.\n\nCSV FILE. When a csv file is selected it can be:\n  1. a file containing a column of location names that need to be geocoded (e.g., New York);\n  2. a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script Stanford_CoreNLP_main.py (the script parses text documents using the Stanford CoreNLP parser).'+GUI_IO_util.msg_Esc)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, select an input file for the GIS script. Two two types of files are acceptable: txt or csv.\n\nTXT FILE. When a txt file is selected, the script will use the NER values from Stanford CoreNLP to obtain a list of locations saved as a csv file. The script will then process this file the same way as it would process a csv file in input containing location names.\n\nCSV FILE. When a csv file is selected it can be:\n  1. a file containing a column of location names that need to be geocoded (e.g., New York);\n  2. a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script NLP_parsers_annotators_main.py (the script parses text documents using the Stanford CoreNLP parser).'+GUI_IO_util.msg_Esc)
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_corpusData+GUI_IO_util.msg_Esc)
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_outputDirectory+GUI_IO_util.msg_Esc)
     else:
@@ -749,7 +759,7 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script allows users to go from text to map in three steps:\n\n1. EXTRACT locations from a text file using Stanford CoreNLP NER extractor (NER values: CITY, STATE_OR_PROVINCE, COUNTRY);\n2. GEOCODE locations, previously extracted, using Nominatim or Google (an API is needed for Google);\n3. MAP locations, previously geocoded, using a selected GIS package (e.g., Google Earth Pro; Google Maps to produce heat maps; Google Maps requires an API key).\n\nOptions are preset and\or disabled depending upon the input type (directory or file; txt or csv file; csv CoNLL file or list of locations to be geocoded or already geocoded).\n\nAll three steps can be selected and carried out in sequence in a pipeline, going automatically from text to map.\n\nIn INPUT, the script can either take:\n   1. A CoNLL table produced by Stanford_CoreNLP.py and use the NER (Named Entity Recognition) values of LOCATION (STATE, PROVINCE, CITY, COUNTRY), values for geocoding;\n   2. a csv file that contains location names to be geocoded (e.g., Chicago);\n   2. a csv file that contains geocoded location names with latitude and longitude.\n\ncsv files, except for the CoNLL table, must have a column header 'Location' (the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location')."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 reminders_util.checkReminder(config_filename, reminders_util.title_options_GIS_default,

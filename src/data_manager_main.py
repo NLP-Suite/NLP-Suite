@@ -275,6 +275,7 @@ if __name__ == '__main__':
     openInputFile_button = tk.Button(window, width=3, text='',
                                      command=lambda: IO_files_util.openFile(window,
                                                                             selectedCsvFile_var.get()))
+    # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                    openInputFile_button,True, False, True, False, 90, GUI_IO_util.open_file_directory_coordinate, "Open displayed file")
 
@@ -309,16 +310,17 @@ if __name__ == '__main__':
     if GUI_util.inputFilename.get() != '':
         if selectedCsvFile_var.get() == '':
             selectedCsvFile_var.set(GUI_util.inputFilename.get())
-        numColumns = IO_csv_util.get_csvfile_numberofColumns(GUI_util.inputFilename.get())
+
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(GUI_util.inputFilename.get())
         if IO_csv_util.csvFile_has_header(GUI_util.inputFilename.get()) == False:
-            menu_values = range(1, numColumns + 1)
+            menu_values = range(1, nColumns + 1)
         else:
             data, headers = IO_csv_util.get_csv_data(GUI_util.inputFilename.get(), True)
             menu_values = headers
     else:
-        numColumns = 0
+        nColumns = 0
         menu_values = " "
-    if numColumns == -1:
+    if nColumns == -1:
         pass
     # return
 
@@ -843,11 +845,11 @@ if __name__ == '__main__':
                          message="The Data manager functions expect in input a csv file.\n\nPlease, select a csv file for your Default orGUI-specific I/O configuration and try again.\n\nThe RUN button is disabled until the required Input/Output option is entered.")
         menu_values = []
         if tracedInputFile != '':
-            numColumns = IO_csv_util.get_csvfile_numberofColumns(tracedInputFile)
-            if numColumns == 0 or numColumns == None:
+            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tracedInputFile)
+            if nColumns == 0 or nColumns == None:
                 return False
             if IO_csv_util.csvFile_has_header(tracedInputFile) == False:
-                menu_values = range(1, numColumns + 1)
+                menu_values = range(1, nColumns + 1)
             else:
                 data, headers = IO_csv_util.get_csv_data(tracedInputFile, True)
                 menu_values = headers
@@ -1141,7 +1143,7 @@ if __name__ == '__main__':
 
     # change the value of the readMe_message
     readMe_message = "The Python 3 scripts provide several ways of handling data from csv files.\n\nIn INPUT, the script takes one or more csv files depending upon the selected operation.\n\nIn OUTPUT, the script creates a new csv file.\n\nThe following operation are possible.\n\n   1. MERGE different csv files using one or more overlapping common field(s) as a way to JOIN the files together;\n   2. CONCATENATE into a single field the values of different fields from one csv file;\n   3. APPEND the content of different fields from one csv file after the content of a selected target field;\n   4. EXTRACT fields from one csv file, perhaps by specific field values (the equivalent of an SQL WHERE clause);\n   4. PURGE dulicate rows from one csv file."
-    readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+    readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
     GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,'data_manager_main.py',True)
 
     GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))

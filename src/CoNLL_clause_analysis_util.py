@@ -32,7 +32,7 @@ documentID_position = 11 # NEW CoNLL_U
 
 # Following are used if running all analyses to prevent redundancy
 # filesToOpen = []  # Store all files that are to be opened once finished
-input_file_name = ''
+inputFilename_name = ''
 output_dir = ''
 
 # def compute_stats(CoNLL_table):
@@ -103,7 +103,7 @@ def clause_data_preparation(data):
                 tense_col = 'Sentence'
                 s_counter+=1
             dat.append(i+[tense_col])
-            
+
     clause_stats = [['Clause Tags', 'Frequencies'],
                          ['Clause-level (S - Sentence)', s_counter],
                          ['Clause-level (SBAR - Clause introduced by a (possibly empty) subordinating conjunction)', sbar_counter],
@@ -121,16 +121,16 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running CLAUSE ANALYSES at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running CLAUSE ANALYSES at',
                                                  True, '', True, '', True)
 
     #output file names
     #clausal_analysis_file_name contains all the CoNLL table records that have a clausal tag
     clausal_analysis_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clause tags', 'list')
-    filesToOpen.append(clausal_analysis_file_name)
+    # filesToOpen.append(clausal_analysis_file_name)
     #clausal_analysis_stats_file_name will contain a data sheet with the frequency distribution of all available clausal tags and a chart sheet with the pie chart visualization of the data
-  
-    
+
+
     # if 0:
     #    stats_clauses(data)
     #else:
@@ -145,82 +145,27 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
 
     clausal_analysis_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clause tags', 'stats')
     clause_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'CA', 'Clause tags', 'list')
-    errorFound=IO_csv_util.list_to_csv(GUI_util.window,clausal_stats,clausal_analysis_stats_file_name)
-    if errorFound==True:
-        return
-    errorFound=IO_csv_util.list_to_csv(GUI_util.window,clausal_list,clause_file_name)
-    if errorFound==True:
-        return
-
-    df = pd.read_csv(clause_file_name, header=None)
-    df.to_csv(clause_file_name,
-				header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-						"Clause Tags"])
-    
+    # convert list to dataframe and save
+    # headers=['Clause Tags','Frequencies']
+    df = pd.DataFrame(clausal_stats)
+    IO_csv_util.df_to_csv(GUI_util.window, df, clausal_analysis_stats_file_name, headers=None, index=False, language_encoding='utf-8')
 
     if createCharts==True:
-        # chart_outputFilename= charts_Excel_util.create_excel_chart(GUI_util.window,
-        #                                 data_to_be_plotted=[clausal_stats],
-        #                                 inputFilename=clausal_analysis_stats_file_name,
-        #                                 outputDir=outputDir,
-        #                                 scriptType='CoNLL_Clause',
-        #                                 chartTitle="Frequency Distribution of Clause Type",
-        #                                 chart_type_list=["pie"],
-        #                                 column_xAxis_label="Clause Tags",
-        #                                 column_yAxis_label="Frequency")
-        columns_to_be_plotted=[[0,1]]
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[0,1]]
         count_var=0
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, clausal_analysis_stats_file_name, outputDir,
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, clausal_analysis_stats_file_name, outputDir,
                                                         outputFileLabel='clausal_stats',
                                                         chartPackage=chartPackage,
                                                         chart_type_list=['bar'],
-                                                        chart_title="Frequency Distribution of Clause Type",
+                                                        chart_title="Frequency Distribution of Clause Types",
                                                         column_xAxis_label_var='Clause Type',
                                                         hover_info_column_list=[],
-                                                        count_var=count_var)
-        if chart_outputFilename != "":
+                                                        count_var=count_var,
+                                                        complete_sid=False)  # TODO to be changed
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
-        # return filesToOpen # to avoid code breaking in plot by sentence index
-
-        # line plot by sentence index
-        chart_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename=clause_file_name,
-                                        outputDir=outputDir,
-                                        select_col=['Clause Tags'],
-                                        group_col=['Sentence ID'],
-                                        chartPackage=chartPackage,
-                                        chartTitle="Frequency Distribution of Clause")
-        # chart_outputFilename=statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
-        #                                                                 clausal_analysis_file_name,
-        #                                                                 '',
-        #                                                                 outputDir,
-        #                                                                 openOutputFiles,
-        #                                                                 createCharts,
-        #                                                                 [[8,8]],
-        #                                                                 ['CLAUSE TAGS'],
-        #                                                                 ['FORM','Sentence'],
-        #                                                                 ['Sentence ID','Document ID'],
-        #                                                                 'CA','line')
-        if len(chart_outputFilename)>0:
-            filesToOpen.extend(chart_outputFilename)
-
-        # output_df= charts_Excel_util.add_missing_IDs(clausal_analysis_file_name)
-        # # overwrite original file having added any missing document ID and sentence ID
-        # output_df.to_csv(clausal_analysis_file_name,index=False)
-        # columns_to_be_plotted = [[1, 8]]
-        # hover_label = ['CLAUSAL TAG-DESCRIPTION']
-        # inputFilename = clausal_analysis_file_name
-        # chart_outputFilename = charts_util.run_all(columns_to_be_plotted,
-        #                                             inputFilename, outputDir,
-        #                                             outputFileLabel='CoNLL_Clause',
-        #                                             chart_type_list=["line"],
-        #                                             chart_title='Frequency of Clause Tags',
-        #                                             column_xAxis_label_var='Sentence index',
-        #                                             hover_info_column_list=hover_label,
-        #                                             count_var=1)
-        # if chartPackage=='Excel' and chart_outputFilename!='':
-        #     filesToOpen.append(chart_outputFilename)
-
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running CLAUSE ANALYSES at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running CLAUSE ANALYSES at', True, '', True, startTime, True)
     return filesToOpen
 

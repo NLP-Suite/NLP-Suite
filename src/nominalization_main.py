@@ -21,7 +21,7 @@ import nltk
 # check WordNet
 IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
 
-from stanza_functions import stanzaPipeLine, sent_tokenize_stanza
+from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
 # MUST use this version or code will break no longer true; pywsd~=1.2.4 pip install pywsd~=1.2.4; even try pip install pywsd=1.2.2
 #   or this version pip install pywsd==1.0.2
 # https://github.com/alvations/pywsd/issues/65
@@ -44,7 +44,7 @@ import GUI_IO_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-#first_section is to extract the word from "syns". 
+#first_section is to extract the word from "syns".
 # syns.name() of "intention" is "purpose.n.01". So "first_section" gets everything before the first period: "purpose"
 
 #params: sent > string
@@ -107,7 +107,7 @@ def nominalized_verb_detection(docID,doc,sent):
                     noun_cnt[word] += 1
                     continue
                 if wn.lemmas(word):
-                    for lemma in wn.lemmas(word): 
+                    for lemma in wn.lemmas(word):
                         derive = lemma.derivationally_related_forms()
                         if derive not in derivationals and derive:
                             derivationals.append(derive)
@@ -181,7 +181,7 @@ def list_to_csv(output_filename, lists):
     IO_csv_util.list_to_csv(GUI_util.window,lists,output_filename,colnum=0)
 
 def write_dir_csv(output_filename, lists, file_name):
-    parts = file_name.split(os.path.sep) 
+    parts = file_name.split(os.path.sep)
     file_name = parts[-1]
     for list_ in lists:
         list_.append(file_name)
@@ -213,7 +213,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
 
         nDocs=len(inputDocs)
 
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running Nominalization at',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Nominalization at',
                                            True, '', True, '', False)
 
         #add all into a sum
@@ -236,14 +236,14 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
             # result1 contains the sentence and nominalized values for a specific document
             result, result1 = nominalized_verb_detection(docID,doc,fin.read())
             # result2 contains the sentence and nominalized values for all documents
-            result2.extend(result1)
+            result2.append(result1)
             fin.close()
 
             # list all verbs as TRUE/FALSE if nominalized
             for word, verb, boolean in result:
                 result_dir.append([word, verb, boolean, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
-            result_dir2.extend(result_dir)
+            result_dir2.append(result_dir)
 
             if len(inputDir) > 0:
                 fname = os.path.basename(os.path.normpath(inputDir))+"_dir"
@@ -339,9 +339,10 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 # bar chart of nominalized verbs
 
                 inputFilename = output_filename_dir_nominalized_frequencies
-                columns_to_be_plotted = [[0, 1]]
+                columns_to_be_plotted_xAxis=[]
+                columns_to_be_plotted_yAxis=[[0, 1]]
 
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                                  outputFileLabel='NOM_verb',
                                                                  chartPackage=chartPackage,
                                                                  chart_type_list=['bar'],
@@ -362,9 +363,10 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 # bar chart of nouns
 
                 inputFilename = output_filename_dir_noun_frequencies
-                columns_to_be_plotted = [[0, 1]]
+                columns_to_be_plotted_xAxis=[]
+                columns_to_be_plotted_yAxis=[[0, 1]]
 
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+                chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                                  outputFileLabel='NOM_noun',
                                                                  chartPackage=chartPackage,
                                                                  chart_type_list=['bar'],
@@ -379,7 +381,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running Nominalization at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Nominalization at', True, '', True, startTime)
 
     if openOutputFiles == 1:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -484,7 +486,7 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts analyzes a text file for instances of nominaliztion (i.e., the use of nouns instead of verbs, such as 'the lynching' occurred).\n\nNominalization, together with passive verb voices, can be used to deny agency. In fact, in an expression such as 'the lynching occurred' there is no mention of an agent, of who did it."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

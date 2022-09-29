@@ -132,28 +132,26 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                Gephi_checkbox)
 
 if GUI_util.inputFilename.get() != '':
-    if selectedCsvFile_var.get() == '':
-        selectedCsvFile_var.set(GUI_util.inputFilename.get())
-    numColumns = IO_csv_util.get_csvfile_numberofColumns(GUI_util.inputFilename.get())
+    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(GUI_util.inputFilename.get())
     if IO_csv_util.csvFile_has_header(GUI_util.inputFilename.get()) == False:
-        menu_values = range(1, numColumns + 1)
+        menu_values = range(1, nColumns + 1)
     else:
         data, headers = IO_csv_util.get_csv_data(GUI_util.inputFilename.get(), True)
         menu_values = headers
 else:
-    numColumns = 0
+    nColumns = 0
     menu_values = " "
-if numColumns == -1:
+if nColumns == -1:
     pass
 
 def changed_filename(tracedInputFile):
     menu_values = []
     if tracedInputFile != '':
-        numColumns = IO_csv_util.get_csvfile_numberofColumns(tracedInputFile)
-        if numColumns == 0 or numColumns == None:
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tracedInputFile)
+        if nColumns == 0 or nColumns == None:
             return False
         if IO_csv_util.csvFile_has_header(tracedInputFile) == False:
-            menu_values = range(1, numColumns + 1)
+            menu_values = range(1, nColumns + 1)
         else:
             data, headers = IO_csv_util.get_csv_data(tracedInputFile, True)
             menu_values = headers
@@ -312,7 +310,7 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 
 # change the value of the readMe_message
 readMe_message="The Python 3 script and online services display the content of text files as word cloud.\n\nA word cloud, also known as text cloud or tag cloud, is a collection of words depicted visually in different sizes (and colors). The bigger and bolder the word appears, the more often it’s mentioned within a given text and the more important it is.\n\nDifferent, freeware, word cloud applications are available: 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle'. These applications require internet connection.\n\nThe script also provides Python word clouds (via Andreas Mueller's Python package WordCloud https://amueller.github.io/word_cloud/) for which no internet connection is required."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

@@ -82,7 +82,7 @@ def run(inputFilename, inputDir, outputDir,
 
         # create a subdirectory of the output directory
         outputCorefedDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='coref',
-                                                            silent=True)
+                                                            silent=False)
         if outputCorefedDir == '':
             return
 
@@ -109,7 +109,7 @@ def run(inputFilename, inputDir, outputDir,
             mb.showwarning("Output directory",
                            "All output files have been saved to a subdirectory of the selected output directory at\n\n" + str(
                                outputCorefedDir))
-            filesToOpen.extend(file_open)
+            filesToOpen.append(file_open)
 
     # split merged coreferenced file  --------------------------------------------------------------------------------------------------------
     # split <@# #@> --------------------------------------------------------------------------------------
@@ -267,7 +267,7 @@ limit_sentence_length_var.set(100)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 680, y_multiplier_integer,
                                                limit_sentence_length_var)
 
-CoRef_var.set(0)
+CoRef_var.set(1)
 CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP - Neural Network)',
                                 variable=CoRef_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
@@ -302,7 +302,11 @@ def get_corefed_txt_file(window,title,fileType,annotate):
     return filePath
 
 corefed_txt_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT corefed TXT file',command=lambda: get_corefed_txt_file(window,'Select INPUT csv file', [("coreferenced file", "*.txt")],True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,corefed_txt_file_button,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   corefed_txt_file_button,
+                                   True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "Click on the button to select a previosuly coreferenced txt file for further manual coreference")
 
 #setup a button to open Windows Explorer on the selected input directory
 openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, corefed_txt_file_var.get()))
@@ -414,11 +418,13 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordi
 
 # change the value of the readMe_message
 readMe_message = "This set of Python 3 scripts implement a Stanford CoreNLP neural network approach to coreference resolution for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nThe NLP Suite implements only PRONOMINAL coreference but NOT NOMINAL.\n\nIn INPUT the scripts expect either a single txt file or a set of txt files in a directory.\n\nIn OUTPUT, the scripts will produce a coreferenced txt file. If manual edit is selected, the script will also display a split-screen file for manual editing. On the left-hand side, pronouns cross-referenced by CoreNLP are tagged in YELLOW; pronouns NOT cross-referenced by CoreNLP are tagged in BLUE. On the right-hand side, pronouns cross-referenced by CoreNLP are tagged in RED, with the pronouns replaced by the referenced nouns.\n\nThe user can edit any unresolved or wrongly resolved pronominal cases directly on the right panel, as if it were any text editor and then save the changes."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,'Stanford_CoreNLP_coreference_main')
 
 if input_main_dir_path.get()!='':
     reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
                                  reminders_util.message_CoreNLP_coref, True)
+reminders_util.checkReminder(config_filename, reminders_util.title_options_only_CoreNLP_coref,
+                             reminders_util.message_only_CoreNLP_coref, True)
 
 GUI_util.window.mainloop()

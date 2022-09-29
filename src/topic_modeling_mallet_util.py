@@ -38,7 +38,7 @@ from sys import platform
 
 import IO_files_util
 import charts_util
-import file_type_converter_util
+import file_converter_util
 import IO_user_interface_util
 
 
@@ -183,7 +183,7 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
     #                                                     Keys_FileName + "\n" +
     #                                                     Compressed_FileName)
 
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running Mallet Topic modeling at ', True,
                                                    "Depending upon corpus size, computations may take a while... "
                                                    "Please, be patient...")
@@ -235,12 +235,12 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
                  '--num-topics', str(numTopics), '--output-state', Compressed_FileName, '--output-topic-keys',
                  Keys_FileName, '--output-doc-topics', Composition_FileName])
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Mallet Topic modeling at ', True, '', True, startTime)
 
     # https://stackoverflow.com/questions/29759305/how-do-i-convert-a-tsv-to-csv
 
-    # convert to csv Mallet tsv output files 
+    # convert to csv Mallet tsv output files
     # read Mallet tab-delimited files; both Keys_FileName and Composition_FileName must be converted
 
     if (not os.path.isfile(Keys_FileName)) and (not os.path.isfile(Composition_FileName)):
@@ -250,38 +250,25 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
                                'variables by reading the TIPS file for Mallet installation and setting Mallet '
                                'environment variables.')
         return
-    Keys_FileName = file_type_converter_util.tsv_converter(GUI_util.window, Keys_FileName, outputDir)
-    Composition_FileName = file_type_converter_util.tsv_converter(GUI_util.window, Composition_FileName, outputDir)
+    Keys_FileName = file_converter_util.tsv_converter(GUI_util.window, Keys_FileName, outputDir)
+    Composition_FileName = file_converter_util.tsv_converter(GUI_util.window, Composition_FileName, outputDir)
     filesToOpen.append(Keys_FileName)
     filesToOpen.append(Composition_FileName)
 
     if createCharts:
-        # chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, Keys_FileName,
-        #                                                    outputDir,
-        #                                                    columns_to_be_plotted_bar=[[0, 1]],
-        #                                                    # columns_to_be_plotted_bySent=[[4, 2]],
-        #                                                    # the fields must be numeric?
-        #                                                    columns_to_be_plotted_bySent=[[]],
-        #                                                    columns_to_be_plotted_byDoc=[[]],
-        #                                                    chartTitle='Mallet Topics',
-        #                                                    count_var=0, hover_label=[2],
-        #                                                    outputFileNameType='',  # 'POS_bar',
-        #                                                    column_xAxis_label='Topic #',
-        #                                                    column_yAxis_label='Topic weight',
-        #                                                    groupByList=[],
-        #                                                    plotList=[],
-        #                                                    chart_title_label='')
-        # if chart_outputFilename != None:
-        #     if len(chart_outputFilename) > 0:
-        #         filesToOpen.extend(chart_outputFilename)
+        # the MALLET files do not have headers to be able to use charts_util.visualize_chart
 
-        columns_to_be_plotted=[[0, 1]]
-        hover_label=[2]
-        chartTitle = 'Mallet Topics'
-        xAxis = 'Topic #'
-        yAxis = 'Topic weight'
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[]
+        for i in range(2, numTopics):
+            columns_to_be_plotted_yAxis.append([1, i])
 
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, Keys_FileName, outputDir,
+        hover_label=[]
+        chartTitle = 'Mallet Topics (Topic Contribution to Document)'
+        xAxis = 'Document'
+        yAxis = 'Topic weight in document'
+
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, Composition_FileName, outputDir,
                                                   'Mallet_TM',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
@@ -291,7 +278,27 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
                                                   count_var=0,
                                                   column_yAxis_label_var=yAxis)
 
-        if chart_outputFilename != "":
+        if chart_outputFilename != None:
+            filesToOpen.append(chart_outputFilename)
+
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[0, 1]]
+        hover_label=[2]
+        chartTitle = 'Mallet Topics (Topic Weight by Topic)'
+        xAxis = 'Topic #'
+        yAxis = 'Topic weight'
+
+        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, Keys_FileName, outputDir,
+                                                  'Mallet_TM',
+                                                  chartPackage=chartPackage,
+                                                  chart_type_list=["bar"],
+                                                  chart_title=chartTitle,
+                                                  column_xAxis_label_var=xAxis,
+                                                  hover_info_column_list=hover_label,
+                                                  count_var=0,
+                                                  column_yAxis_label_var=yAxis)
+
+        if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
     if openOutputFiles:

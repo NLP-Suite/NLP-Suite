@@ -1,14 +1,20 @@
 # Written by Tony Chen Gu in Feb 2022
 # Contact: chentony2011@hotmail.com
 
+import sys
+import GUI_util
+import IO_libraries_util
+
+if IO_libraries_util.install_all_packages(GUI_util.window,"charts_plotly_util",['os','pandas','plotly','kaleido'])==False:
+    sys.exit(0)
+
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 import os
-import charts_util
+
 import IO_csv_util
-import IO_files_util
 
 ## NOTE:
 ## some graphing functions has a column placed at the end
@@ -26,6 +32,8 @@ import IO_files_util
 #                        second_y_var=0,
 #                        second_yAxis_label=''):
 # match the excel chart format
+# TODO Tony when plotting bar charts with documents in the X-axis we need to remove the path and just keep the tail
+#   or the display is too messy
 def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_to_plot,
                         column_xAxis_label='',
                         column_yAxis_label='',
@@ -34,11 +42,11 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
     # if we need to remove the hyperlinks, we need to make a temporary data for plotting
     if remove_hyperlinks:
         remove_hyperlinks,inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
-    
+
     try:
-        data = pd.read_csv(inputFilename, encoding='utf-8')
+        data = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False)
     except pd.errors.ParserError:
-        data = pd.read_csv(inputFilename, encoding='utf-8', sep='delimiter')
+        data = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False, sep='delimiter')
     except:
         print("Error: failed to read the csv file named: "+inputFilename)
         return
@@ -111,12 +119,15 @@ def save_chart(fig, outputDir, chartTitle, static_flag, x_label = '', y_label = 
         savepath = os.path.join(outputDir, chartTitle + '.png')
         fig.write_image(savepath)
     else:
+        # if the chat title has double lines, keep only the last line
+        if "\n" in chartTitle:
+            chartTitle=chartTitle.split("\n")[1]
         savepath = os.path.join(outputDir, chartTitle + '.html')
         fig.write_html(savepath)
     return savepath
 
 #plot bar chart with plotly
-#fileName is a csv file with data to be plotted 
+#fileName is a csv file with data to be plotted
 #x_label indicates the column name of x axis from the data
 #height indicates the column name of y axis from the data
 #the output file would be a html file with hover over effect names by the chart title
@@ -124,7 +135,7 @@ def save_chart(fig, outputDir, chartTitle, static_flag, x_label = '', y_label = 
 #Users are expected to provide the x label and their hights.
 #If not call the get_frequencies function to get the frequencies of the categorical variables in x_label column
 def plot_bar_chart_px(x_label, fileName, chartTitle, height = ''):
-    data = pd.read_csv(fileName, encoding='utf-8')
+    data = pd.read_csv(fileName, encoding='utf-8', error_bad_lines=False)
     if height == '':
         height = x_label+"_count"
         data = get_frequencies(data, x_label)
@@ -136,13 +147,13 @@ def plot_bar_chart_px(x_label, fileName, chartTitle, height = ''):
     return fig
 
 #plot pie chart with plotly
-#fileName is a csv file with data to be plotted 
+#fileName is a csv file with data to be plotted
 #x_label indicates the column name of x axis from the data
 #height indicates the column name of y axis from the data
 #the output file would be a html file with hover over effect names by the chart title
 #duplicates allowed, would add up the counts
 def plot_pie_chart_px(x_label, fileName, chartTitle, height = ''):
-    data = pd.read_csv(fileName, encoding='utf-8')
+    data = pd.read_csv(fileName, encoding='utf-8', error_bad_lines=False)
     if height == '':
         height = x_label+"_count"
         data = get_frequencies(data, x_label)
@@ -156,7 +167,7 @@ def plot_pie_chart_px(x_label, fileName, chartTitle, height = ''):
 #y_label indicates the column name of y axis from the data    COULD BE A DISCRETE VARIABLE
 #the output file would be a html file with hover over effect names by the chart title
 def plot_scatter_chart_px(x_label, y_label, fileName, chartTitle):
-    data = pd.read_csv(fileName, encoding='utf-8')
+    data = pd.read_csv(fileName, encoding='utf-8', error_bad_lines=False)
     fig = px.scatter(data, x=x_label, y=y_label)
     fig.update_layout(title=chartTitle, title_x=0.5)
     return fig
@@ -168,7 +179,7 @@ def plot_scatter_chart_px(x_label, y_label, fileName, chartTitle):
 #the output file would be a html file with hover over effect names by the chart title
 #null value will cause an unclosed shape. This function default removes all rows contaning null values
 def plot_radar_chart_px(theta_label, fileName, chartTitle, r_label = None):
-    data = pd.read_csv(fileName, encoding='utf-8')
+    data = pd.read_csv(fileName, encoding='utf-8', error_bad_lines=False)
     if r_label is None:
         r_label = theta_label+"_count"
         data = get_frequencies(data, theta_label)
@@ -193,7 +204,7 @@ def plot_multi_bar_chart_px(data, chartTitle, cols_to_plot):
 
 #plot multi line chart
 def plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, series_label_list = None):
-    data = pd.read_csv(fileName, encoding='utf-8')
+    data = pd.read_csv(fileName, encoding='utf-8', error_bad_lines=False)
     data.fillna(0, inplace=True)
     figs = make_subplots()
     col_name = list(data.head())
@@ -237,7 +248,7 @@ def plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, se
 #     outputDir = 'C:/Users/Tony Chen/Desktop/NLP_working'
 
 #     #plot_bar_chart(x_label, height, fileName, outputDir, chartTitle, hover_label)
-    
+
 #     #plot_radar_chart_px(x_label, height, fileName, outputDir, chartTitle)
 #     plot_multi_line_chart_w_slider_px(fileName,outputDir,chartTitle)
 

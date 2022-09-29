@@ -1,6 +1,7 @@
 import tkinter.messagebox as mb
 import IO_csv_util
 import CoNLL_util
+import pandas as pd
 
 # returns False if error found
 def geocoded_checker(numColumns, minColumns, headers, locationColumnValue, inputFilename, encodingValue):
@@ -13,7 +14,7 @@ def geocoded_checker(numColumns, minColumns, headers, locationColumnValue, input
     latitude_name = headers[location_num + 1]
     longitude_name = headers[location_num + 2]
     try:
-        dt = pd.read_csv(inputFilename, encoding=encodingValue)
+        dt = pd.read_csv(inputFilename, encoding=encodingValue, error_bad_lines=False)
     except:
         mb.showerror(title='Input file error', message="There was an error reading the input file\n" + str(
             inputFilename) + "\nwith geocoded input. Most likely, the error is due to an encoding error. Your current encoding value is " + encodingValue + ".\n\nSelect a different encoding value and try again.")
@@ -48,7 +49,7 @@ def geocoded_checker(numColumns, minColumns, headers, locationColumnValue, input
 # Checks that the location column is a column of strings
 def location_column_checker(inputFilename, locationColumnValue, encodingValue):
     try:
-        dt = pd.read_csv(inputFilename, encoding=encodingValue)
+        dt = pd.read_csv(inputFilename, encoding=encodingValue, error_bad_lines=False)
     except:
         mb.showerror(title='Input file error', message="There was an error reading the input file\n" + str(
             inputFilename) + "\nwith geocoded input. Most likely, the error is due to an encoding error. Your current encoding value is " + encodingValue + ".\n\nSelect a different encoding value and try again.")
@@ -84,7 +85,7 @@ def restrictions_checker(inputFilename, inputIsCoNLL, withHeader, headers,
     # Check location columns for string values -------------------------------------------------
 
     encodingValue = 'utf-8'
-    locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnValue)
+    locationColumnNumber=IO_csv_util.get_columnNumber_from_headerValue(headers,locationColumnValue, inputFilename)
     if inputIsCoNLL == False:
         if len(locationColumnValue) > 0:
             # check that location column is a column of strings

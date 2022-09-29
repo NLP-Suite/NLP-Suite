@@ -11,7 +11,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"Newspaper titles",['o
 
 import glob
 import os
-from stanza_functions import stanzaPipeLine, sent_tokenize_stanza
+from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
 import string
 import tkinter as tk
 import tkinter.messagebox as mb
@@ -31,8 +31,10 @@ import file_filename_util
 #   The reason is that if many successive paragraphs have no end-of-paragraph punctuation, Stanford CoreNLP will string all of them together
 #       potentially creating unduly long sentences that may lead to efficiency issues
 #       https://stanfordnlp.github.io/CoreNLP/memory-time.html
-def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, openOutputFiles):
-    result=file_filename_util.backup_files(inputFilename, inputDir)
+
+# extra parameters passed to uniform the funct call
+def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, openOutputFiles,createCharts=False,chartPackage='Excel'):
+    result=file_filename_util.backup_files(inputFilename, inputDir,'Add full-stops to paragraphs')
     if result==False:
         return
 
@@ -110,19 +112,25 @@ def check_typesetting_hyphenation(window,inputFilename,inputDir, outputDir='',op
         for line in source.readlines():
             line = line.rstrip("\n")
             if line.endswith("-"):
+                if len(line)>=2:
+                    if line[-2]==' ':
+                        continue
                 hyphenated_lines += 1
                 lin, _, e = line.rpartition(" ")
                 lines.append(line)
+
     if hyphenated_lines > 0:
+        mb.showwarning('Warning', 'There are ' + str(
+            hyphenated_lines) + ' typesetting hyphenated lines in the input file(s).\n\nPlease, check carefully the output csv file to make sure that there are no legitimate end-of-line hyphens (e.g., pretty-smart) that should not be joined together. In such legitimate cases, please, manually move the line end to the next line.')
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'lines with end hyphen')
         lines.insert(0,'Line ending with -')
         IO_error = IO_csv_util.list_to_csv(window, lines, outputFilename)
-        mb.showwarning('Warning','There are ' + str(hyphenated_lines) + ' typesetting hyphenated lines in the input file(s).\n\nPlease, check carefully the output csv file to make sure that there are no legitimate end-of-line hyphens (e.g., pretty-smart) that should not be joined together. In such legitimate cases, please, manually move the line end to the next line.')
         if not IO_error:
             filesToOpen.append(outputFilename)
         if openOutputFiles:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-
+    else:
+        mb.showwarning('Warning', 'There are ' + str(hyphenated_lines) + ' typesetting hyphenated lines in the input file(s).')
 
 def remove_typeseting_hyphenation(window,inputFilename,inputDir, outputDir='',openOutputFiles=False,createCharts=False,chartPackage='Excel'):
 
@@ -152,6 +160,9 @@ def remove_typeseting_hyphenation(window,inputFilename,inputDir, outputDir='',op
             for line in source.readlines():
                 line = line.rstrip("\n")
                 if line.endswith("-"):
+                    if len(line) >= 2:
+                        if line[-2] == ' ': # do not convert - preceded by a space
+                            continue
                     removed_hyphens +=1
                     lin, _, e = line.rpartition(" ")
                 else:
@@ -224,8 +235,8 @@ def remove_characters_between_characters(window,inputFilename,inputDir, outputDi
             mb.showwarning(title='Edits saved', message=str(i) + ' substrings contained between ' + startCharacter + ' ' + endCharacter + ' were removed and saved directly in the input file ' + tail)
 
 # inputFilename contains path
-def remove_blank_lines(window,inputFilename,inputDir, outputDir='',openOutputFiles=False):
-    result=file_filename_util.backup_files(inputFilename, inputDir)
+def remove_blank_lines(window,inputFilename,inputDir, outputDir='',openOutputFiles=False,createCharts=False,chartPackage='Excel'):
+    result=file_filename_util.backup_files(inputFilename, inputDir,"Remove blank lines")
     if result==False:
         return
 
@@ -290,7 +301,7 @@ def isTitle(sentence,Title_length_limit):
         # print sentence
         return True
 
-def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles):
+def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPackage):
 
     if inputDir=='' and inputFilename!='':
         NUM_DOCUMENT=1
@@ -449,7 +460,7 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles):
 # Needs special handling https://stackoverflow.com/questions/6067673/urldecoder-illegal-hex-characters-in-escape-pattern-for-input-string
 # https://stackoverflow.com/questions/7395789/replacing-a-weird-single-quote-with-blank-string-in-python
 def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
-    result=file_filename_util.backup_files(inputFilename, inputDir)
+    result=file_filename_util.backup_files(inputFilename, inputDir,"Convert non-ASCII quotes")
     if result==False:
         return False
 
@@ -463,7 +474,7 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
         return False
 
     docError = 0
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                        'Started running characters conversion at',
                                                  True, '', True, '', True)
     for doc in inputDocs:
@@ -535,10 +546,10 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
 # 			file.write(fullText)
 # 			file.close()
 
-def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFiles,string_IN=[],string_OUT=[],silent=False):
+def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFiles=True,string_IN=[],string_OUT=[],silent=False):
     #edited by Claude Hu 02/2021
     #string_IN=[],string_OUT=[], in the form as list so that running this function can finish replacement of multiple strings without open one file repetitively
-    result=file_filename_util.backup_files(inputFilename, inputDir)
+    result=file_filename_util.backup_files(inputFilename, inputDir,"Find and replace string")
     if result==False:
         return
 
@@ -590,7 +601,7 @@ def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFil
                     # clear the input file; for some bizarre reason it appends the search word otherwise
                     file.truncate(0)
                     file.write(fullText)
-                    changed_values.extend([[string_IN[i],string_OUT[i],index, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
+                    changed_values.append([[string_IN[i],string_OUT[i],index, IO_csv_util.dressFilenameForCSVHyperlink(doc)]])
             file.close()
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'find_replace')

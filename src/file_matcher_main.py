@@ -12,13 +12,14 @@ import tkinter as tk
 import IO_user_interface_util
 import file_matcher_util
 import GUI_IO_util
+import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 
 def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, createCharts, chartPackage, find_var, source_extension_var, target_extension_var, matching_var, copy_var, move_var, character_value, number_of_items):
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start', 'Started running File Matcher at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running File Matcher at',
                                                  True, '', True, '', False)
 
     file_matcher_util.run_default(GUI_util.window, [inputPath], outputPath, selectedCsvFile_var, openOutputFiles, matching_var, source_extension_var, target_extension_var, copy_var, move_var, character_value, number_of_items)
@@ -38,7 +39,7 @@ def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, createChart
     # subdirs: Files in root of type directory
     # files: Files in current root (not in subdirs) of type other than directory
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end', 'Finished running File matcher at', True, '', True, startTime, False)
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running File matcher at', True, '', True, startTime, False)
 
     # if i > 0:
     # 	mb.showwarning(title='File matcher', message=str(i) + ' files have been matched.')
@@ -122,6 +123,7 @@ move_var=tk.IntVar()
 
 
 def clear(e):
+    selectedCsvFile_var.set('')
     source_file_type_menu_var.set('')
     target_file_type_menu_var.set('')
     GUI_util.tips_dropdown_field.set('Open TIPS files')
@@ -135,12 +137,18 @@ def get_additional_csvFile(window,title,fileType):
         selectedCsvFile.config(state='normal')
         selectedCsvFile_var.set(filePath)
 
-# add_file_button = tk.Button(window, text='csv file', width=2,height=1,state='disabled',command=lambda: get_additional_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
-add_file_button = tk.Button(window, text='csv file', command=lambda: get_additional_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,add_file_button,True)
+add_file_button = tk.Button(window, text='Select csv file', command=lambda: get_additional_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer, add_file_button,
+    True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(), "Click on the button to select the csv file to be used to find file matches")
+openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
+# place widget with hover-over info
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100, y_multiplier_integer,openInputFile_button,
+    True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+100, "Open INPUT csv file")
 
-selectedCsvFile = tk.Entry(window,width=70,state='disabled',textvariable=selectedCsvFile_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,y_multiplier_integer,selectedCsvFile)
+selectedCsvFile = tk.Entry(window,width=150,state='disabled',textvariable=selectedCsvFile_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+150,y_multiplier_integer,selectedCsvFile)
 
 find_var.set(1)
 find_checkbox = tk.Checkbutton(window, text='Match files', variable=find_var, onvalue=1, offvalue=0)
@@ -260,10 +268,10 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click to select a csv file containing a list of filenames to be used for finding matches.\n\nTHIS IS PARTICULARLY USEFUL IF YOU WANT TO PROCESS PARTIAL MATCHES, since currently the partial match option is not available. TO GENERATE A LIST OF FILES FOR PARTIAL MATCH USE THE FILE_MANAGER_MAIN.PY, WITH THE LIST OPTION AND THE FILTER 'By number of embedded items'.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click to select a csv file containing a list of filenames to be used for finding matches.\n\nTO GENERATE A LIST OF FILES FOR PARTIAL MATCH YOU CAN USE THE FILE_MANAGER_MAIN.PY, WITH THE LIST OPTION AND THE FILTER 'By number of embedded items'.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to use the script 'Match files'.\n\nThe script identifies files having the same filename and different extensions (e.g., The Atlanta Journal_3-12-1956_4_2.pdf and The Atlanta Journal_3-12-1956_8_2.txt). All subdirectories of a selected directory will be searched for a selected pair of source and target extensions (e.g., pdf and docx).\n\nThe script is very useful, for instance, for identifying pdf files that have been manually transcribed (or automatically converted) to doc/docx or txt format. But it can be used more generally to identify files with the same filename and different extensions.\n\nUsing * * for both source and target will identify any file with the same exact filename and different extensions of any type.\n\nYou can select to match files with an exact match with the baseline filename (e.g., The Atlanta Journal_3-12-1956_8_2), or with a partial match (e.g., only the first two items in the filenames, The Atlanta Journal_3-12-1956).")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to find files with an exact match with the SOURCE filename (e.g., The Atlanta Journal_3-12-1956_8_2), or with a partial match (e.g., only the first two items in the filenames, The Atlanta Journal_3-12-1956).\n\nFor a partial match you will need to enter the character separating items (e.g., _) and the number of items (e.g., 2) and whether you want to include only the first # items.\n\nTHE OPTION IS CURRENTLY DISABLED AND ONLY THE EXACT MATCH WORKS.\n\nIF YOU WANT TO PROCESS PARTIAL MATCHES, YOU NEED TO USE AN INPUT CSV FILE WITH A LIST OF FILES FOR PARTIAL MATCH. TO GENERATE THE CSV FILE, USE THE FILE_MANAGER_MAIN.PY, WITH THE LIST OPTION AND THE FILTER 'By number of embedded items'.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick one or the other checkboxes to COPY or MOVE the matched files from the INPUT directory to the OUTPUT directory.\n\nIn the OUTPUT directory, will create a new sub-directory 'file_matcher_OUTPUT' (any previous 'file_matcher_OUTPUT' subdirectory will be overwritten). Inside this sub-directory, three sub-directories will be created: matched, unmatched, duplicates where matched, unmatched, and duplicate files will be copied/moved.\n\nLeave the checkboxes unticked if you just want to get a list of files.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to find files with an exact match with the SOURCE filename (e.g., The Atlanta Journal_3-12-1956_8_2), or with a partial match (e.g., only the first two items in the filenames, The Atlanta Journal_3-12-1956).\n\nFor a partial match, untick the Exact match checkbox and enter the character separating items (e.g., _) and the number of items (e.g., 2) and whether you want to include only the first # items. For instance, if you want a partial match based on newspaper name and date of newspaper articles such as Alexandria Gazette_04-16-1910_3_1, enter _ as the Separator character(s), 2 as Number of items, and tick the checkbox Include first # items only.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick one or the other checkboxes to COPY or MOVE the matched files from the INPUT directory to the OUTPUT directory.\n\nIn the OUTPUT directory, the algorithm will create a new sub-directory 'file_matcher_OUTPUT' (any previous 'file_matcher_OUTPUT' subdirectory will be overwritten). Inside this sub-directory, three sub-directories will be created: matched, unmatched, duplicates where matched, unmatched, and duplicate files will be copied/moved.\n\nLeave the checkboxes unticked if you just want to get a list of files.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
@@ -271,8 +279,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
 
 # change the value of the readMe_message
-readMe_message="The Python 3 script allows you to find matches between any SOURCE file of a selected type (e.g., pdf) and TARGET files with the same filename but same/different type (e.g., docx).\n\nThe script is very useful, for instance, for identifying pdf files that have been manually transcribed (or automatically converted) to doc/docx or txt format. But it can be used more generally to identify files with the same filename and different extensions."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_message="The Python 3 script allows you to find matches between any SOURCE file of a selected type (e.g., pdf) and TARGET files with the same filename but same/different type (e.g., docx).\n\nThe script is very useful, for instance, for identifying pdf files that have been manually transcribed (or automatically converted) to doc/docx or txt format. But it can be used more generally to identify files with the same filename and different extensions.\n\nIn INPUT the algorithm expects a directory containing a set of files. All files in that directory will be processed against all selected-type files in all subdirectories (thus, to search your entire computer drive, select your top directory).\n\nIn OUTPUT the algorithm will produce 3 csv files listing MATCHED and UNMATCHED files. It will also list all DUPLICATE files found.\n\nThe output files will be placed inside the top searched INPUT directory regardless of selected OUTPUT directory in the I/O configuration."
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 GUI_util.window.mainloop()

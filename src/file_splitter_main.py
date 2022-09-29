@@ -16,11 +16,14 @@ import IO_files_util
 import IO_user_interface_util
 import file_checker_util
 import file_cleaner_util
+import reminders_util
+import config_util
+
 # import several splitter util scripts under various if statements under Run
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,inputDir, outputDir, 
+def run(inputFilename,inputDir, outputDir,
     openOutputFiles,
     createCharts,
     chartPackage,
@@ -48,12 +51,12 @@ def run(inputFilename,inputDir, outputDir,
     menu_option):
 
     if utf8_var==True:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                             'Started running utf8 compliance test at', True)
         file_checker_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
 
     if ASCII_var==True:
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis start',
+        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                             'Started running characters conversion at', True)
         file_cleaner_util.convert_quotes(GUI_util.window,inputFilename, inputDir)
 
@@ -62,7 +65,7 @@ def run(inputFilename,inputDir, outputDir,
         sentence_analysis_util.extract_sentences(window, inputFilename, inputDir, outputDir, extract_sentences_search_words_var)
         return
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                       "Started running " + menu_option + " at", True)
 
     if inputDir=='' and inputFilename!='':
@@ -617,15 +620,15 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if the file to be split is a merged file with filenames embedded in start/end strings (e.g., <@#The New York Times_11-02-1992_4_1#@>).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox to split a txt file into separate files using a Table of Contents as the criterion for splitting.\n\nIn INPUT the Document splitter script expects two types of txt-type files:\n   1. a main txt file (e.g., The Philosopher’s Stone.txt) with the body of a text and section headings (e.g., chapter titles of the Harry Potter book);\n   2. a txt TOC file (Table of Content) that contains all the section headings of the main document (one section heading per line).\n\nSECTION HEADINGS IN THE TOC MUST MATCH EXACTLY THE SECTION HEADINGS IN THE MAIN DOCUMENT.\n   CASE WILL BE IGNORED IN MATCHING SECTION TITLE IN TOC AND MAIN DOCUMENT.\n   REMOVE TABLE OF CONTENTS FROM THE MAIN DOCUMENT TO BE SPLIT.\n\nIn OUTPUT, the script will split the main file into sub-documents, one document for each of the headings listed in the TOC file. The output documents will be placed in a new subdirectory where the main input file is stored. ANY TOC HEADINGS NOT FOUND IN THE MAIN DOCUMENT WILL BE LISTED IN A csv ERROR FILE.")
+                                  "Please, tick the checkbox to split a txt file into separate files using a Table of Contents as the criterion for splitting. Once you tick the checkbox you will be asked to select the txt file containing the Table of Contents to be used.\n\nIn INPUT the Document splitter script expects two types of txt-type files:\n   1. a main txt file (e.g., The Philosopher’s Stone.txt) with the body of a text and section headings (e.g., chapter titles of the Harry Potter book);\n   2. a txt TOC file (Table of Content) that contains all the section headings of the main document (one section heading per line).\n\nSECTION HEADINGS IN THE TOC MUST MATCH EXACTLY THE SECTION HEADINGS IN THE MAIN DOCUMENT.\n   CASE WILL BE IGNORED IN MATCHING SECTION TITLE IN TOC AND MAIN DOCUMENT.\n   REMOVE TABLE OF CONTENTS FROM THE MAIN DOCUMENT TO BE SPLIT.\n\nIn OUTPUT, the script will split the main file into sub-documents, one document for each of the headings listed in the TOC file. The output documents will be placed in a new subdirectory where the main input file is stored. ANY TOC HEADINGS NOT FOUND IN THE MAIN DOCUMENT WILL BE LISTED IN A csv ERROR FILE.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to split a txt file into separate files using a maximum number of words as the criterion for splitting.\n\nThe number of words in the selected file is displayed in the second widget, Word count in selected file. You will need to enter to desired maximum number of words in each split file in the third widget, Max word count in split files.\n\nIn INPUT, the script can either take a single txt file or a directory.\n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox to split a txt file into separate files using single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line,' as the criterion for splitting.\n\nYou have the option to LEMMATIZE the expression you entered (thus, the expression 'coming out', when the 'Lemmatize' checkbox is ticked, would be checked for 'coming out', 'come out', 'came out', 'comes out').\n\nYou also have the option to split a file by the FIRST OCCURRENCE of the expression entered (which would always result in two txt output files) or of splitting the file at every occurrence of the expression entered (thus leading to multiple output txt files, one for each occurrence of the expression).\n\nIn INPUT, the script can either take a single file or a directory. THE SCRIPT CAN EITHER SEARCH IN A CONLL TABLE OR IN TEXT FILE.\n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
+                                  "Please, tick the checkbox to split a txt file into separate files using single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line,' as the criterion for splitting.\n\nThe widget where you can enter your words/collocations will become available once you select the option. Enter there the comma-separated words/set of words to be used for splitting the input file(s) (e.g, coming out, standing in line, boyfriend).\n\nYou have the option to LEMMATIZE the expression you entered (thus, the expression 'coming out', when the 'Lemmatize' checkbox is ticked, would be checked for 'coming out', 'come out', 'came out', 'comes out').\n\nYou also have the option to split a file by the FIRST OCCURRENCE of the expression entered (which would always result in two txt output files) or of splitting the file at every occurrence of the expression entered (thus leading to multiple output txt files, one for each occurrence of the expression).\n\nIn INPUT, the script can either take a single file or a directory. THE SCRIPT CAN EITHER SEARCH IN A CONLL TABLE OR IN TEXT FILE.\n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words).\n\nThe widget 'Words in sentence' will become available once you select the option. You will need to enter there the words/set of words that a sentence must contain in order to be extracted from input and saved in output. Words/set of words must be entered in quotes (e.g., \"The New York Times\") and comma separated (e.g., \"The New York Times\" , \"The Boston Globe\"). When running the script, the script will ask you if you want to process the search word(s) as case sensitive (thus, if you opt for case sensitive searches, a sentence containing the word 'King' will not be selected in output if in the widget 'Word(s) in sentence' you have entered 'king').\n\nIn INPUT, the script expects a single txt file or a directory.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract.txt and containing, for each input file, all the sentences that have the search word(s);\n2. files ending with _extract_minus.txt and containing, for each input file, the sentences that do NOT have the search word(s)." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words, such as coming out, falling in love).\n\nThe widget where you can enter your words/collocations will become available once you select the option. Enter there the comma-separated words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nIn INPUT, the script expects a single txt file or a directory of txt files.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract.txt and containing, for each input file, all the sentences that have the search word(s);\n2. files ending with _extract_wo-searchword.txt and containing, for each input file, the sentences that do NOT have the search word(s)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox to split a txt file into separate files using string values as the criterion for splitting.\n\nIn INPUT, the script can either take a single file or a directory. \n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
+                                  "Please, tick then checkbox to split a txt file into separate files using string values as the criterion for splitting.\n\nIn INPUT, the script can either take a single file or a directory. \n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to split a txt file into separate files using a blank line in the text as the criterion for splitting.\n\nIn INPUT, the script can either take a single file or a directory. \n\nIn OUTPUT, the script will generate the split files in a subdirectory, named split_files, of the directory of the input file or directory.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -640,8 +643,24 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordi
 
 # change the value of the readMe_message
 readMe_message = "These Python 3 scripts split txt files into separate txt files with a number of processing options."
-readMe_command = lambda: GUI_IO_util.display_button_info("NLP Suite Help", readMe_message)
+readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+def activate_NLP_options(*args):
+    global error, package_basics, package, language_list
+    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
+GUI_util.setup_menu.trace('w', activate_NLP_options)
+activate_NLP_options()
+
+if error:
+    mb.showwarning(title='Warning',
+               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup widget at the bottom of this GUI.")
+
+title=["NLP setup options"]
+message="Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " + ', '.join(language_list) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " + package_basics + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
+reminders_util.checkReminder(config_filename, title, message)
 
 GUI_util.window.mainloop()
 
