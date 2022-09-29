@@ -601,7 +601,7 @@ TIPS_lookup = {'File manager': 'TIPS_NLP_File manager.pdf',
 TIPS_options = 'File splitter', 'File merger', 'File handling in NLP Suite', 'File manager', 'Filename checker', 'Filename matcher', 'File classifier (By date)', 'File classifier (By NER)', 'File content checker & converter', 'Text encoding (utf-8)', 'Spelling checker'
 
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):

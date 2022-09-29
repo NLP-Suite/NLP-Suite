@@ -172,26 +172,26 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             outputDir_style=outputDir
 
         if '*' in vocabulary_analysis_menu_var or 'Vocabulary (via unigrams)' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'unigrams')
             if output != None:
                 filesToOpen.append(output)
 
         if '*' in vocabulary_analysis_menu_var or 'Hapax legomena' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'Hapax legomena')
             if output != None:
                 filesToOpen.append(output)
 
         if '*' in vocabulary_analysis_menu_var or 'Repetition: Words' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                        openOutputFiles, createCharts,
                                                        chartPackage,'Repetition: Words in first K and last K sentences')
             if output != None:
                 filesToOpen.append(output)
 
         if '*' in vocabulary_analysis_menu_var or 'Repetition: Last' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                        openOutputFiles, createCharts,
                                                        chartPackage,'Repetition: Last K words of a sentence/First K words of next sentence')
             if output != None:
@@ -214,20 +214,20 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                 filesToOpen.extend(output)
 
         if '*' in vocabulary_analysis_menu_var or 'capital' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'capital')
             if output != None:
                 filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Short' in vocabulary_analysis_menu_var:
-            output =statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Short')
+            output =statistics_txt_util.process_words(window, config_filename, inputFilename,inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Short')
             if output != None:
                 filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Vowel' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Vowel')
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Vowel')
             if output != None:
                 filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Punctuation' in vocabulary_analysis_menu_var:
-            output =statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Punctuation')
+            output =statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Punctuation')
             if output != None:
                 filesToOpen.extend(output)
 
@@ -502,8 +502,8 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Unusual words (via NLTK)',
                                          'Hapax legomena (once-occurring words/unigrams)',
                                          'Language detection',
-                                         'Repetition: Last K words of a sentence/First K words of next sentence',
                                          'Repetition: Words in first K and last K sentences',
+                                         'Repetition: Last K words of a sentence/First K words of next sentence',
                                          'Repetition across sentences (special ngrams)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400, y_multiplier_integer,vocabulary_analysis_menu)
 
@@ -597,7 +597,7 @@ TIPS_lookup = {'Style analysis':'TIPS_NLP_Style analysis.pdf',
 
 TIPS_options='Style analysis', 'English Language Benchmarks','Things to do with words: Overall view', 'Clause analysis', 'Sentence complexity', 'Text readability','Nominalization','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Language concreteness','Yule measures of vocabulary richness','The world of emotions and sentiments','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):

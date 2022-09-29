@@ -1392,7 +1392,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
 
         merge_df = merge_df[['Subject (S)', 'S Gender', 'Verb (V)', 'Object (O)', 'O Gender', 'Sentence ID','Sentence', 'Document ID', 'Document']]
         merge_df = merge_df.drop_duplicates()
-        # TODO unfortunately, saving the file in the proper directory runs into pproblems with visualization
+        # TODO unfortunately, saving the file in the proper directory runs into problems with visualization
         # save the output file in the gender subdirectory
         # # remove the file, add the gender subdirectory, and re-add the file
         # head, tail = os.path.split(kwargs["gender_filename"])
@@ -1412,7 +1412,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         merge_df = merge_df[['Subject (S)', 'Verb (V)', 'Object (O)', "Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]]
         merge_df = merge_df.drop_duplicates()
 
-        # TODO unfortunately, saving the file in the proper directory runs into pproblems with visualization
+        # TODO unfortunately, saving the file in the proper directory runs into problems with visualization
         # save the output file in the gender subdirectory
         # remove the file, add the gender subdirectory, and re-add the file
         # head, tail = os.path.split(kwargs["gender_filename"])
@@ -1422,7 +1422,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         # temp_outputDir = temp_outputDir[4:]
         # fn = head + os.sep + temp_outputDir + os.sep + tail
         # # save the output file in the quote subdirectory
-        fn = kwargs["gender_filename"]
+        fn = kwargs["quote_filename"]
         merge_df.to_csv(fn, index=False, mode="a", encoding=language_encoding)
 
     return SVO_enhanced_dependencies

@@ -564,6 +564,7 @@ def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFil
 
     if string_IN == []:#if string_IN empty, string_IN and string_OUT will be typed in
         string_in, string_out = GUI_IO_util.enter_value_widget("Enter the FIND & REPLACE strings (CASE SENSITIVE)", 'Find',2,'','Replace','')
+
         #put input strings into list so that they can be processed
         string_IN = [string_in]
         string_OUT = [string_out]

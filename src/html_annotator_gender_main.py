@@ -361,7 +361,7 @@ videos_options='No videos available'
 TIPS_lookup = {'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','Gender annotator':'TIPS_NLP_Gender annotator.pdf','NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition) Stanford CoreNLP.pdf','CoreNLP Coref':'TIPS_NLP_Stanford CoreNLP coreference resolution.pdf'}
 TIPS_options='csv files - Problems & solutions','Statistical measures','Gender annotator', 'NER (Named Entity Recognition)', 'CoreNLP Coref'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):

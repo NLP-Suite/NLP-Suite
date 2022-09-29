@@ -502,116 +502,118 @@ from tkinter import Toplevel
 def Dialog2Display(title: str):
     Dialog2 = Toplevel(height=1000, width=1000)
 
-# creating popup message box in tkinter
-# buttonType='OK displays an OK button
-# buttonType='Yes-No' displays Yes/ and No buttons
-# buttonType='Yes-No-Cancel' displays Yes, No, and Cancel buttons
-def message_box_widget(window, message_title, message_text, buttonType='OK', timeout=2000):
-    global ys_no_button
-    ys_no_button  = "NOTHING"
-    # timeout = 6000 # testing
-    # top_message = tk.Toplevel(window)
+
+def message_box_widget(window, message_title, message_text, buttonType='OK', timeout=3000):
+    global yes_no_button
+    yes_no_button = "NOTHING"
     message_title = 'Reminder: ' + message_title
+    global top_message
     top_message = tk.Toplevel()
     top_message.title(message_title)
-    # windowHeight=len(message_text)
-    # print("windowHeight",windowHeight)
-    # TODO can the window size (windowSize) be made dynamic,
-    #   i.e. change windowHeight with the size of message_text passed?
-    # windowHeight = 200
-    # for count, line in enumerate(message_text):
-    #     pass
-    # print('Total Lines', count + 1,"message_text",message_text)
     # # count each \n
     windowHeight = 200
     count = sum(buffer.count('\n') for buffer in message_text)
-    count = count + 1
-    print('Total lines:', count + 1)
-    if count == 1:
-        windowHeight = 100
-    elif count > 1 and count <4:
-        windowHeight = 120
-    elif count > 2 and count < 5:
-        windowHeight = 140
-    elif count > 3 and count <6:
-        windowHeight = 200
-    elif count > 4 and count < 7:
-        windowHeight = 220
-    elif count > 5 and count < 8:
-        windowHeight = 230
+    # TODO MINO
+    # count the characters of message_text
+    # assign a start_windowHeight, which is given by the number of lines (each line worth 20 points)
+    # sum of two --> actual windowHeight
+    count_char = len(message_text)
+
+    if sys.platform == 'darwin':
+        start_windowHeight = 100
+        increment_windowHeight = 10
     else:
-        windowHeight = 250
+        start_windowHeight = 100
+        increment_windowHeight = 10
+    count = count + 1
+    if count >= 5:
+        windowHeight = (start_windowHeight + 100) + int(increment_windowHeight * count + count_char / (count + 5))
+    else:
+        windowHeight = start_windowHeight + int(increment_windowHeight + count_char / (count + 5))
+    # print("-------------------- line count", count, "count_char", count_char, "windowHeight", windowHeight)
     # windowHeight = int(200 + (count * 2))
     # windowSize = '400x' + str(windowHeight)  # +str(windowHeight)
-    windowWidth = 500
+    windowWidth = 600
     windowSize = str(windowWidth) + 'x' + str(windowHeight)
     top_message.geometry(windowSize)
 
-    mbox = tk.Message(top_message, text=message_text, padx=10, pady=10, width=windowWidth-10)
+    mbox = tk.Message(top_message, text=message_text, padx=10, pady=10, width=windowWidth - 10)
     top_message.attributes('-topmost', 'true')
     mbox.pack()  # put the widget on the window
 
-    # # timer
-    # mbox.after(timeout, top_message.destroy)
-    # mbox.pack() # put the widget on the window
-    # TODO can we either have an OK button or Yes No Cancel buttons and return the selection?
+    # define the countdown func.
+    def countdown(countdown_timer):
+        countdown_timer -= 1
+        countdownLabel.configure(text=f"Countdown to automatic closing: {countdown_timer}")
+        countdownLabel.after(1000, lambda: countdown(countdown_timer))
 
-    def wait_for_answer(top_message,button_type, timeout, mbox):
-        global ys_no_button
-        # mbox.pack() # put the widget on the window
-        if button_type=='Yes':
-            # mb.showwarning(title="Yes",message='I pressed YES')
-            # timer
-            # timeout = 6000  # testing
-            ys_no_button = "Happy to tell you that  pressed YES!!!!!!!!!!!!!!!!"
-            # return ys_no_button
-            # mbox.after(timeout, top_message.destroy)
-        elif button_type=='No':
-            # mb.showwarning(title="No",message='I pressed NO')
-            ys_no_button  = "NOTHING to tell you that  pressed NO!!!!!!!!!!!!!!!!"
+    # timer
+    def wait_for_answer(button_type):
+        global yes_no_button
+        global top_message
+        if button_type == 'Yes':
+            yes_no_button = "Yes"
+            # top_message.destroy()
+        elif button_type == 'No':
+            yes_no_button = "No"
+            # top_message.destroy()
 
-
-    # buttonType = 'Yes-No' # testing
-    if buttonType=='OK':
-        button = tk.Button(top_message, text="OK", command=top_message.destroy)
-        button.pack() # put the widget on the window
+    if buttonType == 'OK':
+        button = tk.Button(top_message, text="OK", command=top_message.destroy, fg='red')
+        button.place(x=10, y=windowHeight - 40)
+        # TODO Mino mbox.after are in two different places in OK and Yes/No
+        # TODO Mino can we put Countdown to automatic closing NOT in red?
+        # TODO Mino some of this code is the same across the 3 options, OK, Yes/No, Yes/No/Cancel
+        #    can we put just one instance outside the if statement
         # timer
         mbox.after(timeout, top_message.destroy)
-    # TODO top_message.destroy must be changed to selecting the value and returning it
-    elif buttonType=='Yes-No':
-        # mbox.pack() # put the widget on the window
-        Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer(top_message,'Yes', timeout, mbox))
-        No = tk.Button(top_message, text="No", command=lambda: wait_for_answer(top_message,'No', timeout, mbox))
-        Yes.place(x=10, y=windowHeight-40)
-        No.place(x=50, y=windowHeight-40)
-        # # timer
-        # timeout = 6000  # testing
+
+        countdownLabel = tk.Label(top_message, text=f'Countdown to automatic closing:  {int(timeout / 1000)}', fg='red')
+        countdownLabel.place(x=60, y=windowHeight - 40)
+        countdown(int(timeout / 500))
+    elif buttonType == 'Yes-No':
+        question = tk.Label(top_message, text="Do you want to see this message again?", fg='red')
+        question.place(x=10, y=windowHeight - 80)
+        Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'), fg='red')
+        No = tk.Button(top_message, text="No", command=lambda: wait_for_answer('No'), fg='red')
+        Yes.place(x=10, y=windowHeight - 40)
+        No.place(x=60, y=windowHeight - 40)
+
+        # TODO Mino can we put Countdown to automatic closing NOT in red?
+        # TODO Mino some of this code is the same across the 3 options, OK, Yes/No, Yes/No/Cancel
+        #    can we put just one instance outside the if statement
+        countdownLabel = tk.Label(top_message, text=f'Countdown to automatic closing:  {int(timeout / 1000)}', fg='red')
+        countdownLabel.place(x=110, y=windowHeight - 40)
+        countdown(int(timeout / 1000))
+
+        # TODO Mino mbox.after are in two different places in OK and Yes/No
         mbox.after(timeout, top_message.destroy)
-        if "Happy" in ys_no_button:
-            print("HAPPY")
-            top_message.destroy
-        # mb.showwarning(title="Answer", message=ys_no_button )
-        #
-        # # TODO must place Yes No widgets on the same line
-        # Yes = tk.Button(top_message, text="Yes", command=top_message.destroy)
-        # Yes.pack()
-        # No = tk.Button(top_message, text="No", command=top_message.destroy)
-        # No.pack()
-        return # TODO must return the selected option yes, no
-    # TODO this needs to be completed
-    elif buttonType=='Yes-No-Cancel':
-        # TODO must place Yes No Cancel widgets on the same line
-        Yes = tk.Button(top_message, text="Yes", command=top_message.destroy) # top_message.destroy must be changed
-        Yes.pack() # put the widget on the window
-        No = tk.Button(top_message, text="No", command=top_message.destroy)
-        No.pack() # put the widget on the window
-        Cancel = tk.Button(top_message, text="Cancel", command=top_message.destroy)
-        Cancel.pack() # put the widget on the window
-        return # TODO must return the selected option yes, no, or cancel
+    elif buttonType == 'Yes-No-Cancel':
+        # TODO needs to be completed
+        question = tk.Label(top_message, text="Do you want to see this message again?", fg='red')
+        question.place(x=10, y=windowHeight - 80)
+        Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'))
+        No = tk.Button(top_message, text="No", command=lambda: wait_for_answer('No'))
+        Cancel = tk.Button(top_message, text="Cancel", command=lambda: wait_for_answer('Cancel'))
+        Yes.place(x=10, y=windowHeight - 40)
+        No.place(x=50, y=windowHeight - 40)
+        Cancel.place(x=80, y=windowHeight - 40)
+
+        # TODO Mino can we put Countdown to automatic closing NOT in red?
+        # TODO Mino some of this code is the same across the 3 options, OK, Yes/No, Yes/No/Cancel
+        #    can we put just one instance outside the if statement
+        countdownLabel = tk.Label(top_message, text=f'Countdown to automatic closing:  {int(timeout / 1000)}', fg='red')
+        countdownLabel.place(x=110, y=windowHeight - 40)
+        countdown(int(timeout / 1000))
+
+        # TODO Mino mbox.after are in two different places in OK and Yes/No
+        mbox.after(timeout, top_message.destroy)
 
     top_message.wait_window()
-    if window != '':  # set to '' in NLP_setup_update_util since the GUI.window has already been closed
-        window.focus_force()
+    # if window != '':  # set to '' in NLP_setup_update_util since the GUI.window has already been closed
+    #     window.focus_force()
+
+    return yes_no_button
 
 # creating popup menu in tkinter
 def dropdown_menu_widget(window,textCaption, menu_values, default_value, callback):
@@ -693,6 +695,7 @@ def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
 def enter_value_widget(masterTitle,textCaption,numberOfWidgets=1,defaultValue='',textCaption2='',defaultValue2=''):
     value1=defaultValue
     value2=defaultValue2
+    masterTitle=masterTitle + " (Esc to quit)"
 
     # TODO should not restrict to 2; should have a loop
     if numberOfWidgets==2:
@@ -733,6 +736,11 @@ def enter_value_widget(masterTitle,textCaption,numberOfWidgets=1,defaultValue=''
                                         column=0,
                                         sticky=tk.W,
                                         pady=4)
+    def func(event):
+        master.quit()
+    master.bind('<Return>', func)
+    master.bind('<Escape>', func)
+
     master.mainloop()
     value1=str(e1.get())
     # TODO 2 could be a larger number; should have a loop

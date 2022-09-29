@@ -842,7 +842,7 @@ def print_results(window, words, class_word_list, header, inputFilename, outputD
 
 
 # called by sentence_analysis_main and style_analysis_main
-def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, processType='', excludeStopWords=True,word_length=3):
+def process_words(window, config_filename, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, processType='', excludeStopWords=True,word_length=3):
     filesToOpen=[]
     documentID = 0
     multiple_punctuation=0
@@ -902,6 +902,24 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
         # Excel charts are generated in compute_character_word_ngrams; return to exit here
         return tempOutputFiles
 
+    #For the user input of K sentences or words to be analyzed
+    if 'Repetition: Words' in processType or 'Repetition: Last' in processType:
+        reminder_status = reminders_util.checkReminder(config_filename,
+                                                       reminders_util.title_options_only_CoreNLP_CoNLL_repetition_finder,
+                                                       reminders_util.message_only_CoreNLP_CoNLL_repetition_finder,
+                                                       True)
+
+        if 'Repetition: Last' in processType:
+
+            k_str, useless = GUI_IO_util.enter_value_widget("Enter the number of words, K, to be analyzed", 'K',
+                                                           1, '', '', '')
+        else:
+            k_str, useless = GUI_IO_util.enter_value_widget("Enter the number of sentences, K, to be analyzed", 'K',
+                                                           1, '', '', '')
+        if k_str=='':
+            return
+        k = int(k_str)
+
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         documentID = documentID + 1
@@ -915,14 +933,18 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
         # check each word in sentence for concreteness and write to outputFilename
 
         # analyze each sentence
+        sentence_list = []
         for s in sentences:
             sentenceID = sentenceID + 1
             # print("S" + str(i) +": " + s)
             all_words = []
             found_words = []
             total_words = 0
+            num_words_in_s = s.count(" ") + 1
 
             words = word_tokenize_stanza(stanzaPipeLine(s))
+            words_with_stop = [word for word in words if word.isalpha()]
+            #print(words_with_stop)
             # don't process stopwords
             filtered_words = words
             if processType != '' and not "punctuation" in processType.lower():
@@ -930,18 +952,50 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     words = excludeStopWords_list(words)
                     filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
             # words = fullText.translate(string.punctuation).split()
-            for wordID, word in enumerate(filtered_words):
+            #for wordID, word in enumerate(filtered_words):
+            #print(filtered_words)
+
+# REPEATED WORDS FIRST K SENTENCES/LAST K SENTENCES  -------------------------------------------------------------------------------
+            if 'Repetition: Words' in processType:
+
+                header = ["First/Last Sentence", "K Value", "Sentence ID", "Sentence", "Word Count", "Document ID", "Document"]
+                fileLabel = 'K-sent-' + str(k)
+                if sentenceID <= k:
+                    word_list.append(["First", k, sentenceID, s, num_words_in_s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+
+                elif sentenceID > len(sentences) - k:
+                    word_list.append(["Last", k, sentenceID, s, num_words_in_s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+
 
 # REPEATED WORDS END OF SENTENCE/BEGINNING NEXT SENTENCE  --------------------------------------------------------------------------
-                if processType == 'Repetition: Words':
-                    mb.showwarning("Naman","Naman, this for you!")
+            if 'Repetition: Last' in processType:
+                for wrdID, wrd in enumerate(words_with_stop):
+                    #print(wordID)
+                    #print(word)
+                    #mb.showwarning("Naman","Naman, this for you!")
 
-# REPEATED WORDS FIRST K SENTENCES/LAST K SENTENCES  --------------------------------------------------------------------------
-                if processType == 'Repetition: Last':
-                    mb.showwarning("Naman", "Naman, this for you!")
+                    header = ["First/Last Sentence", "K Value", "Word", "Word ID", "Sentence ID", "Sentence", "Document ID", "Document"]
+                    select_col = ['Word']
+                    # fileLabel = 'Last K words of a sentence and first K words of next sentence'
+                    fileLabel = 'K words'
+                    fileLabel_byDocID = 'Last/First_k_words_byDoc'
+                    columns_to_be_plotted_yAxis=['Word']
+                    chart_title_label = 'Frequency of Last K words of a sentence and first K words of next sentence'
+                    chart_title_byDocID = 'Frequency of Last K words of a sentence and first K words of next sentence by Document'
+                    chart_title_bySentID = 'Frequency of Last K words of a sentence and first K words of next sentence by Sentence Index'
+                    column_xAxis_label = 'Words'
+                    if sentenceID == 1:
+                        if wrdID + 1 > len(words_with_stop) - k:
+                            word_list.append(["Last", k, wrd, wrdID + 1, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+
+                    else:
+                        if wrdID + 1 <= k:
+                            word_list.append(["First", k, wrd, wrdID + 1, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        elif wrdID + 1 > len(words_with_stop) - k:
+                            word_list.append(["Last", k, wrd, wrdID + 1, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
 # SHORT WORDS --------------------------------------------------------------------------
-
+            for wordID, word in enumerate(filtered_words):
                 if processType=='' or "short" in processType.lower():
                     header = ['Short words (<4 characters)', 'Word ID (in sentence)', 'Number of words in sentence', 'Sentence ID','Sentence','Document ID','Document']
                     select_col = ['Short words (<4 characters)']
@@ -1023,15 +1077,32 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     if not IO_error:
         filesToOpen.append(outputFilename)
 
-    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                               chartTitle=chart_title_label,
-                                               count_var=1, hover_label=[],
-                                               outputFileNameType='',  # 'line_bar',
-                                               column_xAxis_label=column_xAxis_label,
-                                               groupByList=['Document ID', 'Document'],
-                                               plotList=['Frequency'],
-                                               chart_title_label='Statistical Measures for ' + column_xAxis_label)
+
+    if 'Repetition: Words' in processType:
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=['Word Count']
+        count_var=0
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
+                                                            outputFilename, outputDir,
+                                                            columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
+                                                            chartTitle="Word Count for First and Last K (" + str(k) + ") Sentences (in order from left to right)",
+                                                            outputFileNameType='k_sent',
+                                                            column_xAxis_label='Word Count',
+                                                            count_var=count_var,
+                                                            hover_label=[],
+                                                            groupByList=[], # ['Document ID', 'Document'],
+                                                            plotList=[], #['Concreteness (Mean score)'],
+                                                            chart_title_label='') #'Concreteness Statistics')
+    else:
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+                                                columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
+                                                chartTitle=chart_title_label,
+                                                count_var=1, hover_label=[],
+                                                outputFileNameType='',  # 'line_bar',
+                                                column_xAxis_label=column_xAxis_label,
+                                                groupByList=['Document ID', 'Document'],
+                                                plotList=['Frequency'],
+                                                chart_title_label='Statistical Measures for ' + column_xAxis_label)
 
     if chart_outputFilename != None:
         filesToOpen.extend(chart_outputFilename)

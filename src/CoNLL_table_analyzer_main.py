@@ -83,7 +83,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
             filesToOpen.append(outputFiles)
 
     if k_sentences_var:
-        outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename,outputDir, createCharts, chartPackage)
+        outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename, outputDir, createCharts, chartPackage)
         if outputFiles != None:
             filesToOpen.extend(outputFiles)
 
@@ -206,11 +206,6 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                                message="The CoNLL table is ill formed. You may have tinkered with it. Please, rerun the Stanford CoreNLP parser since many scripts rely on the CoNLL table.")
                 return
 
-        # if len(data) == 0:
-        #     return
-        # all_CoNLL_records = CoNLL_util.sentence_division(data)
-        # if len(all_CoNLL_records) == 0:
-        #     return
         queried_list = CoNLL_table_search_util.search_CoNLL_table(all_CoNLL_records, searchField_kw, searchedCoNLLField,
                                                                   related_token_POSTAG=co_postag,
                                                                   related_token_DEPREL=co_deprel, _tok_postag_=postag,
@@ -991,7 +986,7 @@ TIPS_lookup = {'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'Network Graphs (via Gephi)': 'TIPS_NLP_Gephi network graphs.pdf'}
 TIPS_options = 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'English Language Benchmarks', 'Style Analysis', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'Nominalization', 'NLP Searches', 'Excel Charts', 'Excel Enabling Macros', 'Excel smoothing data series', 'Statistical measures', 'Network Graphs (via Gephi)'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 right_msg = "\n\nON THE RIGHT-HAND SIDE, please, tick any of the checkboxes to obtain frequency distributions of specific linguistic objects."
@@ -1010,9 +1005,9 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "ON THE LEFT-HAND SIDE, please, enter the CASE SENSITIVE token (i.e., word) to be searched (enter * for any word). ENTER * TO SEARCH FOR ANY TOKEN/WORD. The EXACT word will be searched (e.g., if you enter 'American', any instances of 'America' will not be found).\n\nTHE SELECT OUTPUT BUTTON IS DISABLED UNTIL A SEARCHED TOKEN HAS BEEN ENTERED.\n\nDO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN. n\nThe program will search all the tokens related to this token in the CoNLL table. For example, if the the token wife is entered, the program will search in each dependency tree (i.e., each sentence) all the tokens whose head is the token wife, and the head of the token wife." + right_msg + GUI_IO_util.msg_Esc)
+                                  "ON THE LEFT-HAND SIDE, please, enter the CASE SENSITIVE token (i.e., word) to be searched (enter * for any word). ENTER * TO SEARCH FOR ANY TOKEN/WORD. The EXACT word will be searched (e.g., if you enter 'American', any instances of 'America' will not be found).\n\nTHE SELECT OUTPUT BUTTON IS DISABLED UNTIL A SEARCHED TOKEN HAS BEEN ENTERED.\n\nDO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN. n\nThe algorithm will search all the tokens related to this token in the CoNLL table. For example, if the the token wife is entered, the algorithm will search in each dependency tree (i.e., each sentence)." + right_msg + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "ON THE LEFT-HAND SIDE, please, select the CoNLL field to be used for the search (FORM or LEMMA).\n\nFor example, if brother is entered as the searched token, and FORM is entered as search field, the program will first search all occurrences of the FORM brother. Note that in this case brothers will NOT be considered. Otherwise, if LEMMA is entered as search field, the program will search all occurences of the LEMMA brother. In this case, tokens with form brother and brothers will all be considered." + right_msg + GUI_IO_util.msg_Esc)
+                                  "ON THE LEFT-HAND SIDE, please, select the CoNLL field to be used for the search (FORM or LEMMA).\n\nFor example, if brother is entered as the searched token, and FORM is entered as search field, the algorithm will first search all occurrences of the FORM brother. Note that in this case brothers will NOT be considered. Otherwise, if LEMMA is entered as search field, the algorithm will search all occurences of the LEMMA brother. In this case, tokens with form brother and brothers will all be considered." + right_msg + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "ON THE LEFT-HAND SIDE, please, select POSTAG value for searched token (e.g., NN for noun; RETURN for ANY POSTAG value)." + right_msg + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -1028,7 +1023,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "ON THE LEFT-HAND SIDE, please, tick the checkbox if you wish to extract SVOs from the CoNLL table.\n\nON THE RIGHT-HAND SIDE, tick the 'All analyses: clauses, nouns, verbs, function words (\'junk/stop\' words)' to select and deselect all options, allowing you to select specific options." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to run the repetition finder to locate word expressions repeated across selected K sentences." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox if you wish to run the repetition finder to compute counts and proportions of nouns, verbs, adjectives, and proper nouns across selected K beginnning and ending sentences." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

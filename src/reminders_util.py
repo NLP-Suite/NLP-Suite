@@ -136,6 +136,9 @@ message_only_CoreNLP_NER = "The NER algorithms in this GUI are based exclusively
 title_options_only_CoreNLP_CoNLL_analyzer = ['CoNLL table analyzer']
 message_only_CoreNLP_CoNLL_analyzer = "The CoNLL table analyzer algorithms in this GUI are based exclusively on Stanford CoreNLP parser.\n\nWatch this space for an extension to spaCy and Stanza of the NER algorithms behind this GUI."
 
+title_options_only_CoreNLP_CoNLL_repetition_finder = ['K sentences repetition finder in CoNLL table']
+message_only_CoreNLP_CoNLL_repetition_finder = "In the CoNLL table analyzer GUI there is another K-sentences repetition finder algorithm. It provides data based based on the CoNLL table POS tags on counts and proportions of nouns, verbs, adjectives, and proper nouns in the first and last K sentences of a document."
+
 lemma_frequencies = ['Lemma frequency']
 message_lemma_frequencies = "A blank is likely to be a frequent lemma in your corpus. It is likely to 'mask' all other values. If that is the case, when the chart is displayed you may want to delete rows containing a blank lemma to have a better view of all other values."
 
@@ -359,87 +362,17 @@ def getReminders_list(config_filename,silent=False):
 # when displaying messages the message field is '' since the actual message is not known until the csv file is read
 def displayReminder(df,row_num,title, message, event, currentStatus, question, seeMsgAgain=False) -> object:
 
-    # GUI_IO_util.message_box_widget(1, title, message, buttonType='Yes-No', timeout=6000)
-    # https://stackoverflow.com/questions/30235587/closing-tkmessagebox-after-some-time-in-python?rq=1    def enter_value_widget(masterTitle, textCaption):
-    #     import tkinter as tk
-    #     from tkinter import Toplevel
-    #     window=GUI_util.window
-    #     class App():
-    #         def __init__(self, master):
-    #             top = self.top = Toplevel()
-    #             top.wm_title(textCaption)
-    #             top.focus_force()
-    #             self.label = tk.Label(top, width=len(textCaption))
-    #             self.label.pack()
-    #
-    #             self.label.grid(row=0, column=1)  # , sticky=W)
-    #             # self.callback = callback
-    #
-    #             YES_button = tk.Button(self.top, text='YES', command=self.get_value)
-    #             YES_button.grid(row=0, column=1)
-    #             NO_button = tk.Button(self.top, text='NO', command=self.get_value, sticky=tk.CENTER)
-    #             NO_button.grid(row=0, column=1)
-    #
-    #             # top.after(10000, top.destroy)
-    #
-    #         def get_value(self):
-    #             val = self.label.get()
-    #             self.top.destroy()
-    #             # callback(val)
-    #
-    #     App(window)
-
-        # master = tk.Tk()
-        # master.focus_force()
-        #
-        #
-        # # tk.Label(master, width=len(message), text=message).grid(row=0)
-        #
-        # master(text = title, padx = 20, pady = 20).pack()
-        # master.after(10000, master.destroy)
-        #
-        # master.title(title)
-        # # the width in tk.Entry determines the overall width of the widget;
-        # #   MUST be entered
-        # #   + 30 to add room for - [] and X in a widget window
-        # master.focus_force()
-        #
-        # tk.Button(master,
-        #           text='YES',
-        #           command=master.quit).grid(row=3,
-        #                                     column=0,
-        #                                     sticky=tk.W,
-        #                                     pady=4)
-        # tk.Button(master,
-        #           text='NO',
-        #           command=master.quit).grid(row=3,
-        #                                     column=1,
-        #                                     sticky=tk.W,
-        #                                     pady=4)
-        # master.mainloop()
-        # master.destroy()
-        # # convert to list; value1 is checked for length in calling function
-        # #   so do not convert if empty or its length will be the length of ['']
-        # # if value1!='':
-        # #     value1=list(value1.split(" "))
-        # # TODO temp get answer
-        # answer=0
-        # return answer
-
-    # enter_value_widget("Enter the single start character",message)
-
     try:
         message = df.at[row_num, "Message"].replace("\\n", os.linesep)
     except:
         pass
-    if message == '':
-        GUI_IO_util.enter_value_widget_TEMP("Enter the number of sentences, K, to be analyzed", 'K',
-                                                           1, '', '', '')
-        answer = mb.askquestion(title="Reminder: " + df.at[row_num, "Title"],
-                                message=message+question)
+    if message == '': # there is no message to be displayed
+        return
     else:
-        answer = mb.askquestion(title="Reminder: " + title,
-                                message=message+question)
+        # message = message + question # the question "Do you want to see this message again?" is asked
+        #   in GUI_IO_util.message_box_widget so that it can be placed n red
+        answer = GUI_IO_util.message_box_widget(1, title, message, buttonType='Yes-No', timeout=6000)
+
     answer=answer.capitalize() # Yes/No
     if seeMsgAgain==True:
         if answer == 'No':

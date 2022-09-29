@@ -1,6 +1,7 @@
 # The Python 3 routine was written by Jian Chen, 12.12.2018
 # modified by Jian Chen (January 2019)
 # modified by Jack Hester (February 2019) and Roberto Franzosi (June and December 2019)
+# modified by Chen gong (December 2021)
 # ALL SEARCHES OCCUR WITHIN SENTENCES.
 import string
 import sys
@@ -177,7 +178,7 @@ def filter_list_by_POStag(keyword_list, kw_desired_postag='*'):
         keyword_list = keyword_list
     elif kw_desired_postag == 'NN*':
         keyword_list = [keyword for keyword in keyword_list if
-                        keyword[SearchField.POSTAG] in ['NN', 'NNS', 'NNP', 'NNPS']]
+                        keyword[SearchField.POSTAG.value] in ['NN', 'NNS', 'NNP', 'NNPS']]
     elif kw_desired_postag == 'JJ*':
         keyword_list = [keyword for keyword in keyword_list if keyword[SearchField.POSTAG.value] in ['JJ', 'JJR', 'JJS']]
     elif kw_desired_postag == 'RB*':
@@ -222,19 +223,19 @@ def filter_output_list(list_queried, related_token_DEPREL="*", Sentence_ID="*", 
     if "*" not in related_token_POSTAG:
         postag_list_queried = list(filter(lambda tok: tok[1] == related_token_POSTAG, list_queried))
     elif related_token_POSTAG == "NN*":
-        postag_list_queried = [token for token in list_queried if token[1] in ['NN', 'NNS', 'NNP', 'NNPS']]
+        postag_list_queried = [token for token in list_queried if token[6] in ['NN', 'NNS', 'NNP', 'NNPS']]
     elif related_token_POSTAG == 'JJ*':
-        postag_list_queried = [token for token in list_queried if token[1] in ['JJ', 'JJR', 'JJS']]
+        postag_list_queried = [token for token in list_queried if token[6] in ['JJ', 'JJR', 'JJS']]
     elif related_token_POSTAG == 'RB*':
-        postag_list_queried = [token for token in list_queried if token[1] in ['RB', 'RBR', 'RBS']]
+        postag_list_queried = [token for token in list_queried if token[6] in ['RB', 'RBR', 'RBS']]
     # postag_list_queried = list(filter(lambda tok:tok[1] in ['RB','RBR','RBS'],list_queried))
     elif related_token_POSTAG == 'VB*':
-        postag_list_queried = [token for token in list_queried if token[1] in ['VB', 'VBN', 'VBG', 'VBZ', 'VBP', 'VBD']]
+        postag_list_queried = [token for token in list_queried if token[6] in ['VB', 'VBN', 'VBG', 'VBZ', 'VBP', 'VBD']]
     # postag_list_queried = list(filter(lambda tok:tok[1] in ['VB','VBN','VBG','VBZ','VBP','VBD'],list_queried))
     else:
         postag_list_queried = list_queried
     if "*" not in related_token_DEPREL:
-        deprel_list_queried = list(filter(lambda tok: tok[2] == related_token_DEPREL, postag_list_queried))
+        deprel_list_queried = list(filter(lambda tok: tok[7] == related_token_DEPREL, postag_list_queried))
     else:
         deprel_list_queried = postag_list_queried
     return deprel_list_queried
@@ -285,7 +286,6 @@ def search_in_sentence(searched_token, sentence_CoNLL_records, __field__='FORM',
         # Return form of search governors: [(governor_index, governor_word, target_index)]
         list_indices_related_word.append((governor[0], 2, sentence_CoNLL_records[governor[2] - 1]))
 
-    # TODO: confirm is_head
     for keyword in keyword_list:
         token_id = keyword[0]
         # search head

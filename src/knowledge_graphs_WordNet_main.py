@@ -677,7 +677,7 @@ TIPS_lookup = {'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems
 #'Java download install run': 'TIPS_NLP_Java download install run.pdf'
 TIPS_options = 'csv files - Problems & solutions','Statistical measures','WordNet','The world of emotions and sentiments' #, 'Java download install run'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 webSearch = "\n\nYou can search terms directly on the WordNet website at http://wordnetweb.princeton.edu/perl/webwn?s=&sub=Search+WordNet."

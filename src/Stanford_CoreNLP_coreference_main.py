@@ -379,7 +379,7 @@ TIPS_lookup = {'Stanford CoreNLP supported languages': 'TIPS_NLP_Stanford CoreNL
 
 TIPS_options = 'Stanford CoreNLP coreference resolution','Stanford CoreNLP supported languages','Stanford CoreNLP performance & accuracy', 'utf-8 encoding', 'Stanford CoreNLP memory issues', 'csv files - Problems & solutions'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate,y_multiplier_integer):

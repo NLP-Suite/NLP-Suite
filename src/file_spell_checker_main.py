@@ -347,7 +347,7 @@ TIPS_lookup = {'Word similarity (Levenshtein edit distance)': 'TIPS_NLP_Word sim
 TIPS_options = 'Word similarity (Levenshtein edit distance)', 'NER (Named Entity Recognition)', 'CoNLL Table', 'POSTAG (Part of Speech Tags)'
 
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):

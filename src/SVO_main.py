@@ -787,10 +787,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if os.path.isfile(gender_filename) and os.path.isdir(gender_outputDir):
             target_filePath = gender_outputDir + os.sep + os.path.basename(gender_filename)
             # move the csv gender file
-            os.replace(gender_filename, target_filePath)
-            target_filePath = gender_outputDir + os.sep + os.path.basename(gender_filename_html)
+            if not os.path.isfile(target_filePath):
+                os.replace(gender_filename, target_filePath)
             # move the html gender file
-            os.replace(gender_filename_html, target_filePath)
+            target_filePath = gender_outputDir + os.sep + os.path.basename(gender_filename_html)
+            if os.path.isfile(gender_filename_html) and not os.path.isfile(target_filePath):
+                os.replace(gender_filename_html, target_filePath)
 
     if quote_var:
         quote_outputDir = outputDir + os.sep + os.path.basename(outputDir.replace('_SVO_', '_quote_'))
@@ -1317,7 +1319,7 @@ TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing dat
 
 
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
