@@ -522,7 +522,7 @@ DBpedia_ontology_class_menu = 'Thing', ' Activity', '    Game', '    Sales', '  
 							 ' ClericalAdministrativeRegion', ' Colour', ' Covid19', ' Currency', ' Demographics', ' Depth', ' Device', \
 							 '    Battery', '    Camera', '    Engine', '    InformationAppliance', '    Instrument', '    MobilePhone', '    Robot',\
 							 '    Weapon', ' Diploma', ' Disease', ' ElectionDiagram', ' EthnicGroup', ' Event', ' FileSystem', ' Flag', ' Food', \
-							 ' GeneLocation', ' GrossDomesticProduct', ' GrossDomesticProductPerCapita', ' Holiday', ' Hospital', ' Identifier', ' Language',\
+							' GeneLocation', ' GrossDomesticProduct', ' GrossDomesticProductPerCapita', ' Holiday', ' Hospital', ' Identifier', ' Language',\
 							 ' List', ' MeanOfTransportation', ' Media', ' MedicalSpecialty', ' Medicine', ' Name', ' Novel', ' Pandemic', ' PersonFunction',\
 							 ' Place', '    CelestialBody', '    Cemetery', '    ConcentrationCamp', '    CountrySeat', '    Garden', '    HistoricPlace', '    Mine', \
 							 '    NaturalPlace', '    Park', '    PopulatedPlace', '    ProtectedArea', '    SiteOfSpecialScientificInterest', '    WineRegion',\
@@ -565,17 +565,28 @@ NLP_Suite_data_file_handling_tools_menu = \
 
 NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample data (ALL options GUI)', 'Search (ALL options GUI)',\
 'File checker (file content)', \
-'File checker (file content utf-8 encoding)', 'File checker (file name)', \
+'File checker (file content utf-8 encoding)', \
+'File checker (file name)', \
 'File cleaner (Change to ASCII non-ASCII apostrophes & quotes and % to percent)', \
-'File cleaner (Find & Replace string)', 'File cleaner (Remove blank lines from txt file(s))', \
+'File cleaner (Find & Replace string)', \
+'File cleaner (Remove blank lines from txt file(s))', \
 'File cleaner (Add full stop . at the end of paragraphs without end-of-paragraph punctuation)', \
-'File cleaner (Pronominal resolution via CoreNLP)', 'File finder (file name)', \
-'File merger (file content)', 'File splitter (file content)', 'File splitter (file name)', \
+'File cleaner (Pronominal resolution via CoreNLP)', \
+'File finder (file name)', \
+'File merger (file content)',\
+'File splitter (file content)',\
+'File splitter (file name)', \
 'File search (file content for n-grams & co-occurrences; N-grams viewer)', \
-'File search (file content for words/collocations)', 'File-type converter (csv, docx, pdf, rtf --> txt)', \
-'Find non-related documents', 'Language detection', 'Newspaper article/Document titles', \
-'Similarities between documents (via Java Lucene)', 'Similarities between documents (via Python difflib)', \
-'Similarities between words (Levenshtein distance)', 'Spelling checkers', 'Spelling checker cleaner (Find & Replace string)'
+'File search (file content for words/collocations)',\
+'File-type converter (csv, docx, pdf, rtf --> txt)', \
+'Find non-related documents', \
+'Language detection', \
+'Newspaper article/Document titles', \
+'Similarities between documents (via Java Lucene)', \
+'Similarities between documents (via Python difflib)', \
+'Similarities between words (Levenshtein distance)', \
+'Spelling checkers', \
+'Spelling checker cleaner (Find & Replace string)'
 
 # 'CoreNLP annotator - date (NER normalized date)',
 # 'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)',
