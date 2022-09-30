@@ -1,3 +1,4 @@
+from itertools import count
 import sys
 # import GUI_util
 # import IO_libraries_util
@@ -293,8 +294,9 @@ if sys.platform == 'darwin': #Mac OS
     labels_x_indented_coordinate = 160
     select_file_directory_button_width=23
     open_file_directory_button_width = 1
+    open_file_directory_coordinate = 400 # # position of menu of default and GUI specific IO options
     IO_button_name_width=1
-    open_file_directory_coordinate = 400
+    setup_IO_brief_coordinate = 650 # Position of text entry for Input and Output display
     entry_box_x_coordinate = 470 #start point of all labels in the third column (second column after ? HELP); where IO filename, dir, etc. are displayed
     read_button_x_coordinate = 70
     watch_videos_x_coordinate = 200
@@ -313,15 +315,30 @@ if sys.platform == 'darwin': #Mac OS
     open_outputDir_button_brief = 780
     open_config_file_button_brief = 820
 
-    # special internal GUI specific values MAC
-    # SVO_main Mac
-    SVO_1st_column = 150
-    open_S_dictionary = 280
-    lemmatize_S = 340
-    SVO_2nd_column = 558 # filter & dictionary options for Verbs
-    open_V_dictionary = 660
-    SVO_3rd_column = 965 # filter & dictionary options for Objects
-    open_O_dictionary = 1090
+# --------------------------------------------------- special internal GUI specific values MAC
+# SVO_main Mac
+    SVO_1st_column = 120
+
+    date_character_separator_label = 920
+    date_character_separator_menu = 1050
+    date_position_label = 1100
+    date_position_menu = 1160
+
+    open_S_dictionary = 260
+    lemmatize_S = 320
+    SVO_2nd_column = 520# filter & dictionary options for Verbs
+    open_V_dictionary = 640
+    lemmatize_V = 700
+    SVO_3rd_column = 920 # filter & dictionary options for Objects
+    open_O_dictionary = 1050
+    lemmatize_O = 1110
+
+    SVO_2nd_column_top = 400
+    SVO_3rd_column_top = 800
+
+    dictionary_S_width=60
+    dictionary_V_width=60
+    dictionary_O_width=60
 
     # Mac NLP_setup_package_language_main
     language_widget_with=50
@@ -345,7 +362,8 @@ else: #windows and anything else
     select_file_directory_button_width=30
     IO_button_name_width=30
     open_file_directory_button_width = 3
-    open_file_directory_coordinate = 350
+    open_file_directory_coordinate = 350 # position of menu of default and GUI specific IO options
+    setup_IO_brief_coordinate = 580 # Position of text entry for Input and Output display
     entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
     read_button_x_coordinate = 50
     watch_videos_x_coordinate = 170
@@ -372,8 +390,14 @@ else: #windows and anything else
     reset_column = 960
     show_column = 1020
 
-    # SVO_main Windows
+# SVO_main Windows
     SVO_1st_column = 120
+
+    date_character_separator_label = 920
+    date_character_separator_menu = 1050
+    date_position_label = 1100
+    date_position_menu = 1160
+
     open_S_dictionary = 260
     lemmatize_S = 320
     SVO_2nd_column = 520# filter & dictionary options for Verbs
@@ -493,8 +517,116 @@ from tkinter import Toplevel
 def Dialog2Display(title: str):
     Dialog2 = Toplevel(height=1000, width=1000)
 
-# creating popup menu in tkinter
 
+def message_box_widget(window, message_title, message_text, buttonType='OK', timeout=3000):
+    global yes_no_button
+    yes_no_button = ""
+    if buttonType != 'OK':
+        message_title = 'Reminder: ' + message_title
+    global top_message
+    top_message = tk.Toplevel()
+    top_message.title(message_title)
+
+    # define the countdown func.
+    def countdown(countdown_timer):
+        # TODO MINO
+        if countdown_timer==0:
+            try:
+                top_message.destroy()
+            except:
+                print('Closing message due to timeout.')
+        else:
+            countdown_timer -= 1
+            countdownLabel2.configure(text=f"{countdown_timer}")
+            countdownLabel2.after(1000, lambda: countdown(countdown_timer))
+
+    # timer
+    def wait_for_answer(button_type):
+        global yes_no_button
+        # TODO MINO
+        if button_type == 'Yes':
+            yes_no_button = "Yes"
+            top_message.destroy()
+        elif button_type == 'No':
+            yes_no_button = "No"
+            top_message.destroy()
+        elif button_type == 'Cancel':
+            top_message.destroy()
+
+    if buttonType == 'OK':
+        mbox = tk.Message(top_message, width=600,
+                          text=message_text + '\n\n\n\n')
+        top_message.attributes('-topmost', 'true')
+        mbox.pack()  # put the widget on the window
+        top_message.update_idletasks()
+
+        screen_height = top_message.winfo_height()
+        button = tk.Button(top_message, text="OK", command=top_message.destroy, fg='red')
+        button.place(x=5, y=screen_height - 35)
+
+        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
+        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
+        countdownLabel1.place(x=60, y=screen_height - 35)
+        countdownLabel2.place(x=270, y=screen_height - 35)
+        countdown(int(timeout / 500))
+
+    elif buttonType == 'Yes-No':
+        mbox = tk.Message(top_message, width=600,
+                          text=message_text + '\n\n\n\n')
+        top_message.attributes('-topmost', 'true')
+        mbox.pack()  # put the widget on the window
+        top_message.update_idletasks()
+        screen_height = top_message.winfo_height()
+
+        Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'), fg='red')
+        No = tk.Button(top_message, text="No", command=lambda: wait_for_answer('No'), fg='red')
+        Yes.place(x=5, y=screen_height - 35)
+        No.place(x=50, y=screen_height - 35)
+
+        question = tk.Label(top_message, text='Do you want to see this message again?', fg='red')
+        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
+        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
+
+        question.place(x=5, y=screen_height - 60)
+        countdownLabel1.place(x=110, y=screen_height - 35)
+        countdownLabel2.place(x=320, y=screen_height - 35)
+        countdown(int(timeout / 1000))
+
+    elif buttonType == 'Yes-No-Cancel':
+        mbox = tk.Message(top_message, width=600,
+                          text=message_text + '\n\n\n\n')
+        top_message.attributes('-topmost', 'true')
+        mbox.pack()  # put the widget on the window
+        top_message.update_idletasks()
+        screen_height = top_message.winfo_height()
+
+        Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'))
+        No = tk.Button(top_message, text="No", command=lambda: wait_for_answer('No'))
+        Cancel = tk.Button(top_message, text="Cancel", command=lambda: wait_for_answer('Cancel'))
+
+        Yes.place(x=0, y=screen_height - 35)
+        No.place(x=50, y=screen_height - 35)
+        Cancel.place(x=100, y=screen_height - 35)
+        question.place(x=0, y=screen_height - 60)
+
+        question = tk.Label(top_message, text="Do you want to see this message again?", fg='red')
+        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
+        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
+
+        countdownLabel1.place(x=200, y=screen_height - 35)
+        countdownLabel2.place(x=410, y=screen_height - 35)
+        question.place(x=10, y=screen_height - 60)
+        countdown(int(timeout / 1000))
+
+    # TODO MINO
+    top_message.wait_window()
+    if yes_no_button != "":
+        mbox.after_cancel(mbox)
+    mbox.after(timeout, top_message.destroy)
+
+    return yes_no_button
+
+# creating popup menu in tkinter
 def dropdown_menu_widget(window,textCaption, menu_values, default_value, callback):
 
     class App():
@@ -504,7 +636,7 @@ def dropdown_menu_widget(window,textCaption, menu_values, default_value, callbac
             top.focus_force()
             self.menuButton = ttk.Combobox(top, width=len(textCaption)+30)
             self.menuButton['values'] = menu_values
-            self.menuButton.pack()
+            self.menuButton.pack() # put the widget on the window
 
             self.menuButton.grid(row=0, column=1) # , sticky=W)
             self.callback = callback
@@ -533,7 +665,7 @@ def dropdown_menu_widget2(window,textCaption, menu_values, default_value, callba
     top.focus_force()
     menuButton = ttk.Combobox(top, width=len(textCaption)+30)
     menuButton['values'] = menu_values
-    menuButton.pack()
+    menuButton.pack() # put the widget on the window
 
     menuButton.grid(row=0, column=1) # , sticky=W)
     callback = callback
@@ -548,10 +680,10 @@ def dropdown_menu_widget2(window,textCaption, menu_values, default_value, callba
 def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
     top = tk.Toplevel(window)
     l = tk.Label(top, text= textCaption)
-    l.pack()
+    l.pack() # put the widget on the window
     s = tk.Scale(top, from_= lower_bound, to=upper_bound, orient=tk.HORIZONTAL)
     s.set(default_value)
-    s.pack()
+    s.pack() # put the widget on the window
 
     def get_value():
         global val
@@ -574,6 +706,7 @@ def slider_widget(window,textCaption, lower_bound, upper_bound, default_value):
 def enter_value_widget(masterTitle,textCaption,numberOfWidgets=1,defaultValue='',textCaption2='',defaultValue2=''):
     value1=defaultValue
     value2=defaultValue2
+    masterTitle=masterTitle + " (Esc to quit)"
 
     # TODO should not restrict to 2; should have a loop
     if numberOfWidgets==2:
@@ -614,6 +747,11 @@ def enter_value_widget(masterTitle,textCaption,numberOfWidgets=1,defaultValue=''
                                         column=0,
                                         sticky=tk.W,
                                         pady=4)
+    def func(event):
+        master.quit()
+    master.bind('<Return>', func)
+    master.bind('<Escape>', func)
+
     master.mainloop()
     value1=str(e1.get())
     # TODO 2 could be a larger number; should have a loop

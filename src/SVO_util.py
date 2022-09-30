@@ -168,7 +168,8 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
     return output_name
 
 
-def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filter_o_fileName, lemmatize_s, lemmatize_v,lemmatize_o, outputDir, createCharts=True, chartPackage='Excel'):
+def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filter_o_fileName,
+               lemmatize_s, lemmatize_v,lemmatize_o, outputDir, createCharts=True, chartPackage='Excel'):
     """
     Filters a svo csv file based on the dictionaries given, and replaces the original output csv file
     :param svo_file_name: the name of the svo csv file

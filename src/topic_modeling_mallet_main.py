@@ -51,6 +51,12 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
         reminders_util.checkReminder(config_filename, reminders_util.title_options_topic_modelling_number_of_topics,
                                      reminders_util.message_topic_modelling_number_of_topics, True)
 
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='TM-MALLET',
+                                                       silent=False)
+    if outputDir == '':
+        return
+
     filesToOpen = topic_modeling_mallet_util.run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                                                  OptimizeInterval, numTopics)
 
@@ -141,7 +147,7 @@ TIPS_lookup = {"Mallet installation":"TIPS_NLP_Topic modeling Mallet installatio
 #               "JAVA installation": "TIPS_NLP_Java download install run.pdf"}
 TIPS_options='Topic modeling in Mallet','Mallet installation','Excel - Enabling Macros','csv files - Problems & solutions', 'Statistical measures', 'Topic modeling in Gensim','Topic modeling and corpus size'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):

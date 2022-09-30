@@ -315,7 +315,7 @@ TIPS_lookup = {'English Language Benchmarks': 'TIPS_NLP_English Language Benchma
                 'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf'}
 TIPS_options='English Language Benchmarks', 'Things to do with words: Overall view'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):

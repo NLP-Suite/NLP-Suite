@@ -165,10 +165,17 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         # if count_var == 0: # numeric variable
         #     import pandas as pd
         #     df = pd.read_csv(inputFilename)
-        #     column_data =df[columns_to_be_plotted[i]]
-        #     # create classes of values, for instance 5
-        #     x_axis_labels = ['bin-1', 'bin-2', 'bin-3', 'bin-4', 'bin-5']
-        #     print(pd.cut(df[columns_to_be_plotted[i]], column_data, labels=x_axis_labels))
+        #     # column_data =df[columns_to_be_plotted_yAxis[0].tolist()]
+        #     column_data =df[columns_to_be_plotted_yAxis[0]].tolist()
+        #     print("len(column_data)", len(column_data), "column_data",column_data)
+        #     bins = list(set(column_data))
+        #     bins.sort()
+        #     x_axis_labels = []
+        #     # create classes of values
+        #     for j in range(1,len(bins)):
+        #         # x_axis_labels.append(f"Bin(j)")
+        #         x_axis_labels.append("Bin-" + str(j))
+        #     print("Bins",pd.cut(column_data, bins, labels=x_axis_labels))
 
     # TODO depends on how many documents we have
     if byDoc:

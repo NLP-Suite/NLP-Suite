@@ -24,7 +24,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         encoding_var,
         memory_var, document_length_var, limit_sentence_length_var,
         extract_date_from_text_var, extract_date_from_filename_var, date_format, date_separator_var,
-        date_position_var, language_var, NER_list, NER_sentence_var):
+        date_position_var, language_var, NER_list):
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -93,8 +93,7 @@ run_script_command=lambda: run(
                             date_separator_var.get(),
                             date_position_var.get(),
                             language_var.get(),
-                            NER_list,
-                            NER_sentence_var.get())
+                            NER_list)
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -105,8 +104,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=520, # height at brief display
-                             GUI_height_full=590, # height at full display
+                             GUI_height_brief=480, # height at brief display
+                             GUI_height_full=550, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -152,7 +151,6 @@ date_position_var = tk.IntVar()
 
 language_var = tk.StringVar()
 NER_tag_var = tk.StringVar()
-NER_sentence_var = tk.StringVar()
 NER_entry_var = tk.StringVar()
 # NER_split_values_prefix_entry_var = tk.StringVar()
 # NER_split_values_suffix_entry_var = tk.StringVar()
@@ -275,9 +273,13 @@ NER_tag_lb = tk.Label(window, text='NER tags')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,NER_tag_lb,True)
 
 # NER tags menu
-NER_tag_var.set('')
+NER_tag_var.set('All NER tags') #--- All NER tags
 NER_menu = tk.OptionMenu(window,NER_tag_var,'--- All NER tags', '--- All quantitative expressions','NUMBER', 'ORDINAL', 'PERCENT', '--- All social actors', 'PERSON', 'ORGANIZATION', '--- All spatial expressions', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', '--- All temporal expressions', 'DATE', 'TIME', 'DURATION', 'SET',  '--- All other expressions', 'MISC', 'CAUSE_OF_DEATH', 'CRIMINAL_CHARGE', 'EMAIL',  'IDEOLOGY', 'MONEY',  'NATIONALITY', 'RELIGION', 'TITLE','URL')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,y_multiplier_integer,NER_menu,True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100, y_multiplier_integer,
+                    NER_menu, True, False, True, False,
+                    90, GUI_IO_util.get_labels_x_coordinate(),
+                    "Select the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.")
 
 add_NER_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_NER_Options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+40,y_multiplier_integer,add_NER_button, True)
@@ -333,7 +335,7 @@ def add_NER_tag(*args):
     #     window.focus_force()
     #     return
 
-    if NER_tag_var.get() == '--- All NER tags':
+    if 'All NER tags' in NER_tag_var.get(): # == '--- All NER tags':
         NER_list = ['PERSON', 'ORGANIZATION', 'MISC', 'MONEY', 'NUMBER', 'ORDINAL',
                     'PERCENT', 'DATE', 'TIME', 'DURATION', 'SET', 'EMAIL', 'URL', 'CITY',
                     'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', 'NATIONALITY', 'RELIGION', 'TITLE', 'IDEOLOGY', 'CRIMINAL_CHARGE',
@@ -408,10 +410,6 @@ def clear_NER_list():
     # NER_split_values_suffix_entry_var.set('')
     activate_NER_Options()
 
-NER_sentence_var.set(0)
-NER_sentence_checkbox = tk.Checkbutton(window, variable=NER_sentence_var, onvalue=1, offvalue=0)
-NER_sentence_checkbox.config(text="NER tags by sentence index")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,NER_sentence_checkbox)
 
 def open_GUI2():
     call("python CoNLL_table_analyzer_main.py", shell=True)
@@ -434,7 +432,7 @@ TIPS_lookup = {'Stanford CoreNLP supported languages':'TIPS_NLP_Stanford CoreNLP
 TIPS_options='Stanford CoreNLP supported languages','Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues','NER (Named Entity Recognition)','CoNLL Table','POSTAG (Part of Speech Tags)','csv files - Problems & solutions','Statistical measures'
 
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
@@ -451,9 +449,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                   "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the language to be used: English, Arabic, Chinese, German, Hungarian, Italian, or Spanish.\n\nNot all annotators are available for all languages, in fact, most are not. Please, read the TIPS file TIPS_NLP_Stanford CoreNLP supported languages.pdf.\n\nThe Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The GIS algorithms allow you to extract a date to be used to build dynamic GIS maps. You can extract dates from the document content or from the filename if this embeds a date.\n\nPlease, the tick the checkbox 'From document content' if you wish to extract normalized NER dates from the text itself.\n\nPlease, tick the checkbox 'From filename' if filenames embed a date (e.g., The New York Times_12-05-1885).\n\nDATE WIDGETS ARE NOT VISIBLE WHEN SELECTING A CSV INPUT FILE.\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the follwing information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy); please, select.\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _); please, enter.\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers); please, select.\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field."+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The GIS algorithms allow you to extract a date to be used to build dynamic GIS maps. You can extract dates from the document content or from the filename if this embeds a date.\n\nPlease, the tick the checkbox 'From document content' if you wish to extract normalized NER dates from the text itself.\n\nPlease, tick the checkbox 'From filename' if filenames embed a date (e.g., The New York Times_12-05-1885).\n\nDATE WIDGETS ARE NOT VISIBLE WHEN SELECTING A CSV INPUT FILE.\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the following information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy); please, select.\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _); please, enter.\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers); please, select.\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the 23 NER tags that you would like to extract.\n\nFor English, the Stanford CoreNLP, by default through the NERClassifierCombiner annotator, recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\nClick on the + button to add more NER tags.\nClick on the Reset button (or ESCape) to cancel all selected options and start over."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to plot the extracted NER tags by sentence index."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","If you have run a Stanford CoreNLP parser and you have a CoNLL table containing NER values, click on the 'Open table analyzer (GUI)' to have access to any desired CoNLL table."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

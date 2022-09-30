@@ -11,8 +11,6 @@ import os
 import tkinter.messagebox as mb
 import pandas as pd
 import csv
-import GUI_util
-from csv import writer
 
 # reminders content for specific GUIs are set in the csv file reminders
 # check if the user wants tadded the release_version.txt fio see the message again
@@ -54,7 +52,7 @@ title_options_SVO_corpus = ['SVO with corpus data']
 message_SVO_corpus = 'You have selected to work with a set of txt files in a directory (your corpus).\n\nBeware that SVO extraction is computationally demanding. Furthermore, depending upon the options you choose (manual coreference editing, GIS maps), it may require manual input on each input file processed.\n\nDepending upon corpus size, manual coreference editing may also not be possible, due to memory requirements.'
 
 title_options_SVO_output = ['SVO output']
-message_SVO_output = 'Depending upon the options you select, the SVO pipeline will produce in output different types of files: cvf files, wordcloud image, Google Earth Pro map, and Gephi network graph.\n\nWhile cvf and png files are easy to read, less so are Google Earth Pro kml files and, particularly, Gephi gexf files.\n\nPLEASE, read the Gephi TIPS file before you run the SVO pipeline.'
+message_SVO_output = 'The SVO pipeline will create in output an SVO subdirectory inside the main output directory.\n\nDepending upon the options you select it will also create different subdirectories (e.g., GIS, WordNet) inside the SVO subdirectory. Contrary to this, the creference resolution option will create a subdirectory inside the main output directory rather than the SVO subdirectory, since coreferenced files can then be used as input to any NLP algorithms.\n\nDepending upon the options you select, the SVO pipeline will produce different types of files: cvf files, wordcloud image, Google Earth Pro map, and Gephi network graph.\n\nWhile cvf and png files are easy to read, less so are Google Earth Pro kml files and, particularly, Gephi gexf files.\n\nPLEASE, read the Gephi TIPS file before you run the SVO pipeline.'
 
 title_options_SVO_default = ['SVO default visualization options']
 message_SVO_default = 'The SVO algorithms use default settings for visualizing results in Python Wordclouds and Google Earth Pro. If you want to customize the visualization options, please, use the Wordclouds GUI and the GIS Google Earth GUI with the csv files produced by SVO in input.'
@@ -135,14 +133,20 @@ message_only_CoreNLP_coref = "The coreference algorithms in this GUI are based e
 title_options_only_CoreNLP_NER = ['Stanford CoreNLP NER']
 message_only_CoreNLP_NER = "The NER algorithms in this GUI are based exclusively on Stanford CoreNLP NER annotator.\n\nWatch this space for an extension to spaCy and Stanza of the NER algorithms behind this GUI (the spaCy and Stanza parsers and NER annotators, however, do prooduce NER tags)."
 
+title_options_only_CoreNLP_CoNLL_analyzer = ['CoNLL table analyzer']
+message_only_CoreNLP_CoNLL_analyzer = "The CoNLL table analyzer algorithms in this GUI are based exclusively on Stanford CoreNLP parser.\n\nWatch this space for an extension to spaCy and Stanza of the NER algorithms behind this GUI."
+
+title_options_only_CoreNLP_CoNLL_repetition_finder = ['K sentences repetition finder in CoNLL table']
+message_only_CoreNLP_CoNLL_repetition_finder = "In the CoNLL table analyzer GUI there is another K-sentences repetition finder algorithm. It provides data based based on the CoNLL table POS tags on counts and proportions of nouns, verbs, adjectives, and proper nouns in the first and last K sentences of a document."
+
 lemma_frequencies = ['Lemma frequency']
 message_lemma_frequencies = "A blank is likely to be a frequent lemma in your corpus. It is likely to 'mask' all other values. If that is the case, when the chart is displayed you may want to delete rows containing a blank lemma to have a better view of all other values."
 
 NER_frequencies = ['NER tags frequency']
-message_NER_frequencies = "O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag to have a better view of all other tags."
+message_NER_frequencies = "O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet to have a better view of all other tags."
 
 DepRel_frequencies = ['DepRel tags frequency']
-message_DepRel_frequencies = "punct (punctuation) and det (determiner/article) are likely to be the most frequent DepRel tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the rows containing the 'punct' and 'det' tags to have a better view of all other tags."
+message_DepRel_frequencies = "punct (punctuation) and det (determiner/article) are likely to be the most frequent DepRel tags in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete in the Data worksheet the rows containing the 'punct' and 'det' tags to have a better view of all other tags."
 
 title_options_CoreNLP_shutting_down = ['CoreNLP Server is shutting down']
 message_CoreNLP_shutting_down = "The Stanford CoreNLP, after firing up, will display on command line/prompt the message: CoreNLP Server is shutting down.\n\nIt is NOT a problem. The process will continue..."
@@ -166,7 +170,7 @@ title_options_CoreNLP_nn_parser = ['Clause tags with CoreNLP neural network pars
 message_CoreNLP_nn_parser = "The CoreNLP neural network parser does not produce clause tags in output. The column 'Clause Tag' in the output csv CoNLL table would contain all blank values."
 
 title_options_CoreNLP_quote_annotator = ['CoreNLP quote annotator']
-message_CoreNLP_quote_annotator = "The CoreNLP quote annotator works with double quotes as default \" rather than with single quotes \'. If your document(s) use single quotes for dialogue, make sure to tick the checkbob \'Include single quotes\'. The Stanford CoreNLP annotator will then process BOTH single AND double quotes, otherwise single quotes for dialogues would be missed (e.g., The user said: 'This NLP Suite sucks.')."
+message_CoreNLP_quote_annotator = "The CoreNLP quote annotator works with double quotes as default \" rather than with single quotes \'. If your document(s) use single quotes for dialogue, make sure to tick the checkbox \'Include single quotes\'. The Stanford CoreNLP annotator will then process BOTH single AND double quotes, otherwise single quotes for dialogues would be missed (e.g., The user said: 'This NLP Suite sucks.')."
 
 title_options_memory = ['Available memory']
 message_memory = 'Your computer may not have enough memory to run some of the more resource-intensive algorithms of Stanford CoreNLP (e.g., coreference or some neural network models)\n\nStill, there are several options you may take (e.g., splitting up long documents into shorter parts and feeding tem to CoreNLP; checking your sentence length statistics - anything above 70 will most likely give you troubles, cnsidering that the average sentence length in modern English is 20 words). On Stanford Core NLP and memory issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.'
@@ -358,87 +362,17 @@ def getReminders_list(config_filename,silent=False):
 # when displaying messages the message field is '' since the actual message is not known until the csv file is read
 def displayReminder(df,row_num,title, message, event, currentStatus, question, seeMsgAgain=False) -> object:
 
-    # https://stackoverflow.com/questions/30235587/closing-tkmessagebox-after-some-time-in-python?rq=1    def enter_value_widget(masterTitle, textCaption):
-    #     import tkinter as tk
-    #     from tkinter import Toplevel
-    #     window=GUI_util.window
-    #     class App():
-    #         def __init__(self, master):
-    #             top = self.top = Toplevel()
-    #             top.wm_title(textCaption)
-    #             top.focus_force()
-    #             self.label = tk.Label(top, width=len(textCaption))
-    #             self.label.pack()
-    #
-    #             self.label.grid(row=0, column=1)  # , sticky=W)
-    #             # self.callback = callback
-    #
-    #             YES_button = tk.Button(self.top, text='YES', command=self.get_value)
-    #             YES_button.grid(row=0, column=1)
-    #             NO_button = tk.Button(self.top, text='NO', command=self.get_value, sticky=tk.CENTER)
-    #             NO_button.grid(row=0, column=1)
-    #
-    #             # top.after(10000, top.destroy)
-    #
-    #         def get_value(self):
-    #             val = self.label.get()
-    #             self.top.destroy()
-    #             # callback(val)
-    #
-    #     App(window)
-
-        # master = tk.Tk()
-        # master.focus_force()
-        #
-        #
-        # # tk.Label(master, width=len(message), text=message).grid(row=0)
-        #
-        # master(text = title, padx = 20, pady = 20).pack()
-        # master.after(10000, master.destroy)
-        #
-        # master.title(title)
-        # # the width in tk.Entry determines the overall width of the widget;
-        # #   MUST be entered
-        # #   + 30 to add room for - [] and X in a widget window
-        # master.focus_force()
-        #
-        # tk.Button(master,
-        #           text='YES',
-        #           command=master.quit).grid(row=3,
-        #                                     column=0,
-        #                                     sticky=tk.W,
-        #                                     pady=4)
-        # tk.Button(master,
-        #           text='NO',
-        #           command=master.quit).grid(row=3,
-        #                                     column=1,
-        #                                     sticky=tk.W,
-        #                                     pady=4)
-        # master.mainloop()
-        # master.destroy()
-        # # convert to list; value1 is checked for length in calling function
-        # #   so do not convert if empty or its length will be the length of ['']
-        # # if value1!='':
-        # #     value1=list(value1.split(" "))
-        # # TODO temp get answer
-        # answer=0
-        # return answer
-
-    # enter_value_widget("Enter the single start character",message)
-
     try:
         message = df.at[row_num, "Message"].replace("\\n", os.linesep)
     except:
         pass
-    if message == '':
-        import GUI_IO_util
-        GUI_IO_util.enter_value_widget_TEMP("Enter the number of sentences, K, to be analyzed", 'K',
-                                                           1, '', '', '')
-        answer = mb.askquestion(title="Reminder: " + df.at[row_num, "Title"],
-                                message=message+question)
+    if message == '': # there is no message to be displayed
+        return
     else:
-        answer = mb.askquestion(title="Reminder: " + title,
-                                message=message+question)
+        # message = message + question # the question "Do you want to see this message again?" is asked
+        #   in GUI_IO_util.message_box_widget so that it can be placed n red
+        answer = GUI_IO_util.message_box_widget(1, title, message, buttonType='Yes-No', timeout=30000)
+
     answer=answer.capitalize() # Yes/No
     if seeMsgAgain==True:
         if answer == 'No':
@@ -562,13 +496,14 @@ def resetReminder(config_filename,title):
                            message="The reminders.csv file saved in the reminders subdirectory does not contain the reminder '" + title + "'.\n\nPlease, let the NLP Suite development team know the problem so it can be fixed.")
             return
 
+        message = df.at[row_num, "Message"]
         event = df.at[row_num, "Event"]
         status = df.at[row_num, "Status"]
         if status == "No" or status == "OFF":  # 'No' the old way of saving reminders
             question = '\n\nNow this reminder is turned OFF. Do you want to turn it ON?'
         else:
             question = '\n\nNow this reminder is turned ON. Do you want to turn it OFF?'
-        displayReminder(df, row_num, title, '', event, status, question, False)
+        displayReminder(df, row_num, title, message, event, status, question, False)
 
 
 # update do_not_show_message.csv so that we don't show the message box again

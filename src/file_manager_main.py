@@ -989,7 +989,7 @@ videos_options = 'File manager'
 TIPS_lookup = {'File manager':'TIPS_NLP_File manager.pdf','File handling in NLP Suite': "TIPS_NLP_File handling in NLP Suite.pdf",'Filename checker':'TIPS_NLP_Filename checker.pdf','Filename matcher':'TIPS_NLP_Filename matcher.pdf','File classifier (By date)':'TIPS_NLP_File classifier (By date).pdf','File classifier (By NER)':'TIPS_NLP_File classifier (By NER).pdf','File content checker & converter':'TIPS_NLP_File checker & converter.pdf','Text encoding (utf-8)':'TIPS_NLP_Text encoding (utf-8).pdf','Spelling checker':'TIPS_NLP_Spelling checker.pdf','File merger':'TIPS_NLP_File merger.pdf','File splitter':'TIPS_NLP_File splitter.pdf'}
 TIPS_options= 'File manager','File handling in NLP Suite', 'Filename checker', 'Filename matcher', 'File classifier (By date)','File classifier (By NER)','File content checker & converter','Text encoding (utf-8)','Spelling checker','File merger','File splitter'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):

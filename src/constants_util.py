@@ -522,7 +522,7 @@ DBpedia_ontology_class_menu = 'Thing', ' Activity', '    Game', '    Sales', '  
 							 ' ClericalAdministrativeRegion', ' Colour', ' Covid19', ' Currency', ' Demographics', ' Depth', ' Device', \
 							 '    Battery', '    Camera', '    Engine', '    InformationAppliance', '    Instrument', '    MobilePhone', '    Robot',\
 							 '    Weapon', ' Diploma', ' Disease', ' ElectionDiagram', ' EthnicGroup', ' Event', ' FileSystem', ' Flag', ' Food', \
-							 ' GeneLocation', ' GrossDomesticProduct', ' GrossDomesticProductPerCapita', ' Holiday', ' Hospital', ' Identifier', ' Language',\
+							' GeneLocation', ' GrossDomesticProduct', ' GrossDomesticProductPerCapita', ' Holiday', ' Hospital', ' Identifier', ' Language',\
 							 ' List', ' MeanOfTransportation', ' Media', ' MedicalSpecialty', ' Medicine', ' Name', ' Novel', ' Pandemic', ' PersonFunction',\
 							 ' Place', '    CelestialBody', '    Cemetery', '    ConcentrationCamp', '    CountrySeat', '    Garden', '    HistoricPlace', '    Mine', \
 							 '    NaturalPlace', '    Park', '    PopulatedPlace', '    ProtectedArea', '    SiteOfSpecialScientificInterest', '    WineRegion',\
@@ -549,8 +549,13 @@ NLP_Suite_visualization_tools_menu = 'Excel charts', 'Geographic maps: Geocoding
 'HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)', 'Network graphs (Gephi)', \
 'Sentence visualization: Dependency tree viewer (png graphs)', 'Wordclouds (ALL options GUI)'
 
-NLP_Suite_data_file_handling_tools_menu = 'File handler (ALL options GUI)', 'Sample data (ALL options GUI)', \
+NLP_Suite_data_file_handling_tools_menu = \
+'File handler (ALL options GUI)', \
+'Sample data (ALL options GUI)', \
 'Search (ALL options GUI)', \
+'', \
+'-----------------------------------------------------------------------------------------', \
+'', \
 'Data manager (csv files via Pandas)', \
 'File checker (file name)', \
 'File classifier (dumb classifier via embedded date) (file name)', \
@@ -560,17 +565,28 @@ NLP_Suite_data_file_handling_tools_menu = 'File handler (ALL options GUI)', 'Sam
 
 NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample data (ALL options GUI)', 'Search (ALL options GUI)',\
 'File checker (file content)', \
-'File checker (file content utf-8 encoding)', 'File checker (file name)', \
+'File checker (file content utf-8 encoding)', \
+'File checker (file name)', \
 'File cleaner (Change to ASCII non-ASCII apostrophes & quotes and % to percent)', \
-'File cleaner (Find & Replace string)', 'File cleaner (Remove blank lines from txt file(s))', \
+'File cleaner (Find & Replace string)', \
+'File cleaner (Remove blank lines from txt file(s))', \
 'File cleaner (Add full stop . at the end of paragraphs without end-of-paragraph punctuation)', \
-'File cleaner (Pronominal resolution via CoreNLP)', 'File finder (file name)', \
-'File merger (file content)', 'File splitter (file content)', 'File splitter (file name)', \
+'File cleaner (Pronominal resolution via CoreNLP)', \
+'File finder (file name)', \
+'File merger (file content)',\
+'File splitter (file content)',\
+'File splitter (file name)', \
 'File search (file content for n-grams & co-occurrences; N-grams viewer)', \
-'File search (file content for words/collocations)', 'File-type converter (csv, docx, pdf, rtf --> txt)', \
-'Find non-related documents', 'Language detection', 'Newspaper article/Document titles', \
-'Similarities between documents (via Java Lucene)', 'Similarities between documents (via Python difflib)', \
-'Similarities between words (Levenshtein distance)', 'Spelling checkers', 'Spelling checker cleaner (Find & Replace string)'
+'File search (file content for words/collocations)',\
+'File-type converter (csv, docx, pdf, rtf --> txt)', \
+'Find non-related documents', \
+'Language detection', \
+'Newspaper article/Document titles', \
+'Similarities between documents (via Java Lucene)', \
+'Similarities between documents (via Python difflib)', \
+'Similarities between words (Levenshtein distance)', \
+'Spelling checkers', \
+'Spelling checker cleaner (Find & Replace string)'
 
 # 'CoreNLP annotator - date (NER normalized date)',
 # 'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)',
@@ -586,17 +602,60 @@ NLP_Suite_corpus_tools_menu = 'Co-Occurrences viewer', 'N-grams viewer', \
 'Similarities between documents (via Java Lucene)', 'Topic modeling (via Gensim)', \
 'Topic modeling (via MALLET)'
 
-NLP_Suite_corpus_document_tools_menu = 'WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW', 'Corpus/document(s) statistics (Sentences, words, lines)', 'NLP parsers & annotators (CoreNLP, spaCy, Stanza)', 'CoNLL table analyzer - Search the CoNLL table', \
-'CoNLL table analyzer - Clause, noun, verb, function words frequencies', 'CoreNLP annotator - date (NER normalized date)', \
-'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)', 'CoreNLP annotator - quote', \
-'CoreNLP annotator - coreference (pronominal)', 'SVO (Subject-Verb-Object) extractor & visualization', 'Knowledge graphs: DBpedia & YAGO', \
-'HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)', 'Annotator - hedge/uncertainty', 'Narrative analysis (ALL options GUI)', 'Style analysis (ALL options GUI)', \
-'Sentiment analysis', 'Sentiments/emotions (ALL options GUI)', 'Gender guesser', 'Geographic maps: From texts to maps', 'Geographic maps: Google Earth Pro', \
-'NER (Named Entity Recognition) extractor', 'N-grams (word & character)', 'Nominalization', 'Search (ALL options GUI)', 'Search CoNLL table', \
-'Search text file(s) for n-grams & co-occurrences (N-grams viewer)', 'Search text file(s) for words/collocations', 'Sentence complexity', \
-'Sentence/text readability (via textstat)', 'Similarities between words (Levenshtein distance)', 'Spelling checkers', \
-'Spelling checker cleaner (Find & Replace string)', 'Semantic analysis (via TensorFlow)', 'SRL Semantic Role Labeling', \
-'Wordclouds (ALL options GUI)', 'WordNet', 'Word2Vec (via Gensim)'
+NLP_Suite_corpus_document_tools_menu = \
+'Fundamental NLP tools ---------------------------------------------------------------------------', \
+'', \
+'WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW', \
+'Corpus/document(s) statistics (Sentences, words, lines)', \
+'Parsers & annotators (CoreNLP, spaCy, Stanza)', \
+'BERT (NER, Sentiment, Syntax, Word embeddings', \
+'CoNLL table analyzer - Search the CoNLL table', \
+'CoNLL table analyzer - Clause, noun, verb, function words frequencies', \
+'', \
+'Special annotators ---------------------------------------------------------------------------', \
+'', \
+'CoreNLP annotator - date (NER normalized date)', \
+'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)', \
+'CoreNLP annotator - quote', \
+'CoreNLP annotator - coreference (pronominal)', \
+'Hedge/uncertainty annotator', \
+'HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)', \
+'', \
+'Specialized tools --------------------------------------------------------------------------------', \
+'', \
+'Gender guesser', \
+'Geographic maps: From texts to maps', \
+'Geographic maps: Google Earth Pro', \
+'Knowledge graphs: DBpedia & YAGO', \
+'NER (Named Entity Recognition) extractor', \
+'Narrative analysis (ALL options GUI)', \
+'Semantic analysis (via TensorFlow)', \
+'Sentiments/emotions (ALL options GUI)', \
+'Sentiment analysis', \
+'SRL Semantic Role Labeling', \
+'SVO (Subject-Verb-Object) extractor & visualization', \
+'Wordclouds (ALL options GUI)', \
+'WordNet', \
+'Word2Vec (via Gensim)', \
+'', \
+'Style analysis tools -----------------------------------------------------------------------------------', \
+'', \
+'Style analysis (ALL options GUI)', \
+'N-grams (word & character)', \
+'Nominalization', \
+'Sentence complexity', \
+'Sentence/text readability (via textstat)', \
+'Similarities between words (Levenshtein distance)', \
+'Spelling checkers', \
+'Spelling checker cleaner (Find & Replace string)', \
+'', \
+'Search & extraction tools -----------------------------------------------------------------------', \
+'', \
+'Search (ALL options GUI)', \
+'Search CoNLL table', \
+'Search text file(s) for n-grams & co-occurrences (N-grams viewer)', \
+'Search text file(s) for words/collocations', \
+
 
 # 'Spelling checker/Unusual words (via NLTK)',
 # 'Spelling checker (via autocorrect)',

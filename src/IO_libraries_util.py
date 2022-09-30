@@ -501,7 +501,7 @@ def save_software_config(new_csv, package):
 
 
 # package is != '' when ...
-#   1. the function is called from a specific script that uses the package (e.g., NLP_parsers_annotators_main)
+#   1. the function is called from a specific script that uses the package (e.g., parsers_annotators_main)
 #   2. the function is called from NLP_menu_main when clicking on the button Setup external software
 # return software_dir, missing_software
 def get_external_software_dir(calling_script, package, silent=False, only_check_missing=False, downloading=True,installing=True):

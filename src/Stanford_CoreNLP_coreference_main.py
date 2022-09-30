@@ -57,9 +57,9 @@ def run(inputFilename, inputDir, outputDir,
         corefed_txt_file):
 
     # pull the widget names from the GUI since the scripts change the IO values
-    inputFilename = GUI_util.inputFilename.get()
-    inputDir = GUI_util.input_main_dir_path.get()
-    outputDir = GUI_util.output_dir_path.get()
+    inputFilename = GUI_util.inputFilename
+    inputDir = GUI_util.input_main_dir_path
+    outputDir = GUI_util.output_dir_path
 
     outputCorefedDir = ''
 
@@ -193,11 +193,11 @@ NLPPath = GUI_IO_util.NLPPath
 window = GUI_util.window
 # config_input_output_numeric_options = GUI_util.config_input_output_numeric_options
 # config_filename = GUI_util.config_filename
-inputFilename = GUI_util.inputFilename
-input_main_dir_path = GUI_util.input_main_dir_path
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename,IO_setup_display_brief)
 
+inputFilename = GUI_util.inputFilename
+input_main_dir_path = GUI_util.input_main_dir_path
 
 def clear(e):
     CoRef_var.set(0)
@@ -284,7 +284,6 @@ manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced 
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
                                                manual_Coref_checkbox)
 
-
 def get_corefed_txt_file(window,title,fileType,annotate):
     if corefed_txt_file!='':
         initialFolder=os.path.dirname(os.path.abspath(corefed_txt_file_var.get()))
@@ -354,7 +353,7 @@ def activateCoRefOptions(*args):
         manual_Coref_var.set(0)
 CoRef_var.trace('w', activateCoRefOptions)
 
-activateCoRefOptions()
+# activateCoRefOptions()
 
 
 # def activateTxtFileOptions(*args):
@@ -380,7 +379,7 @@ TIPS_lookup = {'Stanford CoreNLP supported languages': 'TIPS_NLP_Stanford CoreNL
 
 TIPS_options = 'Stanford CoreNLP coreference resolution','Stanford CoreNLP supported languages','Stanford CoreNLP performance & accuracy', 'utf-8 encoding', 'Stanford CoreNLP memory issues', 'csv files - Problems & solutions'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate,y_multiplier_integer):
@@ -426,5 +425,7 @@ if input_main_dir_path.get()!='':
                                  reminders_util.message_CoreNLP_coref, True)
 reminders_util.checkReminder(config_filename, reminders_util.title_options_only_CoreNLP_coref,
                              reminders_util.message_only_CoreNLP_coref, True)
+
+activateCoRefOptions()
 
 GUI_util.window.mainloop()

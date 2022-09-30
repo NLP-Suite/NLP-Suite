@@ -19,6 +19,8 @@ import IO_csv_util
 import Gephi_util
 import IO_files_util
 
+# csv_file_field_list contains the column header of node1, edge, node2 (e.g., SVO)
+
 def runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var):
     fileBase = os.path.basename(inputFilename)[0:-4]
     return Gephi_util.create_gexf(GUI_util.window, fileBase, outputDir, inputFilename,
@@ -282,7 +284,7 @@ TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf",
 
 TIPS_options='Lemmas & stopwords', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle', 'Excel smoothing data series', 'Network Graphs (via Gephi)', 'csv files - Problems & solutions', 'Statistical measures'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):

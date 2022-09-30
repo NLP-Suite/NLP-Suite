@@ -65,7 +65,7 @@ conllu
 nltk~=3.5
 # stanza used by wordcloud script (the new StanfordCoreNLP Python approach) and YAGO
 # stanza
-# stanfordnlp is used by SVO 
+# stanfordnlp is used by SVO
 # stanfordnlp now called stanza
 # stanza requires torch and torchvision; they are installed by STEP2 of setup
 # pip install torch===1.7.1 torchvision===0.8.2 -f https://download.pytorch.org/whl/torch_stable.html
@@ -74,6 +74,12 @@ nltk~=3.5
 
 # VADER (sentimentt analysis)
 twython
+
+# BERT  (sentimentt analysis)
+tensorflow
+protobuf==3.20
+sentencepiece
+
 
 #used by charts_Excel_util.py for visualzing Excel charts
 openpyxl~=3.0.6

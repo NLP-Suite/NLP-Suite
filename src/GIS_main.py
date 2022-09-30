@@ -477,8 +477,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 #setup a button to open Windows Explorer on the selected input directory
 openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 # place widget with hover-over info
-# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
-# the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,openInputFile_button,
                     True, False, True,False, 90, GUI_IO_util.get_open_file_directory_coordinate(), "Open INPUT csv dictionary file")
 
@@ -637,18 +635,30 @@ country_bias_var.set('')
 country_bias = ttk.Combobox(window, width = 25, textvariable = country_bias_var)
 country_bias['values'] = country_menu
 country_bias.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,country_bias, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,
+                    country_bias, True, False, True, False,
+                    90, GUI_IO_util.get_labels_x_coordinate(), "Select a country to privilege geocoding locations in that country when similar locations are found in other countries (e.g., Rome, Georgia, US, and Rome, Italy)")
 
 area_lb = tk.Label(window, text='Area')
+
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,area_lb,True)
 
 area_var.set('e.g., (34.98527, -85.59790), (30.770444, -81.521974)')
 area=tk.Entry(window, width=45,textvariable=area_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+750, y_multiplier_integer,area, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+750, y_multiplier_integer,
+                    area, True, False, True,False, 90,
+                    GUI_IO_util.get_labels_x_coordinate(),
+                    "For Nominatim, you can enter the latitude and longiture of upper left-hand corner and lower right-hand corner of a rectangular area to privilege locations in that area (e.g., Rome, Georgia, vs. Rome, New York)")
 
 restrict_var.set(0)
 restrict_checkbox = tk.Checkbutton(window, text="Restrict", variable=restrict_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+1050, y_multiplier_integer,restrict_checkbox)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+1050, y_multiplier_integer,
+                    restrict_checkbox, False, False, True,False, 90,
+                    GUI_IO_util.get_labels_x_coordinate()+300,
+                    "For Nominatim, after entering area latitude and longitude, you can restrict locations to that specific area or leave it open for Nominatim to decide")
 
 map_locations_var.set(0)
 map_locations_checkbox = tk.Checkbutton(window, variable=map_locations_var, onvalue=1, offvalue=0)
@@ -691,9 +701,10 @@ else:
 open_API_config_button = tk.Button(window, width=3,
                                      text='',
                                      command=lambda:GIS_pipeline_util.getGoogleAPIkey(config_file,True))
-# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
-# the two x-coordinate and x-coordinate_hover_over must have the same values
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer, open_API_config_button, False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+300, "Open csv file for Google API key")
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,
+                    open_API_config_button, False, False, True, False,
+                    90, GUI_IO_util.get_labels_x_coordinate()+300, "Open csv file for Google API key")
 
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
@@ -727,16 +738,28 @@ GIS_package2_var.trace('w', display_reminder)
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf','csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','GIS (Geographic Information System): Mapping Locations':'TIPS_NLP_GIS (Geographic Information System).pdf','Extracting locations: NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf','Geocoding: How to Improve Nominatim':'TIPS_NLP_GIS_Geocoding Nominatim.pdf', "Geocoding":"TIPS_NLP_GIS_Geocoding.pdf","Google Earth Pro":"TIPS_NLP_GIS_Google Earth Pro.pdf","Google API Key":"TIPS_NLP_GIS_Google API Key.pdf", "Google Earth Pro KML Options":"TIPS_NLP_GIS_Google Earth Pro KML options.pdf","HTML":"TIPS_NLP_GIS_Google Earth Pro HTML.pdf","Google Earth Pro Icon":"TIPS_NLP_GIS_Google Earth Pro Icon.pdf", "Google Earth Pro Description":"TIPS_NLP_GIS_Google Earth Pro Description.pdf"}
+TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
+               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures':'TIPS_NLP_Statistical measures.pdf',
+               'GIS (Geographic Information System): Mapping Locations':'TIPS_NLP_GIS (Geographic Information System).pdf',
+               'Extracting locations: NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf',
+               'Geocoding: How to Improve Nominatim':'TIPS_NLP_GIS_Geocoding Nominatim.pdf',
+               "Geocoding":"TIPS_NLP_GIS_Geocoding.pdf",
+               "Google Earth Pro":"TIPS_NLP_GIS_Google Earth Pro.pdf",
+               "Google API Key":"TIPS_NLP_GIS_Google API Key.pdf",
+               "Google Earth Pro KML Options":"TIPS_NLP_GIS_Google Earth Pro KML options.pdf",
+               "HTML":"TIPS_NLP_GIS_Google Earth Pro HTML.pdf",
+               "Google Earth Pro Icon":"TIPS_NLP_GIS_Google Earth Pro Icon.pdf",
+               "Google Earth Pro Description":"TIPS_NLP_GIS_Google Earth Pro Description.pdf"}
 TIPS_options='utf-8 encoding','csv files - Problems & solutions','Statistical measures','GIS (Geographic Information System): Mapping Locations','Extracting locations: NER (Named Entity Recognition)','Geocoding','Geocoding: How to Improve Nominatim', 'Google Earth Pro', 'Google API Key', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
 
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if IO_setup_display_brief==False:
-        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, select an input file for the GIS script. Two two types of files are acceptable: txt or csv.\n\nTXT FILE. When a txt file is selected, the script will use the NER values from Stanford CoreNLP to obtain a list of locations saved as a csv file. The script will then process this file the same way as it would process a csv file in input containing location names.\n\nCSV FILE. When a csv file is selected it can be:\n  1. a file containing a column of location names that need to be geocoded (e.g., New York);\n  2. a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script NLP_parsers_annotators_main.py (the script parses text documents using the Stanford CoreNLP parser).'+GUI_IO_util.msg_Esc)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, select an input file for the GIS script. Two two types of files are acceptable: txt or csv.\n\nTXT FILE. When a txt file is selected, the script will use the NER values from Stanford CoreNLP to obtain a list of locations saved as a csv file. The script will then process this file the same way as it would process a csv file in input containing location names.\n\nCSV FILE. When a csv file is selected it can be:\n  1. a file containing a column of location names that need to be geocoded (e.g., New York);\n  2. a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script parsers_annotators_main.py (the script parses text documents using the Stanford CoreNLP parser).'+GUI_IO_util.msg_Esc)
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_corpusData+GUI_IO_util.msg_Esc)
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_outputDirectory+GUI_IO_util.msg_Esc)
     else:
@@ -744,9 +767,9 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "The INPUT csv file widget displays the csv LOCATION file as soon as produced by the Stanford CoreNLP NER annotator.\n\nEdit the file and rerun the algorithm to geocode from scratch.\n\nYou can also use the 'Select INPUT CSV file' button to select\n   1. a csv file, however created (e.g., CoreNLP NER annotator), containing a list of locations;\n   2. a csv file of geocoded locations (with fields Latitude and Longitude) previosuly created by this algorithm ;\n   3. a csv CoNLL table file.\n\nDifferent options will be available depending upon what the csv file widget displays.\n\nTO RERUN THE PIPELINE, FROM SCRATCH, FROM TEXT TO MAPS, PRESS ESC TO CLEAR THE CSV FILE WIDGET.\n\nYou can also select a geocoded csv file and run the 'MAP locations' option." + GUI_IO_util.msg_openFile)
+                                  "The INPUT csv file widget displays the csv LOCATION file as soon as produced by the Stanford CoreNLP NER annotator.\n\nEdit the file and rerun the algorithm to geocode from scratch.\n\nYou can also use the 'Select INPUT CSV file' button to select\n   1. a csv file, however created (e.g., CoreNLP NER annotator), containing a list of locations, i.e., a column header 'Location' and different locations in each row (e.g., Atlanta, New York City, Paris, South Korea);\n   2. a csv file of geocoded locations (with fields Latitude and Longitude) previosuly created by this algorithm ;\n   3. a csv CoNLL table file with NER location tags; this last option, however, is highly discoreged since the CoNLL table currently available n the NLP Suite has one record per word/token and such country location like 'United States of America' would then not be taken as a single entity for geocoding, but as separate entities.\n\nDifferent options will be available depending upon what the csv file widget displays.\n\nTO RERUN THE PIPELINE, FROM SCRATCH, FROM TEXT TO MAPS, PRESS ESC TO CLEAR THE CSV FILE WIDGET.\n\nYou can also select a geocoded csv file and run the 'MAP locations' option." + GUI_IO_util.msg_openFile)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding.\n\nYou can adjust the memory required to run the CoreNLP NER annotator by sliding the memory bar; the default value of 4 should be sufficient."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The GIS algorithms allow you to extract a date to be used to build dynamic GIS maps. You can extract dates from the document content or from the filename if this embeds a date.\n\nPlease, the tick the checkbox 'From document content' if you wish to extract normalized NER dates from the text itself.\n\nPlease, tick the checkbox 'From filename' if filenames embed a date (e.g., The New York Times_12-05-1885).\n\nDATE WIDGETS ARE NOT VISIBLE WHEN SELECTING A CSV INPUT FILE.\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the follwing information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy); please, select.\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _); please, enter.\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers); please, select.\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field."+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The GIS algorithms allow you to extract a date to be used to build dynamic GIS maps. You can extract dates from the document content or from the filename if this embeds a date.\n\nPlease, the tick the checkbox 'From document content' if you wish to extract normalized NER dates from the text itself.\n\nPlease, tick the checkbox 'From filename' if filenames embed a date (e.g., The New York Times_12-05-1885).\n\nDATE WIDGETS ARE NOT VISIBLE WHEN SELECTING A CSV INPUT FILE.\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the following information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy); please, select.\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _); please, enter.\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers); please, select.\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to EXTRACT locations from a text file using Stanford CoreNLP NER extractor.\n\nThe option is available ONLY when an input txt file is selected."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the column containing the location names (e.g., New York) to be geocoded and mapped.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. NER IS THE COLUMN AUTOMATICALLY USED WHEN WORKING WITH A CONLL FILE IN INPUT."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to GEOCODE a list of locations.\n\nThe option is available ONLY when a csv file of locations NOT yet geocoded is selected.\n\nTo obtain more accurate geocoded results, select a country where most locations are expected to be. Locations falling in the selected country of bias will be given PREFERENCE by the geocoder over locations with the same name in other countries. Thus, if you select United States as your country bias, the geocoder will geocode locations such as Florence, Rome, or Venice in the United States rather than in Italy.\n\nIf you want to geocode locations mostly located in a specific area, enter the latitude and longitude for the upper left-hand and lower right-hand corners of a rectangle that will be used for findinding the locations.\n\nTick the Restrict checkbox if you wish to restrict the search area to the selected area ONLY (otherwise, it is just a preference).\n\nAREA AND RESTRICT WIDGETS ARE AVAILABLE ONLY FOR NOMINATIM."+GUI_IO_util.msg_Esc)

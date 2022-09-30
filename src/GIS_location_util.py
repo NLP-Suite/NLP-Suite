@@ -21,9 +21,9 @@ import IO_user_interface_util
 # TODO MINO GIS convert this function to pandas
 def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_name):
 
-	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS extract_index ', 'Started running extract_index algorithm at',
-												   True, '', True, '', silent=True)
-	# TODO MINO PANDAS
+	# startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS extract_index ', 'Started running extract_index algorithm at',
+	# 											   True, '', True, '', silent=True)
+
 	inputfile = pd.read_csv(InputCodedCsvFile, encoding=encodingValue)
 	data = pd.read_csv(inputFilename, encoding=encodingValue)
 	headers = data.columns.values.tolist()
@@ -37,8 +37,8 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 	index_list = [i+1 for i,bool in enumerate(index_list) if bool]
 	data = data.values.tolist()
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS extract_index', 'Finished running extract_index algorithm at', True, '',
-									   True, startTime, silent=True)
+	# IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS extract_index', 'Finished running extract_index algorithm at', True, '',
+	# 								   True, startTime, silent=True)
 	list_to_return = index_list, data, headers, location_num
 	return list_to_return
 
@@ -46,9 +46,8 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 # returns filename, location, sentence, date (if present)
 def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,split_locations_suffix,datePresent):
 	filenamePositionInCoNLLTable=12
-	startTime=IO_user_interface_util.timed_alert(window, 2000, 'NER locations extraction', "Started extracting NER locations from CoNLL table at",
-												 True,'', True, '', True)
-	print("NER location extractions from CoNLL table started.")
+	# startTime=IO_user_interface_util.timed_alert(window, 2000, 'NER locations extraction', "Started extracting NER locations from CoNLL table at",
+	# 											 True,'', True, '', True)
 
 	# re.sub(pattern, repl, string, count=0, flags=0)
 	split_locations_prefix = re.sub("[^\w]", " ",  split_locations_prefix).split()
@@ -130,10 +129,9 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 			if row[10]!=documentID:
 				documentID=row[11]
 	if len(locList)==0:
-		mb.showwarning(title='NER locations', message="There are no NER tags for 'LOCATION','STATE_OR_PROVINCE','CITY','COUNTRY' in your CoNLL file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.")
-	else:
-		IO_user_interface_util.timed_alert(window, 2000, 'NER locations extraction', "Finished extracting NER locations from CoNLL table at", True, '', True, startTime, True)
-		print("NER locations extraction from CoNLL table finished.")
+		mb.showwarning(title='NER locations', message="There are no NER tags for 'LOCATION','STATE_OR_PROVINCE','CITY','COUNTRY' in your CoNLL file\n\n" + conllFile + "\n\nThere is no geocoding to be done.")
+	# else:
+	# 	IO_user_interface_util.timed_alert(window, 2000, 'NER locations extraction', "Finished extracting NER locations from CoNLL table at", True, '', True, startTime, True)
 	# returns filename, location, sentence, date (if present)
 	# return sorted(locList)
 	# do not sort locations so that you can check from wrong CoreNLP NER tag, e.g., South America as South = LOCATION, America = COUNTRY
@@ -142,8 +140,8 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 # called from GIS_Google_util
 #locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
 def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumber,encodingValue, datePresent, dateColumnNumber):
-	startTime=IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Started extracting locations from csv file at",
-												 True,'', True, '', True)
+	# startTime=IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Started extracting locations from csv file at",
+	# 											 True,'', True, '', True)
 	locList = []
 	#latin-1 for the Italian or the code will break
 	try:
@@ -166,7 +164,7 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 	if len(locList)==0:
 		mb.showwarning(title='Locations', message="There are no locations in your input file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.\n\nNo map via Google Earth Pro and Google Maps can be done.")
 		return
-	IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Finished extracting locations from csv file at", True, '', True, startTime, True)
+	# IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Finished extracting locations from csv file at", True, '', True, startTime, True)
 	# return sorted(locList)
 	# do not sort locations so that you can check from wrong CoreNLP NER tag, e.g., South America as South = LOCATION, America = COUNTRY
 	return locList

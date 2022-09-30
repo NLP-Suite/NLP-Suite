@@ -89,11 +89,26 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                                                            chartTitle='Frequency Distribution of Gender Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
-                                                           outputFileNameType='gender', #'gender_bar',
+                                                           outputFileNameType='gender-values', #'gender_bar',
                                                            column_xAxis_label='Gender values',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Statistical Measures for Gender')
+        if chart_outputFilename!=None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
+
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                           outputDir,
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Word'],
+                                                           chartTitle='Frequency Distribution of Gendered Words',
+                                                           # count_var = 1 for columns of alphabetic values
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='gender-words', #'gender_bar',
+                                                           column_xAxis_label='Gender words',
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Frequency'],
+                                                           chart_title_label='Statistical Measures for Genedered Words')
         if chart_outputFilename!=None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
@@ -110,7 +125,7 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Speakers'],
-                                                           chartTitle='Frequency Distribution of Speakers',
+                                                           chartTitle='Frequency Distribution of Speakers\n(CoreNLP Quote Annotator)',
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='quote', #'quote_bar',
                                                            column_xAxis_label='Speakers',
@@ -392,93 +407,3 @@ def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, gender
     # the annotator returns a list rather than a string
     return chart_outputFilename
 
-def count_pronouns(json):
-    result = 0
-    for sentence in json['sentences']:
-        # sentenceID = sentenceID + 1
-        for token in sentence['tokens']:
-            if token["pos"] == "PRP$" or token["pos"] == "PRP":
-                result += 1
-    return result
-
-
-def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, createCharts,chartPackage, option, corefed_pronouns, all_pronouns: int):
-    return_files = []
-    df = pd.read_csv(inputFilename)
-    if df.empty:
-        return return_files
-    # pronoun cases:
-    #   nominative: I, you, he/she, it, we, they
-    #   objective: me, you, him, her, it, them
-    #   possessive: my, mine, his/her(s), its, our(s), their, your, yours
-    #   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves
-    pronouns = ["i", "you", "he", "she", "it", "we", "they", "me", "her", "him", "us", "them", "my", "mine", "hers", "his", "its", "our", "ours", "their", "your", "yours", "myself", "yourself", "himself", "herself", "oneself", "itself", "ourselves", "yourselves", "themselves"]
-    total_count = 0
-    pronouns_count = {"i": 0, "you": 0, "he": 0, "she": 0, "it": 0, "we": 0, "they": 0, "me": 0, "her": 0, "him": 0, "us": 0, "them": 0, "my": 0, "mine": 0, "hers": 0, "his": 0, "its": 0, "our": 0, "ours": 0, "their": 0, "your": 0, "yours": 0, "myself": 0, "yourself": 0, "himself": 0, "herself": 0, "oneself": 0, "itself": 0, "ourselves": 0, "yourselves": 0, "themselves": 0}
-    for _, row in df.iterrows():
-        if option == "SVO":
-            if (not pd.isna(row["Subject (S)"])) and (str(row["Subject (S)"]).lower() in pronouns):
-                total_count+=1
-                pronouns_count[str(row["Subject (S)"]).lower()] += 1
-            if (not pd.isna(row["Object (O)"])) and (str(row["Object (O)"]).lower() in pronouns):
-                total_count+=1
-                pronouns_count[str(row["Object (O)"]).lower()] += 1
-        elif option == "CoNLL":
-            if (not pd.isna(row["Form"])) and (row["Form"].lower() in pronouns):
-                total_count+=1
-                pronouns_count[row["Form"].lower()] += 1
-        elif option == "coref table":
-            if (not pd.isna(row["Pronoun"])):
-                total_count += 1
-                try:
-                    # some pronouns extracted by CoreNLP coref as such may not be in the list
-                    #   e.g., "we both" leading to error
-                    pronouns_count[row["Pronoun"].lower()] += 1
-                except:
-                    continue
-        else:
-            print ("Wrong Option value!")
-            return []
-    pronouns_count["I"] = pronouns_count.pop("i")
-    if total_count > 0:
-        if option != "coref table":
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_pronouns,
-                                         reminders_util.message_CoreNLP_pronouns, True)
-            return return_files
-        else:
-            #for coref, total count = number of resolved pronouns, the all_pronouns in the input is the number
-            #   of all pronouns in the text
-            coref_rate = round((corefed_pronouns / all_pronouns) * 100, 2)
-            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Coreference results',
-                "Number of pronouns: " + str(
-                all_pronouns) + "\nNumber of coreferenced pronouns: " + str(
-                corefed_pronouns) + "\nPronouns coreference rate: " + str(coref_rate))
-            # save to csv file and run visualization
-            outputFilename= IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv','coref-sum')
-            with open(outputFilename, "w", newline="", encoding='utf-8', errors='ignore') as csvFile:
-                writer = csv.writer(csvFile)
-                writer.writerow(
-                    ["Number of Pronouns", "Number of Coreferenced Pronouns", "Pronouns Coreference Rate"])
-                writer.writerow([all_pronouns, corefed_pronouns, coref_rate])
-                csvFile.close()
-            # no need to display since the chart will contain the values
-            # return_files.append(outputFilename)
-
-            if createCharts:
-                columns_to_be_plotted_xAxis=[]
-                columns_to_be_plotted_yAxis=["Number of Pronouns", "Number of Coreferenced Pronouns", "Pronouns Coreference Rate"]
-                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                                                                   outputDir,
-                                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                                   chartTitle='Coreferenced Pronouns',
-                                                                   # count_var = 1 for columns of alphabetic values
-                                                                   count_var=0, hover_label=[],
-                                                                   outputFileNameType='', #'pronouns_bar',
-                                                                   column_xAxis_label='Coreference values',
-                                                                   groupByList=[],
-                                                                   plotList=[],
-                                                                   chart_title_label='')
-                if chart_outputFilename != None:
-                    if len(chart_outputFilename) > 0:
-                        return_files.extend(chart_outputFilename)
-    return return_files

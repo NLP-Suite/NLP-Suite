@@ -40,6 +40,7 @@ import GUI_IO_util
 import topic_modeling_gensim_util
 import IO_internet_util
 import reminders_util
+import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -59,6 +60,12 @@ def run(inputDir, outputDir, openOutputFiles,createCharts,chartPackage, num_topi
     if num_topics==20:
         reminders_util.checkReminder(config_filename, reminders_util.title_options_topic_modelling_number_of_topics,
                                      reminders_util.message_topic_modelling_number_of_topics, True)
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='TM-Gensim',
+                                                       silent=False)
+    if outputDir == '':
+        return
 
     topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics,
                                           remove_stopwords_var, lemmatize_var, nounsOnly_var, Mallet_var, openOutputFiles,createCharts, chartPackage)
@@ -176,7 +183,7 @@ if current_process().name == 'MainProcess':
     TIPS_options = 'Topic modeling', 'Topic modeling in Gensim', 'Topic modeling in Mallet', 'Topic modeling and corpus size', 'Lemmas & stopwords', 'csv files - Problems & solutions', 'Statistical measures'
 
 
-    # add all the lines lines to the end to every special GUI
+    # add all the lines to the end to every special GUI
     # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
     # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
     def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):

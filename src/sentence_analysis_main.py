@@ -288,7 +288,7 @@ TIPS_lookup = {'Clause analysis':'TIPS_NLP_Clause Analysis.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf'}
 TIPS_options='Clause analysis', 'Sentence complexity', 'Text readability','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):

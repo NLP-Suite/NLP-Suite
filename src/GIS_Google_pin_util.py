@@ -595,8 +595,8 @@ def pin_customizer(inputFilename, pnt, geo_index, index_list, locationColumnName
 		withHeader_var = IO_csv_util.csvFile_has_header(inputFilename)  # check if the file has header
 		data, headers = IO_csv_util.get_csv_data(inputFilename, withHeader_var)  # get the data and header
 
-	startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS kml pin customizer', 'Started running kml pin customizer at',
-												   True, '', True, '', silent=True)
+	# startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS kml pin customizer', 'Started running kml pin customizer at',
+	# 											   True, '', True, '', silent=True)
 
 	# Assign description
 	if description_var_list[j] == 1:
@@ -624,8 +624,8 @@ def pin_customizer(inputFilename, pnt, geo_index, index_list, locationColumnName
 		pnt = pin_name(pnt, data, headers, geo_index, description_csv_field_var_list[j], scale_var_list[j],
 					   color_var_list[j], color_style_var_list[j])
 
-	IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS kml pin customizer', 'Finished running kml pin customizer at', True, '',
-									   True, startTime, silent=True)
+	# IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS kml pin customizer', 'Finished running kml pin customizer at', True, '',
+	# 								   True, startTime, silent=True)
 
 	return pnt
 
