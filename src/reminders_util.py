@@ -170,7 +170,7 @@ title_options_CoreNLP_nn_parser = ['Clause tags with CoreNLP neural network pars
 message_CoreNLP_nn_parser = "The CoreNLP neural network parser does not produce clause tags in output. The column 'Clause Tag' in the output csv CoNLL table would contain all blank values."
 
 title_options_CoreNLP_quote_annotator = ['CoreNLP quote annotator']
-message_CoreNLP_quote_annotator = "The CoreNLP quote annotator works with double quotes as default \" rather than with single quotes \'. If your document(s) use single quotes for dialogue, make sure to tick the checkbob \'Include single quotes\'. The Stanford CoreNLP annotator will then process BOTH single AND double quotes, otherwise single quotes for dialogues would be missed (e.g., The user said: 'This NLP Suite sucks.')."
+message_CoreNLP_quote_annotator = "The CoreNLP quote annotator works with double quotes as default \" rather than with single quotes \'. If your document(s) use single quotes for dialogue, make sure to tick the checkbox \'Include single quotes\'. The Stanford CoreNLP annotator will then process BOTH single AND double quotes, otherwise single quotes for dialogues would be missed (e.g., The user said: 'This NLP Suite sucks.')."
 
 title_options_memory = ['Available memory']
 message_memory = 'Your computer may not have enough memory to run some of the more resource-intensive algorithms of Stanford CoreNLP (e.g., coreference or some neural network models)\n\nStill, there are several options you may take (e.g., splitting up long documents into shorter parts and feeding tem to CoreNLP; checking your sentence length statistics - anything above 70 will most likely give you troubles, cnsidering that the average sentence length in modern English is 20 words). On Stanford Core NLP and memory issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.'
@@ -371,7 +371,7 @@ def displayReminder(df,row_num,title, message, event, currentStatus, question, s
     else:
         # message = message + question # the question "Do you want to see this message again?" is asked
         #   in GUI_IO_util.message_box_widget so that it can be placed n red
-        answer = GUI_IO_util.message_box_widget(1, title, message, buttonType='Yes-No', timeout=6000)
+        answer = GUI_IO_util.message_box_widget(1, title, message, buttonType='Yes-No', timeout=30000)
 
     answer=answer.capitalize() # Yes/No
     if seeMsgAgain==True:

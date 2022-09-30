@@ -505,47 +505,18 @@ def Dialog2Display(title: str):
 
 def message_box_widget(window, message_title, message_text, buttonType='OK', timeout=3000):
     global yes_no_button
-    yes_no_button = "NOTHING"
-    message_title = 'Reminder: ' + message_title
+    yes_no_button = ""
+    if buttonType != 'OK':
+        message_title = 'Reminder: ' + message_title
     global top_message
     top_message = tk.Toplevel()
     top_message.title(message_title)
-    # # count each \n
-    windowHeight = 200
-    count = sum(buffer.count('\n') for buffer in message_text)
-    # TODO MINO
-    # count the characters of message_text
-    # assign a start_windowHeight, which is given by the number of lines (each line worth 20 points)
-    # sum of two --> actual windowHeight
-    count_char = len(message_text)
-
-    if sys.platform == 'darwin':
-        start_windowHeight = 100
-        increment_windowHeight = 10
-    else:
-        start_windowHeight = 100
-        increment_windowHeight = 10
-    count = count + 1
-    if count >= 5:
-        windowHeight = (start_windowHeight + 100) + int(increment_windowHeight * count + count_char / (count + 5))
-    else:
-        windowHeight = start_windowHeight + int(increment_windowHeight + count_char / (count + 5))
-    # print("-------------------- line count", count, "count_char", count_char, "windowHeight", windowHeight)
-    # windowHeight = int(200 + (count * 2))
-    # windowSize = '400x' + str(windowHeight)  # +str(windowHeight)
-    windowWidth = 600
-    windowSize = str(windowWidth) + 'x' + str(windowHeight)
-    top_message.geometry(windowSize)
-
-    mbox = tk.Message(top_message, text=message_text, padx=10, pady=10, width=windowWidth - 10)
-    top_message.attributes('-topmost', 'true')
-    mbox.pack()  # put the widget on the window
 
     # define the countdown func.
     def countdown(countdown_timer):
         countdown_timer -= 1
-        countdownLabel.configure(text=f"Countdown to automatic closing: {countdown_timer}")
-        countdownLabel.after(1000, lambda: countdown(countdown_timer))
+        countdownLabel2.configure(text=f"{countdown_timer}")
+        countdownLabel2.after(1000, lambda: countdown(countdown_timer))
 
     # timer
     def wait_for_answer(button_type):
@@ -559,59 +530,75 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
             # top_message.destroy()
 
     if buttonType == 'OK':
-        button = tk.Button(top_message, text="OK", command=top_message.destroy, fg='red')
-        button.place(x=10, y=windowHeight - 40)
-        # TODO Mino mbox.after are in two different places in OK and Yes/No
-        # TODO Mino can we put Countdown to automatic closing NOT in red?
-        # TODO Mino some of this code is the same across the 3 options, OK, Yes/No, Yes/No/Cancel
-        #    can we put just one instance outside the if statement
-        # timer
-        mbox.after(timeout, top_message.destroy)
+        mbox = tk.Message(top_message, width=600,
+                          text=message_text + '\n\n\n\n')
+        top_message.attributes('-topmost', 'true')
+        mbox.pack()  # put the widget on the window
+        top_message.update_idletasks()
 
-        countdownLabel = tk.Label(top_message, text=f'Countdown to automatic closing:  {int(timeout / 1000)}', fg='red')
-        countdownLabel.place(x=60, y=windowHeight - 40)
+        screen_height = top_message.winfo_height()
+        button = tk.Button(top_message, text="OK", command=top_message.destroy, fg='red')
+        button.place(x=5, y=screen_height - 35)
+
+        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
+        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
+        countdownLabel1.place(x=60, y=screen_height - 35)
+        countdownLabel2.place(x=270, y=screen_height - 35)
         countdown(int(timeout / 500))
+        mbox.after(timeout, top_message.destroy)
     elif buttonType == 'Yes-No':
-        question = tk.Label(top_message, text="Do you want to see this message again?", fg='red')
-        question.place(x=10, y=windowHeight - 80)
+        mbox = tk.Message(top_message, width=600,
+                          text=message_text + '\n\n\n\n')
+        top_message.attributes('-topmost', 'true')
+        mbox.pack()  # put the widget on the window
+        top_message.update_idletasks()
+        screen_height = top_message.winfo_height()
+
         Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'), fg='red')
         No = tk.Button(top_message, text="No", command=lambda: wait_for_answer('No'), fg='red')
-        Yes.place(x=10, y=windowHeight - 40)
-        No.place(x=60, y=windowHeight - 40)
+        Yes.place(x=5, y=screen_height - 35)
+        No.place(x=50, y=screen_height - 35)
 
-        # TODO Mino can we put Countdown to automatic closing NOT in red?
-        # TODO Mino some of this code is the same across the 3 options, OK, Yes/No, Yes/No/Cancel
-        #    can we put just one instance outside the if statement
-        countdownLabel = tk.Label(top_message, text=f'Countdown to automatic closing:  {int(timeout / 1000)}', fg='red')
-        countdownLabel.place(x=110, y=windowHeight - 40)
+        question = tk.Label(top_message, text='Do you want to see this message again?', fg='red')
+        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
+        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
+
+        question.place(x=5, y=screen_height - 60)
+        countdownLabel1.place(x=110, y=screen_height - 35)
+        countdownLabel2.place(x=320, y=screen_height - 35)
         countdown(int(timeout / 1000))
 
-        # TODO Mino mbox.after are in two different places in OK and Yes/No
         mbox.after(timeout, top_message.destroy)
+
     elif buttonType == 'Yes-No-Cancel':
-        # TODO needs to be completed
-        question = tk.Label(top_message, text="Do you want to see this message again?", fg='red')
-        question.place(x=10, y=windowHeight - 80)
+        mbox = tk.Message(top_message, width=600,
+                          text=message_text + '\n\n\n\n')
+        top_message.attributes('-topmost', 'true')
+        mbox.pack()  # put the widget on the window
+        top_message.update_idletasks()
+        screen_height = top_message.winfo_height()
+
         Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'))
         No = tk.Button(top_message, text="No", command=lambda: wait_for_answer('No'))
         Cancel = tk.Button(top_message, text="Cancel", command=lambda: wait_for_answer('Cancel'))
-        Yes.place(x=10, y=windowHeight - 40)
-        No.place(x=50, y=windowHeight - 40)
-        Cancel.place(x=80, y=windowHeight - 40)
 
-        # TODO Mino can we put Countdown to automatic closing NOT in red?
-        # TODO Mino some of this code is the same across the 3 options, OK, Yes/No, Yes/No/Cancel
-        #    can we put just one instance outside the if statement
-        countdownLabel = tk.Label(top_message, text=f'Countdown to automatic closing:  {int(timeout / 1000)}', fg='red')
-        countdownLabel.place(x=110, y=windowHeight - 40)
+        Yes.place(x=0, y=screen_height - 35)
+        No.place(x=50, y=screen_height - 35)
+        Cancel.place(x=100, y=screen_height - 35)
+        question.place(x=0, y=screen_height - 60)
+
+        question = tk.Label(top_message, text="Do you want to see this message again?", fg='red')
+        countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
+        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
+
+        countdownLabel1.place(x=200, y=screen_height - 35)
+        countdownLabel2.place(x=410, y=screen_height - 35)
+        question.place(x=10, y=screen_height - 60)
         countdown(int(timeout / 1000))
 
-        # TODO Mino mbox.after are in two different places in OK and Yes/No
         mbox.after(timeout, top_message.destroy)
 
     top_message.wait_window()
-    # if window != '':  # set to '' in NLP_setup_update_util since the GUI.window has already been closed
-    #     window.focus_force()
 
     return yes_no_button
 

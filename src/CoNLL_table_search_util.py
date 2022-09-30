@@ -16,10 +16,13 @@ from enum import Enum
 from typing import List
 import tkinter as tk
 import tkinter.messagebox as mb
+import pandas as pd
 
 import Stanford_CoreNLP_tags_util
 import CoNLL_util
+import IO_files_util
 import IO_csv_util
+import charts_util
 
 dict_POSTAG, dict_DEPREL = Stanford_CoreNLP_tags_util.dict_POSTAG, Stanford_CoreNLP_tags_util.dict_DEPREL
 
@@ -373,9 +376,17 @@ def do_include_word(word: List[str], filters: List[CoNLLFilter]) -> bool:
 
 
 # Chen
-def search_CoNLL_table(CoNLL_records, form_of_token, _field_='FORM', related_token_POSTAG="*",
+def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoNLL_records, form_of_token, _field_='FORM',
+                       related_token_POSTAG="*",
                        related_token_DEPREL="*",
                        Sentence_ID="*", _tok_postag_='*', _tok_deprel_='*'):
+
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_search',
+                                                       silent=False)
+    if outputDir == '':
+        return outputDir, filesToOpen
 
     if _field_ == 'FORM':
         compare_term = 1  # field position of FORM in CoNLL
@@ -423,7 +434,114 @@ def search_CoNLL_table(CoNLL_records, form_of_token, _field_='FORM', related_tok
     # filter the output list
     deprel_list_queried = filter_output_list(list_queried, related_token_DEPREL, Sentence_ID, related_token_POSTAG)
 
-    return deprel_list_queried
+    if len(deprel_list_queried) == 0:
+        mb.showwarning(title='Empty query results', message=noResults)
+        return outputDir, filesToOpen
+
+    if form_of_token == '*':
+        srcField_kw = 'astrsk'
+    else:
+        srcField_kw = form_of_token
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'CoNLL-search',
+                                                               srcField_kw, form_of_token, _field_)
+
+    # convert list to dataframe and save
+    df = pd.DataFrame(deprel_list_queried)
+    # headers=['list_queried, related_token_DEPREL, Sentence_ID, related_token_POSTAG']
+    IO_csv_util.df_to_csv(GUI_util.window, df, outputFilename, headers=None, index=False,
+                          language_encoding='utf-8')
+
+    filesToOpen.append(outputFilename)
+
+    """
+    The 15 indexed items are created in the function query_the_table:
+        item[0] form/lemma, item[1] postag, item[2] deprel, item[3] is_head, item[4] Document_ID, 
+        item[5] Sentence_ID, item[6] Document, item[7] whole_sent, 
+        item[8] keyword[1]/SEARCHED TOKEN, 
+        item[9] keyword[3]/SEARCHED TOKEN POSTAG, 
+        item[10] keyword[6]/'SEARCHED TOKEN DEPREL'))
+    """
+    if createCharts == True:
+
+        count_var = 1
+        columns_to_be_plotted_xAxis = ['POS Tag of Searched Token/Word']
+        columns_to_be_plotted_yAxis = ['POS Tag of Searched Token/Word']
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
+                                                           outputFilename, outputDir,
+                                                           columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                                           chartTitle="Frequency Distribution of POS Tag of Searched Token/Word",
+                                                           outputFileNameType='search',
+                                                           column_xAxis_label='POS Tag',
+                                                           count_var=count_var,
+                                                           hover_label=[],
+                                                           groupByList=[],  # ['Document ID', 'Document'],
+                                                           plotList=[],  # ['Concreteness (Mean score)'],
+                                                           chart_title_label='')  # 'Concreteness Statistics')
+        if chart_outputFilename != None:
+            filesToOpen.extend(chart_outputFilename)
+
+            columns_to_be_plotted_xAxis = ['DepRel of Searched Token/Word']
+            columns_to_be_plotted_yAxis = ['DepRel of Searched Token/Word']
+            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
+                                                               outputFilename, outputDir,
+                                                               columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                                               chartTitle="Frequency Distribution of DepRel of Searched Token/Word",
+                                                               outputFileNameType='search',
+                                                               column_xAxis_label='DepRel Tag',
+                                                               count_var=count_var,
+                                                               hover_label=[],
+                                                               groupByList=[],  # ['Document ID', 'Document'],
+                                                               plotList=[],  # ['Concreteness (Mean score)'],
+                                                               chart_title_label='')  # 'Concreteness Statistics')
+            if chart_outputFilename != None:
+                filesToOpen.extend(chart_outputFilename)
+
+
+        columns_to_be_plotted_xAxis = ['Co-occurring Token/Word']
+        columns_to_be_plotted_yAxis = ['Co-occurring Token/Word']
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
+                                                           outputFilename, outputDir,
+                                                           columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                                           chartTitle="Frequency Distribution of Co-occurring Tokens/Words",
+                                                           outputFileNameType='search',
+                                                           column_xAxis_label='Co-occurring Token/Word',
+                                                           count_var=count_var,
+                                                           hover_label=[],
+                                                           groupByList=[],  # ['Document ID', 'Document'],
+                                                           plotList=[],  # ['Concreteness (Mean score)'],
+                                                           chart_title_label='')  # 'Concreteness Statistics')
+        if chart_outputFilename != None:
+            filesToOpen.extend(chart_outputFilename)
+
+
+        columns_to_be_plotted_xAxis = ['DepRel of Co-occurring Token/Word']
+        columns_to_be_plotted_yAxis = ['DepRel of Co-occurring Token/Word']
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
+                                                           outputFilename, outputDir,
+                                                           columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                                           chartTitle="Frequency Distribution of DepRel of Co-occurring Token/Word",
+                                                           outputFileNameType='search_CoOc_DepRel',
+                                                           column_xAxis_label='DepRel Tag',
+                                                           count_var=count_var,
+                                                           hover_label=[],
+                                                           groupByList=[],  # ['Document ID', 'Document'],
+                                                           plotList=[],  # ['Concreteness (Mean score)'],
+                                                           chart_title_label='')  # 'Concreteness Statistics')
+        if chart_outputFilename != None:
+            filesToOpen.extend(chart_outputFilename)
+
+    # # Gephi network graphs _________________________________________________
+    # TODO
+    # the CoNLL table search can export a word and related words in a variety of relations to the word (by POS DEPREL etc.)
+    # ideally, these sets of related words can be visualized in a network graph in Gephi
+    # But... Gephi has been hard coded for SVO, since it has only been used for that so far, but any 2 or 3-terms can be visualized as a network
+    # Furthermore, if we cant to create dynamic models that vary ov ertime, wehere we use the sentence index as a proxy for time, we need to pass that variable as well (the saentence index)
+    # create_gexf would need to read in the proper column names, rather than S V OA
+    # outputFileBase = os.path.basename(output_file_name)[0:-4] # without .csv or .txt
+    # gexf_file = Gephi_util.create_gexf(outputFileBase, outputDir, output_file_name)
+    # filesToOpen.append(gexf_file)
+
+    return outputDir, filesToOpen
 
 # %%
 

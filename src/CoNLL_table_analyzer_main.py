@@ -9,7 +9,6 @@ import os
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
-import pandas as pd
 
 import GUI_IO_util
 import CoNLL_util
@@ -83,8 +82,9 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
             filesToOpen.append(outputFiles)
 
     if k_sentences_var:
-        outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename, outputDir, createCharts, chartPackage)
+        temp_outputDir, outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename, outputDir, createCharts, chartPackage)
         if outputFiles != None:
+            outputDir = temp_outputDir
             filesToOpen.extend(outputFiles)
 
     if clausal_analysis_var or noun_analysis_var or verb_analysis_var or function_words_analysis_var:
@@ -206,127 +206,15 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                                message="The CoNLL table is ill formed. You may have tinkered with it. Please, rerun the Stanford CoreNLP parser since many scripts rely on the CoNLL table.")
                 return
 
-        queried_list = CoNLL_table_search_util.search_CoNLL_table(all_CoNLL_records, searchField_kw, searchedCoNLLField,
-                                                                  related_token_POSTAG=co_postag,
-                                                                  related_token_DEPREL=co_deprel, _tok_postag_=postag,
-                                                                  _tok_deprel_=deprel)
+        temp_outputDir, filesToOpen = CoNLL_table_search_util.search_CoNLL_table(inputFilename, outputDir,
+                                          createCharts, chartPackage,
+                                          all_CoNLL_records, searchField_kw, searchedCoNLLField,
+                                          related_token_POSTAG=co_postag,
+                                          related_token_DEPREL=co_deprel, _tok_postag_=postag,
+                                          _tok_deprel_=deprel)
 
-        if len(queried_list) != 0:
-            if searchField_kw == '*':
-                srcField_kw = 'astrsk'
-            else:
-                srcField_kw = searchField_kw
-            output_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'QC',
-                                                                       srcField_kw, searchedCoNLLField)
-
-            # convert list to dataframe and save
-            df = pd.DataFrame(queried_list)
-            # headers=['list_queried, related_token_DEPREL, Sentence_ID, related_token_POSTAG']
-            IO_csv_util.df_to_csv(GUI_util.window, df, output_file_name, headers=None, index=False,
-                                  language_encoding='utf-8')
-
-            filesToOpen.append(output_file_name)
-
-            """
-            The 15 indexed items are created in the function query_the_table:
-                item[0] form/lemma, item[1] postag, item[2] deprel, item[3] is_head, item[4] Document_ID, 
-                item[5] Sentence_ID, item[6] Document, item[7] whole_sent, 
-                item[8] keyword[1]/SEARCHED TOKEN, 
-                item[9] keyword[3]/SEARCHED TOKEN POSTAG, 
-                item[10] keyword[6]/'SEARCHED TOKEN DEPREL'))
-            """
-            # if createCharts == True:
-            #
-            #     columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[[0,1]]
-            #     count_var=1
-            #
-            #     chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name, outputDir,
-            #                             outputFileLabel='QueryCoNLL_POS (' + searchField_kw + ')',
-            #                             chartPackage=chartPackage,
-            #                             chart_type_list=['bar'],
-            #                             chart_title="Frequency of Searched Token POS Tags",
-            #                             column_xAxis_label_var='Searched token POS tag',
-            #                             hover_info_column_list=[],
-            #                             count_var=count_var,
-            #                             complete_sid=False)  # TODO to be changed
-            #
-            #     if chart_outputFilename != None:
-            #         filesToOpen.append(chart_outputFilename)
-            #
-                # output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
-                #                                                                 'kw_deprel', 'stats_pie_chart')
-                # column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 10,
-                #                                                              "Searched token Deprel values (" + searchField_kw + ")",
-                #                                                              "DEPREL")
-                # errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
-                # if errorFound == True:
-                #     return
-                #
-                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name, outputDir,
-                #                         outputFileLabel='QueryCoNLL_DepRel (' + searchField_kw + ')',
-                #                         chartPackage=chartPackage,
-                #                         chart_type_list=['bar'],
-                #                         chart_title="Frequency of Searched Token DepRel Tags",
-                #                         column_xAxis_label_var='Searched token DepRel tag',
-                #                         hover_info_column_list=[],
-                #                         count_var=count_var)
-                # filesToOpen.append(chart_outputFilename)
-                #
-                # output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
-                #                                                                 'co_kw_postag', 'stats_pie_chart')
-                # column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 1,
-                #                                                              "Co-token Postag values (" + searchField_kw + ")",
-                #                                                              "POSTAG")
-                # errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name)
-                # if errorFound == True:
-                #     return
-                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name, outputDir,
-                #                         outputFileLabel='QueryCoNLL_CoOcc_POS (' + searchField_kw + ')',
-                #                         chartPackage=chartPackage,
-                #                         chart_type_list=['bar'],
-                #                         chart_title="Frequency of Searched Token Co-occurring POS Tags",
-                #                         column_xAxis_label_var='Searched token CoOcc_POS tag',
-                #                         hover_info_column_list=[],
-                #                         count_var=count_var)
-                # filesToOpen.append(chart_outputFilename)
-                #
-                # output_file_name_xlsx = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.xlsx', 'QC',
-                #                                                                 'co_kw_deprel', 'stats_pie_chart')
-                # column_stats = statistics_csv_util.compute_statistics_CoreNLP_CoNLL_tag(queried_list, 2,
-                #                                                              "Co-token Deprel values (" + searchField_kw + ")",
-                #                                                              "DEPREL")
-                # errorFound = IO_csv_util.list_to_csv(GUI_util.window, column_stats, output_file_name_xlsx)
-                # if errorFound:
-                #     return
-                #
-                # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, output_file_name, outputDir,
-                #                         outputFileLabel='QueryCoNLL_CoOcc_DEP (' + searchField_kw + ')',
-                #                         chartPackage=chartPackage,
-                #                         chart_type_list=['bar'],
-                #                         chart_title="Frequency of Searched Token Co-Occurring DepRel Tags",
-                #                         column_xAxis_label_var='Searched token CoOcc_DEP tag',
-                #                         hover_info_column_list=[],
-                #                         count_var=count_var)
-                # filesToOpen.append(chart_outputFilename)
-            IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
-                                               'Finished running CoNLL search at', True, '', True, startTime)
-
-            # if openOutputFiles:
-            #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
-
-            # # Gephi network graphs _________________________________________________
-            # TODO
-            # the CoNLL table search can export a word and related words in a variety of relations to the word (by POS DEPREL etc.)
-            # ideally, these sets of related words can be visualized in a network graph in Gephi
-            # But... Gephi has been hard coded for SVO, since it has only been used for that so far, but any 2 or 3-terms can be visualized as a network
-            # Furthermore, if we cant to create dynamic models that vary ov ertime, wehere we use the sentence index as a proxy for time, we need to pass that variable as well (the saentence index)
-            # create_gexf would need to read in the proper column names, rather than S V OA
-            # outputFileBase = os.path.basename(output_file_name)[0:-4] # without .csv or .txt
-            # gexf_file = Gephi_util.create_gexf(outputFileBase, outputDir, output_file_name)
-            # filesToOpen.append(gexf_file)
-
-        else:
-            mb.showwarning(title='Empty query results', message=noResults)
+        if len(filesToOpen)>0:
+            outputDir = temp_outputDir
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

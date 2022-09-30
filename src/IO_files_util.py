@@ -389,9 +389,8 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
                         "\n\nFor your convenience, the NLP Suite will also place you in the main output subdirectory where you can select  any other files you want/need to open:\n\n"+outputDir)
             filesToOpen=filesToOpenSubset
         # mb.showwarning(title='Too many files to open',message='There are ' + str(len(filesToOpen)) + ' files to be opened. This is way too many files.\n\nFor your convenience, you will be placed next in the output directory\n\n'+outputDir+'\n\nYou can select there the files you want/need to open.')
-        # open outputDir
-        openExplorer(window, outputDir)
-        # return
+    # always open outputDir
+    openExplorer(window, outputDir)
     if len(filesToOpen) == 1:
         singularPlural = 'file'
     else:

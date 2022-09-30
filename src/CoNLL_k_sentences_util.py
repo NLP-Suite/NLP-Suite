@@ -25,7 +25,7 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_K-sent-' + k_str,
                                                        silent=False)
     if outputDir == '':
-        return
+        return outputDir, filesToOpen
 
     conll = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False)
     head = ["First/Last Sentences", "K value", "Words Count","Nouns Count","Nouns Proportion", "Verbs Count", "Verbs Proportion", "Adjectives Count","Adjectives Proportion","Proper-Nouns Count","Proper-Nouns Proportion", "Document ID", "Document"]
@@ -34,7 +34,7 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
     for i in range(1, max(conll["Document ID"])+1):
         doc_conll = conll.loc[conll["Document ID"] == i]
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
-                                                                 'CoNLL_K_sent',
+                                                                 'CoNLL_K_sent_'+k_str,
                                                                  '', '', '', '',
                                                                  False,
                                                                  True)
@@ -119,6 +119,6 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
             if chart_outputFilename != None:
                 filesToOpen.extend(chart_outputFilename)
 
-    return filesToOpen
+    return outputDir, filesToOpen
 
 
