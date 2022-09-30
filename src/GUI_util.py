@@ -453,10 +453,6 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
                                                    "Press the Setup INPUT/OUTPUT configuration button to select the file and/or directory to be used in INPUT and the directory to be used in OUTPUT.\n"
                                                    "The selected options will apply to the configuration (default or GUI specific) selected in the dropdown menu for configuration.")
 
-    # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
-    #                                                y_multiplier_integer,
-    #                                                IO_setup_button, True)
-
     setup_IO_menu_var.set("Default I/O configuration")
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate(),
@@ -465,10 +461,6 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
                                                    GUI_IO_util.get_labels_x_coordinate(),
                                                    "Use the dropdown menu to select the INPUT/OUTPUT configuration you want to use to run the algorithmms behind this GUI.\nThe default configuration is the one that applies to ALL GUIs in the NLP Suite. The GUI-specific configuration applies to this GUI only.\n"
                                                    "To change either configuration of INPUT/OUTPUT options, selected the desired configuration and then click on the Setup INPUT/OUTPUT configuration button.")
-
-    # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),
-    #                                                y_multiplier_integer,
-    #                                                setup_IO_menu,True)
 
     # setup buttons to open an input file, an input directory, an output directory, and a csv config file
 
@@ -1032,7 +1024,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     changed_setup_IO_config()
 
     # avoid tracing again since tracing is already done at the bottom of those scripts
-    if scriptName!='SVO_main.py' and scriptName!='NLP_parsers_annotators_main.py':
+    if scriptName!='SVO_main.py' and scriptName!='parsers_annotators_main.py':
         setup_menu.trace('w',lambda x, y, z: handle_setup_options(y_multiplier_integer, scriptName))
 
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI

@@ -44,7 +44,7 @@ import IO_files_util
 import IO_user_interface_util
 import Stanford_CoreNLP_SVO_enhanced_dependencies_util # Enhanced++ dependencies
 import reminders_util
-import NLP_parsers_annotators_visualization_util
+import parsers_annotators_visualization_util
 import charts_util
 
 # when multiple annotators are selected (e.g., quote, gender, normalized-date)
@@ -722,7 +722,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 # when multiple annotators are selected (e.g., quote, gender, normalized-date)
                 #   charts output must go to the appropriate subdirectory
                 outputDir_chosen = os.path.dirname(outputFilename)
-                chart_outputFilename = NLP_parsers_annotators_visualization_util.parsers_annotators_visualization(
+                chart_outputFilename = parsers_annotators_visualization_util.parsers_annotators_visualization(
                     config_filename, inputFilename, inputDir, outputDir_chosen,
                     outputFilename, annotator_params, kwargs, createCharts,
                     chartPackage)
@@ -1337,7 +1337,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         quote_info = []
         for row in raw_quote_info:
             # quote_info.append([row[0], row[1], row[2], row[3], row[4], row[5]])
-            quote_info.append([row[0], row[1], row[2], row[4]])
+            quote_info.append([row[0], row[1], row[3], row[5]]) # TODO MINO
 
     SVO_enhanced_dependencies = []
     SVO_brief = []

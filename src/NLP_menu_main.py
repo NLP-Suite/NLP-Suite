@@ -186,10 +186,10 @@ def checkIO_Filename_InputDir(script, IO_values_local=0, fileExtension=''):
 pydict = {}
 pydict[""] = ["", 0]  # not available
 # https://stanfordnlp.github.io/CoreNLP/quote.html
-pydict["NLP parsers & annotators (CoreNLP, spaCy, Stanza)"] = ["NLP_parsers_annotators_main.py", 1]
-pydict["CoreNLP annotator - date (NER normalized date)"] = ["NLP_parsers_annotators_main.py", 1]
+pydict["Parsers & annotators (CoreNLP, spaCy, Stanza)"] = ["parsers_annotators_main.py", 1]
+pydict["CoreNLP annotator - date (NER normalized date)"] = ["parsers_annotators_main.py", 1]
 pydict["CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)"] = ["html_annotator_gender_main.py", 1]
-pydict["CoreNLP annotator - quote"] = ["NLP_parsers_annotators_main.py", 1]
+pydict["CoreNLP annotator - quote"] = ["parsers_annotators_main.py", 1]
 pydict["CoreNLP annotator - coreference (pronominal)"] = ["Stanford_CoreNLP_coreference_main.py", 1]
 pydict["SVO (Subject-Verb-Object) extractor & visualization"] = ["SVO_main.py", 1]
 pydict["Knowledge graphs: DBpedia & YAGO"] = ["knowledge_graphs_DBpedia_YAGO_main.py", 1]
@@ -200,7 +200,7 @@ pydict["CoNLL table analyzer - Search the CoNLL table"] = ["CoNLL_table_analyzer
 pydict["CoNLL table analyzer - Clause, noun, verb, function words frequencies"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Statistics (csv files)"] = ["statistics_csv_main.py", 1]
 pydict["Statistics (txt files)"] = ["style_analysis_main.py", 1]
-pydict["Co-Reference PRONOMINAL resolution (via Stanford CoreNLP)"] = ["NLP_parsers_annotators_main.py", 1]
+pydict["Co-Reference PRONOMINAL resolution (via Stanford CoreNLP)"] = ["parsers_annotators_main.py", 1]
 pydict["Co-Occurrences viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Data manager (csv files via Pandas)"] = ["data_manager_main.py", 1]
 pydict["File checker (file content)"] = ["file_checker_converter_cleaner_main.py", 1]
@@ -260,7 +260,7 @@ pydict["Spelling checker cleaner (Find & Replace string)"] = ["file_checker_conv
 # pydict["Spelling checker (via pyspellchecker)"] = ["file_spell_checker_main.py", 1]
 # pydict["Spelling checker (via textblob)"] = ["file_spell_checker_main.py", 1]
 pydict["SQL database (via SQLite)"] = ["DB_SQL_main.py", 1]
-pydict["Stanford CoreNLP"] = ["NLP_parsers_annotators_main.py", 1]
+pydict["Stanford CoreNLP"] = ["parsers_annotators_main.py", 1]
 pydict["Semantic analysis (via TensorFlow)"] = ["", 0]
 pydict["SRL Semantic Role Labeling"] = ["", 0]
 pydict["Dictionary items by sentence index"] = ["sentence_analysis_util.dictionary_items_bySentenceID", 0, 3, 'txt']
@@ -274,6 +274,7 @@ pydict["Corpus/document(s) statistics (Sentences, words, lines)"] = ["style_anal
 pydict["Wordclouds (ALL options GUI)"] = ["wordclouds_main.py", 1]
 pydict["WordNet"] = ["knowledge_graphs_WordNet_main.py", 1]
 pydict["Word2Vec (via Gensim)"] = ["word2vec_main.py", 1]
+pydict["------------------"] = ["", 2]
 
 # NLP Suite team & How to cite are in GUI_util
 

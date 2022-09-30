@@ -338,7 +338,6 @@ all_analyses_menu.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                all_analyses_menu)
 
-
 search_token_var = tk.IntVar()
 searchToken_checkbox = tk.Checkbutton(window, state='disabled', variable=search_token_var,  text='Search token/work', onvalue=1,
                                   offvalue=0, command = lambda:  activate_all_options())

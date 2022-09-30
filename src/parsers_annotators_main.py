@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "NLP_parsers_annotators_main", ['tkinter', 'subprocess']) == False:
+if IO_libraries_util.install_all_packages(GUI_util.window, "parsers_annotators_main", ['tkinter', 'subprocess']) == False:
     sys.exit(0)
 
 import os

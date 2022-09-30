@@ -77,7 +77,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             else:
                 bySentenceIndex_character_var = True
 
-        if '*' in str(ngrams_list) or 'Repetition across' in str(ngrams_list) or 'POSTAG' in ngrams_menu_var or 'DEPREL' in str(ngrams_list) or 'NER' in str(ngrams_list):
+        if '*' in str(ngrams_list) or 'POSTAG' in ngrams_menu_var or 'DEPREL' in str(ngrams_list) or 'NER' in str(ngrams_list):
             mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!')
             if 'Repetition' in ngrams_menu_var:
                 mb.showwarning('Warning',
@@ -158,8 +158,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         if vocabulary_analysis_menu_var=='':
             mb.showwarning('Warning', 'No option has been selected for Vocabulary analysis.\n\nPlease, select an option and try again.')
             return
-        if 'Repetition across' in vocabulary_analysis_menu_var:
-            mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!\n\nDo check out the repetition finder algorithm in the CoNLL Table Analyzer GUI.')
+        if 'Repetition across' in vocabulary_analysis_menu_var or 'Objectivity/subjectivity (via spaCy)' in vocabulary_analysis_menu_var:
+            mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!')
             return
 
         if '*' == vocabulary_analysis_menu_var:
@@ -184,6 +184,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                 filesToOpen.append(output)
 
         if '*' in vocabulary_analysis_menu_var or 'Repetition: Words' in vocabulary_analysis_menu_var:
+            # a reminder about CoNLL table analyzer option is posted in process_words
             output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                        openOutputFiles, createCharts,
                                                        chartPackage,'Repetition: Words in first K and last K sentences')
@@ -495,6 +496,7 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Vocabulary (via Stanza multilanguage lemmatizer) - List of all words/tokens in input document(s)',
                                          'Vocabulary richness (word type/token ratio or Yule’s K)',
                                          'Abstract/concrete vocabulary',
+                                         'Objectivity/subjectivity (via spaCy)',
                                          'Punctuation as figures of pathos (? !)',
                                          'Short words (<4 characters)',
                                          'Vowel words',

@@ -574,6 +574,11 @@ def getScript(pydict,script):
     try:
         val = pydict[script]
     except:
+        if '---------------------' in script or len(script)==0:
+            mb.showwarning(title='Warning',
+                           message="The selected option '" + script + "' is not a valid option.\n\nIt is only an explanatory label. \n\nPlease, select a different option.")
+            return script_to_run, IO_values
+
         # entry not in dic; programming error; must be added!
         mb.showwarning(title='Warning',
                        message="The selected option '" + script + "' was not found in the Python dictionary in NLP_GUI.py.\n\nPlease, inform the NLP Suite developers of the problem.\n\nSorry!")

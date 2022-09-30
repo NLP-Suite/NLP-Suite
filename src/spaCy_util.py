@@ -21,7 +21,7 @@ import GUI_util
 import GUI_IO_util
 import IO_user_interface_util
 import constants_util
-import NLP_parsers_annotators_visualization_util
+import parsers_annotators_visualization_util
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -158,7 +158,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
             file_df = pd.read_csv(filesToVisualize[j])
             if not file_df.empty:
                 outputFilename = filesToVisualize[j]
-                chart_outputFilename = NLP_parsers_annotators_visualization_util.parsers_annotators_visualization(
+                chart_outputFilename = parsers_annotators_visualization_util.parsers_annotators_visualization(
                     config_filename, inputFilename, inputDir, outputDir,
                     outputFilename, annotator_params, kwargs, createCharts,
                     chartPackage)

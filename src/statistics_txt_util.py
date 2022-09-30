@@ -858,6 +858,8 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
     hover_label=''
     word_list=[]
 
+    rep_words = []
+
     fin = open('../lib/wordLists/stopwords.txt', 'r')
     stops = set(fin.read().splitlines())
     inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
@@ -954,18 +956,37 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
             # words = fullText.translate(string.punctuation).split()
             #for wordID, word in enumerate(filtered_words):
             #print(filtered_words)
-
+            from collections import Counter
 # REPEATED WORDS FIRST K SENTENCES/LAST K SENTENCES  -------------------------------------------------------------------------------
             if 'Repetition: Words' in processType:
+                for wrdID, wrd in enumerate(filtered_words):
+                        
+                    header = ["First/Last Sentence", "K Value", "Word", "Sentence ID", "Sentence", "Document ID", "Document"]
+                    select_col = ['Word']
+                    fileLabel = 'Repeated Words in First_Last K Sentences'
+                    fileLabel_byDocID ='Rep_Words_First_Last_K_Sentences_byDoc'
+                    columns_to_be_plotted_yAxis = ['Word']
+                    chart_title_label = f'Frequency of repeated words in first and last K ({k}) sentences'
+                    chart_title_byDocID = f'Frequency of repeated words in first and last K ({k}) sentences by Document'
+                    chart_title_bySentID = f'Frequency of repeated words in first and last K ({k}) sentences by Sentence ID'
+                    column_xAxis_label = 'Words'
 
-                header = ["First/Last Sentence", "K Value", "Sentence ID", "Sentence", "Word Count", "Document ID", "Document"]
-                fileLabel = 'K-sent-' + str(k)
-                if sentenceID <= k:
-                    word_list.append(["First", k, sentenceID, s, num_words_in_s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
-
-                elif sentenceID > len(sentences) - k:
-                    word_list.append(["Last", k, sentenceID, s, num_words_in_s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
-
+                    if sentenceID <= k or sentenceID > len(sentences) - k:
+                        if sentenceID <= k:
+                            word_list.append(["First", k, wrd, wrdID, sentenceID, s, documentID, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        else:
+                            word_list.append(["Last", k, wrd, wrdID, sentenceID, s, documentID, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                    
+                count_wrd = 1
+                for j in range(0, len(word_list)-1):
+                    w = word_list[j][2]
+                    for k in range(j+1, len(word_list)-1):
+                        if word_list[k][2] == w:
+                            count_wrd = count_wrd + 1
+                    
+                    if count_wrd == 1:
+                        word_list[j].remove(word_list[j][2])
+                
 
 # REPEATED WORDS END OF SENTENCE/BEGINNING NEXT SENTENCE  --------------------------------------------------------------------------
             if 'Repetition: Last' in processType:
@@ -1078,23 +1099,23 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
         filesToOpen.append(outputFilename)
 
 
-    if 'Repetition: Words' in processType:
-        columns_to_be_plotted_xAxis=[]
-        columns_to_be_plotted_yAxis=['Word Count']
-        count_var=0
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
-                                                            outputFilename, outputDir,
-                                                            columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
-                                                            chartTitle="Word Count for First and Last K (" + str(k) + ") Sentences (in order from left to right)",
-                                                            outputFileNameType='k_sent',
-                                                            column_xAxis_label='Word Count',
-                                                            count_var=count_var,
-                                                            hover_label=[],
-                                                            groupByList=[], # ['Document ID', 'Document'],
-                                                            plotList=[], #['Concreteness (Mean score)'],
-                                                            chart_title_label='') #'Concreteness Statistics')
-    else:
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+    #if 'Repetition: Words' in processType:
+     #   columns_to_be_plotted_xAxis=[]
+      #  columns_to_be_plotted_yAxis=['Word Count']
+      #  count_var=0
+      #  chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
+      #                                                      outputFilename, outputDir,
+       #                                                     columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
+       #                                                     chartTitle="Word Count for First and Last K (" + str(k) + ") Sentences (in order from left to right)",
+        #                                                    outputFileNameType='k_sent',
+         #                                                   column_xAxis_label='Word Count',
+          #                                                  count_var=count_var,
+           #                                                 hover_label=[],
+            #                                                groupByList=[], # ['Document ID', 'Document'],
+             #                                               plotList=[], #['Concreteness (Mean score)'],
+              #                                              chart_title_label='') #'Concreteness Statistics')
+
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                 columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
                                                 chartTitle=chart_title_label,
                                                 count_var=1, hover_label=[],

@@ -1,3 +1,4 @@
+from itertools import count
 import sys
 # import GUI_util
 # import IO_libraries_util
@@ -293,9 +294,9 @@ if sys.platform == 'darwin': #Mac OS
     labels_x_indented_coordinate = 160
     select_file_directory_button_width=23
     open_file_directory_button_width = 1
-    open_file_directory_coordinate = 300
+    open_file_directory_coordinate = 400 # # position of menu of default and GUI specific IO options
     IO_button_name_width=1
-    setup_IO_brief_coordinate = 350
+    setup_IO_brief_coordinate = 650 # Position of text entry for Input and Output display
     entry_box_x_coordinate = 470 #start point of all labels in the third column (second column after ? HELP); where IO filename, dir, etc. are displayed
     read_button_x_coordinate = 70
     watch_videos_x_coordinate = 200
@@ -314,9 +315,15 @@ if sys.platform == 'darwin': #Mac OS
     open_outputDir_button_brief = 780
     open_config_file_button_brief = 820
 
-    # special internal GUI specific values MAC
-    # SVO_main Mac
+# --------------------------------------------------- special internal GUI specific values MAC
+# SVO_main Mac
     SVO_1st_column = 120
+
+    date_character_separator_label = 920
+    date_character_separator_menu = 1050
+    date_position_label = 1100
+    date_position_menu = 1160
+
     open_S_dictionary = 260
     lemmatize_S = 320
     SVO_2nd_column = 520# filter & dictionary options for Verbs
@@ -355,8 +362,8 @@ else: #windows and anything else
     select_file_directory_button_width=30
     IO_button_name_width=30
     open_file_directory_button_width = 3
-    open_file_directory_coordinate = 350
-    setup_IO_brief_coordinate = 580
+    open_file_directory_coordinate = 350 # position of menu of default and GUI specific IO options
+    setup_IO_brief_coordinate = 580 # Position of text entry for Input and Output display
     entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
     read_button_x_coordinate = 50
     watch_videos_x_coordinate = 170
@@ -383,8 +390,14 @@ else: #windows and anything else
     reset_column = 960
     show_column = 1020
 
-    # SVO_main Windows
+# SVO_main Windows
     SVO_1st_column = 120
+
+    date_character_separator_label = 920
+    date_character_separator_menu = 1050
+    date_position_label = 1100
+    date_position_menu = 1160
+
     open_S_dictionary = 260
     lemmatize_S = 320
     SVO_2nd_column = 520# filter & dictionary options for Verbs
@@ -516,23 +529,31 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
 
     # define the countdown func.
     def countdown(countdown_timer):
-        countdown_timer -= 1
-        countdownLabel2.configure(text=f"{countdown_timer}")
-        countdownLabel2.after(1000, lambda: countdown(countdown_timer))
+        # TODO MINO
+        if countdown_timer==0:
+            try:
+                top_message.destroy()
+            except:
+                print('Closing message due to timeout.')
+        else:
+            countdown_timer -= 1
+            countdownLabel2.configure(text=f"{countdown_timer}")
+            countdownLabel2.after(1000, lambda: countdown(countdown_timer))
 
     # timer
     def wait_for_answer(button_type):
         global yes_no_button
-        global top_message
+        # TODO MINO
         if button_type == 'Yes':
             yes_no_button = "Yes"
-            # top_message.destroy()
+            top_message.destroy()
         elif button_type == 'No':
             yes_no_button = "No"
-            # top_message.destroy()
+            top_message.destroy()
+        elif button_type == 'Cancel':
+            top_message.destroy()
 
     if buttonType == 'OK':
-
         mbox = tk.Message(top_message, width=600,
                           text=message_text + '\n\n\n\n')
         top_message.attributes('-topmost', 'true')
@@ -548,7 +569,7 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
         countdownLabel1.place(x=60, y=screen_height - 35)
         countdownLabel2.place(x=270, y=screen_height - 35)
         countdown(int(timeout / 500))
-        mbox.after(timeout, top_message.destroy)
+
     elif buttonType == 'Yes-No':
         mbox = tk.Message(top_message, width=600,
                           text=message_text + '\n\n\n\n')
@@ -570,8 +591,6 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
         countdownLabel1.place(x=110, y=screen_height - 35)
         countdownLabel2.place(x=320, y=screen_height - 35)
         countdown(int(timeout / 1000))
-
-        mbox.after(timeout, top_message.destroy)
 
     elif buttonType == 'Yes-No-Cancel':
         mbox = tk.Message(top_message, width=600,
@@ -599,9 +618,11 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
         question.place(x=10, y=screen_height - 60)
         countdown(int(timeout / 1000))
 
-        mbox.after(timeout, top_message.destroy)
-
+    # TODO MINO
     top_message.wait_window()
+    if yes_no_button != "":
+        mbox.after_cancel(mbox)
+    mbox.after(timeout, top_message.destroy)
 
     return yes_no_button
 
