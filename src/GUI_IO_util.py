@@ -293,8 +293,9 @@ if sys.platform == 'darwin': #Mac OS
     labels_x_indented_coordinate = 160
     select_file_directory_button_width=23
     open_file_directory_button_width = 1
+    open_file_directory_coordinate = 300
     IO_button_name_width=1
-    open_file_directory_coordinate = 400
+    setup_IO_brief_coordinate = 350
     entry_box_x_coordinate = 470 #start point of all labels in the third column (second column after ? HELP); where IO filename, dir, etc. are displayed
     read_button_x_coordinate = 70
     watch_videos_x_coordinate = 200
@@ -355,6 +356,7 @@ else: #windows and anything else
     IO_button_name_width=30
     open_file_directory_button_width = 3
     open_file_directory_coordinate = 350
+    setup_IO_brief_coordinate = 580
     entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
     read_button_x_coordinate = 50
     watch_videos_x_coordinate = 170
@@ -530,6 +532,7 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
             # top_message.destroy()
 
     if buttonType == 'OK':
+
         mbox = tk.Message(top_message, width=600,
                           text=message_text + '\n\n\n\n')
         top_message.attributes('-topmost', 'true')

@@ -19,6 +19,8 @@ import IO_csv_util
 import Gephi_util
 import IO_files_util
 
+# csv_file_field_list contains the column header of node1, edge, node2 (e.g., SVO)
+
 def runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var):
     fileBase = os.path.basename(inputFilename)[0:-4]
     return Gephi_util.create_gexf(GUI_util.window, fileBase, outputDir, inputFilename,

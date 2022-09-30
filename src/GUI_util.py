@@ -408,8 +408,8 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
 
         IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(os.path.normpath(outputDirName)))
         IO_setup_brief_display_area = tk.Text(width=60, height=2)
-        # place the display area for brief
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+250,
+        # place the display area for brief get_open_file_directory_coordinate()+250
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,
                                                        0, IO_setup_brief_display_area)
         IO_setup_brief_display_area.delete(0.1, tk.END)
         IO_setup_var.set(IO_setup_display_string)

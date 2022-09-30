@@ -1061,11 +1061,12 @@ class GexfImport:
 
 
 
-# use Sentence ID to display a dynamic model by sentence
-# TODO
-#  generalize function beyond SVO
+#   use Sentence ID to display a dynamic model by sentence
 #   passing the three headers that need to be displayed
 #   processing Sentence ID optional with a Dynamic boolean
+
+# returns a gexf file
+
 def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spellCol):
     """
     Create gexf format file that can be used in Gephi to visualize result dynamically.
@@ -1082,7 +1083,7 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
     EPOCH = datetime.datetime.today()
     graph_name = fileBase +".gexf"
     gexf = Gexf(fileBase,"Author")
-    graph = gexf.addGraph("directed","dynamic","SVO graph",timeformat="date")
+    graph = gexf.addGraph("directed","dynamic","network graph",timeformat="date")
     with open(inputFilename, encoding='utf-8', errors='ignore',) as result:
         reader = csv.DictReader(result)
 

@@ -17,10 +17,12 @@ import IO_csv_util
 
 def k_sent(inputFilename, outputDir, createCharts, chartPackage):
     filesToOpen=[]
+    k=0
 
     k_str, useless = GUI_IO_util.enter_value_widget("Enter the number of sentences, K, to be analyzed", 'K',
                                                     1, '', '', '')
-    k = int(k_str)
+    if k_str!='':
+        k = int(k_str)
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_K-sent-' + k_str,
                                                        silent=False)

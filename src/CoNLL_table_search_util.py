@@ -5,8 +5,11 @@
 # ALL SEARCHES OCCUR WITHIN SENTENCES.
 import string
 import sys
+import os
+
 import GUI_util
 import IO_libraries_util
+import Gephi_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "CoNLL table_search_util",
                                           ['os', 'tkinter', 'enum', 'typing']) == False:
@@ -464,6 +467,31 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
     if createCharts == True:
 
         count_var = 1
+
+        # columns_to_be_plotted_xAxis = ['POS Tag of Searched Token/Word',
+        #                                'DepRel of Searched Token/Word',
+        #                                'Co-occurring Token/Word',
+        #                                'POS Tag of Co-occurring Token/Word',
+        #                                'DepRel of Co-occurring Token/Word']
+        # columns_to_be_plotted_yAxis = ['POS Tag of Searched Token/Word',
+        #                                'DepRel of Searched Token/Word',
+        #                                'Co-occurring Token/Word',
+        #                                'POS Tag of Co-occurring Token/Word',
+        #                                'DepRel of Co-occurring Token/Word']
+        # chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
+        #                                                    outputFilename, outputDir,
+        #                                                    columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+        #                                                    chartTitle="Frequency Distribution of POS Tag of Searched Token/Word",
+        #                                                    outputFileNameType='search',
+        #                                                    column_xAxis_label='POS Tag',
+        #                                                    count_var=count_var,
+        #                                                    hover_label=[],
+        #                                                    groupByList=[],  # ['Document ID', 'Document'],
+        #                                                    plotList=[],  # ['Concreteness (Mean score)'],
+        #                                                    chart_title_label='')  # 'Concreteness Statistics')
+        # if chart_outputFilename != None:
+        #     filesToOpen.extend(chart_outputFilename)
+
         columns_to_be_plotted_xAxis = ['POS Tag of Searched Token/Word']
         columns_to_be_plotted_yAxis = ['POS Tag of Searched Token/Word']
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
@@ -514,6 +542,22 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
             filesToOpen.extend(chart_outputFilename)
 
 
+        columns_to_be_plotted_xAxis = ['POS Tag of Co-occurring Token/Word']
+        columns_to_be_plotted_yAxis = ['POS Tag of Co-occurring Token/Word']
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
+                                                           outputFilename, outputDir,
+                                                           columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                                           chartTitle="Frequency Distribution of POS Tag of Co-occurring Token/Word",
+                                                           outputFileNameType='search_CoOc_POS',
+                                                           column_xAxis_label='POS Tag',
+                                                           count_var=count_var,
+                                                           hover_label=[],
+                                                           groupByList=[],  # ['Document ID', 'Document'],
+                                                           plotList=[],  # ['Concreteness (Mean score)'],
+                                                           chart_title_label='')  # 'Concreteness Statistics')
+        if chart_outputFilename != None:
+            filesToOpen.extend(chart_outputFilename)
+
         columns_to_be_plotted_xAxis = ['DepRel of Co-occurring Token/Word']
         columns_to_be_plotted_yAxis = ['DepRel of Co-occurring Token/Word']
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
@@ -530,16 +574,15 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
         if chart_outputFilename != None:
             filesToOpen.extend(chart_outputFilename)
 
-    # # Gephi network graphs _________________________________________________
-    # TODO
-    # the CoNLL table search can export a word and related words in a variety of relations to the word (by POS DEPREL etc.)
-    # ideally, these sets of related words can be visualized in a network graph in Gephi
-    # But... Gephi has been hard coded for SVO, since it has only been used for that so far, but any 2 or 3-terms can be visualized as a network
-    # Furthermore, if we cant to create dynamic models that vary ov ertime, wehere we use the sentence index as a proxy for time, we need to pass that variable as well (the saentence index)
-    # create_gexf would need to read in the proper column names, rather than S V OA
-    # outputFileBase = os.path.basename(output_file_name)[0:-4] # without .csv or .txt
-    # gexf_file = Gephi_util.create_gexf(outputFileBase, outputDir, output_file_name)
-    # filesToOpen.append(gexf_file)
+    # Gephi network graphs _________________________________________________
+
+    fileBase = os.path.basename(outputFilename)[0:-4]
+    Gephi_file = Gephi_util.create_gexf(GUI_util.window, fileBase, outputDir, outputFilename,
+                                    'Searched Token/Word',
+                                    'POS Tag of Searched Token/Word',
+                                    'Co-occurring Token/Word', 'Sentence ID')
+
+    filesToOpen.append(Gephi_file)
 
     return outputDir, filesToOpen
 
