@@ -158,7 +158,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         if vocabulary_analysis_menu_var=='':
             mb.showwarning('Warning', 'No option has been selected for Vocabulary analysis.\n\nPlease, select an option and try again.')
             return
-        if 'Repetition across' in vocabulary_analysis_menu_var or 'Objectivity/subjectivity (via spaCy)' in vocabulary_analysis_menu_var:
+        if 'Repetition across' in vocabulary_analysis_menu_var:
             mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!')
             return
 
@@ -180,6 +180,14 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         if '*' in vocabulary_analysis_menu_var or 'Hapax legomena' in vocabulary_analysis_menu_var:
             output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'Hapax legomena')
+            if output != None:
+                filesToOpen.append(output)
+
+        #Added this option to be able to test the subjectivity/objectivity output (Naman Sahni 10/01/2022)
+        if '*' in vocabulary_analysis_menu_var or 'Objectivity/subjectivity (via spaCy)' in vocabulary_analysis_menu_var:
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+                                                        openOutputFiles, createCharts,
+                                                        chartPackage,'Objectivity/subjectivity (via spaCy')
             if output != None:
                 filesToOpen.append(output)
 
@@ -582,6 +590,7 @@ TIPS_lookup = {'Style analysis':'TIPS_NLP_Style analysis.pdf',
                'Clause analysis':'TIPS_NLP_Clause analysis.pdf',
                'Sentence complexity':'TIPS_NLP_Sentence complexity.pdf',
                'Text readability':'TIPS_NLP_Text readability.pdf',
+               'Objective/subjective writing':'TIPS_NLP_Objectivity_subjectivity (via spaCy and TextBlob).pdf',
                'Nominalization':'TIPS_NLP_Nominalization.pdf',
                'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
@@ -597,7 +606,8 @@ TIPS_lookup = {'Style analysis':'TIPS_NLP_Style analysis.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
 
-TIPS_options='Style analysis', 'English Language Benchmarks','Things to do with words: Overall view', 'Clause analysis', 'Sentence complexity', 'Text readability','Nominalization','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Language concreteness','Yule measures of vocabulary richness','The world of emotions and sentiments','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
+TIPS_options='Style analysis', 'English Language Benchmarks','Things to do with words: Overall view', 'Clause analysis', 'Sentence complexity', 'Text readability', \
+             'Objective/subjective writing','Nominalization','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Language concreteness','Yule measures of vocabulary richness','The world of emotions and sentiments','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

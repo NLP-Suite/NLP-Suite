@@ -9,7 +9,7 @@ import os
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
-import pandas as pd
+from subprocess import call
 
 import GUI_IO_util
 import CoNLL_util
@@ -26,7 +26,6 @@ import reminders_util
 # from data_manager_main import extract_from_csv
 
 # more imports (e.g., import CoNLL_clause_analysis_util) are called below under separate if statements
-
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -57,6 +56,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         return
 
     withHeader = True
+    # TODO Chen we are reading inputFilename twice, once here then again as a dataframe
     data, header = IO_csv_util.get_csv_data(inputFilename, withHeader)
     if len(data) == 0:
         return
@@ -191,18 +191,6 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         tempOutputFile = CoNLL_util.compute_sentence_table(inputFilename, outputDir)
         filesToOpen.append(tempOutputFile)
 
-    if extract_var.get():
-        df = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False)
-        data_files = [df]
-        # print(csv_file_field_list)
-        # outputFiles: list = IO_csv_util.extract_from_csv(path=[inputFilename], output_path=outputDir, data_files=data_files,
-        #                                          csv_file_field_list=csv_file_field_list)
-        # TODO csv_file_field_list is not set properly
-        # TODO must pass to extract_from_csv not just the columns but the values selected
-        outputFiles: list = IO_csv_util.extract_from_csv(inputFilename,outputDir, data_files, csv_file_field_list)
-        if outputFiles != None:
-            filesToOpen.append(outputFiles)
-
     if k_sentences_var.get():
         temp_outputDir, outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename, outputDir, createCharts, chartPackage)
         if outputFiles != None:
@@ -280,11 +268,6 @@ clausal_analysis_var = tk.IntVar()
 
 compute_sentence_var = tk.IntVar()
 
-extract_var = tk.IntVar()
-selected_fields_var = tk.StringVar()
-select_csv_field_extract_var = tk.StringVar()
-
-
 all_analyses_var = tk.IntVar()
 
 buildString = ''
@@ -306,8 +289,6 @@ def clear(e):
     co_postag_var.set('*')
     co_postag_var.set('*')
     co_deprel_var.set('*')
-    activate_csv_fields_selection(extract_var.get(), False, False)
-    reset_all_values()
     activate_all_options()
     GUI_util.clear("Escape")
 
@@ -419,29 +400,6 @@ co_deprel_menu_lb['values'] = deprel_menu
 co_deprel_menu_lb.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,co_deprel_menu_lb)
 
-def reset_all_values():
-    global buildString
-    buildString = ''
-    csv_file_field_list.clear()
-    selected_fields_var.set('')
-
-    extract_checkbox.config(state='normal')
-
-    comparator_menu.configure(state="disabled")
-    where_entry.configure(state="disabled")
-    and_or_menu.configure(state="disabled")
-
-    selected_fields_var.set('')
-
-    where_entry_var.set("")
-    comparator_var.set("")
-    and_or_var.set("")
-
-    select_csv_field_extract_menu.config(state='disabled')
-
-    extract_var.set(0)
-
-
 def changed_filename(tracedInputFile):
     global error
     if os.path.isfile(tracedInputFile):
@@ -450,32 +408,11 @@ def changed_filename(tracedInputFile):
             return
         else:
             error = False
-    menu_values = []
-    if tracedInputFile != '':
-        if inputFilename.get() != '':
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_only_CoreNLP_CoNLL_analyzer,
-                                         reminders_util.message_only_CoreNLP_CoNLL_analyzer, True)
-        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tracedInputFile)
-        if nColumns == 0 or nColumns is None:
-            return False
-        if IO_csv_util.csvFile_has_header(tracedInputFile) == False:
-            menu_values = range(1, nColumns + 1)
-        else:
-            data, headers = IO_csv_util.get_csv_data(tracedInputFile, True)
-            menu_values = headers
     else:
-        menu_values.clear()
-        return
-    m = select_csv_field_extract_menu["menu"]
-    m.delete(0, "end")
-
-    for s in menu_values:
-        m.add_command(label=s, command=lambda value=s: select_csv_field_extract_var.set(value))
+        error = True
     activate_all_options()
     clear("<Escape>")
-
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
-
 
 k_sentences_var.set(0)
 k_sentences_checkbox = tk.Checkbutton(window, text="K sentences analyzer (repetition finder)",
@@ -490,190 +427,21 @@ sentence_table_checkbox = tk.Checkbutton(window, text='Compute sentence table', 
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                sentence_table_checkbox)
 
-extract_var.set(0)
-extract_checkbox = tk.Checkbutton(window, text='Extract from CoNLL', variable=extract_var, onvalue=1,
-                                  offvalue=0, command = lambda: activate_all_options())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               extract_checkbox, True)
+extract_fromCoNLL = tk.Button(window, text='Extract other fields/data from CoNLL table (Open GUI)', command = lambda: call("python data_manager_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+    y_multiplier_integer,
+    extract_fromCoNLL,
+    False, False, False, False, 90, GUI_IO_util.read_button_x_coordinate,
+    "Click on the button to open the Data manager GUI where you can use the function 'Extract field(s) from csv file' with several options for complex data queries of csv files (in this case, a CoNLL table).")
 
-select_csv_field_lb = tk.Label(window, text='Select field')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position, y_multiplier_integer,
-                                               select_csv_field_lb, True)
-
-if len(menu_values) > 0:
-    select_csv_field_extract_menu = tk.OptionMenu(window, select_csv_field_extract_var, *menu_values)
-else:
-    select_csv_field_extract_menu = tk.OptionMenu(window, select_csv_field_extract_var, menu_values)
-select_csv_field_extract_menu.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + GUI_IO_util.combobox_position+80, y_multiplier_integer,
-                                               select_csv_field_extract_menu, True)
-
-comparator_var = tk.StringVar()
-comparator_menu = tk.OptionMenu(window, comparator_var, 'not equals', 'equals', 'greater than',
-                                    'greater than or equals', 'less than', 'less than or equals')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 410, y_multiplier_integer,
-                                               comparator_menu, True)
-
-where_lb = tk.Label(window, text='WHERE')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 535, y_multiplier_integer,
-                                               where_lb, True)
-
-where_entry_var = tk.StringVar()
-where_entry = tk.Entry(window, width=25, textvariable=where_entry_var)
-where_entry.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 610, y_multiplier_integer,
-                                               where_entry, True)
-
-and_or_lb = tk.Label(window, text='and/or')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 790, y_multiplier_integer,
-                                               and_or_lb, True)
-
-and_or_var = tk.StringVar()
-and_or_menu = tk.OptionMenu(window, and_or_var, 'and', 'or')
-and_or_menu.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 840, y_multiplier_integer,
-                                               and_or_menu, True)
-
-
-def clear_csv_selections():
-    select_csv_field_extract_var.set('')
-    comparator_var.set('')
-    and_or_var.set('')
-    where_entry_var.set('')
-
-
-def build_extract_string(comingFrom_Plus, comingFrom_OK):
-    add_field_to_list(select_csv_field_extract_var.get(), comingFrom_OK)
-    activate_csv_fields_selection(extract_var.get(), comingFrom_Plus, comingFrom_OK)
-    clear_csv_selections()
-
-
-add_extract_options_var = tk.IntVar()
-add_extract_options = tk.Button(window, text='+', width=2, height=1, state='disabled',
-                                command=lambda: build_extract_string(True, False))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 905, y_multiplier_integer,
-                                               add_extract_options, True)
-
-OK_extract_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
-                              command=lambda: build_extract_string(False, True))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 955, y_multiplier_integer,
-                                               OK_extract_button, True)
-
-
-def add_field_to_list(menu_choice, visualizeBuildString=True):
-    global buildString
-    # skip empty values and csv fields already selected
-    if select_csv_field_extract_var.get() == '':
-        return
-
-    new_build_string = '"",' + menu_choice  # the first one is input file name, which is not used.
-
-    if comparator_var.get() != '' and where_entry_var.get() == '':
-        mb.showwarning(title='Warning',
-                       message='You have selected the comparator value ' + comparator_var.get() + '\n\nYou MUST enter a WHERE value or press ESC to cancel.')
-        return
-    # always enter the value even if empty to ensure a similarly formatted string
-    if comparator_var.get() != '':
-        new_build_string = new_build_string + "," + comparator_var.get()
-    else:
-        new_build_string = new_build_string + "," + "''"
-    if where_entry_var.get() != '':
-        new_build_string = new_build_string + "," + where_entry_var.get()
-    else:
-        new_build_string = new_build_string + "," + "''"
-    if and_or_var.get() != '':
-        new_build_string = new_build_string + "," + and_or_var.get()
-    else:
-        new_build_string = new_build_string + "," + "''"
-    csv_file_field_list.append(new_build_string)
-    buildString = buildString + new_build_string
-
-
-def show_values():
-    mb.showwarning(title='Information', message=buildString)
-
-
-show_button = tk.Button(window, width=7, text='Show', state='normal', command=lambda: show_values())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 1005, y_multiplier_integer,
-                                               show_button, True)
-
-reset_all_button = tk.Button(window, width=6, text='Reset', state='normal', command=lambda: reset_all_values())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 1075, y_multiplier_integer,
-                                               reset_all_button)
-
-
-def extractSelection(*args):
-    # if extract_var.get():
-    #     mb.showwarning(title='Warning',
-    #                    message='The routine to extract fields an field values from the CoNLL table is under '
-    #                            'construction.')
-    activate_csv_fields_selection(extract_var.get(), False, False)
-
-
-extract_var.trace('w', extractSelection)
-
-
-#
 all_analyses_checkbox.configure(state='normal')
 
 searchToken_checkbox.configure(state='normal')
 
 sentence_table_checkbox.configure(state='normal')
-extract_checkbox.configure(state='normal')
 k_sentences_checkbox.configure(state='normal')
 
-
-def activate_csv_fields_selection(checkButton, comingFrom_Plus, comingFrom_OK):
-    if extract_var.get():
-        select_csv_field_extract_menu.configure(state='normal')
-
-    if not checkButton:
-        extract_checkbox.config(state='normal')
-        select_csv_field_extract_var.set('')
-        select_csv_field_extract_menu.config(state='disabled')
-
-        comparator_menu.configure(state="disabled")
-        where_entry.configure(state="disabled")
-        and_or_menu.configure(state="disabled")
-        OK_extract_button.config(state='disabled')
-
-        where_entry_var.set("")
-        comparator_var.set("")
-        and_or_var.set("")
-    if checkButton:
-        reset_all_button.config(state='normal')
-        add_extract_options.config(state='normal')
-        if select_csv_field_extract_var.get() != '':
-            if comingFrom_Plus:
-                select_csv_field_extract_menu.configure(state='normal')
-            else:
-                select_csv_field_extract_menu.configure(state='disabled')
-
-            if where_entry_var.get() != '':
-                and_or_menu.configure(state='normal')
-            else:
-                and_or_menu.configure(state='disabled')
-
-            if comingFrom_OK:
-                comparator_menu.configure(state="disabled")
-                where_entry.configure(state="disabled")
-                and_or_menu.configure(state='disabled')
-                add_extract_options.config(state='disabled')
-                OK_extract_button.config(state='disabled')
-            else:
-                add_extract_options.config(state='normal')
-                OK_extract_button.config(state='normal')
-                comparator_menu.configure(state="normal")
-                where_entry.configure(state="normal")
-        else:
-            select_csv_field_extract_menu.configure(state='normal')
-            extract_checkbox.config(state='normal')
-            comparator_menu.configure(state="normal")
-            where_entry.configure(state="normal")
-            and_or_menu.configure(state="normal")
-            OK_extract_button.config(state='normal')
-select_csv_field_extract_var.trace('w', lambda x, y, z: extract_var.get())
-activate_csv_fields_selection(extract_var.get(), False, False)
 
 def activate_all_options():
     if error:
@@ -681,7 +449,6 @@ def activate_all_options():
         all_analyses_menu.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
-        extract_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
         return
@@ -689,7 +456,6 @@ def activate_all_options():
         all_analyses_menu.configure(state='normal')
         searchToken_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
-        extract_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
         reminders_util.checkReminder(config_filename,
@@ -699,7 +465,6 @@ def activate_all_options():
     elif search_token_var.get()==True:
         all_analyses_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
-        extract_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
 
         entry_searchField_kw.configure(state='normal')
@@ -711,25 +476,12 @@ def activate_all_options():
     elif compute_sentence_var.get():
         all_analyses_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
-        extract_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='disabled')
         searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
         postag_menu_lb.configure(state='disabled')
         deprel_menu_lb.configure(state='disabled')
         co_postag_menu_lb.configure(state='disabled')
         co_deprel_menu_lb.configure(state='disabled')
-    elif extract_var.get():
-        all_analyses_checkbox.configure(state='disabled')
-        sentence_table_checkbox.configure(state='disabled')
-        searchToken_checkbox.configure(state='disabled')
-        k_sentences_checkbox.configure(state='disabled')
-        entry_searchField_kw.configure(state='disabled')
-        searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
-        postag_menu_lb.configure(state='disabled')
-        deprel_menu_lb.configure(state='disabled')
-        co_postag_menu_lb.configure(state='disabled')
-        co_deprel_menu_lb.configure(state='disabled')
-        sentence_table_checkbox.configure(state='disabled')
     elif k_sentences_var.get():
         all_analyses_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
@@ -746,13 +498,7 @@ def activate_all_options():
         all_analyses_menu.configure(state='disabled')
         searchToken_checkbox.configure(state='normal')
         sentence_table_checkbox.configure(state='normal')
-        extract_checkbox.configure(state='normal')
         k_sentences_checkbox.configure(state='normal')
-
-
-# all_analyses_var.trace('w',activate_all_options)
-# all_analyses_var.trace('w',activate_all_options)
-# all_analyses_var.trace('w',activate_all_options)
 
 activate_all_options()
 
@@ -780,9 +526,6 @@ TIPS_options = 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford 
 
 
 def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
-    resetAll = "\n\nPress the RESET ALL button to clear all values, including csv files and fields, and start fresh."
-    plusButton = "\n\nPress the + buttons, when available, to add either a new field from the same csv file (the + button at the end of this line) or a new csv file (the + button next to File at the top of this GUI). Multiple csv files can be used with any of the operations."
-    OKButton = "\n\nPress the OK button, when available, to accept the selections made, then press the RUN button to process the query."
     if not IO_setup_display_brief:
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help", GUI_IO_util.msg_CoNLL)
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -792,7 +535,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checbox to analyze the CoNLL table for different types of clauses (e.g., noun-phrase, NP, verb phrase, VP), nouns (singular, plural, proper nouns, subject and object), verbs (modality, tense, voice), and functions words (or junk/stop words) (e.g., articles/determnants, auxiliaries, conjunctions, prepositions, pronouns)." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox to analyze the CoNLL table for different types of clauses (e.g., noun-phrase, NP, verb phrase, VP), nouns (singular, plural, proper nouns, subject and object), verbs (modality, tense, voice), and functions words (or junk/stop words) (e.g., articles/determnants, auxiliaries, conjunctions, prepositions, pronouns)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checbox to search the CoNLL table for a specific token/word. Enter the CASE SENSITIVE token (i.e., word) to be searched (enter * for any word). ENTER * TO SEARCH FOR ANY TOKEN/WORD. The EXACT word will be searched (e.g., if you enter 'American', any instances of 'America' will not be found).\n\nDO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN. n\nThe algorithm will search all the tokens related to this token in the CoNLL table. For example, if the the token wife is entered, the algorithm will search in each dependency tree (i.e., each sentence).\n\nIn OUTPUT the algorithm will produce several charts and a Gephi network graphs of the relationship between searched and co-occurring words." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -806,11 +549,11 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, select DEPREL value for token co-occurring in the same sentence (e.g., DEPREL nsubjpass for passive nouns that are subjects; RETURN for ANY DEPREL value)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Please, tick the checkbox if you wish to run the repetition finder to compute counts and proportions of nouns, verbs, adjectives, and proper nouns across selected K beginnning and ending sentences." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to compute a sentence table with various sentence statistics.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "The EXTRACT option allows you to select specific fields, even by specific values, from one or more csv files and save the output as a new file.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value in the \'WHERE\' widget (case sensitive!), and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to run the repetition finder to compute counts and proportions of nouns, verbs, adjectives, and proper nouns across selected K beginnning and ending sentences." + GUI_IO_util.msg_Esc)
+                                  "Click the button to open the Data manager GUI for more options on querying the CoNLL table." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

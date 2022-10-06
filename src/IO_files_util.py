@@ -72,10 +72,14 @@ def make_output_subdirectory(inputFilename, inputDir, outputDir, label, silent=T
         # process file
         inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
         outputSubDir = os.path.join(outputDir, label + "_" + inputFileBase)  # + "_CoRefed_files")
-    if inputDir!='':
+    elif inputDir!='':
         # processing a directory
         inputDirBase = os.path.basename(inputDir)
         outputSubDir = os.path.join(outputDir, label + "_" + inputDirBase)
+    elif label != '':
+        outputSubDir = os.path.join(outputDir, label)
+    else:
+        outputSubDir = outputDir
     if os.path.exists(outputSubDir):
         if not silent:
             result = mb.askyesno('Directory already exists',
@@ -84,11 +88,19 @@ def make_output_subdirectory(inputFilename, inputDir, outputDir, label, silent=T
                 # createDir = False
                 # return createDir
                 return ''
-        shutil.rmtree(outputSubDir)
+        try:
+            shutil.rmtree(outputSubDir)
+        except Exception as e:
+            mb.showwarning(title='Directory error',
+                           message="Could not create the directory " + outputSubDir + "\n\n" + str(e))
+            outputSubDir = ''
     try:
+        # chmod() changes the mode of path to the passed numeric mode
         os.chmod(Path(outputSubDir).parent.absolute(), 0o755)
         os.mkdir(outputSubDir, 0o755)
     except Exception as e:
+        mb.showwarning(title='Directory error',
+                       message="Could not create the directory " + outputSubDir + "\n\n" + str(e))
         print("error: ", e.__doc__)
         # createDir = False
         outputSubDir=''
@@ -289,7 +301,7 @@ def checkDirectory(path, message=True):
     else:
         if message:
             mb.showwarning(title='Directory error',
-                           message='The directory ' + path + ' does not exist. It may have been renamed, deleted, moved. Please, check the DIRECTORY and try again')
+                           message='The directory ' + path + ' does not exist. It may have been renamed, deleted, moved.\n\nPlease, check the DIRECTORY and try again')
         return False
 
 
@@ -339,20 +351,32 @@ def openFile(window, inputFilename):
     if os.path.isfile(inputFilename):
         # windows
         if platform in ['win32', 'cygwin']:
-            try:
-                os.system('start "" "' + inputFilename + '"')
-            except IOError:
-                mb.showwarning(title='Input file error',
-                               message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
-                return True
+            while True: # repeat until you close
+                try:
+                    os.system('start "" "' + inputFilename + '"')
+                    break # exit loop
+                except IOError as e:
+                    mb.showwarning(title='Input file error',
+                                   message="Could not open the file " + inputFilename + "\n\n"+str(e))
+                    if "Errno 22" in str(e):
+                        break  # exit loop; the error is not due to file being open
+                    # mb.showwarning(title='Input file error',
+                    #                message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
+                    # restart loop
         # macOS and other unix
         else:
-            try:
-                call(['open', inputFilename])
-            except IOError:
-                mb.showwarning(title='Input file error',
-                               message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
-                return True
+            while True: # repeat until you close
+                try:
+                    call(['open', inputFilename])
+                    break # exit loop
+                except IOError as e:
+                    mb.showwarning(title='Input file error',
+                                   message="Could not open the file " + inputFilename + "\n\n"+str(e))
+                    if "Errno 22" in str(e):
+                        break  # exit loop; the error is not due to file being open
+                    # mb.showwarning(title='Input file error',
+                    #                message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
+                    # restart loop
     else:
         tk.messagebox.showinfo("Error", "The file " + inputFilename + " could not be found.")
         print("The file " + inputFilename + " could not be found.")
@@ -370,25 +394,46 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
             filesToOpen = list(set(filesToOpen))
         else:
             filesToOpen = list(filesToOpen)
-    if len(filesToOpen)>10:
-        if len(filesToOpenSubset)> 0:
-            subDirs=next(os.walk(outputDir))[1]
-            listOfFiles = list()
-            for (dirpath, dirnames, filenames) in os.walk(outputDir):
-                listOfFiles += [os.path.join(dirpath, file) for file in filenames]
-            nFiles=len(listOfFiles)
-            nSubDirs = len(subDirs)
-            subDirs=", \n   ".join(subDirs)
-            label=''
-            if nSubDirs>0:
-                label = " organized in " + str(nSubDirs) + " different subfolders:\n\n   " + subDirs
-            mb.showwarning(title="Output files subset",message="The " + scriptName + " has generated " +
-                        str(nFiles) + " files in output" + label +
-                        "\n\nThe NLP Suite will open next a subset of " +
-                        str(len(filesToOpenSubset)) + " most relevant output files from the different subfolders: all charts and main csv files.\n" +
-                        "\n\nFor your convenience, the NLP Suite will also place you in the main output subdirectory where you can select  any other files you want/need to open:\n\n"+outputDir)
-            filesToOpen=filesToOpenSubset
-        # mb.showwarning(title='Too many files to open',message='There are ' + str(len(filesToOpen)) + ' files to be opened. This is way too many files.\n\nFor your convenience, you will be placed next in the output directory\n\n'+outputDir+'\n\nYou can select there the files you want/need to open.')
+
+    if len(filesToOpenSubset)> 0:
+        filesToOpen=filesToOpenSubset
+
+    if outputDir != GUI_util.output_dir_path.get():
+        subDirs=next(os.walk(outputDir))[1]
+        listOfFiles = list()
+        split_files = False
+        for (dirpath, dirnames, filenames) in os.walk(outputDir):
+            if "split_" in dirpath:
+                split_files=True
+                subDirs.remove(os.path.basename(dirpath))
+                continue
+            if len(os.listdir(dirpath))==0:
+                # remove empty directories
+                shutil.rmtree(dirpath)
+                # remove from list of subDirs
+                if os.path.basename(dirpath) in str(subDirs):
+                    subDirs.remove(os.path.basename(dirpath))
+                continue
+            listOfFiles += [os.path.join(dirpath, file) for file in filenames]
+    else:
+        listOfFiles = filesToOpen
+        subDirs = []
+    nFiles=len(listOfFiles)
+    nSubDirs = len(subDirs)
+    subDirs=", \n   ".join(subDirs)
+    label=''
+    subsetLabel = ''
+    if nSubDirs>0:
+        label = " organized in " + str(nSubDirs) + " different subfolders:\n\n   " + subDirs
+        if split_files:
+            label = label + "\n\nA folder containing split files was generated by Stanford CoreNLP to deal with CoreNLP file-size limitation of 99000 characters. " \
+                            "You do not need to be concerned about that; large files will have been split for processing and put back together automatically by the SVO algorithm."
+        if len(filesToOpenSubset)>0:
+            subsetLabel = "\n\nThe NLP Suite will open next a subset of " + str(len(filesToOpenSubset)) + " most relevant output files from the different subfolders: all charts and main csv files.\n"
+        mb.showwarning(title="Output files subset",message="The " + scriptName + " has generated " +
+                    str(nFiles) + " files in output" + label + subsetLabel +
+                    "\n\nFor your convenience, the NLP Suite will also place you in the main output subdirectory where you can select  any other files you want/need to open:\n\n"+outputDir)
+    # mb.showwarning(title='Too many files to open',message='There are ' + str(len(filesToOpen)) + ' files to be opened. This is way too many files.\n\nFor your convenience, you will be placed next in the output directory\n\n'+outputDir+'\n\nYou can select there the files you want/need to open.')
     # always open outputDir
     openExplorer(window, outputDir)
     if len(filesToOpen) == 1:
@@ -513,10 +558,14 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
     # rename a filename coreferenced by CoreNLP to obtain better filename; NLP_CoreNLP_coref should only be once n the filename
     if 'NLP_CoreNLP_coref' in outFilename:
         if outFilename.count('NLP_CoreNLP_coref')>1:
-            outFilename = outFilename.replace('NLP_CoreNLP_coref','_coref')
-            outFilename = 'NLP_CoreNLP_coref'+outFilename
+            outFilename = outFilename.replace('NLP_CoreNLP_coref','coref')
+            # outFilename = 'NLP_CoreNLP_coref'+outFilename
     if 'CoreNLP_SENNA_SVO_coref' in outFilename:
         outFilename = outFilename.replace('CoreNLP_SENNA_SVO_coref','_coref')
+
+    if sys.platform == 'win32':  # Windows
+        if len(outFilename)>255:
+            mb.showwarning(title='Warning',message='The length (' + str(len(outFilename)) + ' characters) of the filename ' + outFilename + ' exceeds the maximum length of 255 characters allowed by Windows Operating System.\n\nPlease, reduce the filename length.')
 
     return outFilename
 
@@ -733,3 +782,27 @@ def gatherCLAs():
         else:
             openOut = False
         return args.inputFile, args.outputDir, openOut
+
+
+ # move the gender & quote files under the gender & quote dir where a user is more likely to look for it
+# the location_filename is moved above
+
+    # if gender_var:
+    #     # move the gender file under gender dir where a user is more likely to look for it
+    #     gender_outputDir = outputDir + os.sep + os.path.basename(outputDir.replace('_SVO_', '_gender_'))
+    #     if os.path.isfile(gender_filename) and os.path.isdir(gender_outputDir):
+    #         target_filePath = gender_outputDir + os.sep + os.path.basename(gender_filename)
+    #         # move the csv gender file
+    #         if not os.path.isfile(target_filePath):
+    #             os.replace(gender_filename, target_filePath)
+    #         # move the html gender file
+    #         target_filePath = gender_outputDir + os.sep + os.path.basename(gender_filename_html)
+    #         if os.path.isfile(gender_filename_html) and not os.path.isfile(target_filePath):
+    #             os.replace(gender_filename_html, target_filePath)
+    #
+    # if quote_var:
+    #     quote_outputDir = outputDir + os.sep + os.path.basename(outputDir.replace('_SVO_', '_quote_'))
+    #     if os.path.isfile(quote_filename) and os.path.isdir(quote_outputDir):
+    #         target_filePath = quote_outputDir + os.sep + os.path.basename(quote_filename)
+    #         # move the quote file under quote dir where a user is more likely to look for it
+    #         os.replace(quote_filename, target_filePath)

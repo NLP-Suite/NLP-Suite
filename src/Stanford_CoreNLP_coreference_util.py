@@ -1,4 +1,4 @@
-# Written by Gabriel Wang, Jack Hester and Cynthia Dong 2018-2019 
+# Written by Gabriel Wang, Jack Hester and Cynthia Dong 2018-2019
 
 import sys
 import GUI_util
@@ -18,7 +18,7 @@ import IO_user_interface_util
 import Stanford_CoreNLP_util
 import reminders_util
 
-# part of the code about search text function is adapted from 
+# part of the code about search text function is adapted from
 # https://www.geeksforgeeks.org/create-find-and-replace-features-in-tkinter-text-widget/
 def createCompareWindow(origin_display, coref_display, origin_non_coref, corefed_non_coref, root, result):
     top = Toplevel(root)
@@ -93,7 +93,7 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, corefed
             top.destroy()
             top.update()
         return
-    
+
     # function to search string in text
     def find():
         # remove tag 'found' from index 1 to END
@@ -101,22 +101,22 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, corefed
         text1.tag_remove('found', '1.0', END)
         # returns to widget currently in focus
         s = searchBox.get()
-        
+
         if (s):
             idx = '1.0'
             while 1:
                 # searches for desired string from index 1
                 idx = text2.search(s, idx, nocase = 1,
-                                stopindex = END)  
-                if not idx: break          
+                                stopindex = END)
+                if not idx: break
                 # last index sum of current index and
                 # length of text
                 lastidx = '% s+% dc' % (idx, len(s))
                 # overwrite 'Found' at idx
                 text2.tag_add('found', idx, lastidx)
                 idx = lastidx
-    
-            # mark located string as red    
+
+            # mark located string as red
             text2.tag_config('found', foreground ='red', background='gainsboro')
             idx = '1.0'
             while 1:
@@ -140,7 +140,7 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, corefed
     bottomFrame.pack(fill="both", expand=True, side=tk.BOTTOM)
     tk.Button(bottomFrame, text="Quit", command=exit_btn).pack(side="left")
     tk.Button(bottomFrame, text="Save", command=exit_btn_save).pack(side="left")
-    
+
     top.protocol("WM_DELETE_WINDOW", exit_btn)
     root.wait_window(top)
 
@@ -151,6 +151,7 @@ starters = "(Mr|Mrs|Ms|Dr|He\s|She\s|It\s|They\s|Their\s|Our\s|We\s|But\s|Howeve
 acronyms = "([A-Z][.][A-Z][.](?:[A-Z][.])?)"
 websites = "[.](com|net|org|io|gov|edu)"
 digits = "([0-9])"
+
 # personal_pronouns = [" i ", " me ", " my ", " you ", " she ", " her ", " he ", " him ",
 #                      " we ", " us ", " they ", " them ", " he's ", " she's "]
 
@@ -294,7 +295,7 @@ def manualCoref(original_file, corefed_file, outputFile):
     if len(corefed_display) == 0 and len(origin_display) == 0:
         return 1
     result = []
-    result.append("\n".join(corefed_text.split("\n")[2:])) 
+    result.append("\n".join(corefed_text.split("\n")[2:]))
     createCompareWindow(origin_display, corefed_display, origin_non_coref, corefed_non_coref, GUI_util.window, result)
     f = open(outputFile, "w", encoding='utf-8', errors='ignore')
     try:
@@ -309,10 +310,10 @@ def manualCoref(original_file, corefed_file, outputFile):
     return 0
 
 # return file_to_open
-def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, openOutputFiles, createCharts, chartPackage,
+def run(config_filename,inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         language_var, memory_var, manual_Coref):
 
-    corefed_file = []
+    corefed_files = []
     errorFound = False
 
     # check that the CoreNLPdir as been setup
@@ -326,27 +327,23 @@ def run(config_filename,inputFilename, input_main_dir_path, output_dir_path, ope
     #
     if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
         return
-    # with only one input file
-    if len(inputFilename)>0:
-        base = os.path.basename(inputFilename)
-        fileName = os.path.splitext(base)[0]
 
-    else: # dir input
+    if inputDir!='':
         reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
                                      reminders_util.message_CoreNLP_coref, True)
 
-    corefed_file = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
-                                                                    output_dir_path, openOutputFiles, createCharts, chartPackage,
+    corefed_files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+                                                                    outputDir, openOutputFiles, createCharts, chartPackage,
                                                                     ['coref', 'coref table'], False,
                                                                     language_var, memory_var)
 
     if manual_Coref:
-        if len(input_main_dir_path) == 0 and len(inputFilename) > 0:
-            for file in corefed_file:
+        if len(inputDir) == 0 and len(inputFilename) > 0:
+            for file in corefed_files:
                 if file[-4:] == ".txt":
                     error = manualCoref(inputFilename, file, file)
-                    # return the corefed_file
+                    # return the corefed_files
         else:
-            IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Feature Not Available', 'Manual Coreference is only available when processing single file, not input directory.')
+            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Feature Not Available', 'Manual Coreference is only available when processing single file, not input directory.')
 
-    return corefed_file, errorFound
+    return corefed_files, errorFound

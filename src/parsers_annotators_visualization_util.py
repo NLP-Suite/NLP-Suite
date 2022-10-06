@@ -1,4 +1,6 @@
 
+import os
+
 import charts_util
 import reminders_util
 import IO_csv_util
@@ -329,14 +331,14 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
 
-        if 'SVO' in str(annotator_params):
-            for key, value in kwargs.items():
-                if key == "gender_var" and value == True:
-                    chart_outputFilename = visualize_html_file(inputFilename, inputDir, outputDir, kwargs["gender_filename"],
-                                                      genderCol=["S Gender", "O Gender"], wordCol=["Subject (S)", "Object (O)"])
-                    if chart_outputFilename!=None:
-                        if len(chart_outputFilename) > 0:
-                            filesToOpen.extend(chart_outputFilename)
+        # if 'SVO' in str(annotator_params):
+        #     for key, value in kwargs.items():
+        #         if key == "gender_var" and value == True:
+        #             chart_outputFilename = visualize_html_file(inputFilename, inputDir, outputDir+os.sep+"gender", kwargs["gender_filename_html"],
+        #                                               genderCol=["S Gender", "O Gender"], wordCol=["Subject (S)", "Object (O)"])
+        #             if chart_outputFilename!=None:
+        #                 if len(chart_outputFilename) > 0:
+        #                     filesToOpen.extend(chart_outputFilename)
 
 # generate visualization output ----------------------------------------------------------------
 # coref ________________________________________________________________

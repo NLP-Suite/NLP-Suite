@@ -310,7 +310,7 @@ if sys.platform == 'darwin': #Mac OS
     open_NLP_package_language_config_button = 650
     open_setup_software_button = 650
 
-    open_file_button_brief = 700
+    open_file_button_brief = 700 # the left-most button of the four buttons displayed on the far right of top line of every GUI
     open_inputDir_button_brief = 740
     open_outputDir_button_brief = 780
     open_config_file_button_brief = 820
@@ -363,7 +363,7 @@ else: #windows and anything else
     IO_button_name_width=30
     open_file_directory_button_width = 3
     open_file_directory_coordinate = 350 # position of menu of default and GUI specific IO options
-    setup_IO_brief_coordinate = 580 # Position of text entry for Input and Output display
+    setup_IO_brief_coordinate = 600 # Position of text entry for Input and Output display
     entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
     read_button_x_coordinate = 50
     watch_videos_x_coordinate = 170
@@ -377,7 +377,7 @@ else: #windows and anything else
     open_NLP_package_language_config_button = 820
     open_setup_software_button = 820
 
-    open_file_button_brief = 760
+    open_file_button_brief = 760 # the left-most button of the four buttons displayed on the far right of top line of every GUI
     open_inputDir_button_brief = 800
     open_outputDir_button_brief = 840
     open_config_file_button_brief = 880
@@ -529,7 +529,6 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
 
     # define the countdown func.
     def countdown(countdown_timer):
-        # TODO MINO
         if countdown_timer==0:
             try:
                 top_message.destroy()
@@ -543,7 +542,6 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
     # timer
     def wait_for_answer(button_type):
         global yes_no_button
-        # TODO MINO
         if button_type == 'Yes':
             yes_no_button = "Yes"
             top_message.destroy()
@@ -563,12 +561,16 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
         screen_height = top_message.winfo_height()
         button = tk.Button(top_message, text="OK", command=top_message.destroy, fg='red')
         button.place(x=5, y=screen_height - 35)
-
+        denominator1 = 1000
+        denominator2 = 500
+        if "Started running" in message_text or "Finished running" in message_text:
+            denominator1=2000
+            denominator2 = 1500
         countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
-        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
-        countdownLabel1.place(x=60, y=screen_height - 35)
-        countdownLabel2.place(x=270, y=screen_height - 35)
-        countdown(int(timeout / 500))
+        countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / denominator1)}', fg='red')
+        countdownLabel1.place(x=40, y=screen_height - 35)
+        countdownLabel2.place(x=230, y=screen_height - 35)
+        countdown(int(timeout / denominator2))
 
     elif buttonType == 'Yes-No':
         mbox = tk.Message(top_message, width=600,

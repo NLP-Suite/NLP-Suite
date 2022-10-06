@@ -346,6 +346,8 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
     outputDirName = ''
 
     # INPUT file name -----------------------------------------------------------------------------------
+    # when tracing on changed IO options between inputFilename and main_dir_path (e.g., SVO_main or Stanford_CoreNLP_coreference_main),
+    #   always trace on main_dir_path rather than inputFilename since inputFilename may be reset by main_dir_path
 
     if config_input_output_alphabetic_options[0]=='': # INPUT filename
         inputFilename.set('')
@@ -356,6 +358,8 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
 
     # -----------------------------------------------------------------------------------
     # INPUT main directory
+    # when tracing on changed IO options between inputFilename and main_dir_path (e.g., SVO_main or Stanford_CoreNLP_coreference_main),
+    #   always trace on main_dir_path rather than inputFilename since inputFilename may be reset by main_dir_path
 
     if config_input_output_alphabetic_options[1]=='': # INPUT main directory
         input_main_dir_path.set('')
@@ -363,6 +367,7 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
         if error==False:
             error, dirName = config_util.checkConfigDirExists(temp_config_filename, config_input_output_alphabetic_options[1], 'INPUT')
         input_main_dir_path.set(dirName)
+        inputFilename.set('')
 
     # -----------------------------------------------------------------------------------
     # INPUT secondary directory
@@ -461,6 +466,13 @@ def IO_config_setup_brief(window, y_multiplier_integer,scriptName, silent):
                                                    GUI_IO_util.get_labels_x_coordinate(),
                                                    "Use the dropdown menu to select the INPUT/OUTPUT configuration you want to use to run the algorithmms behind this GUI.\nThe default configuration is the one that applies to ALL GUIs in the NLP Suite. The GUI-specific configuration applies to this GUI only.\n"
                                                    "To change either configuration of INPUT/OUTPUT options, selected the desired configuration and then click on the Setup INPUT/OUTPUT configuration button.")
+
+
+    # setup button to open a pop-up text entry widget where users can paste text to be used instead of an input file
+    openTextWidget_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='')
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate-40, y_multiplier_integer,
+                                                   openTextWidget_button, True, False, True, False, 90, GUI_IO_util.read_button_x_coordinate, "Button currently not used. Will eventually open a pop-up text-entry widget where users can paste text to be used temporarily to run the algorithms behind the GUI, instead of either Default or GUI-specific INPUT options.")
 
     # setup buttons to open an input file, an input directory, an output directory, and a csv config file
 
@@ -773,6 +785,7 @@ def display_setup_hover_over(y_multiplier_integer):
     if y_multiplier_integer_SV == 0:
         y_multiplier_integer_SV = y_multiplier_integer
     # place widget with hover-over info
+    # TODO SETUP button
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate,
                                                    y_multiplier_integer_SV,
                                                    setup_menu_lb, True, False, False, False, 90,
@@ -832,17 +845,17 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             not 'NLP_menu_main' in scriptName and \
             not "NLP_setup_" in scriptName:
         #open output csv files widget defined above since it is used earlier
-        open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Automatically open ALL output files", "Do NOT automatically open ALL output files"))
-        open_csv_output_label.configure(text="Automatically open ALL output files")
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+        open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Open output files", "Do NOT open output files"))
+        open_csv_output_label.configure(text="Open output files")
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.watch_videos_x_coordinate,
                                                        y_multiplier_integer,
                                                        open_csv_output_label,True,False,False)
         open_csv_output_checkbox.set(1)
 
         #creat Excel chart files widget defined above since it is used earlier
-        create_Excel_chart_output_label = tk.Checkbutton(window, variable= create_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label,  create_chart_output_checkbox, "Automatically compute charts", "Do NOT automatically compute charts"))
-        create_Excel_chart_output_label.configure(text="Automatically compute chart(s)")
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+380,
+        create_Excel_chart_output_label = tk.Checkbutton(window, variable= create_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label,  create_chart_output_checkbox, "Create charts", "Do NOT create charts"))
+        create_Excel_chart_output_label.configure(text="Create chart(s)")
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
                                                        y_multiplier_integer,
                                                        create_Excel_chart_output_label,True,False,False)
 
@@ -850,9 +863,10 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         # y_multiplier_integer=y_multiplier_integer+1
         # y_multiplier_integer=y_multiplier_integer+1
         charts_options = ['Excel','Python plotLy (dynamic)','Python plotLy (static)']
+        # TODO EXCEL BUTTON (same as setup)
         charts_dropdown_field.set('Excel')
         charts_menu_lb = tk.OptionMenu(window,charts_dropdown_field,*charts_options)
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+620,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
                                                        y_multiplier_integer,
                                                        charts_menu_lb,False,False,False)
 
@@ -944,6 +958,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # do not lay Setup widget in NLP_menu_main and in NLP_setup_package_language_main
 
+    # TODO SETUP button (same as EXCEL)
     y_multiplier_integer_SV = y_multiplier_integer
     if not 'package_language' in config_filename and not 'NLP_menu_main' in scriptName:
         # window.nametowidget(setup_menu_lb)
@@ -952,6 +967,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # there is no RUN button when setting up IO information in any of the NLP_setup scripts
     #   or in any of the GUIs that are ALL options GUIs
+    # TODO RUN button
     if not "NLP_setup_" in scriptName \
             and not "ALL_main" in scriptName:
         # place widget with hover-over info
@@ -963,6 +979,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         # GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
         #                         run_button, False, False, True)
 
+    # TODO CLOSE button
     def _close_window():
         if 'Default' in setup_IO_menu_var.get(): #GUI_util.setup_IO_menu_var.get()
             temp_config_filename = 'NLP_default_IO_config.csv'
@@ -1019,7 +1036,6 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
             display_IO_setup(window, IO_setup_display_brief, config_filename,
                                              config_input_output_numeric_options, scriptName, silent)
-
     setup_IO_menu_var.trace("w",changed_setup_IO_config)
     changed_setup_IO_config()
 

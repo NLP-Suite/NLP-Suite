@@ -608,7 +608,7 @@ NLP_Suite_corpus_document_tools_menu = \
 'WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW', \
 'Corpus/document(s) statistics (Sentences, words, lines)', \
 'Parsers & annotators (CoreNLP, spaCy, Stanza)', \
-'BERT (NER, Sentiment, Syntax, Word embeddings', \
+'BERT (NER, Sentiment, Syntax, Word embeddings)', \
 'CoNLL table analyzer - Search the CoNLL table', \
 'CoNLL table analyzer - Clause, noun, verb, function words frequencies', \
 '', \

@@ -176,6 +176,7 @@ def clear(e):
     GUI_util.tips_dropdown_field.set('Open TIPS files')
 window.bind("<Escape>", clear)
 
+# TODO Anna please add comments about what this function does
 def get_SQLite_file(window,title,fileType):
     #annotator_dictionary_var.set('')
     filePath = tk.filedialog.askopenfilename(title = title, initialdir =inputDir, filetypes = fileType)
@@ -201,11 +202,13 @@ SQLite_DB_file.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,SQLite_DB_file)
 
 table_menu_values = []
+# TODO Anna please add comments about what this function does
 def get_table_list(*args):
     select_DB_table_fields_menu.configure(state='disabled')
     if select_SQLite_DB_var.get()=='':
         select_DB_tables_menu.configure(state='disabled')
         return
+    # get_complex_simplex_list('setup_Complex')
     select_DB_tables_menu.configure(state='normal')
     conn = sqlite3.connect(select_SQLite_DB_var.get())
     cur = conn.cursor()
@@ -219,8 +222,46 @@ def get_table_list(*args):
     m.delete(0, "end")
     for s in table_menu_values:
         m.add_command(label=s, command=lambda value=s: select_DB_tables_var.set(value))
-
 select_SQLite_DB_var.trace('w',get_table_list)
+
+# TODO Anna, I tried to get a list of row values in setup_Complex or setup_Simplex but... could not get it to work
+# TODO  please finish the function
+def get_complex_simplex_list(tableName):
+    if select_SQLite_DB_var.get() == '':
+        return
+    conn = sqlite3.connect(select_SQLite_DB_var.get())
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    cur.execute("SELECT Name FROM '%s'" % tableName)
+    # construct menu values
+    # fields is a list of the column names from input tableName
+    r = cur.fetchone()
+    fields = r.keys()
+    table_fields_menu_values = fields
+    cur.close()
+    m = select_DB_table_fields_menu["menu"]
+    m.delete(0, "end")
+    for s in table_fields_menu_values:
+        m.add_command(label=s, command=lambda value=s: select_DB_table_fields_var.set(value))
+    conn.close()
+    menu=''
+    return menu
+
+complex_objects_lb = tk.Label(window, text='Which complex objects do you want to see? ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,complex_objects_lb,True)
+
+complex_objects_var = tk.StringVar()
+menu = get_complex_simplex_list('setup_Complex')
+complex_objects = tk.OptionMenu(window,complex_objects_var, menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,complex_objects)
+
+simplex_objects_lb = tk.Label(window, text='Which simplex objects do you want to see? ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,simplex_objects_lb,True)
+
+simplex_objects_var = tk.StringVar()
+menu = get_complex_simplex_list('setup_Simplex')
+simplex_objects = tk.OptionMenu(window,simplex_objects_var, menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,simplex_objects)
 
 select_DB_tables_lb = tk.Label(window, text='Select DB table ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_DB_tables_lb,True)
@@ -233,7 +274,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 table_fields_menu_values = []
 
-def get_table_fields_list(*args):
+# TODO Anna please add comments about what this function does
+def get_table_fields_list():
     tableName=select_DB_tables_var.get()
     if tableName=='':
         select_DB_table_fields_menu.configure(state='disabled')
@@ -261,6 +303,7 @@ def get_table_fields_name(*args):
     SQL_query_entry.insert(SQL_query_entry.index(tk.INSERT), select_DB_table_fields_var.get())
 
 select_DB_table_fields_var.trace('w',get_table_fields_name)
+
 
 select_DB_table_fields_lb = tk.Label(window, text='Select DB table field')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,select_DB_table_fields_lb,True)
@@ -381,6 +424,15 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the Construct SQLlite button to construct an SQLite database from a set of INPUT csv files." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the Select SQLite database button to select the database you want to work with.\n\nAn SQLite database has extension sqlite." + GUI_IO_util.msg_Esc)
+
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                                         "NLP Suite Help",
+                                                         "Please, using the dropdown menu, select the COMPLEX object for which you would like to obtain query results." + GUI_IO_util.msg_Esc)
+
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                                         "NLP Suite Help",
+                                                         "Please, using the dropdown menu, select the SIMPLEX object for which you would like to obtain query results." + GUI_IO_util.msg_Esc)
+
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, using the 'Select DB table' dropdown menu, select the table available in the SQLite database.\n\nOnce an SQLite table has been selected, use the 'Select DB table field' dropdown menu to select a specific field available in the selected table.\n\nClick on the Import SQL query button to import a previously saved query.\n\nClick on the Save SQL query button to save the query currently available in the query text box.\n\nSaved and imported queries will be of file type .txt." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, enter an SQL query in the form SELECT ...\n\nYou can visualize a preset template query, using the dropdown menu 'Select the type of SQL query'."+ GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer+3.5,"NLP Suite Help", "Please, using the dropdown menu, select the type of SQL query for which to display a standard template. You will need to change table names and field names to the appropriate names in your database.\n\nTick the Distinct checkbox to display the SQL query as distinct.\n\nClick on the View table relations button to visualize the table relations via their overlapping IDs. "+ GUI_IO_util.msg_Esc)
