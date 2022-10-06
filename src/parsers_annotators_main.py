@@ -389,7 +389,8 @@ annotators_var = tk.IntVar()
 annotators_menu_var = tk.StringVar()
 
 quote_var = tk.IntVar()
-y_multiplier_integer_SV=0 # used to set the quote_var widget on the proper GUI line
+y_multiplier_integer_SV=0 # used to set the parser widget on the proper GUI line
+y_multiplier_integer_SV1=0 # used to set the quote_var widget and coref widget on the proper GUI line
 
 pre_processing_button = tk.Button(window, width=50, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: call('python file_checker_converter_cleaner_main.py'))
 # place widget with hover-over info
@@ -497,24 +498,17 @@ def check_CoreNLP_dateFields(*args):
         date_position_menu.config(state="disabled")
 fileName_embeds_date.trace('w', check_CoreNLP_dateFields)
 
-y_multiplier_integer_SV1=y_multiplier_integer
+y_multiplier_integer_SV=y_multiplier_integer
 
-# if package != '':
-#     available_parsers = 'Parsers for ' + package + '                          '
-# else:
-#     available_parsers = 'Parsers'
-#
 parser_checkbox = tk.Checkbutton(window, variable=parser_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer_SV1,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer_SV,
                                                parser_checkbox, True, False, False, False, 90,
                                                GUI_IO_util.get_labels_x_coordinate(),
                                                "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
 
 available_parsers=''
 
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+40, y_multiplier_integer,
-#                                                parser_lb, True)
 parser_var.set(1)
 
 parsers=[]
@@ -626,6 +620,8 @@ annotators_menu = tk.OptionMenu(window, annotators_menu_var,
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                annotators_menu)
 
+y_multiplier_integer_SV1=y_multiplier_integer
+
 manual_Coref_checkbox = tk.Checkbutton(window, text='Manual edit',
                                        variable=manual_Coref_var,
                                        onvalue=1, offvalue=0)
@@ -639,7 +635,7 @@ quote_checkbox = tk.Checkbutton(window, text='Include single quotes',
                                        onvalue=1, offvalue=0)
 
 def activate_annotators_menu(*args):
-    global y_multiplier_integer, y_multiplier_integer_SV
+    global y_multiplier_integer, y_multiplier_integer_SV1
     if annotators_var.get() == True:
         if parser_var.get():
             if 'POS' in annotators_menu_var.get():
@@ -648,10 +644,10 @@ def activate_annotators_menu(*args):
                 annotators_menu_var.set('')
                 return
         annotators_menu.configure(state='normal')
-        if y_multiplier_integer_SV == 0:
-            y_multiplier_integer_SV = y_multiplier_integer
+        if y_multiplier_integer_SV1 == 0:
+            y_multiplier_integer_SV1 = y_multiplier_integer
         if '*' in annotators_menu_var.get() or 'dialogue' in annotators_menu_var.get():
-            y_multiplier_integer=y_multiplier_integer_SV-1
+            y_multiplier_integer=y_multiplier_integer_SV1-1
             quote_var.set(0)
             y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 400,
                                                            y_multiplier_integer,
@@ -661,7 +657,7 @@ def activate_annotators_menu(*args):
             quote_checkbox.place_forget()  # invisible
 
         if 'Coreference' in annotators_menu_var.get():
-            y_multiplier_integer=y_multiplier_integer-1
+            y_multiplier_integer=y_multiplier_integer_SV1-1
             manual_Coref_var.set(0)
             y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 400,
                                                            y_multiplier_integer,
@@ -784,7 +780,7 @@ def activate_NLP_options(*args):
             m.add_command(label=s, command=lambda value=s: parser_menu_var.set(value))
     parser_lb = tk.Label(window, text=available_parsers)
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate() + 40,
-                                                   y_multiplier_integer_SV1,
+                                                   y_multiplier_integer_SV,
                                                    parser_lb, True, False, False, False, 90,
                                                    GUI_IO_util.get_labels_x_coordinate(),
                                                    "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
@@ -792,16 +788,6 @@ def activate_NLP_options(*args):
     # print("available parsers",available_parsers)
 GUI_util.setup_menu.trace('w', activate_NLP_options)
 activate_NLP_options()
-
-# parser_lb = tk.Label(window, text=available_parsers)
-# parser_lb.config(text=available_parsers)
-# label = parser_lb.cget('text')
-# place widget with hover-over info
-# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate() + 40,
-#                                                y_multiplier_integer_SV1,
-#                                                parser_lb, True, False, False, False, 90,
-#                                                GUI_IO_util.get_labels_x_coordinate(),
-#                                                "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
 
 if error:
     mb.showwarning(title='Warning',

@@ -1,23 +1,19 @@
 # Written by Gabriel Wang 2018
 # Modified by Cynthia Dong (Fall 2019-Spring 2020)
 # Modified by Matthew Chau (Spring 2021)
-# Modified by Roberto Franzosi (Spring-Fall 2021)
+# Modified by Roberto Franzosi (Spring-Fall 2021, Fall 2022)
 # Modified by Cynthia Dong (Fall 2021)
 
 import sys
 import GUI_util
 import IO_libraries_util
-import config_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "SVO main",
-                                          ['subprocess', 'os', 'tkinter', 'csv']) == False:
+                                          ['subprocess', 'os', 'tkinter']) == False:
     sys.exit(0)
 
-# from collections import defaultdict
 import os
-import csv
 import tkinter as tk
-from tkinter import ttk
 import tkinter.messagebox as mb
 from subprocess import call
 
@@ -26,6 +22,7 @@ from subprocess import call
 #   pip3 install stanfordnlp
 # import stanfordnlp
 
+import config_util
 import GUI_IO_util
 import IO_files_util
 import Gephi_util
@@ -42,88 +39,6 @@ import reminders_util
 import knowledge_graphs_WordNet_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
-
-
-lemmalib = {}
-voLib = {}
-notSure = set()
-added = set()
-file_open = []
-
-caps = "([A-HJ-Z])"
-prefixes = "(Mr|St|Mrs|Ms|Dr)[.]"
-suffixes = "(Inc|Ltd|Jr|Sr|Co)"
-starters = "(Mr|Mrs|Ms|Dr|He\s|She\s|It\s|They\s|Their\s|Our\s|We\s|But\s|However\s|That\s|This\s|Wherever)"
-acronyms = "([A-Z][.][A-Z][.](?:[A-Z][.])?)"
-websites = "[.](com|net|org|io|gov)"
-
-
-# svo_CoreNLP_single_file is the individual file when processing a directory;
-# svo_CoreNLP_merged_file is the merged svo csv file
-def extract_CoreNLP_SVO(svo_triplets, svo_CoreNLP_single_file, svo_CoreNLP_merged_file, field_names, document_index, Document):
-    """
-    Extract SVO triplets form a Sentence object.
-    """
-    global lemmalib
-    global notSure
-    global added
-
-    result = IO_files_util.openCSVFile(svo_CoreNLP_single_file, 'w')
-    if not result:
-        return
-    svo_writer = csv.DictWriter(result, fieldnames=field_names)
-    svo_writer.writeheader()
-    if svo_CoreNLP_merged_file:
-        merge_result = IO_files_util.openCSVFile(svo_CoreNLP_merged_file, 'a')
-        if not merge_result:
-            return
-        svo_CoreNLP_writer = csv.DictWriter(merge_result, fieldnames=field_names)
-    for svo in svo_triplets:
-        # RF if len(svo[2]) == 0 or len(svo[3]) == 0:
-        if not (svo[2] and svo[3] and svo[4]):
-            continue
-        # check if the triple needs to be included
-
-        if svo[2] == "Someone?" and (svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]) not in added:
-            notSure.add((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
-            continue
-        if svo[2] != "Someone?":
-            if (svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]) in notSure:
-                notSure.remove((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
-            # before writing row, split location
-            if " " in svo[5]:
-                location_list = svo[5].split(" ")
-                for each_location in location_list:
-                    svo_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
-                                         'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'S': svo[2],
-                                         'V': svo[3], 'O': svo[4],
-                                         'Time': svo[6], 'Location': each_location, 'Person': svo[7],
-                                         'Time stamp': svo[8], field_names[10]: svo[1]
-                                         })
-                    if svo_CoreNLP_merged_file:
-                        svo_CoreNLP_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
-                                                    'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document),
-                                                    'S': svo[2], 'V': svo[3], 'O': svo[4],
-                                                    'Time': svo[6], 'Location': each_location, 'Person': svo[7],
-                                                    'Time stamp': svo[8], field_names[10]: svo[1]
-                                                    })
-            else:
-                svo_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
-                                     'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document), 'S': svo[2],
-                                     'V': svo[3], 'O': svo[4],
-                                     'Time': svo[6], 'Location': svo[5], 'Person': svo[7], 'Time stamp': svo[8],
-                                     field_names[10]: svo[1]
-                                     })
-                if svo_CoreNLP_merged_file:
-                    svo_CoreNLP_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
-                                                'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document),
-                                                'S': svo[2], 'V': svo[3], 'O': svo[4],
-                                                'Time': svo[6], 'Location': svo[5], 'Person': svo[7],
-                                                'Time stamp': svo[8],
-                                                field_names[10]: svo[1]
-                                                })
-            added.add((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
-
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         memory_var,
@@ -166,6 +81,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     outputLocations = []
 
     filesToOpen = []
+    files_to_open = []
 
     if package_display_area_value == '':
         mb.showwarning(title='No setup for NLP package and language',
@@ -191,7 +107,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             mb.showerror(title='Input file error',
                          message="The selected input is a csv file, but... not an _svo.csv file.\n\nPlease, select an _svo.csv file (or txt file(s)) and try again.")
             return
-        if (utf8_var == True or Coref == True or memory_var == True or Manual_Coref_var == True or normalized_NER_date_extractor_var == True or package_var!=''):
+        if (Coref == True or memory_var == True or Manual_Coref_var == True or
+                normalized_NER_date_extractor_var == True or package_var!=''):
             mb.showerror(title='Input file/option error',
                          message="The data analysis option(s) you have selected require in input a txt file, rather than a csv file.\n\nPlease, check your input file and/or algorithm selections and try again.")
             return
@@ -217,41 +134,37 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         save_intermediate_file = False
         isFile = False
 
-    if package_var:
-        # create a SVO subdirectory of the output directory
-        #     # remove NLP_CoreNLP_ from filename (could have been added to filename in case of coref)
-        #     # the replace will be ignored when there is no NLP_CoreNLP_ in the filename
+    if package_var=='Stanford CoreNLP':
+        # simplify the name since it is then used in output files/folders
+        package_var = 'CoreNLP'
+    # the actual directory is created in the CoreNLP_annotator_util
+    #   all we need here is the name of the directory
+    if inputFilename != '':
+        inputBaseName = os.path.basename(inputFilename)[0:-4]  # without .txt
+    else:
+        inputBaseName = os.path.basename(inputDir)
+    if Coref:
+        outputCorefDir = os.path.join(outputDirSV, package_var+ '_coref_' + inputBaseName)
+        outputSVODir = os.path.join(outputDir, package_var + '_SVO_coref_' + inputBaseName)
+    else:
+        outputCorefDir = ''
+        outputSVODir = os.path.join(outputDir, package_var + '_SVO_' + inputBaseName)
 
-        label = ''
-        if package_var=='Stanford CoreNLP':
-            # the actual directory is created in the CoreNLP_annotator_util
-            #   all we need here is the name of the directory
-            label='CoreNLP_SVO'
-            if inputFilename != '':
-                inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
-                outputSVODir = os.path.join(outputDir, label + "_" + inputFileBase)  # + "_CoRefed_files")
-            else:
-                inputDirBase = os.path.basename(inputDir)
-                outputSVODir = os.path.join(outputDir, label + "_" + inputDirBase)
+    # create an SVO subdirectory of the output directory
+    outputSVODir = IO_files_util.make_output_subdirectory('','',outputSVODir, label='',
+                                                              silent=False)
+    if outputSVODir == '':
+        return
 
-        else:
-            # create an SVO subdirectory of the output directory
-            label = package_var + '_SVO'
-            outputSVODir = IO_files_util.make_output_subdirectory(inputFilename.replace("NLP_CoreNLP_", ""),
-                                                                  inputDir, outputDir, label=label,
-                                                                  silent=False)
-            if outputSVODir == '':
-                return
+    if Coref:
+        # create a subdirectory of the output directory
+        outputCorefDir = IO_files_util.make_output_subdirectory('', '', outputCorefDir, '',
+                                                            silent=False)
 
-        outputDir = outputSVODir
+    outputDir = outputSVODir # outputDir is the main subdir inside the main output directory inside which will go gender,
+    # the outputDir folder inside the main output folder will contain subdir SVO, gender, GIS, quote, etc.
 
-    # # create an SVO subdirectory of the output directory
-    # outputSVODir = IO_files_util.make_output_subdirectory(inputFilename.replace("NLP_CoreNLP_", ""),
-    #                                                       inputDir, outputDir, label=label,
-    #                                                     silent=False)
-    # outputDir = outputSVODir
-    # if outputDir == '':
-    #     return
+    outputSVOSVODir = outputSVODir + os.sep + 'SVO'
 
 # CoRef _____________________________________________________
 
@@ -263,46 +176,34 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             mb.showwarning(title='Language',
                            message='The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.')
             return
-        # field_names[10] = "Corefed Sentence"
-        # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING IN SVO
-        # THE SUBSCRIPT _coref_ IS CHECKED BELOW
-
-        # create a subdirectory of the output directory
-        # since coref files can be used by other algorithms, the output dir is placed as a subdirectory f the main output directory rather than the SVO subdirectory
-        outputCorefedDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                            label='coref',
-                                                            silent=True)
-        if outputCorefedDir == '':
-            return
-
         # inputFilename and inputDir are the original txt files to be coreferenced
         # 2 items are returned: filename string and true/False for error
-        file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir, outputCorefedDir,
+        files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename,
+                                       inputFilename, inputDir, outputCorefDir,
                                        openOutputFiles, createCharts, chartPackage,
                                        language_var,
                                        memory_var,
                                        Manual_Coref_var)
         if error_indicator != 0:
             return
+        for file in files_to_open:
+            # visualize the data produced under coref table
+            if 'chart' in file or '.csv' in file:
+                filesToOpen.append(file)
 
-        for f in file_open:
-            # Only txt file is the actual corefed file we need for SVO. We don't need coref table
-            if os.path.splitext(f)[1] == ".txt":
-                inputFilename = f
-        isFile = True
-        inputDir = ""
-
-        if len(file_open) > 0:
-            filesToOpen.append(file_open)
+        # changed the inputDir to the coreferenced dir
+        inputDir = outputCorefDir + os.sep + 'coref'
+        # only the inputDir will be used when coreferencing, whether it will contain a set of files or just one file
+        inputFilename=''
 
  # Date extractor _____________________________________________________
-
+    # TODO no longer used as an option
     if normalized_NER_date_extractor_var:
         files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                                  openOutputFiles, createCharts, chartPackage,
                                                                  'normalized-date', False, language_var,  memory_var, document_length_var, limit_sentence_length_var)
         if len(files)>0:
-            filesToOpen.append(files)
+            filesToOpen.extend(files)
 
     if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
         WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('SVO_main',
@@ -310,9 +211,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if WordNetDir == None:
             return
 
+    if google_earth_var:
+        # create a GIS subdirectory of the output directory
+        outputGISDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
+                                                              label='GIS',
+                                                              silent=True)
+        location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputGISDir, '.csv',
+                                                                     'CoreNLP_SVO_LOCATIONS')
+        outputLocations.append(location_filename)
+
 # CoreNLP Dependencies ++ _____________________________________________________
 
-    if package_var=='Stanford CoreNLP':
+    if package_var=='CoreNLP':
 
         if language_var == 'Arabic' or language_var == 'Hungarian':
             mb.showwarning(title='Language',
@@ -321,18 +231,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
             return
-        location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                     'CoreNLP_SVO_LOCATIONS')
-        gender_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+        gender_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir + os.sep + 'gender', '.csv',
                                                                        'CoreNLP_SVO_gender')
 
 
-        gender_filename_html = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html',
+        gender_filename_html = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir + os.sep + 'gender', '.html',
                                                           'dict_annotated_gender')
 
-        quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+        quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir + os.sep + 'quote', '.csv',
                                                                        'CoreNLP_SVO_quote')
-        # outputLocations.append(location_filename)
 
         params = ['SVO']
         if gender_var:
@@ -345,7 +252,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # gender_var and quote_var are used in CoreNLP_annotate to add gender and quote columns to the SVO csv output file
         # they can be passed independently, but it is useful to have both arguments
         tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                   outputDirSV, openOutputFiles,
+                                   outputSVODir, openOutputFiles,
                                    createCharts,
                                    chartPackage,
                                    params, False,
@@ -357,7 +264,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                    date_position_var=date_position_var,
                                    google_earth_var=google_earth_var,
                                    location_filename = location_filename,
-                                   gender_var = gender_var, gender_filename = gender_filename,
+                                   gender_var = gender_var, gender_filename = gender_filename, gender_filename_html = gender_filename_html,
                                    quote_var = quote_var, quote_filename = quote_filename)
 
 
@@ -369,7 +276,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 output = SVO_util.filter_svo(window,tempOutputFiles[0],
                                     subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                                    outputDir, createCharts, chartPackage)
+                                    outputSVOSVODir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -380,7 +287,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tempOutputFiles[0], encodingValue='utf-8')
                     if nRecords > 1:
                         # create a subdirectory of the output directory
-                        outputWNDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputSVODir,
+                        outputWNDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
                                                                            label='WordNet',
                                                                            silent=True)
                         outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputWNDir, '', ['Verb (V)'])
@@ -388,70 +295,19 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                openOutputFiles, createCharts, chartPackage, language_var)
                         os.remove(outputFilename)
                         if output != None:
-                            filesToOpen.append(output)
+                            filesToOpen.extend(output)
 
                         outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputWNDir, '', ['Subject (S)', 'Object (O)'])
                         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir, config_filename, 'NOUN',
                                                                openOutputFiles, createCharts, chartPackage, language_var)
                         os.remove(outputFilename)
                         if output != None:
-                            filesToOpen.append(output)
+                            filesToOpen.extend(output)
                     else:
                         reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
                                                      reminders_util.message_no_SVO_records, True)
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
-
-        # ask Do you want to display the distribution of verbs by WordNet top synset categories for the n most frequent Subjects?
-        #   ask how many subjects they want to consider (n)
-        #   compute the frequencies of subjects
-        #   get the lemmatized verbs for each of the top n selected subjects
-        #   provide a bar chart of verb categories by subject; for each of these subjects display the bars of the 5 most frequent verb classes
-        # ask Do you want to display the distribution of verbs by WordNet top synset categories for a specific Subject?
-        #   provide a bar chart of WordNet verb categories for the subject
-
-        toProcess_list = []
-        field_names = ['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time',
-                       'Time stamp', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
-        if isFile & Coref:
-            # ANY CHANGES IN THE COREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
-            # NLP_CoreNLP_coref_The Three Little Pigs-svoResult-woFilter.txt
-            # inputFileBase contains _coref
-            # fName is the filename returned by Java SVO -svoResult-woFilter.txt files will be removed below
-            fName = os.path.join(outputDir, "NLP_CoreNLP_" + inputFileBase + "-svoResult-woFilter.txt")
-            toProcess_list.append(fName)
-        elif isFile:
-            # fName is the filename returned by Java SVO The Three Little Pigs SHORT-svoResult-woFilter.txt
-            fName = os.path.join(outputDir, inputFileBase + "-svoResult-woFilter.txt")
-            toProcess_list.append(fName)
-        else: # directory
-            # TODO outputSVODir = inputDir
-            # for tmp in os.listdir(outputSVODir):
-            for tmp in os.listdir(inputDir):
-                # ANY CHANGES IN THE COREREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
-                # THE SUBSCRIPT _coref_ IS CHECKED BELOW
-                if Coref and "-svoResult-woFilter.txt" in tmp:
-                    toProcess_list.append(tmp)
-                elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-coref" not in tmp):
-                    toProcess_list.append(tmp)
-
-        original_toProcess = {}
-        if isFile:  # input is a file (including merged directory)
-            original_toProcess[toProcess_list[0]] = inputFilename
-            # svo_CoreNLP_merged_file=''
-            svo_CoreNLP_merged_file = os.path.join(outputSVODir, "NLP_CoreNLP_SVO_" + inputFileBase + ".csv")
-        else:  # input is a directory
-            # for tmp in os.listdir(outputSVODir):
-            for tmp in os.listdir(inputDir):
-                # ANY CHANGES IN THE COREFERENCED OUTPUT FILENAMES (_coref_) WILL AFFECT DATA PROCESSING BELOW
-                # THE SUBSCRIPT _coref_ IS CHECKED BELOW
-                # "-svoResult-woFilter.txt"  is the filename produced by JAVA
-                # original_toProcess is the txt files in the original inputDir
-                if Coref and "-svoResult-woFilter.txt" in tmp:
-                    original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
-                elif (not Coref) and ("-svoResult-woFilter.txt" in tmp) and ("-coref" not in tmp):
-                    original_toProcess[tmp] = os.path.join(inputDir, tmp.replace("-svoResult-woFilter", ""))
-            svo_CoreNLP_merged_file = os.path.join(outputSVODir, "NLP_CoreNLP_SVO_Dir_" + inputDirBase + ".csv")
 
 # Stanza _____________________________________________________
 
@@ -482,7 +338,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             for file in svo_result_list:
                 output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                                    outputDir, createCharts, chartPackage)
+                                    outputSVOSVODir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -515,7 +371,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             for file in svo_result_list:
                 output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                                    outputDir, createCharts, chartPackage)
+                                    outputSVOSVODir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -553,7 +409,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             for file in svo_SENNA_files:
                 output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects, outputDir, createCharts, chartPackage)
+                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
+                                    outputSVOSVODir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -606,7 +463,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 output = SVO_util.filter_svo(window,tempOutputFiles[0],
                                     subjects_dict_var, verbs_dict_var, objects_dict_var,
                                     lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                                    outputDir, createCharts, chartPackage)
+                                    outputSVOSVODir, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)
 
@@ -648,25 +505,25 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             if inputFilename[-4:] == ".csv":
                 nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue='utf-8')
                 if nRecords > 1:   # including headers; file is empty
-                    gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputDir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
+                    gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputSVOSVODir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
                                                        "Sentence ID")
                     filesToOpen.append(gexf_file)
                 else:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_result_list[0])
                     if nRecords > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputDir, svo_result_list[0],
+                        gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputSVOSVODir, svo_result_list[0],
                                                            "Subject (S)", "Verb (V)", "Object (O)", "Sentence ID")
                         filesToOpen.append(gexf_file)
             else:  # txt input file
                 for f in svo_result_list:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
                     if nRecords > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], outputDir, f, "Subject (S)", "Verb (V)", "Object (O)",
+                        gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], outputSVOSVODir, f, "Subject (S)", "Verb (V)", "Object (O)",
                                                            "Sentence ID")
                         if "CoreNLP" in f or "SENNA_SVO" in f or "SpaCy" in f or "Stanza" in f:
                             filesToOpen.append(gexf_file)
                         if not save_intermediate_file:
-                            gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if
+                            gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputSVOSVODir) if
                                           f.endswith('.gexf')]
                             for f in gexf_files:
                                 if "CoreNLP" not in f and "SENNA_SVO" not in f and "SpaCy" not in f and "Stanza" not in f: #CoreNLP accounts for both ++ and OpenIE
@@ -681,7 +538,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     if IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename) > 1:  # including headers; file is empty
                         myfile = IO_files_util.openCSVFile(inputFilename, 'r')
                         #CYNTHIA
-                        out_file = wordclouds_util.SVOWordCloud(myfile, inputFilename, outputDir, "", prefer_horizontal=.9)
+                        out_file = wordclouds_util.SVOWordCloud(myfile, inputFilename, outputSVODir + os.sep + 'SVO', "", prefer_horizontal=.9)
                         myfile.close()
                         filesToOpen.append(out_file)
             else:
@@ -690,32 +547,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     if nRecords > 1:  # including headers; file is empty
                         myfile = IO_files_util.openCSVFile(f, "r")
                         #CYNTHIA
-                        out_file = wordclouds_util.SVOWordCloud(myfile, f, outputDir, "", prefer_horizontal=.9)
+                        out_file = wordclouds_util.SVOWordCloud(myfile, f, outputSVODir + os.sep + 'SVO', "", prefer_horizontal=.9)
                         myfile.close()
                         if "CoreNLP" in f or "SENNA_SVO" in f:
                             filesToOpen.append(out_file)
-                        # if not merge_txt_file_option and not save_intermediate_file:
-                        #     png_files = [os.path.join(outputDir, f) for f in os.listdir(outputDir) if
-                        #                  f.endswith('.png')]
-                        #     for f in png_files:
-                        #         if "CoreNLP_SVO" not in f and "SENNA_SVO" not in f:
-                        #             os.remove(f)
 
 # GIS maps _____________________________________________________
 
         # SENNA locations are not really geocodable locations
         if google_earth_var:
-            # create a GIS subdirectory of the output directory
-            outputGISDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputSVODir,
-                                                                  label='GIS',
-                                                                  silent=True)
-            # move the LOCATIONS file under GIS where a user is more likely to look for it
-            if os.path.isfile(location_filename) and os.path.isdir(outputGISDir):
-                GIS_directory_filePath = outputGISDir + os.sep + os.path.basename(location_filename)
-                os.replace(location_filename, GIS_directory_filePath)
-                location_filename = GIS_directory_filePath
-                outputLocations.append(location_filename)
-
             # for f in svo_result_list:
                 # SENNA and OpenIE do not have a location field
             if (package_var=='OpenIE' or package_var=='SENNA') and os.path.isfile(location_filename):
@@ -751,11 +591,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                 # since out_file produced by KML is a list cannot use append
                                 filesToOpen = filesToOpen + out_file
 
+# generate subset of files to be opened
+
     if openOutputFiles == True and len(filesToOpen) > 0:
         filesToOpenSubset = []
         # add the SVO main file
         filesToOpenSubset.append(SVO_filename)
-        # filesToOpenSubset.append(location_filename)
         for file in filesToOpen:
             # open all charts, all Google Earth and Google Maps maps, Gephi gexf network graph, html files, and wordclouds png files
             if file[-4:] == '.kml' or file[-5:] == '.html' or file[-4:] == '.png' or file[-5:] == '.gexf' or \
@@ -764,42 +605,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         filesToOpenSubset_string = ", \n   ".join(filesToOpenSubset)
         print("Subset of the " + str(len(filesToOpenSubset)) + " SVO files from the different subfolders to be opened:\n   " + str(filesToOpenSubset_string))
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
-
-    if len(inputDir) > 1 and len(filesToOpen) > 0 and outputSVODir!='':  # when processing a directory, the output changes
-        # not a good idea to change the IO widget output because if you run the script again without first closing the GUI
-        #   the new output dir becomes the new output in an infinite loop
-        # mb.showwarning("Output directory", "All output files have been saved to a subdirectory of the selected output directory at\n\n"+str(outputDir)+"\n\nThe IO widget 'Select OUTPUT files directory' has been updated to reflect the change.")
-        # GUI_util.output_dir_path.set(outputDir)
-        if outputSVODir != '':
-            outputFileDir = outputSVODir
-        elif outputCorefedDir != '':
-            outputFileDir = outputCorefedDir
-        mb.showwarning("Output directory",
-                       "All output files have been saved to a subdirectory of the selected output directory at\n\n" + str(
-                           outputFileDir))
-
- # move the gender & quote files under the gender & quote dir where a user is more likely to look for it
-# the location_filename is moved above
-
-    if gender_var:
-        # move the gender file under gender dir where a user is more likely to look for it
-        gender_outputDir = outputDir + os.sep + os.path.basename(outputDir.replace('_SVO_', '_gender_'))
-        if os.path.isfile(gender_filename) and os.path.isdir(gender_outputDir):
-            target_filePath = gender_outputDir + os.sep + os.path.basename(gender_filename)
-            # move the csv gender file
-            if not os.path.isfile(target_filePath):
-                os.replace(gender_filename, target_filePath)
-            # move the html gender file
-            target_filePath = gender_outputDir + os.sep + os.path.basename(gender_filename_html)
-            if os.path.isfile(gender_filename_html) and not os.path.isfile(target_filePath):
-                os.replace(gender_filename_html, target_filePath)
-
-    if quote_var:
-        quote_outputDir = outputDir + os.sep + os.path.basename(outputDir.replace('_SVO_', '_quote_'))
-        if os.path.isfile(quote_filename) and os.path.isdir(quote_outputDir):
-            target_filePath = quote_outputDir + os.sep + os.path.basename(quote_filename)
-            # move the quote file under quote dir where a user is more likely to look for it
-            os.replace(quote_filename, target_filePath)
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
@@ -1087,7 +892,9 @@ activateCoRefOptions()
 
 def changed_filename(tracedInputFile):
     activateCoRefOptions()
-GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.input_main_dir_path.get()))
+GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_util.input_main_dir_path.get()))
+# must trace on input_main_dir_path, rather than inputFilename,
+#   because inputFilename is set BEFORE input_main_dir_path in GUI_util and it is not up-to-date
 
 package_var.set('Stanford CoreNLP')
 package_lb = tk.Label(window, text='SVO package')
@@ -1222,7 +1029,7 @@ activateGender()
 quote_var.set(0)
 quote_checkbox = tk.Checkbutton(window, text='S & O quote/speaker',
                                                 variable=quote_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
                                                quote_checkbox, True)
 
 def activateQuote(*args):
@@ -1236,7 +1043,7 @@ activateQuote()
 SRL_var.set(0)
 SRL_checkbox = tk.Checkbutton(window, text='SRL (Semantic Role Labeling)',
                                                 variable=SRL_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+600, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
                                                SRL_checkbox)
 SRL_checkbox.configure(state='disabled')
 
@@ -1289,7 +1096,6 @@ package_var.trace('w', activateFilters)
 
 activateFilters()
 
-
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
@@ -1317,8 +1123,6 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf"}
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
 TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'SVO extraction and visualization', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Stanford CoreNLP coreference resolution', 'SENNA', 'CoNLL table',  'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
-
-
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

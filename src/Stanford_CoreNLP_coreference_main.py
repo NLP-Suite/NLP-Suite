@@ -29,20 +29,7 @@ import reminders_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-
-lemmalib = {}
-voLib = {}
-notSure = set()
-added = set()
-file_open = []
-
-caps = "([A-HJ-Z])"
-prefixes = "(Mr|St|Mrs|Ms|Dr)[.]"
-suffixes = "(Inc|Ltd|Jr|Sr|Co)"
-starters = "(Mr|Mrs|Ms|Dr|He\s|She\s|It\s|They\s|Their\s|Our\s|We\s|But\s|However\s|That\s|This\s|Wherever)"
-acronyms = "([A-Z][.][A-Z][.](?:[A-Z][.])?)"
-websites = "[.](com|net|org|io|gov)"
-
+files_to_open = []
 
 def run(inputFilename, inputDir, outputDir,
         openOutputFiles, createCharts, chartPackage,
@@ -57,9 +44,9 @@ def run(inputFilename, inputDir, outputDir,
         corefed_txt_file):
 
     # pull the widget names from the GUI since the scripts change the IO values
-    inputFilename = GUI_util.inputFilename
-    inputDir = GUI_util.input_main_dir_path
-    outputDir = GUI_util.output_dir_path
+    inputFilename = GUI_util.inputFilename.get()
+    inputDir = GUI_util.input_main_dir_path.get()
+    outputDir = GUI_util.output_dir_path.get()
 
     outputCorefedDir = ''
 
@@ -80,15 +67,22 @@ def run(inputFilename, inputDir, outputDir,
             mb.showwarning(title='Language',message='The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.')
             return
 
+        label = 'CoreNLP_coref'
+        if inputFilename != '':
+            inputBaseName = os.path.basename(inputFilename)[0:-4]  # without .txt
+        else:
+            inputBaseName = os.path.basename(inputDir)
+        outputCorefDir = os.path.join(outputDir, label + "_" + inputBaseName)
+
         # create a subdirectory of the output directory
-        outputCorefedDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='coref',
+        outputCorefedDir = IO_files_util.make_output_subdirectory('', '', outputCorefDir, '',
                                                             silent=False)
         if outputCorefedDir == '':
             return
 
         # inputFilename and inputDir are the original txt files to be coreferenced
         # 2 items are returned: filename string and true/False for error
-        file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
+        files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
                                        outputCorefedDir,
                                        openOutputFiles, createCharts, chartPackage,
                                        language_var,
@@ -98,18 +92,18 @@ def run(inputFilename, inputDir, outputDir,
             return
 
         if inputFilename!='':
-            inputFilename = str(file_open)
+            inputFilename = str(files_to_open)
             inputDir = ''
         else:
             # processing a directory
             inputFilename = ''
             inputDir = outputCorefedDir
 
-        if len(file_open) > 0:
-            mb.showwarning("Output directory",
-                           "All output files have been saved to a subdirectory of the selected output directory at\n\n" + str(
-                               outputCorefedDir))
-            filesToOpen.append(file_open)
+        if len(files_to_open) > 0:
+            # mb.showwarning("Output directory",
+            #                "All output files have been saved to a subdirectory of the selected output directory at\n\n" + str(
+            #                    outputCorefedDir))
+            filesToOpen.append(files_to_open)
 
     # split merged coreferenced file  --------------------------------------------------------------------------------------------------------
     # split <@# #@> --------------------------------------------------------------------------------------
@@ -352,6 +346,12 @@ def activateCoRefOptions(*args):
         manual_Coref_checkbox.configure(state='disabled')
         manual_Coref_var.set(0)
 CoRef_var.trace('w', activateCoRefOptions)
+
+def changed_filename(tracedInputFile):
+    activateCoRefOptions()
+GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_util.input_main_dir_path.get()))
+# must trace on input_main_dir_path, rather than inputFilename,
+#   because inputFilename is set BEFORE input_main_dir_path in GUI_util and it is not up-to-date
 
 # activateCoRefOptions()
 

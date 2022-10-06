@@ -50,12 +50,23 @@ import charts_util
 # when multiple annotators are selected (e.g., quote, gender, normalized-date)
 #   output must go to the appropriate subdirectory
 # the function creates the subdirectory for a given annotator
-def create_output_directory(inputFilename, inputDir, outputDirSV, config_filename,
-                            export_json_toTxt, annotator,silent, Json_question_already_asked):
+# outputDirSV is the original output directory listed in the
+def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
+                            export_json_toTxt, annotator, silent, Json_question_already_asked):
     outputJsonDir = ''
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDirSV,
-                                                       label="CoreNLP_" + annotator,
-                                                       silent=False)
+    outputDirSV=GUI_util.output_dir_path.get()
+    if outputDirSV != outputDir:
+        # outputDir = outputDir + os.sep + annotator
+        outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                           label=annotator,
+                                                           silent=False)
+    else:
+        # when coming from coref annotator, the outputDir will contain an unnecessary NLP_CoreNLP_coref_ string
+        # if 'NLP_CoreNLP_coref_' in inputFilename:
+        #     inputFilename = inputFilename.replace('NLP_CoreNLP_coref_', 'coref_')
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                           label="CoreNLP_" + annotator,
+                                                           silent=False)
     # Json_question_already_asked to avoid repeating the reminders question when multiple annotators are used
     if (outputDir !='') and (export_json_toTxt and not Json_question_already_asked):
         # check reminder
@@ -192,8 +203,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
     IO_libraries_util.check_avaialable_memory('Stanford CoreNLP')
 
     # decide on directory or single file
-    if inputDir != '':
-        inputFilename = inputDir
+    # TODO why these lines?
+    # if inputDir != '':
+    #     inputFilename = inputDir
     # decide on to provide output or to return value
 
     # global extract_date_from_text_var, extract_date_from_filename_var
@@ -360,7 +372,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         param_string_NN = param_string_NN + ", " + param
             # when multiple annotators are selected (e.g., quote, gender, normalized-date)
             #   output must go to the appropriate subdirectory and added to routine_list
-            output_dir, outputJsonDir, export_json_toTxt = create_output_directory(inputFilename, inputDir, outputDirSV, config_filename, export_json_toTxt, annotator, silent, Json_question_already_asked)
+            output_dir, outputJsonDir, export_json_toTxt = create_output_directory(inputFilename, inputDir, outputDir, config_filename, export_json_toTxt, annotator, silent, Json_question_already_asked)
             if output_dir == '':
                 return filesToOpen
             # when running the SVO annotator in combination with gender and quote,
@@ -379,7 +391,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         param_string = param_string + ", " + param
             # when multiple annotators are selected (e.g., quote, gender, normalized-date)
             #   output must go to the appropriate subdirectory and added to routine_list
-            output_dir, outputJsonDir, export_json_toTxt = create_output_directory(inputFilename, inputDir, outputDirSV, config_filename, export_json_toTxt, annotator, silent, Json_question_already_asked)
+            output_dir, outputJsonDir, export_json_toTxt = create_output_directory(inputFilename, inputDir, outputDir, config_filename, export_json_toTxt, annotator, silent, Json_question_already_asked)
             if output_dir == '':
                 return filesToOpen
             # when running the SVO annotator in combination with gender and quote,
@@ -484,23 +496,23 @@ def CoreNLP_annotate(config_filename,inputFilename,
         sentenceID = 0
         # if the file is too long, it needs splitting to allow processing by the Stanford CoreNLP
         #   which has a maximum 100,000 characters doc size limit
-        if ("SVO" in str(annotator_params) or "OpenIE" in str(annotator_params)) and "coref" in docName.split("_"):
-            split_file = file_splitter_merged_txt_util.run(docName, "<@#", "#@>", outputDir)
-            if len(split_file)>1:
-                split_file = IO_files_util.getFileList("", split_file[0], fileType=".txt")
-        else:
-            split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName,'',document_length)
+        # if ("SVO" in str(annotator_params) or "OpenIE" in str(annotator_params)) and "coref" in docName.split("_"):
+        #     split_file = file_splitter_merged_txt_util.run(docName, "<@#", "#@>", outputDir)
+        #     if len(split_file)>1:
+        #         split_file = IO_files_util.getFileList("", split_file[0], fileType=".txt")
+        # else:
+        split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName,'',document_length)
         nSplitDocs = len(split_file)
         split_docID = 0
-        for doc in split_file:
+        for doc_split in split_file:
             split_docID = split_docID + 1
             annotated_length = 0#the number of tokens
             # doc_start_time = time.time()
             model_switch = False
-            head, tail = os.path.split(doc)
-            if docName != doc:
-                print("   Processing split file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail)
-            text = open(doc, 'r', encoding=language_encoding, errors='ignore').read().replace("\n", " ")
+            head_split, tail_split = os.path.split(doc_split)
+            if docName != doc_split:
+                print("   Processing split file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail_split)
+            text = open(doc_split, 'r', encoding=language_encoding, errors='ignore').read().replace("\n", " ")
             if "%" in text:
                 reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_percent,
                                              reminders_util.message_CoreNLP_percent, True)
@@ -514,7 +526,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 CoreNLP_output = nlp.annotate(text, properties=params)
                 errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(GUI_util.window,
                                                     CoreNLP_output,
-                                                    doc,
+                                                    doc_split,
                                                     nDocs,
                                                     filesError,
                                                     text,
@@ -526,7 +538,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 file_length=len(text)
                 total_length += file_length
                 speed_assessment.append(
-                    [docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), annotator_time_elapsed, file_length,
+                    [docID, IO_csv_util.dressFilenameForCSVHyperlink(doc_split), annotator_time_elapsed, file_length,
                      param_string, param_number])
                 #output the json output of CoreNLP to a txt file
                 # TODO regardless of annotator,
@@ -539,6 +551,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
             # routine_list contains all annotators
             # loop through all annotators for the same document
             for run in routine_list:
+                if errorFound:
+                    continue  # move to next document; this only continues to next routine_list
                 annotator_start_time = time.time()
                 # params = run[0]
                 annotator_chosen = run[0]
@@ -560,20 +574,21 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     NN_start_time = time.time()
                     CoreNLP_output = nlp.annotate(text, properties=params_NN)
                     errorFound, filesError, CoreNLP_output = IO_user_interface_util.process_CoreNLP_error(
-                        GUI_util.window, CoreNLP_output, doc, nDocs, filesError, text, silent)
+                        GUI_util.window, CoreNLP_output, doc_split, nDocs, filesError, text, silent)
                     if errorFound:
                         continue  # move to next document; this only continues to next routine_list
                     NN_time_elapsed = time.time() - NN_start_time
                     file_length = len(text)
                     total_length += file_length
                     speed_assessment.append(
-                        [docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), NN_time_elapsed, file_length,
+                        [docID, IO_csv_util.dressFilenameForCSVHyperlink(doc_split), NN_time_elapsed, file_length,
                          param_string_NN, param_number_NN])
                     # export Json file to a txt file
-                    # TODO regardless of annotator, when for instance three are passed, we always process only the first one in the list
+                    # TODO regardless of annotator, when for instance three are passed,
+                    #   we always process only the first one in the list
                     # exportJson(export_json_toTxt, tail, outputJsonDir, CoreNLP_output,
                     #            language_encoding, #annotator_params[0])
-                    exportJson(export_json_toTxt, tail, outputJsonDir, CoreNLP_output,
+                    exportJson(export_json_toTxt, tail_split, outputJsonDir, CoreNLP_output,
                                language_encoding, annotator_chosen)
 
 #  generate output from json file for specific annotators ------------------------------------
@@ -590,24 +605,28 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 # elif "DepRel" in annotator_chosen or "All POS" in annotator_chosen or "Lemma" in annotator_chosen:
                 #      sub_result, recordID = routine(config_filename,docID, docName, sentenceID, recordID, CoreNLP_output, **kwargs)
                 elif ("SVO" in str(annotator_params) or "OpenIE" in str(annotator_params)) and "coref" in docName.split("_"):
-                    sub_result = routine(config_filename, split_docID, doc, sentenceID, CoreNLP_output, **kwargs)
+                    sub_result = routine(config_filename, split_docID, doc_split, sentenceID, CoreNLP_output, **kwargs)
                 else:
                     sub_result = routine(config_filename,docID, docName, sentenceID, CoreNLP_output, **kwargs)
-
-                if output_format == 'text':
+                if output_format == 'text': # this type of output format is for 'coref' annotator only
+                    # coreference produces a text output;
+                    # the coreferenced document should not include the prefix NLP_CoreNLP_coref
+                    # (if the filename contains a date; the date position would change as a result and the code would break)
                     #count pronouns number:
                     all_pronouns += count_pronouns(CoreNLP_output)
-                    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,
-                                                                             outputDir_chosen, '.txt',
-                                                                             'CoreNLP_'+ str(annotator_chosen))
-                    with open(outputFilename, "a+", encoding=language_encoding, errors='ignore') as output_text_file:
-                        # insert the separators <@# #@> in the the output file so that the file can then be split on the basis of these characters
-                        if processing_doc != docTitle:
-                            output_text_file.write("\n<@#" + docTitle + "#@>\n")
-                            processing_doc = docTitle
-                        output_text_file.write(sub_result)
-                    if outputFilename not in filesToOpen:
-                        filesToOpen.append(outputFilename)
+                    outputFilename = outputDir_chosen + os.sep + tail
+                    if sub_result!='':
+                        with open(outputFilename, "a+", encoding=language_encoding, errors='ignore') as output_text_file:
+                            # insert the separators <@# #@> in the the output file so that the file can then be split on the basis of these characters
+                            # for merging coreferenced files into a single merged file
+                            # if processing_doc != docTitle:
+                            #     output_text_file.write("\n<@#" + docTitle + "#@>\n")
+                            #     processing_doc = docTitle
+                            output_text_file.write(sub_result)
+                    else:
+                        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Coreference resolution',
+                                                           'The coreference resolution function did not produce any output for the input file ' + docName,
+                                                           False, '', True, '', False)
                 else:
                     # add output to the output storage list in routine_list
                     # for the special case of POS values of a double list [['Verbs'],[Nouns']] you need special handling
@@ -709,7 +728,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # print("Length of Files to Open after generating files: ", len(filesToOpen))
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, '', True, startTime)
+    if "coref" in str(annotator_params):
+        IO_user_interface_util.timed_alert(GUI_util.window,3000,'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, 'The coreference annotator produces a coref subdirectory inside the main output directory containing 2 separate subdirectories in turn containing, respectively, the coreferenced input text files, and statistics csv and chart files with coreference data.', True, startTime)
+    else:
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, '', True, startTime)
 
     # generate visualization output ----------------------------------------------------------------
 
@@ -732,8 +754,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
     CoreNLP_nlp.kill()
     # print("Length of Files to Open after visualization: ", len(filesToOpen))
+    # filesErroris a double list [[]] of headers and errors
     if len(filesError)>0:
-        mb.showwarning("Stanford CoreNLP Error", 'Stanford CoreNLP ' +annotator_chosen+ ' annotator has found '+str(len(filesError)-1)+' files that could not be processed by Stanford CoreNLP.\n\nPlease, read the error output file carefully to see the errors generated by CoreNLP.')
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Stanford CoreNLP Error',
+                                           'Stanford CoreNLP ' + annotator_chosen + ' annotator has found '+str(len(filesError)-1)+' files that could not be processed by Stanford CoreNLP.\n\nPlease, read the error output file carefully to see the errors generated by CoreNLP.',
+                                           False, '', True, '', False)
         errorFile = os.path.join(outputDir,
                                            IO_files_util.generate_output_file_name(IO_csv_util.dressFilenameForCSVHyperlink(inputFilename), inputDir, outputDir, '.csv',
                                                                                    'CoreNLP', 'file_ERRORS'))
@@ -1275,8 +1300,9 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
         check_sentence_length(len(sentence_data['tokens']), sentenceID, config_filename)
 
         if extract_date_from_filename_var:
-            temp = [str(speakers[quoted_sent_id][0]), number_of_quotes, date_str, sentenceID,
-                    complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
+            # TODO MINO: rearrange the columns
+            temp = [str(speakers[quoted_sent_id][0]), number_of_quotes, sentenceID,
+                    complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str]
         else:
             temp = [str(speakers[quoted_sent_id][0]), number_of_quotes, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
         result.append(temp)
@@ -1334,10 +1360,13 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
     # get quote information for this document
     if quote_var:
         raw_quote_info = process_json_quote(config_filename, documentID, document, sentenceID, json, **kwargs)
-        quote_info = []
-        for row in raw_quote_info:
-            # quote_info.append([row[0], row[1], row[2], row[3], row[4], row[5]])
-            quote_info.append([row[0], row[1], row[3], row[5]]) # TODO MINO
+        # TODO MINO: process quotes with pandas without for-loop, and rearrange the columns
+        if extract_date_from_filename_var:
+            quote_columns = ["Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document", "Date"]
+        else:
+            quote_columns = ["Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]
+        quote_df = pd.DataFrame(raw_quote_info, columns=quote_columns)
+        quote_df = quote_df[["Speakers", "Number of Quotes", "Sentence ID", "Document ID"]]
 
     SVO_enhanced_dependencies = []
     SVO_brief = []
@@ -1390,7 +1419,8 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         gender_df = pd.DataFrame(gender_info, columns=["Object (O)", "O Gender", "Sentence Set", "Document ID"])
         merge_df = pd.merge(merge_df, gender_df, on=["Object (O)", "Document ID"], how='left')
 
-        merge_df = merge_df[['Subject (S)', 'S Gender', 'Verb (V)', 'Object (O)', 'O Gender', 'Sentence ID','Sentence', 'Document ID', 'Document']]
+        columns = ['Subject (S)', 'S Gender', 'Verb (V)', 'Object (O)', 'O Gender', 'Sentence ID','Sentence', 'Document ID', 'Document']
+        merge_df = merge_df[columns]
         merge_df = merge_df.drop_duplicates()
         # TODO unfortunately, saving the file in the proper directory runs into problems with visualization
         # save the output file in the gender subdirectory
@@ -1403,13 +1433,19 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         # fn = head + os.sep + temp_outputDir + os.sep + tail
         # # save the output file in the quote subdirectory
         fn = kwargs["gender_filename"]
-        merge_df.to_csv(fn, index=False, mode="a", encoding=language_encoding)
+        # TODO MINO: properly read and save csv without additional row of headers
+        if os.path.isfile(fn):
+            original_df = pd.read_csv(fn, encoding=language_encoding)
+            merge_df = pd.concat([original_df, merge_df], ignore_index=True)
+        outputFilename = IO_csv_util.df_to_csv(GUI_util.window, merge_df, fn, columns, False, language_encoding)
+        # merge_df.to_csv(fn, index=False, encoding=language_encoding)
 
     if quote_var:
         SVO_df = pd.DataFrame(SVO_brief, columns=['Subject (S)', 'Verb (V)', 'Object (O)', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
-        quote_df = pd.DataFrame(quote_info, columns=["Speakers", "Number of Quotes", "Sentence ID", "Document ID"])
+        # quote_df = pd.DataFrame(quote_info, columns=["Speakers", "Number of Quotes", "Sentence ID", "Document ID"])
         merge_df = pd.merge(SVO_df, quote_df, on=["Sentence ID", "Document ID"], how='left')
-        merge_df = merge_df[['Subject (S)', 'Verb (V)', 'Object (O)', "Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]]
+        columns = ['Subject (S)', 'Verb (V)', 'Object (O)', "Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]
+        merge_df = merge_df[columns]
         merge_df = merge_df.drop_duplicates()
 
         # TODO unfortunately, saving the file in the proper directory runs into problems with visualization
@@ -1423,7 +1459,12 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         # fn = head + os.sep + temp_outputDir + os.sep + tail
         # # save the output file in the quote subdirectory
         fn = kwargs["quote_filename"]
-        merge_df.to_csv(fn, index=False, mode="a", encoding=language_encoding)
+        # TODO MINO: properly read and save csv without additional row of headers
+        if os.path.isfile(fn):
+            original_df = pd.read_csv(fn, encoding=language_encoding)
+            merge_df = pd.concat([original_df, merge_df], ignore_index=True)
+        outputFilename = IO_csv_util.df_to_csv(GUI_util.window, merge_df, fn, columns, False, language_encoding)
+        # merge_df.to_csv(fn, index=False, encoding=language_encoding)
 
     return SVO_enhanced_dependencies
 
@@ -1870,11 +1911,11 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
         columns = ["Location", "NER Tag", "Sentence ID", "Sentence", "Document ID", "Document", "Date"]
 
     df = pd.DataFrame(to_write, columns=columns)
-
-    if not os.path.exists(kwargs["location_filename"]):
-        df.to_csv(kwargs["location_filename"], header='column_names', index=False, encoding=language_encoding)
+    outputFilename= kwargs["location_filename"]
+    if not os.path.exists(outputFilename):
+        outputFilename = IO_csv_util.df_to_csv(GUI_util.window, df, outputFilename, columns, False, language_encoding)
     else:
-        df.to_csv(kwargs["location_filename"], mode='a', header=False, index=False, encoding=language_encoding)
+        df.to_csv(outputFilename, mode='a', header=False, index=False, encoding=language_encoding)
 
 def count_pronouns(json):
     result = 0

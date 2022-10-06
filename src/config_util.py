@@ -395,7 +395,7 @@ def write_config_file(window, config_filename, config_input_output_numeric_optio
                        message="The command failed to save the config file\n\n" + config_filename + "\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
 
     if config_filename != 'license_config.csv':
-        IO_user_interface_util.timed_alert(window, 3000, 'Warning',
+        IO_user_interface_util.timed_alert(window, 2000, 'Warning',
                                            'INPUT and OUTPUT paths configuration have been saved to\n\n' + config_filename_path,
                                            False)
 

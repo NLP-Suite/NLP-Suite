@@ -54,8 +54,11 @@ def get_csv_data(inputFilename,withHeader):
 # csv file contains headers,
 #   then the first row will be headers
 def get_csvfile_headers (csvFile,ask_Question=False):
-    headers=''
-    answer=True
+    headers = ''
+    answer = True
+    if not os.path.isfile(csvFile):
+        mb.showwarning("Warning", "The csv file " + csvFile + " does not exist.")
+        return headers
     if ask_Question:
         answer=mb.askyesno("File headers","Does the selected input file\n\n"+csvFile+"\n\nhave headers?")
     if csvFile!='' and answer ==True:
@@ -63,10 +66,9 @@ def get_csvfile_headers (csvFile,ask_Question=False):
             reader = csv.DictReader(f)
             try:
                 headers=reader.fieldnames
-            except: # empty files will break the next
-                # mb.showwarning("Warning","The selected csv file has no records.\n\nPlease, check the file content and select a different file.")
-                # headers=''
-                return headers
+            except IOError as e: # empty files will break the next
+                mb.showwarning("Warning","Opening the csv file " + csvFile + " encountered an error.\n\n" + str(e))
+                headers=''
             # f.seek(0)
     return headers
 
@@ -129,7 +131,12 @@ def get_csv_field_values(inputFilename, column_name):
 
 # get the number of records and columns of a csv file
 def GetNumberOf_Records_Columns_inCSVFile(inputFilename,encodingValue='utf-8'):
-    maxnum = pd.read_csv(inputFilename, encoding=encodingValue).shape
+    nRecords=0
+    nColumns=0
+    try:
+        maxnum = pd.read_csv(inputFilename, encoding=encodingValue).shape
+    except:
+        return nRecords, nColumns
     return maxnum # tuple with first value number of records, second value number of columns
 
 # inputFile has path
@@ -150,18 +157,24 @@ def GetMaxValueInCSVField(inputFilename,algorithm='',columnHeader='Document ID',
 # triggered by a df.to_csv
 # headers is a list []
 def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, language_encoding='utf-8'):
-    try:
-        # when the dataframe already includes headers (e.g., in all CoNLL table analyzer functions)
-        #   you do not want to add a header then header=None;
-        #   however, if you pass a header, then you cannot have header=None or a header will never be saved
-        if headers!=None:
-            data_frame.to_csv(outputFilename, columns=headers, index=False, encoding=language_encoding)
-        else:
-            data_frame.to_csv(outputFilename, columns=headers, header=None, index=False, encoding=language_encoding)
-        return outputFilename
-    except IOError:
-        mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
-        return ''
+    while True: # repeat until file is closed
+        try:
+            # when the dataframe already includes headers (e.g., in all CoNLL table analyzer functions)
+            #   you do not want to add a header then header=None;
+            #   however, if you pass a header, then you cannot have header=None or a header will never be saved
+            if headers!=None:
+                data_frame.to_csv(outputFilename, columns=headers, index=False, encoding=language_encoding)
+            else:
+                data_frame.to_csv(outputFilename, columns=headers, header=None, index=False, encoding=language_encoding)
+            break # exit loop
+        except IOError as e:
+            # mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
+            mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\n"+str(e))
+            if not "Permission" in str(e):
+                outputFilename = ''
+                break  # exit loop; the error is not due to file being open
+            # restart the loop
+    return outputFilename
 
 # list_output has the following type format [['PRONOUN ANALYSIS','FREQUENCY'], ['PRP', 105], ['PRP$', 11], ['WP', 5], ['WP$', 0]]
 # output_filename is the name of the outputfile with path
@@ -183,7 +196,8 @@ def list_to_csv(window,list_output,output_filename,colnum=0, encoding='utf-8'):
 
 
 def openCSVOutputFile(outputCSVFilename, IO='w', encoding='utf-8',errors='ignore', newline=''):
-
+# https://stackoverflow.com/questions/29347790/difference-between-ioerror-and-oserror#:~:text=There%27s%20no%20difference%20between%20IOError,a%20file%20or%20removing%20one.
+# There's no difference between IOError and OSError cause they mostly appear on similar commands like opening a file or removing one.
     try:
         with open(outputCSVFilename,'w', encoding='utf-8', errors='ignore') as csvfile:
             csvfile.close()
@@ -196,7 +210,7 @@ def openCSVOutputFile(outputCSVFilename, IO='w', encoding='utf-8',errors='ignore
             mb.showwarning(title='Output file error', message="Could not write the file " + outputCSVFilename + "\n\nA file with the same name is already open. Please, close the csv file and try again!")
         else:
             mb.showwarning(title='Output file error',
-                           message="Could not write the file " + outputCSVFilename + "\n\nThe following error occurred while opening the file in output:\n\n" + str(e) + "\n\nPlease, close the Excel file and try again!")
+                           message="Could not write the file " + outputCSVFilename + "\n\nThe following error occurred while opening the file in output:\n\n" + str(e) + "\n\nPlease, close the csv file and try again!")
         return True
 
 

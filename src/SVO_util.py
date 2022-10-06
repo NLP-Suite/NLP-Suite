@@ -1,19 +1,86 @@
 import pandas as pd
-import IO_libraries_util
-import GUI_util
 from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-
-# import stanza
-# stanza.download('en')
-# stannlp = stanza.Pipeline(lang='en', processors='tokenize,ner,mwt,pos,lemma')
 
 import IO_files_util
 import IO_user_interface_util
 import charts_util
 import IO_csv_util
-import reminders_util
 
-def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, outputDir) -> list:
+
+# notSure = set()
+# added = set()
+#
+# # svo_CoreNLP_single_file is the individual file when processing a directory;
+# # svo_CoreNLP_merged_file is the merged svo csv file
+# # TODO NOT USED
+# #   output with Document ID as first field is wrong according to new standard NLP Suite output layout
+# def extract_CoreNLP_SVO(svo_triplets, svo_CoreNLP_single_file, svo_CoreNLP_merged_file, field_names, document_index, Document):
+#     """
+#     Extract SVO triplets form a Sentence object.
+#     """
+#     import csv
+#
+#     global notSure
+#     global added
+#
+#     result = IO_files_util.openCSVFile(svo_CoreNLP_single_file, 'w')
+#     if not result:
+#         return
+#     svo_writer = csv.DictWriter(result, fieldnames=field_names)
+#     svo_writer.writeheader()
+#     if svo_CoreNLP_merged_file:
+#         merge_result = IO_files_util.openCSVFile(svo_CoreNLP_merged_file, 'a')
+#         if not merge_result:
+#             return
+#         svo_CoreNLP_writer = csv.DictWriter(merge_result, fieldnames=field_names)
+#     for svo in svo_triplets:
+#         # RF if len(svo[2]) == 0 or len(svo[3]) == 0:
+#         if not (svo[2] and svo[3] and svo[4]):
+#             continue
+#         # check if the triple needs to be included
+#
+#         if svo[2] == "Someone?" and (svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]) not in added:
+#             notSure.add((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
+#             continue
+#         if svo[2] != "Someone?":
+#             if (svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]) in notSure:
+#                 notSure.remove((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
+#             # before writing row, split location
+#             if " " in svo[5]:
+#                 location_list = svo[5].split(" ")
+#                 for each_location in location_list:
+#                     svo_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
+#                                          'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document),
+#                                          'S': svo[2], 'V': svo[3], 'O': svo[4],
+#                                          'Time': svo[6], 'Location': each_location, 'Person': svo[7],
+#                                          'Time stamp': svo[8], field_names[10]: svo[1]
+#                                          })
+#                     if svo_CoreNLP_merged_file:
+#                         svo_CoreNLP_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
+#                                                     'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document),
+#                                                     'S': svo[2], 'V': svo[3], 'O': svo[4],
+#                                                     'Time': svo[6], 'Location': each_location, 'Person': svo[7],
+#                                                     'Time stamp': svo[8], field_names[10]: svo[1]
+#                                                     })
+#             else:
+#                 svo_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
+#                                      'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document),
+#                                      'S': svo[2], 'V': svo[3], 'O': svo[4],
+#                                      'Time': svo[6], 'Location': svo[5], 'Person': svo[7],
+#                                      'Time stamp': svo[8], field_names[10]: svo[1]
+#                                      })
+#                 if svo_CoreNLP_merged_file:
+#                     svo_CoreNLP_writer.writerow({'Document ID': str(document_index), 'Sentence ID': str(svo[0]),
+#                                                 'Document': IO_csv_util.dressFilenameForCSVHyperlink(Document),
+#                                                 'S': svo[2], 'V': svo[3], 'O': svo[4],
+#                                                 'Time': svo[6], 'Location': svo[5], 'Person': svo[7],
+#                                                 'Time stamp': svo[8],
+#                                                 field_names[10]: svo[1]
+#                                                 })
+#             added.add((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
+
+
+def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, outputSVODir) -> list:
     """
     Only triggered when both SENNA and CoreNLP ++ options are chosen.
     Counts the frequency of same and different SVOs and SVs in the SENNA and CoreNLP ++ results and lists them
@@ -21,7 +88,7 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
     :param senna_csv: the path of the Senna csv file
     :param inputFilename: the input file name; used for generating output file name
     :param inputDir: the input directory name; used for generating output file name
-    :param outputDir: the output directory name; used for generating output file name
+    :param outputSVODir: the output directory name; used for generating output file name
     :return: [Freq table, Comparison table], where Freq table counts the frequency of same/different SVOs, and
         Comparison table lists all the same/different SVOs
     """
@@ -98,7 +165,7 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
     df = df.append(pd.DataFrame([[len(same_svo), len(same_sv), len(diff_svo), len(diff_sv), total_svo, total_sv]],
                                 columns=['Same SVO', 'Same SV', 'Different SVO', 'Different SV', 'Total SVO',
                                          'Total SV']), ignore_index=True)
-    freq_output_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+    freq_output_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir, '.csv',
                                                                'SENNA_CoreNLP_SVO_FREQ')
     df.to_csv(freq_output_name, encoding='utf-8', index=False)
 
@@ -132,21 +199,21 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
                                                     columns=['Same', 'S', 'V', 'O', 'Different', 'S', 'V', 'O']), ignore_index=True)
 
     # Outputting the file
-    compare_outout_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+    compare_outout_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir, '.csv',
                                                                   'SENNA_CoreNLP_SVO_COMPARE')
     compare_df.to_csv(compare_outout_name, encoding='utf-8', index=False)
 
     return [freq_output_name, compare_outout_name]
 
 
-def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) -> str:
+def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputSVODir) -> str:
     """
     Combine the CoreNLP ++ results and Senna SVO results into one table; sorted by document ID then sentence ID
     :param CoreNLP ++_svo: the path of the stanford core CoreNLP ++ csv file
     :param senna_svo: the path of the Senna csv file
     :param inputFilename: the input file name; used for generating output file name
     :param inputDir: the input directory name; used for generating output file name
-    :param outputDir: the output directory name; used for generating output file name
+    :param outputSVODir: the output directory name; used for generating output file name
     :return: the name of the output csv file
     """
     columns = ['Tool', 'Subject (S)', 'Verb (V)', 'Object (O)', 'Negation', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
@@ -161,7 +228,7 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
             combined_df = combined_df.append(pd.DataFrame([new_row], columns=columns), ignore_index=True)
 
     combined_df.sort_values(by=['Document ID', 'Sentence ID'], inplace=True)
-    output_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+    output_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir, '.csv',
                                                           'SENNA_CoreNLP_SVO_COMBINE')
     combined_df.to_csv(output_name, encoding='utf-8', index=False)
 
@@ -169,7 +236,7 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputDir) 
 
 
 def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filter_o_fileName,
-               lemmatize_s, lemmatize_v,lemmatize_o, outputDir, createCharts=True, chartPackage='Excel'):
+               lemmatize_s, lemmatize_v,lemmatize_o, outputSVODir, createCharts=True, chartPackage='Excel'):
     """
     Filters a svo csv file based on the dictionaries given, and replaces the original output csv file
     :param svo_file_name: the name of the svo csv file
@@ -179,7 +246,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
     """
 
     startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
-                                                   'Started running the SVO filter algorithm at',
+                                                   'Started running the filter algorithm for Subject-Verb-Object (SVO) at',
                                                    True, '', True)
 
     df = pd.read_csv(svo_file_name, encoding='utf-8',error_bad_lines=False)
@@ -198,7 +265,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
         o_set = open(filter_o_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')
         o_set = set(o_set)
 
-    # Adding rows to filtered df
+    # Adding rows to FILTERED df
     for i in range(num_rows):
         subject, verb, object = '', '', ''
         if not pd.isna(unfiltered_svo[i]['Subject (S)']):
@@ -219,6 +286,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
         if object and filter_o_fileName and object not in o_set:
             continue
 
+        # UNFILTERED
         # the next line does NOT replace the original SVO;
         #   must replace SVO with the values computed above: subject, verb, object
         if lemmatize_s:
@@ -230,7 +298,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
 
         filtered_svo[i] = unfiltered_svo[i]
 
-    IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running SVO filter algorithm at', True, '', True,
+    IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running the filter algorithm for Subject-Verb-Object (SVO) at', True, '', True,
                                        startTime, True)
 
     # Replacing the original csv file
@@ -241,7 +309,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_file_name)
     if nRecords>1:
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
-                                                           outputDir,
+                                                           outputSVODir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Subject (S)'],
                                                            chartTitle='Frequency Distribution of Subjects (filtered)',
                                                            count_var=1, hover_label=[],
@@ -255,7 +323,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                 filesToOpen.extend(chart_outputFilename)
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
-                                                           outputDir,
+                                                           outputSVODir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Verb (V)'],
                                                            chartTitle='Frequency Distribution of Verbs (filtered)',
                                                            count_var=1, hover_label=[],
@@ -269,7 +337,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                 filesToOpen.extend(chart_outputFilename)
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
-                                                           outputDir,
+                                                           outputSVODir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Object (O)'],
                                                            chartTitle='Frequency Distribution of Objects (filtered)',
                                                            count_var=1, hover_label=[],

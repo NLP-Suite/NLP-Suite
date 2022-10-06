@@ -46,6 +46,10 @@ from nltk.tree import Tree
 from nltk.draw import TreeView
 from PIL import Image
 
+#For objectivity/subjectivity
+from spacytextblob.spacytextblob import SpacyTextBlob
+import en_core_web_sm
+
 
 #whether stopwordst were already downloaded can be tested, see stackoverflow
 #   https://stackoverflow.com/questions/23704510/how-do-i-test-whether-an-nltk-resource-is-already-installed-on-the-machine-runni
@@ -858,7 +862,9 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
     hover_label=''
     word_list=[]
 
-    rep_words = []
+    word_list_temp = []
+    word_list_temp3 = []
+    
 
     fin = open('../lib/wordLists/stopwords.txt', 'r')
     stops = set(fin.read().splitlines())
@@ -931,6 +937,10 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
         fullText = fullText.replace('\n', ' ')
         sentences = sent_tokenize_stanza(stanzaPipeLine(fullText))
 
+        rep_words_first = []
+        rep_words_last = []
+        word_list_temp = []
+
         sentenceID = 0  # to store sentence index
         # check each word in sentence for concreteness and write to outputFilename
 
@@ -956,14 +966,38 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
             # words = fullText.translate(string.punctuation).split()
             #for wordID, word in enumerate(filtered_words):
             #print(filtered_words)
+
+# SUBJECTIVITY/OBJECTIVITY PER SENTENCE---------------------------------------------------------------------------------------------
+            if "Objectivity/subjectivity" in processType:
+                
+
+                nlp = spacy.load('en_core_web_sm')
+                nlp.add_pipe('spacytextblob')
+
+                header = ["Subjectivity Score", "Sentence ID", "Sentence", "Document ID", "Document"]
+                select_col = ['Subjectivity Scores']
+                fileLabel = 'Objectivity_subjectivity per sentence'
+                fileLabel_byDocID = 'Objecitivity_subjectivity_per_sentence_byDoc'
+                columns_to_be_plotted_yAxis = ['Subjectivity Score']
+                chart_title_label = 'Frequency of subjectivity scores'
+                chart_title_byDocID = 'Frequency of subjectivity scores by Document'
+                chart_title_bySentID = 'Frequency of subjectivity scores by Sentence ID'
+                column_xAxis_label = 'Subjectivity Scores'
+
+                d = nlp(s)
+                subjectivity_score = d._.blob.subjectivity
+
+                word_list.append([subjectivity_score, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+
+            
             from collections import Counter
 # REPEATED WORDS FIRST K SENTENCES/LAST K SENTENCES  -------------------------------------------------------------------------------
             if 'Repetition: Words' in processType:
                 for wrdID, wrd in enumerate(filtered_words):
-                        
-                    header = ["First/Last Sentence", "K Value", "Word", "Sentence ID", "Sentence", "Document ID", "Document"]
+                    
+                    header = ["First/Last Sentence", "K Value", "Word", "Word ID", "Sentence ID", "Sentence", "Document ID", "Document"]
                     select_col = ['Word']
-                    fileLabel = 'Repeated Words in First_Last K Sentences'
+                    fileLabel = 'K_Sentences'
                     fileLabel_byDocID ='Rep_Words_First_Last_K_Sentences_byDoc'
                     columns_to_be_plotted_yAxis = ['Word']
                     chart_title_label = f'Frequency of repeated words in first and last K ({k}) sentences'
@@ -971,21 +1005,28 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
                     chart_title_bySentID = f'Frequency of repeated words in first and last K ({k}) sentences by Sentence ID'
                     column_xAxis_label = 'Words'
 
-                    if sentenceID <= k or sentenceID > len(sentences) - k:
-                        if sentenceID <= k:
-                            word_list.append(["First", k, wrd, wrdID, sentenceID, s, documentID, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
-                        else:
-                            word_list.append(["Last", k, wrd, wrdID, sentenceID, s, documentID, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                    if sentenceID <= k:
+                        word_list_temp.append(["First", k, wrd, wrdID+1, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        rep_words_first.append(wrd)
                     
-                count_wrd = 1
-                for j in range(0, len(word_list)-1):
-                    w = word_list[j][2]
-                    for k in range(j+1, len(word_list)-1):
-                        if word_list[k][2] == w:
-                            count_wrd = count_wrd + 1
-                    
-                    if count_wrd == 1:
-                        word_list[j].remove(word_list[j][2])
+                    elif sentenceID > len(sentences) - k:
+                        word_list_temp.append(["Last", k, wrd, wrdID+1, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        rep_words_last.append(wrd)
+        #print(rep_words_first)
+        #print(rep_words_last)
+        if "Repetition: Words" in processType:
+            word_list.extend([sublist for sublist in word_list_temp if sublist[2] in rep_words_first and sublist[2] in rep_words_last])
+
+
+            
+                
+                
+                
+                                    
+                
+        
+
+
                 
 
 # REPEATED WORDS END OF SENTENCE/BEGINNING NEXT SENTENCE  --------------------------------------------------------------------------
@@ -1090,6 +1131,44 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
 # N-GRAMS & HAPAX --------------------------------------------------------------------------
         # hapax and ngrams are processed above outside the for doc loop
         #    a for doc loop is already carried out in the function compute_character_word_ngrams
+    
+    # To remove the words that are never repeated
+        
+                    
+
+    
+
+        
+       # for sublist in word_list_temp:
+        #    if sublist[2] in rep_words_first:
+         #       if sublist[2] not in rep_words_last:
+         #           print(sublist[2])
+         #           word_list.remove(sublist)
+         #   elif sublist[2] in rep_words_last:
+         #       if sublist[2] not in rep_words_first:
+         #           print(sublist[2])
+          #          word_list.remove(sublist)
+                
+            
+                
+            
+            #if count_wrd == 1:
+            #    for sublist in word_list:
+            #            
+            #        if el == sublist[2]:
+            #            word_list.remove(sublist)
+            #            break
+
+                            
+                    
+
+
+       
+
+        
+        #word_list.sort(key = lambda x: x[4])
+    
+    #print(word_list[0])
 
     word_list.insert(0, header)
 

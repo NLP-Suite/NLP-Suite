@@ -540,7 +540,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
 
             ws_chart.add_chart(chartName1, "A1")
 
-    # move chart sheet to first in Excel, so as to open Excel directly on the Chart worksheet rather on the Data worksheet
+    # move chart sheet to first in Excel, so as to open Excel directly on the Chart worksheet rather on the Data worksheet of the Excel chart file
     # https://stackoverflow.com/questions/51082458/move-a-worksheet-in-a-workbook-using-openpyxl-or-xl-or-xlsxwriter
     sheets = wb._sheets
     from_loc = len(sheets) - 1
