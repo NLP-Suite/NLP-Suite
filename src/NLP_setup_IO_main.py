@@ -262,38 +262,31 @@ def save_IO_config():
     # config_input_output_alphabetic_options is a double list, each sublist of 4 items
     #   (path + 3 date items [[],[],...])
     # e.g., [['', '', '', ''], ['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/newspaperArticles', 'mm/dd/yyyy', '_', '4'], ['', '', '', ''], ['C:/Program Files (x86)/NLP_backup/Output', '', '', '']]
+
     # build current IO alphabetic options
-    # current_config_input_output_alphabetic_options.append([GUI_util.inputFilename.get()
+
     current_config_input_output_alphabetic_options=[]
     input_item=[]
     if extract_date_from_filename_var.get():
-    #     input_item.append(date_format_menu)
-    #     input_item.append(date_separator_var.get())
-    #     input_item.append(date_position_var.get())
-    # else:
-    #     input_item.append('')
-    #     input_item.append('')
-    #     input_item.append('')
-        input_item.append[date_format_menu + ', ' + date_separator_var.get() + ', ' + date_position_var.get()]
+        input_item.append(date_format_menu)
+        input_item.append(date_separator_var.get())
+        input_item.append(date_position_var.get())
     else:
         input_item.append('')
         input_item.append('')
         input_item.append('')
-    print("input_item",input_item)
-    print(GUI_util.input_main_dir_path.get())
     current_config_input_output_alphabetic_options.append(GUI_util.inputFilename.get())
     current_config_input_output_alphabetic_options.extend(input_item)
-    print("config_input_output_alphabetic_options",current_config_input_output_alphabetic_options)
-    current_config_input_output_alphabetic_options.append(GUI_util.input_main_dir_path.get())
-    current_config_input_output_alphabetic_options.extend(input_item)
-    print("config_input_output_alphabetic_options",current_config_input_output_alphabetic_options)
+    current_config_input_output_alphabetic_options=[current_config_input_output_alphabetic_options]
+    temp=[]
+    temp.append(GUI_util.input_main_dir_path.get())
+    temp.extend(input_item)
+    temp=[temp]
+    current_config_input_output_alphabetic_options.extend(temp)
     current_config_input_output_alphabetic_options.append([GUI_util.input_secondary_dir_path.get(), '','',''])
     current_config_input_output_alphabetic_options.append([GUI_util.output_dir_path.get(), '','',''])
-    print("config_input_output_alphabetic_options",current_config_input_output_alphabetic_options)
-    return
-    if extract_date_from_filename_var.get():
-        # check and save IO config on CLOSE
-        config_util.save_IO_config(window, config_filename, config_input_output_numeric_options,
+
+    config_util.save_IO_config(window, config_filename, config_input_output_numeric_options,
                                    current_config_input_output_alphabetic_options)
 
 save_button = tk.Button(window, text='SAVE', width=10, height=2, command=lambda: save_IO_config())

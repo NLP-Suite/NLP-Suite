@@ -89,24 +89,34 @@ def save_IO_config(window, config_filename, config_input_output_numeric_options,
         config_filename, config_input_output_numeric_options)
     if saved_config_input_output_alphabetic_options != current_config_input_output_alphabetic_options:
         # TODO Roby check that only 4 items are checked ['', '', '', '']
-        if current_config_input_output_alphabetic_options == ['', '', '', ''] or \
-                current_config_input_output_alphabetic_options == ['', '', '', '']:
-            saveGUIconfig = False
+        # both input filename and dir are empty
+        # if current_config_input_output_alphabetic_options[0] == ['', '', '', ''] or \
+        #         current_config_input_output_alphabetic_options[1] == ['', '', '', '']:
+        #     print("current_config_input_output_alphabetic_options[0]",
+        #           current_config_input_output_alphabetic_options[0])
+        #     print("current_config_input_output_alphabetic_options[1]",
+        #           current_config_input_output_alphabetic_options[1])
+        #     saveGUIconfig = False
+        # else:
+        #     # TODO Roby check that only 4 items are checked ['', '', '', '']
+        #     print("saved_config_input_output_alphabetic_options [0]",
+        #           saved_config_input_output_alphabetic_options[0])
+        #     print("saved_config_input_output_alphabetic_options [1]",
+        #           saved_config_input_output_alphabetic_options[1])
+        #     if saved_config_input_output_alphabetic_options[0] == ['', '', '', ''] or \
+        #             saved_config_input_output_alphabetic_options[1] == ['', '', '', '']:
+        #         saveGUIconfig = True
+        #     else:
+        if 'default' in config_filename:
+            saveGUIconfig = mb.askyesno("Save I/O values to 'Default I/O configuration': " + config_filename,
+                                        'The selected Input/Output options are different from the I/O values previously saved in\n\n' + config_filename + '\n\nand listed below in succinct form for readability:\n\n' + str(
+                                            config_input_output_full_options) + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
         else:
-            # TODO Roby check that only 4 items are checked ['', '', '', '']
-            if saved_config_input_output_alphabetic_options == ['', '', '', ''] or \
-                    saved_config_input_output_alphabetic_options == ['', '', '', '']:
-                saveGUIconfig = True
-            else:
-                if 'default' in config_filename:
-                    saveGUIconfig = mb.askyesno("Save I/O values to 'Default I/O configuration': " + config_filename,
-                                                'The selected Input/Output options are different from the I/O values previously saved in\n\n' + config_filename + '\n\nand listed below in succinct form for readability:\n\n' + str(
-                                                    config_input_output_full_options) + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
-                else:
-                    saveGUIconfig = mb.askyesno(
-                        "Save I/O values to 'GUI-specific I/O configuration': " + config_filename,
-                        'The selected Input/Output options are different from the I/O values previously saved in\n\n' + config_filename + ' and listed below in succinct form for readability:\n\n' + str(
-                            config_input_output_full_options) + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
+            saveGUIconfig = mb.askyesno(
+                "Save I/O values to 'GUI-specific I/O configuration': " + config_filename,
+                'The selected Input/Output options are different from the I/O values previously saved in\n\n' + config_filename + ' and listed below in succinct form for readability:\n\n' + str(
+                    config_input_output_full_options) + '\n\nDo you want to replace the previously saved I/O values with the current ones?')
+        print("saveGUIconfig", saveGUIconfig)
         if saveGUIconfig == True:
             write_config_file(window, config_filename, config_input_output_numeric_options,
                                           current_config_input_output_alphabetic_options)
@@ -239,6 +249,7 @@ def save_NLP_package_language_config(window, currently_selected_options, current
 
 def get_standard_config_csv(config_input_output_numeric_options, config_input_output_alphabetic_options):
 
+    print("config_input_output_alphabetic_options",config_input_output_alphabetic_options)
     header=['I/O configuration label', 'Path', 'Date format', 'Date separator character(s)', 'Date position']
     fileType=getFiletype(config_input_output_numeric_options)
     standard_config_csv = \
@@ -250,12 +261,16 @@ def get_standard_config_csv(config_input_output_numeric_options, config_input_ou
                   ['Date separator character(s)'],
                   ['Date position']]
 
+    print("standard_config_csv",standard_config_csv)
     for (index, row) in enumerate(standard_config_csv):
-        if len(config_input_output_alphabetic_options) > 0:
-            standard_config_csv[index].append(config_input_output_alphabetic_options[index])
+        print("index",index,"   row",row)
+        if len(config_input_output_alphabetic_options[index]) > 0:
+            print("config_input_output_alphabetic_options[index][0]",config_input_output_alphabetic_options[index][0])
+            standard_config_csv[index].append(config_input_output_alphabetic_options[index][0])
         else:
             standard_config_csv[index].append('')
     standard_config_csv.insert(0,header)
+    print("standard_config_csv",standard_config_csv)
     return standard_config_csv
 
 # called by get_missing_IO_values in GUI_util and readConfig below
