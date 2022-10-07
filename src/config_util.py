@@ -218,7 +218,7 @@ def write_NLP_package_language_config_file(window, config_filename, currently_se
                        message="The command failed to save the config file\n\n" + config_filename + "\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
 
 
-def save_NLP_package_language_config(window, currently_selected_options, currently_selected_parsers):
+def save_NLP_package_language_config(window, currently_selected_options, currently_selected_parsers, memory, document_length, limit_sentence_length):
     config_filename = GUI_IO_util.configPath + os.sep + 'NLP_default_package_language_config.csv'
     # package, parsers, package_basics, language = read_NLP_package_language_config()
     error, package, parsers, package_basics, language, package_display_area_value = read_NLP_package_language_config()
@@ -239,13 +239,16 @@ def save_NLP_package_language_config(window, currently_selected_options, current
 
 def get_standard_config_csv(config_input_output_numeric_options, config_input_output_alphabetic_options):
 
-    header=['I/O configuration label', 'Path']
+    header=['I/O configuration label', 'Path', 'Date format', 'Date separator character(s)', 'Date position']
     fileType=getFiletype(config_input_output_numeric_options)
     standard_config_csv = \
                   [[fileType],
                   ['Input files directory'],
                   ['Input files secondary directory'],
-                  ['Output files directory']]
+                  ['Output files directory'],
+                  ['Date format'],
+                  ['Date separator character(s)'],
+                  ['Date position']]
 
     for (index, row) in enumerate(standard_config_csv):
         if len(config_input_output_alphabetic_options) > 0:
@@ -264,6 +267,7 @@ def read_config_file(config_filename, config_input_output_numeric_options):
     # check that the config file exists
     if os.path.isfile(configFilePath) == True:
         csv_file = open(configFilePath, 'r', newline='')
+        # config_option_csv contains 5 columns with input filename, directory, secondary directory, output directory
         config_option_csv = list(csv.reader(csv_file, delimiter=','))
     else:
         config_option_csv = list()
@@ -273,9 +277,11 @@ def read_config_file(config_filename, config_input_output_numeric_options):
     for row in config_option_csv[1:]:  # skip header line
         if row[1]!='':
             if config_input_output_full_options=='':
-                config_input_output_full_options=str(row[0]) + ': ' + str(row[1])
+                # TODO Roby added row[2] onward
+                config_input_output_full_options=str(row[0]) + ': ' + str(row[1]) + ': ' + str(row[2]) + ': ' + str(row[3]) + ': ' + str(row[4])
             else:
-                config_input_output_full_options = config_input_output_full_options + '\n\n' + str(row[0]) + ': ' + str(row[1]) + '\n'
+                # TODO Roby added row[2] onward
+                config_input_output_full_options = config_input_output_full_options + '\n\n' + str(row[0]) + ': ' + str(row[1]) + ': ' + str(row[2]) + ': ' + str(row[3]) + ': ' + str(row[4]) + '\n'
         config_input_output_alphabetic_options.append(row[1])
         index = index + 1
     return config_input_output_alphabetic_options, config_input_output_full_options, missingIO

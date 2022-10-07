@@ -43,7 +43,6 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
 
     if all_analyses_var.get() == False and\
         search_token_var.get() == False and\
-        extract_var.get() == False and \
         compute_sentence_var.get() == False and \
         k_sentences_var.get() == False:
             mb.showwarning(title='No option selected',

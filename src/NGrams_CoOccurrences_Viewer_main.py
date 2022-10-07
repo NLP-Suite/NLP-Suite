@@ -367,7 +367,7 @@ CoOcc_checkbox = tk.Checkbutton(window, text='Co-Occurrences VIEWER', variable=C
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,CoOcc_checkbox)
 
 search_words_var.set('')
-search_words_lb = tk.Label(window, text='Search words')
+search_words_lb = tk.Label(window, text='Search word(s)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,search_words_lb,True)
 search_words_entry = tk.Entry(window, textvariable=search_words_var)
 search_words_entry.configure(width=100)

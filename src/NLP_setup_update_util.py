@@ -32,6 +32,10 @@ def exit_window(window,config_filename, scriptName, config_input_output_numeric_
     #                                           ['pygit2']) == False:
     #     sys.exit(0)
 
+    # config_input_output_numeric_options is a list such as [6, 1, 0, 1]
+    # current_config_input_output_alphabetic_options a list such as
+    #   ['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/newspaperArticles/A Spool of Blue Thread_Anne Tyler_Rebecca Pepper Sinkler_02-13-2015.txt', '', '', 'C:/Program Files (x86)/NLP_backup/Output']
+    print("config_input_output_numeric_options,current_config_input_output_alphabetic_options",config_input_output_numeric_options,current_config_input_output_alphabetic_options)
     def exit_handler():
         try:
             # set equal to test
@@ -55,7 +59,7 @@ def exit_window(window,config_filename, scriptName, config_input_output_numeric_
     # when closing NLP Suite via terminal
     atexit.register(exit_handler)
 
-    if not 'NLP_menu_main' in scriptName and 'NLP_welcome_main' not in scriptName:
+    if (not 'NLP_menu_main' in scriptName) and (not 'NLP_welcome_main' in scriptName):
         # check and save IO config on CLOSE
         config_util.save_IO_config(window, config_filename, config_input_output_numeric_options,
                            current_config_input_output_alphabetic_options)

@@ -561,10 +561,10 @@ def IO_config_setup_full (window, y_multiplier_integer):
         openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, inputFilename.get()))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
-            openInputFile_button, True, False, True, False, 90, GUI_IO_util.get_open_file_directory_coordinate(), "Open INPUT file")
+            openInputFile_button, True, False, True, False, 90, GUI_IO_util.open_file_directory_coordinate, "Open INPUT file")
 
         inputFile_lb = tk.Label(window, textvariable=inputFilename)
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,
                                                        y_multiplier_integer, inputFile_lb)
 
     #primary INPUT directory ______________________________________________
@@ -878,6 +878,9 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # charts_dropdown_field.trace('w',warning_message)
 
     readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)
+    # In NLP_setup_IO_main and NLP_setup_package_language_main an extra line of widgets is added to the GUI
+    if "NLP_setup_IO_main" in scriptName:
+        y_multiplier_integer = y_multiplier_integer +1
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.read_button_x_coordinate,
                                                    y_multiplier_integer,
