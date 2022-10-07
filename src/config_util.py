@@ -88,14 +88,14 @@ def save_IO_config(window, config_filename, config_input_output_numeric_options,
     saved_config_input_output_alphabetic_options, config_input_output_full_options, missingIO = read_config_file(
         config_filename, config_input_output_numeric_options)
     if saved_config_input_output_alphabetic_options != current_config_input_output_alphabetic_options:
-        if current_config_input_output_alphabetic_options == ['', '', '',
-                                                              ''] or current_config_input_output_alphabetic_options == [
-            '', '', '', '']:
+        # TODO Roby check that only 4 items are checked ['', '', '', '']
+        if current_config_input_output_alphabetic_options == ['', '', '', ''] or \
+                current_config_input_output_alphabetic_options == ['', '', '', '']:
             saveGUIconfig = False
         else:
-            if saved_config_input_output_alphabetic_options == ['', '', '',
-                                                                ''] or saved_config_input_output_alphabetic_options == [
-                '', '', '', '']:
+            # TODO Roby check that only 4 items are checked ['', '', '', '']
+            if saved_config_input_output_alphabetic_options == ['', '', '', ''] or \
+                    saved_config_input_output_alphabetic_options == ['', '', '', '']:
                 saveGUIconfig = True
             else:
                 if 'default' in config_filename:
@@ -258,7 +258,7 @@ def get_standard_config_csv(config_input_output_numeric_options, config_input_ou
     standard_config_csv.insert(0,header)
     return standard_config_csv
 
-# called by get_missing_IO_values and readConfig below
+# called by get_missing_IO_values in GUI_util and readConfig below
 # returns a double list of csv IO labels and values saved in a csv config file
 def read_config_file(config_filename, config_input_output_numeric_options):
     config_input_output_alphabetic_options = []
@@ -268,21 +268,24 @@ def read_config_file(config_filename, config_input_output_numeric_options):
     if os.path.isfile(configFilePath) == True:
         csv_file = open(configFilePath, 'r', newline='')
         # config_option_csv contains 5 columns with input filename, directory, secondary directory, output directory
+        #   Oct 2022 added 3 more columns for date options of either fileName or Input Dir: date format, character separator, date position
         config_option_csv = list(csv.reader(csv_file, delimiter=','))
     else:
         config_option_csv = list()
         config_option_csv=get_standard_config_csv(config_input_output_numeric_options,config_option_csv)
     missingIO=get_missing_IO_values(config_input_output_numeric_options, config_option_csv)
     index = 1
+    # loop through the 5 rows (including header) of input file, input primary dir, input secondary dir, output dir
     for row in config_option_csv[1:]:  # skip header line
-        if row[1]!='':
+        if row[1]!='': # second column in the config file containing a path
             if config_input_output_full_options=='':
                 # TODO Roby added row[2] onward
-                config_input_output_full_options=str(row[0]) + ': ' + str(row[1]) + ': ' + str(row[2]) + ': ' + str(row[3]) + ': ' + str(row[4])
+                config_input_output_full_options=str(row[0]) + ': ' + str(row[1]) + ', ' + str(row[2]) + ', ' + str(row[3]) + ', ' + str(row[4])
             else:
                 # TODO Roby added row[2] onward
-                config_input_output_full_options = config_input_output_full_options + '\n\n' + str(row[0]) + ': ' + str(row[1]) + ': ' + str(row[2]) + ': ' + str(row[3]) + ': ' + str(row[4]) + '\n'
-        config_input_output_alphabetic_options.append(row[1])
+                config_input_output_full_options = config_input_output_full_options + '\n\n' + str(row[0]) + ': ' + str(row[1]) + ', ' + str(row[2]) + ', ' + str(row[3]) + ', ' + str(row[4]) + '\n'
+        # TODO Roby added row[2] onward
+        config_input_output_alphabetic_options.append([row[1],row[2],row[3],row[4]])
         index = index + 1
     return config_input_output_alphabetic_options, config_input_output_full_options, missingIO
 

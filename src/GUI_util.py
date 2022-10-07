@@ -349,11 +349,13 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
     # when tracing on changed IO options between inputFilename and main_dir_path (e.g., SVO_main or Stanford_CoreNLP_coreference_main),
     #   always trace on main_dir_path rather than inputFilename since inputFilename may be reset by main_dir_path
 
-    if config_input_output_alphabetic_options[0]=='': # INPUT filename
+    # TODO Roby changed [0] to [0][0]
+    if config_input_output_alphabetic_options[0][0]=='': # INPUT filename
         inputFilename.set('')
     else:
         if error==False:
-            error, fileName = config_util.checkConfigFileExists(temp_config_filename, config_input_output_alphabetic_options[0], 'INPUT')
+            # TODO Roby changed [0] to [0][0]
+            error, fileName = config_util.checkConfigFileExists(temp_config_filename, config_input_output_alphabetic_options[0][0], 'INPUT')
         inputFilename.set(fileName)
 
     # -----------------------------------------------------------------------------------
@@ -361,55 +363,65 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename,config_input_
     # when tracing on changed IO options between inputFilename and main_dir_path (e.g., SVO_main or Stanford_CoreNLP_coreference_main),
     #   always trace on main_dir_path rather than inputFilename since inputFilename may be reset by main_dir_path
 
-    if config_input_output_alphabetic_options[1]=='': # INPUT main directory
+    # TODO Roby changed [1] to [1][0]
+    if config_input_output_alphabetic_options[1][0]=='': # INPUT main directory
         input_main_dir_path.set('')
     else:
         if error==False:
-            error, dirName = config_util.checkConfigDirExists(temp_config_filename, config_input_output_alphabetic_options[1], 'INPUT')
+            # TODO Roby changed [1] to [1][0]
+            error, dirName = config_util.checkConfigDirExists(temp_config_filename, config_input_output_alphabetic_options[1][0], 'INPUT')
         input_main_dir_path.set(dirName)
         inputFilename.set('')
 
     # -----------------------------------------------------------------------------------
     # INPUT secondary directory
 
-    if config_input_output_alphabetic_options[2]=='': # INPUT secondary directory
+    # TODO Roby changed [2] to [2][0]
+    if config_input_output_alphabetic_options[2][0]=='': # INPUT secondary directory
         input_secondary_dir_path.set('')
     else:
         if error==False:
-            error, dirName = config_util.checkConfigDirExists(temp_config_filename, config_input_output_alphabetic_options[2], 'INPUT')
+            # TODO Roby changed [2] to [2][0]
+            error, dirName = config_util.checkConfigDirExists(temp_config_filename, config_input_output_alphabetic_options[2][0], 'INPUT')
         input_secondary_dir_path.set(dirName)
 
     # -----------------------------------------------------------------------------------
     # OUTPUT directory
 
-    if config_input_output_alphabetic_options[3]=='': # OUTPUT directory
+    # TODO Roby changed [3] to [3][0]
+    if config_input_output_alphabetic_options[3][0]=='': # OUTPUT directory
         outputDirName = ''
         output_dir_path.set('')
     else:
         if error==False:
-            error, dirName = config_util.checkConfigDirExists(temp_config_filename, config_input_output_alphabetic_options[3], 'OUTPUT')
+            # TODO Roby changed [3] to [3][0]
+            error, dirName = config_util.checkConfigDirExists(temp_config_filename, config_input_output_alphabetic_options[3][0], 'OUTPUT')
         output_dir_path.set(dirName)
 
     # display I/O info briefly
     if IO_setup_display_brief == True and config_input_output_numeric_options!=[0,0,0,0]:
         IO_setup_display_string = ''
         # check filename
-        if str(config_input_output_alphabetic_options[0])!='':
+        # TODO Roby changed [0] to [0][0]
+        if str(config_input_output_alphabetic_options[0][0])!='':
             #head is path, tail is filename
-            head, tail = os.path.split(config_input_output_alphabetic_options[0])
+            head, tail = os.path.split(config_input_output_alphabetic_options[0][0])
             IO_setup_display_string = "INPUT FILE: " + str(tail)
         else:
             # check input directory
-            if str(config_input_output_alphabetic_options[1]) != '':
-                inputDirName = config_input_output_alphabetic_options[1]
+            # TODO Roby changed [1] to [1][0]
+            if str(config_input_output_alphabetic_options[1][0]) != '':
+                inputDirName = config_input_output_alphabetic_options[1][0]
                 IO_setup_display_string = "INPUT DIR: " + str(os.path.basename(os.path.normpath(inputDirName)))
 
         # both filename [1] and input Dir [2] are empty
-        if (config_input_output_alphabetic_options[0] == '') and (
-                config_input_output_alphabetic_options[1] == ''):
+        # TODO Roby changed [0] to [0][0] and [1] to [1][0]
+        if (config_input_output_alphabetic_options[0][0] == '') and (
+                config_input_output_alphabetic_options[1][0] == ''):
             IO_setup_display_string = "INPUT FILE:\nINPUT DIR:"
 
-        outputDirName = config_input_output_alphabetic_options[3]
+        # TODO Roby changed [3] to [3][0]
+        outputDirName = config_input_output_alphabetic_options[3][0]
 
         IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(os.path.normpath(outputDirName)))
         IO_setup_brief_display_area = tk.Text(width=60, height=2)
@@ -879,8 +891,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)
     # In NLP_setup_IO_main and NLP_setup_package_language_main an extra line of widgets is added to the GUI
-    if "NLP_setup_IO_main" in scriptName:
-        y_multiplier_integer = y_multiplier_integer +1
+    # if "NLP_setup_IO_main" in scriptName:
+    #     y_multiplier_integer = y_multiplier_integer +1
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.read_button_x_coordinate,
                                                    y_multiplier_integer,
@@ -1003,7 +1015,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
         # hitting the CLOSE button will automatically pull from GitHub the latest release available on GitHub
         import NLP_setup_update_util
-        NLP_setup_update_util.exit_window(window, temp_config_filename, scriptName, config_input_output_numeric_options,config_input_output_alphabetic_options, local_release_version, GitHub_release_version)
+        NLP_setup_update_util.exit_window(window, local_release_version, GitHub_release_version)
 
     close_button = tk.Button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
     # place widget with hover-over info
