@@ -126,7 +126,6 @@ if config_input_output_numeric_options[0]!=0: # input filename
                 ', ' + str(config_input_output_alphabetic_options[0][3]) + \
                 ', ' + str(config_input_output_alphabetic_options[0][4]) + ')'
 
-print("IN NLP config_input_output_alphabetic_options[0][1]",config_input_output_alphabetic_options[0][1])
 GUI_util.inputFilename.set(config_input_output_alphabetic_options[0][1] + label)
 inputFile_lb = tk.Label(window, textvariable=GUI_util.inputFilename)
 
@@ -145,13 +144,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                date_hover_over_label)
 
 # TODO Must relay the widget here to display hover-over information, although the widget has been laid in GUI_util
-# input dir ------------------------------------------------------------------
-# if config_input_output_numeric_options[1]!=0:
-# label = ''
-# if config_input_output_alphabetic_options[0][2]!='' or config_input_output_alphabetic_options[1][2]!='':
-#     label = '  (Date: ' + str(config_input_output_alphabetic_options[1][2]) + \
-#             ', ' + str(config_input_output_alphabetic_options[1][3]) + \
-#             ', ' + str(config_input_output_alphabetic_options[1][4]) + ')'
 
 label = ''
 date_hover_over_label = ''
@@ -183,7 +175,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                False, False, False, False, 90,
                                                GUI_IO_util.get_open_file_directory_coordinate(),
                                                date_hover_over_label)
-print("IN NLP config_input_output_alphabetic_options[1][1] + label",config_input_output_alphabetic_options[1][1] + label)
 
 if config_input_output_numeric_options[2]!=0: # input secondary dir
     GUI_util.input_secondary_dir_path.set(config_input_output_alphabetic_options[2][1])
@@ -204,7 +195,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                'Tick the checkbox if the filename(s) used as your corpus embed a date (e.g, The New York Times_12-19-1899). Then select the appropriate information (please, read the ?HELP for more information).\n' \
                                                 'The NLP Suite will use the information to build dynamic network graphs and dynamic GIS maps.')
 
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,extract_date_checkbox,True)
 
 date_format_lb = tk.Label(window,text='Format ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,
@@ -329,12 +319,7 @@ def save_config(config_input_output_alphabetic_options):
 
     # config_option_csv = config_util.get_template_config_csv_file(config_input_output_numeric_options, config_input_output_alphabetic_options)
     # config_util.get_template_config_csv_file(config_input_output_numeric_options, config_input_output_alphabetic_options)
-    print("IN NLP config_input_output_alphabetic_options",config_input_output_alphabetic_options)
-    # config_util.save_IO_config(window, config_filename, config_input_output_numeric_options,
-    #                config_input_output_alphabetic_options)
-    # config_util.write_IO_config_file(window, config_filename, config_input_output_numeric_options,
-    #                                  config_input_output_alphabetic_options, silent=False)
-    #
+
     config_util.get_template_config_csv_file(config_input_output_numeric_options, config_input_output_alphabetic_options)
 
     fileType=config_util.getFiletype(config_input_output_numeric_options) # different types of input files
@@ -345,7 +330,6 @@ def save_config(config_input_output_alphabetic_options):
                   'Output files directory']
 
     input_item_date=[]
-    print("IN NLP extract_date_from_filename_var.get()",extract_date_from_filename_var.get())
 
     # extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var
     #   are all local to this GUI rather than on GUI_util
@@ -359,7 +343,6 @@ def save_config(config_input_output_alphabetic_options):
     else:
         date_label = ''
         input_item_date=['','',0]
-    print("IN NLP input_item_date",input_item_date)
 
     inputFilename_list = []
     inputFilename_list.append(fileType)
@@ -388,22 +371,17 @@ def save_config(config_input_output_alphabetic_options):
     if not extract_date_from_filename_var.get():
         directory_no_date=GUI_util.remove_date_from_directory(GUI_util.input_main_dir_path.get(),False)
         GUI_util.input_main_dir_path.set(directory_no_date)
-        print(" 1 GUI_util.input_main_dir_path.get()", GUI_util.input_main_dir_path.get())
     else:
         if GUI_util.input_main_dir_path.get() != '':
             if '(Date: ' in GUI_util.input_main_dir_path.get():
                 GUI_util.input_main_dir_path.set(GUI_util.input_main_dir_path.get())
             else:
                 GUI_util.input_main_dir_path.set(GUI_util.input_main_dir_path.get() + date_label)
-    print(" 2 GUI_util.input_main_dir_path.get()",GUI_util.input_main_dir_path.get())
     inputDir_list.append(GUI_util.input_main_dir_path.get())
     if GUI_util.input_main_dir_path.get()!='':
         inputDir_list.extend(input_item_date)
     else:
         inputDir_list.extend(['', '', 0])
-
-    print("IN NLP setup input_item_date",input_item_date)
-    print("IN NLP_setup inputDir_list",inputDir_list)
 
     input_item_date = ['', '', 0] # secondary dir and output dir do not have dates
 
@@ -413,7 +391,6 @@ def save_config(config_input_output_alphabetic_options):
     inputDir2_list.append('Input files secondary directory')
     inputDir2_list.append(GUI_util.input_secondary_dir_path.get())
     inputDir2_list.extend(input_item_date)
-    # print("IN NLP_setup inputDir_list",inputDir2_list)
 
     outputDir_list = []
     # outputDir_list.extend([GUI_util.output_dir_path.get(), '','',''])
@@ -421,7 +398,6 @@ def save_config(config_input_output_alphabetic_options):
     outputDir_list.append('Output files directory')
     outputDir_list.append(GUI_util.output_dir_path.get())
     outputDir_list.extend(input_item_date)
-    # print("IN NLP_setup inputDir_list",outputDir_list)
 
     # combine all four Input/output options in a list
     current_config_input_output_alphabetic_options=[]
@@ -429,8 +405,6 @@ def save_config(config_input_output_alphabetic_options):
     current_config_input_output_alphabetic_options.append(inputDir_list)
     current_config_input_output_alphabetic_options.append(inputDir2_list)
     current_config_input_output_alphabetic_options.append(outputDir_list)
-
-    print("IN NLP_setup current_config_input_output_alphabetic_options",current_config_input_output_alphabetic_options)
 
     config_util.write_IO_config_file(window, config_filename, config_input_output_numeric_options,
                                      current_config_input_output_alphabetic_options, silent=False)
