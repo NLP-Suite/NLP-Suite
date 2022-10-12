@@ -331,33 +331,6 @@ def clear(e):
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
-def display_txt_file_options(*args):
-    cannotRun = False
-    if csv_file_var.get() == '':
-        if inputFilename.get()!='' or input_main_dir_path.get()!='':
-            if geocode_locations_var.get()==False and map_locations_var.get()==True:
-                mb.showwarning(title='Warning',
-                               message="The 'GEOCODE locations' checkbox is ticked off but you have the 'MAP locations' checkbox ticked.\n\nYou cannot map without geocoding.")
-                cannotRun = True
-            else:
-                location_menu_var.set('')
-                location_field.config(state='disabled')
-                extract_date_from_text_checkbox.config(state='normal')
-                extract_date_from_filename_checkbox.config(state='normal')
-                NER_extractor_var.set(1)
-                NER_extractor = True
-                NER_extractor_checkbox.configure(state='disabled')
-                country_bias.configure(state='normal')
-                geocode_locations_var.set(1)
-                geocode_locations = True
-                map_locations_var.set(1)
-                map_locations = True
-        else:
-            location_menu_var.set('')
-            location_field.config(state='disabled')
-    return cannotRun
-inputFilename.trace('w',display_txt_file_options)
-input_main_dir_path.trace('w',display_txt_file_options)
 
 def check_csv_file_headers(csv_file):
     cannotRun=False
@@ -581,9 +554,10 @@ else:
 location_field_lb = tk.Label(window, text='Select the column containing location names')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,location_field_lb,True)
 if menu_values!='':
-    location_field = tk.OptionMenu(window,location_menu_var,*menu_values)
+    location_field = tk.OptionMenu(window, location_menu_var,*menu_values)
 else:
-    location_field = tk.OptionMenu(window,location_menu_var,menu_values)
+    location_field = tk.OptionMenu(window, location_menu_var,menu_values)
+
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,location_field)
 
 geocode_locations_var.set(0)
@@ -591,18 +565,6 @@ geocode_locations_checkbox = tk.Checkbutton(window, variable=geocode_locations_v
 geocode_locations_checkbox.config(text="GEOCODE locations")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,geocode_locations_checkbox, True)
 
-def activate_geocoder(*args):
-    if geocode_locations_var.get()==True:
-        geocoder.configure(state='normal')
-    else:
-        geocoder.configure(state='disabled')
-
-    if geocode_locations_var.get()==0:
-        if display_csv_file_options()==True:
-            return
-        if display_txt_file_options()==True:
-            return
-geocode_locations_var.trace('w',activate_geocoder)
 
 geocoder_lb = tk.Label(window, text='Geocoder')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200,y_multiplier_integer,geocoder_lb,True)
@@ -667,6 +629,48 @@ map_locations_var.set(0)
 map_locations_checkbox = tk.Checkbutton(window, variable=map_locations_var, onvalue=1, offvalue=0)
 map_locations_checkbox.config(text="MAP locations")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,map_locations_checkbox,True)
+
+def display_txt_file_options(*args):
+    cannotRun = False
+    if csv_file_var.get() == '':
+        if inputFilename.get()!='' or input_main_dir_path.get()!='':
+            if geocode_locations_var.get()==False and map_locations_var.get()==True:
+                mb.showwarning(title='Warning',
+                               message="The 'GEOCODE locations' checkbox is ticked off but you have the 'MAP locations' checkbox ticked.\n\nYou cannot map without geocoding.")
+                cannotRun = True
+            else:
+                location_menu_var.set('')
+                location_field.config(state='disabled')
+                extract_date_from_text_checkbox.config(state='normal')
+                extract_date_from_filename_checkbox.config(state='normal')
+                NER_extractor_var.set(1)
+                NER_extractor = True
+                NER_extractor_checkbox.configure(state='disabled')
+                country_bias.configure(state='normal')
+                geocode_locations_var.set(1)
+                geocode_locations = True
+                map_locations_var.set(1)
+                map_locations = True
+        else:
+            location_menu_var.set('')
+            location_field.config(state='disabled')
+    return cannotRun
+inputFilename.trace('w',display_txt_file_options)
+input_main_dir_path.trace('w',display_txt_file_options)
+display_txt_file_options()
+
+def activate_geocoder(*args):
+    if geocode_locations_var.get()==True:
+        geocoder.configure(state='normal')
+    else:
+        geocoder.configure(state='disabled')
+
+    if geocode_locations_var.get()==0:
+        if display_csv_file_options()==True:
+            return
+        if display_txt_file_options()==True:
+            return
+geocode_locations_var.trace('w',activate_geocoder)
 
 def call_reminders(*args):
     if map_locations_var.get()==True:
@@ -801,24 +805,21 @@ if result!=None:
 activate_Google_API_geocode()
 activate_Google_API_Google_Maps()
 
-if inputFilename.get()!='':
-    inputFile = inputFilename.get()
-    if ' (Date: ' in inputFile:
-        char_pos = inputFile.find(' (Date: ')
-        inputFile = inputFile[char_pos:]
+if GUI_util.setup_IO_menu_var.get()=='Default I/O configuration':
+    temp_config_filename = 'NLP_default_IO_config.csv'
 
-if input_main_dir_path.get()!='':
-    inputDir = input_main_dir_path.get()
-    if ' (Date: ' in inputDir:
-        inputDir = 'TEMPORARY FOR TESTING (Date: mm/dd/yyyy _ 2)' # TODO replace
-        char_pos = inputDir.find(' (Date: ')
-        date_item = inputDir[char_pos:]
-        date_item=date_item.replace('(Date: ','') # TODO does NOT replace first blank
-        date_item=date_item.replace(')','')
-        split_date = date_item.split(' ')
-        extract_date_from_filename_var.set(1)
-        date_format.set(split_date[1])
-        date_separator_var.set(split_date[2])
-        date_position_var.set(split_date[3])
+config_input_output_alphabetic_options, missingIO = config_util.read_config_file(temp_config_filename, config_input_output_numeric_options)
+
+if len(config_input_output_alphabetic_options)>0:
+    index=0
+    while index<2: # check date options for input file and input dir
+        if config_input_output_alphabetic_options[index][2]!='':
+            extract_date_from_filename_var.set(1)
+            date_format.set(config_input_output_alphabetic_options[index][2])
+            date_separator_var.set(config_input_output_alphabetic_options[index][3])
+            date_position_var.set(config_input_output_alphabetic_options[index][4])
+        else:
+            extract_date_from_filename_var.set(0)
+        index=index+1
 
 GUI_util.window.mainloop()

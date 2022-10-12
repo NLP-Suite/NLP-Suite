@@ -116,11 +116,12 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, False)
 config_input_output_alphabetic_options, missingIO = config_util.read_config_file(config_filename, config_input_output_numeric_options)
 # set existing GUI options
 
-# TODO Must relay the widget to display hover-over information, although the widget has been laid in GUI_util
+# TODO Must relay the widget here to display hover-over information, although the widget has been laid in GUI_util
 # the index for config_input_output_numeric_options start at 0
+
 if config_input_output_numeric_options[0]!=0: # input filename
     label = ''
-    if config_input_output_alphabetic_options[0][2]!='':
+    if config_input_output_alphabetic_options[0][2]!='' and not 'Date: ' in config_input_output_alphabetic_options[0][1]:
         label = '  (Date: ' + str(config_input_output_alphabetic_options[0][2]) + \
                 ', ' + str(config_input_output_alphabetic_options[0][3]) + \
                 ', ' + str(config_input_output_alphabetic_options[0][4]) + ')'
@@ -142,20 +143,19 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                False, False, False, False, 90,
                                                GUI_IO_util.get_open_file_directory_coordinate(),
                                                date_hover_over_label)
-    # y_multiplier_integer = y_multiplier_integer +1
 
-# TODO Must relay the widget to display hover-over information, although the widget has been laid in GUI_util
+# TODO Must relay the widget here to display hover-over information, although the widget has been laid in GUI_util
 # input dir ------------------------------------------------------------------
-if config_input_output_numeric_options[1]!=0:
-    label = ''
-    if config_input_output_alphabetic_options[1][2]!='':
-        label = '  (Date: ' + str(config_input_output_alphabetic_options[1][2]) + \
-                ', ' + str(config_input_output_alphabetic_options[1][3]) + \
-                ', ' + str(config_input_output_alphabetic_options[1][4]) + ')'
+# if config_input_output_numeric_options[1]!=0:
+# label = ''
+# if config_input_output_alphabetic_options[0][2]!='' or config_input_output_alphabetic_options[1][2]!='':
+#     label = '  (Date: ' + str(config_input_output_alphabetic_options[1][2]) + \
+#             ', ' + str(config_input_output_alphabetic_options[1][3]) + \
+#             ', ' + str(config_input_output_alphabetic_options[1][4]) + ')'
 
 label = ''
 date_hover_over_label = ''
-if config_input_output_alphabetic_options[1][2]!='': # there is date format
+if config_input_output_alphabetic_options[1][2]!='' and not 'Date: ' in config_input_output_alphabetic_options[1][1]: # there is date format
     label = '  (Date: ' + str(config_input_output_alphabetic_options[1][2]) + \
             ', ' + str(config_input_output_alphabetic_options[1][3]) + \
             ', ' + str(config_input_output_alphabetic_options[1][4]) + ')'
@@ -353,20 +353,33 @@ def save_config(config_input_output_alphabetic_options):
         input_item_date.append(date_format_var.get())
         input_item_date.append(date_separator_var.get())
         input_item_date.append(date_position_var.get())
+        date_label = ' (Date: ' + str(date_format_var.get()) + ' ' + \
+                          str(date_separator_var.get()) + ' ' + \
+                          str(int(date_position_var.get())) + ')'
     else:
-        input_item_date=['','',0,]
+        date_label = ''
+        input_item_date=['','',0]
     print("IN NLP input_item_date",input_item_date)
 
-    inputFilename_list=[]
+    inputFilename_list = []
     inputFilename_list.append(fileType)
+
     if not extract_date_from_filename_var.get():
         fileName_no_date=GUI_util.remove_date_from_filename(GUI_util.inputFilename.get(),False)
         GUI_util.inputFilename.set(fileName_no_date)
+    else:
+        if GUI_util.inputFilename.get() != '':
+            if '(Date: ' in GUI_util.inputFilename.get():
+                GUI_util.inputFilename.set(GUI_util.inputFilename.get())
+            else:
+                GUI_util.inputFilename.set(GUI_util.inputFilename.get() + date_label)
+        else:
+            GUI_util.inputFilename.set('')
     inputFilename_list.append(GUI_util.inputFilename.get())
     if GUI_util.inputFilename.get() != '':
         inputFilename_list.extend(input_item_date)
     else:
-        inputFilename_list.extend(['', '', 0, ])
+        inputFilename_list.extend(['', '', 0])
 
 # main_dir_path
     inputDir_list=[]
@@ -374,17 +387,25 @@ def save_config(config_input_output_alphabetic_options):
     inputDir_list.append('Input files directory')
     if not extract_date_from_filename_var.get():
         directory_no_date=GUI_util.remove_date_from_directory(GUI_util.input_main_dir_path.get(),False)
-        GUI_util.inputFilename.set(directory_no_date)
+        GUI_util.input_main_dir_path.set(directory_no_date)
+        print(" 1 GUI_util.input_main_dir_path.get()", GUI_util.input_main_dir_path.get())
+    else:
+        if GUI_util.input_main_dir_path.get() != '':
+            if '(Date: ' in GUI_util.input_main_dir_path.get():
+                GUI_util.input_main_dir_path.set(GUI_util.input_main_dir_path.get())
+            else:
+                GUI_util.input_main_dir_path.set(GUI_util.input_main_dir_path.get() + date_label)
+    print(" 2 GUI_util.input_main_dir_path.get()",GUI_util.input_main_dir_path.get())
     inputDir_list.append(GUI_util.input_main_dir_path.get())
     if GUI_util.input_main_dir_path.get()!='':
         inputDir_list.extend(input_item_date)
     else:
-        inputDir_list.extend(['', '', 0, ])
+        inputDir_list.extend(['', '', 0])
 
     print("IN NLP setup input_item_date",input_item_date)
     print("IN NLP_setup inputDir_list",inputDir_list)
 
-    input_item_date = ['', '', 0,] # secondary dir and output dir do not have dates
+    input_item_date = ['', '', 0] # secondary dir and output dir do not have dates
 
     inputDir2_list = []
     # inputDir2_list.extend([GUI_util.input_secondary_dir_path.get(), '','',''])
@@ -402,8 +423,7 @@ def save_config(config_input_output_alphabetic_options):
     outputDir_list.extend(input_item_date)
     # print("IN NLP_setup inputDir_list",outputDir_list)
 
-    # current_config_input_output_alphabetic_options=[inputFilename_list + inputDir_list + inputDir2_list + outputDir_list]
-    #
+    # combine all four Input/output options in a list
     current_config_input_output_alphabetic_options=[]
     current_config_input_output_alphabetic_options.append(inputFilename_list)
     current_config_input_output_alphabetic_options.append(inputDir_list)

@@ -284,6 +284,7 @@ def get_template_config_csv_file(config_input_output_numeric_options, config_inp
     print("IN get_template_config_csv_file AT THE END IO_configuration_label",IO_configuration)
     return IO_configuration
 
+
 # called by get_missing_IO_values in GUI_util and readConfig below
 # returns a double list of csv IO labels and values saved in a csv config file
 # returns config_input_output_alphabetic_options, a list with 5 items
@@ -291,53 +292,21 @@ def get_template_config_csv_file(config_input_output_numeric_options, config_inp
 #   Oct 2022 added 3 more columns for date options of either fileName or Input Dir: date format, character separator, date position
 # config_option_csv = list(csv.reader(csv_file, delimiter=','))
 
-
-    # header=['I/O configuration label', 'Path']
-    # fileType=getFiletype(config_input_output_numeric_options)
-    # standard_config_csv = \
-    #               [[fileType],
-    #               ['Input files directory'],
-    #               ['Input files secondary directory'],
-    #               ['Output files directory']]
-    #
-    # for (index, row) in enumerate(standard_config_csv):
-    #     if len(config_input_output_alphabetic_options) > 0:
-    #         standard_config_csv[index].append(config_input_output_alphabetic_options[index])
-    #     else:
-    #         standard_config_csv[index].append('')
-    # standard_config_csv.insert(0,header)
-    # return standard_config_csv
-
 def read_config_file(config_filename, config_input_output_numeric_options):
+    print("config_filename, config_input_output_numeric_options",config_filename, config_input_output_numeric_options)
     config_input_output_alphabetic_options = []
     configFilePath = os.path.join(GUI_IO_util.configPath, config_filename)
     # check that the config file exists
     if os.path.isfile(configFilePath) == True:
-        # csv_file = open(configFilePath, 'r', newline='')
-        # TODO config_input_output_alphabetic_options is read in with no headers
-        config_input_output_alphabetic_options = pd.read_csv(configFilePath, encoding='utf-8', error_bad_lines=False)
-        print("IN AFTER csv read configFilePath 1",config_input_output_alphabetic_options)
-        config_input_output_alphabetic_options = config_input_output_alphabetic_options.fillna('')
-        print("IN AFTER csv read configFilePath 2",config_input_output_alphabetic_options)
-        config_input_output_alphabetic_options = config_input_output_alphabetic_options.values.tolist()
-        # print(type(config_option_csv))
+        csv_file = open(configFilePath, 'r', newline='')
+        config_input_output_alphabetic_options = list(csv.reader(csv_file, delimiter=','))
+        config_input_output_alphabetic_options.pop(0) # skip header
         print("IN AFTER csv read configFilePath 3",config_input_output_alphabetic_options)
     else:
         config_input_output_alphabetic_options = list()
         config_input_output_alphabetic_options=get_template_config_csv_file(config_input_output_numeric_options,config_input_output_alphabetic_options)
         # remove headers row to uniform output to the pd option above that does not read header
     missingIO=get_missing_IO_values(config_input_output_numeric_options, config_input_output_alphabetic_options)
-    # loop through the 4 rows of input file, input primary dir, input secondary dir, output dir
-    # for row in config_input_output_alphabetic_options:
-    #     if row[1]!='': # second column in the config file containing a path
-    #         if config_input_output_full_options=='':
-    #             # TODO Roby added row[2] onward
-    #             config_input_output_full_options=str(row[0]) + ': ' + str(row[1]) + ', ' + str(row[2]) + ', ' + str(row[3]) + ', ' + str(row[4])
-    #         else:
-    #             # TODO Roby added row[2] onward
-    #             config_input_output_full_options = config_input_output_full_options + '\n\n' + str(row[0]) + ': ' + str(row[1]) + ', ' + str(row[2]) + ', ' + str(row[3]) + ', ' + str(row[4]) + '\n'
-    #     # TODO Roby added row[2] onward
-    #     # config_input_output_alphabetic_options.append([row[0],row[1],row[2],row[3],row[4]])
     print("IN read AT END config_input_output_alphabetic_options",config_input_output_alphabetic_options)
     # return config_input_output_alphabetic_options, config_input_output_full_options, missingIO
     return config_input_output_alphabetic_options, missingIO
