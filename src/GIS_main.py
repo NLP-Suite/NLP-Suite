@@ -573,7 +573,10 @@ NER_extractor_checkbox = tk.Checkbutton(window, variable=NER_extractor_var, onva
 NER_extractor_checkbox.config(text="EXTRACT locations (via Stanford CoreNLP NER) - Default parameters")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,NER_extractor_checkbox)
 
-menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
+if os.path.isfile(inputFilename.get()):
+    menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
+else:
+    menu_values = ''
 
 location_field_lb = tk.Label(window, text='Select the column containing location names')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,location_field_lb,True)
@@ -797,5 +800,25 @@ if result!=None:
 
 activate_Google_API_geocode()
 activate_Google_API_Google_Maps()
+
+if inputFilename.get()!='':
+    inputFile = inputFilename.get()
+    if ' (Date: ' in inputFile:
+        char_pos = inputFile.find(' (Date: ')
+        inputFile = inputFile[char_pos:]
+
+if input_main_dir_path.get()!='':
+    inputDir = input_main_dir_path.get()
+    if ' (Date: ' in inputDir:
+        inputDir = 'TEMPORARY FOR TESTING (Date: mm/dd/yyyy _ 2)' # TODO replace
+        char_pos = inputDir.find(' (Date: ')
+        date_item = inputDir[char_pos:]
+        date_item=date_item.replace('(Date: ','') # TODO does NOT replace first blank
+        date_item=date_item.replace(')','')
+        split_date = date_item.split(' ')
+        extract_date_from_filename_var.set(1)
+        date_format.set(split_date[1])
+        date_separator_var.set(split_date[2])
+        date_position_var.set(split_date[3])
 
 GUI_util.window.mainloop()

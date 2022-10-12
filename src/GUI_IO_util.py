@@ -304,7 +304,7 @@ if sys.platform == 'darwin': #Mac OS
     open_reminders_x_coordinate = 570
     open_setup_x_coordinate = 770
     run_button_x_coordinate = 940
-    close_button_x_coordinate = 1070
+    close_button_x_coordinate = 1110
 
     open_IO_config_button = 650
     open_NLP_package_language_config_button = 650

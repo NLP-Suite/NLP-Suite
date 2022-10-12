@@ -88,7 +88,7 @@ def timed_alert(window, timeout, message_title, message_text, time_needed=False,
         if not 'Finished' in message_text and not 'Opening' in message_text:
             message_text = message_text + '\n\nYou can follow the algorithm in command line.'
 
-        GUI_IO_util.message_box_widget(window, message_title, message_text)
+        GUI_IO_util.message_box_widget(window, message_title, message_text, 'OK', timeout)
 
     return time.time()
 

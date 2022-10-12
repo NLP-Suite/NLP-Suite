@@ -12,7 +12,7 @@ import os
 import string
 
 
-from sympy import Q
+# from sympy import Q
 
 import GUI_IO_util
 import IO_files_util
@@ -48,14 +48,14 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
     rep_words_first = []
     rep_words_last = []
 
-    
+
     #print(filtered_lemmas)
 
-    
-    txt = ""
-    
 
-    
+    txt = ""
+
+
+
     for i in range(1, max(conll["Document ID"])+1):
         txt = ""
         doc_conll = conll.loc[conll["Document ID"] == i]
@@ -69,7 +69,7 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
                 txt += l + " "
             else:
                 txt += " " + l
-            
+
         #txt.replace("  ", " ")
         #print(txt)
         sent = sentences = sent_tokenize_stanza(stanzaPipeLine(txt))
@@ -80,7 +80,7 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
             break
 
         for s in sent:
-            
+
             sentenceID = sentenceID + 1
 
             words = word_tokenize_stanza(stanzaPipeLine(s))
@@ -93,13 +93,13 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
                 if sentenceID <= k:
                     result_rep_words_temp.append(["First", k, wrd, wrdID+1, sentenceID, s, i, DOC])
                     rep_words_first.append(wrd)
-                    
+
                 elif sentenceID > len(sentences) - k:
                     result_rep_words_temp.append(["Last", k, wrd, wrdID+1, sentenceID, s, i, DOC])
                     rep_words_last.append(wrd)
-        
+
         result_rep_words.extend([sublist for sublist in result_rep_words_temp if sublist[2] in rep_words_first and sublist[2] in rep_words_last])
-    
+
         df_rep_words = pd.DataFrame(result_rep_words, columns=head_rep_words)
         if df_rep_words.empty:
             outputFilename_rep_words = None
@@ -125,13 +125,13 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
                 filesToOpen.extend(chart_outputFilename_rep_words)
 
 
-    
-    
 
 
-    
-  
-            
+
+
+
+
+
 
 
 
@@ -146,11 +146,11 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
             if(doc_conll["Sentence ID"]<=k):
                 ksentences_first = doc_conll.loc[doc_conll["Sentence ID"]]
 
-            
-                
+
+
             else:
                 ksentences_last = doc_conll.loc[doc_conll["Sentence ID"]]
-                
+
         else:
             ksentences_first = doc_conll.loc[(doc_conll["Sentence ID"] <= k)]
             ksentences_last = doc_conll.loc[(doc_conll["Sentence ID"] > max(doc_conll['Sentence ID']) - k)]

@@ -236,7 +236,7 @@ def run(inputFilename,inputDir,outputDir,
         config_filename_temp = 'shape_of_stories_config.csv'
         config_input_output_numeric_options = [3, 1, 0, 1]
         config_input_output_alphabetic_options = [outputFilename, '','',outputDir]
-        config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
+        config_util.write_IO_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
 
         reminders_util.checkReminder(config_filename,
                                      reminders_util.title_options_shape_of_stories,
