@@ -19,8 +19,8 @@ import config_util
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(1),
-                                                 GUI_height_brief=470, # height at brief display
-                                                 GUI_height_full=510, # height at full display
+                                                 GUI_height_brief=510, # height at brief display
+                                                 GUI_height_full=550, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -39,6 +39,7 @@ package_var = tk.StringVar()
 package_basics_var = tk.StringVar()
 language_var = tk.StringVar()
 language_list = []
+encoding_var = tk.StringVar()
 y_multiplier_integer=0
 
 current_package_lb = tk.Label(window,text='Currently available default NLP package and language')
@@ -54,7 +55,7 @@ window.bind("<Escape>", clear)
 
 def display_available_options():
     global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers
-    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     # print("display",parsers_display_area)
     package_display_area = tk.Label(width=80, height=1, anchor='w', text=str(package_display_area_value), state='disabled')
     # place widget with hover-over info
@@ -83,7 +84,7 @@ package_lb = tk.Label(window,text='NLP package (parser & annotators)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                y_multiplier_integer, package_lb, True)
 package_var.set('Stanford CoreNLP')
-package_menu = tk.OptionMenu(window, package_var, 'Stanford CoreNLP','spaCy','Stanza')
+package_menu = tk.OptionMenu(window, package_var, 'BERT', 'spaCy','Stanford CoreNLP', 'Stanza')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+100,
                                                y_multiplier_integer, package_menu)
 
@@ -141,6 +142,10 @@ global language_menu
 def get_available_languages():
     if package_var.get() == 'Stanford CoreNLP':
         languages_available=['Arabic','Chinese','English', 'German','Hungarian','Italian','Spanish']
+    if package_var.get() == 'BERT':
+        mb.showwarning(title='Option', message='The BERT option is not available yet. Sorry!\n\nPlease, select another option.')
+        package_var.set('Stanford CoreNLP')
+        return
     if package_var.get() == 'spaCy':
         languages_available = spaCy_util.list_all_languages()
     if package_var.get() == 'Stanza':
@@ -176,6 +181,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.show_column, 
                                                show_language_button, False, False, False, False, 90,
                                                GUI_IO_util.open_reminders_x_coordinate,
                                                "Click on the Show button to display the list of selected language(s).")
+
+encoding_lb = tk.Label(window, text='Select encoding type (utf-8 default)')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,encoding_lb, True)
+
+encoding_var.set('utf-8')
+encodingValue = tk.OptionMenu(window,encoding_var,'utf-8','utf-16-le','utf-32-le','latin-1','ISO-8859-1')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+100, y_multiplier_integer,encodingValue)
+
 # memory options
 memory_var_lb = tk.Label(window, text='Memory ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
@@ -188,13 +201,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                memory_var, True)
 
 document_length_var_lb = tk.Label(window, text='Document length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+100, y_multiplier_integer,
                                                document_length_var_lb, True)
 
 document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
 document_length_var.pack()
 document_length_var.set(90000)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+150, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+200, y_multiplier_integer,
                                                document_length_var,True)
 
 limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
@@ -210,6 +223,8 @@ def save_NLP_config(parsers):
     if language_var.get()=='':
         mb.showwarning(title='Warning',message='You must select the language your corpus is written in before saving.')
         return
+    encoding = encoding_var.get()
+
     memory = memory_var.get()
     document_length = document_length_var.get()
     limit_sentence_length = limit_sentence_length_var.get()
@@ -221,9 +236,8 @@ def save_NLP_config(parsers):
     # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
     #   several times in config_util.py
     currently_selected_package_language= {'MAIN NLP PACKAGE': package_var.get(), 'LEMMATIZER PACKAGE': package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
-    print("parsers_display_area",parsers_display_area['text'])
     config_util.save_NLP_package_language_config(window, currently_selected_package_language, parsers_display_area['text'],
-                            memory, document_length, limit_sentence_length)
+                            encoding, memory, document_length, limit_sentence_length)
     display_available_options()
 
 save_button = tk.Button(window, text='SAVE', width=10, height=2, command=lambda: save_NLP_config(parsers))
@@ -300,8 +314,8 @@ def show_language_list():
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Setup INPUT-OUTPUT options':'TIPS_NLP_Setup INPUT-OUTPUT options.pdf'}
-TIPS_options='Setup INPUT-OUTPUT options'
+TIPS_lookup = {'Setup INPUT-OUTPUT options':'TIPS_NLP_Setup INPUT-OUTPUT options.pdf','Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf'}
+TIPS_options='Setup INPUT-OUTPUT options','Text encoding (utf-8)'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -317,17 +331,20 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, using the dropdown menu, select the NLP package to be used as the default package for basic functions, namely, sentence splitter, tokenizer, lemmatizer."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the language(s) your input txt file(s) are written in. Different NLP packages support a different range of languages.\n\nFor those NLP packages that suport multiple languages (e.g., texts written in both English and Chinese), such as Stanza, hit the + button multiple times to add multiple languages.\n\nHit the Reset buttons to start fresh.\n\nHit the Show button to display the current language selection.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,
+                                  "NLP Suite Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                                          "The performance of different NLP tools (e.g., Stanford CoreNLP) is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, hit the SAVE button to save any changes made.")
     y_multiplier_integer = 7.5
-    return y_multiplier_integer
+    return y_multiplier_integer+1
 
 y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
 
 # change the value of the readMe_message
-readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the default NLP package (e.g., spaCy, Stanford CoreNLP, Stanza) and language (e.g., English, Chinese) to be used for parsing and annotating your corpus in a specific language. Different packages support different sets of languages."
+readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the default NLP package (e.g., spaCy, Stanford CoreNLP, Stanza), language (e.g., English, Chinese), and language encoding (e.g., utf-8) to be used for parsing and annotating your corpus in a specific language. Different packages support different sets of languages.\n\n" + \
+                "When Stanford CoreNLP is selected as NLP package, various options become available that apply only to CoreNLP: Memory, Document length (CoreNLP has a maximum processing size of 100,000 characters), Limit sentence length (CoreNLP performance deteriorates rapidly with sentence lengths above 100 words)."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, scriptName, False)
 

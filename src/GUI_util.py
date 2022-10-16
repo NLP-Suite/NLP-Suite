@@ -36,8 +36,8 @@ noLicenceError=False
 # gather GUI info from external file
 # def set_window(size, label, config, config_option):
 def set_window(size, label, config, config_option):
-
     global GUI_size, GUI_label, config_filename, config_input_output_numeric_options
+
     GUI_size, GUI_label, config_filename, config_input_output_numeric_options = size, label, config, config_option
     # window.geometry(GUI_size)
     # window.title(GUI_label)
@@ -71,11 +71,16 @@ window.bind("<Escape>", clear)
 
 #IO widgets
 
-global IO_setup_config_SV
-IO_setup_config_SV = ''
+### TODO Roby commented
+# config_filename =''
+config_input_output_numeric_options=[]
 
 setup_IO_menu_var = tk.StringVar()
-setup_IO_menu = tk.OptionMenu(window, setup_IO_menu_var, 'Default I/O configuration', 'GUI-specific I/O configuration',command=lambda:set_IO_brief_values(config_filename))
+# https://stackoverflow.com/questions/42222626/tkinter-option-menu-widget-add-command-lambda-does-not-produce-expected-command
+###
+# setup_IO_menu = tk.OptionMenu(window, setup_IO_menu_var, 'Default I/O configuration', 'GUI-specific I/O configuration',command=lambda:set_IO_brief_values(config_filename))
+setup_IO_menu = tk.OptionMenu(window, setup_IO_menu_var, 'Default I/O configuration', 'GUI-specific I/O configuration')
+
 IO_setup_var = tk.StringVar()
 
 select_inputFilename_button=tk.Button()
@@ -318,34 +323,12 @@ def selectDirectory_set_options(window, input_main_dir_path,output_dir_path,titl
             input_main_dir_path.set(directoryName)
         else:
             input_secondary_dir_path.set(directoryName)
-    else:
+    else: # OUTPUT
         if (GUI_IO_util.NLPPath + '\\') in directoryName.replace('/','\\'):
             mb.showwarning(title='Warning',
                            message="You have selected an output directory for your scripts that is inside the NLP Suite directory.\n\nPlease, select a different directory and try again.")
             return
         output_dir_path.set(directoryName)
-
-# when called from GUI_util command=lambda we open the file
-# when called from NLP_setup_IO_main we just want to remove the date portion from the filename
-def remove_date_from_filename(inputFile, open):
-    if ' (Date: ' in inputFile:
-        char_pos = inputFile.find(' (Date: ')
-        inputFile = inputFile[:char_pos] # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from the filename
-        inputFile.rstrip()
-    if open:
-        IO_files_util.openFile(window, inputFile)
-    return inputFile
-# when called from GUI_util command=lambda we open the directory
-# when called from NLP_setup_IO_main we just want to remove the date portion from the directory
-def remove_date_from_directory(inputDir, open):
-    if ' (Date: ' in inputDir:
-        char_pos = inputDir.find(' (Date: ')
-        inputDir = inputDir[:char_pos] # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from the dir name
-        inputDir.rstrip()
-    if open:
-        IO_files_util.openExplorer(window, inputDir)
-    return inputDir
-
 
 # configuration_type is the value displayed on the GUI: Default I/O configuration,GUI-specific I/O configuration
 def display_IO_setup(window,IO_setup_display_brief,config_filename, scriptName,silent,*args):
@@ -360,12 +343,12 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename, scriptName,s
         temp_config_filename=config_filename
     silent=False
     if IO_setup_display_brief:
-        date_hover_over_label, IO_setup_display_string = set_IO_brief_values(temp_config_filename)
+        date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missingIO = set_IO_brief_values(temp_config_filename)
 ###
     # the full options must always be displayed, even when the brief option is selected;
     #   the reason is that the IO widgets filename, inputDir, and outputDir are used in all GUI
 
-    run_button_state, answer = activateRunButton(temp_config_filename,IO_setup_display_brief,scriptName,silent)
+    run_button_state, answer = activateRunButton(temp_config_filename,IO_setup_display_brief,scriptName, config_input_output_alphabetic_options, missingIO, silent)
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
     if not answer:
         return
@@ -373,7 +356,7 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename, scriptName,s
         setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent)
 
 # config_filename can be either the Default value or the GUI_specific value depending on setup_IO_menu_var.get()
-def activateRunButton(config_filename,IO_setup_display_brief,scriptName,silent = False):
+def activateRunButton(config_filename,IO_setup_display_brief,scriptName, config_input_output_alphabetic_options, missingIO, silent = False):
     global run_button_state, answer
     if config_input_output_numeric_options == [0,0,0,0]:
         run_button_state = 'disabled'
@@ -381,8 +364,9 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName,silent =
         return
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
     # there is no RUN button when setting up IO information so the call to check_missingIO should be silent
-    config_input_output_alphabetic_options, missingIO=config_util.read_config_file(config_filename, config_input_output_numeric_options)
     run_button_state, answer = config_util.check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_display_brief, silent)
+    if missingIO!='':
+        run_button_state='disabled'
     run_button.configure(state=run_button_state)
     return run_button_state, answer
 
@@ -408,14 +392,15 @@ def set_IO_brief_values(config_filename):
         if config_input_output_alphabetic_options[0][1]!='': # check that there is a file path
             date_hover_over_label = 'The input file does not have a date embedded in the filename'
             # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from filename
-            config_input_output_alphabetic_options[0][1] = remove_date_from_filename(config_input_output_alphabetic_options[0][1],False)
+            config_input_output_alphabetic_options[0][1] = IO_files_util.open_file_removing_date_from_filename(window,config_input_output_alphabetic_options[0][1],False)
     # set the filename value
     # inputFilename.set(config_input_output_alphabetic_options[0][1] + file_date_label)
     # date label already added in NLP_setup_IO_main
-    inputFilename.set(config_input_output_alphabetic_options[0][1])
+    # remove date from filename if present; inputFilename is used in all GUIs
+    inputFilename.set(IO_files_util.open_file_removing_date_from_filename(window,config_input_output_alphabetic_options[0][1],False))
 
     dir_date_label=''
-    if str(config_input_output_alphabetic_options[1][2]) != '':  # data format available
+    if str(config_input_output_alphabetic_options[1][2]) != '':  # date format available
         # dir_date_label = ' (Date: ' + str(config_input_output_alphabetic_options[1][2]) + ' ' + \
         #                  str(config_input_output_alphabetic_options[1][3]) + ' ' + \
         #                  str(int(config_input_output_alphabetic_options[1][4])) + ')'
@@ -428,41 +413,41 @@ def set_IO_brief_values(config_filename):
         if config_input_output_alphabetic_options[1][1]!= '': # check that there is a dir path
             date_hover_over_label = 'The txt files in the input directory do not contain a date embedded in the filename'
             # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from dir name
-            config_input_output_alphabetic_options[1][1] = remove_date_from_directory(
-                config_input_output_alphabetic_options[1][1], False)
+            config_input_output_alphabetic_options[1][1] = IO_files_util.open_directory_removing_date_from_directory(
+                window,config_input_output_alphabetic_options[1][1], False)
     # set the dir value
     # input_main_dir_path.set(config_input_output_alphabetic_options[1][1] + dir_date_label)
     # date label already added in NLP_setup_IO_main
-    input_main_dir_path.set(config_input_output_alphabetic_options[1][1])
+    # remove date in input_main_dir_path since t will be used in ALL GUIs
+    input_main_dir_path.set(IO_files_util.open_directory_removing_date_from_directory(
+                window,config_input_output_alphabetic_options[1][1], False))
     if input_main_dir_path.get()!='':
         inputFilename.set('')
 
     # lay out the display brief widget
     IO_setup_display_string = ''
     # check filename
-    if inputFilename.get()!='': # str(config_input_output_alphabetic_options[0][1])!='':
+    if config_input_output_alphabetic_options[0][1]!='': # str(config_input_output_alphabetic_options[0][1])!='':
         #head is path, tail is filename
-        head, tail = os.path.split(inputFilename.get())
+        head, tail = os.path.split(config_input_output_alphabetic_options[0][1])
         IO_setup_display_string = "INPUT FILE: " + str(tail)
     else:
         # check input directory
-        if input_main_dir_path.get()!= '': # str(config_input_output_alphabetic_options[1][1]) != '':
-            inputDirName = input_main_dir_path.get() # config_input_output_alphabetic_options[1][1]
-            IO_setup_display_string = "INPUT DIR: " + str(os.path.basename(os.path.normpath(inputDirName)))
+        if config_input_output_alphabetic_options[1][1]!= '':
+            IO_setup_display_string = "INPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[1][1])))
 
     # both filename [1] and input Dir [2] are empty
     if (inputFilename.get() == '') and (
             input_main_dir_path.get() == ''):
         IO_setup_display_string = "INPUT FILE:\nINPUT DIR:"
 
-    outputDirName = config_input_output_alphabetic_options[3][1]
-    input_main_dir_path.set(outputDirName)
+    output_dir_path.set(config_input_output_alphabetic_options[3][1])
 
-    IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(os.path.normpath(outputDirName)))
+    IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[3][1])))
 
-    update_display_area(IO_setup_display_string)
+    update_display_area(IO_setup_display_string,IO_setup_brief_display_area)
 
-    return date_hover_over_label, IO_setup_display_string
+    return date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missingIO
 
 def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptName, silent):
     global IO_setup_brief_display_area
@@ -499,17 +484,10 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     IO_setup_brief_display_area = tk.Text(width=60, height=2)
 
     if config_input_output_numeric_options!=[0,0,0,0]:
-        date_hover_over_label, IO_setup_display_string = set_IO_brief_values(config_filename)
-    ###
-    update_display_area(IO_setup_display_string)
-# def update_display_area(IO_setup_display_string):
-#     IO_setup_brief_display_area.delete(0.1, tk.END)
-#     IO_setup_var.set(IO_setup_display_string)
-#     IO_setup_brief_display_area.insert("end", IO_setup_display_string)
-#     # IO_setup_brief_display_area.pack(side=tk.LEFT)
-#     IO_setup_brief_display_area.configure(state='disabled')
+        date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missingIO = set_IO_brief_values(config_filename)
 
-    # file_date_label, dir_date_label, date_hover_over_label, IO_setup_display_string = set_IO_brief_values(config_filename)
+    update_display_area(IO_setup_display_string, IO_setup_brief_display_area)
+
 
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -525,14 +503,14 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     x_coordinate_hover_over = GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_file_button_brief
     # setup a button to open an input file
     openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                     command=lambda:remove_date_from_filename(inputFilename.get(),True))
+                                     command=lambda:IO_files_util.open_file_removing_date_from_filename(window,inputFilename.get(),True))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_file_button_brief, y_multiplier_integer,
                                                    openInputFile_button, True, False, True, False, 90, x_coordinate_hover_over, "Open INPUT file")
 
     # setup a button to open Windows Explorer on the selected INPUT directory
     openInputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                     command=lambda: remove_date_from_directory(input_main_dir_path.get(),True))
+                                     command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get(),True))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_inputDir_button_brief, y_multiplier_integer,
                                                    openInputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open INPUT files directory")
@@ -561,14 +539,15 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_config_file_button_brief, y_multiplier_integer,
                                                    openInputConfigFile_button, True, False, True,False, 90,
                                                    x_coordinate_hover_over, "Open csv config file")
-def update_display_area(IO_setup_display_string, *args):
-    global IO_setup_brief_display_area
+def update_display_area(IO_setup_display_string,IO_setup_brief_display_area):
+    # since IO_setup_brief_display_area is a disabled widget,
+    #   it must be turned to normal temporarily or it will not update
+    IO_setup_brief_display_area.configure(state='normal')
     IO_setup_brief_display_area.delete(0.1, tk.END)
     IO_setup_var.set(IO_setup_display_string)
     IO_setup_brief_display_area.insert("end", str(IO_setup_display_string))
     # IO_setup_brief_display_area.pack(side=tk.LEFT)
     IO_setup_brief_display_area.configure(state='disabled')
-
 
 def IO_config_setup_full (window, y_multiplier_integer):
 
@@ -601,7 +580,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
 
         #setup a button to open Windows Explorer on the selected input file
         openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                            command=lambda: IO_files_util.openFile(window, open_file(inputFilename.get())))
+                            command=lambda: IO_files_util.openFile(window, inputFilename.get()))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
             openInputFile_button, True, False, True, False, 90,
@@ -611,7 +590,6 @@ def IO_config_setup_full (window, y_multiplier_integer):
         date_label=''
         if '(Date: ' in str(inputFilename.get()):
             date_label='The input file has a date embedded in the filename'
-        print("inputFilename",inputFilename.get(),'date_label',date_label)
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                        GUI_IO_util.get_entry_box_x_coordinate(),
@@ -631,7 +609,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
 
         #setup a button to open Windows Explorer on the selected main input directory
         openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width,
-                            text='', command=lambda: remove_date_from_directory(input_main_dir_path.get()))
+                            text='', command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get()))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.get_open_file_directory_coordinate(),
             y_multiplier_integer,
@@ -839,7 +817,7 @@ def get_hover_over_info(package_display_area_value):
 def display_setup_hover_over(y_multiplier_integer):
     global y_multiplier_integer_SV
 
-    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
     hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
 
@@ -858,21 +836,19 @@ def display_setup_hover_over(y_multiplier_integer):
                                                    hover_over_info)
 
     # y_multiplier_integer=y_multiplier_integer-1
-    return y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value
+    return y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var
 
 def handle_setup_options(y_multiplier_integer, scriptName):
     global setup_menu_lb
     package_display_area_value_new=''
-    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
-    y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value = display_setup_hover_over(y_multiplier_integer)
+    y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = display_setup_hover_over(y_multiplier_integer)
 
-    # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
     if setup_menu.get()=='Setup NLP package and corpus language':
-        # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
         call("python NLP_setup_package_language_main.py", shell=True)
         # this will display the correct hover-over info after the python call, in case options were changed
-        y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value_new = display_setup_hover_over(y_multiplier_integer)
+        y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, memory_var, document_length_var, limit_sentence_length_var = display_setup_hover_over(y_multiplier_integer)
         setup_menu.set('Setup')
         # unfortunately the next lines do not Enter/Leave the previous Setup
         # hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
@@ -885,7 +861,7 @@ def handle_setup_options(y_multiplier_integer, scriptName):
         setup_IO_configuration_options(False, scriptName, True)
 
     setup_menu.set("Setup")
-    return error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new
+    return error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, memory_var, document_length_var, limit_sentence_length_var
 
 def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
                videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName='', silent=False, package_display_area_value=''):
@@ -990,8 +966,10 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                  True)
 
     routine = config_filename[:-len('_config.csv')]
+    ### TODO Roby edited
     # get the list of titles available for a given GUI
-    if 'NLP_menu_main' in scriptName or 'Default' in setup_IO_menu_var.get():
+    # if 'NLP_menu_main' in scriptName or 'Default' in setup_IO_menu_var.get():
+    if 'NLP_menu_main' in scriptName:
         config_filename = 'NLP_default_IO_config.csv'
     reminder_options = reminders_util.getReminders_list(config_filename, True)
     # None returned for a faulty reminders.csv
@@ -1082,6 +1060,21 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         temp_config_filename = 'NLP_default_IO_config.csv'
     else:
         temp_config_filename = config_filename
+
+    global IO_setup_config_SV
+    IO_setup_config_SV = ''
+
+    ###
+    def changed_setup_IO_config(*args):
+        global IO_setup_config_SV
+        if setup_IO_menu_var.get() != IO_setup_config_SV:
+            IO_setup_config_SV = setup_IO_menu_var.get()
+            # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
+            display_IO_setup(window, IO_setup_display_brief, config_filename,
+                             config_input_output_numeric_options, scriptName, silent)
+
+    setup_IO_menu_var.trace("w", changed_setup_IO_config)
+    changed_setup_IO_config()
 
     # avoid tracing again since tracing is already done at the bottom of those scripts
     if scriptName!='SVO_main.py' and scriptName!='parsers_annotators_main.py':

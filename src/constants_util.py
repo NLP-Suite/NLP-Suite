@@ -607,8 +607,7 @@ NLP_Suite_corpus_document_tools_menu = \
 '', \
 'WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW', \
 'Corpus/document(s) statistics (Sentences, words, lines)', \
-'Parsers & annotators (CoreNLP, spaCy, Stanza)', \
-'BERT (NER, Sentiment, Syntax, Word embeddings)', \
+'Parsers & annotators (BERT, CoreNLP, spaCy, Stanza)', \
 'CoNLL table analyzer - Search the CoNLL table', \
 'CoNLL table analyzer - Clause, noun, verb, function words frequencies', \
 '', \
@@ -631,12 +630,15 @@ NLP_Suite_corpus_document_tools_menu = \
 'Narrative analysis (ALL options GUI)', \
 'Semantic analysis (via TensorFlow)', \
 'Sentiments/emotions (ALL options GUI)', \
-'Sentiment analysis', \
+'Sentiment analysis (dictionary options: ANEW, hedonometer, SentiWordNet, VADER)', \
+'Sentiment analysis (neural network/tensor options: BERT, spaCy, Stanford CoreNLP, Stanza)', \
 'SRL Semantic Role Labeling', \
 'SVO (Subject-Verb-Object) extractor & visualization', \
 'Wordclouds (ALL options GUI)', \
 'WordNet', \
-'Word2Vec (via Gensim)', \
+'Word embeddings (Word2Vec) (via BERT)', \
+'Word embeddings (Word2Vec) (via Gensim)', \
+'Word embeddings (Word2Vec) (via spaCy)', \
 '', \
 'Style analysis tools -----------------------------------------------------------------------------------', \
 '', \

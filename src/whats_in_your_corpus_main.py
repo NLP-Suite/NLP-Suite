@@ -15,6 +15,7 @@ from subprocess import call
 import GUI_IO_util
 import IO_user_interface_util
 import IO_files_util
+import config_util
 import statistics_txt_util
 import knowledge_graphs_WordNet_util
 import Stanford_CoreNLP_util
@@ -177,7 +178,7 @@ def run(inputFilename,inputDir, outputDir,
             if output != None:
                 filesToOpen.append(output)
         if '*' == corpus_statistics_options_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir,
+            output = statistics_txt_util.process_words(window, config_filename,inputFilename, inputDir, outputDir,
                                                                    openOutputFiles, createCharts, chartPackage)
             if output != None:
                 filesToOpen.append(output)
@@ -187,22 +188,22 @@ def run(inputFilename,inputDir, outputDir,
             if output != None:
                 filesToOpen.append(output)
         if 'capital' in corpus_statistics_options_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir,
                                                                    openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
                 filesToOpen.append(output)
         if 'Short' in corpus_statistics_options_menu_var:
-            output=statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
+            output=statistics_txt_util.process_words(window,config_filename,inputFilename,inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
                 filesToOpen.append(output)
 
         if 'Vowel' in corpus_statistics_options_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
                 filesToOpen.append(output)
 
         if 'Punctuation' in corpus_statistics_options_menu_var:
-            output=statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
+            output=statistics_txt_util.process_words(window,config_filename,inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
                 filesToOpen.append(output)
 
@@ -496,20 +497,15 @@ def run(inputFilename,inputDir, outputDir,
             # run with all default values;
             # checking for txt: NER=='LOCATION', provide a csv output with column: [Locations]
             NERs = ['COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION']
-            extract_date_from_text_var = False
-            extract_date_from_filename_var = False
-            date_format = ''
-            date_separator_var = ''
-            date_position_var = 0
             locations = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                          outputDir_what_else, openOutputFiles,
                                                                          createCharts, chartPackage, 'NER',
                                                                          False,
                                                                          language_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                          NERs=NERs,
-                                                                         extract_date_from_text_var=extract_date_from_text_var,
+                                                                         extract_date_from_text_var=0,
                                                                          extract_date_from_filename_var=extract_date_from_filename_var,
-                                                                         date_format=date_format,
+                                                                         date_format=date_format_var,
                                                                          date_separator_var=date_separator_var,
                                                                          date_position_var=date_position_var)
 
@@ -577,10 +573,6 @@ def run(inputFilename,inputDir, outputDir,
                                                                      'CoreNLP_SVO_quote')
             outputLocations.append(location_filename)
             extract_date_from_text_var = False
-            extract_date_from_filename_var = False
-            date_format_var = ''
-            date_separator_var = ''
-            date_position_var = 0
             google_earth_var = True
             location_filename = location_filename
             gender_var = True
@@ -790,7 +782,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 open_tm_GUI_var.set(0) # topic modeling GUI
 open_GUI_checkbox = tk.Checkbutton(window,text="Open Gensim/MALLET GUI", variable=open_tm_GUI_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,open_GUI_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 500,y_multiplier_integer,open_GUI_checkbox)
 
 def activate_topics(*args):
     if topics_var.get()==True:
@@ -876,13 +868,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_
                                                document_length_var,True)
 
 limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 530, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 500, y_multiplier_integer,
                                                limit_sentence_length_var_lb,True)
 
 limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
 limit_sentence_length_var.pack()
 limit_sentence_length_var.set(100)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 680, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 630, y_multiplier_integer,
                                                limit_sentence_length_var)
 
 what_else_var.set(1)
@@ -934,7 +926,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 open_GIS_GUI_var.set(0) # GIS GUI
 open_GIS_GUI_checkbox = tk.Checkbutton(window,text="Open GIS GUI", state='disabled', variable=open_GIS_GUI_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,open_GIS_GUI_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 500,y_multiplier_integer,open_GIS_GUI_checkbox)
 
 def activate_GIS_GUI(*args):
     if GIS_var.get():
@@ -1032,5 +1024,10 @@ readMe_message="The GUI brings together various Python 3 scripts to buil a pipel
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(config_filename, config_input_output_numeric_options)
+extract_date_from_text_var=0
 
 GUI_util.window.mainloop()

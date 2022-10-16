@@ -209,6 +209,7 @@ http://maps.google.com/mapfiles
 # input_main_dir_path = GUI_util.input_main_dir_path
 
 internetAvailable = False
+errorDisplayed = False
 
 encoding_var = tk.StringVar()
 

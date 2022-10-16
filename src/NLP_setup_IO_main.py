@@ -17,6 +17,7 @@ import tkinter as tk
 import GUI_IO_util
 import config_util
 import reminders_util
+import IO_files_util
 
 if __name__ == '__main__':
     # get arguments from command line
@@ -317,17 +318,10 @@ def save_config(config_input_output_alphabetic_options):
 
     # build current options config_input_output_alphabetic_options, a list of 4 items: path + 3 date items
 
-    # config_option_csv = config_util.get_template_config_csv_file(config_input_output_numeric_options, config_input_output_alphabetic_options)
+
     # config_util.get_template_config_csv_file(config_input_output_numeric_options, config_input_output_alphabetic_options)
 
-    config_util.get_template_config_csv_file(config_input_output_numeric_options, config_input_output_alphabetic_options)
-
     fileType=config_util.getFiletype(config_input_output_numeric_options) # different types of input files
-    IO_configuration_label = \
-                  [fileType,
-                  'Input files directory',
-                  'Input files secondary directory',
-                  'Output files directory']
 
     input_item_date=[]
 
@@ -348,7 +342,7 @@ def save_config(config_input_output_alphabetic_options):
     inputFilename_list.append(fileType)
 
     if not extract_date_from_filename_var.get():
-        fileName_no_date=GUI_util.remove_date_from_filename(GUI_util.inputFilename.get(),False)
+        fileName_no_date=IO_files_util.open_file_removing_date_from_filename(window,GUI_util.inputFilename.get(),False)
         GUI_util.inputFilename.set(fileName_no_date)
     else:
         if GUI_util.inputFilename.get() != '':
@@ -369,7 +363,7 @@ def save_config(config_input_output_alphabetic_options):
     # if GUI_util.input_main_dir_path.get()!='':
     inputDir_list.append('Input files directory')
     if not extract_date_from_filename_var.get():
-        directory_no_date=GUI_util.remove_date_from_directory(GUI_util.input_main_dir_path.get(),False)
+        directory_no_date=IO_files_util.open_directory_removing_date_from_directory(window,GUI_util.input_main_dir_path.get(),False)
         GUI_util.input_main_dir_path.set(directory_no_date)
     else:
         if GUI_util.input_main_dir_path.get() != '':

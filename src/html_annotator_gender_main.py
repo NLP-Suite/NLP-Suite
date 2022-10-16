@@ -25,10 +25,20 @@ import config_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createCharts, chartPackage,
-        CoreNLP_gender_annotator_var, memory_var, CoreNLP_download_gender_file_var, CoreNLP_upload_gender_file_var,
+        CoreNLP_gender_annotator_var, CoreNLP_download_gender_file_var, CoreNLP_upload_gender_file_var,
         annotator_dictionary_var, annotator_dictionary_file_var,personal_pronouns_var,plot_var, year_state_var, firstName_entry_var, new_SS_folders):
 
     filesToOpen=[]
+
+    # get the NLP package and language options
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
+    if package_display_area_value == '':
+        mb.showwarning(title='No setup for NLP package and language',
+                       message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
+        return
+
     # select dict_var with no file_var
     if annotator_dictionary_var==True and annotator_dictionary_file_var=='':
         if annotator_dictionary_file_var=='':
@@ -99,7 +109,6 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.charts_dropdown_field.get(),
 
                 CoreNLP_gender_annotator_var.get(),
-                memory_var.get(),
                 CoreNLP_download_gender_file_var.get(),
                 CoreNLP_upload_gender_file_var.get(),
                 annotator_dictionary_var.get(),
@@ -160,7 +169,7 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 CoreNLP_gender_annotator_var=tk.IntVar()
-memory_var = tk.IntVar()
+
 CoreNLP_download_gender_file_var=tk.IntVar()
 CoreNLP_upload_gender_file_var=tk.IntVar()
 annotator_dictionary_var=tk.IntVar() # to annotate a document using a dictionary
@@ -175,17 +184,7 @@ last_SS_year_var=tk.IntVar()
 new_SS_folders=[]
 
 CoreNLP_gender_annotator_checkbox = tk.Checkbutton(window, text='Annotate nouns & pronouns gender (via CoreNLP Gener annotator - Neural Network)', variable=CoreNLP_gender_annotator_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoreNLP_gender_annotator_checkbox,True)
-
-#memory options
-
-memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer,memory_var_lb,True)
-
-memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
-memory_var.pack()
-memory_var.set(6)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,memory_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoreNLP_gender_annotator_checkbox)
 
 CoreNLP_download_gender_file_checkbox = tk.Checkbutton(window, text='Download CoreNLP gender file', variable=CoreNLP_download_gender_file_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,CoreNLP_download_gender_file_checkbox,True)
@@ -372,7 +371,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     else:
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to run the Stanford CoreNLP gender annotator. The CoreNLP gender annotator is based on CoreNLP annotator which, unfortunately, only has about 60\% accuracy. The algorithm annotates the gender of both first names and personal pronouns (he, him, his, she, her, hers).\n\nThe CoreNLP annotator uses a neural network approach. This annotator requires a great deal of memory. Please, adjust the memory allowing as much memory as you can afford.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to run the Stanford CoreNLP gender annotator. The CoreNLP gender annotator is based on CoreNLP annotator which, unfortunately, only has about 60\% accuracy. The algorithm annotates the gender of both first names and personal pronouns (he, him, his, she, her, hers).\n\nThe CoreNLP annotator uses a neural network approach. This annotator requires a great deal of memory.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the DOWNLOAD checkbox to dowload the Stanford CoreNLP gender file for editing.\n\nTick the UPLOAD checkbox to upload the edited Stanford CoreNLP gender file.\n\nThe CoreNLP gender file has the format JOHN\\MALE with one NAME\\GENDER entry per line. The CoreNLP gender file is found in The default gender mappings file is in the stanford-corenlp-3.5.2-models.jar file. It is called tmp-stanford-models-expanded/edu/stanford/nlp/models/gender/first_name_map_small')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to annotate the first names found in a text using an input dictionary list of gender annotated first names. As a caveat, keep in mind that some first names may be both male and female names (e.g., Jamie in the US) or male and female depending upon the country (e.g., Andrea is a male name in Italy, a female name in the US).\n\nThe algorithm uses the NER PERSON value from the Stanford CoreNLP NER annotator to annotate the gender of proper first names.\n\nThe algorithm also annotates the gender of personal pronouns (he, him, his, she, her, hers, as, respectively, male and female).\n\nThe "Select dictionary file" widget will become available when the "Annotate first names by gender" checkbox is ticked off.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, click on the \'Select dictionary file\' to select the first name file to be used to annotate the first names found in the input text(s) by gender.\n\nSeveral files are available as default files in the lib subdirectory (e.g., the 1990 US census lists, the US Social Security list, Carnegie Mellon lists). But, users can also select any file of their choice.\n\nThe "Select dictionary file" widget will become available when the "Annotate first names by gender" checkbox is ticked off.')
@@ -388,11 +387,6 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordin
 readMe_message="The Python 3 scripts provide ways of annotating text files for the gender (female/male) of first names found in the text.\n\nTwo different types of gender annotation are applied.\n\n  1. Stanford CoreNLP gender annotator. This annotator requires Coref annotator which only has about 60% accuracy.\n\n  2. A second approach is based on a variety of first name lists (e.g., US Census name lists, Social Security lists, Carnegie Mellon lists). As a point of warning, it should be noted that many first names may be both male or female first names (e.g., Jamie in the US), sometimes depending upon the country (e.g., Andrea is a male name in Italy and a female name in the US).\n\nWhether using CoreNLP or dictionary lists, the algorithms also classify the gender of personal pronouns (he, him, his; she, her, hers as male and female, respectively)."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
-
-global error, language
-error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
-language_var = language
-language_list = language
 
 GUI_util.window.mainloop()
 
