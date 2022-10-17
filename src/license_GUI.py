@@ -59,7 +59,7 @@ def save_agreement(*args):
 				mb.showwarning(title='Permission error?',
 							   message="The command failed to create the Config directory.\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
 				return
-		config_util.write_config_file(GUI_util.window, config_filename, config_input_output_numeric_options,
+		config_util.write_IO_config_file(GUI_util.window, config_filename, config_input_output_numeric_options,
 									  current_config_input_output_alphabetic_options)
 		GUI_util.window.destroy()
 agreement_checkbox_var.trace('w',save_agreement)

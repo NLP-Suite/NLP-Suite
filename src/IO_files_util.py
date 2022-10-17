@@ -233,6 +233,28 @@ def openExplorer(window, directory):
             print("OS error in accessing directory")
 
 
+# when called from GUI_util command=lambda we open the file
+# when called from NLP_setup_IO_main we just want to remove the date portion from the filename without opening the file
+def open_file_removing_date_from_filename(window,inputFile, open):
+    if ' (Date: ' in inputFile:
+        char_pos = inputFile.find(' (Date: ')
+        inputFile = inputFile[:char_pos] # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from the filename
+        inputFile.rstrip()
+    if open:
+        openFile(window, inputFile)
+    return inputFile
+
+# when called from GUI_util command=lambda we open the directory
+# when called from NLP_setup_IO_main we just want to remove the date portion from the directory without opening the directory
+def open_directory_removing_date_from_directory(window,inputDir, open):
+    if ' (Date: ' in inputDir:
+        char_pos = inputDir.find(' (Date: ')
+        inputDir = inputDir[:char_pos] # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from the dir name
+        inputDir.rstrip()
+    if open:
+        openExplorer(window, inputDir)
+    return inputDir
+
 # returns date, dateStr
 def getDateFromFileName(file_name, sep='_', date_field_position=2, date_format='mm-dd-yyyy', errMsg=True):
     # configFile_basename is the filename w/o the full path

@@ -623,8 +623,8 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
             nDocsRewritten = 1
             if doNotListIndividualFiles==False:
                 nDocsRewritten = nDocs+1
-            mb.showwarning(title='txt files',
-                           message='The Python 3 wordclouds algorithm has produced '+ str(nDocsRewritten)+' txt file(s) without stopwords, punctuation, and with lemmatized words, depending upon your selected filter options.\n\nYou will find the file(s) in your output directory.\n\nYou can use the file(s) to produce wordclouds using any of the internet wordcloud services.')
+            IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Python wordclouds txt files output',
+                                               'The Python 3 wordclouds algorithm has produced '+ str(nDocsRewritten)+' txt file(s) without stopwords, punctuation, and with lemmatized words, depending upon your selected filter options.\n\nYou will find the file(s) in your output directory.\n\nYou can use the file(s) to produce wordclouds using any of the internet wordcloud services.')
 
     if len(combinedtext) < 1:
         print('All ' + str(NumEmptyDocs) + ' txt files in your input directory\n' + str(

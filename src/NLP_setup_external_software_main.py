@@ -48,7 +48,7 @@ y_multiplier_integer_SV=y_multiplier_integer
 missing_software_var = tk.StringVar()
 
 missing_software_display_area = tk.Entry(width=80, state='disabled', textvariable=missing_software_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate() + 290,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.website_url_placement,
                                                y_multiplier_integer, missing_software_display_area, True)
 
 # software_dir, missing_external_software = IO_libraries_util.get_external_software_dir(scriptName, software_download_var.get(), True, True)
@@ -85,12 +85,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                y_multiplier_integer, software_download_menu,True)
 
 software_website = tk.Label(height=1, anchor='w', text='Website url')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate() + 200,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.website_url_placement,
                                                y_multiplier_integer, software_website, True)
 
 software_website_url_var=tk.StringVar()
 software_website_display_area = tk.Entry(width=80, state='disabled', textvariable=software_website_url_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate() + 290,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.website_url_placement,
                                                y_multiplier_integer, software_website_display_area, True)
 
 error = False

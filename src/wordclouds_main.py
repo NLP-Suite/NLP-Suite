@@ -11,8 +11,7 @@ import os
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.messagebox as mb
-# import requests
-# import webbrowser
+from subprocess import call
 
 
 import IO_internet_util
@@ -35,6 +34,12 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
         max_words, lemmatize, stopwords, punctuation, lowercase, collocation, differentPOS_differentColors,
         prepare_image_var,selectedImage, use_contour_only,
         differentColumns_differentColors, csvField_color_list, openOutputFiles, doNotCreateIntermediateFiles):
+
+    # get the NLP package and language options
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
+
     if len(visualization_tools)==0 and differentColumns_differentColors==False:
         mb.showwarning("Warning",
                        "No options have been selected.\n\nPlease, select an option to run and try again.")
@@ -288,7 +293,10 @@ differentPOS_differentColors_checkbox.config(text="Different colors by POS tags"
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+950,
                                                y_multiplier_integer, differentPOS_differentColors_checkbox)
 
-menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
+menu_values=''
+if os.path.isfile(inputFilename.get()):
+    if inputFilename.get().endswith('csv'):
+        menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 
 prepare_image_checkbox = tk.Checkbutton(window, variable=prepare_image_var,
                                                        onvalue=1, offvalue=0)
@@ -346,7 +354,11 @@ def displayWarning(*args):
 collocation_var.trace('w', displayWarning)
 differentPOS_differentColors_var.trace('w',displayWarning)
 
-menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
+menu_values=''
+
+if os.path.isfile(inputFilename.get()):
+    if inputFilename.get().endswith('csv'):
+        menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 
 field_lb = tk.Label(window, text='Select csv field')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,field_lb,True)
@@ -360,11 +372,12 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 def activateCsvOptions(*args):
     csv_field_var.set('')
     if differentColumns_differentColors_var.get()==True:
-        if inputFilename.get()[-4:]!='.csv':
-            mb.showwarning(title='Input file error', message='The Python 3 wordclouds algorithm expects in input a csv type file.\n\nPlease, select a csv input file and try again.')
-            # differentColumns_differentColors_var.set(0)
-            return
-        csv_field_menu.configure(state='normal')
+        if os.path.isfile(inputFilename.get()):
+            if inputFilename.get()[-4:]!='.csv':
+                mb.showwarning(title='Input file error', message='The Python 3 wordclouds algorithm expects in input a csv type file.\n\nPlease, select a csv input file and try again.')
+                # differentColumns_differentColors_var.set(0)
+                return
+            csv_field_menu.configure(state='normal')
 
     else:
         csv_field_menu.configure(state='disabled')
@@ -487,6 +500,11 @@ def changed_filename(*args):
 
     clear_field_color_list()
     # menu_values is the number of headers in the csv dictionary file
+    if os.path.isfile(inputFilename.get()):
+        if not inputFilename.get().endswith('csv'):
+            return
+    else:
+        return
     menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
     m = csv_field_menu["menu"]
     m.delete(0,"end")
@@ -559,7 +577,7 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 def activate_NLP_options(*args):
     global error, package_basics, package, language_list
-    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 GUI_util.setup_menu.trace('w', activate_NLP_options)
@@ -567,7 +585,8 @@ activate_NLP_options()
 
 if error:
     mb.showwarning(title='Warning',
-               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup widget at the bottom of this GUI.")
+               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
+    call("python NLP_setup_package_language_main.py", shell=True)
 
 title=["NLP setup options"]
 message="Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " + ', '.join(language_list) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " + package_basics + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."

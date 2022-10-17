@@ -31,11 +31,7 @@ import spaCy_util
 # 1: included 0: not included
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
-        memory_var,
-        document_length_var,
-        limit_sentence_length_var,
         manual_Coref, open_GUI,
-        dateInclude, sep, date_field_position, dateFormat,
         parser_var,
         parser_menu_var,
         single_quote,
@@ -44,13 +40,28 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     filesToOpen = []
     outputCoNLLfilePath = ''
 
-    # display_available_options()
-    #changed_NLP_package_set_parsers()
+    if '--------------' in annotators_menu_var:
+        mb.showwarning(title='Only a label',message='Your annotator selection is invalid. It is only a label to make readability of menu options easier.\n\nPlease, select a different option and try again.')
+        return
 
+    # get the NLP package and language options
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = \
+        config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
     if package_display_area_value == '':
         mb.showwarning(title='No setup for NLP package and language',
                        message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
         return
+
+    # get the date options from filename
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        temp_config_filename = 'NLP_default_IO_config.csv'
+    else:
+        temp_config_filename = config_filename
+    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = \
+        config_util.get_date_options(temp_config_filename, config_input_output_numeric_options)
+    extract_date_from_text_var = 0
 
     if parser_var == 0 and CoNLL_table_analyzer_var == 1:
         mb.showinfo("Warning", "You have selected to open the CoNLL table analyser GUI. This option expects to run the parser first.\n\nPlease, tick the CoreNLP parser checkbox and try again.")
@@ -58,6 +69,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     if annotators_var and annotators_menu_var == '':
         mb.showinfo("Warning", "You have selected to run a CoreNLP annotator but no annotator has been selected.\n\nPlease, select an annotator and try try again.")
+        return
+
+    if annotators_menu_var == 'Word embeddings (Word2Vec)':
+        mb.showinfo("Warning", "The 'Word embeddings (Word2Vec)' annotator is not available yet for either BERT or spaCy. Sorry!\n\nPlease, select an annotator and try try again.")
         return
 
 # Stanford CoreNLP ---------------------------------------------------------------------------
@@ -124,10 +139,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                                openOutputFiles, createCharts, chartPackage,
                                                                                annotator, False, #'All POS',
                                                                                language, memory_var, document_length_var, limit_sentence_length_var,
-                                                                               extract_date_from_filename_var=dateInclude,
-                                                                               date_format=dateFormat,
-                                                                               date_separator_var=sep,
-                                                                               date_position_var=date_field_position,
+                                                                               extract_date_from_filename_var=extract_date_from_filename_var,
+                                                                               date_format=date_format_var,
+                                                                               date_separator_var=date_separator_var,
+                                                                               date_position_var=date_position_var,
                                                                                single_quote_var = single_quote)
 
                 if len(tempOutputFiles)>0:
@@ -187,10 +202,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                     annotator, False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
-                                                    extract_date_from_filename_var=dateInclude,
-                                                    date_format=dateFormat,
-                                                    date_separator_var=sep,
-                                                    date_position_var=date_field_position)
+                                                    extract_date_from_filename_var=extract_date_from_filename_var,
+                                                    date_format=date_format_var,
+                                                    date_separator_var=date_separator_var,
+                                                    date_position_var=date_position_var)
 
         if tempOutputFiles == None:
             return
@@ -253,10 +268,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       annotator, False,
                                                       language_list,
                                                       memory_var, document_length_var, limit_sentence_length_var,
-                                                      extract_date_from_filename_var=dateInclude,
-                                                      date_format=dateFormat,
-                                                      date_separator_var=sep,
-                                                      date_position_var=date_field_position)
+                                                      extract_date_from_filename_var=extract_date_from_filename_var,
+                                                      date_format=date_format_var,
+                                                      date_separator_var=date_separator_var,
+                                                      date_position_var=date_position_var)
 
         if tempOutputFiles == None:
             return
@@ -275,9 +290,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             return
         # open the analyzer having saved the new parser output in config so that it opens the right input file
         config_filename_temp = 'conll_table_analyzer_config.csv'
-        config_input_output_numeric_options = [1, 0, 0, 1]
-        config_input_output_alphabetic_options = [str(tempOutputFiles[0]), '','',outputDir]
-        config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
+        config_input_output_numeric_options_temp=[1, 0, 0, 1]
+        # TODO Roby must pass the correct config_input_output_alphabetic_options
+        config_input_output_alphabetic_options = [str(tempOutputFiles[0]), '','',outputDir,date_format_var,date_separator_var,date_position_var]
+        config_util.write_IO_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options_temp, config_input_output_alphabetic_options, True)
 
         reminders_util.checkReminder(config_filename,
                                      reminders_util.title_options_CoNLL_analyzer,
@@ -297,15 +313,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_dropdown_field.get(),
-                                 memory_var.get(),
-                                 document_length_var.get(),
-                                 limit_sentence_length_var.get(),
                                  manual_Coref_var.get(),
                                  open_GUI_var.get(),
-                                 fileName_embeds_date.get(),
-                                 date_separator_var.get(),
-                                 date_position_var.get(),
-                                 date_format.get(),
                                  parser_var.get(),
                                  parser_menu_var.get(),
                                  quote_var.get(),
@@ -322,8 +331,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=520, # height at brief display
-                             GUI_height_full=600, # height at full display
+                             GUI_height_brief=440, # height at brief display
+                             GUI_height_full=520, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -352,6 +361,7 @@ GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_di
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
+
 def clear(e):
     # package.set('Stanford CoreNLP')
     # language.set("English")
@@ -368,8 +378,6 @@ window.bind("<Escape>", clear)
 package = tk.StringVar()
 language = tk.StringVar()
 language_list = []
-memory_var = tk.IntVar()
-date_extractor_var = tk.IntVar()
 CoreNLP_gender_annotator_var = tk.IntVar()
 split_files_var = tk.IntVar()
 quote_extractor_var = tk.IntVar()
@@ -377,11 +385,7 @@ manual_Coref_var = tk.IntVar()
 open_GUI_var = tk.IntVar()
 parser_var = tk.IntVar()
 parser_menu_var = tk.StringVar()
-fileName_embeds_date = tk.IntVar()
 
-date_format = tk.StringVar()
-date_separator_var = tk.StringVar()
-date_position_var = tk.IntVar()
 
 CoNLL_table_analyzer_var = tk.IntVar()
 
@@ -405,98 +409,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                    coreference_button,
                                    False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
                                    "Click on the button to open the GUI")
-
-# memory options
-
-memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               memory_var_lb, True)
-
-memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
-memory_var.pack()
-memory_var.set(4)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100, y_multiplier_integer,
-                                               memory_var,True)
-
-document_length_var_lb = tk.Label(window, text='Document length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
-                                               document_length_var_lb, True)
-
-document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
-document_length_var.pack()
-document_length_var.set(90000)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+150, y_multiplier_integer,
-                                               document_length_var,True)
-
-limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
-                                               limit_sentence_length_var_lb,True)
-
-limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
-limit_sentence_length_var.pack()
-limit_sentence_length_var.set(100)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 550, y_multiplier_integer,
-                                               limit_sentence_length_var)
-
-date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm',
-                                 'yyyy')
-
-fileName_embeds_date_msg = tk.Label()
-date_position_menu_lb = tk.Label()
-date_position_menu = tk.OptionMenu(window, date_position_var, 1, 2, 3, 4, 5)
-date_format_lb = tk.Label()
-date_separator = tk.Entry(window, textvariable=date_separator_var)
-date_separator_lb = tk.Label()
-
-fileName_embeds_date_checkbox = tk.Checkbutton(window, text='Filename embeds date', variable=fileName_embeds_date,
-                                               onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               fileName_embeds_date_checkbox, True)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
-                                               fileName_embeds_date_msg, True)
-
-date_format.set('mm-dd-yyyy')
-date_format_lb = tk.Label(window, text='Date format ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
-                                               date_format_lb, True)
-date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm',
-                                 'yyyy')
-date_format_menu.configure()
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 90, y_multiplier_integer,
-                                               date_format_menu, True)
-
-date_separator_lb = tk.Label(window, text='Date character separator ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 230, y_multiplier_integer,
-                                               date_separator_lb, True)
-
-date_separator_var.set('_')
-date_separator = tk.Entry(window, textvariable=date_separator_var)
-date_separator.configure(width=2)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 390, y_multiplier_integer,
-                                               date_separator, True)
-
-date_position_var.set(2)
-date_position_menu_lb = tk.Label(window, text='Date position ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 440, y_multiplier_integer,
-                                               date_position_menu_lb, True)
-date_position_menu = tk.OptionMenu(window, date_position_var, 1, 2, 3, 4, 5)
-date_position_menu.configure(width=2)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 530, y_multiplier_integer,
-                                               date_position_menu)
-
-
-def check_CoreNLP_dateFields(*args):
-    if fileName_embeds_date.get() == 1:
-        # fileName_embeds_date_msg.config(text="Date option ON")
-        date_format_menu.config(state="normal")
-        date_separator.config(state='normal')
-        date_position_menu.config(state='normal')
-    else:
-        # fileName_embeds_date_msg.config(text="Date option OFF")
-        date_format_menu.config(state="disabled")
-        date_separator.config(state='disabled')
-        date_position_menu.config(state="disabled")
-fileName_embeds_date.trace('w', check_CoreNLP_dateFields)
 
 y_multiplier_integer_SV=y_multiplier_integer
 
@@ -604,18 +516,21 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 annotators_menu_var.set("")
 annotators_menu_var.set("")
 annotators_menu = tk.OptionMenu(window, annotators_menu_var,
-        'Sentence splitter (with sentence length)',
-        'Lemma annotator',
-        'POS annotator',
-        'NER (GUI)',
-        'Coreference PRONOMINAL resolution (Neural Network)',
-        'Sentiment analysis (Neural Network)',
-        'OpenIE - Relation triples extractor (Neural Network)',
-        'SVO extraction (Enhanced++ Dependencies; Neural Network)',
-        '*',
-        'Gender annotator (Neural Network)',
-        'Normalized NER date annotator',
-        'Quote/dialogue annotator (Neural Network)')
+        'Fundamental NLP tools (via BERT, CoreNLP, spaCy, Stanza) -------------------------------------',
+        '   Sentence splitter (with sentence length)',
+        '   Lemma annotator',
+        '   POS annotator',
+        '   NER (GUI)',
+        'Special annotators (via BERT, CoreNLP, sPacy, Stanza) -----------------------------------------',
+        '   Coreference PRONOMINAL resolution (via BERT, CoreNLP, spaCy Neural Network)',
+        '   Sentiment analysis (Neural Network)',
+        '   OpenIE - Relation triples extractor (via CoreNLP Neural Network)',
+        '   SVO extraction (via CoraNLP, spaCy, Stanza)',
+        '   Word embeddings (Word2Vec) (via BERT, Gensim, spaCy)',
+        'More special annotators (CoreNLP only) --------------------------------------------------------',
+        '   Gender annotator (via CoreNLP Neural Network)',
+        '   Normalized NER date annotator (via CoreNLP)',
+        '   Quote/dialogue annotator (via CoreNLP Neural Network)')
 
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
                                                annotators_menu)
@@ -738,12 +653,6 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, click on the 'Coreference resolution' button to open the GUI where you will be able to perform coreference resolution of your input document(s).")
-    # y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-    #                               "Please, click on the 'Setup' button to open the GUI that will allow you to select the NLP package to be used (e.g., spaCy, Stanford CoreNLP, Stanza).\n\nDifferent NLP packages support a different range of languages. The Setup GUI will also allow you to select the language of your input txt file(s).\n\nTHE CURRENT NLP PACKAGE AND LANGUAGE SELECTION IS DISPLAYED IN THE TEXT WIDGET."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "The Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if your filenames embed a date (e.g., The New York Times_12-23-1992).\n\nWhen the date option is ticked, the script will add a date field to the CoNLL table. The date field will be used by other NLP scripts (e.g., Ngrams).\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the following information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy); please, select.\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _); please, enter.\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers); please, select.\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to use the CoreNLP parser to obtain a CoNLL table (CoNLL U format).\n\nThe CoNLL table is the basis of many of the NLP analyses: noun & verb analysis, function words, clause analysis, query CoNLL.\n\nYou have a choice between two types of papers:\n   1. the recommended default Probabilistic Context Free Grammar (PCFG) parser;\n   2. a Neural-network dependency parser.\n\nThe neural network approach is more accurate but much slower.\n\nIn output the scripts produce a CoNLL table with the following 9 fields: ID, FORM, LEMMA, POSTAG, NER (23 classes), HEAD, DEPREL, DEPS, CLAUSAL TAGS (the neural-network parser does not produce clausal tags).\n\nThe following fields will be automatically added to the standard 9 fields of a CoNLL table (CoNLL U format): RECORD NUMBER, DOCUMENT ID, SENTENCE ID, DOCUMENT (INPUT filename), DATE (if the filename embeds a date).\n\nIf you suspect that CoreNLP may have given faulty results for some sentences, you can test those sentences directly on the Stanford CoreNLP website at https://corenlp.run")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -765,7 +674,7 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 def activate_NLP_options(*args):
     global error, parsers, available_parsers, parser_lb, package, package_display_area_value, language, language_list, y_multiplier_integer
-    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new = GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
+    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, memory_var, document_length_var, limit_sentence_length_var = GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
     if package != '':
         available_parsers = 'Parsers for ' + package + '                          '
     else:
@@ -791,6 +700,9 @@ activate_NLP_options()
 
 if error:
     mb.showwarning(title='Warning',
-               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup widget at the bottom of this GUI.")
+               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
+    call("python NLP_setup_package_language_main.py", shell=True)
+    # this will display the correct hover-over info after the python call, in case options were changed
+    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
 GUI_util.window.mainloop()

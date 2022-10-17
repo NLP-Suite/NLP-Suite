@@ -1,6 +1,6 @@
 # Created on Thu Nov 21 09:45:47 2019
 # @author: jack hester
-# rewritten by Roberto Franzosi April 2020, April 2022
+# rewritten by Roberto Franzosi April 2020, April 2022, October 2022
 
 import sys
 import GUI_util
@@ -245,7 +245,10 @@ html_annotator_dictionary_file=tk.Entry(window, width=100,textvariable=html_anno
 html_annotator_dictionary_file.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,html_annotator_dictionary_file)
 
-menu_values=IO_csv_util.get_csvfile_headers(html_annotator_dictionary_file.get())
+menu_values=''
+if os.path.isfile(html_annotator_dictionary_file.get()):
+    if html_annotator_dictionary_file.get().endswith('csv'):
+        menu_values=IO_csv_util.get_csvfile_headers(html_annotator_dictionary_file.get())
 
 field_lb = tk.Label(window, text='Select csv field 1')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,field_lb,True)
@@ -299,7 +302,12 @@ def changed_dictionary_filename(*args):
     csv_field_value_var.set('')
     color_palette_dict_var.set('')
     # menu_values is the number of headers in the csv dictionary file
-    menu_values=IO_csv_util.get_csvfile_headers(html_annotator_dictionary_file.get())
+    menu_values = ''
+    if os.path.isfile(html_annotator_dictionary_file.get()):
+        if html_annotator_dictionary_file.get().endswith('csv'):
+            menu_values=IO_csv_util.get_csvfile_headers(html_annotator_dictionary_file.get())
+        else:
+            return
     m = csv_field1_menu["menu"]
     m.delete(0,"end")
     for s in menu_values:
@@ -339,7 +347,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_
 def get_csv_fieldValues(*args):
     csv_field_value_var.set('')
     color_palette_dict_menu.configure(state='normal')
-    menu_values = IO_csv_util.get_csvfile_headers(html_annotator_dictionary_file.get())
+    if os.path.isfile(html_annotator_dictionary_file.get()):
+        if html_annotator_dictionary_file.get().endswith('csv'):
+            menu_values = IO_csv_util.get_csvfile_headers(html_annotator_dictionary_file.get())
+        else:
+            return
     if csv_field2_var.get()!='':
         menu_field_values = IO_csv_util.get_csv_field_values(html_annotator_dictionary_file.get(), csv_field2_var.get())
     else:

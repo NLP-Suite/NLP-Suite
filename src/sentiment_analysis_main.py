@@ -36,7 +36,6 @@ def run(inputFilename,inputDir,outputDir,
         mean_var,
         median_var,
         SA_algorithm_var,
-        memory_var,
         sentence_index_var,
         shape_of_stories_var):
 
@@ -44,6 +43,15 @@ def run(inputFilename,inputDir,outputDir,
     usedir = False
     flag="" #used by CoreNLP
     filesToOpen = []  # Store all files that are to be opened once finished
+
+    # get the NLP package and language options
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
+    if package_display_area_value == '':
+        mb.showwarning(title='No setup for NLP package and language',
+                       message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
+        return
 
     if SA_algorithm_var=='':
         mb.showwarning('Warning',"No option has been selected.\n\nPlease, select a Sentiment analysis option and try again.")
@@ -77,7 +85,11 @@ def run(inputFilename,inputDir,outputDir,
     anew_var=0
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_'+SA_algorithm_var.lstrip(),
+    if SA_algorithm_var.lstrip()=='*':
+        dirLabel = 'ALL'
+    else:
+        dirLabel = SA_algorithm_var.lstrip()
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_'+ dirLabel,
                                                        silent=False)
     if outputDir == '':
         return
@@ -181,14 +193,6 @@ def run(inputFilename,inputDir,outputDir,
 
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
             return
-        # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Stanford CoreNLP Sentiment Analysis',
-        #                                    'Started running Stanford CoreNLP Sentiment Analysis at', True,
-        #                                    'You can follow CoreNLP in command line.')
-
-        #@ need an additional variable CoreNLP dir and memory_var @
-        # set memory_var if not there
-        if memory_var==0:
-            memory_var=4
         outputFilename = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                           outputDir, openOutputFiles, createCharts, chartPackage,'sentiment', False,
                                                                           language_var,
@@ -236,7 +240,7 @@ def run(inputFilename,inputDir,outputDir,
         config_filename_temp = 'shape_of_stories_config.csv'
         config_input_output_numeric_options = [3, 1, 0, 1]
         config_input_output_alphabetic_options = [outputFilename, '','',outputDir]
-        config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
+        config_util.write_IO_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
 
         reminders_util.checkReminder(config_filename,
                                      reminders_util.title_options_shape_of_stories,
@@ -306,7 +310,6 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                mean_var.get(),
                                median_var.get(),
                                SA_algorithm_var.get(),
-                               memory_var.get(),
                                sentence_index_var.get(),
                                shape_of_stories_var.get())
 
@@ -356,8 +359,6 @@ GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_di
 mean_var = tk.IntVar()
 median_var = tk.IntVar()
 SA_algorithm_var = tk.StringVar()
-memory_var = tk.IntVar()
-memory_var_lb = tk.Label(window, text='Memory ')
 
 sentence_index_var = tk.IntVar()
 shape_of_stories_var = tk.IntVar()
@@ -420,28 +421,6 @@ SA_algorithm_menu = tk.OptionMenu(window,SA_algorithm_var,*SA_algorithms)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,SA_algorithm_menu)
 
 y_multiplier_integerSV=y_multiplier_integer-1
-
-def activate_memory_var(*args):
-
-    global memory_var, y_multiplier_integer, language_menu
-    if 'spaCy' in SA_algorithm_var.get() or 'Stanford CoreNLP' in SA_algorithm_var.get() or 'Stanza' in SA_algorithm_var.get() or SA_algorithm_var.get()=='*':
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+850, y_multiplier_integerSV,
-                                                       memory_var_lb, True)
-
-        memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
-        memory_var.pack()
-        memory_var.set(6)
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+920,
-                                                       y_multiplier_integerSV, memory_var)
-    else:
-        memory_var_lb.place_forget() #invisible
-        try:
-            memory_var.place_forget() #invisible
-        except:
-            return
-SA_algorithm_var.trace('w',activate_memory_var)
-
-activate_memory_var()
 
 sentence_index_var.set(0)
 sentence_index_checkbox = tk.Checkbutton(window, state='disabled', text='Do sentiments fluctuate across a document (Sentiment scores by sentence index)', variable=sentence_index_var, onvalue=1, offvalue=0)
@@ -528,7 +507,7 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 def activate_NLP_options(*args):
     global error, package_basics, package, language_var, language_list
-    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 GUI_util.setup_menu.trace('w', activate_NLP_options)
@@ -536,7 +515,8 @@ activate_NLP_options()
 
 if error:
     mb.showwarning(title='Warning',
-               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup widget at the bottom of this GUI.")
+               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
+    call("python NLP_setup_package_language_main.py", shell=True)
 
 title=["NLP setup options"]
 message="Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " + ', '.join(language_list) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " + package_basics + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."

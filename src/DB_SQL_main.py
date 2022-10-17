@@ -126,8 +126,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=580, # height at brief display
-                                                 GUI_height_full=620, # height at full display
+                                                 GUI_height_brief=660, # height at brief display
+                                                 GUI_height_full=700, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -195,9 +195,9 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 openInputFile_button = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, select_SQLite_DB_var.get()))
 # place widget with hover-over info
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,openInputFile_button,True, False, True,False, 90, GUI_IO_util.get_labels_x_coordinate()+190, "Open INPUT SQLite database")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200, y_multiplier_integer,openInputFile_button,True, False, True,False, 90, GUI_IO_util.get_labels_x_coordinate()+190, "Open INPUT SQLite database")
 
-SQLite_DB_file=tk.Entry(window, width=100,textvariable=select_SQLite_DB_var)
+SQLite_DB_file=tk.Entry(window, width=GUI_IO_util.SQLite_DB_file_width,textvariable=select_SQLite_DB_var)
 SQLite_DB_file.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,SQLite_DB_file)
 
@@ -247,21 +247,21 @@ def get_complex_simplex_list(tableName):
     menu=''
     return menu
 
-complex_objects_lb = tk.Label(window, text='Which complex objects do you want to see? ')
+complex_objects_lb = tk.Label(window, text='Select complex object ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,complex_objects_lb,True)
 
 complex_objects_var = tk.StringVar()
 menu = get_complex_simplex_list('setup_Complex')
 complex_objects = tk.OptionMenu(window,complex_objects_var, menu)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,complex_objects)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200, y_multiplier_integer,complex_objects)
 
-simplex_objects_lb = tk.Label(window, text='Which simplex objects do you want to see? ')
+simplex_objects_lb = tk.Label(window, text='Select simplex object ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,simplex_objects_lb,True)
 
 simplex_objects_var = tk.StringVar()
 menu = get_complex_simplex_list('setup_Simplex')
 simplex_objects = tk.OptionMenu(window,simplex_objects_var, menu)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,simplex_objects)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200, y_multiplier_integer,simplex_objects)
 
 select_DB_tables_lb = tk.Label(window, text='Select DB table ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_DB_tables_lb,True)
