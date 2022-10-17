@@ -516,7 +516,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 annotators_menu_var.set("")
 annotators_menu_var.set("")
 annotators_menu = tk.OptionMenu(window, annotators_menu_var,
-        'Fundamental NLP tools (via BERT, CoreNLP, sPacy, Stanza) -------------------------------------',
+        'Fundamental NLP tools (via BERT, CoreNLP, spaCy, Stanza) -------------------------------------',
         '   Sentence splitter (with sentence length)',
         '   Lemma annotator',
         '   POS annotator',

@@ -293,8 +293,10 @@ differentPOS_differentColors_checkbox.config(text="Different colors by POS tags"
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+950,
                                                y_multiplier_integer, differentPOS_differentColors_checkbox)
 
-# TODO Roby check for filename exists
-menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
+menu_values=''
+if os.path.isfile(inputFilename.get()):
+    if inputFilename.get().endswith('csv'):
+        menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 
 prepare_image_checkbox = tk.Checkbutton(window, variable=prepare_image_var,
                                                        onvalue=1, offvalue=0)
@@ -352,8 +354,11 @@ def displayWarning(*args):
 collocation_var.trace('w', displayWarning)
 differentPOS_differentColors_var.trace('w',displayWarning)
 
-# TODO Roby check for filename exists
-menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
+menu_values=''
+
+if os.path.isfile(inputFilename.get()):
+    if inputFilename.get().endswith('csv'):
+        menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 
 field_lb = tk.Label(window, text='Select csv field')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,field_lb,True)
@@ -367,12 +372,12 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 def activateCsvOptions(*args):
     csv_field_var.set('')
     if differentColumns_differentColors_var.get()==True:
-        # TODO Roby check for filename exists
-        if inputFilename.get()[-4:]!='.csv':
-            mb.showwarning(title='Input file error', message='The Python 3 wordclouds algorithm expects in input a csv type file.\n\nPlease, select a csv input file and try again.')
-            # differentColumns_differentColors_var.set(0)
-            return
-        csv_field_menu.configure(state='normal')
+        if os.path.isfile(inputFilename.get()):
+            if inputFilename.get()[-4:]!='.csv':
+                mb.showwarning(title='Input file error', message='The Python 3 wordclouds algorithm expects in input a csv type file.\n\nPlease, select a csv input file and try again.')
+                # differentColumns_differentColors_var.set(0)
+                return
+            csv_field_menu.configure(state='normal')
 
     else:
         csv_field_menu.configure(state='disabled')
@@ -495,7 +500,11 @@ def changed_filename(*args):
 
     clear_field_color_list()
     # menu_values is the number of headers in the csv dictionary file
-    # TODO Roby check for filename exists
+    if os.path.isfile(inputFilename.get()):
+        if not inputFilename.get().endswith('csv'):
+            return
+    else:
+        return
     menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
     m = csv_field_menu["menu"]
     m.delete(0,"end")

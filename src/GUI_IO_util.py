@@ -284,45 +284,80 @@ def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False
     return y_multiplier_integer
 
 if sys.platform == 'darwin': #Mac OS
-    about_button_x_coordinate = 330 # get_labels_x_coordinate() + 100
-    release_history_button_x_coordinate = 510 # get_labels_x_coordinate() + 100
-    team_button_x_coordinate = 690 # get_labels_x_coordinate() + 100
-    cite_button_x_coordinate = 870 # get_labels_x_coordinate() + 100
+    about_button_x_coordinate = 330
+    release_history_button_x_coordinate = 510
+    team_button_x_coordinate = 690
+    cite_button_x_coordinate = 870
 
     help_button_x_coordinate = 70
     labels_x_coordinate = 150  # start point of all labels in the second column (first column after ? HELP)
     labels_x_indented_coordinate = 160
+    entry_box_x_coordinate = 470 #start point of all labels in the third column (second column after ? HELP); where IO filename, dir, etc. are displayed
+
+# top line of widgets MAC
     select_file_directory_button_width=23
     open_file_directory_button_width = 1
-    open_file_directory_coordinate = 400 # # position of menu of default and GUI specific IO options
+    open_file_directory_coordinate = 410 # position of menu of default and GUI specific IO options
     IO_button_name_width=1
+    setup_pop_up_text_widget = 620
     setup_IO_brief_coordinate = 650 # Position of text entry for Input and Output display
-    entry_box_x_coordinate = 470 #start point of all labels in the third column (second column after ? HELP); where IO filename, dir, etc. are displayed
+    open_IO_config_button = 650
+
+    # 4 small widgets to the right of top line MAC
+    open_file_button_brief = 715 # the left-most button of the four buttons displayed on the far right of top line of every GUI
+    open_inputDir_button_brief = 760
+    open_outputDir_button_brief = 805
+    open_config_file_button_brief = 850
+
+# bottom line of widgets MAC
     read_button_x_coordinate = 70
     watch_videos_x_coordinate = 200
     open_TIPS_x_coordinate = 370
     open_reminders_x_coordinate = 570
-    open_setup_x_coordinate = 770
-    run_button_x_coordinate = 940
-    close_button_x_coordinate = 1110
-
-    open_IO_config_button = 650
     open_NLP_package_language_config_button = 650
     open_setup_software_button = 650
-
-    open_file_button_brief = 700 # the left-most button of the four buttons displayed on the far right of top line of every GUI
-    open_inputDir_button_brief = 740
-    open_outputDir_button_brief = 780
-    open_config_file_button_brief = 820
+    open_setup_x_coordinate = 770
+    run_button_x_coordinate = 940
+    close_button_x_coordinate = 1070
 
 # --------------------------------------------------- special internal GUI specific values MAC
-# SVO_main Mac
-    SVO_1st_column = 120
+# Mac NLP_setup_package_language_main
+    language_widget_with=50
+    plus_column = 992
+    reset_column = 1045
+    show_column = 1125
 
-    date_character_separator_label = 920
-    date_character_separator_menu = 1050
-    date_position_label = 1100
-    date_position_menu = 1160
+# MAC NLP_setup_IO_main Mac
+    date_format_coordinate = 530
+    date_char_sep_lb_coordinate = 690
+    date_char_sep_coordinate = 825
+    date_position_lb_coordinate = 900
+    date_position_coordinate = 970
+
+# MAC NLP_setup_external_software_main.py
+    missing_software_display_area_width = 60
+    website_url_placement = 500
+
+# MAC DB_SQL_main
+    SQLite_DB_file_width = 80
+    simplex_complex_files_dropdown = 425 # Complex/Simplex objects do you want to see? dropdowns
+    select_DB_table_field = 500
+
+# MAC GIS_Google_Earth_main.py
+    reset_button = 552
+    icon_type_button = 520
+    group_label = 1125
+    select_icon_color = 820
+    display_icon = select_icon_color + 100
+
+# MAC GIS_distance_main.py
+    GIS_distance_labels_align = 150+370 #TODO changed from get_labels_x_coordinate()+350 to GIS_distance_labels_align
+
+# MAC GIS_main.py
+    geocoder_label_loc = 315
+
+# MAC SVO_main Mac
+    SVO_1st_column = 120
 
     open_S_dictionary = 260
     lemmatize_S = 320
@@ -340,57 +375,80 @@ if sys.platform == 'darwin': #Mac OS
     dictionary_V_width=60
     dictionary_O_width=60
 
-    # Mac NLP_setup_package_language_main
-    language_widget_with=50
-    plus_column = 982
-    reset_column = 1035
-    show_column = 1115
-
-    # CoNLL_table_analyzer_main
+# MAC CoNLL_table_analyzer_main
     combobox_position = 210
     combobox_width = 40
 
+# MAC html_annotator_gender_main
+    annotator_dictionary_file_width = 80
+    select_dictionary_file_button = 400
+    select_dictionary_file_annotator = 475
+    SS_folder_width = 70
+    by_type_dropdown = 520
+    select_SS_folder = 1160
+
 else: #windows and anything else
-    about_button_x_coordinate = 230 # get_labels_x_coordinate() + 100
-    release_history_button_x_coordinate = 400 # get_labels_x_coordinate() + 100
-    team_button_x_coordinate = 570 # get_labels_x_coordinate() + 100
-    cite_button_x_coordinate = 740 # get_labels_x_coordinate() + 100
-    help_button_x_coordinate = 70
+    about_button_x_coordinate = 230
+    release_history_button_x_coordinate = 400
+    team_button_x_coordinate = 570
+    cite_button_x_coordinate = 740
+
     help_button_x_coordinate = 50
     labels_x_coordinate = 120  # start point of all labels in the second column (first column after ? HELP)
     labels_x_indented_coordinate = 140
+
+# top line of widgets Windows
     select_file_directory_button_width=30
     IO_button_name_width=30
     open_file_directory_button_width = 3
     open_file_directory_coordinate = 350 # position of menu of default and GUI specific IO options
+    setup_pop_up_text_widget = 560
     setup_IO_brief_coordinate = 600 # Position of text entry for Input and Output display
     entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
-    read_button_x_coordinate = 50
-    watch_videos_x_coordinate = 170
-    open_TIPS_x_coordinate = 350
-    open_reminders_x_coordinate = 550
-    open_setup_x_coordinate = 750
-    run_button_x_coordinate = 940
-    close_button_x_coordinate = 1050
 
-    open_IO_config_button = 820
-    open_NLP_package_language_config_button = 820
-    open_setup_software_button = 820
-
+    # 4 small widgets to the right of top line
     open_file_button_brief = 760 # the left-most button of the four buttons displayed on the far right of top line of every GUI
     open_inputDir_button_brief = 800
     open_outputDir_button_brief = 840
     open_config_file_button_brief = 880
 
-    # special internal GUI specific values WINDOWS
+# top line of widgets Windows
+    read_button_x_coordinate = 50
+    watch_videos_x_coordinate = 170
+    open_TIPS_x_coordinate = 350
+    open_reminders_x_coordinate = 550
+    open_setup_x_coordinate = 750
+    open_IO_config_button = 820
+    open_NLP_package_language_config_button = 820
+    open_setup_software_button = 820
+    run_button_x_coordinate = 940
+    close_button_x_coordinate = 1050
 
-    # Windows NLP_setup_package_language_main
+# WINDOWS special internal GUI specific values WINDOWS -----------------------------------------------------------
+
+# Windows NLP_setup_package_language_main
     language_widget_with=70
     plus_column = 920
     reset_column = 960
     show_column = 1020
 
-# SVO_main Windows
+# Windows NLP_setup_IO_main
+    date_format_coordinate = 460
+    date_char_sep_lb_coordinate = 620
+    date_char_sep_coordinate = 745
+    date_position_lb_coordinate = 810
+    date_position_coordinate = 880
+
+# Windows  NLP_setup_external_software_main.py
+    missing_software_display_area_width = 80
+    website_url_placement = 640
+
+# Windows DB_SQL_main
+    SQLite_DB_file_width = 100
+    simplex_complex_files_dropdown = 390  # Complex/Simplex objects do you want to see? dropdowns
+    select_DB_table_field = 500
+
+# Windows SVO_main
     SVO_1st_column = 120
 
     date_character_separator_label = 920
@@ -414,9 +472,17 @@ else: #windows and anything else
     dictionary_V_width=60
     dictionary_O_width=60
 
-    # CoNLL_table_analyzer_main
+# Windows CoNLL_table_analyzer_main
     combobox_position = 200
     combobox_width = 50
+
+# Windows html_annotator_gender_main
+    annotator_dictionary_file_width = 100
+    select_dictionary_file_button = 310
+    select_dictionary_file_annotator = 370
+    SS_folder_width = 110
+    by_type_dropdown = 470
+    select_SS_folder = 1070
 
 basic_y_coordinate = 90
 y_step = 40 #the line-by-line increment on the GUI
@@ -560,7 +626,7 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
 
         screen_height = top_message.winfo_height()
         button = tk.Button(top_message, text="OK", command=top_message.destroy, fg='red')
-        button.place(x=5, y=screen_height - 35)
+        button.place(x=5, y=screen_height - 35) # place OK button
         denominator1 = 1000
         denominator2 = 500
         if "Started running" in message_text or "Finished running" in message_text:
@@ -582,16 +648,16 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
 
         Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'), fg='red')
         No = tk.Button(top_message, text="No", command=lambda: wait_for_answer('No'), fg='red')
-        Yes.place(x=5, y=screen_height - 35)
-        No.place(x=50, y=screen_height - 35)
+        Yes.place(x=5, y=screen_height - 35) # place Yes button
+        No.place(x=65, y=screen_height - 35) # place No button
 
         question = tk.Label(top_message, text='Do you want to see this message again?', fg='red')
         countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
         countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
 
         question.place(x=5, y=screen_height - 60)
-        countdownLabel1.place(x=110, y=screen_height - 35)
-        countdownLabel2.place(x=320, y=screen_height - 35)
+        countdownLabel1.place(x=125, y=screen_height - 35)
+        countdownLabel2.place(x=335, y=screen_height - 35)
         countdown(int(timeout / 1000))
 
     elif buttonType == 'Yes-No-Cancel':

@@ -73,7 +73,8 @@ GUI_label = 'Graphical User Interface (GUI) for Setting Up Input/Output, I/O, Op
 # define variables
 y_multiplier_integer = 0
 # GUI_size is reset many times in the script
-GUI_size = '1200x290'
+GUI_width=str(GUI_IO_util.get_GUI_width(2))
+GUI_size = GUI_width + 'x290'
 
 extract_date_from_filename_var = tk.IntVar()
 date_format_var = tk.StringVar()
@@ -84,21 +85,21 @@ date_position_var = tk.IntVar()
 if ((config_input_output_numeric_options[0] == 0 and config_input_output_numeric_options[1] != 0)
     or (config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] == 0)) \
         and config_input_output_numeric_options[2] == 0:
-    GUI_size = '1200x340'
+    GUI_size = GUI_width + 'x340'
 
 # either input file or dir (for corpus) and secondary dir
 if ((config_input_output_numeric_options[0] == 0 and config_input_output_numeric_options[1] != 0)
     or (config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] == 0)) \
         and config_input_output_numeric_options[2] != 0:
-    GUI_size = '1200x380'
+    GUI_size = GUI_width + 'x380'
 
 # both input file and dir (for corpus) and no secondary dir
 if config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] != 0 and config_input_output_numeric_options[2] == 0:
-    GUI_size = '1200x380'
+    GUI_size = GUI_width + 'x380'
 
 # both input file and dir (for corpus) and secondary dir
 if config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] != 0 and config_input_output_numeric_options[2] != 0:
-    GUI_size = '1200x420'
+    GUI_size = GUI_width + 'x420'
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -202,25 +203,23 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_co
                                                y_multiplier_integer, date_format_lb, True)
 date_format_var.set('mm-dd-yyyy')
 date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
-# date_format_menu.configure(width=10,state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 70,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_format_coordinate,
                                                y_multiplier_integer, date_format_menu, True)
 date_separator_var.set('_')
 date_separator_lb = tk.Label(window, text='Character separator ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 220,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_char_sep_lb_coordinate,
                                                y_multiplier_integer, date_separator_lb, True)
 
 date_separator = tk.Entry(window, textvariable=date_separator_var, width=3)
-# date_separator.configure(width=2,state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 340,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_char_sep_coordinate,
                                                y_multiplier_integer, date_separator, True)
 
 date_position_menu_lb = tk.Label(window, text='Position ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 390,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_position_lb_coordinate,
                                                y_multiplier_integer, date_position_menu_lb, True)
 date_position_var.set(2)
 date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 450,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_position_coordinate,
                                                y_multiplier_integer, date_position_menu)
 
 def check_dateFields(*args):

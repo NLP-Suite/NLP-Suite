@@ -1061,4 +1061,9 @@ else:
 
 display_icon_image(pic_url, y_multiplier_integer_save)
 
+if inputFilename.get()=='':
+    print("error1")
+else:
+    if not inputFilename.get().endswith('csv'):
+        print("error 2")
 GUI_util.window.mainloop()

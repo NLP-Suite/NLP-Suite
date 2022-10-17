@@ -20,7 +20,8 @@ import GUI_IO_util
 
 def run(inputFilename,inputdirname, outdirname,
         open_csv_output_checkbox,
-         create_chart_output_checkbox,
+        create_chart_output_checkbox,
+        charts_dropdown_field,
         characters_NER_var,
         characters_WordNet_var,
         characters_DBpedia_YAGO_var,
@@ -78,19 +79,19 @@ def run(inputFilename,inputdirname, outdirname,
         call("python knowledge_graphs_WordNet_main.py", shell=True)
 
     if characters_DBpedia_YAGO_var == True or characters_DBpedia_YAGO_var == True or space_DBpedia_YAGO_var==True or action_DBpedia_YAGO_var == True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_main.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_DBpedia_YAGO_main.py') == False:
             return
-        call("python knowledge_graphs_main.py", shell=True)
+        call("python knowledge_graphs_DBpedia_YAGO_main.py", shell=True)
 
     if characters_byGender_CoreNLP_var == True or characters_DBpedia_YAGO_var == True or characters_byGender_dict_var == True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('annotator_gender_main.py') == False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_gender_main.py') == False:
             return
-        call("python annotator_gender_main.py", shell=True)
+        call("python html_annotator_gender_main.py", shell=True)
 
     if story_plot_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('parsers_annotators_main.py') == False:
             return
-        call("parsers_annotators_main.py", shell=True)
+        call("python parsers_annotators_main.py", shell=True)
 
     if space_GIS_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('GIS_main.py')==False:

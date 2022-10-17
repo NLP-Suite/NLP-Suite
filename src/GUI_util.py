@@ -475,7 +475,7 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     # setup button to open a pop-up text entry widget where users can paste text to be used instead of an input file
     openTextWidget_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='')
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate-40, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
                             openTextWidget_button, True, False, True, False, 90,
                             GUI_IO_util.read_button_x_coordinate, "Button currently not used. Will eventually open a pop-up text-entry widget where users can paste text to be used temporarily to run the algorithms behind the GUI, instead of either Default or GUI-specific INPUT options.")
 
@@ -880,7 +880,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # "IO_setup_main" has no Excel display
     # GUIs that serve only as frontend GUIs for more specialized GUIs should NOT display Open ooutput and Excel tickboxes
-    #   that is the case, for instance, in narrative_analysis_main
+    #   that is the case, for instance, in narrative_analysis_ALL_main
+    #   that is the case, for instance, in narrative_analysis_ALL_main
     #   in this case config_input_output_numeric_options = [0,0,0,0]
     if config_input_output_numeric_options!= [0,0,0,0] and \
             not 'NLP_menu_main' in scriptName and \

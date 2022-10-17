@@ -26,7 +26,7 @@ import config_util
 
 #config_filename has no path;
 # config_input_output_numeric_options is set to [0 0,0,0] for GUIs that are placeholders for more specialized GUIs
-#   in these cases (e.g., narrative_analysis_main, there are no I/O options to save
+#   in these cases (e.g., narrative_analysis_ALL_main, there are no I/O options to save
 # current_config_input_output_alphabetic_options value returned in GUI_util by config_util.read_config_file
 # called from GUI_util when hitting CLOSE
 def exit_window(window, local_release_version, GitHub_release_version):
