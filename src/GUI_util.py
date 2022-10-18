@@ -379,50 +379,41 @@ def set_IO_brief_values(config_filename):
                                                                 config_input_output_numeric_options)
     date_hover_over_label=''
 
-    file_date_label=''
-    if str(config_input_output_alphabetic_options[0][2]) != '':  # date format available
-        # file_date_label = ' (Date: ' + str(config_input_output_alphabetic_options[0][2]) + ' ' + \
-        #                   str(config_input_output_alphabetic_options[0][3]) + ' ' + \
-        #                   str(int(config_input_output_alphabetic_options[0][4])) + ')'
-        date_hover_over_label = 'The input file has a date embedded in the filename with the following values:\n' \
-                                'Date format: ' + str(config_input_output_alphabetic_options[0][2]) + \
-                                ' Date character(s) separator: ' + str(config_input_output_alphabetic_options[0][3]) + \
-                                ' Date position: ' + str(config_input_output_alphabetic_options[0][4])
-    else:
-        if config_input_output_alphabetic_options[0][1]!='': # check that there is a file path
+# checking inputFilename -----------------------------------------------------
+    if config_input_output_alphabetic_options[0][1] != '':  # check that there is a file path
+        # date label already added in NLP_setup_IO_main
+        # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from filename since it will be used in ALL GUIs
+        inputFilename.set(IO_files_util.open_file_removing_date_from_filename(window,config_input_output_alphabetic_options[0][1],False))
+        input_main_dir_path.set('')
+        file_date_label=''
+        if str(config_input_output_alphabetic_options[0][2]) != '':  # date format available
+            date_hover_over_label = 'The input file has a date embedded in the filename with the following values:\n' \
+                                    'Date format: ' + str(config_input_output_alphabetic_options[0][2]) + \
+                                    ' Date character(s) separator: ' + str(config_input_output_alphabetic_options[0][3]) + \
+                                    ' Date position: ' + str(config_input_output_alphabetic_options[0][4])
+        else:
             date_hover_over_label = 'The input file does not have a date embedded in the filename'
-            # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from filename
-            config_input_output_alphabetic_options[0][1] = IO_files_util.open_file_removing_date_from_filename(window,config_input_output_alphabetic_options[0][1],False)
-    # set the filename value
-    # inputFilename.set(config_input_output_alphabetic_options[0][1] + file_date_label)
-    # date label already added in NLP_setup_IO_main
-    # remove date from filename if present; inputFilename is used in all GUIs
-    inputFilename.set(IO_files_util.open_file_removing_date_from_filename(window,config_input_output_alphabetic_options[0][1],False))
+            # # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from filename
+            # config_input_output_alphabetic_options[0][1] = IO_files_util.open_file_removing_date_from_filename(window,config_input_output_alphabetic_options[0][1],False)
 
-    dir_date_label=''
-    if str(config_input_output_alphabetic_options[1][2]) != '':  # date format available
-        # dir_date_label = ' (Date: ' + str(config_input_output_alphabetic_options[1][2]) + ' ' + \
-        #                  str(config_input_output_alphabetic_options[1][3]) + ' ' + \
-        #                  str(int(config_input_output_alphabetic_options[1][4])) + ')'
-        if date_hover_over_label == '':
-            date_hover_over_label = 'The txt files in the input directory contain a date embedded in the filename with the following values:\n' + \
-                        'Date format: ' + str(config_input_output_alphabetic_options[1][2]) + \
-                        ' Date character(s) separator: ' + str(config_input_output_alphabetic_options[1][3]) + \
-                        ' Date position: ' + str(config_input_output_alphabetic_options[1][4])
-    else:
-        if config_input_output_alphabetic_options[1][1]!= '': # check that there is a dir path
+# checking input directory  -----------------------------------------------------
+    if config_input_output_alphabetic_options[1][1] != '':  # check that there is a dir path
+        # date label already added in NLP_setup_IO_main
+        # remove date in input_main_dir_path since it will be used in ALL GUIs
+        input_main_dir_path.set(IO_files_util.open_directory_removing_date_from_directory(
+            window, config_input_output_alphabetic_options[1][1], False))
+        dir_date_label=''
+        if str(config_input_output_alphabetic_options[1][2]) != '':  # date format available
+            if date_hover_over_label == '':
+                date_hover_over_label = 'The txt files in the input directory contain a date embedded in the filename with the following values:\n' + \
+                            'Date format: ' + str(config_input_output_alphabetic_options[1][2]) + \
+                            ' Date character(s) separator: ' + str(config_input_output_alphabetic_options[1][3]) + \
+                            ' Date position: ' + str(config_input_output_alphabetic_options[1][4])
+        else: # no date available
             date_hover_over_label = 'The txt files in the input directory do not contain a date embedded in the filename'
             # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from dir name
             config_input_output_alphabetic_options[1][1] = IO_files_util.open_directory_removing_date_from_directory(
                 window,config_input_output_alphabetic_options[1][1], False)
-    # set the dir value
-    # input_main_dir_path.set(config_input_output_alphabetic_options[1][1] + dir_date_label)
-    # date label already added in NLP_setup_IO_main
-    # remove date in input_main_dir_path since t will be used in ALL GUIs
-    input_main_dir_path.set(IO_files_util.open_directory_removing_date_from_directory(
-                window,config_input_output_alphabetic_options[1][1], False))
-    if input_main_dir_path.get()!='':
-        inputFilename.set('')
 
     # lay out the display brief widget
     IO_setup_display_string = ''
@@ -1008,7 +999,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     y_multiplier_integer_SV = y_multiplier_integer
     if not 'package_language' in config_filename and not 'NLP_menu_main' in scriptName:
         # window.nametowidget(setup_menu_lb)
-        # error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+        # error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
         handle_setup_options(y_multiplier_integer, scriptName)
 
     # there is no RUN button when setting up IO information in any of the NLP_setup scripts
