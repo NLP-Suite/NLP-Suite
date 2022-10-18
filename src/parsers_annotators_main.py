@@ -435,46 +435,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file
                                                parser_menu, False, False, False, False, 90,
                                                GUI_IO_util.get_labels_x_coordinate(),
                                                "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
-if len(parsers) > 0:
-    parser_menu_var.set(parsers[0])
-
-# parser_lb = tk.Label(window, text=available_parsers)
-# label = parser_lb.cget('text')
-#
-# # place widget with hover-over info
-# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate()+40, y_multiplier_integer_SV1,
-#                                                parser_lb, True, False, False, False, 90,
-#                                                GUI_IO_util.get_labels_x_coordinate(),
-#                                                "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
-#
-# def display_available_options(*args):
-#     global y_multiplier_integer, y_multiplier_integer_SV1, error, package, parsers, language, package_display_area_value, language_list
-#     error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
-#     language_list=[language]
-#     parser_var.set(1)
-#     if package!='':
-#         available_parsers = 'Parsers for ' + package +'                          '
-#     else:
-#         available_parsers='Parsers'
-#     if len(parsers)>0:
-#         parser_menu_var.set(parsers[0])
-#
-#     parser_checkbox = tk.Checkbutton(window, text=available_parsers, variable=parser_var, onvalue=1, offvalue=0)
-#     # place widget with hover-over info
-#     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer_SV1,
-#                                                    parser_checkbox, True, False, False, False, 90,
-#                                                    GUI_IO_util.get_labels_x_coordinate(),
-#                                                    "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
-#     if len(parsers) == 0:
-#         parser_menu = tk.OptionMenu(window, parser_menu_var, parsers)
-#     else:
-#         parser_menu = tk.OptionMenu(window, parser_menu_var, *parsers)
-#     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate(),
-#                                                    y_multiplier_integer,
-#                                                    parser_menu)
-#     return y_multiplier_integer
-# parser_menu_var.trace('w',display_available_options())
-# display_available_options()
 
 def activate_SentenceTable(*args):
     global parser_menu
@@ -551,13 +511,15 @@ quote_checkbox = tk.Checkbutton(window, text='Include single quotes',
 
 def activate_annotators_menu(*args):
     global y_multiplier_integer, y_multiplier_integer_SV1
+    if parser_var.get()==True and (annotators_var.get()==True and annotators_menu_var.get()!=''):
+        mb.showinfo("Warning", "You have selected to run BOTH the CoreNLP parser AND the annotator '" + annotators_menu_var.get().lstrip() + "'.\n\nPlease, select one or the other and try again.")
+        return
     if annotators_var.get() == True:
-        if parser_var.get():
-            if 'POS' in annotators_menu_var.get():
-                mb.showinfo("Warning", "You have selected to run the CoreNLP parser AND the lemma/POS annotator. The parser already computes lemmas and POS tags.\n\nPlease, tick either the parser or the annotator checkbox.")
-                annotators_var.set(0)
-                annotators_menu_var.set('')
-                return
+            # if 'POS' in annotators_menu_var.get():
+            #     mb.showinfo("Warning", "You have selected to run the CoreNLP parser AND the lemma/POS annotator. The parser already computes lemmas and POS tags.\n\nPlease, tick either the parser or the annotator checkbox.")
+            #     annotators_var.set(0)
+            #     annotators_menu_var.set('')
+            #     return
         annotators_menu.configure(state='normal')
         if y_multiplier_integer_SV1 == 0:
             y_multiplier_integer_SV1 = y_multiplier_integer
@@ -595,7 +557,7 @@ def activate_annotators_menu(*args):
         open_GUI_checkbox.place_forget()  # invisible
         annotators_menu_var.set('')
         annotators_menu.configure(state='disabled')
-
+parser_var.trace('w', activate_annotators_menu)
 annotators_var.trace('w', activate_annotators_menu)
 annotators_menu_var.trace('w', activate_annotators_menu)
 

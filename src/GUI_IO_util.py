@@ -299,7 +299,7 @@ if sys.platform == 'darwin': #Mac OS
     open_file_directory_button_width = 1
     open_file_directory_coordinate = 410 # position of menu of default and GUI specific IO options
     IO_button_name_width=1
-    setup_pop_up_text_widget = 620
+    setup_pop_up_text_widget = 620 # widget to eventually open a text widget to enter text
     setup_IO_brief_coordinate = 650 # Position of text entry for Input and Output display
     open_IO_config_button = 650
 
@@ -337,6 +337,11 @@ if sys.platform == 'darwin': #Mac OS
 # MAC NLP_setup_external_software_main.py
     missing_software_display_area_width = 60
     website_url_placement = 500
+
+# MAC Yes No reminder
+    countdownLabel1_X = 125
+    countdownLabel2_X = 335
+    no_reminder = 65
 
 # MAC DB_SQL_main
     SQLite_DB_file_width = 80
@@ -402,8 +407,8 @@ else: #windows and anything else
     IO_button_name_width=30
     open_file_directory_button_width = 3
     open_file_directory_coordinate = 350 # position of menu of default and GUI specific IO options
-    setup_pop_up_text_widget = 560
-    setup_IO_brief_coordinate = 600 # Position of text entry for Input and Output display
+    setup_pop_up_text_widget = 560  # widget to eventually open a text widget to enter text
+    setup_IO_brief_coordinate = 610 # Position of text entry for Input and Output display
     entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
 
     # 4 small widgets to the right of top line
@@ -443,7 +448,12 @@ else: #windows and anything else
     missing_software_display_area_width = 80
     website_url_placement = 640
 
-# Windows DB_SQL_main
+# Windows Yes No reminder
+    countdownLabel1_X = 90
+    countdownLabel2_X = 280
+    no_reminder = 45
+
+    # Windows DB_SQL_main
     SQLite_DB_file_width = 100
     simplex_complex_files_dropdown = 390  # Complex/Simplex objects do you want to see? dropdowns
     select_DB_table_field = 500
@@ -634,7 +644,7 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
             denominator2 = 1500
         countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
         countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / denominator1)}', fg='red')
-        countdownLabel1.place(x=40, y=screen_height - 35)
+        countdownLabel1.place(x=40, y=screen_height - 35) # OK button
         countdownLabel2.place(x=230, y=screen_height - 35)
         countdown(int(timeout / denominator2))
 
@@ -649,15 +659,15 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
         Yes = tk.Button(top_message, text="Yes", command=lambda: wait_for_answer('Yes'), fg='red')
         No = tk.Button(top_message, text="No", command=lambda: wait_for_answer('No'), fg='red')
         Yes.place(x=5, y=screen_height - 35) # place Yes button
-        No.place(x=65, y=screen_height - 35) # place No button
+        No.place(x=no_reminder, y=screen_height - 35) # place No button
 
         question = tk.Label(top_message, text='Do you want to see this message again?', fg='red')
         countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
         countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / 1000)}', fg='red')
 
         question.place(x=5, y=screen_height - 60)
-        countdownLabel1.place(x=125, y=screen_height - 35)
-        countdownLabel2.place(x=335, y=screen_height - 35)
+        countdownLabel1.place(x=countdownLabel1_X, y=screen_height - 35) #125
+        countdownLabel2.place(x=countdownLabel2_X, y=screen_height - 35)
         countdown(int(timeout / 1000))
 
     elif buttonType == 'Yes-No-Cancel':

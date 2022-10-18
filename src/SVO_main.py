@@ -77,6 +77,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # get the date options from filename
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
     extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
@@ -306,72 +308,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
-# Stanza _____________________________________________________
-
-    if package_var == 'Stanza':
-
-        document_length_var = 1
-        limit_sentence_length_var = 1000
-        annotator = 'SVO'
-        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
-                                                                       outputDir,
-                                                                       openOutputFiles,
-                                                                       createCharts, chartPackage,
-                                                                       annotator, False,
-                                                                       language_list,
-                                                                       memory_var, document_length_var, limit_sentence_length_var,
-                                                                       extract_date_from_filename_var=extract_date_from_filename_var,
-                                                                       date_format=date_format_var,
-                                                                       date_separator_var=date_separator_var,
-                                                                       date_position_var=date_position_var)
-
-        if tempOutputFiles != None:
-            SVO_filename=tempOutputFiles[0]
-            filesToOpen.extend(tempOutputFiles)
-            svo_result_list.append(tempOutputFiles[1])
-
-        # Filtering SVO
-        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-            for file in svo_result_list:
-                output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                                    outputSVOSVODir, createCharts, chartPackage)
-                if output != None:
-                    filesToOpen.extend(output)
-
-# spaCY _____________________________________________________
-
-    if package_var == 'spaCy':
-
-        document_length_var = 1
-        limit_sentence_length_var = 1000
-        annotator = 'SVO'
-        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
-                                                    outputDir,
-                                                    openOutputFiles,
-                                                    createCharts, chartPackage,
-                                                    annotator, False,
-                                                    language,
-                                                    memory_var, document_length_var, limit_sentence_length_var,
-                                                    extract_date_from_filename_var=extract_date_from_filename_var,
-                                                    date_format=date_format_var,
-                                                    date_separator_var=date_separator_var,
-                                                    date_position_var=date_position_var)
-
-        if tempOutputFiles != None:
-            SVO_filename=tempOutputFiles[0]
-            filesToOpen.extend(tempOutputFiles)
-            svo_result_list.append(tempOutputFiles[1])
-
-        # Filtering SVO
-        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-            for file in svo_result_list:
-                output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                                    outputSVOSVODir, createCharts, chartPackage)
-                if output != None:
-                    filesToOpen.extend(output)
-
     # SENNA _____________________________________________________
 
     if package_var=='SENNA':
@@ -430,7 +366,73 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     #             filesToOpen.append(freq_csv)
     #             filesToOpen.append(combined_csv)
 
-# CoreNLP OpenIE _____________________________________________________
+# Stanza _____________________________________________________
+
+    if package_var == 'Stanza':
+
+        document_length_var = 1
+        limit_sentence_length_var = 1000
+        annotator = 'SVO'
+        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+                                                      outputSVODir,
+                                                      openOutputFiles,
+                                                      createCharts, chartPackage,
+                                                      annotator, False,
+                                                      language_list,
+                                                      memory_var, document_length_var, limit_sentence_length_var,
+                                                      extract_date_from_filename_var=extract_date_from_filename_var,
+                                                      date_format=date_format_var,
+                                                      date_separator_var=date_separator_var,
+                                                      date_position_var=date_position_var)
+
+        if tempOutputFiles != None:
+            SVO_filename = tempOutputFiles[0]
+            filesToOpen.extend(tempOutputFiles)
+            svo_result_list.append(tempOutputFiles[1])
+
+        # Filtering SVO
+        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
+            for file in svo_result_list:
+                output = SVO_util.filter_svo(window, file, subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                             lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
+                                             outputSVOSVODir, createCharts, chartPackage)
+                if output != None:
+                    filesToOpen.extend(output)
+
+    # spaCY _____________________________________________________
+
+    if package_var == 'spaCy':
+
+        document_length_var = 1
+        limit_sentence_length_var = 1000
+        annotator = 'SVO'
+        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
+                                                    outputSVODir,
+                                                    openOutputFiles,
+                                                    createCharts, chartPackage,
+                                                    annotator, False,
+                                                    language,
+                                                    memory_var, document_length_var, limit_sentence_length_var,
+                                                    extract_date_from_filename_var=extract_date_from_filename_var,
+                                                    date_format=date_format_var,
+                                                    date_separator_var=date_separator_var,
+                                                    date_position_var=date_position_var)
+
+        if tempOutputFiles != None:
+            SVO_filename = tempOutputFiles[0]
+            filesToOpen.extend(tempOutputFiles)
+            svo_result_list.append(tempOutputFiles[1])
+
+        # Filtering SVO
+        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
+            for file in svo_result_list:
+                output = SVO_util.filter_svo(window, file, subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                             lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
+                                             outputSVOSVODir, createCharts, chartPackage)
+                if output != None:
+                    filesToOpen.extend(output)
+
+    # CoreNLP OpenIE _____________________________________________________
 
     if package_var=='OpenIE':
 
