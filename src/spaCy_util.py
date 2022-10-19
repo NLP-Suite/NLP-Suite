@@ -68,6 +68,21 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     # annotating each input file
     docID = 0
 
+    if "Lemma" in annotator_params:
+        annotator = 'Lemma'
+    elif "NER" in annotator_params:
+        annotator = 'NER'
+    elif "All POS" in annotator_params:
+        annotator = 'POS'
+    elif "SVO" in annotator_params:
+        annotator = 'SVO'
+    elif "sentiment" in annotator_params:
+        annotator = 'sentiment'
+    # create the appropriate subdirectory to better organize output files
+    outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                       label=annotator,
+                                                       silent=False)
+
     # check if selected language is one.
     lang = ''
     lang_list = []

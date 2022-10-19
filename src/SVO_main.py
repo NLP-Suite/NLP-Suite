@@ -137,6 +137,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if package_var=='Stanford CoreNLP':
         # simplify the name since it is then used in output files/folders
         package_var = 'CoreNLP'
+    if 'OpenIE' in package_var:
+        package_var = 'OpenIE'
+
     # the actual directory is created in the CoreNLP_annotator_util
     #   all we need here is the name of the directory
     if inputFilename != '':
@@ -164,7 +167,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     outputDir = outputSVODir # outputDir is the main subdir inside the main output directory inside which will go gender,
     # the outputDir folder inside the main output folder will contain subdir SVO, gender, GIS, quote, etc.
 
-    outputSVOSVODir = outputSVODir + os.sep + 'SVO'
+    if package_var=='OpenIE' or package_var=='SENNA':
+        outputSVOSVODir = outputSVODir + os.sep + package_var
+    else:
+        outputSVOSVODir = outputSVODir + os.sep + 'SVO'
 
 # CoRef _____________________________________________________
 
@@ -266,50 +272,41 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                    gender_var = gender_var, gender_filename = gender_filename, gender_filename_html = gender_filename_html,
                                    quote_var = quote_var, quote_filename = quote_filename)
 
-
-        if len(tempOutputFiles)==0:
-            return
-        else:
+        # Filtering SVO
+        if len(tempOutputFiles)!=0:
             SVO_filename=tempOutputFiles[0]
-            if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                output = SVO_util.filter_svo(window,tempOutputFiles[0],
-                                    subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                                    outputSVOSVODir, createCharts, chartPackage)
-                if output != None:
-                    filesToOpen.extend(output)
-
-                if lemmatize_verbs:
-                    # tempOutputFiles[0] is the filename with lemmatized SVO values
-                    # we want to aggregate with WordNet the verbs in column 'V'
-                    # check that SVO output file contains records
-                    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tempOutputFiles[0], encodingValue='utf-8')
-                    if nRecords > 1:
-                        # create a subdirectory of the output directory
-                        outputWNDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
-                                                                           label='WordNet',
-                                                                           silent=True)
-                        outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputWNDir, '', ['Verb (V)'])
-                        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir, config_filename, 'VERB',
-                                                               openOutputFiles, createCharts, chartPackage, language_var)
-                        os.remove(outputFilename)
-                        if output != None:
-                            filesToOpen.extend(output)
-
-                        outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputWNDir, '', ['Subject (S)', 'Object (O)'])
-                        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir, config_filename, 'NOUN',
-                                                               openOutputFiles, createCharts, chartPackage, language_var)
-                        os.remove(outputFilename)
-                        if output != None:
-                            filesToOpen.extend(output)
-                    else:
-                        reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
-                                                     reminders_util.message_no_SVO_records, True)
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
-    # SENNA _____________________________________________________
+# CoreNLP OpenIE _____________________________________________________
+    if 'OpenIE' in package_var:
+        if language_var != 'English':
+            mb.showwarning(title='Language',
+                           message='The Stanford CoreNLP OpenIE annotator is only available for English.')
+            return
 
+        tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+                                                                           outputSVODir, openOutputFiles,
+                                                                           createCharts,
+                                                                           chartPackage,
+                                                                           'OpenIE',
+                                                                           False,
+                                                                           language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                           extract_date_from_text_var=extract_date_from_text_var,
+                                                                           extract_date_from_filename_var=extract_date_from_filename_var,
+                                                                           date_format=date_format_var,
+                                                                           date_separator_var=date_separator_var,
+                                                                           date_position_var=date_position_var,
+                                                                           google_earth_var = google_earth_var,
+                                                                           location_filename = location_filename)
+
+        # Filtering SVO
+        if len(tempOutputFiles)!=0:
+            SVO_filename=tempOutputFiles[0]
+            filesToOpen.extend(tempOutputFiles)
+            svo_result_list.append(tempOutputFiles[0])
+
+# SENNA _____________________________________________________
     if package_var=='SENNA':
         if language_var != 'English':
             mb.showwarning(title='Language',
@@ -318,11 +315,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # TODO must filter SVO results by social actors if the user selected that option
         #   both options run correctly for CoreNLP ++
         svo_SENNA_files = []
-        svo_SENNA_file = SENNA_util.run_senna(inputFilename, inputDir, outputDir, openOutputFiles,
+        svo_SENNA_file = SENNA_util.run_senna(inputFilename, inputDir, outputSVODir, openOutputFiles,
                                                                 createCharts, chartPackage)
-        if len(svo_SENNA_file) > 0:
-            svo_SENNA_file = svo_SENNA_file[0]
-            SVO_filename=svo_SENNA_file[0]
+        if svo_SENNA_file!='':
+            SVO_filename=svo_SENNA_file
+            svo_result_list.append(svo_SENNA_file)
 
         if save_intermediate_file:
             for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
@@ -337,19 +334,20 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         filesToOpen.extend(svo_SENNA_files)
 
-        # Filtering SVO
+        # # Filtering SVO
+        #
+        # if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
+        #     for file in svo_SENNA_files:
+        #         output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
+        #                             lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
+        #                             outputSVOSVODir, createCharts, chartPackage)
+        #         if output != None:
+        #             filesToOpen.extend(output)
 
-        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-            for file in svo_SENNA_files:
-                output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                                    outputSVOSVODir, createCharts, chartPackage)
-                if output != None:
-                    filesToOpen.extend(output)
-
-        for file in svo_SENNA_files:
-            svo_result_list.append(file)
-
+        # for file in svo_SENNA_files:
+        #     SVO_filename=file
+        #     svo_result_list.append(file)
+        #
         # testing that SENNA output directory is not empty, probably because the data matrix is too large for the computer memory
 
         # # Getting the list of directories
@@ -366,43 +364,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     #             filesToOpen.append(freq_csv)
     #             filesToOpen.append(combined_csv)
 
-# Stanza _____________________________________________________
-
-    if package_var == 'Stanza':
-
-        document_length_var = 1
-        limit_sentence_length_var = 1000
-        annotator = 'SVO'
-        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
-                                                      outputSVODir,
-                                                      openOutputFiles,
-                                                      createCharts, chartPackage,
-                                                      annotator, False,
-                                                      language_list,
-                                                      memory_var, document_length_var, limit_sentence_length_var,
-                                                      extract_date_from_filename_var=extract_date_from_filename_var,
-                                                      date_format=date_format_var,
-                                                      date_separator_var=date_separator_var,
-                                                      date_position_var=date_position_var)
-
-        if tempOutputFiles != None:
-            SVO_filename = tempOutputFiles[0]
-            filesToOpen.extend(tempOutputFiles)
-            svo_result_list.append(tempOutputFiles[1])
-
-        # Filtering SVO
-        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-            for file in svo_result_list:
-                output = SVO_util.filter_svo(window, file, subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                             lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                                             outputSVOSVODir, createCharts, chartPackage)
-                if output != None:
-                    filesToOpen.extend(output)
-
-    # spaCY _____________________________________________________
+# spaCY _____________________________________________________
 
     if package_var == 'spaCy':
-
         document_length_var = 1
         limit_sentence_length_var = 1000
         annotator = 'SVO'
@@ -419,85 +383,87 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                     date_position_var=date_position_var)
 
         if tempOutputFiles != None:
-            SVO_filename = tempOutputFiles[0]
             filesToOpen.extend(tempOutputFiles)
+            # the SVO output file is in tempOutputFiles[1] tempOutputFiles[0] contains the parser output
+            SVO_filename = tempOutputFiles[1]
             svo_result_list.append(tempOutputFiles[1])
 
-        # Filtering SVO
-        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-            for file in svo_result_list:
-                output = SVO_util.filter_svo(window, file, subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                             lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                                             outputSVOSVODir, createCharts, chartPackage)
-                if output != None:
-                    filesToOpen.extend(output)
+# Stanza _____________________________________________________
 
-    # CoreNLP OpenIE _____________________________________________________
+    if package_var == 'Stanza':
+        document_length_var = 1
+        limit_sentence_length_var = 1000
+        annotator = 'SVO'
+        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+                                                      outputSVODir,
+                                                      openOutputFiles,
+                                                      createCharts, chartPackage,
+                                                      annotator, False,
+                                                      language_list,
+                                                      memory_var, document_length_var, limit_sentence_length_var,
+                                                      extract_date_from_filename_var=extract_date_from_filename_var,
+                                                      date_format=date_format_var,
+                                                      date_separator_var=date_separator_var,
+                                                      date_position_var=date_position_var)
 
-    if package_var=='OpenIE':
-
-        if language_var != 'English':
-            mb.showwarning(title='Language',
-                           message='The Stanford CoreNLP OpenIE annotator is only available for English.')
-            return
-
-        tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                           outputDir, openOutputFiles,
-                                                                           createCharts,
-                                                                           chartPackage,
-                                                                           'OpenIE',
-                                                                           False,
-                                                                           language_var, memory_var, document_length_var, limit_sentence_length_var,
-                                                                           extract_date_from_text_var=extract_date_from_text_var,
-                                                                           extract_date_from_filename_var=extract_date_from_filename_var,
-                                                                           date_format=date_format_var,
-                                                                           date_separator_var=date_separator_var,
-                                                                           date_position_var=date_position_var,
-                                                                           google_earth_var = google_earth_var,
-                                                                           location_filename = location_filename)
-
-        if len(tempOutputFiles)>0:
-            SVO_filename = tempOutputFiles[0]
-            if subjects_dict_var or verbs_dict_var or objects_dict_var or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                output = SVO_util.filter_svo(window,tempOutputFiles[0],
-                                    subjects_dict_var, verbs_dict_var, objects_dict_var,
-                                    lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                                    outputSVOSVODir, createCharts, chartPackage)
-                if output != None:
-                    filesToOpen.extend(output)
-
-            if lemmatize_verbs:
-                # tempOutputFiles[0] is the filename with lemmatized SVO values
-                # we want to aggregate with WordNet the verbs in column 'V'
-                # check that SVO output file contains records
-                nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tempOutputFiles[0], encodingValue='utf-8')
-                if nRecords > 1:
-                    outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Verb (V)'])
-                    output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
-                                                                             config_filename, 'VERB',
-                                                                             openOutputFiles, createCharts, chartPackage, language_var)
-                    os.remove(outputFilename)
-                    if output != None:
-                        filesToOpen.extend(output)
-                    outputFilename = IO_csv_util.extract_from_csv(tempOutputFiles[0], outputDir, '', ['Subject (S)', 'Object (O)'])
-                    output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputDir,
-                                                                             config_filename, 'NOUN',
-                                                                             openOutputFiles, createCharts, chartPackage, language_var)
-                    os.remove(outputFilename)
-                    if output != None:
-                        filesToOpen.extend(output)
-                else:
-                    reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
-                                                 reminders_util.message_no_SVO_records, True)
+        if tempOutputFiles != None:
             filesToOpen.extend(tempOutputFiles)
-            svo_result_list.append(tempOutputFiles[0])
+            # the SVO output file is in tempOutputFiles[1] tempOutputFiles[0] contains the parser output
+            SVO_filename = tempOutputFiles[1]
+            svo_result_list.append(tempOutputFiles[1])
+
+    # Filtering SVO for all packages
+    if len(svo_result_list)>0:
+        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or \
+                lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
+            output = SVO_util.filter_svo(window,SVO_filename,
+                                subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
+                                outputSVOSVODir, createCharts, chartPackage)
+            if output != None:
+                filesToOpen.extend(output)
+
+        if lemmatize_verbs:
+            # tempOutputFiles[0] is the filename with lemmatized SVO values
+            # we want to aggregate with WordNet the verbs in column 'V'
+            # check that SVO output file contains records
+            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(SVO_filename,
+                                                                                   encodingValue='utf-8')
+            if nRecords > 1:
+                # create a subdirectory of the output directory
+                outputWNDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
+                                                                     label='WordNet',
+                                                                     silent=True)
+                outputFilename = IO_csv_util.extract_from_csv(SVO_filename, outputWNDir, '', ['Verb (V)'])
+                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
+                                                                         config_filename, 'VERB',
+                                                                         openOutputFiles, createCharts,
+                                                                         chartPackage, language_var)
+                os.remove(outputFilename)
+                if output != None:
+                    filesToOpen.extend(output)
+
+                outputFilename = IO_csv_util.extract_from_csv(SVO_filename, outputWNDir, '',
+                                                              ['Subject (S)', 'Object (O)'])
+                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
+                                                                         config_filename, 'NOUN',
+                                                                         openOutputFiles, createCharts,
+                                                                         chartPackage, language_var)
+                os.remove(outputFilename)
+                if output != None:
+                    filesToOpen.extend(output)
+            else:
+                reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
+                                             reminders_util.message_no_SVO_records, True)
+
+        # filesToOpen.extend(tempOutputFiles)
+        # svo_result_list.append(tempOutputFiles[0])
 
     reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_someone,
                                  reminders_util.message_SVO_someone, True)
     # the SVO script can take in input a csv SVO file previously computed: inputFilename
     # results currently produced are in svo_result_list
     if ('SVO_' in inputFilename) or (len(svo_result_list) > 0):
-
         # Gephi network graphs _________________________________________________
         if gephi_var:
             # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
@@ -546,7 +512,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     if nRecords > 1:  # including headers; file is empty
                         myfile = IO_files_util.openCSVFile(f, "r")
                         #CYNTHIA
-                        out_file = wordclouds_util.SVOWordCloud(myfile, f, outputSVODir + os.sep + 'SVO', "", prefer_horizontal=.9)
+                        # out_file = wordclouds_util.SVOWordCloud(myfile, f, outputSVODir + os.sep + 'SVO', "", prefer_horizontal=.9)
+                        out_file = wordclouds_util.SVOWordCloud(myfile, f, outputSVOSVODir, "", prefer_horizontal=.9)
                         myfile.close()
                         if "CoreNLP" in f or "SENNA_SVO" in f:
                             filesToOpen.append(out_file)
@@ -557,11 +524,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if google_earth_var:
             # for f in svo_result_list:
                 # SENNA and OpenIE do not have a location field
-            if (package_var=='OpenIE' or package_var=='SENNA') and os.path.isfile(location_filename):
+            if (package_var=='SENNA') and os.path.isfile(location_filename):
                 reminders_util.checkReminder(config_filename, reminders_util.title_options_GIS_OpenIE_SENNA,
                                              reminders_util.message_GIS_OpenIE_SENNA, True)
             else:
-                if (package_var != 'OpenIE' and package_var != 'SENNA') and os.path.isfile(location_filename):
+                if (package_var != 'SENNA') and os.path.isfile(location_filename):
                     reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
                                                  reminders_util.message_geocoder, True)
                     # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
@@ -785,7 +752,7 @@ package_var.set('Stanford CoreNLP')
 package_lb = tk.Label(window, text='SVO package')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                package_lb, True)
-package_menu = tk.OptionMenu(window, package_var, 'spaCy','Stanford CoreNLP', 'Stanza', 'OpenIE', 'SENNA')
+package_menu = tk.OptionMenu(window, package_var, 'spaCy','Stanford CoreNLP', 'Stanza', 'OpenIE (via Stanford CoreNLP)', 'SENNA')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 120, y_multiplier_integer,
                                                package_menu)
 
