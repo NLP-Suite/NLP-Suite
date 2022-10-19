@@ -167,7 +167,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     outputDir = outputSVODir # outputDir is the main subdir inside the main output directory inside which will go gender,
     # the outputDir folder inside the main output folder will contain subdir SVO, gender, GIS, quote, etc.
 
-    if package_var=='OpenIE' or package_var=='SENNA':
+    if package_var=='OpenIE': # or package_var=='SENNA':
         outputSVOSVODir = outputSVODir + os.sep + package_var
     else:
         outputSVOSVODir = outputSVODir + os.sep + 'SVO'
@@ -299,8 +299,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                            date_position_var=date_position_var,
                                                                            google_earth_var = google_earth_var,
                                                                            location_filename = location_filename)
-
-        # Filtering SVO
         if len(tempOutputFiles)!=0:
             SVO_filename=tempOutputFiles[0]
             filesToOpen.extend(tempOutputFiles)
@@ -312,57 +310,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             mb.showwarning(title='Language',
                            message='SENNA is only available for English.')
             return
-        # TODO must filter SVO results by social actors if the user selected that option
-        #   both options run correctly for CoreNLP ++
         svo_SENNA_files = []
-        svo_SENNA_file = SENNA_util.run_senna(inputFilename, inputDir, outputSVODir, openOutputFiles,
+        tempOutputFiles = SENNA_util.run_senna(inputFilename, inputDir, outputSVODir, openOutputFiles,
                                                                 createCharts, chartPackage)
-        if svo_SENNA_file!='':
-            SVO_filename=svo_SENNA_file
-            svo_result_list.append(svo_SENNA_file)
-
-        if save_intermediate_file:
-            for file in IO_files_util.getFileList(inputFile=inputFilename, inputDir=inputDir, fileType='.txt'):
-                svo_SENNA_files += SENNA_util.run_senna(inputFilename=file, inputDir='',
-                                                                          outputDir=os.path.join(outputDir,
-                                                                                                 outputSVODir),
-                                                                          openOutputFiles=openOutputFiles,
-                                                                          createCharts=createCharts,
-                                                                          chartPackage=chartPackage)
-        else:
-            svo_SENNA_files = [svo_SENNA_file]
-
-        filesToOpen.extend(svo_SENNA_files)
-
-        # # Filtering SVO
-        #
-        # if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-        #     for file in svo_SENNA_files:
-        #         output = SVO_util.filter_svo(window,file, subjects_dict_var, verbs_dict_var, objects_dict_var,
-        #                             lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-        #                             outputSVOSVODir, createCharts, chartPackage)
-        #         if output != None:
-        #             filesToOpen.extend(output)
-
-        # for file in svo_SENNA_files:
-        #     SVO_filename=file
-        #     svo_result_list.append(file)
-        #
-        # testing that SENNA output directory is not empty, probably because the data matrix is too large for the computer memory
-
-        # # Getting the list of directories
-        if len(os.listdir(outputSVODir))==0:
-            mb.showwarning(title='Warning',message='It looks like the SENNA algorithm did not produce any output. The output directory\n' + outputSVODir + '\nis empty.\n\nDepending upon the input corpus size, the SENNA output data matrix may simply be too big for the memory available on your machine (all the more true for an 8GB machine).')
-
-    # next lines create summaries of comparative results from CoreNLP and SENNA
-    # if SENNA_SVO_extractor_var and SVO_extractor_var:
-    #     if len(os.listdir(outputSVODir)) > 0:
-    #         if svo_CoreNLP_merged_file and svo_SENNA_file:
-    #             CoreNLP_PlusPlus_file = svo_CoreNLP_merged_file
-    #             freq_csv, compare_outout_name = SVO_util.count_frequency_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
-    #             combined_csv = SVO_util.combine_two_svo(CoreNLP_PlusPlus_file, svo_SENNA_file, inputFileBase, inputDir, outputDir)
-    #             filesToOpen.append(freq_csv)
-    #             filesToOpen.append(combined_csv)
+        if len(tempOutputFiles)!=0:
+            filesToOpen.extend(tempOutputFiles)
+            SVO_filename=tempOutputFiles[0]
+            svo_result_list.append(tempOutputFiles[0])
 
 # spaCY _____________________________________________________
 
