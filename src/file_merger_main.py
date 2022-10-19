@@ -110,7 +110,7 @@ config_filename=GUI_util.config_filename
 input_main_dir_path =GUI_util.input_main_dir_path
 output_dir_path =GUI_util.output_dir_path
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 merge_subdir_var=tk.IntVar()
 merge_embed_subdir_name_var=tk.IntVar()

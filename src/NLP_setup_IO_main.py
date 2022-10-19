@@ -105,7 +105,7 @@ GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_nu
 
 window = GUI_util.window
 
-GUI_util.GUI_top(config_input_output_numeric_options, config_filename, False)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, False,'')
 
 # check the GUI specific IO options against the default options in NLP_default_IO_config.csv
 #	warning the user for any discrepancy

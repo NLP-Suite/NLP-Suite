@@ -158,7 +158,7 @@ inputFilename=GUI_util.inputFilename
 inputDir=GUI_util.input_main_dir_path
 outputDir=GUI_util.output_dir_path
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename, IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 construct_SQLite_DB_var=tk.IntVar()
 select_SQLite_DB_var=tk.StringVar()

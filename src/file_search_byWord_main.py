@@ -122,7 +122,7 @@ config_filename=GUI_util.config_filename
 inputDir =GUI_util.input_main_dir_path
 outputDir =GUI_util.output_dir_path
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 language_list = []
 
