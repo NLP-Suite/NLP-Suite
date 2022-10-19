@@ -674,7 +674,7 @@ window = GUI_util.window
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_numeric_options, config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 
 def clear(e):
@@ -730,7 +730,7 @@ google_earth_var = tk.IntVar()
 def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
 
-pre_processing_button = tk.Button(window, text='Pre-processing tools (Open file checking & cleaning GUI)',width=50,command=open_GUI)
+pre_processing_button = tk.Button(window, text='Pre-processing tools (Open file checking & cleaning GUI)',width=50,command=lambda:open_GUI())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                    pre_processing_button,

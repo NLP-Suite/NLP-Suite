@@ -32,7 +32,7 @@ head, scriptName = os.path.split(os.path.basename(__file__))
 config_input_output_numeric_options=[0,0,0,0]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 window = GUI_util.window
 
 package_var = tk.StringVar()

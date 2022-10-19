@@ -121,7 +121,7 @@ if current_process().name == 'MainProcess':
     # config_filename = GUI_util.config_filename
     inputFilename = GUI_util.inputFilename
 
-    GUI_util.GUI_top(config_input_output_numeric_options, config_filename,IO_setup_display_brief)
+    GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
     num_topics_var = tk.IntVar()
     remove_stopwords_var = tk.IntVar()

@@ -244,7 +244,7 @@ outputDir = GUI_util.output_dir_path
 openOutputFiles = GUI_util.open_csv_output_checkbox.get()
 createCharts = GUI_util.create_chart_output_checkbox.get()
 
-GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 wordNet_keyword_list = []
 hidden_noun_lemma_csv = tk.StringVar()
