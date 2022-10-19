@@ -128,17 +128,27 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
 
         if "Lemma"  in annotator_params:
+            annotator = 'Lemma'
             processors='tokenize,lemma,pos'
         elif "NER" in annotator_params:
+            annotator = 'NER'
             processors='tokenize,ner'
         elif "All POS" in annotator_params:
+            annotator = 'POS'
             processors='tokenize,pos'
         elif "depparse" in annotator_params or "SVO" in annotator_params:
             processors='tokenize,mwt,pos,ner,lemma,depparse' # add NER when parser option selected
             if "SVO" in annotator_params:
+                annotator = 'SVO'
                 annotator_params = "DepRel_SVO"
         elif "sentiment" in annotator_params:
+            annotator = 'sentiment'
             processors='tokenize,sentiment'
+
+        # create the appropriate subdirectory to better organize output files
+        outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                           label=annotator,
+                                                           silent=False)
 
         nlp = stanza.Pipeline(lang=lang, processors=processors, verbose=False)
 
