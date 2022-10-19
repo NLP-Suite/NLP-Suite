@@ -58,6 +58,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         temp_config_filename = 'NLP_default_IO_config.csv'
     else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
         temp_config_filename = config_filename
     extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = \
         config_util.get_date_options(temp_config_filename, config_input_output_numeric_options)
@@ -357,7 +358,7 @@ GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_nu
 
 window = GUI_util.window
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
@@ -396,14 +397,19 @@ quote_var = tk.IntVar()
 y_multiplier_integer_SV=0 # used to set the parser widget on the proper GUI line
 y_multiplier_integer_SV1=0 # used to set the quote_var widget and coref widget on the proper GUI line
 
-pre_processing_button = tk.Button(window, width=50, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: call('python file_checker_converter_cleaner_main.py'))
+def open_GUI(param):
+    if 'preprocess' in param:
+        call('python file_checker_converter_cleaner_main.py')
+    else:
+        call('python Stanford_CoreNLP_coreference_main.py')
+
+pre_processing_button = tk.Button(window, width=50, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: open_GUI('preprocess'))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                    pre_processing_button,
                                    False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
                                    "Click on the button to open the GUI")
-
-coreference_button = tk.Button(window, width=50, text='Coreference resolution (Open GUI)',command=lambda: call('python Stanford_CoreNLP_coreference_main.py'))
+coreference_button = tk.Button(window, width=50, text='Coreference resolution (Open GUI)',command=lambda: open_GUI('coref'))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                    coreference_button,
@@ -481,11 +487,11 @@ annotators_menu = tk.OptionMenu(window, annotators_menu_var,
         '   Lemma annotator',
         '   POS annotator',
         '   NER (GUI)',
-        'Special annotators (via BERT, CoreNLP, sPacy, Stanza) -----------------------------------------',
+        'Special annotators (via BERT, CoreNLP, spaCy, Stanza) -----------------------------------------',
         '   Coreference PRONOMINAL resolution (via BERT, CoreNLP, spaCy Neural Network)',
         '   Sentiment analysis (Neural Network)',
         '   OpenIE - Relation triples extractor (via CoreNLP Neural Network)',
-        '   SVO extraction (via CoraNLP, spaCy, Stanza)',
+        '   SVO extraction (via CoreNLP, spaCy, Stanza)',
         '   Word embeddings (Word2Vec) (via BERT, Gensim, spaCy)',
         'More special annotators (CoreNLP only) --------------------------------------------------------',
         '   Gender annotator (via CoreNLP Neural Network)',
