@@ -417,28 +417,42 @@ def set_IO_brief_values(config_filename):
 
     # lay out the display brief widget
     IO_setup_display_string = ''
-    # check filename
-    if config_input_output_alphabetic_options[0][1]!='': # str(config_input_output_alphabetic_options[0][1])!='':
+    # check filename config_input_output_numeric_options[0] != 0:
+    if config_input_output_alphabetic_options[0][1]!= '':
+        # if config_input_output_alphabetic_options[0][1]!='': # str(config_input_output_alphabetic_options[0][1])!='':
         #head is path, tail is filename
         head, tail = os.path.split(config_input_output_alphabetic_options[0][1])
         IO_setup_display_string = "INPUT FILE: " + str(tail)
-    else:
-        # check input directory
-        if config_input_output_alphabetic_options[1][1]!= '':
-            IO_setup_display_string = "INPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[1][1])))
+    # else:
+    # check input directory config_input_output_numeric_options[1]!=0:
+    if config_input_output_alphabetic_options[1][1]!= '':
+        IO_setup_display_string = "INPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[1][1])))
 
     # both filename [1] and input Dir [2] are empty
-    if (inputFilename.get() == '') and (
-            input_main_dir_path.get() == ''):
+    if (config_input_output_alphabetic_options[0][1] == '') and (
+            config_input_output_alphabetic_options[1][1] == ''):
         IO_setup_display_string = "INPUT FILE:\nINPUT DIR:"
 
     output_dir_path.set(config_input_output_alphabetic_options[3][1])
 
-    IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[3][1])))
+    # IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[3][1])))
+    IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(config_input_output_alphabetic_options[3][1]))
 
     update_display_area(IO_setup_display_string,IO_setup_brief_display_area)
 
     return date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missingIO
+
+def openConfigFile(setup_IO_menu_var, scriptName, config_filename):
+    if 'Default' in setup_IO_menu_var:  # GUI_util.GUI_util.setup_IO_menu_var.get()
+        temp_config_filename = 'NLP_default_IO_config.csv'
+    else:
+        temp_config_filename = scriptName.replace('main.py', 'config.csv')
+    IO_files_util.openFile(window, GUI_IO_util.configPath + os.sep + temp_config_filename)
+    # IO_files_util.openFile(window, GUI_IO_util.configPath + os.sep + config_filename)
+    time.sleep(10) # wait 10 seconds to give enough time to save any changes to the csv config file
+    # IO_setup_display_brief = True
+    # display_IO_setup(window, IO_setup_display_brief, temp_config_filename,
+    #                  config_input_output_numeric_options, scriptName, silent)
 
 def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptName, silent):
     global IO_setup_brief_display_area
@@ -513,19 +527,9 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_outputDir_button_brief, y_multiplier_integer,
                                                    openOutputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open OUTPUT files directory")
 
-    def openConfigFile(scriptName):
-        if 'Default' in setup_IO_menu_var.get():  # GUI_util.GUI_util.setup_IO_menu_var.get()
-            temp_config_filename = 'NLP_default_IO_config.csv'
-        else:
-            temp_config_filename = config_filename
-        IO_files_util.openFile(window, GUI_IO_util.configPath + os.sep + temp_config_filename)
-        time.sleep(10) # wait 10 seconds to give enough time to save any changes to the csv config file
-        IO_setup_display_brief = True
-        display_IO_setup(window, IO_setup_display_brief, temp_config_filename,
-                         config_input_output_numeric_options, scriptName, silent)
-
+    # Open csv config file
     openInputConfigFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                     command=lambda: openConfigFile(scriptName))
+                                     command=lambda: openConfigFile(setup_IO_menu_var.get(), scriptName, config_filename))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_config_file_button_brief, y_multiplier_integer,
                                                    openInputConfigFile_button, True, False, True,False, 90,
@@ -731,7 +735,7 @@ def display_about_release_team_cite_buttons(scriptName):
 #   for consistency, it should also be used for NLP_main that for now relies on a previous approach based on config (i.e., NLP_config.csv)
 # silent is set to True in those GUIs where the selected default I/O configuration does not confirm to the expected input
 #   For example, you need a csv file but the default is a Directory, e.g., data_manager_main
-def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_display_brief,scriptName='',silent=False):
+def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_display_brief,scriptName,silent=False):
     import IO_libraries_util
     from PIL import Image, ImageTk
 

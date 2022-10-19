@@ -309,6 +309,7 @@ def read_config_file(config_filename, config_input_output_numeric_options):
         csv_file = open(configFilePath, 'r', newline='')
         config_input_output_alphabetic_options = list(csv.reader(csv_file, delimiter=','))
         config_input_output_alphabetic_options.pop(0) # skip header
+        # if not 'Date format' in config_input_output_alphabetic_options[0]: # len(config_input_output_alphabetic_options[0])==2:
         if len(config_input_output_alphabetic_options[0])==2:
             mb.showwarning(title='Obsolete csv config file structure', message="The " + configFilePath + " has an obsolete config file structure.\n\nIt will be automatically deleted.\n\nPlease, enter next the Input/output configuration options that will be saved with the new file structure.")
             csv_file.close()
@@ -320,11 +321,18 @@ def read_config_file(config_filename, config_input_output_numeric_options):
                     ']', '"') + " --config_filename " + config_filename, shell=True)
                 if os.path.isfile(configFilePath) == False:
                     mb.showwarning(title='Missing IO configuration data ',
-                                   message="You must enter the appropriate Input/output configuration options and SAVE them to exit this loop.")
+                                   message="You must enter the appropriate Input/output configuration options in NLP_setup_IO_main.py and SAVE them to exit this loop.")
             # read the newly saved options
-            read_config_file(config_filename, config_input_output_numeric_options)
+            csv_file = open(configFilePath, 'r', newline='')
+            config_input_output_alphabetic_options = list(csv.reader(csv_file, delimiter=','))
+            config_input_output_alphabetic_options.pop(0)  # skip header
+            # cannot use read_config_file again or it returns the old config_input_output_numeric_options
+            #   and the program bombs in GUI_util
+            # read_config_file(config_filename, config_input_output_numeric_options)
+        csv_file.close()
     else:
         config_input_output_alphabetic_options = list()
+        # setup an empty double list config_input_output_alphabetic_options, WITHOUT header
         config_input_output_alphabetic_options=get_template_config_csv_file(config_input_output_numeric_options,config_input_output_alphabetic_options)
     missingIO=get_missing_IO_values(config_input_output_numeric_options, config_input_output_alphabetic_options)
     return config_input_output_alphabetic_options, missingIO
