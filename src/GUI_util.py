@@ -343,7 +343,7 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename, scriptName,s
         temp_config_filename=config_filename
     silent=False
     if IO_setup_display_brief:
-        date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missingIO = set_IO_brief_values(temp_config_filename)
+        date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missingIO = set_IO_brief_values(temp_config_filename,y_multiplier_integer)
 ###
     # the full options must always be displayed, even when the brief option is selected;
     #   the reason is that the IO widgets filename, inputDir, and outputDir are used in all GUI
@@ -374,7 +374,7 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName, config_
 #    input filename, input dir, secondary input dir, output dir
 #__________________________________________________________________________________________________________________
 
-def set_IO_brief_values(config_filename):
+def set_IO_brief_values(config_filename, y_multiplier_integer):
     config_input_output_alphabetic_options, missingIO = config_util.read_config_file(config_filename,
                                                                 config_input_output_numeric_options)
     date_hover_over_label=''
@@ -438,7 +438,19 @@ def set_IO_brief_values(config_filename):
     # IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(os.path.normpath(config_input_output_alphabetic_options[3][1])))
     IO_setup_display_string = IO_setup_display_string + "\nOUTPUT DIR: " + str(os.path.basename(config_input_output_alphabetic_options[3][1]))
 
+    # re-lay the widget to display the correct hover-over info
+    IO_setup_brief_display_area = tk.Text(width=60, height=2)
+    # place widget with hover-over info
+    y_multiplier_integer=0
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                                   GUI_IO_util.setup_IO_brief_coordinate,
+                                                   y_multiplier_integer,
+                                                   IO_setup_brief_display_area,
+                                                   False, False, False, False, 90,
+                                                   GUI_IO_util.setup_IO_brief_coordinate,
+                                                   date_hover_over_label)
     update_display_area(IO_setup_display_string,IO_setup_brief_display_area)
+    # update_display_area(IO_setup_display_string)
 
     return date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missingIO
 
@@ -455,7 +467,6 @@ def openConfigFile(setup_IO_menu_var, scriptName, config_filename):
     #                  config_input_output_numeric_options, scriptName, silent)
 
 def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptName, silent):
-    global IO_setup_brief_display_area
     IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,scriptName, silent))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(),
@@ -486,14 +497,9 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
 
     # display text area for setup brief
 
-    IO_setup_brief_display_area = tk.Text(width=60, height=2)
-
     if config_input_output_numeric_options!=[0,0,0,0]:
-        date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missingIO = set_IO_brief_values(config_filename)
-
-    update_display_area(IO_setup_display_string, IO_setup_brief_display_area)
-
-
+        date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missingIO = set_IO_brief_values(config_filename, y_multiplier_integer)
+    IO_setup_brief_display_area = tk.Text(width=60, height=2)
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                    GUI_IO_util.setup_IO_brief_coordinate,
@@ -502,7 +508,7 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
                                                    True, False, False, False, 90,
                                                    GUI_IO_util.setup_IO_brief_coordinate,
                                                    date_hover_over_label)
-
+    update_display_area(IO_setup_display_string, IO_setup_brief_display_area)
 
     # setup buttons to open an input file, an input directory, an output directory, and a csv config file
     x_coordinate_hover_over = GUI_IO_util.get_open_file_directory_coordinate()+GUI_IO_util.open_file_button_brief
@@ -535,6 +541,8 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
                                                    openInputConfigFile_button, True, False, True,False, 90,
                                                    x_coordinate_hover_over, "Open csv config file")
 def update_display_area(IO_setup_display_string,IO_setup_brief_display_area):
+# def update_display_area(IO_setup_display_string):
+#     global IO_setup_brief_display_area
     # since IO_setup_brief_display_area is a disabled widget,
     #   it must be turned to normal temporarily or it will not update
     IO_setup_brief_display_area.configure(state='normal')

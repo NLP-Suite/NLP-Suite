@@ -58,8 +58,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         temp_config_filename = 'NLP_default_IO_config.csv'
     else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
-        temp_config_filename = config_filename
+        temp_config_filename = scriptName.replace('main.py', 'config.csv')
     extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = \
         config_util.get_date_options(temp_config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
@@ -399,9 +398,9 @@ y_multiplier_integer_SV1=0 # used to set the quote_var widget and coref widget o
 
 def open_GUI(param):
     if 'preprocess' in param:
-        call('python file_checker_converter_cleaner_main.py')
+        call('python file_checker_converter_cleaner_main.py',shell=True)
     else:
-        call('python Stanford_CoreNLP_coreference_main.py')
+        call('python Stanford_CoreNLP_coreference_main.py',shell=True)
 
 pre_processing_button = tk.Button(window, width=50, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: open_GUI('preprocess'))
 # place widget with hover-over info

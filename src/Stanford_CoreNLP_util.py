@@ -623,6 +623,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                             #     output_text_file.write("\n<@#" + docTitle + "#@>\n")
                             #     processing_doc = docTitle
                             output_text_file.write(sub_result)
+                            ###
+                        filesToOpen.append(outputFilename)
                     else:
                         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Coreference resolution',
                                                            'The coreference resolution function did not produce any output for the input file ' + docName,
@@ -729,7 +731,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # set filesToVisualize because filesToOpen will include xlsx files otherwise
     filesToVisualize=filesToOpen
     if "coref" in str(annotator_params):
-        IO_user_interface_util.timed_alert(GUI_util.window,3000,'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, 'The coreference annotator produces a coref subdirectory inside the main output directory containing 2 separate subdirectories in turn containing, respectively, the coreferenced input text files, and statistics csv and chart files with coreference data.', True, startTime)
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, 'The coreference annotator produces a coref subdirectory inside the main output directory containing 2 separate subdirectories in turn containing, respectively, the coreferenced input text files, and statistics csv and chart files with coreference data.', True, startTime)
     else:
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True, '', True, startTime)
 

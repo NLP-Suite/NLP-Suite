@@ -280,7 +280,7 @@ def compare_results(origin_text,corefed_text):
         corefed_non_coref.append((corefed_sentences[i], non_coref))
     return origin_display, corefed_display, origin_non_coref, corefed_non_coref
 
-
+# displays side-by-side the original and coreferenced file for manual editing
 # return error indicator: 1 error; 0 no error
 def manualCoref(original_file, corefed_file, outputFile):
     f = open(original_file, "r", encoding='utf-8', errors='ignore')
@@ -334,7 +334,7 @@ def run(config_filename,inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     corefed_files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                     outputDir, openOutputFiles, createCharts, chartPackage,
-                                                                    ['coref', 'coref table'], False,
+                                                                    ['coref table','coref'], False,
                                                                     language_var, memory_var)
 
     if manual_Coref:
