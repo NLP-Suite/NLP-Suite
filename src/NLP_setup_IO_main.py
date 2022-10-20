@@ -121,6 +121,7 @@ config_input_output_alphabetic_options, missingIO = config_util.read_config_file
 # TODO Must relay the widget here to display hover-over information, although the widget has been laid in GUI_util
 # the index for config_input_output_numeric_options start at 0
 
+# FILE INPUT
 if config_input_output_numeric_options[0]!=0: # input filename
     label = ''
     if config_input_output_alphabetic_options[0][2]!='' and not 'Date: ' in config_input_output_alphabetic_options[0][1]:
@@ -128,55 +129,56 @@ if config_input_output_numeric_options[0]!=0: # input filename
                 ', ' + str(config_input_output_alphabetic_options[0][3]) + \
                 ', ' + str(config_input_output_alphabetic_options[0][4]) + ')'
 
-GUI_util.inputFilename.set(config_input_output_alphabetic_options[0][1] + label)
-inputFile_lb = tk.Label(window, textvariable=GUI_util.inputFilename)
+    GUI_util.inputFilename.set(config_input_output_alphabetic_options[0][1] + label)
+    inputFile_lb = tk.Label(window, textvariable=GUI_util.inputFilename)
 
-date_hover_over_label = ''
-if '  (Date: ' in label:
-    date_hover_over_label = 'The input file has a date embedded in the filename with the following options for date format, date character(s) separator, and date position in filename.\n(Date: ' + GUI_util.inputFilename.get().split(' (Date:')[1]
-else:
-    date_hover_over_label = 'The input file has no date embedded in the filename'
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                               GUI_IO_util.get_entry_box_x_coordinate(),
-                                               y_multiplier_integer,
-                                               inputFile_lb,
-                                               False, False, False, False, 90,
-                                               GUI_IO_util.get_open_file_directory_coordinate(),
-                                               date_hover_over_label)
+    date_hover_over_label = ''
+    if '  (Date: ' in label:
+        date_hover_over_label = 'The input file has a date embedded in the filename with the following options for date format, date character(s) separator, and date position in filename.\n(Date: ' + GUI_util.inputFilename.get().split(' (Date:')[1]
+    else:
+        date_hover_over_label = 'The input file has no date embedded in the filename'
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                                   GUI_IO_util.get_entry_box_x_coordinate(),
+                                                   y_multiplier_integer,
+                                                   inputFile_lb,
+                                                   False, False, False, False, 90,
+                                                   GUI_IO_util.get_open_file_directory_coordinate(),
+                                                   date_hover_over_label)
 
 # TODO Must relay the widget here to display hover-over information, although the widget has been laid in GUI_util
+# DIR INPUT
+if config_input_output_numeric_options[1]!=0: # input dir
+    label = ''
+    date_hover_over_label = ''
+    if config_input_output_alphabetic_options[1][2]!='' and not 'Date: ' in config_input_output_alphabetic_options[1][1]: # there is date format
+        label = '  (Date: ' + str(config_input_output_alphabetic_options[1][2]) + \
+                ', ' + str(config_input_output_alphabetic_options[1][3]) + \
+                ', ' + str(config_input_output_alphabetic_options[1][4]) + ')'
+        date_hover_over_label = 'The input file has a date embedded in the filename with the following values:\n' \
+                                'Date format: ' + str(config_input_output_alphabetic_options[0][2]) + \
+                                ' Date character(s) separator: ' + str(config_input_output_alphabetic_options[0][3]) + \
+                                ' Date position: ' + str(config_input_output_alphabetic_options[0][4])
 
-label = ''
-date_hover_over_label = ''
-if config_input_output_alphabetic_options[1][2]!='' and not 'Date: ' in config_input_output_alphabetic_options[1][1]: # there is date format
-    label = '  (Date: ' + str(config_input_output_alphabetic_options[1][2]) + \
-            ', ' + str(config_input_output_alphabetic_options[1][3]) + \
-            ', ' + str(config_input_output_alphabetic_options[1][4]) + ')'
-    date_hover_over_label = 'The input file has a date embedded in the filename with the following values:\n' \
-                            'Date format: ' + str(config_input_output_alphabetic_options[0][2]) + \
-                            ' Date character(s) separator: ' + str(config_input_output_alphabetic_options[0][3]) + \
-                            ' Date position: ' + str(config_input_output_alphabetic_options[0][4])
+    GUI_util.input_main_dir_path.set(config_input_output_alphabetic_options[1][1] + label)
+    inputMainDir_lb = tk.Label(window, textvariable=GUI_util.input_main_dir_path)
+    date_hover_over_label = ''
+    if '  (Date: ' in label:
+        date_hover_over_label = 'The txt files in the input directory contain a date embedded in the filename with the following values:\n' + \
+                                'Date format: ' + str(config_input_output_alphabetic_options[1][2]) + \
+                                ' Date character(s) separator: ' + str(config_input_output_alphabetic_options[1][3]) + \
+                                ' Date position: ' + str(config_input_output_alphabetic_options[1][4])
+    else:
+        date_hover_over_label = 'The txt files in the selected input directory have no date embedded in the filename'
 
-GUI_util.input_main_dir_path.set(config_input_output_alphabetic_options[1][1] + label)
-inputMainDir_lb = tk.Label(window, textvariable=GUI_util.input_main_dir_path)
-date_hover_over_label = ''
-if '  (Date: ' in label:
-    date_hover_over_label = 'The txt files in the input directory contain a date embedded in the filename with the following values:\n' + \
-                            'Date format: ' + str(config_input_output_alphabetic_options[1][2]) + \
-                            ' Date character(s) separator: ' + str(config_input_output_alphabetic_options[1][3]) + \
-                            ' Date position: ' + str(config_input_output_alphabetic_options[1][4])
-else:
-    date_hover_over_label = 'The txt files in the selected input directory have no date embedded in the filename'
-
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                               GUI_IO_util.get_entry_box_x_coordinate(),
-                                               y_multiplier_integer,
-                                               inputMainDir_lb,
-                                               False, False, False, False, 90,
-                                               GUI_IO_util.get_open_file_directory_coordinate(),
-                                               date_hover_over_label)
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                                   GUI_IO_util.get_entry_box_x_coordinate(),
+                                                   y_multiplier_integer,
+                                                   inputMainDir_lb,
+                                                   False, False, False, False, 90,
+                                                   GUI_IO_util.get_open_file_directory_coordinate(),
+                                                   date_hover_over_label)
 
 if config_input_output_numeric_options[2]!=0: # input secondary dir
     GUI_util.input_secondary_dir_path.set(config_input_output_alphabetic_options[2][1])

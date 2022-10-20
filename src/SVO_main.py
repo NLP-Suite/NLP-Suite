@@ -167,7 +167,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     outputDir = outputSVODir # outputDir is the main subdir inside the main output directory inside which will go gender,
     # the outputDir folder inside the main output folder will contain subdir SVO, gender, GIS, quote, etc.
 
-    if package_var=='OpenIE': # or package_var=='SENNA':
+    if package_var=='OpenIE':
         outputSVOSVODir = outputSVODir + os.sep + package_var
     else:
         outputSVOSVODir = outputSVODir + os.sep + 'SVO'
@@ -474,10 +474,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
 # GIS maps _____________________________________________________
 
-        # SENNA locations are not really geocodable locations
         if google_earth_var:
-            # for f in svo_result_list:
-                # SENNA and OpenIE do not have a location field
+            # SENNA locations are not really geocodable locations
             if (package_var=='SENNA') and os.path.isfile(location_filename):
                 reminders_util.checkReminder(config_filename, reminders_util.title_options_GIS_OpenIE_SENNA,
                                              reminders_util.message_GIS_OpenIE_SENNA, True)
