@@ -54,11 +54,12 @@ def run(inputFilename, inputDir, outputDir,
     language_var = language
     language_list = [language]
 
-    # get the date options from filename
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
-        config_filename, config_input_output_numeric_options)
+        temp_config_filename = 'NLP_default_IO_config.csv'
+    else:
+        temp_config_filename = scriptName.replace('main.py', 'config.csv')
+    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = \
+        config_util.get_date_options(temp_config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
     if package_display_area_value == '':
@@ -117,7 +118,7 @@ def run(inputFilename, inputDir, outputDir,
             # mb.showwarning("Output directory",
             #                "All output files have been saved to a subdirectory of the selected output directory at\n\n" + str(
             #                    outputCorefedDir))
-            filesToOpen.append(files_to_open)
+            filesToOpen.extend(files_to_open)
 
     # split merged coreferenced file  --------------------------------------------------------------------------------------------------------
     # split <@# #@> --------------------------------------------------------------------------------------
@@ -139,7 +140,7 @@ def run(inputFilename, inputDir, outputDir,
             error = Stanford_CoreNLP_coreference_util.manualCoref(inputFilename, corefed_txt_file, corefed_txt_file)
 
     if openOutputFiles == True and len(filesToOpen) > 0:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputCorefedDir)
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
@@ -169,9 +170,9 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
 
-
 GUI_label = 'Graphical User Interface (GUI) for Coreference PRONOMINAL Resolution (via CoreNLP) and Manual Editing'
 config_filename = 'coref_config.csv'
+head, scriptName = os.path.split(os.path.basename(__file__))
 # The 4 values of config_option refer to:
 #   input file
         # 1 for CoNLL file

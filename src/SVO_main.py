@@ -41,8 +41,8 @@ import knowledge_graphs_WordNet_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
-        Coref,
-        Manual_Coref_var,
+        coref_var,
+        manual_coref_var,
         normalized_NER_date_extractor_var,
         package_var,
         gender_var,
@@ -91,7 +91,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # the merge option refers to merging the txt files into one
     merge_txt_file_option = False
 
-    if Coref == False and package_display_area_value == '':
+    if coref_var == False and package_display_area_value == '':
         mb.showwarning(title='No option selected',
                        message="No option has been selected.\n\nPlease, select an option and try again.")
         return
@@ -107,7 +107,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             mb.showerror(title='Input file error',
                          message="The selected input is a csv file, but... not an _svo.csv file.\n\nPlease, select an _svo.csv file (or txt file(s)) and try again.")
             return
-        if (Coref == True or Manual_Coref_var == True or
+        if (coref_var == True or manual_coref_var == True or
                 normalized_NER_date_extractor_var == True or package_var!=''):
             mb.showerror(title='Input file/option error',
                          message="The data analysis option(s) you have selected require in input a txt file, rather than a csv file.\n\nPlease, check your input file and/or algorithm selections and try again.")
@@ -146,7 +146,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         inputBaseName = os.path.basename(inputFilename)[0:-4]  # without .txt
     else:
         inputBaseName = os.path.basename(inputDir)
-    if Coref:
+    if coref_var:
         outputCorefDir = os.path.join(outputDirSV, package_var+ '_coref_' + inputBaseName)
         outputSVODir = os.path.join(outputDir, package_var + '_SVO_coref_' + inputBaseName)
     else:
@@ -159,7 +159,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if outputSVODir == '':
         return
 
-    if Coref:
+    if coref_var:
         # create a subdirectory of the output directory
         outputCorefDir = IO_files_util.make_output_subdirectory('', '', outputCorefDir, '',
                                                             silent=False)
@@ -167,7 +167,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     outputDir = outputSVODir # outputDir is the main subdir inside the main output directory inside which will go gender,
     # the outputDir folder inside the main output folder will contain subdir SVO, gender, GIS, quote, etc.
 
-    if package_var=='OpenIE': # or package_var=='SENNA':
+    if package_var=='OpenIE':
         outputSVOSVODir = outputSVODir + os.sep + package_var
     else:
         outputSVOSVODir = outputSVODir + os.sep + 'SVO'
@@ -176,7 +176,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     # field_names = ['Document ID', 'Sentence ID', 'Document', 'S', 'V', 'O', 'LOCATION', 'PERSON', 'TIME', 'TIME_STAMP', 'Sentence']
 
-    if Coref:
+    if coref_var:
         # must be changed
         if language_var != 'English' and language_var != 'Chinese':
             mb.showwarning(title='Language',
@@ -187,8 +187,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename,
                                        inputFilename, inputDir, outputCorefDir,
                                        openOutputFiles, createCharts, chartPackage,
-                                       language_var,
-                                       Manual_Coref_var)
+                                       language_var, memory_var,
+                                       manual_coref_var)
         if error_indicator != 0:
             return
         for file in files_to_open:
@@ -474,10 +474,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
 # GIS maps _____________________________________________________
 
-        # SENNA locations are not really geocodable locations
         if google_earth_var:
-            # for f in svo_result_list:
-                # SENNA and OpenIE do not have a location field
+            # SENNA locations are not really geocodable locations
             if (package_var=='SENNA') and os.path.isfile(location_filename):
                 reminders_util.checkReminder(config_filename, reminders_util.title_options_GIS_OpenIE_SENNA,
                                              reminders_util.message_GIS_OpenIE_SENNA, True)
@@ -533,8 +531,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_dropdown_field.get(),
-                                 CoRef_var.get(),
-                                 manual_Coref_var.get(),
+                                 coref_var.get(),
+                                 manual_coref_var.get(),
                                  normalized_NER_date_extractor_var.get(),
                                  package_var.get(),
                                  gender_var.get(),
@@ -599,9 +597,9 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 
 
 def clear(e):
-    CoRef_var.set(0)
-    manual_Coref_checkbox.configure(state='disabled')
-    manual_Coref_var.set(0)
+    coref_var.set(0)
+    manual_coref_checkbox.configure(state='disabled')
+    manual_coref_var.set(0)
     subjects_checkbox.configure(state='normal')
     verbs_checkbox.configure(state='normal')
     objects_checkbox.configure(state='normal')
@@ -627,9 +625,9 @@ window.bind("<Escape>", clear)
 package_display_area_value = tk.StringVar()
 language_var = tk.StringVar()
 language_list = []
-CoRef_var = tk.IntVar()
+coref_var = tk.IntVar()
 
-manual_Coref_var = tk.IntVar()
+manual_coref_var = tk.IntVar()
 package_var = tk.StringVar()
 normalized_NER_date_extractor_var = tk.IntVar()
 gender_var = tk.IntVar()
@@ -660,9 +658,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 
 # NLP packages & languages ------------------------------------------------------------------------------------------------------
 
-CoRef_var.set(0)
+coref_var.set(0)
 CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP - Neural Network)',
-                                variable=CoRef_var, onvalue=1, offvalue=0)
+                                variable=coref_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                CoRef_checkbox)
 
@@ -670,29 +668,29 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 # CoRef_menu = tk.OptionMenu(window, CoRef_menu_var, 'Deterministic', 'Statistical', 'Neural Network')
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, CoRef_menu)
 
-manual_Coref_var.set(0)
-manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_Coref_var,
+manual_coref_var.set(0)
+manual_coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_coref_var,
                                        onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
-                                               manual_Coref_checkbox)
+                                               manual_coref_checkbox)
 
 def activateCoRefOptions(*args):
-    if CoRef_var.get() == 1:
+    if coref_var.get() == 1:
         # CoRef_menu.configure(state='normal')
         if input_main_dir_path.get()!='':
             reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
                                          reminders_util.message_CoreNLP_coref, True)
-            manual_Coref_var.set(0)
-            manual_Coref_checkbox.configure(state='disabled')
+            manual_coref_var.set(0)
+            manual_coref_checkbox.configure(state='disabled')
         else:
-            manual_Coref_checkbox.configure(state='normal')
-            manual_Coref_var.set(1)
+            manual_coref_checkbox.configure(state='normal')
+            manual_coref_var.set(1)
         # manual_Coref_checkbox.configure(state='disabled')
     else:
-        manual_Coref_checkbox.configure(state='disabled')
-        manual_Coref_var.set(0)
+        manual_coref_checkbox.configure(state='disabled')
+        manual_coref_var.set(0)
 
-CoRef_var.trace('w', activateCoRefOptions)
+coref_var.trace('w', activateCoRefOptions)
 
 activateCoRefOptions()
 
@@ -707,8 +705,11 @@ package_lb = tk.Label(window, text='SVO package')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                package_lb, True)
 package_menu = tk.OptionMenu(window, package_var, 'spaCy','Stanford CoreNLP', 'Stanza', 'OpenIE (via Stanford CoreNLP)', 'SENNA')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 120, y_multiplier_integer,
-                                               package_menu)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_S_dictionary, y_multiplier_integer,
+                                   package_menu,
+                                   False, False, True, False, 90, GUI_IO_util.open_S_dictionary,
+                                   "Use the dropdown menu to select the NLP package you wish to use to extract SVO information from your corpus.\nYour package selection is independent of the NLP package currently selected in Setup.")
 
 def activate_filter_dictionaries(*args):
     if not filter_subjects_var.get():
@@ -866,9 +867,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column
                                                True)
 
 google_earth_var.set(1)
-google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where in maps (via Google Maps & Google Earth Pro)',
+google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Maps & Google Earth Pro)',
                                        variable=google_earth_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
                                                google_earth_checkbox)
 
 def activateFilters(*args):

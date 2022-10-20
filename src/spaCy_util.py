@@ -76,6 +76,8 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
         annotator = 'POS'
     elif "SVO" in annotator_params:
         annotator = 'SVO'
+    elif "depparse" in annotator_params:
+        annotator = 'depparse'
     elif "sentiment" in annotator_params:
         annotator = 'sentiment'
     # create the appropriate subdirectory to better organize output files

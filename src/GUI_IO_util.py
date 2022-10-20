@@ -297,10 +297,10 @@ if sys.platform == 'darwin': #Mac OS
 # top line of widgets MAC
     select_file_directory_button_width=23
     open_file_directory_button_width = 1
-    open_file_directory_coordinate = 410 # position of menu of default and GUI specific IO options
+    open_file_directory_coordinate = 405 # position of menu of default and GUI specific IO options
     IO_button_name_width=1
-    setup_pop_up_text_widget = 620 # widget to eventually open a text widget to enter text
-    setup_IO_brief_coordinate = 650 # Position of text entry for Input and Output display
+    setup_pop_up_text_widget = 638 # widget to eventually open a text widget to enter text
+    setup_IO_brief_coordinate = 685 # Position of text entry for Input and Output display
     open_IO_config_button = 650
 
     # 4 small widgets to the right of top line MAC
@@ -367,18 +367,18 @@ if sys.platform == 'darwin': #Mac OS
     open_S_dictionary = 260
     lemmatize_S = 320
     SVO_2nd_column = 520# filter & dictionary options for Verbs
-    open_V_dictionary = 640
-    lemmatize_V = 700
+    open_V_dictionary = 615
+    lemmatize_V = 680
     SVO_3rd_column = 920 # filter & dictionary options for Objects
-    open_O_dictionary = 1050
-    lemmatize_O = 1110
+    open_O_dictionary = 1025
+    lemmatize_O = 1090
 
     SVO_2nd_column_top = 400
     SVO_3rd_column_top = 800
 
-    dictionary_S_width=60
-    dictionary_V_width=60
-    dictionary_O_width=60
+    dictionary_S_width=37
+    dictionary_V_width=37
+    dictionary_O_width=37
 
 # MAC CoNLL_table_analyzer_main
     combobox_position = 210
@@ -478,9 +478,9 @@ else: #windows and anything else
     SVO_2nd_column_top = 400
     SVO_3rd_column_top = 800
 
-    dictionary_S_width=60
-    dictionary_V_width=60
-    dictionary_O_width=60
+    dictionary_S_width=55
+    dictionary_V_width=55
+    dictionary_O_width=55
 
 # Windows CoNLL_table_analyzer_main
     combobox_position = 200
