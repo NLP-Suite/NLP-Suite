@@ -371,7 +371,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or \
                 lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             output = SVO_util.filter_svo(window,SVO_filename,
-                                subjects_dict_var, verbs_dict_var, objects_dict_var,
+                                subject_filePath, verb_filePath, object_filePath,
                                 lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
                                 outputSVOSVODir, createCharts, chartPackage)
             if output != None:

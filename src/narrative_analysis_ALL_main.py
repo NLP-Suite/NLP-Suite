@@ -143,7 +143,9 @@ GUI_util.run_button.configure(command=run_script_command)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=False
 
-GUI_size='1200x550'
+GUI_width=str(GUI_IO_util.get_GUI_width(2))
+GUI_size = GUI_width + 'x550'
+
 GUI_label='Graphical User Interface (GUI) for Narrative Analysis'
 head, scriptName = os.path.split(os.path.basename(__file__))
 config_filename = scriptName.replace('main.py', 'config.csv')

@@ -176,11 +176,20 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      annotator_params,
                      DoCleanXML,
                      language,
-                     memory_var,
+                     memory_var=6,
                      document_length=90000,
                      sentence_length=1000, # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
                      export_json_toTxt = True,
                      **kwargs):
+
+    # These values can be zero if the setup has specified e.g., spaCy but in SVO or other annotators, the user selects to run CoreNLP
+    if memory_var==0:
+        memory_var=4
+    if document_length==0:
+        document_length=90000
+    if sentence_length==0:
+        sentence_length=100  # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
+
     silent=True
     start_time = time.time()
     speed_assessment = []#storing the information used for speed assessment
@@ -489,6 +498,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # record the time consumption before annotating text in each file
     processing_doc = ''
 
+    # nlp = StanfordCoreNLP('http://localhost:9000')
     for docName in inputDocs:
         docID = docID + 1
         head, tail = os.path.split(docName)
