@@ -318,7 +318,7 @@ if sys.platform == 'darwin': #Mac OS
     open_setup_software_button = 650
     open_setup_x_coordinate = 770
     run_button_x_coordinate = 940
-    close_button_x_coordinate = 1070
+    close_button_x_coordinate = 1090
 
 # --------------------------------------------------- special internal GUI specific values MAC
 # Mac NLP_setup_package_language_main
@@ -338,7 +338,11 @@ if sys.platform == 'darwin': #Mac OS
     missing_software_display_area_width = 60
     website_url_placement = 500
 
-# MAC Yes No reminder
+# MAC OK
+    countdownLabelOK1_X = 70
+    countdownLabelOK2_X= 280
+
+    # MAC Yes No reminder
     countdownLabel1_X = 125
     countdownLabel2_X = 335
     no_reminder = 65
@@ -448,12 +452,16 @@ else: #windows and anything else
     missing_software_display_area_width = 80
     website_url_placement = 640
 
+# Windows OK
+    countdownLabelOK1_X = 40
+    countdownLabelOK2_X = 230
+
 # Windows Yes No reminder
     countdownLabel1_X = 90
     countdownLabel2_X = 280
     no_reminder = 45
 
-    # Windows DB_SQL_main
+# Windows DB_SQL_main
     SQLite_DB_file_width = 100
     simplex_complex_files_dropdown = 390  # Complex/Simplex objects do you want to see? dropdowns
     select_DB_table_field = 500
@@ -500,11 +508,11 @@ y_step = 40 #the line-by-line increment on the GUI
 def get_GUI_width(size_type=1):
     if sys.platform == 'darwin':  # Mac OS
         if size_type == 1: # for now we have one basic size
-            return 1400
+            return 1100
         if size_type == 2:
-            return 1400
+            return 1300
         if size_type == 3:
-            return 1400
+            return 1350
         if size_type == 4:
             return 1400
     elif sys.platform == 'win32': # for now we have two basic sizes
@@ -644,8 +652,8 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
             denominator2 = 1500
         countdownLabel1 = tk.Label(top_message, text='Countdown to automatic closing:')
         countdownLabel2 = tk.Label(top_message, text=f'{int(timeout / denominator1)}', fg='red')
-        countdownLabel1.place(x=40, y=screen_height - 35) # OK button
-        countdownLabel2.place(x=230, y=screen_height - 35)
+        countdownLabel1.place(x=countdownLabelOK1_X, y=screen_height - 35) # OK button 40
+        countdownLabel2.place(x=countdownLabelOK2_X, y=screen_height - 35) # 230
         countdown(int(timeout / denominator2))
 
     elif buttonType == 'Yes-No':
