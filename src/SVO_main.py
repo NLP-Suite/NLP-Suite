@@ -767,7 +767,7 @@ subjects_checkbox = tk.Checkbutton(window, text='Filter Subject', variable=filte
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                    subjects_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
-                                   "The option for filtering subjects via WordNet for social actors is available only for the English language.\nBut you can choose a different special-purpose file.")
+                                   "The option for filtering subjects via WordNet for social actors is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the subjects file
 openInputFile_subjects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
@@ -787,7 +787,7 @@ verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=filter_verb
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
                                    verbs_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
-                                   "The option for filtering verbs for social actions via WordNet is available only for the English language.\nBut you can choose a different special-purpose file.")
+                                   "The option for filtering verbs for social actions via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the verbs file
 openInputFile_verbs_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
@@ -808,7 +808,7 @@ objects_checkbox = tk.Checkbutton(window, text='Filter Object', variable=filter_
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
                                    objects_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
-                                   "The option for filtering objects for social actors via WordNet is available only for the English language.\nBut you can choose a different special-purpose file.")
+                                   "The option for filtering objects for social actors via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the objects file
 openInputFile_objects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
@@ -823,18 +823,29 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.lemmatize_O, y
 # subjects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
 subjects_dict_var.set('social-actor-list.csv')
 subjects_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_S_width, state="disabled", textvariable=subjects_dict_var)
+
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               subjects_dict_entry, True)
+                                   subjects_dict_entry,
+                                   True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "The complete path of the subject social actor list is "+ subject_filePath+"\nTick twice the checkbox 'Filter Subject' to select a different file.")
 
 # verbs_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-action-list.csv'))
 verbs_dict_var.set('social-action-list.csv')
 verbs_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_V_width, state="disabled", textvariable=verbs_dict_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, verbs_dict_entry, True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
+                                   verbs_dict_entry,
+                                   True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
+                                   "The complete path of the verb social action list is "+ verb_filePath+"\nTick twice the checkbox 'Filter Verb' to select a different file.")
 
 objects_dict_var.set('')
 objects_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_O_width, state="disabled", textvariable=objects_dict_var)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
-                                               objects_dict_entry)
+                                   objects_dict_entry,
+                                   False, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
+                                   "The complete path of the object social actor list is "+ object_filePath+"\nTick twice the checkbox 'Filter Object' to select a different file.")
 
 gender_var.set(0)
 gender_checkbox = tk.Checkbutton(window, text='S & O gender',
