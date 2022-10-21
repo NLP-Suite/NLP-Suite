@@ -56,7 +56,7 @@ def classifier(input_first_dir, input_sec_dir,outputDir,openOutputFiles, date_fo
         # IO_util.timed_alert(GUI_util.window, 5000, 'file classifier', 'Processing file: ' + str(ungrouped))
 
         fname, file_ext = os.path.splitext(ungrouped)
-        date, date_str = IO_files_util.getDateFromFileName(fname, date_separator, date_position, date_format)
+        date, date_str, month, day, year = IO_files_util.getDateFromFileName(fname, date_separator, date_position, date_format)
         if date_str == '':
             nDateErrors=nDateErrors+1
             data.append([IO_csv_util.dressFilenameForCSVHyperlink(input_first_dir + os.sep + ungrouped), '','Error in Date Format! Source File not copied',splitDuration])
@@ -68,7 +68,7 @@ def classifier(input_first_dir, input_sec_dir,outputDir,openOutputFiles, date_fo
                 filename, file_extension = os.path.splitext(file)
                 if file_extension != '':
                     nTargetDocs=nTargetDocs+1
-                    dt,dt_str = IO_files_util.getDateFromFileName(filename, date_separator, date_position, date_format)
+                    dt, dt_str, month, day, year = IO_files_util.getDateFromFileName(filename, date_format, date_separator, date_position)
                     if dt_str!='':
                         if dt < early:
                             early = dt

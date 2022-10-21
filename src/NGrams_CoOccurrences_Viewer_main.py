@@ -63,9 +63,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         search_words,
         date_options,
         temporal_aggregation_var,
-        date_format,
-        date_separator_var,
-        date_position_var,
         viewer_options_list):
     # print(date_options, temporal_aggregation_var, date_format, date_separator_var, date_position_var)
     filesToOpen = []
@@ -77,6 +74,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     error_filenames = []
     error_flag = False
 
+    # get the date options from filename
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
+        config_filename, config_input_output_numeric_options)
+    extract_date_from_text_var = 0
+
     if n_grams_var==False and n_grams_viewer_var==False and CoOcc_Viewer_var==False:
         mb.showwarning(title='Warning',
                        message='There are no options selected.\n\nPlease, select one of the available options and try again.')
@@ -87,7 +93,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         return
 
     if date_options:
-        new_date_format = date_format.replace('yyyy', '%Y').replace('mm', '%m').replace('dd', '%d')
+        new_date_format = date_format_var.replace('yyyy', '%Y').replace('mm', '%m').replace('dd', '%d')
         for folder, subs, files in os.walk(inputDir):
             for filename in files:
                 if not filename.endswith('.txt'):
@@ -113,7 +119,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         df.to_csv(error_output, encoding='utf-8', index=False)
         mb.showwarning(title='Warning',
                        message='There are ' + str(error_file_number) + ' files out of ' + str(
-                           total_file_number) + ' processed in the selected input directory with errors in either the date format or the date position. \n\nThe selected date format is '+ str(date_format)+' and the selected date position is ' + str(date_position_var) + '.\n\nClick OK to open a csv file with a list of files with erroneous dates. Check carefully, both date format and date position. Any erroneous file will need to be fixed or removed from the input directory before processing. You may also simply need to select a different date format and/or date position.')
+                           total_file_number) + ' processed in the selected input directory with errors in either the date format or the date position. \n\nThe selected date format is '+
+                               str(date_format_var)+' and the selected date position is ' +
+                               str(date_position_var) + '.\n\nClick OK to open a csv file with a list of files with erroneous dates. Check carefully, both date format and date position. Any erroneous file will need to be fixed or removed from the input directory before processing. You may also simply need to select a different date format and/or date position.')
         filesToOpen.append(error_output)
         if openOutputFiles == True:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -206,10 +214,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             date_options,
             temporal_aggregation_var,
             number_of_years,
-            date_position_var,
-            date_format,
+            date_format_var,
             date_separator_var,
-            temporal_aggregation_var,
+            date_position_var,
             viewer_options_list)
 
     # plot Ngrams
@@ -287,9 +294,6 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_ma
                                  search_words_var.get(),
                                  date_options.get(),
                                  temporal_aggregation_var.get(),
-                                 date_format.get(),
-                                 date_separator_var.get(),
-                                 date_position_var.get(),
                                  viewer_options_list)
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -345,10 +349,6 @@ search_words_var=tk.StringVar()
 date_options = tk.IntVar()
 fileName_embeds_date = tk.IntVar()
 
-date_format = tk.StringVar()
-date_separator_var = tk.StringVar()
-date_position_var = tk.IntVar()
-
 temporal_aggregation_var=tk.StringVar()
 
 viewer_options_menu_var=tk.StringVar()
@@ -388,7 +388,7 @@ temporal_aggregation_lb = tk.Label(window,text='Aggregate by ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,temporal_aggregation_lb,True)
 temporal_aggregation_menu = tk.OptionMenu(window, temporal_aggregation_var, 'group of years', 'year', 'quarter','month') #,'day'
 temporal_aggregation_menu.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+90,y_multiplier_integer,temporal_aggregation_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+90,y_multiplier_integer,temporal_aggregation_menu)
 
 number_of_years=0
 
@@ -406,40 +406,14 @@ def get_year_group(*args):
         return number_of_years
 temporal_aggregation_var.trace('w',get_year_group)
 
-date_format.set('mm-dd-yyyy')
-date_format_lb = tk.Label(window,text='Format ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+220,y_multiplier_integer,date_format_lb,True)
-date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
-date_format_menu.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+280,y_multiplier_integer,date_format_menu,True)
-
-date_separator_var.set('_')
-date_separator_lb = tk.Label(window, text='Character separator ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+420,y_multiplier_integer,date_separator_lb,True)
-date_separator = tk.Entry(window, textvariable=date_separator_var)
-date_separator.configure(width=2,state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+550,y_multiplier_integer,date_separator,True)
-
-date_position_var.set(2)
-date_position_menu_lb = tk.Label(window, text='Position ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+580,y_multiplier_integer,date_position_menu_lb,True)
-date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
-date_position_menu.configure(width=1,state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+640,y_multiplier_integer,date_position_menu)
 
 def check_dateFields(*args):
     if date_options.get() == 1:
         date_options_msg.config(text="Date option ON")
         temporal_aggregation_menu.config(state="normal")
-        date_format_menu.config(state="normal")
-        date_separator.config(state='normal')
-        date_position_menu.config(state='normal')
     else:
         date_options_msg.config(text="Date option OFF")
         temporal_aggregation_menu.config(state="disabled")
-        date_format_menu.config(state="disabled")
-        date_separator.config(state='disabled')
-        date_position_menu.config(state="disabled")
 date_options.trace('w',check_dateFields)
 
 add_viewer_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_viewer_var())
@@ -517,9 +491,6 @@ def clear(e):
     viewer_options_list.clear()
     viewer_options_menu_var.set('Case sensitive')
     temporal_aggregation_var.set('year')
-    date_format.set('mm-dd-yyyy')
-    date_separator_var.set('_')
-    date_position_var.set(2)
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -588,7 +559,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, enter the comma-separated list of single words or collocations (i.e., sets of words such as coming out, beautiful sunny day) for which you want to know N-Grams/Co-occurrences statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences.\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: group of years, year, quarter, month.\n\nPlease, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2).')
+                                                         'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences.\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: group of years, year, quarter, month.\n\nPlease, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2).\nAvailable date options are: mm-dd-yyyy, dd-mm-yyyy, yyyy-mm-dd, yyyy-dd-mm, yyyy-mm, yyyy. Date options are set in NLP_setup_IO_main.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, use the dropdown menu to select various options that can be applied to the VIEWER. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nYou can make your searches CASE SENSITIVE.\n\nYou can NORMALIZE results. Only works for N-Grams. Formula: search word frequency / total number of all words e.g: word "nurse" occurs once in year 1892, and year 1892 has a total of 1000 words. Then the normalized frequency will be 1/1000.\n\nYou can SCALE results. Only works for N-Grams. It applies the min-max normalization to frequency of search words. After the min-max normalization is done, each column of data (i.e., each search word) will fall in the same range.\n\nYou can LEMMATIZE words for your searches (e.g., be instead of being, is, was). The routine relies on the Stanford CoreNLP for lemmatizing words.\n\nFinally, you can select to display minimal information or full information.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",

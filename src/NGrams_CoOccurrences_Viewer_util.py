@@ -26,10 +26,9 @@ def run(inputDir="relative_path_here",
         dateOption=False,
         temporal_aggregation='year',
         number_of_years=0,
-        datePos=2,
         dateFormat="mm-dd-yyyy",
         itemsDelimiter="_",
-        temporalAggregation="",
+        datePos=2,
         viewer_options_list=[]):
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
@@ -90,8 +89,8 @@ def run(inputDir="relative_path_here",
     if n_grams_viewer and byYear and dateOption:
         yearList = []
         for file in files:  # iterate over each file
-            date, dateStr = IO_files_util.getDateFromFileName(file, itemsDelimiter, datePos, dateFormat)
-            yearList.append(int(dateStr[-4:]))
+            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
+            yearList.append(year)
         yearList = sorted(np.unique(yearList))
         for word in search_word_list:
             ngram_results[word] = {}
@@ -104,10 +103,10 @@ def run(inputDir="relative_path_here",
         for file in files:  # iterate over each file
             docIndex += 1
             # extract the date from the file name
-            date, dateStr = IO_files_util.getDateFromFileName(file, itemsDelimiter, datePos, dateFormat)
+            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
             if date == '':
-                continue  # TODO: Warn user this file has a bad date; done in getDate
-            year = int(dateStr[-4:])
+                continue  # TODO: getDate warns user is this file has a bad date
+            year = int(year)
             f = open(file, "r", encoding='utf-8', errors='ignore')
             docText = f.read()
             f.close()
@@ -126,12 +125,10 @@ def run(inputDir="relative_path_here",
                         for i in range(length_of_search_list):
                             if i == 0:
                                 if split_search_word[i] == token:
-                                    # print("yes")
                                     checker = True
                             else:
                                 if checker and (collocationIndex + i) < len(tokens_):
                                     if split_search_word[i] == tokens_[collocationIndex + i]:
-                                        # print("yes")
                                         checker = True
                                     else:
                                         checker = False
@@ -139,7 +136,6 @@ def run(inputDir="relative_path_here",
                             ngram_results[search_word][year]["Frequency"] += 1
                     else:
                         if search_word == token:
-                            # print(search_word, 'FOUND!!!!!', file)
                             ngram_results[search_word][year]["Frequency"] += 1
 
         if byNumberOfYears > 1:
@@ -172,8 +168,8 @@ def run(inputDir="relative_path_here",
         monthList = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
         yearList = []
         for file in files:  # iterate over each file
-            date, dateStr = IO_files_util.getDateFromFileName(file, itemsDelimiter, datePos, dateFormat)
-            yearList.append(int(dateStr[-4:]))
+            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
+            yearList.append(year)
         yearList = sorted(np.unique(yearList))
 
         for word in search_word_list:
@@ -187,11 +183,9 @@ def run(inputDir="relative_path_here",
         for file in files:  # iterate over each file
             docIndex += 1
             # extract the date from the file name
-            date, dateStr = IO_files_util.getDateFromFileName(file, itemsDelimiter, datePos, dateFormat)
+            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
             if date == '':
-                continue  # TODO: Warn user this file has a bad date; done in getDate
-            year = dateStr[-4:]
-            month = dateStr[0:2]
+                continue  # TODO: getDate warns user is this file has a bad date
             f = open(file, "r", encoding='utf-8', errors='ignore')
             docText = f.read()
             f.close()
@@ -210,22 +204,21 @@ def run(inputDir="relative_path_here",
                         for i in range(length_of_search_list):
                             if i == 0:
                                 if split_search_word[i] == token:
-                                    # print("yes")
                                     checker = True
                             else:
                                 if checker and (collocationIndex + i) < len(tokens_):
                                     if split_search_word[i] == tokens_[collocationIndex + i]:
-                                        # print("yes")
                                         checker = True
                                     else:
                                         checker = False
                         if checker:
+                            # TODO Tai-Sandy the += 1 fails when aggregating by quarter or month
                             ngram_results[search_word][year][month]["Frequency"] += 1
                     else:
                         if search_word == token:
-                            # print(search_word, 'FOUND!!!!!', file)
                             ngram_results[search_word][year][month]["Frequency"] += 1
 
+# aggregate by quarter
         if byQuarter:
             quarter_ngram_results = {}
             for word, yearDict in ngram_results.items():
@@ -268,9 +261,9 @@ def run(inputDir="relative_path_here",
             index = 0
             # extract the date from the file name
             if dateOption:
-                date, dateStr = IO_files_util.getDateFromFileName(file, itemsDelimiter, datePos, dateFormat)
+                date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
                 if date == '':
-                    continue  # TODO: Warn user this file has a bad date; done in getDate
+                    continue  # TODO: getDate warns user is this file has a bad date
             else:
                 date = ''
                 f = open(file, "r", encoding='utf-8', errors='ignore')
@@ -296,12 +289,10 @@ def run(inputDir="relative_path_here",
                                 for i in range(length_of_search_list):
                                     if i == 0:
                                         if split_search_word[i] == token:
-                                            # print("yes")
                                             checker = True
                                     else:
                                         if checker and (collocationIndex + i) < len(tokens_):
                                             if split_search_word[i] == tokens_[collocationIndex + i]:
-                                                # print("yes")
                                                 checker = True
                                             else:
                                                 checker = False
@@ -400,7 +391,6 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
             newdf.rename(columns={'year_temp': 'year'}, inplace=True)
             newdf.rename(columns={'yearMonth_temp': 'year-' + temporal_aggregation}, inplace=True)
 
-        print(newdf)
         newdf.to_csv(NgramsFileName, encoding='utf-8', index=False)
     if len(coOcc_results)>0:
         # with open(os.path.join(WCOFileName, outputDir), 'w', encoding='utf-8') as f:

@@ -222,6 +222,8 @@ def selectDirectory(title, initialFolder=''):
 
 
 def openExplorer(window, directory):
+    if not os.path.isdir(directory):
+        mb.showwarning(title='Input dir error',message='The directory ' + directory + ' does not exist. It must have been removed.\n\nPlease, select a different directory and try again.')
     if sys.platform == 'win32':  # Windows
         os.startfile(directory)
     elif sys.platform == 'darwin':  # Mac
@@ -231,7 +233,6 @@ def openExplorer(window, directory):
             subprocess.Popen(['xdg-open', directory])  # Linux
         except OSError:
             print("OS error in accessing directory")
-
 
 # when called from GUI_util command=lambda we open the file
 # when called from NLP_setup_IO_main we just want to remove the date portion from the filename without opening the file
@@ -256,7 +257,7 @@ def open_directory_removing_date_from_directory(window,inputDir, open):
     return inputDir
 
 # returns date, dateStr
-def getDateFromFileName(file_name, sep='_', date_field_position=2, date_format='mm-dd-yyyy', errMsg=True):
+def getDateFromFileName(file_name, date_format='mm-dd-yyyy', sep='_', date_field_position=2, errMsg=True):
     # configFile_basename is the filename w/o the full path
     file_name = ntpath.basename(file_name)
     x = file_name
@@ -288,21 +289,39 @@ def getDateFromFileName(file_name, sep='_', date_field_position=2, date_format='
             if date_format == 'mm-dd-yyyy':
                 date = datetime.datetime.strptime(raw_date, '%m-%d-%Y').date()
                 dateStr = date.strftime('%m-%d-%Y')
+                month=dateStr[0:2]
+                day=dateStr[3:5]
+                year=dateStr[-4:]
             elif date_format == 'dd-mm-yyyy':
                 date = datetime.datetime.strptime(raw_date, '%d-%m-%Y').date()
                 dateStr = date.strftime('%d-%m-%Y')
+                month=dateStr[3:5]
+                day=dateStr[0:2]
+                year=dateStr[-4:]
             elif date_format == 'yyyy-mm-dd':
                 date = datetime.datetime.strptime(raw_date, '%Y-%m-%d').date()
                 dateStr = date.strftime('%Y-%m-%d')
+                month=dateStr[5:7]
+                day=dateStr[8:10]
+                year=dateStr[:4]
             elif date_format == 'yyyy-dd-mm':
                 date = datetime.datetime.strptime(raw_date, '%Y-%d-%m').date()
                 dateStr = date.strftime('%Y-%d-%m')
+                month=dateStr[8:10]
+                day=dateStr[5:7]
+                year=dateStr[:4]
             elif date_format == 'yyyy-mm':
                 date = datetime.datetime.strptime(raw_date, '%Y-%m').date()
                 dateStr = date.strftime('%Y-%m')
+                month=dateStr[5:7]
+                day=0
+                year=dateStr[:4]
             elif date_format == 'yyyy':
                 date = datetime.datetime.strptime(raw_date, '%Y').date()
                 dateStr = date.strftime('%Y')
+                month = 0
+                day = 0
+                year = dateStr[:4]
             dateStr = dateStr.replace('/', '-')
         except ValueError:
             if errMsg == True:
@@ -314,8 +333,7 @@ def getDateFromFileName(file_name, sep='_', date_field_position=2, date_format='
                 date = ''  # must assign or you get an error in return
                 dateStr = ''
     # TODO: see the modification, so we can get a date object and a string from the same method, DO keep this change for the file_classifier to work.
-    return date, dateStr
-
+    return date, dateStr, int(month), int(day), int(year)
 
 def checkDirectory(path, message=True):
     if os.path.isdir(path):

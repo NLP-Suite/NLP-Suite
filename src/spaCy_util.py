@@ -350,8 +350,7 @@ def date_in_filename(document, **kwargs):
         if key == 'date_position_var':
             date_position_var = value
     if extract_date_from_filename_var:
-        date, date_str = IO_files_util.getDateFromFileName(document, date_separator_var, date_position_var,
-                                                           date_format)
+        date, date_str, month, day, year = IO_files_util.getDateFromFileName(document, date_format, date_separator_var, date_position_var)
     return date_str
 
 # Python dictionary of language (values) and their acronyms (keys)
