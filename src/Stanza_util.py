@@ -285,7 +285,6 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
     filesToVisualize=filesToOpen
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, False)
-    # TODO MINO
     for j in range(len(filesToVisualize)):
         #02/27/2021; eliminate the value error when there's no information from certain annotators
         if filesToVisualize[j][-4:] == ".csv":

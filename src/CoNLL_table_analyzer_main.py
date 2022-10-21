@@ -49,7 +49,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                        message="No option has been selected.\n\nPlease, select an option by ticking a checkbox and try again.")
             return
 
-    if search_token_var.get() and searchField_kw.get()=='e.g.: father':
+    if search_token_var.get() and searchField_kw=='e.g.: father':
         mb.showwarning(title='Search error',
                        message="The 'Searched token' field must be different from 'e.g.: father'. Please, enter a CoNLL table token/word and try again.")
         return
@@ -115,17 +115,17 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
                                            'Finished running CoNLL table ' + label + ' analyses at',
                                            True, '', True, startTime, False)
 
-    if search_token_var.get() and searchField_kw.get() != 'e.g.: father':
+    if search_token_var.get() and searchField_kw != 'e.g.: father':
         # # create a subdirectory of the output directory
         # outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_search',
         #                                                    silent=True)
 
-        if ' ' in searchField_kw.get():
+        if ' ' in searchField_kw:
             mb.showwarning(title='Search error',
                            message="The CoNLL table search can only contain one token/word since the table has one record for each token/word.\n\nPlease, enter a different word and try again.\n\nIf you need to search your corpus for collocations, i.e., multi-word expressions, you need to use the 'N-grams/Co-occurrence searches' or the 'Words/collocations searches' in the ALL searches GUI.")
             return
-        if searchedCoNLLField.get().lower() not in ['lemma', 'form']:
-            searchedCoNLLField.set('FORM')
+        if searchedCoNLLField.lower() not in ['lemma', 'form']:
+            searchedCoNLLField_var.set('FORM')
         if postag_var.get() != '*':
             postag = str(postag_var.get()).split(' - ')[0]
             postag = postag.strip()
@@ -204,8 +204,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_dropdown_field.get(),
-                                 searchedCoNLLField.get(),
-                                 searchField_kw.get(),
+                                 searchedCoNLLField_var.get(),
+                                 searchField_kw_var.get(),
                                  postag_var.get(),
                                  deprel_var.get(),
                                  co_postag_var.get(),
@@ -253,8 +253,8 @@ inputFilename = GUI_util.inputFilename
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 all_analyses = tk.StringVar()
-searchField_kw = tk.StringVar()
-searchedCoNLLField = tk.StringVar()
+searchField_kw_var = tk.StringVar()
+searchedCoNLLField_var = tk.StringVar()
 postag_var = tk.StringVar()
 deprel_var = tk.StringVar()
 co_postag_var = tk.StringVar()
@@ -282,7 +282,7 @@ def clear(e):
     all_analyses_menu.configure(state='disabled')
     all_analyses.set('*')
     search_token_var.set(0)
-    searchField_kw.set('e.g.: father')
+    searchField_kw_var.set('e.g.: father')
     postag_var.set('*')
     deprel_var.set('*')
     co_postag_var.set('*')
@@ -290,8 +290,6 @@ def clear(e):
     co_deprel_var.set('*')
     activate_all_options()
     GUI_util.clear("Escape")
-
-
 window.bind("<Escape>", clear)
 
 
@@ -324,26 +322,26 @@ searchToken_checkbox = tk.Checkbutton(window, state='disabled', variable=search_
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                     y_multiplier_integer, searchToken_checkbox,True)
 
-searchField_kw.set('e.g.: father')
+searchField_kw_var.set('e.g.: father')
 
 # used to place noun/verb checkboxes starting at the top level
 y_multiplier_integer_top = y_multiplier_integer
 
-entry_searchField_kw = tk.Entry(window, state='disabled', textvariable=searchField_kw)
+entry_searchField_kw = tk.Entry(window, state='disabled', textvariable=searchField_kw_var)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate,
     y_multiplier_integer,
     entry_searchField_kw,
     False, False, False, False, 90, GUI_IO_util.open_file_directory_coordinate,
-    "Enter the CASE SENSITIVE word that you would like to search (* for any word). All searches are done WITHIN EACH SENTENCE for the EXACT word.")
+    "Enter the CASE SENSITIVE word (ONE WORD ONLY) that you would like to search (* for any word). All searches are done WITHIN EACH SENTENCE for the EXACT word.")
 
 # Search type var (FORM/LEMMA)
-searchedCoNLLField.set('FORM')
+searchedCoNLLField_var.set('FORM')
 searchedCoNLLdescription_csv_field_menu_lb = tk.Label(window, text='CoNLL search field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
                                                searchedCoNLLdescription_csv_field_menu_lb,True)
 
-searchedCoNLLdescription_csv_field_menu_lb = tk.OptionMenu(window, searchedCoNLLField, 'FORM', 'LEMMA')
+searchedCoNLLdescription_csv_field_menu_lb = tk.OptionMenu(window, searchedCoNLLField_var, 'FORM', 'LEMMA')
 searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                searchedCoNLLdescription_csv_field_menu_lb)

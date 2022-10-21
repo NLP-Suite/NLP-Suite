@@ -8,20 +8,13 @@ edited by Naman Sahni 9/23.2022
 """
 from pydoc import Doc
 import pandas as pd
-import os
 import string
-
-
-# from sympy import Q
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
 import GUI_IO_util
 import IO_files_util
 import charts_util
-import IO_csv_util
-import CoNLL_util
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import statistics_txt_util
-
 
 def k_sent(inputFilename, outputDir, createCharts, chartPackage):
     filesToOpen=[]
