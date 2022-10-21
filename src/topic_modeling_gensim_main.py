@@ -62,7 +62,7 @@ def run(inputDir, outputDir, openOutputFiles,createCharts,chartPackage, num_topi
                                      reminders_util.message_topic_modelling_number_of_topics, True)
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='TM-Gensim',
+    outputDir = IO_files_util.make_output_subdirectory('', inputDir, outputDir, label='TM-Gensim',
                                                        silent=False)
     if outputDir == '':
         return

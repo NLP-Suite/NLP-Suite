@@ -41,4 +41,8 @@ def sent_tokenize_stanza(doc, return_text=True):
 # https://stanfordnlp.github.io/stanza/lemma.html
 # https://github.com/stanfordnlp/stanza/blob/main/stanza/models/lemmatizer.py
 def lemmatize_stanza(doc):
-    return doc.sentences[0].words[0].lemma
+    try:
+        return doc.sentences[0].words[0].lemma
+    except:
+        # if doc=[]
+        return ''

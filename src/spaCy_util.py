@@ -167,7 +167,6 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
         svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
         filesToOpen.append(svo_df_outputFilename)
 
-    #TODO MINO
     filesToVisualize=filesToOpen
     for j in range(len(filesToVisualize)):
         #02/27/2021; eliminate the value error when there's no information from certain annotators

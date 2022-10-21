@@ -391,21 +391,21 @@ corpus_statistics_var = tk.IntVar()
 corpus_statistics_options_menu_var = tk.StringVar()
 corpus_text_options_menu_var = tk.StringVar()
 
-CoNLL_table_analysis_button = tk.Button(window, width=50, text='CoNLL table analysis (Open GUI)',command=lambda: call('python CoNLL_table_analyzer_main.py'))
+CoNLL_table_analysis_button = tk.Button(window, width=50, text='CoNLL table analysis (Open GUI)',command=lambda: call('python CoNLL_table_analyzer_main.py', shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                    CoNLL_table_analysis_button,
                                    False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
                                    "Click on the button to open the GUI")
 
-ngrams_button = tk.Button(window, width=50, text='N-Grams/Co-occurrences VIEWER (Open GUI)',command=lambda: call('python NGrams_CoOccurrences_Viewer_main.py'))
+ngrams_button = tk.Button(window, width=50, text='N-Grams/Co-occurrences VIEWER (Open GUI)',command=lambda: call('python NGrams_CoOccurrences_Viewer_main.py', shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                    ngrams_button,
                                    False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
                                    "Click on the button to open the GUI")
 
-nominalization_button = tk.Button(window, width=50, text='Nominalization (Open GUI)',command=lambda: call('python nominalization_main.py'))
+nominalization_button = tk.Button(window, width=50, text='Nominalization (Open GUI)',command=lambda: call('python nominalization_main.py', shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                    nominalization_button,

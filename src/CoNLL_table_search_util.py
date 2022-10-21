@@ -445,6 +445,11 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
         srcField_kw = 'astrsk'
     else:
         srcField_kw = form_of_token
+
+    if len(deprel_list_queried)==1: # only headers, list empty
+        mb.showwarning(title='Empty query results',message=noResults)
+        return outputDir, filesToOpen
+
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'CoNLL-search',
                                                                srcField_kw, form_of_token, _field_)
 
@@ -467,30 +472,6 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
     if createCharts == True:
 
         count_var = 1
-
-        # columns_to_be_plotted_xAxis = ['POS Tag of Searched Token/Word',
-        #                                'DepRel of Searched Token/Word',
-        #                                'Co-occurring Token/Word',
-        #                                'POS Tag of Co-occurring Token/Word',
-        #                                'DepRel of Co-occurring Token/Word']
-        # columns_to_be_plotted_yAxis = ['POS Tag of Searched Token/Word',
-        #                                'DepRel of Searched Token/Word',
-        #                                'Co-occurring Token/Word',
-        #                                'POS Tag of Co-occurring Token/Word',
-        #                                'DepRel of Co-occurring Token/Word']
-        # chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
-        #                                                    outputFilename, outputDir,
-        #                                                    columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-        #                                                    chartTitle="Frequency Distribution of POS Tag of Searched Token/Word",
-        #                                                    outputFileNameType='search',
-        #                                                    column_xAxis_label='POS Tag',
-        #                                                    count_var=count_var,
-        #                                                    hover_label=[],
-        #                                                    groupByList=[],  # ['Document ID', 'Document'],
-        #                                                    plotList=[],  # ['Concreteness (Mean score)'],
-        #                                                    chart_title_label='')  # 'Concreteness Statistics')
-        # if chart_outputFilename != None:
-        #     filesToOpen.extend(chart_outputFilename)
 
         columns_to_be_plotted_xAxis = ['POS Tag of Searched Token/Word']
         columns_to_be_plotted_yAxis = ['POS Tag of Searched Token/Word']

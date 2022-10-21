@@ -593,8 +593,11 @@ window = GUI_util.window
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
+subject_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
+verb_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-action-list.csv'
+object_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
 
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 def clear(e):
     coref_var.set(0)
@@ -715,31 +718,45 @@ def activate_filter_dictionaries(*args):
     if not filter_subjects_var.get():
         subjects_dict_var.set('')
     else:
-        subjects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
+        # subjects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
+        subjects_dict_var.set('social-actor-list.csv')
     if not filter_verbs_var.get():
         verbs_dict_var.set('')
     else:
-        verbs_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-action-list.csv'))
+        # verbs_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-action-list.csv'))
+        verbs_dict_var.set('social-action-list.csv')
     if not filter_objects_var.get():
         objects_dict_var.set('')
     else:
-        objects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
-filter_subjects_var.trace('w',activate_filter_dictionaries)
+        # objects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
+        objects_dict_var.set('social-actor-list.csv')
+        filter_subjects_var.trace('w',activate_filter_dictionaries)
 filter_verbs_var.trace('w',activate_filter_dictionaries)
 filter_objects_var.trace('w',activate_filter_dictionaries)
 
 def getDictFile(checkbox_var, dict_var, checkbox_value, dictFile):
+    global subject_filePath, verb_filePath, object_filePath
     filePath = ''
     if checkbox_value == 1:
-        if dictFile == 'Subject' or dictFile == 'Object':
-            filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
+        if dictFile == 'Subject':
+            filePath = 'social-actor-list.csv'
         elif dictFile == 'Verb':
-            filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-action-list.csv'
+            filePath = 'social-action-list.csv'
+        elif dictFile == 'Subject' or dictFile == 'Object':
+            filePath = 'social-actor-list.csv'
         initialFolder = GUI_IO_util.wordLists_libPath
         filePath = tk.filedialog.askopenfilename(title='Select INPUT csv ' + dictFile + ' dictionary filter file',
                                                  initialdir=initialFolder, filetypes=[("csv files", "*.csv")])
         if len(filePath) == 0:
             checkbox_var.set(0)
+        else:
+            if dictFile == 'Subject':
+                subject_filePath = filePath
+            elif dictFile == 'Verb':
+                verb_filePath = filePath
+            elif dictFile == 'Object':
+                object_filePath = filePath
+            filePath=os.path.basename(os.path.normpath(filePath))
     dict_var.set(filePath)
 
 filter_subjects_var.set(1)
@@ -750,11 +767,11 @@ subjects_checkbox = tk.Checkbutton(window, text='Filter Subject', variable=filte
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                    subjects_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
-                                   "The option for filtering subjects via WordNet for social actors is available only for the English language.\nBut you can choose a different special-purpose file.")
+                                   "The option for filtering subjects via WordNet for social actors is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the subjects file
 openInputFile_subjects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                          command=lambda: IO_files_util.openFile(window, subjects_dict_var.get()))
+                                          command=lambda: IO_files_util.openFile(window, subject_filePath))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_S_dictionary, y_multiplier_integer,
                                                openInputFile_subjects_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 140, "Open csv file containing SUBJECT filters")
@@ -763,7 +780,6 @@ lemmatize_subjects_checkbox = tk.Checkbutton(window, text='Lemmatize Subject', v
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.lemmatize_S, y_multiplier_integer,
                                                lemmatize_subjects_checkbox, True)
 
-
 filter_verbs_var.set(1)
 verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=filter_verbs_var, onvalue=1, offvalue=0,
                                 command=lambda: getDictFile(filter_verbs_var, verbs_dict_var, filter_verbs_var.get(), 'Verb'))
@@ -771,11 +787,11 @@ verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=filter_verb
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
                                    verbs_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
-                                   "The option for filtering verbs for social actions via WordNet is available only for the English language.\nBut you can choose a different special-purpose file.")
+                                   "The option for filtering verbs for social actions via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the verbs file
 openInputFile_verbs_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                       command=lambda: IO_files_util.openFile(window, verbs_dict_var.get()))
+                                       command=lambda: IO_files_util.openFile(window, verb_filePath))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_V_dictionary, y_multiplier_integer,
                                                openInputFile_verbs_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 520, "Open csv file containing VERB filters")
 
@@ -792,11 +808,11 @@ objects_checkbox = tk.Checkbutton(window, text='Filter Object', variable=filter_
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
                                    objects_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
-                                   "The option for filtering objects for social actors via WordNet is available only for the English language.\nBut you can choose a different special-purpose file.")
+                                   "The option for filtering objects for social actors via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the objects file
 openInputFile_objects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                                         command=lambda: IO_files_util.openFile(window, objects_dict_var.get()))
+                                         command=lambda: IO_files_util.openFile(window, object_filePath))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_O_dictionary, y_multiplier_integer,
                                                openInputFile_objects_button,True, False, True, False, 90, GUI_IO_util.open_O_dictionary, "Open csv file containing OBJECT filters")
 
@@ -804,19 +820,32 @@ lemmatize_objects_checkbox = tk.Checkbutton(window, text='Lemmatize Object', var
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.lemmatize_O, y_multiplier_integer,
                                                lemmatize_objects_checkbox)
 
-subjects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
+# subjects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
+subjects_dict_var.set('social-actor-list.csv')
 subjects_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_S_width, state="disabled", textvariable=subjects_dict_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               subjects_dict_entry, True)
 
-verbs_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-action-list.csv'))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   subjects_dict_entry,
+                                   True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "The complete path of the subject social actor list is "+ subject_filePath+"\nTick twice the checkbox 'Filter Subject' to select a different file.")
+
+# verbs_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-action-list.csv'))
+verbs_dict_var.set('social-action-list.csv')
 verbs_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_V_width, state="disabled", textvariable=verbs_dict_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, verbs_dict_entry, True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
+                                   verbs_dict_entry,
+                                   True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
+                                   "The complete path of the verb social action list is "+ verb_filePath+"\nTick twice the checkbox 'Filter Verb' to select a different file.")
 
 objects_dict_var.set('')
 objects_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_O_width, state="disabled", textvariable=objects_dict_var)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
-                                               objects_dict_entry)
+                                   objects_dict_entry,
+                                   False, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
+                                   "The complete path of the object social actor list is "+ object_filePath+"\nTick twice the checkbox 'Filter Object' to select a different file.")
 
 gender_var.set(0)
 gender_checkbox = tk.Checkbutton(window, text='S & O gender',

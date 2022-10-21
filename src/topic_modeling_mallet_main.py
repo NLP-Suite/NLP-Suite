@@ -52,7 +52,7 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
                                      reminders_util.message_topic_modelling_number_of_topics, True)
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='TM-MALLET',
+    outputDir = IO_files_util.make_output_subdirectory('', inputDir, outputDir, label='TM-MALLET',
                                                        silent=False)
     if outputDir == '':
         return
