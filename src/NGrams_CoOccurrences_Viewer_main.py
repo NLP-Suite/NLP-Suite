@@ -346,6 +346,10 @@ CoOcc_Viewer_var = tk.IntVar()
 
 search_words_var=tk.StringVar()
 
+# date_format_var=tk.StringVar()
+# date_separator_var=tk.StringVar()
+# date_position_var=tk.IntVar()
+
 date_options = tk.IntVar()
 fileName_embeds_date = tk.IntVar()
 
@@ -360,7 +364,11 @@ fullInfo = tk.IntVar()
 
 n_grams_viewer_var.set(0)
 Ngrams_checkbox = tk.Checkbutton(window, text='N-grams VIEWER', variable=n_grams_viewer_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,Ngrams_checkbox,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                   Ngrams_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "The N-grams VIEWER option requires in input file(s) with a date embedded in the filename")
 
 CoOcc_Viewer_var.set(0)
 CoOcc_checkbox = tk.Checkbutton(window, text='Co-Occurrences VIEWER', variable=CoOcc_Viewer_var, onvalue=1, offvalue=0)
@@ -501,6 +509,13 @@ def activate_allOptions():
     CoOcc_checkbox.configure(state='normal')
     search_words_entry.configure(state='normal')
     date_options_checkbox.config(state='normal')
+    if "INPUT FILE" in GUI_util.IO_setup_var.get():
+        input_label= 'INPUT FILE'
+    else:
+        input_label = 'INPUT DIR'
+    if n_grams_viewer_var.get() and ('(Date: ' not in GUI_util.IO_setup_var.get()):
+        mb.showwarning(title='Warning',message='The N-grams VIEWER option requires file(s) with a date embedded in the filename.\n\nYour current ' + input_label + ' selection does not show the Date option.\n\nPlease, select a different Input configuration or run the Co-Occurrences VIEWER option instead that does not require a date embedded in filenames.')
+        n_grams_viewer_var.set(0)
     if n_grams_viewer_var.get() or CoOcc_Viewer_var.get():
         search_words_entry.configure(state='normal')
         date_options_checkbox.config(state='normal')

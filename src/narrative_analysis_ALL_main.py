@@ -215,22 +215,22 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 characters_WordNet_var.set(0)
 characters_WordNet_checkbox = tk.Checkbutton(window,text="Via WordNet", variable=characters_WordNet_var, onvalue=1, offvalue=0)
 # characters_WordNet_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+190,y_multiplier_integer,characters_WordNet_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,characters_WordNet_checkbox,True)
 
 characters_DBpedia_YAGO_var.set(0)
 characters_DBpedia_YAGO_checkbox = tk.Checkbutton(window,text="Via DBpedia/YAGO", variable=characters_DBpedia_YAGO_var, onvalue=1, offvalue=0)
 # characters_DBpedia_YAGO_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+320,y_multiplier_integer,characters_DBpedia_YAGO_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,characters_DBpedia_YAGO_checkbox,True)
 
 characters_byGender_CoreNLP_var.set(0)
 characters_byGender_CoreNLP_checkbox = tk.Checkbutton(window,text="By gender - Via CoreNLP", variable=characters_byGender_CoreNLP_var, onvalue=1, offvalue=0)
 # characters_byGender_CoreNLP_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+470,y_multiplier_integer,characters_byGender_CoreNLP_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_4th_column,y_multiplier_integer,characters_byGender_CoreNLP_checkbox,True)
 
 characters_byGender_dict_var.set(0)
 characters_byGender_dict_checkbox = tk.Checkbutton(window,text="By gender - Via dictionaries", variable=characters_byGender_dict_var, onvalue=1, offvalue=0)
 # characters_byGender_dict_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+650,y_multiplier_integer,characters_byGender_dict_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_5th_column,y_multiplier_integer,characters_byGender_dict_checkbox)
 
 scene_lb = tk.Label(window, text='Scenes/settings (When & where action happens)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,scene_lb)
@@ -238,32 +238,32 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 time_NER_var.set(0)
 time_NER_checkbox = tk.Checkbutton(window, text="Time: When (via NER)",variable=time_NER_var, onvalue=1, offvalue=0)
 # time_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,time_NER_checkbox, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer,time_NER_checkbox, True)
 
 story_plot_var.set(0)
 story_plot_checkbox = tk.Checkbutton(window,text="Story & plot (Via CoreNLP NER normalized time)", variable=story_plot_var, onvalue=1, offvalue=0)
 # story_plot_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+190,y_multiplier_integer,story_plot_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,story_plot_checkbox)
 
 space_NER_var.set(0)
 space_NER_checkbox = tk.Checkbutton(window, text="Space: Where (via NER)",variable=space_NER_var, onvalue=1, offvalue=0)
 #space_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,space_NER_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer,space_NER_checkbox,True)
 
 space_GIS_var.set(0)
 space_GIS_checkbox = tk.Checkbutton(window, text="Via GIS",variable=space_GIS_var, onvalue=1, offvalue=0)
 #GIS_locations_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+190,y_multiplier_integer,space_GIS_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,space_GIS_checkbox,True)
 
 space_WordNet_var.set(0)
 space_WordNet_checkbox = tk.Checkbutton(window, text="Via WordNet", variable=space_WordNet_var, onvalue=1, offvalue=0)
 # space_WordNet_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+320,y_multiplier_integer,space_WordNet_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,space_WordNet_checkbox,True)
 
 space_DBpedia_YAGO_var.set(0)
 space_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text="Via DBpedia/YAGO", variable=space_DBpedia_YAGO_var, onvalue=1, offvalue=0)
 # space_DBpedia_YAGO_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+470,y_multiplier_integer,space_DBpedia_YAGO_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_4th_column,y_multiplier_integer,space_DBpedia_YAGO_checkbox)
 
 characters_BySettings_lb = tk.Label(window, text='Characters in their scenes/settings')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,characters_BySettings_lb)
@@ -271,7 +271,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 characters_bySetting_var.set(0)
 characters_bySetting_checkbox = tk.Checkbutton(window,text="Characters (By scene/setting)", variable=characters_bySetting_var, onvalue=1, offvalue=0)
 characters_bySetting_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,characters_bySetting_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer,characters_bySetting_checkbox)
 
 action_lb = tk.Label(window, text='Action: What')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,action_lb)
@@ -279,12 +279,12 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 action_WordNet_var.set(0)
 action_WordNet_checkbox = tk.Checkbutton(window, text="Via WordNet", variable=action_WordNet_var, onvalue=1, offvalue=0)
 # action_WordNet_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,action_WordNet_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer,action_WordNet_checkbox,True)
 
 action_DBpedia_YAGO_var.set(0)
 action_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text="Via DBpedia/YAGO", variable=action_DBpedia_YAGO_var, onvalue=1, offvalue=0)
 # action_DBpedia_YAGO_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+160,y_multiplier_integer,action_DBpedia_YAGO_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,action_DBpedia_YAGO_checkbox)
 
 SVO_var.set(0)
 SVO_checkbox = tk.Checkbutton(window, text="SVOs: Who, What, Whom, When, Where",variable=SVO_var, onvalue=1, offvalue=0)
@@ -294,14 +294,16 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 shape_stories_var.set(0)
 shape_stories_checkbox = tk.Checkbutton(window, text="Shape of stories",variable=shape_stories_var, onvalue=1, offvalue=0)
 # shape_stories_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+260,y_multiplier_integer,shape_stories_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,shape_stories_checkbox,True)
 
 story_parts_var.set(0)
-story_parts_checkbox = tk.Checkbutton(window,text="Narrative elements (Labov's abstract, orientation, complicating action, evaluation, resolution, coda)", variable=story_parts_var, onvalue=1, offvalue=0)
+story_parts_checkbox = tk.Checkbutton(window,text="Narrative elements", variable=story_parts_var, onvalue=1, offvalue=0)
 story_parts_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+460,y_multiplier_integer,story_parts_checkbox)
-
-#abstract; orientation; complicating action; evaluation; resolution; and coda
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_4th_column, y_multiplier_integer,
+                                   story_parts_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.narrative_analysis_3rd_column,
+                                   "Narrative elements from Labov: abstract, orientation, complicating action, evaluation, resolution, coda")
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

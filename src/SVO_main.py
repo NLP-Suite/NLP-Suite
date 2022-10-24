@@ -147,11 +147,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     else:
         inputBaseName = os.path.basename(inputDir)
     if coref_var:
-        outputCorefDir = os.path.join(outputDirSV, package_var+ '_coref_' + inputBaseName)
-        outputSVODir = os.path.join(outputDir, package_var + '_SVO_coref_' + inputBaseName)
+        outputCorefDir = os.path.join(outputDirSV, 'coref_' + package_var + '_' + inputBaseName)
+        outputSVODir = os.path.join(outputDir, 'SVO_coref_' + package_var + '_' +inputBaseName)
     else:
         outputCorefDir = ''
-        outputSVODir = os.path.join(outputDir, package_var + '_SVO_' + inputBaseName)
+        outputSVODir = os.path.join(outputDir, 'SVO_' + package_var + '_' +inputBaseName)
 
     # create an SVO subdirectory of the output directory
     outputSVODir = IO_files_util.make_output_subdirectory('','',outputSVODir, label='',
@@ -201,15 +201,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # only the inputDir will be used when coreferencing, whether it will contain a set of files or just one file
         inputFilename=''
 
- # Date extractor _____________________________________________________
-    # TODO no longer used as an option
-    if normalized_NER_date_extractor_var:
-        files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
-                                                                 openOutputFiles, createCharts, chartPackage,
-                                                                 'normalized-date', False, language_var,  memory_var, document_length_var, limit_sentence_length_var)
-        if len(files)>0:
-            filesToOpen.extend(files)
-
     if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
         WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('SVO_main',
                                                                                             'WordNet')
@@ -237,14 +228,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
             return
         gender_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir + os.sep + 'gender', '.csv',
-                                                                       'CoreNLP_SVO_gender')
+                                                                       'SVO_CoreNLP_gender')
 
 
         gender_filename_html = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir + os.sep + 'gender', '.html',
                                                           'dict_annotated_gender')
 
         quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir + os.sep + 'quote', '.csv',
-                                                                       'CoreNLP_SVO_quote')
+                                                                       'SVO_CoreNLP_quote')
 
         params = ['SVO']
         if gender_var:

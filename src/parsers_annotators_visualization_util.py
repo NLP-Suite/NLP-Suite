@@ -1,6 +1,4 @@
 
-import os
-
 import charts_util
 import reminders_util
 import IO_csv_util
@@ -48,9 +46,59 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                 filesToOpen.extend(chart_outputFilename)
 
 # generate visualization output ----------------------------------------------------------------
-# date ________________________________________________________________
+# NER ________________________________________________________________
 
-    elif 'date' in str(annotator_params) and 'date' in outputFilename:
+    elif 'NER' in str(annotator_params) and 'NER' in outputFilename:
+        reminders_util.checkReminder(config_filename, reminders_util.NER_frequencies,
+                                     reminders_util.message_NER_frequencies, True)
+        if IO_csv_util.get_csvfile_headers(outputFilename, False)[1] == "NER Tag":
+            # plot NER tag (e.g, LOCATION)
+            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                               outputDir,
+                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['NER Tag'],
+                               chartTitle='Frequency Distribution of NER Tags',
+                               # count_var = 1 for columns of alphabetic values
+                               count_var=1, hover_label=[],
+                               outputFileNameType='NER-tag', #'NER_tag_bar',
+                               column_xAxis_label='NER tag',
+                               groupByList=['Document ID','Document'],
+                               plotList=['Frequency'],
+                               chart_title_label='NER tag')
+            if chart_outputFilename != None:
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
+
+            if len(kwargs['NERs'])>1:
+                ner_tags = 'Multi-tags'
+            else:
+                ner_tags = str(kwargs['NERs'][0])
+            # plot the words contained in each NER tag (e.g, the word 'Rome' in NER tag LOCATION)
+            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                       outputDir,
+                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Word'],
+                                       chartTitle='Frequency Distribution of Words by NER ' + ner_tags,
+                                       # count_var = 1 for columns of alphabetic values
+                                       count_var=1, hover_label=[],
+                                       outputFileNameType='NER-word', #'NER_word_bar',
+                                       column_xAxis_label='Word',
+                                       groupByList=['Document ID','Document'],
+                                       plotList=['Frequency'],
+                                       chart_title_label='NER Words')
+            if chart_outputFilename != None:
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
+
+# generate visualization output ----------------------------------------------------------------
+# date ________________________________________________________________
+    # dates are extracted by the date annotator, but also as part of SVO and OpenIE
+    elif (('date' in str(annotator_params) and 'date' in outputFilename)) or \
+            (('SVO' in str(annotator_params) and 'SVO' in outputFilename)) or \
+            ('OpenIE' in str(annotator_params) and 'OpenIE' in outputFilename):
+
+        # TODO Mino
+        # if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True:
+        #     visualize_GIS_maps(kwargs, locations, documentID, document, date_str)
+
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Normalized date'],
@@ -231,49 +279,6 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                                                                groupByList=['Document ID', 'Document'],
                                                                plotList=['Sentiment score'],
                                                                chart_title_label='Sentiment Statistics')
-            if chart_outputFilename != None:
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
-
-# generate visualization output ----------------------------------------------------------------
-# NER ________________________________________________________________
-
-    elif 'NER' in str(annotator_params) and 'NER' in outputFilename:
-        reminders_util.checkReminder(config_filename, reminders_util.NER_frequencies,
-                                     reminders_util.message_NER_frequencies, True)
-        if IO_csv_util.get_csvfile_headers(outputFilename, False)[1] == "NER Tag":
-            # plot NER tag (e.g, LOCATION)
-            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                               outputDir,
-                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['NER Tag'],
-                               chartTitle='Frequency Distribution of NER Tags',
-                               # count_var = 1 for columns of alphabetic values
-                               count_var=1, hover_label=[],
-                               outputFileNameType='NER-tag', #'NER_tag_bar',
-                               column_xAxis_label='NER tag',
-                               groupByList=['Document ID','Document'],
-                               plotList=['Frequency'],
-                               chart_title_label='NER tag')
-            if chart_outputFilename != None:
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
-
-            if len(kwargs['NERs'])>1:
-                ner_tags = 'Multi-tags'
-            else:
-                ner_tags = str(kwargs['NERs'][0])
-            # plot the words contained in each NER tag (e.g, the word 'Rome' in NER tag LOCATION)
-            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                                       outputDir,
-                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Word'],
-                                       chartTitle='Frequency Distribution of Words by NER ' + ner_tags,
-                                       # count_var = 1 for columns of alphabetic values
-                                       count_var=1, hover_label=[],
-                                       outputFileNameType='NER-word', #'NER_word_bar',
-                                       column_xAxis_label='Word',
-                                       groupByList=['Document ID','Document'],
-                                       plotList=['Frequency'],
-                                       chart_title_label='NER Words')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
                     filesToOpen.extend(chart_outputFilename)

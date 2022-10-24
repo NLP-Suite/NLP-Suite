@@ -117,9 +117,11 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
 
 
 def SSA_annotate(year_state_var,firstName_entry_var,outputDir):
-    df1 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_state_year.csv')
+    if year_state_var!= 'Year of birth':
+        return
+        df1 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_state_year.csv')
+        target1 = df1[df1['Name'] == firstName_entry_var]
     df2 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_yearOfBirth.csv')
-    target1 = df1[df1['Name'] == firstName_entry_var]
     target2 = df2[df2['Name'] == firstName_entry_var]
     if year_state_var == 'State':
         output_path = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,

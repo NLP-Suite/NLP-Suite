@@ -15,10 +15,7 @@ import subprocess
 
 import IO_files_util
 import IO_csv_util
-import charts_util
-import file_splitter_ByLength_util
 import GUI_util
-import GUI_IO_util
 import IO_user_interface_util
 import constants_util
 import parsers_annotators_visualization_util
@@ -117,14 +114,19 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
         svo_df_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                         'SpaCy_' + 'SVO')
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                            'SpaCy_')
+                                                            'SpaCy_CoNLL')
     else:
-        if len(annotator_params)>1:
-            annotator_string=''
+        # TODO Mino annotator_params is always passed as a string rather than a list
+        # if annotator_params)>1:
+        #     annotator_string=''
+        # else:
+        #     annotator_string = annotator_params[0]
+        if 'depparse' in annotator_params:
+            annotator_label='CoNLL'
         else:
-            annotator_string = annotator_params[0]
+            annotator_label=annotator
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                             'SpaCy_' + annotator_string)
+                                                                 'SpaCy_' + annotator_label)
     # create output df
     df = pd.DataFrame()
 

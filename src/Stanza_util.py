@@ -492,13 +492,19 @@ def extractNER(word, df, idx, column, NER_bool):
     elif word['ner'].startswith("I") or word['ner'].startswith("E"):
         tempNER = df.at[idx, column]
         currentNER = word['text']
-        df.at[idx, column] = tempNER + '; ' + currentNER
+        if not isinstance(tempNER, str):
+            df.at[idx, column] = currentNER
+        else:
+            df.at[idx, column] = tempNER + ' ' + currentNER
         if word['ner'].startswith("E"):
             NER_bool = False
     elif isinstance(df.at[idx, column], str):
         tempNER = df.at[idx, column]
         currentNER = word['text']
-        df.at[idx, column] = tempNER + '; ' + currentNER
+        if not isinstance(tempNER, str):
+            df.at[idx, column] = currentNER
+        else:
+            df.at[idx, column] = tempNER + ' ' + currentNER
     else:
         df.at[idx, column] = word['text']
 
