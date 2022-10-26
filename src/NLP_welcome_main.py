@@ -22,7 +22,7 @@ import GUI_IO_util
 import videos_util
 import NLP_setup_update_util
 
-GUI_size = str(GUI_IO_util.get_GUI_width(1)) + 'x600'
+GUI_size = str(GUI_IO_util.get_GUI_width(2)) + 'x600'
 
 GUI_util.set_window(GUI_size, '', '', '')
 

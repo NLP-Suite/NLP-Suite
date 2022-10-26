@@ -33,7 +33,7 @@ import SVO_util
 import Stanza_util
 import Stanford_CoreNLP_coreference_util
 import Stanford_CoreNLP_util
-import SENNA_util
+# import SENNA_util
 import spaCy_util
 import reminders_util
 import knowledge_graphs_WordNet_util
@@ -147,11 +147,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     else:
         inputBaseName = os.path.basename(inputDir)
     if coref_var:
-        outputCorefDir = os.path.join(outputDirSV, package_var+ '_coref_' + inputBaseName)
-        outputSVODir = os.path.join(outputDir, package_var + '_SVO_coref_' + inputBaseName)
+        outputCorefDir = os.path.join(outputDirSV, 'coref_' + package_var + '_' + inputBaseName)
+        outputSVODir = os.path.join(outputDir, 'SVO_coref_' + package_var + '_' +inputBaseName)
     else:
         outputCorefDir = ''
-        outputSVODir = os.path.join(outputDir, package_var + '_SVO_' + inputBaseName)
+        outputSVODir = os.path.join(outputDir, 'SVO_' + package_var + '_' +inputBaseName)
 
     # create an SVO subdirectory of the output directory
     outputSVODir = IO_files_util.make_output_subdirectory('','',outputSVODir, label='',
@@ -201,15 +201,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # only the inputDir will be used when coreferencing, whether it will contain a set of files or just one file
         inputFilename=''
 
- # Date extractor _____________________________________________________
-    # TODO no longer used as an option
-    if normalized_NER_date_extractor_var:
-        files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
-                                                                 openOutputFiles, createCharts, chartPackage,
-                                                                 'normalized-date', False, language_var,  memory_var, document_length_var, limit_sentence_length_var)
-        if len(files)>0:
-            filesToOpen.extend(files)
-
     if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
         WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('SVO_main',
                                                                                             'WordNet')
@@ -222,7 +213,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                               label='GIS',
                                                               silent=True)
         location_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputGISDir, '.csv',
-                                                                     'CoreNLP_SVO_LOCATIONS')
+                                                                     'SVO_' + package_var+ '_LOCATIONS')
         outputLocations.append(location_filename)
 
 # CoreNLP Dependencies ++ _____________________________________________________
@@ -237,14 +228,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
             return
         gender_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir + os.sep + 'gender', '.csv',
-                                                                       'CoreNLP_SVO_gender')
+                                                                       'SVO_CoreNLP_gender')
 
 
         gender_filename_html = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir + os.sep + 'gender', '.html',
                                                           'dict_annotated_gender')
 
         quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir + os.sep + 'quote', '.csv',
-                                                                       'CoreNLP_SVO_quote')
+                                                                       'SVO_CoreNLP_quote')
 
         params = ['SVO']
         if gender_var:
@@ -304,6 +295,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
+# removed from the options; way way too slow and with far better options now in spaCy and Stanza
 # SENNA _____________________________________________________
     if package_var=='SENNA':
         if language_var != 'English':
@@ -358,7 +350,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       extract_date_from_filename_var=extract_date_from_filename_var,
                                                       date_format=date_format_var,
                                                       date_separator_var=date_separator_var,
-                                                      date_position_var=date_position_var)
+                                                      date_position_var=date_position_var,
+                                                      google_earth_var=google_earth_var,
+                                                      location_filename=location_filename)
 
         if tempOutputFiles != None:
             filesToOpen.extend(tempOutputFiles)
@@ -707,7 +701,9 @@ package_var.set('Stanford CoreNLP')
 package_lb = tk.Label(window, text='SVO package')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                package_lb, True)
-package_menu = tk.OptionMenu(window, package_var, 'spaCy','Stanford CoreNLP', 'Stanza', 'OpenIE (via Stanford CoreNLP)', 'SENNA')
+
+# removed SENNA from the list; way too slow the NLP Suite implementation of SENNA SVO
+package_menu = tk.OptionMenu(window, package_var, 'spaCy','Stanford CoreNLP', 'Stanza', 'OpenIE (via Stanford CoreNLP)')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_S_dictionary, y_multiplier_integer,
                                    package_menu,
@@ -952,13 +948,15 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'Stanford CoreNLP enhanced dependencies parser (SVO)':'TIPS_NLP_Stanford CoreNLP enhanced dependencies parser (SVO).pdf',
                'Stanford CoreNLP coreference resolution': "TIPS_NLP_Stanford CoreNLP coreference resolution.pdf",
                'CoNLL table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
-               'SENNA': 'TIPS_NLP_SVO SENNA.pdf',
+               # 'SENNA': 'TIPS_NLP_SVO SENNA.pdf',
                "Google Earth Pro": "TIPS_NLP_Google Earth Pro.pdf",
                "Geocoding": "TIPS_NLP_Geocoding.pdf",
                "Geocoding: How to Improve Nominatim":"TIPS_NLP_Geocoding Nominatim.pdf",
                "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf"}
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
-TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'SVO extraction and visualization', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Stanford CoreNLP coreference resolution', 'SENNA', 'CoNLL table',  'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
+
+# removed SENNA from the TIPS_options
+TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'SVO extraction and visualization', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Stanford CoreNLP coreference resolution', 'CoNLL table',  'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -993,7 +991,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "THE GENDER AND QUOTE/SPEAKER ANNOTATORS ARE AVAILABLE FOR STANFORD CORENLP AND ENGLISH LANGUAGE ONLY.\n\n"
                                   "Tick the SRL checkbox if you wish to run Jinho Choi's SRL (Semantic Role Labeling) algorithm (https://github.com/emorynlp/elit/blob/main/docs/semantic_role_labeling.md). THE OPTION IS CURRENTLY DISABLED."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe GIS mapping option is not available for SENNA or CoreNLP OpenIE."+GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.."+GUI_IO_util.msg_Esc)
+                                   # "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe GIS mapping option is not available for SENNA or CoreNLP OpenIE." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

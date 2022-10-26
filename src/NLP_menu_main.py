@@ -54,7 +54,7 @@ GUI_util.run_button.configure(command=run_script_command)
 
 IO_setup_display_brief=False
 
-GUI_width=GUI_IO_util.get_GUI_width(1)
+GUI_width=GUI_IO_util.get_GUI_width(2)
 GUI_height=670 # height of GUI with full I/O display
 
 GUI_size = str(GUI_width) + 'x' + str(GUI_height)

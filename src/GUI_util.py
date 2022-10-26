@@ -583,7 +583,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
 
         #setup a button to open Windows Explorer on the selected input file
         openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
-                            command=lambda: IO_files_util.openFile(window, inputFilename.get()))
+                            command=lambda: IO_files_util.open_file_removing_date_from_filename(window,inputFilename.get(),True))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
             openInputFile_button, True, False, True, False, 90,
@@ -612,7 +612,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
 
         #setup a button to open Windows Explorer on the selected main input directory
         openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width,
-                            text='', command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get()))
+                            text='', command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get(),True))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
             GUI_IO_util.get_open_file_directory_coordinate(),
             y_multiplier_integer,

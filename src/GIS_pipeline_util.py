@@ -296,7 +296,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     # Google Earth Pro
     # ------------------------------------------------------------------------------------
 
-    if 'Google Earth Pro' in mapping_package:
+    if 'Google Earth Pro' in mapping_package and kmloutputFilename == '':
         if kmloutputFilename == '':
             reminders_util.checkReminder(config_filename,
                             reminders_util.title_options_Google_Earth_Pro_download,

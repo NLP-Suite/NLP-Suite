@@ -198,7 +198,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     filesToOpen = []
     # check that the CoreNLPdir has been setup
     CoreNLPdir, missing_external_software=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_annotator', 'Stanford CoreNLP')
-    if CoreNLPdir== None:
+    if CoreNLPdir== '' or CoreNLPdir== None:
         return filesToOpen
     # check the version of CoreNLP
     IO_libraries_util.check_CoreNLPVersion(CoreNLPdir)
@@ -308,9 +308,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         "First Reference Sentence ID", "First Reference Sentence", "Pronoun Start ID in Reference Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
         'gender':['Word', 'Gender', 'Sentence ID', 'Sentence','Document ID', 'Document'],
         'normalized-date':["Word", "Normalized date", "tid","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
-        'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Time','Time normalized NER','Sentence ID', 'Sentence','Document ID', 'Document'],
-        'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Location", 'Person', 'Time',
-                   'Time normalized NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
+        'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Date type','Normalized date','Sentence ID', 'Sentence','Document ID', 'Document'],
+        'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Location", 'Person', 'Date type',
+                   'Normalized date', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         # Chen
         # added Deps column
         'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
@@ -1406,6 +1406,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
 
         #CYNTHIA: " ".join(L) => "; ".join(L)
         # ; added list of locations in SVO output (e.g., Los Angeles; New York; Washington)
+        # TODO Mino
         for row in SVO:
             # SVO_brief.append([sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2]])
             SVO_brief.append([row[0], row[1], row[2], sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
@@ -1419,6 +1420,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
             # produce an intermediate location file
             locations.append([sentenceID, complete_sent, [[x,y] for x,y in zip(L,NER_value)]])
 
+    # TODO Mino
     if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True:
         visualize_GIS_maps(kwargs, locations, documentID, document, date_str)
 

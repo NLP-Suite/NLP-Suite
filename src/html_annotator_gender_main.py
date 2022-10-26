@@ -48,6 +48,12 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
     if CoreNLP_gender_annotator_var==False and annotator_dictionary_var==False and plot_var==False:
         mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options and try again.')
         return
+
+    if plot_var and year_state_var!= 'Year of birth':
+        mb.showwarning('Warning',
+                       message='The selected option "' + year_state_var + '" is not available yet.\n\nThe only currently available option is "Year of birth".\n\nSorry!')
+        return
+
     #CoreNLP annotate
     if CoreNLP_gender_annotator_var==True:
         output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
@@ -87,7 +93,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
             return
         else:
             output = html_annotator_gender_dictionary_util.SSA_annotate(year_state_var,firstName_entry_var,outputDir)
-            if len(output)>0:
+            if output!=None:
                 # output=output[0]
                 filesToOpen.append(output)
 
@@ -128,8 +134,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=560, # height at brief display
-                                                 GUI_height_full=640, # height at full display
+                                                 GUI_height_brief=520, # height at brief display
+                                                 GUI_height_full=600, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=2, # to be added for full display
                                                  increment=2) # to be added for full display
@@ -186,6 +192,7 @@ new_SS_folders=[]
 CoreNLP_gender_annotator_checkbox = tk.Checkbutton(window, text='Annotate nouns & pronouns gender (via CoreNLP Gender annotator - Neural Network)', variable=CoreNLP_gender_annotator_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,CoreNLP_gender_annotator_checkbox)
 
+# TODO list of male/female names https://nlp.stanford.edu/projects/gender.shtml
 CoreNLP_download_gender_file_checkbox = tk.Checkbutton(window, text='Download CoreNLP gender file', variable=CoreNLP_download_gender_file_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer,CoreNLP_download_gender_file_checkbox,True)
 
@@ -193,7 +200,7 @@ CoreNLP_upload_gender_file_checkbox = tk.Checkbutton(window, text='Upload CoreNL
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.select_dictionary_file_annotator,y_multiplier_integer,CoreNLP_upload_gender_file_checkbox)
 
 annotator_dictionary_var.set(0)
-annotator_dictionary_checkbox = tk.Checkbutton(window, text='Annotate first names by gender (via CoreNLP NER PERSON & dictionary file)', variable=annotator_dictionary_var, onvalue=1, offvalue=0)
+annotator_dictionary_checkbox = tk.Checkbutton(window, text='Annotate first names by gender (via selected dictionary file)', variable=annotator_dictionary_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,annotator_dictionary_checkbox)
 
 annotator_dictionary_button=tk.Button(window, width=20, text='Select dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
@@ -220,10 +227,10 @@ def get_dictionary_file(window,title,fileType):
         annotator_dictionary_file.config(state='normal')
         annotator_dictionary_file_var.set(filePath)
 
-personal_pronouns_var.set(1)
-personal_pronouns_checkbox = tk.Checkbutton(window, text='Process personal pronouns', variable=personal_pronouns_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer,personal_pronouns_checkbox)
-
+# personal_pronouns_var.set(1)
+# personal_pronouns_checkbox = tk.Checkbutton(window, text='Process personal pronouns', variable=personal_pronouns_var, onvalue=1, offvalue=0)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer,personal_pronouns_checkbox)
+#
 plot_var.set(0)
 plot_checkbox = tk.Checkbutton(window, text='Plot names via US Social Security', variable=plot_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,plot_checkbox,True)
@@ -310,7 +317,7 @@ def activate_all_options(*args):
     annotator_dictionary_button.config(state='disabled')
     openInputFile_button.config(state='disabled')
     annotator_dictionary_file.config(state='disabled')
-    personal_pronouns_checkbox.configure(state='disabled')
+    # personal_pronouns_checkbox.configure(state='disabled')
     # year_state_var.set('')
     year_state_menu.configure(state='disabled')
     firstName_entry.configure(state="disabled")
@@ -332,7 +339,7 @@ def activate_all_options(*args):
         annotator_dictionary_button.config(state='normal')
         openInputFile_button.config(state='normal')
         annotator_dictionary_file.config(state='normal')
-        personal_pronouns_checkbox.configure(state='normal')
+        # personal_pronouns_checkbox.configure(state='normal')
     if plot_var.get()==True:
         checkUSSSUpdate()
         CoreNLP_gender_annotator_checkbox.configure(state="disabled")
@@ -373,9 +380,9 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to run the Stanford CoreNLP gender annotator. The CoreNLP gender annotator is based on CoreNLP annotator which, unfortunately, only has about 60\% accuracy. The algorithm annotates the gender of both first names and personal pronouns (he, him, his, she, her, hers).\n\nThe CoreNLP annotator uses a neural network approach. This annotator requires a great deal of memory.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the DOWNLOAD checkbox to dowload the Stanford CoreNLP gender file for editing.\n\nTick the UPLOAD checkbox to upload the edited Stanford CoreNLP gender file.\n\nThe CoreNLP gender file has the format JOHN\\MALE with one NAME\\GENDER entry per line. The CoreNLP gender file is found in The default gender mappings file is in the stanford-corenlp-3.5.2-models.jar file. It is called tmp-stanford-models-expanded/edu/stanford/nlp/models/gender/first_name_map_small')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to annotate the first names found in a text using an input dictionary list of gender annotated first names. As a caveat, keep in mind that some first names may be both male and female names (e.g., Jamie in the US) or male and female depending upon the country (e.g., Andrea is a male name in Italy, a female name in the US).\n\nThe algorithm uses the NER PERSON value from the Stanford CoreNLP NER annotator to annotate the gender of proper first names.\n\nThe algorithm also annotates the gender of personal pronouns (he, him, his, she, her, hers, as, respectively, male and female).\n\nThe "Select dictionary file" widget will become available when the "Annotate first names by gender" checkbox is ticked off.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to annotate the first names found in a text using an input dictionary list of gender annotated first names. As a caveat, keep in mind that some first names may be both male and female names (e.g., Jamie in the US) or male and female depending upon the country (e.g., Andrea is a male name in Italy, a female name in the US).\n\nThe "Select dictionary file" widget will become available when the "Annotate first names by gender" checkbox is ticked off.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, click on the \'Select dictionary file\' to select the first name file to be used to annotate the first names found in the input text(s) by gender.\n\nSeveral files are available as default files in the lib subdirectory (e.g., the 1990 US census lists, the US Social Security list, Carnegie Mellon lists). But, users can also select any file of their choice.\n\nThe "Select dictionary file" widget will become available when the "Annotate first names by gender" checkbox is ticked off.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to annotate the gender of personal pronouns (he, him, his, she, her, hers as male and female, respectively).')
+    # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to annotate the gender of personal pronouns (he, him, his, she, her, hers as male and female, respectively).')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to plot selected first name(s) by US State, by Year of use of the first name, by Year of birth of individuals bearing the first name, by US State & Year (combining both into one file), or State & Year of birth (combining both into one file) using United States Social Security lists.\n\nEnter comma-separated first names, including double names, e.g., Jo Ann.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to generate new US Social Security files (by US State, Year, Year of birth, US State & Year, US State & Year of birth).\n\nTHIS IS ONLY NECESSARY WHEN THE US SOCIAL SECURITY ADMINISTRATION RELEASES NEW GENDER NAMES DATA.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, click on the \'Select new SS folders\' to select the two folders where you downloaded and unzipped the most up-to-date gender names databases \'National data\' and \'State-specific data\' from the US Social Security website\n\nhttps://www.ssa.gov/oact/babynames/limits.html\n\nThe last updated year in your NLP Suite is displayed in the last widget of this GUI line.')
@@ -384,7 +391,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
 
 # change the value of the readMe_message
-readMe_message="The Python 3 scripts provide ways of annotating text files for the gender (female/male) of first names found in the text.\n\nTwo different types of gender annotation are applied.\n\n  1. Stanford CoreNLP gender annotator. This annotator requires Coref annotator which only has about 60% accuracy.\n\n  2. A second approach is based on a variety of first name lists (e.g., US Census name lists, Social Security lists, Carnegie Mellon lists). As a point of warning, it should be noted that many first names may be both male or female first names (e.g., Jamie in the US), sometimes depending upon the country (e.g., Andrea is a male name in Italy and a female name in the US).\n\nWhether using CoreNLP or dictionary lists, the algorithms also classify the gender of personal pronouns (he, him, his; she, her, hers as male and female, respectively)."
+readMe_message="The Python 3 scripts provide ways of annotating text files for the gender (female/male) of first names found in the text.\n\nTwo different types of gender annotation are applied.\n\n  1. Stanford CoreNLP gender annotator. This annotator requires Coref annotator which only has about 60% accuracy.\n\n  2. A second approach is based on a variety of first name lists (e.g., US Census name lists, Social Security lists, Carnegie Mellon lists). As a point of warning, it should be noted that many first names may be both male or female first names (e.g., Jamie in the US), sometimes depending upon the country (e.g., Andrea is a male name in Italy and a female name in the US)."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 

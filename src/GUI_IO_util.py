@@ -283,7 +283,7 @@ def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False
         y_multiplier_integer = y_multiplier_integer+1
     return y_multiplier_integer
 
-if sys.platform == 'darwin': #Mac OS
+if sys.platform == 'darwin':  # Mac OS
     about_button_x_coordinate = 330
     release_history_button_x_coordinate = 510
     team_button_x_coordinate = 690
@@ -396,6 +396,38 @@ if sys.platform == 'darwin': #Mac OS
     by_type_dropdown = 520
     select_SS_folder = 1160
 
+# MAC narrative_analysis_ALL_main.py
+
+    narrative_analysis_2nd_column = 360
+    narrative_analysis_3rd_column = 570
+    narrative_analysis_4th_column = 820
+    narrative_analysis_5th_column = 1100
+
+# Mac wordclouds_main.py
+    wordclouds_font_lb = 310
+    wordclouds_font_menu = 355
+
+    wordclouds_max_words_number = wordclouds_font_lb
+    wordclouds_stopwords_pos = 400
+    wordclouds_lemmas_pos = 545
+    wordclouds_punctuation_pos = 680
+    wordclouds_lowercase_pos = 840
+    wordclouds_collocation_pos = 985
+    wordclouds_color_by_POS_tags = 1130
+
+    wordclouds_openImage_button = wordclouds_font_lb+15
+    wordclouds_selectedImage_width = 60
+    wordclouds_selectedImage_file_path = wordclouds_stopwords_pos
+    contour_only_pos = wordclouds_collocation_pos
+
+    wordclouds_select_csv_field = wordclouds_font_lb
+    wordclouds_color_checkbox_pos = wordclouds_lemmas_pos
+    wordclouds_RGB_lb = wordclouds_punctuation_pos
+    wordclouds_RGB = 795
+    wordclouds_add_button = 910
+    wordclouds_reset_button = 965
+    wordclouds_show_button = 1038
+
 else: #windows and anything else
     about_button_x_coordinate = 230
     release_history_button_x_coordinate = 400
@@ -502,13 +534,46 @@ else: #windows and anything else
     by_type_dropdown = 470
     select_SS_folder = 1070
 
+# Windows narrative_analysis_ALL_main.py
+    narrative_analysis_2nd_column = 320
+    narrative_analysis_3rd_column = 510
+    narrative_analysis_4th_column = 740
+    narrative_analysis_5th_column = 980
+
+# Windows wordclouds_main.py
+
+    wordclouds_font_lb = 270
+    wordclouds_font_menu = 310
+
+    wordclouds_max_words_number = wordclouds_font_lb
+    wordclouds_stopwords_pos = 340
+    wordclouds_lemmas_pos = 470
+    wordclouds_punctuation_pos = 590
+    wordclouds_lowercase_pos = 730
+    wordclouds_collocation_pos = 870
+    wordclouds_color_by_POS_tags = 1010
+
+    wordclouds_openImage_button = wordclouds_font_lb
+    wordclouds_selectedImage_width = 100
+    wordclouds_selectedImage_file_path = wordclouds_stopwords_pos
+    contour_only_pos = wordclouds_color_by_POS_tags
+
+    wordclouds_select_csv_field = wordclouds_font_lb
+    wordclouds_color_checkbox_pos = wordclouds_punctuation_pos
+    wordclouds_RGB_lb = 700
+    wordclouds_RGB = 800
+    wordclouds_add_button = 910
+    wordclouds_reset_button = 940
+    wordclouds_show_button = 990
+
+
 basic_y_coordinate = 90
 y_step = 40 #the line-by-line increment on the GUI
 
 def get_GUI_width(size_type=1):
     if sys.platform == 'darwin':  # Mac OS
         if size_type == 1: # for now we have one basic size
-            return 1100
+            return 1250
         if size_type == 2:
             return 1300
         if size_type == 3:
