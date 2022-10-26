@@ -225,7 +225,7 @@ prefer_horizontal_checkbox = tk.Checkbutton(window, variable=prefer_horizontal_v
                                                        onvalue=1, offvalue=0)
 
 prefer_horizontal_checkbox.config(text="Horizontal")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,
                                                y_multiplier_integer, prefer_horizontal_checkbox, True)
 def warnUser(*args):
     if prefer_horizontal_var.get()==True:

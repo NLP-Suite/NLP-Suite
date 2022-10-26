@@ -77,6 +77,8 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             extract_date_from_text_var = True
         if key == 'extract_date_from_filename_var' and value == True:
             extract_date_from_filename_var = True
+        if key == 'google_earth_var' and value == True:
+            google_earth_var = True
 
     output_format_option = {
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
@@ -175,10 +177,14 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         svo_df_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                         'Stanza_' + 'SVO')
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                'Stanza_')
+                                                                'Stanza_CoNLL')
     else:
+        if 'depparse' in annotator_params:
+            annotator_label='CoNLL'
+        else:
+            annotator_label=annotator
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                'Stanza_' + annotator_params)
+                                                                'Stanza_' + annotator_label)
 
     for docName in inputDocs:
         docID = docID + 1
@@ -258,6 +264,13 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     if "SVO" in annotator_params:
         svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
         filesToOpen.append(svo_df_outputFilename)
+
+        # create locations file for GIS if google_earth_var exists
+        if google_earth_var is True:
+            loc_df = visualize_GIS_maps_Stanza(svo_df)
+            loc_df_outputFilename = kwargs["location_filename"]
+            loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
+            filesToOpen.append(loc_df_outputFilename)
 
     # Filter + Visualization.
     language_list=IO_csv_util.get_csv_field_values(outputFilename, 'Language')
@@ -414,9 +427,9 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
 
     # output: svo_df
     if extract_date_from_filename_var:
-        svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Date'})
+        svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Date'})
     else:
-        svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID'})
+        svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence'})
     empty_verb_idx = []
     SVO_found = False
     NER_found = False # boolean value for NER tags
@@ -455,7 +468,8 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
                     svo_df, NER_found = extractNER(token, svo_df, c, 'Time', NER_found)
         # check if SVO is found, then add Sentence ID
         if SVO_found:
-            svo_df.at[c, 'Sentence ID'] =  c+1
+            svo_df.at[c, 'Sentence ID'] = c+1
+            svo_df.at[c, 'Sentence'] = sentence.text
             SVO_found = False
         c+=1
 
@@ -477,27 +491,37 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
     # set the S-V-O sequence in order
     # add date from filename
     if extract_date_from_filename_var:
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Document ID', 'Document', 'Date']]
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date']]
         svo_df['Date'] = date_str
     else:
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Document ID', 'Document']]
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
 
     return svo_df
 
 # extract NERs
+# stanza returns NER tags with BIOES representation of the entities
+# i.e) "Doctor" -> "Doctor" : "S-PERSON"
+# i.e) "Chris Manning" -> "Chris" : "B-PERSON", "Manning" : "E-PERSON"
+# i.e) "the Bay Area" -> "the" : "B-LOC", "Bay" : "I-LOC", "Area" : "E-LOC"
 def extractNER(word, df, idx, column, NER_bool):
-    if word['ner'].startswith("B"):
-        NER_bool = True
-        df.at[idx, column] = word['text']
-    elif word['ner'].startswith("I") or word['ner'].startswith("E"):
+    if word['ner'].startswith("B") or word['ner'].startswith("I"):
+        # change NER boolean value
+        if word['ner'].startswith("B"):
+            NER_bool = True
         tempNER = df.at[idx, column]
         currentNER = word['text']
         if not isinstance(tempNER, str):
             df.at[idx, column] = currentNER
         else:
             df.at[idx, column] = tempNER + ' ' + currentNER
-        if word['ner'].startswith("E"):
-            NER_bool = False
+    elif word['ner'].startswith("S") or word['ner'].startswith("E"):
+        tempNER = df.at[idx, column]
+        currentNER = word['text']
+        if not isinstance(tempNER, str):
+            df.at[idx, column] = currentNER + ';'
+        else:
+            df.at[idx, column] = tempNER + ' ' + currentNER + ';'
+        NER_bool = False
     elif isinstance(df.at[idx, column], str):
         tempNER = df.at[idx, column]
         currentNER = word['text']
@@ -548,6 +572,17 @@ def date_in_filename(document, **kwargs):
     if extract_date_from_filename_var:
         date, date_str, month, day, year = IO_files_util.getDateFromFileName(document,  date_format, date_separator_var, date_position_var)
     return date_str
+
+# create locations file for GIS
+def visualize_GIS_maps_Stanza(svo_df):
+    loc_df = pd.DataFrame(columns=['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+    for _,row in svo_df.iterrows():
+        if isinstance(row['Location'], str):
+            loc_list = row['Location'].split(';')
+            for loc in loc_list:
+                if loc != '':
+                    loc_df.loc[len(loc_df.index)] = [loc, 'LOCATION', row['Sentence ID'], row['Sentence'], row['Document ID'], 'Document']
+    return loc_df
 
 # Python dictionary of language (values) and their acronyms (keys)
 lang_dict  = dict(constants_util.languages)

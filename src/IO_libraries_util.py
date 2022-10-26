@@ -489,7 +489,8 @@ def get_existing_software_config(external_software_config_file=''):
     return existing_software_config
 
 # gets a list of the external software: CoreNLP, SENNA, WordNet, MALLET, Google Earth Pro, Gephi
-def get_missing_external_software_list(calling_script, external_software_config_file):
+# warn user only if the specific package required to run a script is missing
+def get_missing_external_software_list(calling_script, external_software_config_file, package):
     if external_software_config_file=='':
         external_software_config_file=get_existing_software_config(external_software_config_file)
     index = 0
@@ -531,7 +532,7 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
     errorFound = False
     Cancel = False
 
-    missing_software = get_missing_external_software_list(calling_script, existing_software_config)
+    missing_software = get_missing_external_software_list(calling_script, existing_software_config, package)
 
     if missing_software!='':
         missing_software=missing_software.replace('\n\n','') + "\n\n"
@@ -578,9 +579,11 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             # the software directory is stored in config file but...
             #   check that the software directory still exists and the package has not been moved
             if os.path.isdir(software_dir) == False or check_inputExternalProgramFile(calling_script, software_dir, software_name) == False:
-                mb.showwarning(title=software_name.upper() + ' directory error',
-                               message='The directory\n   ' + software_dir + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'NLP_setup_external_software_config.csv' + '\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-download/re-install ' +
-                                       software_name.upper() + '.')
+                # warn the user of a missing software only if the software (i.e., package) is required by the calling script
+                if package in software_name.upper():
+                    mb.showwarning(title=software_name.upper() + ' directory error',
+                                   message='The directory\n   ' + software_dir + '\nstored in the software config file\n  ' + GUI_IO_util.configPath + os.sep + 'NLP_setup_external_software_config.csv' + '\n\nno longer exists. It may have been renamed, deleted, or moved.\n\nYou must re-download/re-install ' +
+                                           software_name.upper() + '.')
                 errorFound=True
                 silent = False
             else:
@@ -801,6 +804,6 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             if software_dir == '':
                 software_dir = None # specific calling scripts (e.g. Stanford CoreNL) check for None
 
-            missing_software = get_missing_external_software_list(calling_script, existing_software_config)
+            missing_software = get_missing_external_software_list(calling_script, existing_software_config, package)
 
     return software_dir, missing_software
