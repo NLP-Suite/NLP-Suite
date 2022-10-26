@@ -77,12 +77,10 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             extract_date_from_text_var = True
         if key == 'extract_date_from_filename_var' and value == True:
             extract_date_from_filename_var = True
+        # TODO MINO: check for google_earth_var
         if key == 'google_earth_var' and value == True:
             google_earth_var = True
 
-    output_format_option = {
-        'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
-    }
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Stanza at',
                                             True, '', True, '', False)
 
@@ -177,14 +175,10 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         svo_df_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                         'Stanza_' + 'SVO')
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                'Stanza_CoNLL')
+                                                                'Stanza_')
     else:
-        if 'depparse' in annotator_params:
-            annotator_label='CoNLL'
-        else:
-            annotator_label=annotator
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                'Stanza_' + annotator_label)
+                                                                'Stanza_' + annotator_params)
 
     for docName in inputDocs:
         docID = docID + 1
@@ -264,8 +258,8 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     if "SVO" in annotator_params:
         svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
         filesToOpen.append(svo_df_outputFilename)
-
-        # create locations file for GIS if google_earth_var exists
+        
+        # TODO MINO: create locations file for GIS if google_earth_var exists
         if google_earth_var is True:
             loc_df = visualize_GIS_maps_Stanza(svo_df)
             loc_df_outputFilename = kwargs["location_filename"]
@@ -342,68 +336,81 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
             dicts = stanza_doc.to_dict()
             for i in range(len(dicts)):
                 temp_df = pd.DataFrame.from_dict(dicts[i])
-                if annotator_params=='sentiment':
-                    temp_df['sentiment_score'] = sentiment_dictionary[i]
+                # if annotator_params=='sentiment':
+                #     temp_df['sentiment_score'] = sentiment_dictionary[i]
                 out_df = out_df.append(temp_df)
 
     # Stanza doc to Pandas DataFrame conversion logic for single language annotation
     else:
         # check if the annotator is sentiment
-        if annotator_params=='sentiment':
-            sentiment_dictionary = {}
-            for i, sentence in enumerate(stanza_doc.sentences):
-                sentiment_dictionary[i] = sentence.sentiment
-
+        # if annotator_params=='sentiment':
+        #     sentiment_dictionary = {}
+        #     sentence_dictionary = {}
+        #     for i, sentence in enumerate(stanza_doc.sentences):
+        #         sentiment_dictionary[i] = sentence.sentiment
+        #         sentence_dictionary[i] = sentence.text
         dicts = stanza_doc.to_dict()
         for i in range(len(dicts)):
             temp_df = pd.DataFrame.from_dict(dicts[i])
-            if annotator_params=='sentiment':
-                temp_df['sentiment_score'] = sentiment_dictionary[i]
+            # if annotator_params=='sentiment':
+            #     temp_df['sentiment_score'] = sentiment_dictionary[i]
+            #     temp_df['Sentence'] = sentence_dictionary[i]
             out_df = out_df.append(temp_df)
 
-    # drop the columns that don't correspond to Stanford CoreNLP output
-    out_df = out_df.drop(
-        ['xpos', 'start_char', 'end_char', 'multi_ner', 'feats'],
-        axis=1,
-        errors='ignore'
+    # TODO MINO: change sentiment analysis output for visualization
+    if annotator_params=='sentiment':
+        for i, sentence in enumerate(stanza_doc.sentences):
+            out_df.at[i, 'Sentiment score'] = sentence.sentiment
+            out_df.at[i, 'Sentiment label'] = 'positive' if sentence.sentiment > 1 else 'negative' if sentence.sentiment < 1 else 'neutral'
+            out_df.at[i, 'Sentence ID'] = i+1
+            out_df.at[i, 'Sentence'] = sentence.text
+        out_df['Document ID'] = docID
+        out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
+        
+    else:
+        # drop the columns that don't correspond to Stanford CoreNLP output
+        out_df = out_df.drop(
+            ['xpos', 'start_char', 'end_char', 'multi_ner', 'feats'],
+            axis=1,
+            errors='ignore'
+            )
+        out_df = out_df.reset_index(drop=True)
+
+        # rename the columns created by Stanza
+        out_df = out_df.rename(
+            columns = {
+                'id':'ID',
+                'text':'Form',
+                'lemma':'Lemma',
+                'upos':'POStag',
+                'head':'Head',
+                'deprel':'DepRel',
+                'ner':'NER',
+                'lang':'Language',
+                'sentiment_score':'Sentiment score'
+            }
         )
-    out_df = out_df.reset_index(drop=True)
+        out_df['Record ID'] = None
+        out_df['Sentence ID'] = None
+        out_df['Document ID'] = docID
+        out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
 
-    # rename the columns created by Stanza
-    out_df = out_df.rename(
-        columns = {
-            'id':'ID',
-            'text':'Form',
-            'lemma':'Lemma',
-            'upos':'POStag',
-            'head':'Head',
-            'deprel':'DepRel',
-            'ner':'NER',
-            'lang':'Language',
-            'sentiment_score':'Sentiment score'
-        }
-    )
-    out_df['Record ID'] = None
-    out_df['Sentence ID'] = None
-    out_df['Document ID'] = docID
-    out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
+        i = 0
+        sidx = 1
+        for row in out_df.iterrows():
+            if i != 0 and row[1]['ID'] == 1 :
+                sidx+=1
 
-    i = 0
-    sidx = 1
-    for row in out_df.iterrows():
-        if i != 0 and row[1]['ID'] == 1 :
-            sidx+=1
+            out_df.at[i, 'Record ID'] = row[1]['ID']
+            out_df.at[i, 'Sentence ID'] = sidx
 
-        out_df.at[i, 'Record ID'] = row[1]['ID']
-        out_df.at[i, 'Sentence ID'] = sidx
+            i+=1
 
-        i+=1
-
-    if 'Language' in out_df.columns:
-        out_df = out_df[ [ col for col in out_df.columns if col != 'Language' ] + ['Language'] ]
-        for idx in range(len(out_df)):
-            temp_lang = out_df.at[idx, 'Language']
-            out_df.at[idx, 'Language'] = lang_dict[temp_lang]
+        if 'Language' in out_df.columns:
+            out_df = out_df[ [ col for col in out_df.columns if col != 'Language' ] + ['Language'] ]
+            for idx in range(len(out_df)):
+                temp_lang = out_df.at[idx, 'Language']
+                out_df.at[idx, 'Language'] = lang_dict[temp_lang]
 
     if "Lemma"  in annotator_params:
         out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
@@ -413,9 +420,8 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         out_df = out_df[['ID', 'Form', 'POStag', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "depparse" in annotator_params or "SVO" in annotator_params:
         out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
-    elif "sentiment" in annotator_params:
-        out_df = out_df[['ID', 'Form', 'Sentiment score', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
-
+    elif "sentiment" in annotator_params: # TODO MINO: change sentiment analysis output for visualization
+        out_df = out_df[['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
     return out_df
 
 # extract SVO from Stanza doc (depparse)
@@ -425,6 +431,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
     if inputDir != '':
         inputFilename = inputDir + os.sep + tail
 
+    # TODO MINO: add Sentence column for SVO DataFrame
     # output: svo_df
     if extract_date_from_filename_var:
         svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Date'})
@@ -468,8 +475,8 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
                     svo_df, NER_found = extractNER(token, svo_df, c, 'Time', NER_found)
         # check if SVO is found, then add Sentence ID
         if SVO_found:
-            svo_df.at[c, 'Sentence ID'] = c+1
-            svo_df.at[c, 'Sentence'] = sentence.text
+            svo_df.at[c, 'Sentence'] =  sentence.text # TODO MINO: add value to Sentence column
+            svo_df.at[c, 'Sentence ID'] =  c+1
             SVO_found = False
         c+=1
 
@@ -498,6 +505,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
 
     return svo_df
 
+# TODO MINO NER: now only different word will be separated by semi-colon
 # extract NERs
 # stanza returns NER tags with BIOES representation of the entities
 # i.e) "Doctor" -> "Doctor" : "S-PERSON"
@@ -573,6 +581,7 @@ def date_in_filename(document, **kwargs):
         date, date_str, month, day, year = IO_files_util.getDateFromFileName(document,  date_format, date_separator_var, date_position_var)
     return date_str
 
+# TODO MINO
 # create locations file for GIS
 def visualize_GIS_maps_Stanza(svo_df):
     loc_df = pd.DataFrame(columns=['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])

@@ -98,14 +98,14 @@ n_grams_list=[]
 
 bySentenceIndex_var=tk.IntVar()
 
-n_grams_button = tk.Button(window, width=70, text='Compute N-Grams (Open GUI)',  command=lambda: call("python html_annotator_gender_main.py", shell=True))
+n_grams_button = tk.Button(window, width=70, text='Compute N-Grams (Open GUI)',  command=lambda: call("python style_analysis_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                    n_grams_button,
                                    False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
                                    "Click on the button to open the GUI")
 
-corpus_statistics_button = tk.Button(window, width=70, text='Compute document(s) statistics (Open GUI)',  command=lambda: call("python html_annotator_gender_main.py", shell=True))
+corpus_statistics_button = tk.Button(window, width=70, text='Compute document(s) statistics (Open GUI)',  command=lambda: call("python style_analysis_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                    corpus_statistics_button,
