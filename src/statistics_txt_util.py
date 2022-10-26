@@ -222,20 +222,22 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
             # currentLine.append([documentID])
             print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
             # currentLine.append([doc])
-            fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
-
-            Nsentences = str(textstat.sentence_count(fullText))
+            # fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
+            f = open(doc, "r", encoding="utf-8", errors="ignore")
+            docText = f.read()
+            f.close()
+            Nsentences = str(textstat.sentence_count(docText))
             # print('TOTAL number of sentences: ',Nsentences)
 
-            Nwords = str(textstat.lexicon_count(fullText, removepunct=True))
+            Nwords = str(textstat.lexicon_count(docText, removepunct=True))
             # print('TOTAL number of words: ',Nwords)
 
-            Nsyllables = textstat.syllable_count(fullText, lang='en_US')
+            Nsyllables = textstat.syllable_count(docText, lang='en_US')
             # print('TOTAL number of Syllables: ',Nsyllables)
 
             # words = fullText.split()
             # words = nltk.word_tokenize(fullText)
-            words = word_tokenize_stanza(stanzaPipeLine(fullText))
+            words = word_tokenize_stanza(stanzaPipeLine(docText))
 
             if excludeStopWords:
                 words = excludeStopWords_list(words)
@@ -264,7 +266,12 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                 currentLine[0].append(item[1])  # frequency
             writer = csv.writer(csvfile)
             writer.writerows(currentLine)
+
         csvfile.close()
+
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                           'Finished running document(s) statistics at', True, '', True, startTime,
+                                           False)
 
         # number of sentences in input
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
@@ -864,7 +871,7 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
 
     word_list_temp = []
     word_list_temp3 = []
-    
+
 
     fin = open('../lib/wordLists/stopwords.txt', 'r')
     stops = set(fin.read().splitlines())
@@ -969,7 +976,7 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
 
 # SUBJECTIVITY/OBJECTIVITY PER SENTENCE---------------------------------------------------------------------------------------------
             if "Objectivity/subjectivity" in processType:
-                
+
 
                 nlp = spacy.load('en_core_web_sm')
                 nlp.add_pipe('spacytextblob')
@@ -989,12 +996,12 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
 
                 word_list.append([subjectivity_score, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
-            
+
             from collections import Counter
 # REPEATED WORDS FIRST K SENTENCES/LAST K SENTENCES  -------------------------------------------------------------------------------
             if 'Repetition: Words' in processType:
                 for wrdID, wrd in enumerate(filtered_words):
-                    
+
                     header = ["First/Last Sentence", "K Value", "Word", "Word ID", "Sentence ID", "Sentence", "Document ID", "Document"]
                     select_col = ['Word']
                     fileLabel = 'K_Sentences'
@@ -1008,7 +1015,7 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
                     if sentenceID <= k:
                         word_list_temp.append(["First", k, wrd, wrdID+1, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
                         rep_words_first.append(wrd)
-                    
+
                     elif sentenceID > len(sentences) - k:
                         word_list_temp.append(["Last", k, wrd, wrdID+1, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
                         rep_words_last.append(wrd)
@@ -1018,16 +1025,16 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
             word_list.extend([sublist for sublist in word_list_temp if sublist[2] in rep_words_first and sublist[2] in rep_words_last])
 
 
-            
-                
-                
-                
-                                    
-                
-        
 
 
-                
+
+
+
+
+
+
+
+
 
 # REPEATED WORDS END OF SENTENCE/BEGINNING NEXT SENTENCE  --------------------------------------------------------------------------
             if 'Repetition: Last' in processType:
@@ -1131,14 +1138,14 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
 # N-GRAMS & HAPAX --------------------------------------------------------------------------
         # hapax and ngrams are processed above outside the for doc loop
         #    a for doc loop is already carried out in the function compute_character_word_ngrams
-    
+
     # To remove the words that are never repeated
-        
-                    
 
-    
 
-        
+
+
+
+
        # for sublist in word_list_temp:
         #    if sublist[2] in rep_words_first:
          #       if sublist[2] not in rep_words_last:
@@ -1148,26 +1155,26 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
          #       if sublist[2] not in rep_words_first:
          #           print(sublist[2])
           #          word_list.remove(sublist)
-                
-            
-                
-            
+
+
+
+
             #if count_wrd == 1:
             #    for sublist in word_list:
-            #            
+            #
             #        if el == sublist[2]:
             #            word_list.remove(sublist)
             #            break
 
-                            
-                    
 
 
-       
 
-        
+
+
+
+
         #word_list.sort(key = lambda x: x[4])
-    
+
     #print(word_list[0])
 
     word_list.insert(0, header)

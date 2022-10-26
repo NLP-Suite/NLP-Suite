@@ -314,6 +314,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         #   plot values are the second item in the list [[7,2]] i.e. 2
         count_var = count_var_SV
         # not all csv output contain the Sentence ID (e.g., line length function)
+        # TODO Samir; to test the add_missing_IDs you must change bySent=False to bySent=True
         bySent=False
         if bySent:
             # TODO temporary to measure process time
@@ -441,6 +442,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
     # the file should have a column named Sentence ID
     # the extra parameter "complete_sid" is set to True by default to avoid extra code mortification elsewhere
     if complete_sid:
+        # TODO Samir
         inputFilename = add_missing_IDs(inputFilename, inputFilename)
         # complete_sentence_index(inputFilename)
     if use_plotly:
@@ -660,10 +662,14 @@ def header_check(inputFile):
         pass
     return sentenceID_pos, docCol_pos, docName_pos, frequency_pos, header
 
+# TODO Samir very slow
 def process_sentenceID_record(Row_list, Row_list_new, index,
                               start_sentence, end_sentence,
                               header, sentenceID_pos, docCol_pos, docName_pos, frequency_pos,
                               save_current):
+    # TODO temporary to measure process time
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Excel process_sentenceID_record at',
+                                                 True, '', True, '', True)
     # range(start, stop, step)
     # end_sentence is always skipped; the range of integers end at end_sentence – 1
     for i in range(start_sentence, end_sentence, 1):
@@ -688,6 +694,10 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
 
     if save_current:
         Row_list_new.append(Row_list[index])
+    # TODO temporary to measure process time
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Excel process_sentenceID_record at',
+                                       True, '', True, startTime, True)
+
     return Row_list_new
 
 # written by Yi Wang
@@ -695,6 +705,7 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
 
 # input can be a csv filename or a dataFrame
 # output is a csv file
+# TODO Samir very slow
 def add_missing_IDs(input, outputFilename):
     from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
     # TODO temporary to measure process time

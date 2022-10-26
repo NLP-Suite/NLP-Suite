@@ -196,54 +196,65 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
     if inputDir != '':
         inputFilename = inputDir + os.sep + tail
 
-    # if only one language is selected (not multilingual)
-    # if len(language)==1 and language[0]!='multilingual':
-    out_df = pd.DataFrame()
-
-    for i, token in enumerate(spacy_doc):
-        out_df.at[i, 'ID'] = token.i + 1
-        out_df.at[i,'Form'] = token.text
-        out_df.at[i,'Lemma'] = token.lemma_
-        out_df.at[i,'POStag'] = token.pos_
-        out_df.at[i,'Head'] = token.head.i # add Head index
-        out_df.at[i,'DepRel'] = token.dep_
-        out_df.at[i, 'is_sent_start'] = token.is_sent_start
-        if "sentiment" in annotator_params:
-            out_df.at[i,'Sentiment score (token)'] = round(token._.blob.polarity,2)
-            out_df.at[i,'Sentiment score (sentence)'] = 0 # will be replaced later
-        if hasattr(token, 'ent_type_'): # check if NER is annotated for each token
-            out_df.at[i,'NER'] = token.ent_type_
-
-    # add necessary columns after the loop
-    out_df['Record ID'] = None
-    out_df['Sentence ID'] = None
-    out_df['Document ID'] = docID
-    out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
-
-    # get sentence sentiment
+    # TODO MINO: change sentiment analysis output for visualization
     if "sentiment" in annotator_params:
-        sentence_sentiment = [round(sent._.blob.polarity,2) for sent in spacy_doc.sents]
+        c = 0
+        for sent in spacy_doc.sents:
+            out_df.at[c, 'Sentiment score'] = round(sent._.blob.polarity,2)
+            out_df.at[c, 'Sentiment label'] = 'positive' if out_df.at[c, 'Sentiment score'] > 0 else 'negative' if out_df.at[c, 'Sentiment score'] < 0 else 'neutral'
+            out_df.at[c, 'Sentence ID'] = c+1
+            out_df.at[c, 'Sentence'] = sent.text
+            c+=1
+        out_df['Document ID'] = docID
+        out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
+    else:
+        out_df = pd.DataFrame()
 
-    # enter Record and Sentence IDs
-    i = 0
-    sidx = 1
-    for row in out_df.iterrows():
-        if i != 0 and row[1]['is_sent_start'] == True:
-            sidx+=1
+        for i, token in enumerate(spacy_doc):
+            out_df.at[i, 'ID'] = token.i + 1
+            out_df.at[i,'Form'] = token.text
+            out_df.at[i,'Lemma'] = token.lemma_
+            out_df.at[i,'POStag'] = token.pos_
+            out_df.at[i,'Head'] = token.head.i # add Head index
+            out_df.at[i,'DepRel'] = token.dep_
+            out_df.at[i, 'is_sent_start'] = token.is_sent_start
+            if hasattr(token, 'ent_type_'): # check if NER is annotated for each token
+                out_df.at[i,'NER'] = token.ent_type_
+
+        # add necessary columns after the loop
+        out_df['Record ID'] = None
+        out_df['Sentence ID'] = None
+        out_df['Document ID'] = docID
+        out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
+
+        # get sentence sentiment
         if "sentiment" in annotator_params:
-            out_df.at[i, 'Sentiment score (sentence)'] = sentence_sentiment[sidx-1]
-        out_df.at[i, 'Record ID'] = row[1]['ID']
-        out_df.at[i, 'Sentence ID'] = sidx
-        i+=1
+            sentence_sentiment = [round(sent._.blob.polarity,2) for sent in spacy_doc.sents]
 
-    # drop 'is_sent_start' column
-    out_df = out_df.drop(columns=['is_sent_start'])
+        # enter Record and Sentence IDs
+        i = 0
+        sidx = 1
+        for row in out_df.iterrows():
+            if i != 0 and row[1]['is_sent_start'] == True:
+                sidx+=1
+            if "sentiment" in annotator_params:
+                out_df.at[i, 'Sentiment score'] = sentence_sentiment[sidx-1]
+            out_df.at[i, 'Record ID'] = row[1]['ID']
+            out_df.at[i, 'Sentence ID'] = sidx
+            i+=1
 
-    # extract list of identified token language
-    tmp_lang_lst = [lang_dict[token.lang_] for token in spacy_doc]
-    out_df['Language'] = tmp_lang_lst
+        # drop 'is_sent_start' column
+        out_df = out_df.drop(columns=['is_sent_start'])
 
-    out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+        # extract list of identified token language
+        tmp_lang_lst = [lang_dict[token.lang_] for token in spacy_doc]
+        out_df['Language'] = tmp_lang_lst
+
+    # TODO MINO: change sentiment analysis output for visualization
+    if "sentiment" in annotator_params:
+        out_df = out_df[['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
+    else:
+        out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
 
     return out_df
 
