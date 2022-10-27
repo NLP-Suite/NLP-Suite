@@ -80,7 +80,8 @@ software_download_lb = tk.Label(window,text='Software download & install')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                y_multiplier_integer, software_download_lb, True)
 software_download_var.set('')
-software_download_menu = tk.OptionMenu(window, software_download_var, '*','Stanford CoreNLP', 'Gephi','Google Earth Pro','MALLET','SENNA','WordNet')
+# 'SENNA' was removed from SVO options; way too slow
+software_download_menu = tk.OptionMenu(window, software_download_var, '*','Stanford CoreNLP', 'Gephi','Google Earth Pro','MALLET','WordNet')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200,
                                                y_multiplier_integer, software_download_menu,True)
 
@@ -102,8 +103,9 @@ def activate_software_website(*args):
         software_website_url="https://gephi.org/users/download/"
     if 'MALLET' in software_download_var.get():
         software_website_url="http://mallet.cs.umass.edu/download.php"
-    if 'SENNA' in software_download_var.get():
-        software_website_url= "https://ronan.collobert.com/senna/download.html"
+    # 'SENNA' was removed from SVO options; way too slow
+    # if 'SENNA' in software_download_var.get():
+    #     software_website_url= "https://ronan.collobert.com/senna/download.html"
     if 'WordNet' in software_download_var.get():
         software_website_url="https://wordnet.princeton.edu/download/current-version"
     software_website_url_var.set(software_website_url)

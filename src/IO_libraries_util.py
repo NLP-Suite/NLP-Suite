@@ -309,7 +309,8 @@ CoreNLP_download = "https://stanfordnlp.github.io/CoreNLP/download.html"
 Gephi_download = "https://gephi.org/users/download/"
 Google_Earth_download = "https://www.google.com/earth/download/gep/agree.html?hl=en-GB"
 MALLET_download = "http://mallet.cs.umass.edu/download.php"
-SENNA_download = "https://ronan.collobert.com/senna/download.html"
+# SENNA removed from SVO way too slow
+# SENNA_download = "https://ronan.collobert.com/senna/download.html"
 WordNet_download = "https://wordnet.princeton.edu/download/current-version"
 
 # the function checks that if Stanford CoreNLP version matches with the latest downloadable version
@@ -357,9 +358,9 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName):
 # Check Stanford CoreNLP
     if programName == 'Stanford CoreNLP':
         for item in fileList:
-            if 'stanford-corenlp' in str(item):
+            if 'ejml' in str(item) or 'javax' in str(item):
                 return True
-        directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, many files with \'stanford-corenlp\' in the filename.'
+        directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, many files with \'ejml\' and \'javax\' in the filename.'
         message = directory_content + select_directory_msg + unarchive_msg
 
     # Check Gephi
@@ -402,12 +403,13 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName):
         directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, the subdirectories \'bin\' and \'class\''
         message = directory_content + select_directory_msg + directory_content
 
-# Check SENNA
-    if programName == 'SENNA':
-        if 'senna-osx' in fileList and 'senna-win32.exe' in fileList:
-            return True
-        directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, the files \'senna-osx\' and \'senna-win32.exe\''
-        message = directory_content + select_directory_msg + unarchive_msg
+# SENNA was removed from SVO as way too slow
+# # Check SENNA
+#     if programName == 'SENNA':
+#         if 'senna-osx' in fileList and 'senna-win32.exe' in fileList:
+#             return True
+#         directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, the files \'senna-osx\' and \'senna-win32.exe\''
+#         message = directory_content + select_directory_msg + unarchive_msg
 
 # Check WordNet
     if programName == 'WordNet':
@@ -460,7 +462,7 @@ def initialize_software_config_fields(existing_software_config: list) -> list:
                   ['Gephi', '', Gephi_download],
                   ['Google Earth Pro', '', Google_Earth_download],
                   ['Mallet', '', MALLET_download],
-                  ['SENNA', '', SENNA_download],
+                  # ['SENNA', '', SENNA_download],
                   ['WordNet', '', WordNet_download]]
     fields = [x[0].lower() for x in existing_software_config]
     for (index, row) in enumerate(sample_csv):
@@ -578,7 +580,8 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
             errorFound=False
             # the software directory is stored in config file but...
             #   check that the software directory still exists and the package has not been moved
-            if os.path.isdir(software_dir) == False or check_inputExternalProgramFile(calling_script, software_dir, software_name) == False:
+            if os.path.isdir(software_dir) == False or \
+                    check_inputExternalProgramFile(calling_script, software_dir, software_name) == False:
                 # warn the user of a missing software only if the software (i.e., package) is required by the calling script
                 if package in software_name.upper():
                     mb.showwarning(title=software_name.upper() + ' directory error',
@@ -681,8 +684,8 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
 # CoreNLP, SENNA, MALLET, WordNet in Mac are archived files
 # DOWNLOAD Messages for Stanford CoreNLP, SENNA, MALLET, WordNet in Mac
 
+                        # software_name == 'SENNA' or \
                         if software_name=='Stanford CoreNLP' or \
-                                software_name == 'SENNA' or \
                                 software_name == 'MALLET' or \
                                 (platform == 'darwin' and software_name == 'WordNet'):
                             archive_message=', double click on the downloaded file to unarchive it, move the entire software folder to a location of your choice (e.g., desktop), '
@@ -732,16 +735,16 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                 Java_required = software_name + ' requires the freeware Java (by Oracle) installed on our machine.\n\nTo download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a FREE Oracle account if you do not have one).\n\nThe NLP Suite will open the Java download website.\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable.'
                                 open_url('Java', url, ask_to_open = True, message_title = 'Java', message = Java_required)
 
+# removed SENNA from SVO, way too slow
 # DOWNLOAD Microsoft Visual Studio C++ for SENNA
-
-                        if software_name == 'SENNA':
-                            # Microsoft Visual Studio C++ must be downloaded for Windows machines;
-                            #   on Mac it is built into the OS
-                            if platform=='win32':
-                                url = 'https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019'
-                                title = 'Microsoft Visual Studio C++'
-                                message = 'SENNA (and Python WordCloud) require the freeware Visual Studio C++ (Community edition) installed on our Windows machine. If you haven\'t already installed it, please do so now.\n\nThe downloaded file is an executable file that opens an installer.\n\nDo you want to install Visual Studio C++?'
-                                open_url(title, url, ask_to_open = True, message_title = title, message = message)
+                        # if software_name == 'SENNA':
+                        #     # Microsoft Visual Studio C++ must be downloaded for Windows machines;
+                        #     #   on Mac it is built into the OS
+                        #     if platform=='win32':
+                        #         url = 'https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2019'
+                        #         title = 'Microsoft Visual Studio C++'
+                        #         message = 'SENNA (and Python WordCloud) require the freeware Visual Studio C++ (Community edition) installed on our Windows machine. If you haven\'t already installed it, please do so now.\n\nThe downloaded file is an executable file that opens an installer.\n\nDo you want to install Visual Studio C++?'
+                        #         open_url(title, url, ask_to_open = True, message_title = title, message = message)
 
 # INSTALLING -------------------------------------------------------------------------------
 #                   if not answer:  # answer = True downloading and installing; you have already warned the user
@@ -782,8 +785,8 @@ def get_external_software_dir(calling_script, package, silent=False, only_check_
                                     software_name = 'Google Earth Pro'
                                 elif 'mallet' in software_name.lower():
                                     software_name = 'Mallet'
-                                elif 'senna' in software_name.lower():
-                                    software_name = 'SENNA'
+                                # elif 'senna' in software_name.lower():
+                                #     software_name = 'SENNA'
                                 elif 'wordnet' in software_name.lower():
                                     software_name = 'WordNet'
                                 # check that the selected folder for the external program is correct; if so save
