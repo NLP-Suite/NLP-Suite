@@ -198,7 +198,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     filesToOpen = []
     # check that the CoreNLPdir has been setup
     CoreNLPdir, missing_external_software=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_annotator', 'Stanford CoreNLP')
-    if CoreNLPdir== '' or CoreNLPdir== None:
+    if CoreNLPdir== '' or CoreNLPdir== None or 'corenlp' in missing_external_software.lower():
         return filesToOpen
     # check the version of CoreNLP
     IO_libraries_util.check_CoreNLPVersion(CoreNLPdir)
@@ -868,10 +868,10 @@ def date_in_filename(document, **kwargs):
 def date_get_tense(norm_date):
     tense = ''
     # print(norm_date)
-    if (len(norm_date) >= 9 and 'OFFSET P-' in norm_date) or "PAST" in norm_date:
+    if (len(norm_date) >= 9 and "PREV" in norm_date) or "OFFSET P" in norm_date or "PAST" in norm_date:
         # print('past')
         tense = 'PAST'
-    elif len(norm_date) >= 6 and 'OFFSET' in norm_date:
+    elif (len(norm_date) >= 6 and 'OFFSET' in norm_date) or "FUTURE" in norm_date:
         # print("future")
         tense = 'FUTURE'
     elif 'THIS' in norm_date or 'PRESENT' in norm_date:
