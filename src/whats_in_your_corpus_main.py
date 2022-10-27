@@ -48,10 +48,6 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             topics_Mallet_var.get(),
                             topics_Gensim_var.get(),
                             open_tm_GUI_var.get(),
-                            language_var.get(),
-                            memory_var.get(),
-                            document_length_var.get(),
-                            limit_sentence_length_var.get(),
                             what_else_var.get(),
                             what_else_menu_var.get(),
                             quote_var.get(),
@@ -76,10 +72,6 @@ def run(inputFilename,inputDir, outputDir,
         topics_Mallet_var,
         topics_Gensim_var,
         open_tm_GUI_var,
-        language_var,
-        memory_var,
-        document_length_var,
-        limit_sentence_length_var,
         what_else_var,
         what_else_menu_var,
         single_quote,
@@ -91,6 +83,27 @@ def run(inputFilename,inputDir, outputDir,
     filesToOpen=[]
     openOutputFilesSV=openOutputFiles
     openOutputFiles=False # to make sure files are only opened at the end of this multi-tool script
+
+
+    # get the NLP package and language options
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
+
+    # get the date options from filename
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
+        config_filename, config_input_output_numeric_options)
+    extract_date_from_text_var = 0
+
+    if package_display_area_value == '':
+        mb.showwarning(title='No setup for NLP package and language',
+                       message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
+        return
+
 
     if (utf8_var==False and \
         ASCII_var == False and \
@@ -381,7 +394,7 @@ def run(inputFilename,inputDir, outputDir,
                     annotator = ['POS']
                     files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                 outputDir_what_else, openOutputFiles, createCharts, chartPackage,
-                                                annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
+                                                annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
                     if len(files) > 0:
                             noun_verb=''
                             if verbs_var == True:
@@ -419,7 +432,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator_list, False,
-                                                                      language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                      language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
                 filesToOpen.append(output)
@@ -432,7 +445,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False,
-                                                                      language_var, memory_var, document_length_var,
+                                                                      language_var, export_json_var, memory_var, document_length_var,
                                                                       limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
@@ -443,7 +456,7 @@ def run(inputFilename,inputDir, outputDir,
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
-                                                                      annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
+                                                                      annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
 
             if output != None:
                 filesToOpen.append(output)
@@ -453,7 +466,7 @@ def run(inputFilename,inputDir, outputDir,
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
-                                                                      annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                      annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       single_quote_var = single_quote)
             if output != None:
                 filesToOpen.append(output)
@@ -462,7 +475,7 @@ def run(inputFilename,inputDir, outputDir,
             annotator='normalized-date'
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir_what_else,
                         openOutputFiles, createCharts, chartPackage,
-                        annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
+                        annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
             if output != None:
                 filesToOpen.append(output)
 
@@ -474,7 +487,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False,
-                                                                      language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                      language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
                 filesToOpen.append(output)
@@ -485,7 +498,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False,
-                                                                      memory_var, document_length_var,
+                                                                      memory_var, export_json_var, document_length_var,
                                                                       limit_sentence_length_var)
             if output != None:
                 filesToOpen.append(output)
@@ -501,7 +514,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                          outputDir_what_else, openOutputFiles,
                                                                          createCharts, chartPackage, 'NER',
                                                                          False,
-                                                                         language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                         language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                          NERs=NERs,
                                                                          extract_date_from_text_var=0,
                                                                          extract_date_from_filename_var=extract_date_from_filename_var,
@@ -584,6 +597,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                                createCharts, chartPackage,
                                                                                'SVO', False,
                                                                                language_var,
+                                                                               export_json_var,
                                                                                memory_var=memory_var,
                                                                                document_length_var=document_length_var,
                                                                                limit_sentence_length_var=limit_sentence_length_var,
@@ -614,8 +628,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=590, # height at brief display
-                             GUI_height_full=630, # height at full display
+                             GUI_height_brief=550, # height at brief display
+                             GUI_height_full=590, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
@@ -842,41 +856,6 @@ language_var_lb = tk.Label(window, text='Language')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                language_var_lb, True)
 
-language_var.set('English')
-language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese', 'English', 'German','Hungarian','Italian','Spanish')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+70,
-                                               y_multiplier_integer, language_menu, True)
-# memory options
-memory_var_lb = tk.Label(window, text='Memory')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+210, y_multiplier_integer,
-                                               memory_var_lb, True)
-
-memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
-memory_var.pack()
-memory_var.set(6)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 280, y_multiplier_integer,
-                                               memory_var, True)
-
-document_length_var_lb = tk.Label(window, text='Document length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+210, y_multiplier_integer,
-                                               document_length_var_lb, True)
-
-document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
-document_length_var.pack()
-document_length_var.set(90000)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+330, y_multiplier_integer,
-                                               document_length_var,True)
-
-limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 500, y_multiplier_integer,
-                                               limit_sentence_length_var_lb,True)
-
-limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
-limit_sentence_length_var.pack()
-limit_sentence_length_var.set(100)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 630, y_multiplier_integer,
-                                               limit_sentence_length_var)
-
 what_else_var.set(1)
 what_else_checkbox = tk.Checkbutton(window,text="What else is in your document(s)? (via Stanford CoreNLP and WordNet)", variable=what_else_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,what_else_checkbox,True)
@@ -993,8 +972,6 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
             \n  do not list individual files when processing a directory \
             \n\nTo set different options, use the wordclouds GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick the Mallet or Gensim checkboxes to run run LDA Topic Modeling to find out the main topics of your corpus.\n\nTick the \'open GUI\' checkbox to open the specialized Gensim topic modeling GUI that offers more options. Mallet can only be run via its GUI")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select the language to be used: English, Arabic, Chinese, German, Hungarian, Italian, or Spanish.\n\nNot all annotators are available for all languages, in fact, most are not. Please, read the TIPS file TIPS_NLP_Stanford CoreNLP supported languages.pdf.\n\nThe Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to analyze your corpus for a variety of tools. Select the default \'*\' to run all options. Allternatively, select the specific option to run.\n\nThe NLP tools will allow you to answer questions such as:\n  1. Are there dialogues in your corpus? The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker. The default CoreNLP parameter is DOUBLE quotes. If you want to process both DOUBLE and SINGLE quotes, plase tick the checkbox 'Include single quotes.'\n  .2 Do nouns and verbs cluster in specific aggregates (e.g., communication, movement)?\n  3. Does the corpus contain references to people (by gender) and organizations?\n  4.  References to dates and times?\n  5. References to geographical locations that could be placed on a map?\n  6. References to nature (e.g., weather, seasons, animals, plants)?")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to run the GIS pipeline to extract locations from your input document(s) and map them in Google Earth Pro and Google Maps.\n\nThe GIS function in this GUI is based on the following default options:" \
             "\n  use Nominatim for geocoding "\

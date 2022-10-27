@@ -70,7 +70,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     files_to_open = []
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 
@@ -187,7 +187,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename,
                                        inputFilename, inputDir, outputCorefDir,
                                        openOutputFiles, createCharts, chartPackage,
-                                       language_var, memory_var,
+                                       language_var, memory_var, export_json_var,
                                        manual_coref_var)
         if error_indicator != 0:
             return
@@ -252,7 +252,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                    createCharts,
                                    chartPackage,
                                    params, False,
-                                   language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                   language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                    extract_date_from_text_var=extract_date_from_text_var,
                                    extract_date_from_filename_var=extract_date_from_filename_var,
                                    date_format=date_format_var,
@@ -282,7 +282,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                            chartPackage,
                                                                            'OpenIE',
                                                                            False,
-                                                                           language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                           language_var, memory_var, export_json_var, document_length_var, limit_sentence_length_var,
                                                                            extract_date_from_text_var=extract_date_from_text_var,
                                                                            extract_date_from_filename_var=extract_date_from_filename_var,
                                                                            date_format=date_format_var,
@@ -326,7 +326,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                     extract_date_from_filename_var=extract_date_from_filename_var,
                                                     date_format=date_format_var,
                                                     date_separator_var=date_separator_var,
-                                                    date_position_var=date_position_var)
+                                                    date_position_var=date_position_var,
+                                                    google_earth_var=google_earth_var,
+                                                    location_filename=location_filename)
 
         if tempOutputFiles != None:
             filesToOpen.extend(tempOutputFiles)
@@ -846,8 +848,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column
 gender_var.set(0)
 gender_checkbox = tk.Checkbutton(window, text='S & O gender',
                                                 variable=gender_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               gender_checkbox, True)
+                                   gender_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   "The gender annotator is available only via Stanford CoreNLP")
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+#                                                gender_checkbox, True)
 
 def activateGender(*args):
 
@@ -861,8 +868,11 @@ activateGender()
 quote_var.set(0)
 quote_checkbox = tk.Checkbutton(window, text='S & O quote/speaker',
                                                 variable=quote_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
-                                               quote_checkbox, True)
+                                   quote_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
+                                   "The quote annotator is available only via Stanford CoreNLP")
 
 def activateQuote(*args):
     if quote_var.get() and ((package_var.get() != 'Stanford CoreNLP') or (package_var.get() == 'Stanford CoreNLP' and 'English' not in str(language_list))):
@@ -1022,7 +1032,7 @@ def activate_NLP_options(*args):
     global error, package, language_list, y_multiplier_integer
 
     # after update no display
-    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
+    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
     language_list = [language]
     package_var.set(package)
     if language!='English':
@@ -1045,7 +1055,7 @@ if error:
                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
     call("python NLP_setup_package_language_main.py", shell=True)
     # this will display the correct hover-over info after the python call, in case options were changed
-    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
 
 GUI_util.window.mainloop()

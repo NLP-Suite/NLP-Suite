@@ -168,8 +168,14 @@ def excludeStopWords_list(words):
 def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                               excludeStopWords=True, lemmatizeWords=True):
     filesToOpen = []
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus_stats',
-                                                             '')
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='corpus_stats',
+                                                       silent=False)
+    if outputDir == '':
+        return
+
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus_stats', '')
     filesToOpen.append(outputFilename)
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
 

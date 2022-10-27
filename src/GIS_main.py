@@ -52,7 +52,7 @@ def run(inputFilename,
     locationColumnName=''
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
     if package_display_area_value == '':
@@ -138,6 +138,7 @@ def run(inputFilename,
         locationFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                 outputDir, openOutputFiles, createCharts, chartPackage, 'NER', False,
                                                                 language_var,
+                                                                export_json_var,
                                                                 memory_var,
                                                                 NERs=NERs,
                                                                 extract_date_from_text_var=0,

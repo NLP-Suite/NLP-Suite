@@ -19,8 +19,8 @@ import config_util
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(1),
-                                                 GUI_height_brief=510, # height at brief display
-                                                 GUI_height_full=550, # height at full display
+                                                 GUI_height_brief=540, # height at brief display
+                                                 GUI_height_full=580, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -40,6 +40,7 @@ package_basics_var = tk.StringVar()
 language_var = tk.StringVar()
 language_list = []
 encoding_var = tk.StringVar()
+export_json_var = tk.IntVar()
 y_multiplier_integer=0
 
 current_package_lb = tk.Label(window,text='Currently available default NLP package and language')
@@ -50,12 +51,13 @@ y_multiplier_integer_SV1=y_multiplier_integer
 
 def clear(e):
     reset_language_list()
+    export_json_var.set(0)
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
 def display_available_options():
     global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     # print("display",parsers_display_area)
     package_display_area = tk.Label(width=80, height=1, anchor='w', text=str(package_display_area_value), state='disabled')
     # place widget with hover-over info
@@ -189,6 +191,13 @@ encoding_var.set('utf-8')
 encodingValue = tk.OptionMenu(window,encoding_var,'utf-8','utf-16-le','utf-32-le','latin-1','ISO-8859-1')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+100, y_multiplier_integer,encodingValue)
 
+export_json_var.set(0)
+export_json_label = tk.Checkbutton(window,
+                                variable=export_json_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox(export_json_label, export_json_var, "Export Json file(s)", "Do NOT export Json file(s)"))
+export_json_label.configure(text="Do NOT export Json file(s)")
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+                                               export_json_label)
+
 # memory options
 memory_var_lb = tk.Label(window, text='Memory ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
@@ -196,8 +205,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
-memory_var.set(6)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 100, y_multiplier_integer,
+memory_var.set(4)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 60, y_multiplier_integer,
                                                memory_var, True)
 
 document_length_var_lb = tk.Label(window, text='Document length')
@@ -207,7 +216,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_
 document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
 document_length_var.pack()
 document_length_var.set(90000)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+200, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+210, y_multiplier_integer,
                                                document_length_var,True)
 
 limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
@@ -217,13 +226,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_
 limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
 limit_sentence_length_var.pack()
 limit_sentence_length_var.set(100)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 550, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 500, y_multiplier_integer,
                                                limit_sentence_length_var)
 def save_NLP_config(parsers):
     if language_var.get()=='':
         mb.showwarning(title='Warning',message='You must select the language your corpus is written in before saving.')
         return
     encoding = encoding_var.get()
+    export_json = export_json_var.get()
 
     memory = memory_var.get()
     document_length = document_length_var.get()
@@ -237,7 +247,7 @@ def save_NLP_config(parsers):
     #   several times in config_util.py
     currently_selected_package_language= {'MAIN NLP PACKAGE': package_var.get(), 'LEMMATIZER PACKAGE': package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
     config_util.save_NLP_package_language_config(window, currently_selected_package_language, parsers_display_area['text'],
-                            encoding, memory, document_length, limit_sentence_length)
+                            encoding, export_json, memory, document_length, limit_sentence_length)
     display_available_options()
 
 save_button = tk.Button(window, text='SAVE', width=10, height=2, command=lambda: save_NLP_config(parsers))
@@ -334,11 +344,14 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,
                                   "NLP Suite Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                                         "Tick the checkbox to export or not export the Json file(s) in txt format produced by the selected NLP package." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                                          "The performance of different NLP tools (e.g., Stanford CoreNLP) is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, hit the SAVE button to save any changes made.")
     y_multiplier_integer = 7.5
-    return y_multiplier_integer+1
+    # TODO any line added to the GUI (e.g., Do NOT export json file(s)) will have to change +2 to +3, ... in the next command
+    return y_multiplier_integer+2
 
 y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
 

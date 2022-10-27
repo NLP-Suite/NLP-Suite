@@ -157,9 +157,6 @@ message_CoreNLP_NER_tags = "The CoNLL table produced by the CoreNLP parser has a
 title_options_CoreNLP_website = ['CoreNLP language/annotator options website']
 message_CoreNLP_website = "You will be asked next if you want to open the Stanford CoreNLP language website to get a list of available annotators for each supported language.\n\nIf you do not want to be asked again to open the website, just hit 'No' below."
 
-title_options_CoreNLP_Json = ['CoreNLP exporting Json files']
-message_CoreNLP_Json = "Stanford CoreNLP can export in output Json files for the selected annotator(s)). Json files may give expert users checks against the NLP Suite performance about some CoreNLP annotators.\n\nIf you do not wish to produce these files, simply turn OFF this reminder by replying No to wanting to see this reminder again. And like for any reminder, you can always turn it back ON, and export Json files, at any time by using the 'Open reminders' dropdown menu at at the bottom of this GUI."
-
 title_options_TIPS_file = ['Open TIPS file']
 message_TIPS_file = "You will be asked next if you want to open a TIPS file for help.\n\nIf you do not want to be asked again to open the TIPS file, just hit 'No' below."
 

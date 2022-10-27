@@ -45,7 +45,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         return
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = \
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = \
         config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
@@ -123,6 +123,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                                            outputDir, openOutputFiles,
                                                                                            createCharts, chartPackage,
                                                                                            language, memory_var,
+                                                                                           export_json_var,
                                                                                            manual_Coref)
 
                         if error_indicator != 0:
@@ -138,7 +139,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                                outputDir,
                                                                                openOutputFiles, createCharts, chartPackage,
                                                                                annotator, False, #'All POS',
-                                                                               language, memory_var, document_length_var, limit_sentence_length_var,
+                                                                               language, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                                extract_date_from_filename_var=extract_date_from_filename_var,
                                                                                date_format=date_format_var,
                                                                                date_separator_var=date_separator_var,
@@ -641,7 +642,7 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 def activate_NLP_options(*args):
     global error, parsers, available_parsers, parser_lb, package, package_display_area_value, language, language_list, y_multiplier_integer
-    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, memory_var, document_length_var, limit_sentence_length_var = GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
+    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
     if package != '':
         available_parsers = 'Parsers for ' + package + '                          '
     else:
@@ -670,6 +671,6 @@ if error:
                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
     call("python NLP_setup_package_language_main.py", shell=True)
     # this will display the correct hover-over info after the python call, in case options were changed
-    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
 GUI_util.window.mainloop()

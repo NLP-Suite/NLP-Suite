@@ -21,6 +21,7 @@ import shape_of_stories_clustering_util as cl
 import shape_of_stories_vectorizer_util as vec
 import shape_of_stories_visualization_util as viz
 
+import config_util
 import GUI_IO_util
 import IO_files_util
 import IO_csv_util
@@ -95,6 +96,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       createCharts, chartPackage)
     # step 1: run sentiment analysis
     if sentimentAnalysis == 1:
+
+        # get the NLP package and language options
+        error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+        language_var = language
+        language_list = [language]
+
         # run appropriate sentiment analysis method as indicated by sentimentAnalysisMethod
         if sentimentAnalysisMethod == "Stanford CoreNLP Neural Network":
             reminders_util.checkReminder(config_filename,
@@ -109,7 +116,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 computeSAScores=mb.askyesno("Sentiment Analysis","You have selected to run sentiment analysis on your corpus. But there already exists a csv file of sentiment scores for this corpus saved in the default output directory:\n\n"+outputFilename+"\n\nAre you sure you want to recompute the scores?")
                 if not computeSAScores:
                     return
-            tempOutputfile=Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, '', inputDir, outputDir, openOutputFiles, createCharts, chartPackage,'sentiment',False, memory_var)
+            tempOutputfile=Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, '', inputDir, outputDir, openOutputFiles,
+                                createCharts, chartPackage,'sentiment',False, language_var, export_json_var, memory_var)
             if tempOutputfile==None:
                 return
             sentiment_scores_input=tempOutputfile[0]

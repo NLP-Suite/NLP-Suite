@@ -36,7 +36,7 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
         differentColumns_differentColors, csvField_color_list, openOutputFiles, doNotCreateIntermediateFiles):
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 
@@ -577,7 +577,7 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 def activate_NLP_options(*args):
     global error, package_basics, package, language_list
-    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 GUI_util.setup_menu.trace('w', activate_NLP_options)
