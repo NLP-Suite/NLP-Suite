@@ -61,6 +61,8 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
             extract_date_from_text_var = True
         if key == 'extract_date_from_filename_var' and value == True:
             extract_date_from_filename_var = True
+        if key == 'google_earth_var' and value == True:
+            google_earth_var = True
 
     # annotating each input file
     docID = 0
@@ -117,10 +119,6 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
                                                             'SpaCy_CoNLL')
     else:
         # TODO Mino annotator_params is always passed as a string rather than a list
-        # if annotator_params)>1:
-        #     annotator_string=''
-        # else:
-        #     annotator_string = annotator_params[0]
         if 'depparse' in annotator_params:
             annotator_label='CoNLL'
         else:
@@ -169,6 +167,14 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
         svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
         filesToOpen.append(svo_df_outputFilename)
 
+        # create locations file if GIS visualization is selected
+        if google_earth_var is True:
+            loc_df = visualize_GIS_maps_spaCy(svo_df)
+            loc_df_outputFilename = kwargs["location_filename"]
+            loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
+            filesToOpen.append(loc_df_outputFilename)
+
+
     filesToVisualize=filesToOpen
     for j in range(len(filesToVisualize)):
         #02/27/2021; eliminate the value error when there's no information from certain annotators
@@ -196,7 +202,6 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
     if inputDir != '':
         inputFilename = inputDir + os.sep + tail
 
-    # TODO MINO: change sentiment analysis output for visualization
     if "sentiment" in annotator_params:
         c = 0
         for sent in spacy_doc.sents:
@@ -250,7 +255,6 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
         tmp_lang_lst = [lang_dict[token.lang_] for token in spacy_doc]
         out_df['Language'] = tmp_lang_lst
 
-    # TODO MINO: change sentiment analysis output for visualization
     if "sentiment" in annotator_params:
         out_df = out_df[['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
     else:
@@ -284,6 +288,9 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
     c = 0
     SVO_found = False
     NER_found = False
+    loc_ent_iob_= ''
+    per_ent_iob_ = ''
+    tim_ent_iob_ = ''
     empty_verb_idx = []
     # extract SVOs
     for sent in doc.sents:
@@ -300,16 +307,27 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
             # extract NER tags
             if SVO_found is True or NER_found is True:
                 if token.ent_type_ in  NER_LOCATION:
-                    svo_df, NER_found = extractNER(token, svo_df, c, 'Location', NER_found)
+                    svo_df, NER_found, loc_ent_iob_ = extractNER(token, svo_df, c, 'Location', NER_found, loc_ent_iob_)
                 elif token.ent_type_ in  NER_PERSON:
-                    svo_df, NER_found = extractNER(token, svo_df, c, 'Person', NER_found)
+                    svo_df, NER_found, per_ent_iob_ = extractNER(token, svo_df, c, 'Person', NER_found, per_ent_iob_)
                 elif token.ent_type_ in  NER_TIME:
-                    svo_df, NER_found = extractNER(token, svo_df, c, 'Time', NER_found)
+                    svo_df, NER_found, tim_ent_iob_ = extractNER(token, svo_df, c, 'Time', NER_found, tim_ent_iob_)
         # check if SVO is found, then add Sentence ID
         if SVO_found:
             svo_df.at[c, 'Sentence ID'] = c+1
+            svo_df.at[c, 'Sentence'] = sent.text
             SVO_found = False
         c+=1
+
+    # add semi-colon for each NERs to process for GIS visualization
+    for _,row in svo_df.iterrows():
+        if isinstance(row['Location'], str) and row['Location'].endswith(';') is False:
+            row['Location'] = row['Location'] + ';'
+        if isinstance(row['Person'], str) and row['Person'].endswith(';') is False:
+            row['Person'] = row['Person'] + ';'
+        if isinstance(row['Time'], str) and row['Time'].endswith(';') is False:
+            row['Time'] = row['Time'] + ';'
+
 
     # csv output columns
     svo_df['Document ID'] = docID
@@ -327,23 +345,31 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
     # set the S-V-O sequence in order
     # add date from filename
     if extract_date_from_filename_var:
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Document ID', 'Document', 'Date']]
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date']]
         svo_df['Date'] = date_str
     else:
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Document ID', 'Document']]
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
 
     return svo_df
 
 # extract NERs
-def extractNER(word, df, idx, column, NER_bool):
+# spaCy uses IOB tags for entities (Inside-Outside-Beginning)
+def extractNER(word, df, idx, column, NER_bool, ent_iob):
     if isinstance(df.at[idx, column], str):
-        tempNER = df.at[idx, column]
-        currentNER = word.text
-        df.at[idx, column] = tempNER + '; ' + currentNER
+        if word.ent_iob_ == 'B':
+            tempNER = df.at[idx, column]
+            currentNER = word.text
+            df.at[idx, column] = tempNER + '; ' + currentNER
+        elif word.ent_iob_ == 'I':
+            tempNER = df.at[idx, column]
+            currentNER = word.text
+            df.at[idx, column] = tempNER + ' ' + currentNER
     else:
         df.at[idx, column] = word.text
 
-    return df, NER_bool
+    ent_iob = word.ent_iob_
+
+    return df, NER_bool, ent_iob
 
 # extract date in filename from Stanford_CoreNLP_util
 def date_in_filename(document, **kwargs):
@@ -365,6 +391,17 @@ def date_in_filename(document, **kwargs):
     if extract_date_from_filename_var:
         date, date_str, month, day, year = IO_files_util.getDateFromFileName(document, date_format, date_separator_var, date_position_var)
     return date_str
+
+# create locations file for GIS
+def visualize_GIS_maps_spaCy(svo_df):
+    loc_df = pd.DataFrame(columns=['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+    for _,row in svo_df.iterrows():
+        if isinstance(row['Location'], str):
+            loc_list = row['Location'].split(';')
+            for loc in loc_list:
+                if loc != '':
+                    loc_df.loc[len(loc_df.index)] = [loc, 'LOCATION', row['Sentence ID'], row['Sentence'], row['Document ID'], 'Document']
+    return loc_df
 
 # Python dictionary of language (values) and their acronyms (keys)
 lang_dict  = dict(constants_util.languages)

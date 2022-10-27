@@ -52,7 +52,7 @@ import charts_util
 # the function creates the subdirectory for a given annotator
 # outputDirSV is the original output directory listed in the
 def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
-                            export_json_toTxt, annotator, silent, Json_question_already_asked):
+                            export_json_var, annotator, silent, Json_question_already_asked):
     outputJsonDir = ''
     outputDirSV=GUI_util.output_dir_path.get()
     if outputDirSV != outputDir:
@@ -67,22 +67,13 @@ def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
         outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
                                                            label="CoreNLP_" + annotator,
                                                            silent=False)
-    # Json_question_already_asked to avoid repeating the reminders question when multiple annotators are used
-    if (outputDir !='') and (export_json_toTxt and not Json_question_already_asked):
-        # check reminder
-        reminder_status = reminders_util.checkReminder(config_filename,
-                                                       reminders_util.title_options_CoreNLP_Json,
-                                                       reminders_util.message_CoreNLP_Json,
-                                                       True, silent)
-        if reminder_status == 'Yes' or reminder_status == 'ON':  # 'Yes' the old way of saving reminders
-            # create a subdirectory of the output directory
-            outputJsonDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                                   label='Json',
-                                                                   silent=True)
-        else:
-            export_json_toTxt = False
-
-    return outputDir, outputJsonDir, export_json_toTxt
+    # create a subdirectory of the output directory
+    outputJsonDir=''
+    if export_json_var:
+        outputJsonDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                               label='Json',
+                                                               silent=True)
+    return outputDir, outputJsonDir
 
 def check_CoreNLP_language(config_filename,annotator,language):
     not_available = False
@@ -176,6 +167,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      annotator_params,
                      DoCleanXML,
                      language,
+                     export_json_var=0,
                      memory_var=6,
                      document_length=90000,
                      sentence_length=1000, # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
@@ -381,7 +373,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         param_string_NN = param_string_NN + ", " + param
             # when multiple annotators are selected (e.g., quote, gender, normalized-date)
             #   output must go to the appropriate subdirectory and added to routine_list
-            output_dir, outputJsonDir, export_json_toTxt = create_output_directory(inputFilename, inputDir, outputDir, config_filename, export_json_toTxt, annotator, silent, Json_question_already_asked)
+            output_dir, outputJsonDir = create_output_directory(inputFilename, inputDir, outputDir, config_filename, export_json_var, annotator, silent, Json_question_already_asked)
             if output_dir == '':
                 return filesToOpen
             # when running the SVO annotator in combination with gender and quote,
@@ -400,7 +392,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         param_string = param_string + ", " + param
             # when multiple annotators are selected (e.g., quote, gender, normalized-date)
             #   output must go to the appropriate subdirectory and added to routine_list
-            output_dir, outputJsonDir, export_json_toTxt = create_output_directory(inputFilename, inputDir, outputDir, config_filename, export_json_toTxt, annotator, silent, Json_question_already_asked)
+            output_dir, outputJsonDir = create_output_directory(inputFilename, inputDir, outputDir, config_filename, export_json_var, annotator, silent, Json_question_already_asked)
             if output_dir == '':
                 return filesToOpen
             # when running the SVO annotator in combination with gender and quote,
@@ -555,7 +547,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 # TODO regardless of annotator,
                 #   when for instance three are passed with * from NLP_parsers_annotators_main using annotators dropdown menu,
                 #   we always process only the first one in the list
-                exportJson(export_json_toTxt, tail, outputJsonDir, CoreNLP_output,
+                exportJson(export_json_var, tail, outputJsonDir, CoreNLP_output,
                                language_encoding, annotator_params[0]) # only one annotator
             else: CoreNLP_output = ""
 
@@ -599,7 +591,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     #   we always process only the first one in the list
                     # exportJson(export_json_toTxt, tail, outputJsonDir, CoreNLP_output,
                     #            language_encoding, #annotator_params[0])
-                    exportJson(export_json_toTxt, tail_split, outputJsonDir, CoreNLP_output,
+                    exportJson(export_json_var, tail_split, outputJsonDir, CoreNLP_output,
                                language_encoding, annotator_chosen)
 
 #  generate output from json file for specific annotators ------------------------------------
@@ -1874,9 +1866,9 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
     return result, recordID
 
 
-def exportJson(export_json_toTxt, inputFilename, outputJsonDir, CoreNLP_output,
+def exportJson(export_json_var, inputFilename, outputJsonDir, CoreNLP_output,
                language_encoding, annotator_params):
-        if not export_json_toTxt:
+        if not export_json_var:
             return
         if outputJsonDir!='':
             jsonFilename = os.path.join(outputJsonDir, inputFilename[:-4] + "_" + str(annotator_params) + ".txt")

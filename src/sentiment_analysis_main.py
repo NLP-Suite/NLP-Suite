@@ -45,7 +45,7 @@ def run(inputFilename,inputDir,outputDir,
     filesToOpen = []  # Store all files that are to be opened once finished
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
     if package_display_area_value == '':
@@ -195,7 +195,7 @@ def run(inputFilename,inputDir,outputDir,
             return
         outputFilename = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                           outputDir, openOutputFiles, createCharts, chartPackage,'sentiment', False,
-                                                                          language_var,
+                                                                          language_var, export_json_var,
                                                                           memory_var)
         # outputFilename=outputFilename[0] # annotators return a list and not a string
         if SA_algorithm_var!='*' and len(outputFilename)>0:
@@ -507,7 +507,7 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 def activate_NLP_options(*args):
     global error, package_basics, package, language_var, language_list
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 GUI_util.setup_menu.trace('w', activate_NLP_options)

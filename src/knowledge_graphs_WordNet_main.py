@@ -15,6 +15,7 @@ import tkinter.messagebox as mb
 import pandas as pd
 
 import GUI_IO_util
+import config_util
 import IO_files_util
 import CoNLL_util
 import knowledge_graphs_WordNet_util
@@ -46,6 +47,10 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         dict_WordNet_filename_var):
 
     filesToOpen = []  # Store all files that are to be opened once finished
+
+    # get the NLP package and language options
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+
     language_var='English' # WordNet works only for English language
 
     WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('knowledge_graphs_WordNet_main', 'WordNet')
@@ -135,14 +140,13 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
 
     if aggregate_POS_var == True:
         annotator = ['POS']
-        memory_var = 4
         nouns_var = True
         verbs_var = True
         # uses a txt fie in input
         language_var='English'
         files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                  outputDir, openOutputFiles, createCharts, chartPackage,
-                                                                 annotator, False, language_var, memory_var)
+                                                                 annotator, False, language_var, export_json_var, memory_var)
         if len(files) > 0:
             noun_verb = ''
             if verbs_var == True:

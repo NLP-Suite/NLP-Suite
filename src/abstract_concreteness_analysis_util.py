@@ -164,6 +164,13 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 	elif len(inputFilename) == 0 and len(inputDir) == 0:  # empty input
 		print('No input specified. Please give either a single file or a directory of files to analyze.')
 		sys.exit(1)
+
+	# create a subdirectory of the output directory
+	outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='abstr-concret',
+													   silent=False)
+	if outputDir == '':
+		return
+
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
 	                                               'Started running CONCRETENESS Analysis at', True,silent=True)
 	outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,

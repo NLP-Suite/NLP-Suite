@@ -166,7 +166,7 @@ class GroupedColorFunc(object):
         return self.get_color_func(word)
 
 # CYNTHIA: wordcloud function particularly designed for SVO
-def SVOWordCloud(svoFile, doc, outputDir, transformed_image_mask, prefer_horizontal):
+def SVOWordCloud(svoFile, inputFilename, outputDir, transformed_image_mask, prefer_horizontal):
     # read SVO result in
     svo_df = pd.read_csv(svoFile, encoding='utf-8',error_bad_lines=False)
     svo_df = svo_df.fillna("")
@@ -206,7 +206,7 @@ def SVOWordCloud(svoFile, doc, outputDir, transformed_image_mask, prefer_horizon
     plt.figure(figsize = (8, 8), facecolor = None)
     plt.imshow(wc, interpolation="bilinear")
     plt.axis("off")
-    output_file_name = IO_files_util.generate_output_file_name(doc, '', outputDir, '.png', 'WC', 'img')
+    output_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.png', 'WC', 'img')
     wc.to_file(output_file_name)
     return output_file_name
 
@@ -237,7 +237,7 @@ def processColorList(currenttext, color_to_words, csvField_color_list, myfile):
     return currenttext, color_to_words
 
 # add bg_image_flag parameter to indicate whether to add background image
-def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transformed_image_mask,collocation,prefer_horizontal, bg_image = None,bg_image_flag = False, font = None, max_words = 100):
+def display_wordCloud_sep_color(inputFilename, outputDir, text, color_to_words, transformed_image_mask,collocation,prefer_horizontal, bg_image = None,bg_image_flag = False, font = None, max_words = 100):
     # stopwords dealt with in main function
     stopwords=''
     c_wid = 0 if bg_image_flag else 3
@@ -251,7 +251,7 @@ def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transforme
     grouped_color_func = GroupedColorFunc(color_to_words, default_color)
     wc.recolor(color_func=grouped_color_func)
     plt.figure(figsize = (8, 8), facecolor = None)
-    output_file_name = IO_files_util.generate_output_file_name(doc, '', outputDir, '.png', 'WC', 'img')
+    output_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.png', 'WC', 'img')
     if bg_image_flag and bg_image is not None:
         img = changeWhiteToTransparent(wc.to_image())
         img = img.resize(bg_image.size)
@@ -275,7 +275,12 @@ def display_wordCloud_sep_color(doc, outputDir, text, color_to_words, transforme
         wc.to_file(output_file_name)
     return output_file_name
 
-def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, collocation, prefer_horizontal,bg_image = None, bg_image_flag = True, font = None, max_words=100):
+def display_wordCloud(inputFilename,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, collocation, prefer_horizontal,bg_image = None, bg_image_flag = True, font = None, max_words=100):
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='abstr-concret',
+                                                       silent=False)
+    if outputDir == '':
+        return
 
     comment_words = ' '
     # stopwords = set(STOPWORDS)
@@ -317,10 +322,10 @@ def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFi
                         font_path = font).generate(textToProcess)
     if doNotListIndividualFiles==True:
         plt.title(inputDir)
-        output_file_name=IO_files_util.generate_output_file_name(doc, inputDir, outputDir, '.png', 'WC', 'img')
+        output_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.png', 'WC', 'img')
     else:
-        plt.title(ntpath.basename(doc))
-        output_file_name=IO_files_util.generate_output_file_name(doc, inputDir, outputDir, '.png', 'WC', 'img')
+        plt.title(ntpath.basename(inputFilename))
+        output_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.png', 'WC', 'img')
     # plot the WordCloud image
     plt.figure(figsize = (8, 8), facecolor = None)
     if bg_image_flag and bg_image is not None:
@@ -350,31 +355,31 @@ def display_wordCloud(doc,inputDir,outputDir,textToProcess,doNotListIndividualFi
 # 2 returned boolean
 #   the first one tells user that the program MUST exit;
 #   the second that a file is empty and processing moves to the next file
-def check_file_empty(currenttext,doc,nDocs,NumEmptyDocs):
+def check_file_empty(currenttext,inputFilename,nDocs,NumEmptyDocs):
     if len(currenttext) == 0:
         NumEmptyDocs=NumEmptyDocs+1
         if nDocs == 1:
-            mb.showerror(title='File empty', message='The file ' + doc + ' is empty.\n\nPlease, use another file and try again.')
+            mb.showerror(title='File empty', message='The file ' + inputFilename + ' is empty.\n\nPlease, use another file and try again.')
             return True, True, NumEmptyDocs # must exit script
         else:
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Empty file',
-                                               'The file ' + doc + ' is empty.')
+                                               'The file ' + inputFilename + ' is empty.')
         return False, True, NumEmptyDocs
     else:
         return False, False, NumEmptyDocs
 
 #Mortified by Tony 01/23/2022  add bg_image and bg_image_flag
-def processCsvColumns(doc, inputDir, outputDir, openOutputFiles,csvField_color_list, doNotListIndividualFiles, bg_image=None, bg_image_flag=False):
+def processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles,csvField_color_list, doNotListIndividualFiles, bg_image=None, bg_image_flag=False):
     transformed_image_mask=[]
     collocation=False
     prefer_horizontal=.9
     currenttext = ''
     color_to_words = defaultdict(list)
-    with open(doc, 'r', encoding='utf-8', errors='ignore') as myfile:
+    with open(inputFilename, 'r', encoding='utf-8', errors='ignore') as myfile:
         if len(csvField_color_list) != 0:
             # process csvField_color_list
             currenttext, color_to_words = processColorList(currenttext, color_to_words, csvField_color_list, myfile)
-            tempOutputfile = display_wordCloud_sep_color(doc, outputDir, currenttext, color_to_words, transformed_image_mask, collocation, prefer_horizontal, bg_image = bg_image, bg_image_flag= bg_image_flag)
+            tempOutputfile = display_wordCloud_sep_color(inputFilename, outputDir, currenttext, color_to_words, transformed_image_mask, collocation, prefer_horizontal, bg_image = bg_image, bg_image_flag= bg_image_flag)
             filesToOpen.append(tempOutputfile)
             # IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
@@ -386,6 +391,12 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
     #   they provide code to display wc in a selected image
     global filesToOpen
     filesToOpen=[]
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='wordcloud',
+                                                       silent=False)
+    if outputDir == '':
+        return filesToOpen
 
     #font = 'IMPRISHA.TTF'
     font = get_font_path(font)
