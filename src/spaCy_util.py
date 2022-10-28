@@ -118,7 +118,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                             'SpaCy_CoNLL')
     else:
-        # TODO Mino annotator_params is always passed as a string rather than a list
+        # TODO annotator_params is always passed as a string rather than a list
         if 'depparse' in annotator_params:
             annotator_label='CoNLL'
         else:
