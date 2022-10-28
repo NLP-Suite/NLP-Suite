@@ -468,7 +468,7 @@ def activate_viewer_options(*args):
                 return
         # remove the case option, when a different one is selected
         if 'insensitive' in viewer_options_menu_var.get() and 'sensitive' in str(viewer_options_list):
-            viewer_options_list.remove('Case sensitive')
+            viewer_options_list.remove('Case sensitive (default)')
         if 'sensitive' in viewer_options_menu_var.get() and 'insensitive' in str(viewer_options_list):
             viewer_options_list.remove('Case insensitive')
         if len(viewer_options_list) > 0:

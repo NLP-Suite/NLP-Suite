@@ -29,8 +29,11 @@ from sklearn.manifold import TSNE
 
 
 #stopwords
-from nltk.corpus import stopwords
-stop_words = stopwords.words('english')
+# from nltk.corpus import stopwords
+# stop_words = stopwords.words('english')
+
+fin = open('../lib/wordLists/stopwords.txt', 'r')
+stop_words = set(fin.read().splitlines())
 
 #spacy for lemmatization
 import spacy

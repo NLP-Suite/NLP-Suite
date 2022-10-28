@@ -2,6 +2,7 @@
 # re-written by Roberto Franzosi October 2021
 # completed by Austin Cai October 2021
 
+import os
 import GUI_util
 import pandas as pd
 import csv
@@ -32,7 +33,7 @@ def run(inputDir="relative_path_here",
         viewer_options_list=[]):
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
-                                       'Started running Word/Characters N-Grams at',
+                                       'Started running Words/Characters N-Grams VIEWER at',
                                        True, '', True, '', False)
 
     if search_wordsLists is None:
@@ -88,7 +89,11 @@ def run(inputDir="relative_path_here",
 
     if n_grams_viewer and byYear and dateOption:
         yearList = []
+        docIndex = 1
         for file in files:  # iterate over each file
+            head, tail = os.path.split(file)
+            print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
+            docIndex += 1
             date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
             yearList.append(year)
         yearList = sorted(np.unique(yearList))
@@ -99,8 +104,11 @@ def run(inputDir="relative_path_here",
                                           "Frequency": 0}
 
         pprint.pprint(ngram_results)
+        print()
         docIndex = 1
         for file in files:  # iterate over each file
+            head, tail = os.path.split(file)
+            print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
             docIndex += 1
             # extract the date from the file name
             date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
@@ -167,7 +175,11 @@ def run(inputDir="relative_path_here",
     if n_grams_viewer and dateOption and (byMonth or byQuarter):
         monthList = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
         yearList = []
+        docIndex = 1
         for file in files:  # iterate over each file
+            head, tail = os.path.split(file)
+            print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
+            docIndex += 1
             date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
             yearList.append(year)
         yearList = sorted(np.unique(yearList))
@@ -179,8 +191,12 @@ def run(inputDir="relative_path_here",
                 for m in monthList:
                     ngram_results[word][str(y)][m] = {"Search Word(s)": word,
                                                       "Frequency": 0}
+        pprint.pprint(ngram_results)
+        print()
         docIndex = 1
         for file in files:  # iterate over each file
+            head, tail = os.path.split(file)
+            print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
             docIndex += 1
             # extract the date from the file name
             date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
@@ -212,12 +228,10 @@ def run(inputDir="relative_path_here",
                                     else:
                                         checker = False
                         if checker:
-                            # TODO Tai-Sandy the += 1 fails when aggregating by quarter or month
-                            ngram_results[search_word][year][month]["Frequency"] += 1
+                            ngram_results[search_word][str(year)][str(month).zfill(2)]["Frequency"] += 1
                     else:
                         if search_word == token:
-                            ngram_results[search_word][year][month]["Frequency"] += 1
-
+                            ngram_results[search_word][str(year)][str(month).zfill(2)]["Frequency"] += 1
 # aggregate by quarter
         if byQuarter:
             quarter_ngram_results = {}
@@ -327,7 +341,7 @@ def run(inputDir="relative_path_here",
     NgramsFileName, coOccFileName = save(NgramsFileName, coOccFileName, ngram_results, coOcc_results_binary, aggregateBy, temporal_aggregation)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
-                                       'Finished running Word/Characters N-Grams at', True, '', True, startTime, False)
+                                       'Finished running Words/Characters N-Grams VIEWER at', True, '', True, startTime, False)
 
     return NgramsFileName, coOccFileName
 
