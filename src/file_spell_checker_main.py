@@ -56,6 +56,11 @@ def run(inputFilename, inputDir, outputDir,
             autocorrect_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'spell_autocorrect')
             autocorrect_df.to_csv(autocorrect_file_name,encoding='utf-8', index=False)
             filesToOpen.append(autocorrect_file_name)
+        if checker_value_var == '*' or 'BERT' in checker_value_var:
+            pyspellchecker_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'spell_pyspellchecker')
+            import BERT_util
+            BERT_output = BERT_util.spell_checker_bert(window, inputFilename, inputDir, outputDir, '', createCharts, chartPackage)
+            filesToOpen.append(BERT_output)
         if checker_value_var == '*' or 'pyspellchecker' in checker_value_var:
             pyspellchecker_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'spell_pyspellchecker')
             pyspellchecker_df.to_csv(pyspellchecker_file_name,encoding='utf-8', index=False)
@@ -281,8 +286,9 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_ind
 spelling_checker_value = tk.OptionMenu(window, checker_value_var, '*',
                                        'Language detector',
                                        'Spell checker (via autocorrect)',
-                                       'Spell checker (via pyspellchecker)',
+                                       'Spell checker (via BERT)',
                                        'Spell checker (via NLTK unusual words)',
+                                       'Spell checker (via pyspellchecker)',
                                        'Spell checker (via textblob)',
                                        'Find & Replace string (via csv file)')
 
