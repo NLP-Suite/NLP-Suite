@@ -75,7 +75,10 @@ nltk~=3.5
 # VADER (sentimentt analysis)
 twython
 
-# BERT  (sentimentt analysis)
+# BERT
+transformers
+sentence_transformers
+contextualSpellCheck
 tensorflow
 protobuf==3.20
 sentencepiece

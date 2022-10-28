@@ -81,7 +81,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         if key == 'google_earth_var' and value == True:
             google_earth_var = True
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Stanza at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Stanza ' + str(annotator_params) + ' annotator at',
                                             True, '', True, '', False)
 
     #collecting input txt files
@@ -258,7 +258,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     if "SVO" in annotator_params:
         svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
         filesToOpen.append(svo_df_outputFilename)
-        
+
         # TODO MINO: create locations file for GIS if google_earth_var exists
         if google_earth_var is True:
             loc_df = visualize_GIS_maps_Stanza(svo_df)
@@ -291,7 +291,9 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         filesToOpen.append(vocab_df_outputFilename)
 
     filesToVisualize=filesToOpen
+
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, False)
+
     for j in range(len(filesToVisualize)):
         #02/27/2021; eliminate the value error when there's no information from certain annotators
         if filesToVisualize[j][-4:] == ".csv":
@@ -366,7 +368,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
             out_df.at[i, 'Sentence'] = sentence.text
         out_df['Document ID'] = docID
         out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
-        
+
     else:
         # drop the columns that don't correspond to Stanford CoreNLP output
         out_df = out_df.drop(

@@ -21,7 +21,7 @@ import sentiment_analysis_hedonometer_util
 import sentiment_analysis_SentiWordNet_util
 import sentiment_analysis_VADER_util
 import sentiment_analysis_ANEW_util
-import sentiment_analysis_roBERTa_util
+import BERT_util
 import spaCy_util
 import Stanza_util
 import Stanford_CoreNLP_util
@@ -144,7 +144,7 @@ def run(inputFilename,inputDir,outputDir,
 # BERT ---------------------------------------------------------
 
     if BERT_var==1:
-        tempOutputFiles = sentiment_analysis_roBERTa_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
+        tempOutputFiles = BERT_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
         if tempOutputFiles == None:
             return
         if len(tempOutputFiles) > 0:

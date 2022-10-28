@@ -13,16 +13,19 @@ import tkinter.messagebox as mb
 from subprocess import call
 
 import GUI_IO_util
-import Stanford_CoreNLP_util
 import IO_files_util
 import reminders_util
 import config_util
+import BERT_util
+import spaCy_util
+import Stanford_CoreNLP_util
+import Stanza_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 # def run(CoreNLPdir,inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPackage,encoding_var,memory_var,extract_date_from_text_var,extract_date_from_filename_var,date_format,date_separator_var,date_position_var,NER_list,NER_split_prefix_values_entry_var,NER_split_suffix_values_entry_var,NER_sentence_var):
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
-        NER_list):
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, config_filename,
+        NER_package, NER_list):
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -52,24 +55,70 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                        message='The Stanford CoreNLP NER annotator is not available for Arabic.')
         return
 
-    tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
-                                                        openOutputFiles, createCharts, chartPackage,
-                                                        'NER',
-                                                        language=language_var,
-                                                        NERs=NER_list,
-                                                        DoCleanXML=False,
-                                                        export_json_var= export_json_var,
-                                                        memory_var=memory_var,
-                                                        document_length=document_length_var,
-                                                        sentence_length=limit_sentence_length_var,
-                                                        extract_date_from_text_var=extract_date_from_text_var,
-                                                        extract_date_from_filename_var=extract_date_from_filename_var,
-                                                        date_format=date_format_var,
-                                                        date_separator_var=date_separator_var,
-                                                        date_position_var=date_position_var)
+    if 'BERT' in NER_package:
+        tempOutputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, '', createCharts, chartPackage)
+        if tempOutputFiles != '':
+            filesToOpen.append(tempOutputFiles)
 
-    if len(tempOutputFiles)>0:
-        filesToOpen.append(tempOutputFiles)
+    if 'spaCy' in NER_package:
+        document_length_var = 1
+        limit_sentence_length_var = 1000
+        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
+                                                    outputDir,
+                                                    openOutputFiles,
+                                                    createCharts, chartPackage,
+                                                    'NER', False,
+                                                    language,
+                                                    memory_var, document_length_var, limit_sentence_length_var,
+                                                    extract_date_from_filename_var=extract_date_from_filename_var,
+                                                    date_format=date_format_var,
+                                                    date_separator_var=date_separator_var,
+                                                    date_position_var=date_position_var)
+
+        if tempOutputFiles == None:
+            return
+        else:
+            filesToOpen.append(tempOutputFiles)
+
+    if 'Stanza' in NER_package:
+        document_length_var = 1
+        limit_sentence_length_var = 1000
+        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+                                                      outputDir,
+                                                      openOutputFiles,
+                                                      createCharts, chartPackage,
+                                                      'NER', False,
+                                                      language_list,
+                                                      memory_var, document_length_var, limit_sentence_length_var,
+                                                      extract_date_from_filename_var=extract_date_from_filename_var,
+                                                      date_format=date_format_var,
+                                                      date_separator_var=date_separator_var,
+                                                      date_position_var=date_position_var)
+
+        if tempOutputFiles == None:
+            return
+        else:
+            filesToOpen.append(tempOutputFiles)
+
+    if 'CoreNLP' in NER_package:
+        tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
+                                                            openOutputFiles, createCharts, chartPackage,
+                                                            'NER',
+                                                            language=language_var,
+                                                            NERs=NER_list,
+                                                            DoCleanXML=False,
+                                                            export_json_var= export_json_var,
+                                                            memory_var=memory_var,
+                                                            document_length=document_length_var,
+                                                            sentence_length=limit_sentence_length_var,
+                                                            extract_date_from_text_var=extract_date_from_text_var,
+                                                            extract_date_from_filename_var=extract_date_from_filename_var,
+                                                            date_format=date_format_var,
+                                                            date_separator_var=date_separator_var,
+                                                            date_position_var=date_position_var)
+
+        if len(tempOutputFiles)>0:
+            filesToOpen.append(tempOutputFiles)
 
     # TODO Excel charts; the basic bar charts are carried out in the _annotator_util
 
@@ -99,6 +148,8 @@ run_script_command=lambda: run(
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_dropdown_field.get(),
+                            config_filename,
+                            NER_packages_var.get(),
                             NER_list)
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -160,47 +211,42 @@ pre_processing_button = tk.Button(window, text='Pre-processing tools (file check
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
                                                pre_processing_button)
 
+NER_entry_lb = tk.Label(window, text='NER packages')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,NER_entry_lb,True)
+
+NER_packages_var = tk.StringVar()
+NER_packages_var.set('BERT')
+NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'BERT','spaCy','Stanford CoreNLP','Stanza')
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+100, y_multiplier_integer,
+                    NER_packages_menu, False, False, True, False,
+                    90, GUI_IO_util.get_labels_x_coordinate(),
+                    "Select the NER package you wish to use as NER annotator")
+
 NER_tag_lb = tk.Label(window, text='NER tags')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,NER_tag_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,NER_tag_lb,True)
 
 # NER tags menu
 NER_tag_var.set('All NER tags') #--- All NER tags
 NER_menu = tk.OptionMenu(window,NER_tag_var,'--- All NER tags', '--- All quantitative expressions','NUMBER', 'ORDINAL', 'PERCENT', '--- All social actors', 'PERSON', 'ORGANIZATION', '--- All spatial expressions', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', '--- All temporal expressions', 'DATE', 'TIME', 'DURATION', 'SET',  '--- All other expressions', 'MISC', 'CAUSE_OF_DEATH', 'CRIMINAL_CHARGE', 'EMAIL',  'IDEOLOGY', 'MONEY',  'NATIONALITY', 'RELIGION', 'TITLE','URL')
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+80, y_multiplier_integer,
                     NER_menu, True, False, True, False,
                     90, GUI_IO_util.get_labels_x_coordinate(),
                     "Select the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.")
 
 add_NER_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_NER_Options())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+40,y_multiplier_integer,add_NER_button, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,add_NER_button, True)
 
 reset_NER_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: clear_NER_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+70,y_multiplier_integer,reset_NER_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget+30,y_multiplier_integer,reset_NER_button,True)
 
 NER_entry_lb = tk.Label(window, text='NER list')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 140,y_multiplier_integer,NER_entry_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget + 100,y_multiplier_integer,NER_entry_lb,True)
 
-NER_entry = tk.Entry(window,width=70,textvariable=NER_entry_var)
+NER_entry = tk.Entry(window,width=80,textvariable=NER_entry_var)
 NER_entry.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+ 200,y_multiplier_integer,NER_entry)
-
-# openFile_button = tk.Button(window, width=3, text='',command=lambda: IO_files_util.openFile(window, os.path.join(GUI_IO_util.wordLists_libPath,'NER_prefix_suffix.csv')))
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,openFile_button,True)
-
-# NER_split_values_prefix_entry_lb = tk.Label(window, text='NER split values (Prefix)')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 40,y_multiplier_integer,NER_split_values_prefix_entry_lb,True)
-#
-# NER_split_values_prefix_entry = tk.Entry(window,width=70,textvariable=NER_split_values_prefix_entry_var)
-# NER_split_values_prefix_entry.configure(state="disabled")
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+ 200,y_multiplier_integer,NER_split_values_prefix_entry)
-#
-# NER_split_values_suffix_entry_lb = tk.Label(window, text='NER split values (Suffix)')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 40,y_multiplier_integer,NER_split_values_suffix_entry_lb,True)
-#
-# NER_split_values_suffix_entry = tk.Entry(window,width=70,textvariable=NER_split_values_suffix_entry_var)
-# NER_split_values_suffix_entry.configure(state="disabled")
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+ 200,y_multiplier_integer,NER_split_values_suffix_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget + 160,y_multiplier_integer,NER_entry)
 
 def clear(e):
     clear_NER_list()
@@ -289,14 +335,6 @@ def clear_NER_list():
     # NER_split_values_prefix_entry_var.set('')
     # NER_split_values_suffix_entry_var.set('')
     activate_NER_Options()
-
-
-def open_GUI2():
-    call("python CoNLL_table_analyzer_main.py", shell=True)
-
-CoNLL_table_analyzer_button = tk.Button(window, text='Open the CoNLL table analyzer GUI',command=open_GUI2)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               CoNLL_table_analyzer_button)
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

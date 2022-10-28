@@ -626,7 +626,7 @@ NLP_Suite_corpus_document_tools_menu = \
 'Geographic maps: From texts to maps', \
 'Geographic maps: Google Earth Pro', \
 'Knowledge graphs: DBpedia & YAGO', \
-'NER (Named Entity Recognition) extractor', \
+'NER (Named Entity Recognition) annotator', \
 'Narrative analysis (ALL options GUI)', \
 'Semantic analysis (via TensorFlow)', \
 'Sentiments/emotions (ALL options GUI)', \

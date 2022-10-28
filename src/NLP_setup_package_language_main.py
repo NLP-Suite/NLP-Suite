@@ -39,6 +39,10 @@ package_var = tk.StringVar()
 package_basics_var = tk.StringVar()
 language_var = tk.StringVar()
 language_list = []
+memory_var = tk.IntVar()
+document_length_var = tk.IntVar()
+limit_sentence_length_var = tk.IntVar()
+
 encoding_var = tk.StringVar()
 export_json_var = tk.IntVar()
 y_multiplier_integer=0
@@ -46,6 +50,8 @@ y_multiplier_integer=0
 current_package_lb = tk.Label(window,text='Currently available default NLP package and language')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                y_multiplier_integer, current_package_lb, True)
+
+error = False
 
 y_multiplier_integer_SV1=y_multiplier_integer
 
@@ -56,8 +62,14 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 def display_available_options():
-    global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers, memory_var, document_length_var, limit_sentence_length_var
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory, document_length, limit_sentence_length = config_util.read_NLP_package_language_config()
+    package_basics_var.set(package)
+    if language_var.get()!=language:
+        language_var.set(language)
+    memory_var.set(int(memory))
+    document_length_var.set(int(document_length))
+    limit_sentence_length_var.set(int(limit_sentence_length))
     # print("display",parsers_display_area)
     package_display_area = tk.Label(width=80, height=1, anchor='w', text=str(package_display_area_value), state='disabled')
     # place widget with hover-over info
@@ -92,7 +104,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_
 
 y_multiplier_integer_SV2=y_multiplier_integer
 
-display_available_options()
+# display_available_options()
 
 def changed_NLP_package_set_parsers(*args):
     global y_multiplier_integer_SV2
@@ -206,8 +218,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(4)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 60, y_multiplier_integer,
-                                               memory_var, True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 60,
+                                               y_multiplier_integer,
+                                               memory_var, True, False, False, False, 90,
+                                               GUI_IO_util.labels_x_coordinate + 60,
+                                               "The memory widget is only available for the Stanford CoreNLP package for parser & annotators")
 
 document_length_var_lb = tk.Label(window, text='Document length')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+100, y_multiplier_integer,
@@ -216,8 +232,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_
 document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
 document_length_var.pack()
 document_length_var.set(90000)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+210, y_multiplier_integer,
-                                               document_length_var,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_file_directory_coordinate+210,
+                                               y_multiplier_integer,
+                                               document_length_var, True, False, False, False, 90,
+                                               GUI_IO_util.open_file_directory_coordinate+100,
+                                               "The document length widget is only available for the Stanford CoreNLP package for parser & annotators")
 
 limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
@@ -226,8 +246,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_
 limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
 limit_sentence_length_var.pack()
 limit_sentence_length_var.set(100)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 500, y_multiplier_integer,
-                                               limit_sentence_length_var)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_file_directory_coordinate+500,
+                                               y_multiplier_integer,
+                                               limit_sentence_length_var, False, False, False, False, 90,
+                                               GUI_IO_util.open_file_directory_coordinate+370,
+                                               "The sentence length widget is only available for the Stanford CoreNLP package for parser & annotators")
+
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 500, y_multiplier_integer,
+#                                                limit_sentence_length_var)
 def save_NLP_config(parsers):
     if language_var.get()=='':
         mb.showwarning(title='Warning',message='You must select the language your corpus is written in before saving.')
@@ -311,6 +338,7 @@ package_var.trace('w',changed_NLP_package)
 changed_NLP_package()
 
 def reset_language_list():
+    language_var.set('')
     language_list.clear()
     language_menu.configure(state='normal')
     language_menu.set('')
@@ -364,5 +392,8 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 if error:
     mb.showwarning(title='Warning',
                message="The config file " + config_filename + " could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options then click on the SAVE button to save your options.")
+
+display_available_options()
+
 
 GUI_util.window.mainloop()
