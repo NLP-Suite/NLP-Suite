@@ -7,6 +7,8 @@ assignees: ''
 
 ---
 
+**Add a screenshot of the GUI you are running with the widget selections**
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 
