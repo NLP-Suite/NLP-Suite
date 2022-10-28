@@ -56,7 +56,7 @@ def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
     outputJsonDir = ''
     outputDirSV=GUI_util.output_dir_path.get()
     if outputDirSV != outputDir:
-        # outputDir = outputDir + os.sep + annotator
+        # create output subdirectory
         outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                            label=annotator,
                                                            silent=False)

@@ -402,6 +402,8 @@ def set_IO_brief_values(config_filename, y_multiplier_integer):
         # remove date in input_main_dir_path since it will be used in ALL GUIs
         input_main_dir_path.set(IO_files_util.open_directory_removing_date_from_directory(
             window, config_input_output_alphabetic_options[1][1], False))
+        if input_main_dir_path.get()!='':
+            inputFilename.set('')
         dir_date_label=''
         if str(config_input_output_alphabetic_options[1][2]) != '':  # date format available
             if date_hover_over_label == '':
