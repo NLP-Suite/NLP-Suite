@@ -45,7 +45,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     # instantiate variables for input/output handling settings
     language_encoding='utf-8'
     filesToOpen = []
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running spaCy at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running spaCy ' + str(annotator_params) + ' annotator at',
                                             True, '', True, '', False)
     #collecting input txt files
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
@@ -174,6 +174,9 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
             loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
             filesToOpen.append(loc_df_outputFilename)
 
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                       'Finished running spaCy ' + str(annotator_params) + ' annotator at',
+                                       True,'',True, startTime)
 
     filesToVisualize=filesToOpen
     for j in range(len(filesToVisualize)):
