@@ -89,6 +89,8 @@ def run(inputFilename,inputDir,outputDir,
         dirLabel = 'ALL'
     else:
         dirLabel = SA_algorithm_var.lstrip()
+
+    # create output subdirectory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_'+ dirLabel,
                                                        silent=False)
     if outputDir == '':
