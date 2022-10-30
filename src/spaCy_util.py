@@ -157,12 +157,12 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
             return
 
         # convert Doc to DataFrame
-        temp_df = convertSpacyDoctoDf(Spacy_output, inputFilename, inputDir, tail, docID, annotator_params, lang_list)
+        temp_df = convertSpacyDoctoDf(Spacy_output, inputFilename, inputDir, tail, int(docID), annotator_params, lang_list)
         df = pd.concat([df, temp_df], ignore_index=True, axis=0)
 
         # SVO extraction if selected
         if "SVO" in annotator_params:
-            temp_svo_df = extractSVO(Spacy_output, docID, inputFilename, inputDir, tail, extract_date_from_filename_var)
+            temp_svo_df = extractSVO(Spacy_output, int(docID), inputFilename, inputDir, tail, extract_date_from_filename_var)
             svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
 
     # save dataframe to csv
@@ -217,16 +217,16 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
         for sent in spacy_doc.sents:
             out_df.at[c, 'Sentiment score'] = round(sent._.blob.polarity,2)
             out_df.at[c, 'Sentiment label'] = 'positive' if out_df.at[c, 'Sentiment score'] > 0 else 'negative' if out_df.at[c, 'Sentiment score'] < 0 else 'neutral'
-            out_df.at[c, 'Sentence ID'] = c+1
+            out_df.at[c, 'Sentence ID'] = int(c+1)
             out_df.at[c, 'Sentence'] = sent.text
             c+=1
-        out_df['Document ID'] = docID
+        out_df['Document ID'] = int(docID)
         out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
     else:
         out_df = pd.DataFrame()
 
         for i, token in enumerate(spacy_doc):
-            out_df.at[i, 'ID'] = token.i + 1
+            out_df.at[i, 'ID'] = int(token.i + 1)
             out_df.at[i,'Form'] = token.text
             out_df.at[i,'Lemma'] = token.lemma_
             out_df.at[i,'POStag'] = token.pos_
@@ -254,8 +254,8 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
                 sidx+=1
             if "sentiment" in annotator_params:
                 out_df.at[i, 'Sentiment score'] = sentence_sentiment[sidx-1]
-            out_df.at[i, 'Record ID'] = row[1]['ID']
-            out_df.at[i, 'Sentence ID'] = sidx
+            out_df.at[i, 'Record ID'] = int(row[1]['ID'])
+            out_df.at[i, 'Sentence ID'] = int(sidx)
             i+=1
 
         # drop 'is_sent_start' column

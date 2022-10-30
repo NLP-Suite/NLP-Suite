@@ -205,8 +205,7 @@ inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
 def clear(e):
-    CoRef_var.set(0)
-    CoRef_checkbox.configure(state='normal')
+    CoRef_var.set('Stanford CoreNLP')
     manual_Coref_var.set(0)
     manual_Coref_checkbox.configure(state='disabled')
     corefed_txt_file_var.set('')
@@ -237,7 +236,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 CoRef_var.set('Stanford CoreNLP')
 CoRef_var_menu = tk.OptionMenu(window,CoRef_var,'BERT','spaCy','Stanford CoreNLP')
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+150, y_multiplier_integer,
                     CoRef_var_menu, False, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate,
                     "Options currently available only for Stanford CoreNLP.\nSelect the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.")

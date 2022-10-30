@@ -310,6 +310,12 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
 
     filesToOpen = []
 
+    # create output subdirectory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_ANEW',
+                                                       silent=False)
+    if outputDir == '':
+        return
+
     # startTime = time.localtime()
     # print("Started running ANEW at " + str(startTime[3]) + ':' + str(startTime[4]))
 

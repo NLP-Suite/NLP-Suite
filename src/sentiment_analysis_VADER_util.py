@@ -225,6 +225,12 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
 
     filesToOpen = []
 
+    # create output subdirectory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_VADER',
+                                                       silent=False)
+    if outputDir == '':
+        return
+
     if len(outputDir) < 0 or not os.path.exists(outputDir):
         print('No output directory specified, or path does not exist.')
         sys.exit(1)

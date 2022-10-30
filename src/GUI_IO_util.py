@@ -422,11 +422,29 @@ if sys.platform == 'darwin':  # Mac OS
 
     wordclouds_select_csv_field = wordclouds_font_lb
     wordclouds_color_checkbox_pos = wordclouds_lemmas_pos
-    wordclouds_RGB_lb = wordclouds_punctuation_pos
-    wordclouds_RGB = 795
-    wordclouds_add_button = 910
-    wordclouds_reset_button = 965
-    wordclouds_show_button = 1038
+    wordclouds_RGB_lb = wordclouds_punctuation_pos # 680
+    wordclouds_RGB = wordclouds_lowercase_pos # 840
+    wordclouds_add_button = wordclouds_color_by_POS_tags # 910
+    wordclouds_reset_button = wordclouds_color_by_POS_tags + 55 # 965
+    wordclouds_show_button = wordclouds_color_by_POS_tags + 128 # 1038
+
+#Mac: knowledge_graphs_DBpedia_YAGO_main.py
+    knowledge_graphs_YAGO_checkbox_pos = 670
+
+    knowledge_databases_menu = 250
+    knowledge_ontology_class_lb = 330
+    knowledge_ontology_class_menu = 380
+    knowledge_sub_class_entry_lb = 620
+    knowledge_sub_class_entry = 700
+    knowledge_DBpedia_ontology_class_menu = setup_IO_brief_coordinate # 685
+
+    knowledge_color_label = 950
+    knowledge_color_menu = 1000
+    knowledge_bold_checkbox = 1060
+
+    knowledge_reset_button = 1130
+    knowledge_show_button = 1210
+    knowledge_plus_button = 1290
 
 else: #windows and anything else
     about_button_x_coordinate = 230
@@ -560,12 +578,30 @@ else: #windows and anything else
 
     wordclouds_select_csv_field = wordclouds_font_lb
     wordclouds_color_checkbox_pos = wordclouds_punctuation_pos
-    wordclouds_RGB_lb = 700
-    wordclouds_RGB = 800
-    wordclouds_add_button = 910
-    wordclouds_reset_button = 940
-    wordclouds_show_button = 990
+    wordclouds_RGB_lb = wordclouds_lowercase_pos #730
+    wordclouds_RGB = wordclouds_lowercase_pos + 100 #800
+    wordclouds_add_button = wordclouds_color_by_POS_tags # 1010
+    wordclouds_reset_button = wordclouds_color_by_POS_tags + 30
+    wordclouds_show_button = wordclouds_color_by_POS_tags + 80
 
+#Windows: knowledge_graphs_DBpedia_YAGO_main.py
+    knowledge_graphs_YAGO_checkbox_pos = 600
+
+    knowledge_databases_menu = 200
+    knowledge_ontology_class_lb = 280
+    knowledge_ontology_class_menu = 330
+    knowledge_sub_class_entry_lb = 570
+    knowledge_sub_class_entry = 650
+
+    knowledge_color_label = 900
+    knowledge_color_menu = 950
+    knowledge_bold_checkbox = 1020
+
+    knowledge_reset_button = 1090
+    knowledge_show_button = 1155
+    knowledge_plus_button = 1220
+
+    knowledge_DBpedia_ontology_class_menu = setup_IO_brief_coordinate # 610
 
 basic_y_coordinate = 90
 y_step = 40 #the line-by-line increment on the GUI
@@ -575,7 +611,7 @@ def get_GUI_width(size_type=1):
         if size_type == 1: # for now we have one basic size
             return 1250
         if size_type == 2:
-            return 1300
+            return 1350
         if size_type == 3:
             return 1350
         if size_type == 4:

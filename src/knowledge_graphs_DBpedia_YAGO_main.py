@@ -312,13 +312,13 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 # http://yago.r2.enst.fr/downloads/yago-4
 knowledge_graphs_YAGO_var.set(0)
 knowledge_graphs_YAGO_checkbox = tk.Checkbutton(window, text='HTML annotate corpus using YAGO knowledge graph',variable=knowledge_graphs_YAGO_var, onvalue=1, offvalue=0,command=lambda: activate_DBpedia_YAGO_menu())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+200,y_multiplier_integer,knowledge_graphs_YAGO_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos,y_multiplier_integer,knowledge_graphs_YAGO_checkbox,True)
 
 confidence_level_lb = tk.Label(window, text='DBpedia confidence level')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+270,y_multiplier_integer,confidence_level_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos,y_multiplier_integer,confidence_level_lb,True)
 
 confidence_level_entry = tk.Scale(window, from_=0.0, to=1.0, resolution = 0.1, orient=tk.HORIZONTAL)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+420,y_multiplier_integer,confidence_level_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+520,y_multiplier_integer,confidence_level_entry)
 confidence_level_entry.set(.5)
 
 y_multiplier_integer=y_multiplier_integerSV+1
@@ -326,10 +326,10 @@ y_multiplier_integer=y_multiplier_integerSV+1
 DB_menu_options=('*','Wikipedia', 'Wikidata')
 databases_var.set('')
 databases_menu_lb = tk.Label(window, text='Databases')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,databases_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,databases_menu_lb,True)
 databases_menu = tk.OptionMenu(window,databases_var,*DB_menu_options)
 databases_menu.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,y_multiplier_integer,databases_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_databases_menu,y_multiplier_integer,databases_menu,True)
 
 
 #activated when pressing the RESET button
@@ -380,7 +380,7 @@ YAGO_ontology_class_menu = constants_util.YAGO_ontology_class_menu
 DBpedia_ontology_class_menu = constants_util.DBpedia_ontology_class_menu
 
 ontology_class_lb = tk.Label(window, text='Class')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+180,y_multiplier_integer,ontology_class_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_ontology_class_lb,y_multiplier_integer,ontology_class_lb,True)
 ontology_class_var.set('')
 # to jump to an item in the list that starts with a specific letter (e.g., without) by pressing that letter (e.g., w)
 # https://stackoverflow.com/questions/32747592/can-you-have-a-tkinter-drop-down-menu-that-can-jump-to-an-entry-by-typing
@@ -396,26 +396,26 @@ elif sys.platform == 'darwin':
 
 ontology_class = ttk.Combobox(window, width = ontology_width, textvariable = ontology_class_var)
 ontology_class['values'] = DBpedia_ontology_class_menu
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+230, y_multiplier_integer,ontology_class,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_ontology_class_menu, y_multiplier_integer,ontology_class,True)
 ontology_class.configure(state='disabled')
 
 sub_class_entry_lb = tk.Label(window, text='Sub-class')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+470,y_multiplier_integer,sub_class_entry_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_sub_class_entry_lb,y_multiplier_integer,sub_class_entry_lb,True)
 
 sub_class_entry = tk.Entry(window,width=35,textvariable=sub_class_entry_var)
 sub_class_entry.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+550,y_multiplier_integer,sub_class_entry,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_sub_class_entry,y_multiplier_integer,sub_class_entry,True)
 
 color_palette_DBpedia_YAGO_var.set('')
 color_palette_DBpedia_YAGO_lb = tk.Label(window, text='Color')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+780,y_multiplier_integer,color_palette_DBpedia_YAGO_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_color_label,y_multiplier_integer,color_palette_DBpedia_YAGO_lb,True)
 color_palette_DBpedia_YAGO_menu = tk.OptionMenu(window, color_palette_DBpedia_YAGO_var,'black','blue','green','pink','red','yellow')
 color_palette_DBpedia_YAGO_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+830, y_multiplier_integer,color_palette_DBpedia_YAGO_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_color_menu, y_multiplier_integer,color_palette_DBpedia_YAGO_menu,True)
 
 bold_DBpedia_YAGO_var.set(1)
 bold_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text='Bold', state='disabled',variable=bold_DBpedia_YAGO_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+900,y_multiplier_integer,bold_DBpedia_YAGO_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_bold_checkbox,y_multiplier_integer,bold_DBpedia_YAGO_checkbox,True)
 
 def activate_class_var(*args):
     if ontology_class_var.get() or sub_class_entry_var.get():
@@ -430,7 +430,7 @@ def activate_class_var(*args):
     ontology_class.configure(state='normal')
 
 reset_class_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: clear_DBpedia_YAGO_class_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+970,y_multiplier_integer,reset_class_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_reset_button,y_multiplier_integer,reset_class_button,True)
 
 def show_class_color_list():
     # if len(DBpedia_YAGO_color_list)==0:
@@ -450,12 +450,12 @@ def show_class_color_list():
         mb.showwarning(title='Warning', message='The currently selected combination of ontology classes and colors are:\n\n' + class_color_string + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
 show_class_color_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_class_color_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+1035,y_multiplier_integer,show_class_color_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_show_button,y_multiplier_integer,show_class_color_button,True)
 
 firstTime = False
 
 add_class_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_class_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+1100,y_multiplier_integer,add_class_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_plus_button,y_multiplier_integer,add_class_button)
 
 # https://www.python.org/download/mac/tcltk/
 # https://stackoverflow.com/questions/24207870/cant-reenable-menus-in-python-tkinter-on-mac
@@ -471,21 +471,21 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
         ontology_class_var.set('') # DBpedia_YAGO_menu_options
         knowledge_graphs_DBpedia_checkbox.configure(state="normal")
         knowledge_graphs_YAGO_checkbox.configure(state="normal")
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+200, y_multiplier_integerSV,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos, y_multiplier_integerSV,
                                                    knowledge_graphs_YAGO_checkbox)
     else:
         ontology_class.configure(state='normal')
     if knowledge_graphs_DBpedia_var.get()==True:
         ontology_class['values'] = DBpedia_ontology_class_menu
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+200, y_multiplier_integerSV,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos, y_multiplier_integerSV,
                                                        knowledge_graphs_YAGO_checkbox, True)
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 550,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_sub_class_entry,
                                                        y_multiplier_integerSV, confidence_level_lb,True)
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 720,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_DBpedia_ontology_class_menu,
                                                        y_multiplier_integerSV, confidence_level_entry)
         knowledge_graphs_YAGO_checkbox.configure(state="disabled")
     else:
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+200, y_multiplier_integerSV,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos, y_multiplier_integerSV,
                                                        knowledge_graphs_YAGO_checkbox)
         confidence_level_lb.place_forget()  # invisible
         confidence_level_entry.place_forget()  # invisible
