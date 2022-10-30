@@ -84,18 +84,6 @@ def run(inputFilename,inputDir,outputDir,
     vader_var=0
     anew_var=0
 
-    # create a subdirectory of the output directory
-    if SA_algorithm_var.lstrip()=='*':
-        dirLabel = 'ALL'
-    else:
-        dirLabel = SA_algorithm_var.lstrip()
-
-    # create output subdirectory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_'+ dirLabel,
-                                                       silent=False)
-    if outputDir == '':
-        return
-
     if SA_algorithm_var=='*':
         BERT_var=1
         CoreNLP_var=1

@@ -19,7 +19,7 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='form-lemma', #'POS_bar',
                                                            column_xAxis_label='Lemma values',
-                                                           groupByList=['Document ID','Document'],
+                                                           groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Lemma Values')
 
@@ -38,7 +38,7 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='POS', #'POS_bar',
                                                            column_xAxis_label='POS tag values',
-                                                           groupByList=['Document ID','Document'],
+                                                           groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='POS Tag Values')
         if chart_outputFilename!=None:
@@ -168,23 +168,6 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
 
-# generate visualization output ----------------------------------------------------------------
-# quote ________________________________________________________________
-
-    elif 'quote' in str(annotator_params) and 'quote' in outputFilename:
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Speakers'],
-                                                           chartTitle='Frequency Distribution of Speakers\n(CoreNLP Quote Annotator)',
-                                                           count_var=1, hover_label=[],
-                                                           outputFileNameType='quote', #'quote_bar',
-                                                           column_xAxis_label='Speakers',
-                                                           groupByList=['Document ID', 'Document'],
-                                                           plotList=['Frequency'],
-                                                           chart_title_label='Statistical Measures for Quotes')
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
 
 # generate visualization output ----------------------------------------------------------------
 # parser ________________________________________________________________
@@ -206,6 +189,24 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                                                            plotList=['Frequency'],
                                                            chart_title_label='Statistical Measures for Form & Lemma Values')
         if chart_outputFilename!=None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
+
+# generate visualization output ----------------------------------------------------------------
+# quote ________________________________________________________________
+
+    elif 'quote' in str(annotator_params) and 'quote' in outputFilename:
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                           outputDir,
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Speakers'],
+                                                           chartTitle='Frequency Distribution of Speakers\n(CoreNLP Quote Annotator)',
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='quote', #'quote_bar',
+                                                           column_xAxis_label='Speakers',
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Frequency'],
+                                                           chart_title_label='Statistical Measures for Quotes')
+        if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
 
@@ -271,13 +272,28 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
         if IO_csv_util.get_csvfile_headers(outputFilename, False)[0] == "Sentiment score":
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                outputDir,
-                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment label'], # sentiment score
+                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment score'], # sentiment score
                                                                chartTitle='Frequency Distribution of Sentiment Scores',
-                                                               count_var=1, hover_label=[],
-                                                               outputFileNameType='sent', #'senti_bar',
+                                                               count_var=0, hover_label=[],
+                                                               outputFileNameType='score', #'senti_bar',
                                                                column_xAxis_label='Sentiment score',
                                                                groupByList=['Document ID', 'Document'],
                                                                plotList=['Sentiment score'],
+                                                               chart_title_label='Sentiment Statistics')
+            if chart_outputFilename != None:
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
+
+        if IO_csv_util.get_csvfile_headers(outputFilename, False)[1] == "Sentiment label":
+            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                               outputDir,
+                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment label'],
+                                                               chartTitle='Frequency Distribution of Sentiment Labels',
+                                                               count_var=1, hover_label=[],
+                                                               outputFileNameType='label', #'senti_bar',
+                                                               column_xAxis_label='Sentiment label',
+                                                               groupByList=['Document ID', 'Document'],
+                                                               plotList=['Sentiment label'],
                                                                chart_title_label='Sentiment Statistics')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:

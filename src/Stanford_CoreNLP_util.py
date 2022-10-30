@@ -65,7 +65,7 @@ def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
         # if 'NLP_CoreNLP_coref_' in inputFilename:
         #     inputFilename = inputFilename.replace('NLP_CoreNLP_coref_', 'coref_')
         outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                           label="CoreNLP_" + annotator,
+                                                           label=annotator + "_CoreNLP",
                                                            silent=False)
     # create a subdirectory of the output directory
     outputJsonDir=''
