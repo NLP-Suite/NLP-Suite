@@ -21,7 +21,7 @@ from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tok
 import nltk
 import pandas
 import pandas as pd
-from stanfordcorenlp import StanfordCoreNLP
+from stanfordcorenlp import StanfordCoreNLP # python wrapper for Stanford CoreNLP
 import collections
 import tkinter.messagebox as mb
 from autocorrect import Speller
@@ -255,9 +255,9 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
     all_header_rows_dict = []
     ner_dict = {}
 
-    # check that the CoreNLPdir as been setup
-    CoreNLPdir, missing_external_software = IO_libraries_util.get_external_software_dir('spell_checker_main', 'Stanford CoreNLP')
-    if CoreNLPdir == None:
+    # check that the CoreNLPDir as been setup
+    CoreNLPDir, missing_external_software = IO_libraries_util.get_external_software_dir('spell_checker_main', 'Stanford CoreNLP')
+    if CoreNLPDir == None:
         return
     if by_all_tokens_var:
         pass
@@ -277,7 +277,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
 
     # TODO which annotators is it using? We do not need all annotators! Sentence splitter and tokenizer (and NER)
     p = subprocess.Popen(
-        ['java', '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
+        ['java', '-mx' + str(5) + "g", '-cp', os.path.join(CoreNLPDir, '*'),
          'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-timeout', '999999'])
     time.sleep(5)
 

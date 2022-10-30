@@ -401,7 +401,7 @@ def open_GUI(param):
     if 'preprocess' in param:
         call('python file_checker_converter_cleaner_main.py',shell=True)
     else:
-        call('python Stanford_CoreNLP_coreference_main.py',shell=True)
+        call('python coreference_main.py',shell=True)
 
 pre_processing_button = tk.Button(window, width=50, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: open_GUI('preprocess'))
 # place widget with hover-over info

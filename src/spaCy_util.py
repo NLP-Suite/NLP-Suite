@@ -53,6 +53,12 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     if nDocs==0:
         return filesToOpen
 
+    tempfile=inputFilename
+    if tempfile=='':
+        tempfile=inputDir
+    head, tail = os.path.split(tempfile)
+    tail=tail.replace('.txt','')
+
     # iterate through kwarg items
     extract_date_from_text_var = False
     extract_date_from_filename_var = False
@@ -79,9 +85,10 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
         annotator = 'depparse'
     elif "sentiment" in annotator_params:
         annotator = 'sentiment'
+
     # create the appropriate subdirectory to better organize output files
     outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-                                                       label=annotator,
+                                                       label=annotator + '_spaCy_' + tail,
                                                        silent=False)
 
     # check if selected language is one.
@@ -114,9 +121,9 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     if "SVO" in annotator_params:
         svo_df = pd.DataFrame()
         svo_df_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                        'SpaCy_' + 'SVO')
+                                                                        'SVO_spaCy')
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                            'SpaCy_CoNLL')
+                                                            'CoNLL_SpaCy')
     else:
         # TODO annotator_params is always passed as a string rather than a list
         if 'depparse' in annotator_params:
@@ -124,7 +131,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
         else:
             annotator_label=annotator
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                 'SpaCy_' + annotator_label)
+                                                                 annotator_label+'_SpaCy')
     # create output df
     df = pd.DataFrame()
 

@@ -90,6 +90,12 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     if nDocs==0:
         return filesToOpen
 
+    tempfile=inputFilename
+    if tempfile=='':
+        tempfile=inputDir
+    head, tail = os.path.split(tempfile)
+    tail=tail.replace('.txt','')
+
     # annotating each input file
     docID=0
     recordID = 0
@@ -147,7 +153,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
         # create the appropriate subdirectory to better organize output files
         outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-                                                           label=annotator,
+                                                           label=annotator+'_Stanza_'+tail,
                                                            silent=False)
 
         nlp = stanza.Pipeline(lang=lang, processors=processors, verbose=False)
@@ -173,12 +179,12 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     if "SVO" in annotator_params:
         svo_df = pd.DataFrame()
         svo_df_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                        'Stanza_' + 'SVO')
+                                                                        'SVO_Stanza')
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                'Stanza_')
+                                                                'CoNLL_Stanza')
     else:
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                'Stanza_' + annotator_params)
+                                                                annotator_params+'_Stanza')
 
     for docName in inputDocs:
         docID = docID + 1
