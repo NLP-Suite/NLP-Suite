@@ -5,7 +5,7 @@ import IO_libraries_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window, "BERT_util",
                                           ['os', 'transformers', 'csv', 'argparse', 'tkinter', 'time', 'stanza',
-                                           'sentencepiece','sentence_transformers', 'tensorflow']) == False:
+                                           'contextualSpellCheck','sentencepiece','sentence_transformers', 'tensorflow']) == False:
     sys.exit(0)
 
 
@@ -34,7 +34,6 @@ import IO_files_util
 import charts_util
 import statistics_txt_util
 import word2vec_util
-
 
 # Provides NER tags per sentence for every doc and stores in a csv file
 def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts, chartPackage):
@@ -675,7 +674,6 @@ def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Docu
 
     return outputFilename
 
-
 # helper main method for sentiment analysis
 def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPackage='Excel'):
     """
@@ -839,15 +837,3 @@ def split_into_sentences(text):
 
 # Looking for good model
 # def coreference_BERT(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage):
-
-
-# ToDo
-
-
-
-
-
-
-
-
-

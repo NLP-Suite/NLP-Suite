@@ -186,11 +186,11 @@ def checkIO_Filename_InputDir(script, IO_values_local=0, fileExtension=''):
 pydict = {}
 pydict[""] = ["", 0]  # not available
 # https://stanfordnlp.github.io/CoreNLP/quote.html
-pydict["Parsers & annotators (BERT, CoreNLP, spaCy, Stanza)"] = ["parsers_annotators_main.py", 1]
-pydict["CoreNLP annotator - date (NER normalized date)"] = ["parsers_annotators_main.py", 1]
+pydict["Parsers & annotators (BERT,NER  CoreNLP, spaCy, Stanza)"] = ["parsers_annotators_main.py", 1]
+pydict["CoreNLP annotator - date (normalized date)"] = ["parsers_annotators_main.py", 1]
 pydict["CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)"] = ["html_annotator_gender_main.py", 1]
 pydict["CoreNLP annotator - quote"] = ["parsers_annotators_main.py", 1]
-pydict["CoreNLP annotator - coreference (pronominal)"] = ["Stanford_CoreNLP_coreference_main.py", 1]
+pydict["CoreNLP annotator - coreference (pronominal)"] = ["coreference_main.py", 1]
 pydict["SVO (Subject-Verb-Object) extractor & visualization"] = ["SVO_main.py", 1]
 pydict["Knowledge graphs: DBpedia & YAGO"] = ["knowledge_graphs_DBpedia_YAGO_main.py", 1]
 pydict["HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)"] = ["html_annotator_main.py", 1]
@@ -210,7 +210,7 @@ pydict["File cleaner (Change to ASCII non-ASCII apostrophes & quotes and % to pe
 pydict["File cleaner (Find & Replace string)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File cleaner (Remove blank lines from txt file(s))"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File cleaner (Add full stop . at the end of paragraphs without end-of-paragraph punctuation)"] = ["file_checker_converter_cleaner_main.py", 1]
-pydict["File cleaner (Pronominal resolution via CoreNLP)"] = ["Stanford_CoreNLP_coreference_main.py", 1]
+pydict["File cleaner (Pronominal resolution via CoreNLP)"] = ["coreference_main.py", 1]
 pydict["File classifier (dumb classifier via embedded date) (file name)"] = ["file_classifier_main.py", 1]
 pydict["File finder (file name)"] = ["file_manager_main.py", 1]
 pydict["File search (file content for words/collocations)"] = ["file_search_byWord_main.py", 1]

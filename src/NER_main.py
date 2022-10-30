@@ -6,6 +6,7 @@ import IO_libraries_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window,"Stanford_CoreNLP_NER_extractor",['os','pandas','tkinter'])==False:
     sys.exit(0)
+# IBM https://ibm.github.io/zshot/ "pip install zshot"
 
 import os
 import tkinter as tk
@@ -46,7 +47,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                        message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
         return
 
-    if len(NER_list)==0:
+    if len(NER_list)==0 and 'CoreNLP' in NER_packages_var.get():
         mb.showwarning(title='No NER tag selected', message='No NER tag has been selected.\n\nPlease, select an NER tag and try again.')
         return
 
@@ -216,7 +217,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 NER_packages_var = tk.StringVar()
 NER_packages_var.set('BERT')
-NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'BERT','spaCy','Stanford CoreNLP','Stanza')
+# IBM https://ibm.github.io/zshot/ "pip install zshot"
+NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'BERT','IBM','spaCy','Stanford CoreNLP','Stanza')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+100, y_multiplier_integer,
                     NER_packages_menu, False, False, True, False,
@@ -233,7 +235,7 @@ NER_menu = tk.OptionMenu(window,NER_tag_var,'--- All NER tags', '--- All quantit
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+80, y_multiplier_integer,
                     NER_menu, True, False, True, False,
                     90, GUI_IO_util.get_labels_x_coordinate(),
-                    "Select the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.")
+                    "Options currently available only for Stanford CoreNLP.\nSelect the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.")
 
 add_NER_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_NER_Options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,add_NER_button, True)
@@ -261,6 +263,8 @@ def add_NER_tag(*args):
     #     window.focus_force()
     #     return
 
+    if not 'CoreNLP' in NER_packages_var.get():
+        return
     if 'All NER tags' in NER_tag_var.get(): # == '--- All NER tags':
         NER_list = ['PERSON', 'ORGANIZATION', 'MISC', 'MONEY', 'NUMBER', 'ORDINAL',
                     'PERCENT', 'DATE', 'TIME', 'DURATION', 'SET', 'EMAIL', 'URL', 'CITY',
@@ -324,9 +328,24 @@ NER_tag_var.trace ('w',add_NER_tag)
 
 add_NER_tag()
 
-def activate_NER_Options():
-    NER_menu.configure(state='normal')
+def activate_NER_Options(*args):
     add_NER_button.configure(state="disabled")
+    if 'CoreNLP' in NER_packages_var.get():
+        NER_menu.configure(state='normal')
+        reset_NER_button.configure(state='normal')
+        NER_tag_var.set('All NER tags')  # --- All NER tags
+    else:
+        NER_menu.configure(state='disabled')
+        reset_NER_button.configure(state='disabled')
+        NER_tag_var.set('')
+        NER_entry_var.set('')
+    if 'IBM' in NER_packages_var.get():
+        mb.showwarning("Option not available",
+                       "The selected " + NER_packages_var.get() + " option is not available yet.\n\nSorry! Please, check back soon...")
+
+activate_NER_Options()
+
+NER_packages_var.trace('w',activate_NER_Options)
 
 def clear_NER_list():
     NER_list.clear()

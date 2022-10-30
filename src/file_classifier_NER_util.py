@@ -10,7 +10,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_packages(GUI_util.window,"Find Non-related Documents",['stanza','tkinter','stanfordcorenlp','os','tkinter','glob'])==False:
     sys.exit(0)
 
-from stanfordcorenlp import StanfordCoreNLP
+from stanfordcorenlp import StanfordCoreNLP # python wrapper for Stanford CoreNLP
 import os
 from glob import glob
 import tkinter.messagebox as mb
@@ -168,8 +168,8 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
 
     filesToOpen = []
     # check that the CoreNLPdir has been setup
-    CoreNLPdir, missing_external_software=IO_libraries_util.get_external_software_dir('file_classifier_NER_util', 'Stanford CoreNLP')
-    if CoreNLPdir==None:
+    CoreNLPDir, missing_external_software=IO_libraries_util.get_external_software_dir('file_classifier_NER_util', 'Stanford CoreNLP')
+    if CoreNLPDir==None:
         return filesToOpen
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
