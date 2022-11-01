@@ -305,7 +305,7 @@ def custom_sort(s):
 
 
 all_analyses_var = tk.IntVar()
-all_analyses_checkbox = tk.Checkbutton(window, state='disabled', variable = all_analyses_var, text='Clauses, nouns, verbs, function words',
+all_analyses_checkbox = tk.Checkbutton(window, state='disabled', variable = all_analyses_var, text='Clause, noun, verb, function word',
                                 onvalue=1, offvalue=0, command = lambda: activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
                                                     y_multiplier_integer, all_analyses_checkbox,True)

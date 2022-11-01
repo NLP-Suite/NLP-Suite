@@ -287,7 +287,6 @@ open_API_config_var=tk.StringVar()
 
 def clear(e):
     csv_file_var.set('')
-    encoding_var.set('utf-8')
     NER_extractor_var.set(1)
     NER_extractor_checkbox.config(state='disabled')
     location_menu_var.set('')
@@ -423,7 +422,7 @@ openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_b
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,openInputFile_button,
                     True, False, True,False, 90, GUI_IO_util.get_open_file_directory_coordinate(), "Open INPUT csv dictionary file")
 
-csv_file=tk.Entry(window, width=130,textvariable=csv_file_var)
+csv_file=tk.Entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
 csv_file.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,csv_file)
 
@@ -454,7 +453,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 geocoder_lb = tk.Label(window, text='Geocoder')
 
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200,y_multiplier_integer,geocoder_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.geocoder_label_loc,y_multiplier_integer,geocoder_lb,True)
 geocoder_var.set('Nominatim')
 geocoder = tk.OptionMenu(window,geocoder_var,'Nominatim','Google')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,geocoder)
@@ -481,12 +480,12 @@ geocoder_var.trace('w',activate_Google_API_geocode)
 # split lines
 
 country_bias_lb = tk.Label(window, text='Country bias')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200,y_multiplier_integer,country_bias_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.country_bias_pos,y_multiplier_integer,country_bias_lb,True)
 
 country_menu = constants_util.ISO_GIS_country_menu
 
 country_bias_var.set('')
-country_bias = ttk.Combobox(window, width = 35, textvariable = country_bias_var)
+country_bias = ttk.Combobox(window, width = GUI_IO_util.country_bias_width, textvariable = country_bias_var)
 country_bias['values'] = country_menu
 country_bias.configure(state='disabled')
 # place widget with hover-over info
@@ -496,12 +495,12 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coor
 
 area_lb = tk.Label(window, text='Area')
 
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+270,y_multiplier_integer,area_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.area_lb,y_multiplier_integer,area_lb,True)
 
 area_var.set('e.g., (34.98527, -85.59790), (30.770444, -81.521974)')
-area=tk.Entry(window, width=55,textvariable=area_var)
+area=tk.Entry(window, width=GUI_IO_util.area_width,textvariable=area_var)
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+320, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.area_pos, y_multiplier_integer,
                     area, True, False, True,False, 90,
                     GUI_IO_util.get_labels_x_coordinate(),
                     "For Nominatim, you can enter the latitude and longiture of upper left-hand corner and lower right-hand corner of a rectangular area to privilege locations in that area (e.g., Rome, Georgia, vs. Rome, New York)")
@@ -509,15 +508,15 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coor
 restrict_var.set(0)
 restrict_checkbox = tk.Checkbutton(window, text="Restrict", variable=restrict_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+700, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.restrict_pos, y_multiplier_integer,
                     restrict_checkbox, False, False, True,False, 90,
-                    GUI_IO_util.get_labels_x_coordinate()+300,
+                    GUI_IO_util.open_TIPS_x_coordinate,
                     "For Nominatim, after entering area latitude and longitude, you can restrict locations to that specific area or leave it open for Nominatim to decide")
 
 map_locations_var.set(0)
 map_locations_checkbox = tk.Checkbutton(window, variable=map_locations_var, onvalue=1, offvalue=0)
 map_locations_checkbox.config(text="MAP locations")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,map_locations_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,map_locations_checkbox,True)
 
 def display_txt_file_options(*args):
     cannotRun = False
@@ -574,18 +573,18 @@ GIS_package_var.set('Google Earth Pro & Google Maps')
 GIS_package_lb = tk.Label(window, text='Software')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,GIS_package_lb,True)
 GIS_package = tk.OptionMenu(window,GIS_package_var,'Google Earth Pro & Google Maps','Google Earth Pro','Google Maps','QGIS','Tableau','TimeMapper')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+80, y_multiplier_integer,GIS_package,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.GIS_package_pos, y_multiplier_integer,GIS_package,True)
 
 GIS_package2_var.set(0)
 GIS_package2_checkbox = tk.Checkbutton(window, variable=GIS_package2_var, onvalue=1, offvalue=0)
 GIS_package2_checkbox.config(text="GIS package - Open GUI")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700, y_multiplier_integer,GIS_package2_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.GIS_open_GUI, y_multiplier_integer,GIS_package2_checkbox)
 
 open_API_config_lb = tk.Label(window, text='View Google API key')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_API_config_lb,True)
 open_API_config_var.set('Google Maps')
 API = tk.OptionMenu(window,open_API_config_var,'Google Maps','Google geocoding')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+130, y_multiplier_integer,API, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.GIS_open_API, y_multiplier_integer,API, True)
 
 open_API_config_button=tk.Button()
 if 'Maps' in open_API_config_var.get():
@@ -596,9 +595,9 @@ open_API_config_button = tk.Button(window, width=3,
                                      text='',
                                      command=lambda:GIS_pipeline_util.getGoogleAPIkey(config_file,True))
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.GIS_openAPI_file, y_multiplier_integer,
                     open_API_config_button, False, False, True, False,
-                    90, GUI_IO_util.get_labels_x_coordinate()+300, "Open csv file for Google API key")
+                    90, GUI_IO_util.GIS_openAPI_file, "Open csv file for Google API key")
 
 
 # https://developers.google.com/maps/documentation/embed/get-api-key

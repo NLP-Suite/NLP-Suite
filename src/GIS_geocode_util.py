@@ -374,7 +374,7 @@ def geocode(window,locations, inputFilename, outputDir,
 				# TODO MINO GIS create kml record
 				pnt = kml.newpoint(coords=[(lng, lat)])
 				pnt.style.iconstyle.icon.href = icon_url
-				pnt.name = itemToGeocode
+				# pnt.name = itemToGeocode
 				pnt.style.labelstyle.scale = '1'
 				# pnt.style.labelstyle.color = simplekml.Color.rgb(int(r_value), int(g_value), int(b_value))
 				sentence = input_df.at[index-1, 'Sentence']

@@ -34,6 +34,7 @@ import IO_files_util
 import charts_util
 import statistics_txt_util
 import word2vec_util
+import parsers_annotators_visualization_util
 
 # Provides NER tags per sentence for every doc and stores in a csv file
 def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts, chartPackage):
@@ -416,46 +417,6 @@ def split_into_sentences(text):
 # def coreference_BERT(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage):
 
 
-# ToDo
-
-
-# import statements
-import sys
-
-from regex import R
-import GUI_util
-import IO_libraries_util
-
-if IO_libraries_util.install_all_packages(GUI_util.window, "sentiment_analysis_roBERTa_util",
-                                          ['os', 'transformers', 'csv', 'argparse', 'tkinter', 'time', 'stanza',
-                                           'sentencepiece', 'tensorflow']) == False:
-    sys.exit(0)
-
-from transformers import AutoTokenizer, AutoModelForTokenClassification
-from transformers import BertTokenizerFast, EncoderDecoderModel
-from transformers import pipeline
-from sentence_transformers import SentenceTransformer
-import pandas as pd
-import os
-import csv
-import time
-import argparse
-import tkinter.messagebox as mb
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-import torch
-import spacy
-import contextualSpellCheck
-# Visualization
-import plotly.express as px
-##from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
-
-import IO_csv_util
-import IO_files_util
-import charts_util
-import statistics_txt_util
-import word2vec_util
-
 
 # Provides NER tags per sentence for every doc and stores in a csv file
 def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts, chartPackage):
@@ -492,11 +453,20 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts
 
     result.insert(0, header)
 
-    tempOutputFiles = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                              'NER_Tags_BERT')
-    IO_error = IO_csv_util.list_to_csv(window, result, tempOutputFiles)
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                              'NER_BERT')
+    IO_error = IO_csv_util.list_to_csv(window, result, outputFilename)
+
     if not IO_error:
-        return tempOutputFiles
+        # chart_outputFilename = parsers_annotators_visualization_util.parsers_annotators_visualization(
+        #     config_filename, inputFilename, inputDir, outputDir,
+        #     outputFilename, annotator_params, kwargs, createCharts,
+        #     chartPackage)
+        # if chart_outputFilename != None:
+        #     if len(chart_outputFilename) > 0:
+        #         filesToOpen.extend(chart_outputFilename)
+
+        return outputFilename
 
 
 # provides summary of text per doc and stores in a csv file

@@ -322,10 +322,18 @@ if sys.platform == 'darwin':  # Mac OS
 
 # --------------------------------------------------- special internal GUI specific values MAC
 # Mac NLP_setup_package_language_main
-    language_widget_with=50
+    all_widget_pos = 500
+    package_display_area_width = 60
+    language_widget_width=50
     plus_column = 992
     reset_column = 1045
     show_column = 1125
+
+    memory_pos = 220
+    document_length_lb = 510
+    document_length_pos = 670
+    sentence_length_lb = 880
+    sentence_length_pos = 1030
 
 # MAC NLP_setup_IO_main Mac
     date_format_coordinate = 530
@@ -364,6 +372,19 @@ if sys.platform == 'darwin':  # Mac OS
 
 # MAC GIS_main.py
     geocoder_label_loc = 315
+    csv_file_width=85
+    country_bias_width=25
+    area_width=40
+
+    country_bias_pos = geocoder_label_loc
+    area_lb = 670
+    area_pos = 720
+    restrict_pos = 1100
+
+    GIS_package_pos = 480
+    GIS_open_GUI = 820
+    GIS_open_API = 250
+    GIS_openAPI_file = 420
 
 # MAC SVO_main Mac
     SVO_1st_column = 120
@@ -429,7 +450,7 @@ if sys.platform == 'darwin':  # Mac OS
     wordclouds_show_button = wordclouds_color_by_POS_tags + 128 # 1038
 
 #Mac: knowledge_graphs_DBpedia_YAGO_main.py
-    knowledge_graphs_YAGO_checkbox_pos = 670
+    knowledge_graphs_YAGO_checkbox_pos = setup_IO_brief_coordinate
 
     knowledge_databases_menu = 250
     knowledge_ontology_class_lb = 330
@@ -438,6 +459,8 @@ if sys.platform == 'darwin':  # Mac OS
     knowledge_sub_class_entry = 700
     knowledge_DBpedia_ontology_class_menu = setup_IO_brief_coordinate # 685
 
+    confidence_level_entry_pos = 770
+
     knowledge_color_label = 950
     knowledge_color_menu = 1000
     knowledge_bold_checkbox = 1060
@@ -445,6 +468,26 @@ if sys.platform == 'darwin':  # Mac OS
     knowledge_reset_button = 1130
     knowledge_show_button = 1210
     knowledge_plus_button = 1290
+
+# Mac: html_annotator_main.py
+    html_annotator_add_dictionary_description = 450
+
+    html_annotator_openInputFile_button = 380
+    html_annotator_dictionary_width = 80
+    html_annotator_dictionary_file_button = 460
+
+    html_annotator_csv_field1_menu = 280
+    html_annotator_add_dictValue_button = 380
+    html_annotator_reset_dictValue_button = 440
+    html_annotator_show_keywords_button = 527
+
+    html_annotator_csv_field2_lb = 640
+    html_annotator_csv_field2_menu = 770
+    html_annotator_value_lb = 865
+    html_annotator_csv_field_value_menu = 1020
+    html_annotator_color_palette_dict_lb = 1100
+    html_annotator_color_palette_dict_menu = 1190
+    html_annotator_bold_checkbox = 1270
 
 else: #windows and anything else
     about_button_x_coordinate = 230
@@ -486,10 +529,18 @@ else: #windows and anything else
 # WINDOWS special internal GUI specific values WINDOWS -----------------------------------------------------------
 
 # Windows NLP_setup_package_language_main
-    language_widget_with=70
+    all_widget_pos = 450
+    package_display_area_width = 80
+    language_widget_width=70
     plus_column = 920
     reset_column = 960
     show_column = 1020
+
+    memory_pos = 180
+    document_length_lb = all_widget_pos
+    document_length_pos = 590
+    sentence_length_lb = 880
+    sentence_length_pos = 1010
 
 # Windows NLP_setup_IO_main
     date_format_coordinate = 460
@@ -540,7 +591,22 @@ else: #windows and anything else
     dictionary_V_width=55
     dictionary_O_width=55
 
-# Windows CoNLL_table_analyzer_main
+# Windows GIS_main.py
+    geocoder_label_loc = 320
+    csv_file_width = 130
+    country_bias_width = 35
+    area_width = 55
+    country_bias_pos = geocoder_label_loc
+    area_lb = 670
+    area_pos = 720
+    restrict_pos = 1100
+
+    GIS_package_pos = 480
+    GIS_open_GUI = 820
+    GIS_open_API = 250
+    GIS_openAPI_file = 420
+
+    # Windows CoNLL_table_analyzer_main
     combobox_position = 200
     combobox_width = 50
 
@@ -585,7 +651,8 @@ else: #windows and anything else
     wordclouds_show_button = wordclouds_color_by_POS_tags + 80
 
 #Windows: knowledge_graphs_DBpedia_YAGO_main.py
-    knowledge_graphs_YAGO_checkbox_pos = 600
+    knowledge_graphs_YAGO_checkbox_pos = setup_IO_brief_coordinate
+    confidence_level_entry_pos = 770
 
     knowledge_databases_menu = 200
     knowledge_ontology_class_lb = 280
@@ -602,6 +669,26 @@ else: #windows and anything else
     knowledge_plus_button = 1220
 
     knowledge_DBpedia_ontology_class_menu = setup_IO_brief_coordinate # 610
+
+#Windows: html_annotator_main.py
+    html_annotator_add_dictionary_description = 420
+
+    html_annotator_openInputFile_button = 320
+    html_annotator_dictionary_width = 100
+    html_annotator_dictionary_file_button = 370
+
+    html_annotator_csv_field1_menu = 240
+    html_annotator_add_dictValue_button = 350
+    html_annotator_reset_dictValue_button = 380
+    html_annotator_show_keywords_button = 430
+
+    html_annotator_csv_field2_lb = 500
+    html_annotator_csv_field2_menu = 600
+    html_annotator_value_lb = 740
+    html_annotator_csv_field_value_menu = 870
+    html_annotator_color_palette_dict_lb = 1000
+    html_annotator_color_palette_dict_menu = 1080
+    html_annotator_bold_checkbox = 1180
 
 basic_y_coordinate = 90
 y_step = 40 #the line-by-line increment on the GUI

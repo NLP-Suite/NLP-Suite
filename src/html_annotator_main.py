@@ -223,7 +223,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 html_annotator_add_dictionary_var.set(0)
 html_annotator_add_dictionary_checkbox = tk.Checkbutton(window, text='Add annotations to a previously annotated HTML file using csv dictionary', variable=html_annotator_add_dictionary_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300,y_multiplier_integer,html_annotator_add_dictionary_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_add_dictionary_description,y_multiplier_integer,html_annotator_add_dictionary_checkbox)
 
 annotator_dictionary_button=tk.Button(window, width=20, text='Select csv dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT csv dictionary file', [("dictionary files", "*.csv")]))
 annotator_dictionary_button.config(state='disabled')
@@ -238,12 +238,12 @@ current_y_multiplier_integer=y_multiplier_integer-1
 openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, html_annotator_dictionary_file.get()))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,
-    openInputFile_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+190, "Open displayed csv dictionary file")
+    GUI_IO_util.html_annotator_openInputFile_button, y_multiplier_integer,
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.html_annotator_openInputFile_button, "Open displayed csv dictionary file")
 
-html_annotator_dictionary_file=tk.Entry(window, width=100,textvariable=html_annotator_dictionary_file_var)
+html_annotator_dictionary_file=tk.Entry(window, width=GUI_IO_util.html_annotator_dictionary_width,textvariable=html_annotator_dictionary_file_var)
 html_annotator_dictionary_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,html_annotator_dictionary_file)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_dictionary_file_button, y_multiplier_integer,html_annotator_dictionary_file)
 
 menu_values=''
 if os.path.isfile(html_annotator_dictionary_file.get()):
@@ -257,13 +257,13 @@ if menu_values!='':
 else:
     csv_field1_menu = tk.OptionMenu(window, csv_field1_var, menu_values)
 csv_field1_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+120,y_multiplier_integer,csv_field1_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_csv_field1_menu,y_multiplier_integer,csv_field1_menu,True)
 
 add_dictValue_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: csv_field_value_menu.configure(state="normal"))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+230,y_multiplier_integer,add_dictValue_button, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_add_dictValue_button,y_multiplier_integer,add_dictValue_button, True)
 
 reset_dictValue_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: clear_dictionary_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+260,y_multiplier_integer,reset_dictValue_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_reset_dictValue_button,y_multiplier_integer,reset_dictValue_button,True)
 
 def showKeywordList():
     if len(csvValue_color_list)==0:
@@ -272,28 +272,28 @@ def showKeywordList():
         mb.showwarning(title='Warning', message='The currently selected combination of csv field values and colors are:\n\n' + ','.join(csvValue_color_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
 show_keywords_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: showKeywordList())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+310,y_multiplier_integer,show_keywords_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_show_keywords_button,y_multiplier_integer,show_keywords_button,True)
 
 # OK_button = tk.Button(window, text='OK', width=3,height=1,state='disabled',command=lambda: accept_keyword_list())
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+330,y_multiplier_integer,OK_button,True)
 
 field2_lb = tk.Label(window, text='Select csv field 2')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+380,y_multiplier_integer,field2_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_csv_field2_lb,y_multiplier_integer,field2_lb,True)
 if menu_values!='':
     csv_field2_menu = tk.OptionMenu(window, csv_field2_var, *menu_values)
 else:
     csv_field2_menu = tk.OptionMenu(window, csv_field2_var, menu_values)
 csv_field2_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+480,y_multiplier_integer,csv_field2_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_csv_field2_menu,y_multiplier_integer,csv_field2_menu,True)
 
 value_lb = tk.Label(window, text='Select csv field value ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+620,y_multiplier_integer,value_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_value_lb,y_multiplier_integer,value_lb,True)
 if menu_values!='':
     csv_field_value_menu = tk.OptionMenu(window, csv_field_value_var, *menu_values)
 else:
     csv_field_value_menu = tk.OptionMenu(window, csv_field_value_var, menu_values)
 csv_field_value_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+750,y_multiplier_integer,csv_field_value_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_csv_field_value_menu,y_multiplier_integer,csv_field_value_menu,True)
 
 def changed_dictionary_filename(*args):
     csvValue_color_list.clear()
@@ -339,10 +339,10 @@ else:
 color_menu=['black','blue','green','pink','red','yellow']
 
 color_palette_dict_lb = tk.Label(window, text='Select color')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+640,y_multiplier_integer,color_palette_dict_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_color_palette_dict_lb,y_multiplier_integer,color_palette_dict_lb,True)
 color_palette_dict_menu = tk.OptionMenu(window, color_palette_dict_var,*color_menu)
 color_palette_dict_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+730, y_multiplier_integer,color_palette_dict_menu, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_color_palette_dict_menu, y_multiplier_integer,color_palette_dict_menu, True)
 
 def get_csv_fieldValues(*args):
     csv_field_value_var.set('')
@@ -399,7 +399,7 @@ color_palette_dict_var.trace('w',activate_color_palette_dict_menu)
 
 bold_dict_var.set(1)
 bold_checkbox = tk.Checkbutton(window, text='Bold', state='disabled',variable=bold_dict_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+830,y_multiplier_integer,bold_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_bold_checkbox,y_multiplier_integer,bold_checkbox)
 
 def activateDictionary(*args):
     if html_annotator_dictionary_var.get()==1 or html_annotator_add_dictionary_var.get()==1:

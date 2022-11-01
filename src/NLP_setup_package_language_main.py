@@ -64,16 +64,16 @@ window.bind("<Escape>", clear)
 def display_available_options():
     global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers, memory_var, document_length_var, limit_sentence_length_var
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory, document_length, limit_sentence_length = config_util.read_NLP_package_language_config()
-    package_basics_var.set(package)
+    package_basics_var.set(package_basics)
     if language_var.get()!=language:
         language_var.set(language)
     memory_var.set(int(memory))
     document_length_var.set(int(document_length))
     limit_sentence_length_var.set(int(limit_sentence_length))
     # print("display",parsers_display_area)
-    package_display_area = tk.Label(width=80, height=1, anchor='w', text=str(package_display_area_value), state='disabled')
+    package_display_area = tk.Label(width=GUI_IO_util.package_display_area_width, height=1, anchor='w', text=str(package_display_area_value), state='disabled')
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate() + 100,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos,
                                                    y_multiplier_integer_SV1,
                                                    package_display_area, True, False, False, False, 90,
                                                    GUI_IO_util.open_TIPS_x_coordinate,
@@ -99,7 +99,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
                                                y_multiplier_integer, package_lb, True)
 package_var.set('Stanford CoreNLP')
 package_menu = tk.OptionMenu(window, package_var, 'BERT', 'spaCy','Stanford CoreNLP', 'Stanza')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+100,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.all_widget_pos,
                                                y_multiplier_integer, package_menu)
 
 y_multiplier_integer_SV2=y_multiplier_integer
@@ -122,20 +122,26 @@ def changed_NLP_package_set_parsers(*args):
 
     # mac 70
     parsers_display_area = tk.Label(width=80, height=1, anchor='w', text=', '.join(available_parsers), state='disabled')
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+100,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos,
                                                    y_multiplier_integer_SV2, parsers_display_area)
     return y_multiplier_integer
 
 y_multiplier_integer = changed_NLP_package_set_parsers()
 
-package_basics_lb = tk.Label(window,text='NLP package (tokenizer/lemmatizer)')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
-                                               y_multiplier_integer, package_basics_lb, True)
+package_basics_lb = tk.Label(window,text='NLP package for basic functions')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
+                                               y_multiplier_integer,
+                                               package_basics_lb, True, False, False, False, 90,
+                                               GUI_IO_util.labels_x_coordinate,
+                                               "Use the dropdown menu to select the package (spaCy, Stanza) to be used for basic NLP operations: sentence splitting, tokenizing, lemmatizing.")
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+#                                                y_multiplier_integer, package_basics_lb, True)
 package_basics_var.set('Stanza')
 # TODO 'spaCy' will be added as an option for basic tokenizer and lemmatizer
 package_basics_menu = tk.OptionMenu(window, package_basics_var, 'Stanza', 'spaCy')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate() + 100,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos,
                                                y_multiplier_integer,
                                                package_basics_menu, False, False, False, False, 90,
                                                GUI_IO_util.open_TIPS_x_coordinate,
@@ -167,10 +173,10 @@ def get_available_languages():
     return languages_available
 
 language_var.set('')
-language_menu = ttk.Combobox(window, width=GUI_IO_util.language_widget_with, textvariable=language_var)
+language_menu = ttk.Combobox(window, width=GUI_IO_util.language_widget_width, textvariable=language_var)
 language_menu['values'] = get_available_languages()
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate()+100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_pos, y_multiplier_integer,
                                                language_menu, True, False, False, False, 90,
                                                GUI_IO_util.open_TIPS_x_coordinate,
                                                "Use the dropdown menu to select the language your corpus is written in.\nDifferent packages (CoreNLP, spaCy, Stanza) can handle different sets of languages. Only Stanza allows multi-language selection.")
@@ -201,7 +207,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coo
 
 encoding_var.set('utf-8')
 encodingValue = tk.OptionMenu(window,encoding_var,'utf-8','utf-16-le','utf-32-le','latin-1','ISO-8859-1')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+100, y_multiplier_integer,encodingValue)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.all_widget_pos, y_multiplier_integer,encodingValue)
 
 export_json_var.set(0)
 export_json_label = tk.Checkbutton(window,
@@ -212,49 +218,47 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 
 # memory options
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                memory_var_lb, True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(4)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 60,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.memory_pos,
                                                y_multiplier_integer,
                                                memory_var, True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate + 60,
+                                               GUI_IO_util.labels_x_coordinate,
                                                "The memory widget is only available for the Stanford CoreNLP package for parser & annotators")
 
-document_length_var_lb = tk.Label(window, text='Document length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+100, y_multiplier_integer,
+document_length_var_lb = tk.Label(window, text='Limit document length')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.document_length_lb, y_multiplier_integer,
                                                document_length_var_lb, True)
 
 document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
 document_length_var.pack()
 document_length_var.set(90000)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_file_directory_coordinate+210,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.document_length_pos,
                                                y_multiplier_integer,
                                                document_length_var, True, False, False, False, 90,
-                                               GUI_IO_util.open_file_directory_coordinate+100,
+                                               GUI_IO_util.document_length_lb,
                                                "The document length widget is only available for the Stanford CoreNLP package for parser & annotators")
 
 limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 370, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.sentence_length_lb, y_multiplier_integer,
                                                limit_sentence_length_var_lb,True)
 
 limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
 limit_sentence_length_var.pack()
 limit_sentence_length_var.set(100)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_file_directory_coordinate+500,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.sentence_length_pos,
                                                y_multiplier_integer,
                                                limit_sentence_length_var, False, False, False, False, 90,
-                                               GUI_IO_util.open_file_directory_coordinate+370,
+                                               GUI_IO_util.document_length_pos,
                                                "The sentence length widget is only available for the Stanford CoreNLP package for parser & annotators")
 
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 500, y_multiplier_integer,
-#                                                limit_sentence_length_var)
 def save_NLP_config(parsers):
     if language_var.get()=='':
         mb.showwarning(title='Warning',message='You must select the language your corpus is written in before saving.')

@@ -19,6 +19,7 @@ import GUI_util
 import IO_user_interface_util
 import constants_util
 import parsers_annotators_visualization_util
+import reminders_util
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
@@ -53,11 +54,15 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     if nDocs==0:
         return filesToOpen
 
+
     tempfile=inputFilename
     if tempfile=='':
         tempfile=inputDir
     head, tail = os.path.split(tempfile)
     tail=tail.replace('.txt','')
+
+    reminders_util.checkReminder(config_filename, reminders_util.title_options_spaCy_parameters,
+                                 reminders_util.message_spaCy_parameters, True)
 
     # iterate through kwarg items
     extract_date_from_text_var = False
