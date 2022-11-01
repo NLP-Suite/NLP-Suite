@@ -93,6 +93,9 @@ message_WordNet_inputFilename_button = 'The Select INPUT file button is disabled
 title_options_WordNet_verb_aggregation = ['WordNet VERB aggregation']
 message_WordNet_verb_aggregation = "CAVEAT!\n\nFor VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.\n\nThe WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts."
 
+title_options_spaCy_parameters = ['spaCy annotators']
+message_spaCy_parameters = 'Contrary to Stanford CoreNLP and Stanza, spaCy does not process specific annotators (e.g., POS, NER). Regardless of selected annotator, spaCy will also process the corpus with its full parser.'
+
 title_options_topic_modeling = ['What is in your corpus - Topic modeling']
 message_topic_modeling = 'The topic modeling option requires in input a set of txt documents, rather than a single txt file. The topic modeling option is disabled for single documents.'
 

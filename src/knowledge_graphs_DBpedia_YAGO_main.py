@@ -315,10 +315,10 @@ knowledge_graphs_YAGO_checkbox = tk.Checkbutton(window, text='HTML annotate corp
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos,y_multiplier_integer,knowledge_graphs_YAGO_checkbox,True)
 
 confidence_level_lb = tk.Label(window, text='DBpedia confidence level')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos,y_multiplier_integer,confidence_level_lb,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos,y_multiplier_integer,confidence_level_lb,True)
 
 confidence_level_entry = tk.Scale(window, from_=0.0, to=1.0, resolution = 0.1, orient=tk.HORIZONTAL)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+520,y_multiplier_integer,confidence_level_entry)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+520,y_multiplier_integer,confidence_level_entry)
 confidence_level_entry.set(.5)
 
 y_multiplier_integer=y_multiplier_integerSV+1
@@ -463,55 +463,6 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_plus_b
 
 # https://www.python.org/downloads/
 
-def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry,*args):
-    global firstTime
-    if knowledge_graphs_DBpedia_var.get()==False and knowledge_graphs_YAGO_var.get()==False:
-        DBpedia_YAGO_class_list.clear()
-        DBpedia_YAGO_color_list.clear()
-        ontology_class_var.set('') # DBpedia_YAGO_menu_options
-        knowledge_graphs_DBpedia_checkbox.configure(state="normal")
-        knowledge_graphs_YAGO_checkbox.configure(state="normal")
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos, y_multiplier_integerSV,
-                                                   knowledge_graphs_YAGO_checkbox)
-    else:
-        ontology_class.configure(state='normal')
-    if knowledge_graphs_DBpedia_var.get()==True:
-        ontology_class['values'] = DBpedia_ontology_class_menu
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos, y_multiplier_integerSV,
-                                                       knowledge_graphs_YAGO_checkbox, True)
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_sub_class_entry,
-                                                       y_multiplier_integerSV, confidence_level_lb,True)
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_DBpedia_ontology_class_menu,
-                                                       y_multiplier_integerSV, confidence_level_entry)
-        knowledge_graphs_YAGO_checkbox.configure(state="disabled")
-    else:
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos, y_multiplier_integerSV,
-                                                       knowledge_graphs_YAGO_checkbox)
-        confidence_level_lb.place_forget()  # invisible
-        confidence_level_entry.place_forget()  # invisible
-    if knowledge_graphs_DBpedia_var.get()==True:
-        knowledge_graphs_YAGO_checkbox.configure(state="disabled")
-    if knowledge_graphs_YAGO_var.get()==True:
-        ontology_class['values'] = YAGO_ontology_class_menu
-        knowledge_graphs_DBpedia_checkbox.configure(state="disabled")
-    if knowledge_graphs_DBpedia_var.get()==True or knowledge_graphs_YAGO_var.get()==True:
-        # display the reminder only once in the same GUI or the trace will display it many times
-        if firstTime==False:
-            reminders_util.checkReminder(config_filename,
-                                         reminders_util.title_options_DBpedia_YAGO,
-                                         reminders_util.message_DBpedia_YAGO,
-                                         True)
-        firstTime=True
-        # databases_menu.configure(state="normal")
-        ontology_class.configure(state='normal')
-        sub_class_entry.configure(state="normal")
-    else:
-        databases_menu.configure(state="disabled")
-        ontology_class.configure(state='disabled')
-        sub_class_entry.configure(state="disabled")
-knowledge_graphs_DBpedia_var.trace('w',callback = lambda x,y,z: activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry))
-knowledge_graphs_YAGO_var.trace('w',callback = lambda x,y,z: activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry))
-
 def activate_class_options(*args):
     if ontology_class_var.get() in DBpedia_YAGO_class_list:
         mb.showwarning(title='Warning', message='The class "'+ ontology_class_var.get() + '" is already in your selection list: '+ str(DBpedia_YAGO_class_list) + '.\n\nPlease, select another class.')
@@ -563,6 +514,58 @@ def activate_class_color_combo(*args):
             reset_class_button.configure(state='normal')
             show_class_color_button.configure(state='normal')
 color_palette_DBpedia_YAGO_var.trace('w',activate_class_color_combo)
+
+def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry,*args):
+    global firstTime, knowledge_graphs_YAGO_checkbox
+    if knowledge_graphs_DBpedia_var.get()==False and knowledge_graphs_YAGO_var.get()==False:
+        DBpedia_YAGO_class_list.clear()
+        DBpedia_YAGO_color_list.clear()
+        ontology_class_var.set('') # DBpedia_YAGO_menu_options
+        knowledge_graphs_DBpedia_checkbox.configure(state="normal")
+        knowledge_graphs_YAGO_checkbox.configure(state="normal")
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos, y_multiplier_integerSV,
+                                                   knowledge_graphs_YAGO_checkbox)
+    else:
+        ontology_class.configure(state='normal')
+    if knowledge_graphs_DBpedia_var.get()==True:
+
+        knowledge_graphs_YAGO_checkbox.place_forget()  # invisible
+
+        ontology_class['values'] = DBpedia_ontology_class_menu
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,
+                                                       y_multiplier_integerSV, confidence_level_lb,True)
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.confidence_level_entry_pos,
+                                                       y_multiplier_integerSV,
+                                                       confidence_level_entry, False, False, False, False, 90,
+                                                       GUI_IO_util.open_TIPS_x_coordinate,
+                                                       "DBpedia allows you to set confidence levels for your annotation (.5 is the recommended default value in a range between 0 and 1).\nThe higher the confidence level the less likely you are to find DBpedia entries; the lower the level and the more likely you are to find extraneous entries")
+
+    else:
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos, y_multiplier_integerSV,
+                                                       knowledge_graphs_YAGO_checkbox)
+        confidence_level_lb.place_forget()  # invisible
+        confidence_level_entry.place_forget()  # invisible
+    if knowledge_graphs_YAGO_var.get()==True:
+        ontology_class['values'] = YAGO_ontology_class_menu
+        knowledge_graphs_DBpedia_checkbox.configure(state="disabled")
+    if knowledge_graphs_DBpedia_var.get()==True or knowledge_graphs_YAGO_var.get()==True:
+        # display the reminder only once in the same GUI or the trace will display it many times
+        if firstTime==False:
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_DBpedia_YAGO,
+                                         reminders_util.message_DBpedia_YAGO,
+                                         True)
+        firstTime=True
+        # databases_menu.configure(state="normal")
+        ontology_class.configure(state='normal')
+        sub_class_entry.configure(state="normal")
+    else:
+        databases_menu.configure(state="disabled")
+        ontology_class.configure(state='disabled')
+        sub_class_entry.configure(state="disabled")
+knowledge_graphs_DBpedia_var.trace('w',callback = lambda x,y,z: activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry))
+knowledge_graphs_YAGO_var.trace('w',callback = lambda x,y,z: activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry))
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
