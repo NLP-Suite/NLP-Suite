@@ -48,7 +48,7 @@ export_json_var = tk.IntVar()
 y_multiplier_integer=0
 
 current_package_lb = tk.Label(window,text='Currently available default NLP package and language')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, current_package_lb, True)
 
 error = False
@@ -95,7 +95,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,x_coordinate_hover_over, y
                                                openInputConfigFile_button, False, False, True,False, 90, x_coordinate_hover_over-50, "Open csv config file")
 
 package_lb = tk.Label(window,text='NLP package (parser & annotators)')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, package_lb, True)
 package_var.set('Stanford CoreNLP')
 package_menu = tk.OptionMenu(window, package_var, 'BERT', 'spaCy','Stanford CoreNLP', 'Stanza')
@@ -117,7 +117,7 @@ def changed_NLP_package_set_parsers(*args):
         available_parsers = ['Constituency parser', 'Dependency parser']
 
     parsers_lb = tk.Label(window, text='Available parsers for ' + package_var.get()+'                      ')
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(),
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                    y_multiplier_integer_SV2, parsers_lb, True)
 
     # mac 70
@@ -135,7 +135,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                package_basics_lb, True, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
                                                "Use the dropdown menu to select the package (spaCy, Stanza) to be used for basic NLP operations: sentence splitting, tokenizing, lemmatizing.")
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
 #                                                y_multiplier_integer, package_basics_lb, True)
 package_basics_var.set('Stanza')
 # TODO 'spaCy' will be added as an option for basic tokenizer and lemmatizer
@@ -154,7 +154,7 @@ def activate_NLP_basics(*args):
 package_basics_var.trace('w', activate_NLP_basics)
 
 language_lb = tk.Label(window,text='Language')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, language_lb, True)
 
 menu_values = []
@@ -203,7 +203,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.show_column, 
                                                "Click on the Show button to display the list of selected language(s).")
 
 encoding_lb = tk.Label(window, text='Select encoding type (utf-8 default)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,encoding_lb, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,encoding_lb, True)
 
 encoding_var.set('utf-8')
 encodingValue = tk.OptionMenu(window,encoding_var,'utf-8','utf-16-le','utf-32-le','latin-1','ISO-8859-1')
@@ -213,7 +213,7 @@ export_json_var.set(0)
 export_json_label = tk.Checkbutton(window,
                                 variable=export_json_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox(export_json_label, export_json_var, "Export Json file(s)", "Do NOT export Json file(s)"))
 export_json_label.configure(text="Do NOT export Json file(s)")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                export_json_label)
 
 # memory options
@@ -385,7 +385,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     # TODO any line added to the GUI (e.g., Do NOT export json file(s)) will have to change +2 to +3, ... in the next command
     return y_multiplier_integer+2
 
-y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
+y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the default NLP package (e.g., spaCy, Stanford CoreNLP, Stanza), language (e.g., English, Chinese), and language encoding (e.g., utf-8) to be used for parsing and annotating your corpus in a specific language. Different packages support different sets of languages.\n\n" + \

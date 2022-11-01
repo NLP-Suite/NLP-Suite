@@ -199,11 +199,11 @@ window.bind("<Escape>", clear)
 # CHECK ________________________________________________________
 
 # check_files_lb = tk.Label(window, text='Check files',font=("Courier", 12, "bold"))
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,check_files_lb)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,check_files_lb)
 
 check_tools_var.set('')
 check_lb = tk.Label(window, text='Check Files')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,check_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,check_lb,True)
 check_menu = tk.OptionMenu(window,check_tools_var,
                     'Check utf-8 encoding compliance',
                     'Check end-of-line typesetting hyphenation',
@@ -217,18 +217,18 @@ check_menu = tk.OptionMenu(window,check_tools_var,
                     # 'Short words',
                     # 'Vowel words')
 
-check_menu.configure(width=70)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,check_menu)
+check_menu.configure(width=GUI_IO_util.widget_width_long)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,y_multiplier_integer,check_menu)
 
 #setup GUI widgets
 # CONVERT ________________________________________________________
 
 # convert_files_lb = tk.Label(window, text='Convert files',font=("Courier", 12, "bold"))
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,convert_files_lb)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,convert_files_lb)
 
 convert_tools_var.set('')
 convert_lb = tk.Label(window, text='Convert Files')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,convert_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,convert_lb,True)
 convert_menu = tk.OptionMenu(window,convert_tools_var,
                     'Document converter (csv --> txt)',
                     'Document converter (docx --> txt)',
@@ -236,12 +236,12 @@ convert_menu = tk.OptionMenu(window,convert_tools_var,
                     'Document converter (pdf --> txt) (via pytesseract)',
                     'Document converter (rtf --> txt)')
 
-convert_menu.configure(width=70)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,convert_menu)
+convert_menu.configure(width=GUI_IO_util.widget_width_long)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,y_multiplier_integer,convert_menu)
 
 clean_tools_var.set('')
 clean_lb = tk.Label(window, text='Clean Files')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,clean_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,clean_lb,True)
 clean_menu = tk.OptionMenu(window,clean_tools_var,
                     'Change to ASCII non-ASCII apostrophes & quotes and % to percent',
                     'Find & Replace string',
@@ -252,8 +252,8 @@ clean_menu = tk.OptionMenu(window,clean_tools_var,
                     'Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation',
                     'Separate titles from documents (newspaper articles)')
 
-clean_menu.configure(width=70)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,clean_menu)
+clean_menu.configure(width=GUI_IO_util.widget_width_long)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,y_multiplier_integer,clean_menu)
 
 
 def activate_allOptions(*args):
@@ -319,7 +319,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),increment)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,increment)
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script can check the CONTENT of txt files for\n  utf-8 compliace;\n  spelling.\n\nThe script can also convert a file type from\n  pdf to txt;\n  docx to txt;\n  rtf to txt.\nThe txt type is the only file type NLP tools can process.\n\nIn INPUT the script can take either a single txt file or a directory, processing all txt fles in the directory."

@@ -648,11 +648,11 @@ google_earth_var = tk.IntVar()
 def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
 
-pre_processing_button = tk.Button(window, text='Pre-processing tools (Open file checking & cleaning GUI)',width=50,command=lambda:open_GUI())
+pre_processing_button = tk.Button(window, text='Pre-processing tools (Open file checking & cleaning GUI)',width=GUI_IO_util.widget_width_short,command=lambda:open_GUI())
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    pre_processing_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
 # NLP packages & languages ------------------------------------------------------------------------------------------------------
@@ -660,7 +660,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 coref_var.set(0)
 CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP - Neural Network)',
                                 variable=coref_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                CoRef_checkbox)
 
 # CoRef_menu_var.set("Neural Network")
@@ -670,7 +670,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_c
 manual_coref_var.set(0)
 manual_coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_coref_var,
                                        onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                manual_coref_checkbox)
 
 def activateCoRefOptions(*args):
@@ -701,7 +701,7 @@ GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_uti
 
 package_var.set('Stanford CoreNLP')
 package_lb = tk.Label(window, text='SVO package')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                package_lb, True)
 
 # removed SENNA from the list; way too slow the NLP Suite implementation of SENNA SVO
@@ -762,9 +762,9 @@ subjects_checkbox = tk.Checkbutton(window, text='Filter Subject', variable=filte
                                    command=lambda: getDictFile(filter_subjects_var, subjects_dict_var, filter_subjects_var.get(),
                                                                'Subject'))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    subjects_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "The option for filtering subjects via WordNet for social actors is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the subjects file
@@ -772,7 +772,7 @@ openInputFile_subjects_button = tk.Button(window, width=GUI_IO_util.open_file_di
                                           command=lambda: IO_files_util.openFile(window, subject_filePath))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_S_dictionary, y_multiplier_integer,
-                                               openInputFile_subjects_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 140, "Open csv file containing SUBJECT filters")
+                                               openInputFile_subjects_button, True, False, True, False, 90, GUI_IO_util.labels_x_coordinate + 140, "Open csv file containing SUBJECT filters")
 
 lemmatize_subjects_checkbox = tk.Checkbutton(window, text='Lemmatize Subject', variable=lemmatize_subjects_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.lemmatize_S, y_multiplier_integer,
@@ -791,7 +791,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column
 openInputFile_verbs_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                        command=lambda: IO_files_util.openFile(window, verb_filePath))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_V_dictionary, y_multiplier_integer,
-                                               openInputFile_verbs_button, True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate() + 520, "Open csv file containing VERB filters")
+                                               openInputFile_verbs_button, True, False, True, False, 90, GUI_IO_util.labels_x_coordinate + 520, "Open csv file containing VERB filters")
 
 lemmatize_verbs_var.set(1)
 lemmatize_verbs_checkbox = tk.Checkbutton(window, text='Lemmatize Verb', variable=lemmatize_verbs_var, onvalue=1, offvalue=0)
@@ -823,9 +823,9 @@ subjects_dict_var.set('social-actor-list.csv')
 subjects_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_S_width, state="disabled", textvariable=subjects_dict_var)
 
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    subjects_dict_entry,
-                                   True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "The complete path of the subject social actor list is "+ subject_filePath+"\nTick twice the checkbox 'Filter Subject' to select a different file.")
 
 # verbs_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-action-list.csv'))
@@ -849,11 +849,11 @@ gender_var.set(0)
 gender_checkbox = tk.Checkbutton(window, text='S & O gender',
                                                 variable=gender_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    gender_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "The gender annotator is available only via Stanford CoreNLP")
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
 #                                                gender_checkbox, True)
 
 def activateGender(*args):
@@ -892,7 +892,7 @@ SRL_checkbox.configure(state='disabled')
 gephi_var.set(1)
 gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network graphs (via Gephi) ',
                                 variable=gephi_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                gephi_checkbox, True)
 
 wordcloud_var.set(1)
@@ -1006,7 +1006,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
+y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "This set of Python 3 scripts extract automatically most of the elements of a story grammar and visualize the results in network graphs and GIS maps. A story grammar – basically, the 5Ws + H of modern journalism: Who, What, When, Where, Why, and How – provides the basic building blocks of narrative.\n\nThe set of scripts assembled here for this purpose ranges from testing for utf-8 compliance of the input text, to resolution for pronominal coreference, extraction of normalized NER dates (WHEN), visualized in various Excel charts, extraction, geocoding, and mapping in Google Earth Pro of NER locations.\n\nAt the heart of the SVO approach are several NLP packages to choose from. For passive sentences, the pipeline swaps S and O to transform the triplet into active voice. Thus, the WHO, WHAT (WHOM) are extracted from a text. Each component of the SVO triplet can be filtered via specific dictionaries (e.g., filtering for social actors and social actions, only). The set of SVO triplets are then visualized in dynamic network graphs (via Gephi).\n\nThe WHY and HOW of narrative are still beyond the reach of the current set of SVO scripts.\n\nIn INPUT the scripts expect a txt file to run utf-8 check, coreference resolution, date extraction, and CoreNLP. You can also enter a csv file, the output of a previous run with any of the NLP packages (_svo.csv/_SVO_Result) marked file) if all you want to do is to visualize results.\n\nIn OUTPUT, the scripts will produce several files (txt, csv, png, HTML, KML), depending upon the options selected."

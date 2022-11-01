@@ -209,7 +209,7 @@ def open_GUI1():
     call("python file_checker_converter_cleaner_main.py", shell=True)
 
 pre_processing_button = tk.Button(window, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI1)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                pre_processing_button)
 
 NER_entry_lb = tk.Label(window, text='NER packages')
@@ -222,7 +222,7 @@ NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'BERT','IBM','spaCy','
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+100, y_multiplier_integer,
                     NER_packages_menu, False, False, True, False,
-                    90, GUI_IO_util.get_labels_x_coordinate(),
+                    90, GUI_IO_util.labels_x_coordinate,
                     "Select the NER package you wish to use as NER annotator")
 
 NER_tag_lb = tk.Label(window, text='NER tags')
@@ -234,7 +234,7 @@ NER_menu = tk.OptionMenu(window,NER_tag_var,'--- All NER tags', '--- All quantit
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+80, y_multiplier_integer,
                     NER_menu, True, False, True, False,
-                    90, GUI_IO_util.get_labels_x_coordinate(),
+                    90, GUI_IO_util.labels_x_coordinate,
                     "Options currently available only for Stanford CoreNLP.\nSelect the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.")
 
 add_NER_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_NER_Options())
@@ -387,7 +387,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","If you have run a Stanford CoreNLP parser and you have a CoNLL table containing NER values, click on the 'Open table analyzer (GUI)' to have access to any desired CoNLL table."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script will extract NER tags from either tetxt file(s) using the Stanford CoreNLP NER annotator.\n\nIn INPUT the algorith expects a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the algorithm exports a csv file of extracted NER values and 2 Excel bar charts (if the checkbox 'Automatically compute Excel chart(s)' is not ticked off)."

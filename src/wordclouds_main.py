@@ -211,9 +211,9 @@ wordclouds_var.set('Python WordCloud')
 selectedImage_var.set('')
 use_contour_only_var.set(1)
 wordclouds = tk.OptionMenu(window,wordclouds_var,'Python WordCloud','TagCrowd','Tagul','Tagxedo','Wordclouds','Wordle')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+120, y_multiplier_integer,wordclouds,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+120, y_multiplier_integer,wordclouds,True)
 wordclouds_lb = tk.Label(window, text='Select the word cloud service you wish to use (txt file(s)/CoNLL table)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,wordclouds_lb)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,wordclouds_lb)
 
 y_multiplier_integer_SV=y_multiplier_integer
 
@@ -302,15 +302,15 @@ prepare_image_checkbox = tk.Checkbutton(window, variable=prepare_image_var,
                                                        onvalue=1, offvalue=0)
 
 prepare_image_checkbox.config(text="Prepare image")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, prepare_image_checkbox)
 
 # width=20,
 select_image_file_button=tk.Button(window, text='Select png image file',command=lambda: get_image(window,'Select INPUT png file', [("png files", "*.png")]))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    select_image_file_button,
-                                   True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to select the png image file")
 
 # setup a button to open Windows Explorer on open the png image file
@@ -344,7 +344,7 @@ def get_image(window,title,fileType):
 differentColumns_differentColor_var.set(0)
 differentColumns_differentColor_checkbox = tk.Checkbutton(window, variable=differentColumns_differentColor_var, onvalue=1, offvalue=0)
 differentColumns_differentColor_checkbox.config(text="Use different colors for different columns (csv file)")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,differentColumns_differentColor_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,differentColumns_differentColor_checkbox)
 
 def displayWarning(*args):
     if collocation_var.get()==True and differentPOS_differentColor_var.get()==True:
@@ -361,7 +361,7 @@ if os.path.isfile(inputFilename.get()):
         menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 
 field_lb = tk.Label(window, text='Select csv field')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer,field_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,field_lb,True)
 if menu_values!='':
     csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
 else:
@@ -517,7 +517,7 @@ changed_filename()
 doNotCreateIntermediateFiles_var.set(1)
 doNotCreateIntermediateFiles_checkbox = tk.Checkbutton(window, variable=doNotCreateIntermediateFiles_var, onvalue=1, offvalue=0)
 doNotCreateIntermediateFiles_checkbox.config(text="Do NOT produce intermediate word cloud files when processing all txt files in a directory")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,doNotCreateIntermediateFiles_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,doNotCreateIntermediateFiles_checkbox)
 
 def changeLabel_nomin(*args):
     if doNotCreateIntermediateFiles_var.get()==1:
@@ -567,7 +567,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, untick the checkbox if you want to create intermediate image files for every txt file in a directory when processing all the txt files in a directory. These image files will be in addition to the final file which will include the words from all files in the directory (so, if there is 1 file in the directory, this will lead to 2 files, although in this case, the image utput will be exactly the same for each of he 2 files).\n\nWARNING! Unticking the checkbox may result in a very large number of intermediate files (1 word cloud image file for every txt file in the directory).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 script and online services display the content of text files as word cloud.\n\nA word cloud, also known as text cloud or tag cloud, is a collection of words depicted visually in different sizes (and colors). The bigger and bolder the word appears, the more often it’s mentioned within a given text and the more important it is.\n\nDifferent, freeware, word cloud applications are available: 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle'. These applications require internet connection.\n\nThe script also provides Python word clouds (via Andreas Mueller's Python package WordCloud https://amueller.github.io/word_cloud/) for which no internet connection is required.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files or a csv file (e.g., a CoNLL table).\n\nIn OUTPUT the algorithms create word cloud image file(s)."

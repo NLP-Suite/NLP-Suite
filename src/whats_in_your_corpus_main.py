@@ -714,19 +714,19 @@ window.bind("<Escape>", clear)
 
 utf8_var.set(1)
 utf8_checkbox = tk.Checkbutton(window, text='Check input document(s) for utf-8 encoding', variable=utf8_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,utf8_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,utf8_checkbox)
 
 ASCII_var.set(1)
 ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent', variable=ASCII_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,ASCII_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,ASCII_checkbox)
 
 corpus_statistics_var.set(1)
 corpus_statistics_checkbox = tk.Checkbutton(window,text="Document(s) linguistic features", variable=corpus_statistics_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,corpus_statistics_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,corpus_statistics_checkbox,True)
 
 corpus_statistics_options_menu_var.set('*')
 corpus_statistics_options_menu_lb = tk.Label(window, text='NLP tools options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+440,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
 corpus_statistics_options_menu = tk.OptionMenu(window, corpus_statistics_options_menu_var,
                                                '*',
                                                'Compute statistics (sentences, words, syllables)',
@@ -744,21 +744,21 @@ corpus_statistics_options_menu = tk.OptionMenu(window, corpus_statistics_options
                                                'Words with capital initial (proper nouns)',
                                                'Unusual words (via NLTK)'
                                                )
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,corpus_statistics_options_menu, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+570,y_multiplier_integer,corpus_statistics_options_menu, True)
 
 corpus_text_options_menu_var.set('*')
 corpus_options_menu_lb = tk.Label(window, text='Text options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 680,y_multiplier_integer,corpus_options_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 680,y_multiplier_integer,corpus_options_menu_lb,True)
 corpus_options_menu = tk.OptionMenu(window, corpus_text_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 780,y_multiplier_integer,corpus_options_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 780,y_multiplier_integer,corpus_options_menu)
 
 wordclouds_var.set(1)
 wordclouds_checkbox = tk.Checkbutton(window,text="Wordclouds", variable=wordclouds_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,wordclouds_checkbox, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,wordclouds_checkbox, True)
 
 open_wordclouds_GUI_var.set(0) # wordclouds GUI
 open_wordclouds_GUI_checkbox = tk.Checkbutton(window,text="Open wordclouds GUI", state='disabled', variable=open_wordclouds_GUI_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,open_wordclouds_GUI_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+440,y_multiplier_integer,open_wordclouds_GUI_checkbox)
 
 def activate_wordclouds_GUI(*args):
     if wordclouds_var.get():
@@ -770,7 +770,7 @@ wordclouds_var.trace('w', activate_wordclouds_GUI)
 activate_wordclouds_GUI()
 
 topics_checkbox = tk.Checkbutton(window,text="What are the topics? (Topic modeling)", variable=topics_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,topics_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,topics_checkbox,True)
 
 def changed_filename(*args):
     if inputFilename.get()!='':
@@ -788,15 +788,15 @@ inputFilename.trace('w',changed_filename)
 
 topics_Mallet_var.set(0)
 topics_Mallet_checkbox = tk.Checkbutton(window,text="via MALLET", variable=topics_Mallet_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,topics_Mallet_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+440,y_multiplier_integer,topics_Mallet_checkbox,True)
 
 topics_Gensim_var.set(1)
 topics_Gensim_checkbox = tk.Checkbutton(window,text="via Gensim", variable=topics_Gensim_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,topics_Gensim_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+570,y_multiplier_integer,topics_Gensim_checkbox,True)
 
 open_tm_GUI_var.set(0) # topic modeling GUI
 open_GUI_checkbox = tk.Checkbutton(window,text="Open Gensim/MALLET GUI", variable=open_tm_GUI_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 500,y_multiplier_integer,open_GUI_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 500,y_multiplier_integer,open_GUI_checkbox)
 
 def activate_topics(*args):
     if topics_var.get()==True:
@@ -853,12 +853,12 @@ open_tm_GUI_var.trace('w',activate_allOptions)
 
 # language options
 language_var_lb = tk.Label(window, text='Language')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                language_var_lb, True)
 
 what_else_var.set(1)
 what_else_checkbox = tk.Checkbutton(window,text="What else is in your document(s)? (via Stanford CoreNLP and WordNet)", variable=what_else_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,what_else_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,what_else_checkbox,True)
 
 what_else_menu_var.set('*')
 what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues (CoreNLP Neural Network)','Noun and verb classes (CoreNLP NER & WordNet)', 'People & organizations (CoreNLP NER)', 'Females & males (CoreNLP Neural Network)',
@@ -867,7 +867,7 @@ what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues (Cor
                                'References to nature (CoreNLP & WordNet)',
                                'Sentiments expressed (CoreNLP)')
 what_else_menu.config(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 440, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 440, y_multiplier_integer,
                                                what_else_menu, True)
 
 # set value of current GUI line to display correctly the single quotes widget
@@ -884,7 +884,7 @@ def activate_what_else_menu(*args):
             if y_multiplier_integer_SV!=0:
                 y_multiplier_integer = y_multiplier_integer_SV
             quote_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 500,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 500,
                                                            y_multiplier_integer,
                                                            quote_checkbox)
             quote_checkbox.configure(state='normal')
@@ -901,11 +901,11 @@ activate_what_else_menu()
 
 GIS_var.set(1)
 GIS_checkbox = tk.Checkbutton(window,text="GIS (Geographic Information System) pipeline", variable=GIS_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,GIS_checkbox, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,GIS_checkbox, True)
 
 open_GIS_GUI_var.set(0) # GIS GUI
 open_GIS_GUI_checkbox = tk.Checkbutton(window,text="Open GIS GUI", state='disabled', variable=open_GIS_GUI_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 500,y_multiplier_integer,open_GIS_GUI_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 500,y_multiplier_integer,open_GIS_GUI_checkbox)
 
 def activate_GIS_GUI(*args):
     if GIS_var.get():
@@ -919,11 +919,11 @@ activate_GIS_GUI()
 
 SVO_var.set(1)
 SVO_checkbox = tk.Checkbutton(window,text="SVO (Subject-Verb-Object) pipeline", variable=SVO_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SVO_checkbox, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SVO_checkbox, True)
 
 open_SVO_GUI_var.set(0) # SVO GUI
 open_SVO_GUI_checkbox = tk.Checkbutton(window,text="Open SVO GUI", state='disabled', variable=open_SVO_GUI_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,open_SVO_GUI_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+440,y_multiplier_integer,open_SVO_GUI_checkbox)
 
 def activate_SVO_GUI(*args):
     if SVO_var.get():
@@ -994,7 +994,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="The GUI brings together various Python 3 scripts to buil a pipeline for the analysis of a corpus, automatically extracting all relevant data from texts and visualizing the results.\n\nEach tool performs all required computations then saves results as csv files and visualizes them in various ways (word clouds, Excel charts, and HTML files)."

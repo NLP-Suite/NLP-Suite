@@ -391,57 +391,57 @@ corpus_statistics_var = tk.IntVar()
 corpus_statistics_options_menu_var = tk.StringVar()
 corpus_text_options_menu_var = tk.StringVar()
 
-CoNLL_table_analysis_button = tk.Button(window, width=50, text='CoNLL table analysis (Open GUI)',command=lambda: call('python CoNLL_table_analyzer_main.py', shell=True))
+CoNLL_table_analysis_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='CoNLL table analysis (Open GUI)',command=lambda: call('python CoNLL_table_analyzer_main.py', shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    CoNLL_table_analysis_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-ngrams_button = tk.Button(window, width=50, text='N-Grams/Co-occurrences VIEWER (Open GUI)',command=lambda: call('python NGrams_CoOccurrences_Viewer_main.py', shell=True))
+ngrams_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='N-Grams/Co-occurrences VIEWER (Open GUI)',command=lambda: call('python NGrams_CoOccurrences_Viewer_main.py', shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    ngrams_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-nominalization_button = tk.Button(window, width=50, text='Nominalization (Open GUI)',command=lambda: call('python nominalization_main.py', shell=True))
+nominalization_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Nominalization (Open GUI)',command=lambda: call('python nominalization_main.py', shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    nominalization_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-spell_checker_button = tk.Button(window, width=50, text='Spelling/grammar checker (Open GUI)',command=lambda: call('python file_spell_checker_main.py', shell=True))
+spell_checker_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Spelling/grammar checker (Open GUI)',command=lambda: call('python file_spell_checker_main.py', shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    spell_checker_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
 ngrams_analysis_var.set(0)
 ngrams_checkbox = tk.Checkbutton(window, text='Compute n-grams', variable=ngrams_analysis_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,ngrams_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,ngrams_checkbox,True)
 
 ngrams_menu_var.set('Word')
 ngrams_menu_lb = tk.Label(window, text='N-grams type')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,ngrams_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_ngrams_menu_pos,y_multiplier_integer,ngrams_menu_lb,True)
 ngrams_menu = tk.OptionMenu(window, ngrams_menu_var, 'Character', 'Word') #,'DEPREL','POSTAG')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,ngrams_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate,y_multiplier_integer,ngrams_menu)
 
 ngrams_options_menu_lb = tk.Label(window, text='N-grams options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,ngrams_options_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ngrams_options_menu_lb,True)
 ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax legomena (once-occurring words/unigrams)','Normalize n-grams', 'Exclude punctuation (word n-grams only)','By sentence index','Repetition of words (last K words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,ngrams_options_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_ngrams_options_menu_pos,y_multiplier_integer,ngrams_options_menu,True)
 
 add_ngrams_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_ngrams_analysis_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+600,y_multiplier_integer,add_ngrams_button, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_add_ngrams_button_pos,y_multiplier_integer,add_ngrams_button, True)
 
 reset_ngrams_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_ngrams_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+640,y_multiplier_integer,reset_ngrams_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_reset_ngrams_button_pos,y_multiplier_integer,reset_ngrams_button,True)
 
 show_ngrams_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_ngrams_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+700,y_multiplier_integer,show_ngrams_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_show_ngrams_button_pos,y_multiplier_integer,show_ngrams_button)
 
 def reset_ngrams_list():
     ngrams_list.clear()
@@ -478,11 +478,11 @@ ngrams_options_menu_var.trace('w',activate_ngrams_options)
 
 corpus_statistics_var.set(0)
 corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute document(s) statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,corpus_statistics_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,corpus_statistics_checkbox,True)
 
 corpus_statistics_options_menu_var.set('*')
 corpus_statistics_options_menu_lb = tk.Label(window, text='Statistics options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,corpus_statistics_options_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
 
 corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_menu_var,
                                                 '*',
@@ -490,13 +490,13 @@ corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_
                                                'Compute sentence length',
                                                'Compute line length',
                                                )
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+370,y_multiplier_integer,corpus_statistics_options_menu, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_corpus_statistics_options_menu_pos,y_multiplier_integer,corpus_statistics_options_menu, True)
 
 corpus_text_options_menu_var.set('')
 corpus_options_menu_lb = tk.Label(window, text='Text options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 600,y_multiplier_integer,corpus_options_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_corpus_text_options_menu_lb_pos,y_multiplier_integer,corpus_options_menu_lb,True)
 corpus_text_options_menu = tk.OptionMenu(window, corpus_text_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 700,y_multiplier_integer,corpus_text_options_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_corpus_options_menu_men_pos,y_multiplier_integer,corpus_text_options_menu)
 
 def activate_corpus_options(*args):
     if corpus_statistics_var.get()==True:
@@ -509,21 +509,21 @@ corpus_statistics_var.trace('w',activate_corpus_options)
 
 complexity_readability_analysis_var.set(0)
 complexity_readability_analysis_checkbox = tk.Checkbutton(window, text='Complexity/readability analysis', variable=complexity_readability_analysis_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,complexity_readability_analysis_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complexity_readability_analysis_checkbox,True)
 
 complexity_readability_analysis_menu_var.set('*')
 complexity_readability_analysis_lb = tk.Label(window, text='Select the complexity/readability analysis you wish to perform')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,complexity_readability_analysis_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate,y_multiplier_integer,complexity_readability_analysis_lb,True)
 complexity_readability_analysis_menu = tk.OptionMenu(window,complexity_readability_analysis_menu_var,'*','Sentence complexity','Text readability')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400, y_multiplier_integer,complexity_readability_analysis_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_complexity_readability_analysis_menu_pos, y_multiplier_integer,complexity_readability_analysis_menu)
 
 vocabulary_analysis_var.set(0)
 vocabulary_analysis_checkbox = tk.Checkbutton(window, text='Vocabulary analysis', variable=vocabulary_analysis_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,vocabulary_analysis_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,vocabulary_analysis_checkbox,True)
 
 vocabulary_analysis_menu_var.set('*')
 vocabulary_analysis_lb = tk.Label(window, text='Select the vocabulary analysis you wish to perform')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,vocabulary_analysis_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate,y_multiplier_integer,vocabulary_analysis_lb,True)
 vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*',
                                          'Vocabulary (via unigrams) - List of all words/tokens in input document(s)',
                                          'Vocabulary (via Stanza multilanguage lemmatizer) - List of all words/tokens in input document(s)',
@@ -540,11 +540,11 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Repetition: Words in first K and last K sentences',
                                          'Repetition: Last K words of a sentence/First K words of next sentence',
                                          'Repetition across sentences (special ngrams)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400, y_multiplier_integer,vocabulary_analysis_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_vocabulary_analysis_menu_pos, y_multiplier_integer,vocabulary_analysis_menu)
 
 gender_guesser_var.set(0)
 gender_guesser_checkbox = tk.Checkbutton(window, text='Who wrote the text - Gender guesser', variable=gender_guesser_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,gender_guesser_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,gender_guesser_checkbox)
 gender_guesser_checkbox.configure(state='normal')
 
 def activate_options(*args):
@@ -668,7 +668,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the \'Who wrote the text\' checkbox if you wish to run the Gender Guesser algorithm to determine an author\'s gender based on the words used.\n\nYou will need to copy and paste a document content to the website http://www.hackerfactor.com/GenderGuesser.php#About\n\nYou need to be connected to the internet.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts analyze different aspects of style, from the analysis of CoNLL table tags (POSTAG, DEPREL, NER), to sentence complexity and readability, vocabulary analysis (short and vowel words, abstract/concrete words, unusual words, vocabulary richness (Yule\'s K)), N-grams."

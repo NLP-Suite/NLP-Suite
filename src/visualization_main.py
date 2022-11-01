@@ -110,27 +110,27 @@ dynamic_network_field_var = tk.IntVar()
 
 Excel_button = tk.Button(window, text='Open Excel GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
                                command=lambda: call("python charts_Excel_main.py", shell=True))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                Excel_button)
 
 GIS_button = tk.Button(window, text='Open GIS GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
                                command=lambda: call("python GIS_main.py", shell=True))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                GIS_button)
 
 HTML_button = tk.Button(window, text='Open HTML annotator GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
                                command=lambda: call("python html_annotator_main.py", shell=True))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                HTML_button)
 
 wordcloud_button = tk.Button(window, text='Open wordcloud GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
                                command=lambda: call("python wordclouds_main.py", shell=True))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                wordcloud_button)
 Gephi_var.set(0)
 Gephi_checkbox = tk.Checkbutton(window, text='Visualize relations in a Gephi network graph', variable=Gephi_var,
                                     onvalue=1)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                Gephi_checkbox)
 
 if GUI_util.inputFilename.get() != '':
@@ -171,13 +171,13 @@ def changed_filename(tracedInputFile):
     clear("<Escape>")
 
 select_csv_field_lb = tk.Label(window, text='Select csv file field')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                select_csv_field_lb, True)
 
 csv_field_var = tk.StringVar()
 select_csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
 select_csv_field_menu.configure(state='disabled', width=12)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+150, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_select_csv_field_menu_pos, y_multiplier_integer,
                                                select_csv_field_menu, True)
 
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
@@ -186,32 +186,32 @@ changed_filename(GUI_util.inputFilename.get())
 
 OK_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
                             command=lambda: display_selected_csv_fields(True,False))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 800, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_OK_button_pos, y_multiplier_integer,
                                                OK_button,True)
 
 add_button_var = tk.IntVar()
 add_button = tk.Button(window, text='+', width=2, height=1, state='disabled',
                               # command=lambda: add_field_to_list(selected_csv_file_fields_var.get()))
                                 command = lambda: activate_csv_fields_selection(True,False))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 850, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_add_button_pos, y_multiplier_integer,
                                                add_button, True)
 
 reset_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 900,y_multiplier_integer,reset_button, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_reset_button_pos,y_multiplier_integer,reset_button, True)
 
 select_csv_field_dynamic_network_lb = tk.Label(window, text='Select csv file field for dynamic network graph')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+300, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos, y_multiplier_integer,
                                                select_csv_field_dynamic_network_lb, True)
 
 dynamic_network_field_var = tk.StringVar()
 dynamic_network_field_menu = tk.OptionMenu(window, dynamic_network_field_var, *menu_values)
 dynamic_network_field_menu.configure(state='disabled', width=12)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+600, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_dynamic_network_field_pos, y_multiplier_integer,
                                                dynamic_network_field_menu)
 
 csv_file_fields=tk.Entry(window, width=150,textvariable=selected_csv_file_fields_var)
 csv_file_fields.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,csv_file_fields)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,csv_file_fields)
 
 def activate_csv_fields_selection(comingFrom_Plus, comingFrom_OK):
     # check if input file is csv
@@ -308,7 +308,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","\n\nThe widget is always disabled; it is for display only. When pressing OK, the selected csv fields will be displayed." + plusButton + OKButton + resetAll)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 script and online services display the content of text files as word cloud.\n\nA word cloud, also known as text cloud or tag cloud, is a collection of words depicted visually in different sizes (and colors). The bigger and bolder the word appears, the more often it’s mentioned within a given text and the more important it is.\n\nDifferent, freeware, word cloud applications are available: 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle'. These applications require internet connection.\n\nThe script also provides Python word clouds (via Andreas Mueller's Python package WordCloud https://amueller.github.io/word_cloud/) for which no internet connection is required."

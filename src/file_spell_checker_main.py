@@ -219,33 +219,33 @@ def build_NER_list():
 
 Levenshtein_distance_checkbox = tk.Checkbutton(window, text='Run Levensthein\' distance algorithm', state='normal',
                                                variable=Levenshtein_distance_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                Levenshtein_distance_checkbox)
 
 by_all_tokens_var.set(0)
 by_all_tokens_checkbox = tk.Checkbutton(window, text='Check all tokens (words)', state='normal',
                                         variable=by_all_tokens_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                by_all_tokens_checkbox)
 
 byNER_value_var.set(0)
 byNER_value_checkbox = tk.Checkbutton(window, state='normal', text='Check by NER tag', variable=byNER_value_var,
                                       onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                byNER_value_checkbox)
 
 NER_value_lb = tk.Label(window, text='Select NER tag for computing word similarity')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate() + 20,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate + 20,
                                                y_multiplier_integer, NER_value_lb, True)
 NER_value = tk.OptionMenu(window, NER_value_var, '*', 'CITY', 'COUNTRY', 'STATE_OR_PROVINCE', 'LOCATION',
                           'ORGANIZATION', 'PERSON')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 50, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 50, y_multiplier_integer,
                                                NER_value, True)
 
 selected_NER_list_var.set('')
 selected_NER_list = tk.Entry(window, width=40, textvariable=selected_NER_list_var)
 selected_NER_list.config(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 600, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 600, y_multiplier_integer,
                                                selected_NER_list)
 
 
@@ -265,24 +265,24 @@ activate_NER_list_entry()
 
 similarity_value_var.set(80)
 similarity_value_lb = tk.Label(window, text='Enter word length for computing similarity')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                similarity_value_lb, True)
 similarity_value = tk.Entry(window, width=5, textvariable=similarity_value_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                similarity_value, True)
 
 check_withinSubDir_var.set(1)
 check_withinSubDir_checkbox = tk.Checkbutton(window, text='Check WITHIN each subdirectory only',
                                              variable=check_withinSubDir_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 600, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 600, y_multiplier_integer,
                                                check_withinSubDir_checkbox)
 
 spelling_checker_checkbox = tk.Checkbutton(window, text='Run spelling checker',state='normal',variable=spelling_checker_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,spelling_checker_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,spelling_checker_checkbox,True)
 
 checker_value_var.set('*')
 spelling_checker_value_lb = tk.Label(window, text='Select script')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+150,y_multiplier_integer,spelling_checker_value_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+150,y_multiplier_integer,spelling_checker_value_lb,True)
 spelling_checker_value = tk.OptionMenu(window, checker_value_var, '*',
                                        'Language detector',
                                        'Spell checker (via autocorrect)',
@@ -292,12 +292,12 @@ spelling_checker_value = tk.OptionMenu(window, checker_value_var, '*',
                                        'Spell checker (via textblob)',
                                        'Find & Replace string (via csv file)')
 
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,spelling_checker_value,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,spelling_checker_value,True)
 
 check_withinDir_spell_checker_var.set(1)
 check_withinDir_spell_checker_checkbox = tk.Checkbutton(window, text='Check WITHIN main directory only',
                                              variable=check_withinDir_spell_checker_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 600, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 600, y_multiplier_integer,
                                                check_withinDir_spell_checker_checkbox)
 
 def activate_all_options(*args):
@@ -384,7 +384,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 
-y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
+y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a way of checking for word similarieties (or dissimilarities) using the Levenshtein's distance (also popularly called the edit distance). The algorithm can also be used to check word spelling.\n\nIn INPUT the scripts expect a directory where the software Stanford CoreNLP has been downloaded and a main drectory where txt files to be analyzed are stored.\n\nIn OUTPUT, the scripts will save the csv files and Excel charts written by the various scripts. The csv output list contains words with a frequency greater than 1."

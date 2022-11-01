@@ -185,18 +185,18 @@ html_annotator_add_dictionary_var=tk.IntVar() # to add new annotations via dicti
 html_annotator_dictionary_file_var=tk.StringVar() # dictionary file used to annotate
 html_annotator_extractor_var=tk.IntVar() # to extract annotations in csv format from an annotated file
 
-knowledge_graphs_DBpedia_YAGO_button = tk.Button(window, width=70, text='HTML annotate corpus using the DBpedia & YAGO knowledge graphs (Open GUI)', command=lambda: call("python knowledge_graphs_DBpedia_YAGO_main.py", shell=True))
+knowledge_graphs_DBpedia_YAGO_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML annotate corpus using the DBpedia & YAGO knowledge graphs (Open GUI)', command=lambda: call("python knowledge_graphs_DBpedia_YAGO_main.py", shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    knowledge_graphs_DBpedia_YAGO_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-knowledge_graphs_WordNet_button = tk.Button(window, width=70, text='HTML annotate corpus using the WordNet knowledge graphs (Open GUI)', command=lambda: call("python knowledge_graphs_WordNet_main.py", shell=True))
+knowledge_graphs_WordNet_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML annotate corpus using the WordNet knowledge graphs (Open GUI)', command=lambda: call("python knowledge_graphs_WordNet_main.py", shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    knowledge_graphs_WordNet_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
 # http://yago.r2.enst.fr/
@@ -211,15 +211,15 @@ def clear_dictionary_list():
     csv_field_value_menu.configure(state='normal')
     csvValue_color_list.clear()
 
-html_gender_annotator_button = tk.Button(window, width=70, text='HTML gender annotator (Open GUI)',  command=lambda: call("python html_annotator_gender_main.py", shell=True))
+html_gender_annotator_button = tk.Button(window, width=GUI_IO_util.widget_width_long, text='HTML gender annotator (Open GUI)',  command=lambda: call("python html_annotator_gender_main.py", shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    html_gender_annotator_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
 html_dictionary_annotator_checkbox = tk.Checkbutton(window, text='HTML annotate corpus using csv dictionary',  variable=html_annotator_dictionary_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,html_dictionary_annotator_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,html_dictionary_annotator_checkbox,True)
 
 html_annotator_add_dictionary_var.set(0)
 html_annotator_add_dictionary_checkbox = tk.Checkbutton(window, text='Add annotations to a previously annotated HTML file using csv dictionary', variable=html_annotator_add_dictionary_var, onvalue=1, offvalue=0)
@@ -275,7 +275,7 @@ show_keywords_button = tk.Button(window, text='Show', width=5,height=1,state='di
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_show_keywords_button,y_multiplier_integer,show_keywords_button,True)
 
 # OK_button = tk.Button(window, text='OK', width=3,height=1,state='disabled',command=lambda: accept_keyword_list())
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+330,y_multiplier_integer,OK_button,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+330,y_multiplier_integer,OK_button,True)
 
 field2_lb = tk.Label(window, text='Select csv field 2')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_csv_field2_lb,y_multiplier_integer,field2_lb,True)
@@ -465,7 +465,7 @@ def get_dictionary_file(window,title,fileType):
 
 html_annotator_extractor_var.set(0)
 html_annotator_extractor_checkbox = tk.Checkbutton(window, text='Extract HTML annotations', variable=html_annotator_extractor_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,html_annotator_extractor_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,html_annotator_extractor_checkbox)
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -496,7 +496,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to run the Python 3 HTML_annotator_extractor script to extract all matched terms in your corpus as tagged in the HTML file(s).\n\nIn INPUT, the script expects previously annotated .html file(s) via DBpedia or dictionary.\n\nIn OUTPUT the script generates a csv file with the filename and term annotated, and whether it was annotated using DBpedia or dictionary.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide different ways of annotating text files in HTML for matching terms found in a user-supplied dictionary file, in knowledge graphs such as DBpedia, YAGO, or WordNet, or in the Stanford CorenNLP gender annotator.\n\ncsv dictionary files can be constructed, for instance, by exporting specific tokens from the CoNLL table (e.g., FORM values of NER PERSON or all past verbs).\n\nThe selection of the knowledge graphs DBpedia, YAGO, WordNet and the Stanford CoreNLP gender annotator will open specialized GUIs."

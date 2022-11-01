@@ -227,7 +227,7 @@ def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
 
 pre_processing_button = tk.Button(window, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                pre_processing_button)
 
 CoRef_lb = tk.Label(window, text='Coreference resolution')
@@ -250,7 +250,7 @@ CoRef_var.trace('w',activate_options)
 # CoRef_var.set(1)
 # CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP - Neural Network)',
 #                                 variable=CoRef_var, onvalue=1, offvalue=0)
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
 #                                                CoRef_checkbox)
 
 # CoRef_menu_var.set("Neural Network")
@@ -261,7 +261,7 @@ CoRef_var.trace('w',activate_options)
 manual_Coref_var.set(0)
 manual_Coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_Coref_var,
                                        onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                manual_Coref_checkbox)
 
 def get_corefed_txt_file(window,title,fileType,annotate):
@@ -282,9 +282,9 @@ def get_corefed_txt_file(window,title,fileType,annotate):
 
 corefed_txt_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT corefed TXT file',command=lambda: get_corefed_txt_file(window,'Select INPUT csv file', [("coreferenced file", "*.txt")],True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    corefed_txt_file_button,
-                                   True, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to select a previosuly coreferenced txt file for further manual coreference")
 
 #setup a button to open Windows Explorer on the selected input directory
@@ -292,25 +292,25 @@ openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_b
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.get_open_file_directory_coordinate(),
+    GUI_IO_util.open_file_directory_coordinate,
     y_multiplier_integer,
-    openInputFile_button, True, False, True, False, 90, GUI_IO_util.get_open_file_directory_coordinate(), "Open coreferenced txt file")
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.open_file_directory_coordinate, "Open coreferenced txt file")
 
 corefed_txt_file=tk.Entry(window, width=130,textvariable=corefed_txt_file_var)
 corefed_txt_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,corefed_txt_file)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,corefed_txt_file)
 
 split_coreferenced_files_var.set(0)
 split_coreferenced_files_checkbox = tk.Checkbutton(window, text='Split merged coreferenced file (with filenames embedded in <@# #@>) for manual editing to fit memory', variable=split_coreferenced_files_var,
                                        onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                split_coreferenced_files_checkbox)
 split_coreferenced_files_checkbox.config(state='disabled')
 
 continue_manual_Coref_var.set(0)
 continue_manual_Coref_var_checkbox = tk.Checkbutton(window, text='Continue manual coreferencing of previously coreferenced document', variable=continue_manual_Coref_var,
                                        onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                continue_manual_Coref_var_checkbox)
 
 continue_manual_Coref_var_checkbox.configure(state='disabled')
@@ -396,7 +396,7 @@ def help_buttons(window, help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
+y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "This set of Python 3 scripts implement different options to carry out coreference resolution.\n\nStanford CoreNLP uses a neural network approach to coreference resolution for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nFor Stanford CoreNLP the NLP Suite implements only PRONOMINAL coreference but NOT NOMINAL.\n\nIn INPUT the scripts expect either a single txt file or a set of txt files in a directory.\n\nIn OUTPUT, the scripts will produce a coreferenced txt file. If manual edit is selected, the script will also display a split-screen file for manual editing. On the left-hand side, pronouns cross-referenced by CoreNLP are tagged in YELLOW; pronouns NOT cross-referenced by CoreNLP are tagged in BLUE. On the right-hand side, pronouns cross-referenced by CoreNLP are tagged in RED, with the pronouns replaced by the referenced nouns.\n\nThe user can edit any unresolved or wrongly resolved pronominal cases directly on the right panel, as if it were any text editor and then save the changes."

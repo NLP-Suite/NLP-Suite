@@ -40,7 +40,7 @@ software_install_var = tk.StringVar()
 y_multiplier_integer=0
 
 missing_software_lb = tk.Label(window,text='Missing external software')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, missing_software_lb, True)
 
 y_multiplier_integer_SV=y_multiplier_integer
@@ -62,7 +62,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.website_url_p
 #     missing_software_var.set(missing_external_software)
 
 # missing_software_display_area = tk.Label(width=80, height=1, anchor='w', text=str(missing_external_software), state='disabled')
-# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate() + 100,
+# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_file_directory_coordinate + 100,
 #                                                y_multiplier_integer_SV, missing_software_display_area, True)
 
 def openConfigFile():
@@ -77,12 +77,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,x_coordinate_hover_over, y
                                                openInputConfigFile_button, False, False, True,False, 90, x_coordinate_hover_over-100, "Open csv config file")
 
 software_download_lb = tk.Label(window,text='Software download & install')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, software_download_lb, True)
 software_download_var.set('')
 # 'SENNA' was removed from SVO options; way too slow
 software_download_menu = tk.OptionMenu(window, software_download_var, '*','Stanford CoreNLP', 'Gephi','Google Earth Pro','MALLET','WordNet')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200,
                                                y_multiplier_integer, software_download_menu,True)
 
 software_website = tk.Label(height=1, anchor='w', text='Website url')
@@ -151,7 +151,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = 4.5
     return y_multiplier_integer-1
 
-y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
+y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the default NLP package (e.g., Stanford CoreNLP, Stanza) and language (e.g., English, Chinese) to be used for parsing and annotating your corpus in a specific language. Different packages support different sets of languages."

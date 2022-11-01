@@ -98,18 +98,18 @@ n_grams_list=[]
 
 bySentenceIndex_var=tk.IntVar()
 
-n_grams_button = tk.Button(window, width=70, text='Compute N-Grams (Open GUI)',  command=lambda: call("python style_analysis_main.py", shell=True))
+n_grams_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Compute N-Grams (Open GUI)',  command=lambda: call("python style_analysis_main.py", shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    n_grams_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-corpus_statistics_button = tk.Button(window, width=70, text='Compute document(s) statistics (Open GUI)',  command=lambda: call("python style_analysis_main.py", shell=True))
+corpus_statistics_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Compute document(s) statistics (Open GUI)',  command=lambda: call("python style_analysis_main.py", shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    corpus_statistics_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
 videos_lookup = {'No videos available':''}
@@ -143,7 +143,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                   'Please, tick the checkbox if you wish to open the style GUI to compute basic statistics on your corpus.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provides a quick link to various NLP Suite GUIs for obtaining basic statistics about the corpus (e.g., n-grams, sentence lenght)."

@@ -139,11 +139,11 @@ if config_input_output_numeric_options[0]!=0: # input filename
         date_hover_over_label = 'The input file has no date embedded in the filename'
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                   GUI_IO_util.get_entry_box_x_coordinate(),
+                                                   GUI_IO_util.entry_box_x_coordinate,
                                                    y_multiplier_integer,
                                                    inputFile_lb,
                                                    False, False, False, False, 90,
-                                                   GUI_IO_util.get_open_file_directory_coordinate(),
+                                                   GUI_IO_util.open_file_directory_coordinate,
                                                    date_hover_over_label)
 
 # TODO Must relay the widget here to display hover-over information, although the widget has been laid in GUI_util
@@ -173,11 +173,11 @@ if config_input_output_numeric_options[1]!=0: # input dir
 
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                                   GUI_IO_util.get_entry_box_x_coordinate(),
+                                                   GUI_IO_util.entry_box_x_coordinate,
                                                    y_multiplier_integer,
                                                    inputMainDir_lb,
                                                    False, False, False, False, 90,
-                                                   GUI_IO_util.get_open_file_directory_coordinate(),
+                                                   GUI_IO_util.open_file_directory_coordinate,
                                                    date_hover_over_label)
 
 if config_input_output_numeric_options[2]!=0: # input secondary dir
@@ -191,11 +191,11 @@ if config_input_output_numeric_options[3] != 0: # output dir
 extract_date_checkbox = tk.Checkbutton(window, text='Extract date from filename (for dynamic GIS)', variable=extract_date_from_filename_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                               GUI_IO_util.get_labels_x_coordinate(),
+                                               GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer,
                                                extract_date_checkbox,
                                                True, False, False, False, 90,
-                                               GUI_IO_util.get_labels_x_coordinate(),
+                                               GUI_IO_util.labels_x_coordinate,
                                                'Tick the checkbox if the filename(s) used as your corpus embed a date (e.g, The New York Times_12-19-1899). Then select the appropriate information (please, read the ?HELP for more information).\n' \
                                                 'The NLP Suite will use the information to build dynamic network graphs and dynamic GIS maps.')
 
@@ -310,7 +310,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
 
     return y_multiplier_integer -1
 
-y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
+y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 def save_config(config_input_output_alphabetic_options):
     # config_input_output_alphabetic_options is a double list, each sublist of 4 items

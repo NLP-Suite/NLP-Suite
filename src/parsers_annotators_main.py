@@ -403,26 +403,26 @@ def open_GUI(param):
     else:
         call('python coreference_main.py',shell=True)
 
-pre_processing_button = tk.Button(window, width=50, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: open_GUI('preprocess'))
+pre_processing_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: open_GUI('preprocess'))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    pre_processing_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
-coreference_button = tk.Button(window, width=50, text='Coreference resolution (Open GUI)',command=lambda: open_GUI('coref'))
+coreference_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Coreference resolution (Open GUI)',command=lambda: open_GUI('coref'))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    coreference_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
 y_multiplier_integer_SV=y_multiplier_integer
 
 parser_checkbox = tk.Checkbutton(window, variable=parser_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer_SV,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer_SV,
                                                parser_checkbox, True, False, False, False, 90,
-                                               GUI_IO_util.get_labels_x_coordinate(),
+                                               GUI_IO_util.labels_x_coordinate,
                                                "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
 
 available_parsers=''
@@ -436,10 +436,10 @@ if len(parsers) == 0:
 else:
     parser_menu = tk.OptionMenu(window, parser_menu_var, *parsers)
 #     # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_open_file_directory_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_file_directory_coordinate,
                                                y_multiplier_integer,
                                                parser_menu, False, False, False, False, 90,
-                                               GUI_IO_util.get_labels_x_coordinate(),
+                                               GUI_IO_util.labels_x_coordinate,
                                                "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
 
 def activate_SentenceTable(*args):
@@ -458,11 +458,11 @@ def activate_SentenceTable(*args):
 CoNLL_table_analyzer_var.set(0)
 CoNLL_table_analyzer_checkbox = tk.Checkbutton(window, text='CoNLL table analyzer', variable=CoNLL_table_analyzer_var,
                                                onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                CoNLL_table_analyzer_checkbox, True)
 CoNLL_table_analyzer_checkbox_msg = tk.Label()
 CoNLL_table_analyzer_checkbox_msg.config(text="Open the CoNLL table analyzer GUI")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                CoNLL_table_analyzer_checkbox_msg)
 
 def check_CoNLL_table(*args):
@@ -476,7 +476,7 @@ check_CoNLL_table()
 
 Annotators_checkbox = tk.Checkbutton(window, text='Annotators', variable=annotators_var,
                                              onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                Annotators_checkbox, True)
 
 annotators_menu_var.set("")
@@ -498,7 +498,7 @@ annotators_menu = tk.OptionMenu(window, annotators_menu_var,
         '   Normalized NER date annotator (via CoreNLP)',
         '   Quote/dialogue annotator (via CoreNLP Neural Network)')
 
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                annotators_menu)
 
 y_multiplier_integer_SV1=y_multiplier_integer
@@ -532,7 +532,7 @@ def activate_annotators_menu(*args):
         if '*' in annotators_menu_var.get() or 'dialogue' in annotators_menu_var.get():
             y_multiplier_integer=y_multiplier_integer_SV1-1
             quote_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 400,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 400,
                                                            y_multiplier_integer,
                                                            quote_checkbox,True)
             quote_checkbox.configure(state='normal')
@@ -542,12 +542,12 @@ def activate_annotators_menu(*args):
         if 'Coreference' in annotators_menu_var.get():
             y_multiplier_integer=y_multiplier_integer_SV1-1
             manual_Coref_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 400,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 400,
                                                            y_multiplier_integer,
                                                            manual_Coref_checkbox,True)
 
             open_GUI_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 550,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 550,
                                                            y_multiplier_integer,
                                                            open_GUI_checkbox)
             open_GUI_checkbox.configure(state='normal')
@@ -632,7 +632,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
+y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script will perform different types of textual operations using a selected NLP package (e.g., spaCy, Stanford CoreNLP, Stanza). The main operation is text parsing to produce the CoNLL table (CoNLL U format).\n\nYOU MUST BE CONNETED TO THE INTERNET TO RUN THE SCRIPTS.\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce different file types: txt-format copies of the same input txt files for co-reference, csv for annotators (HTML for gender annotator)."
@@ -656,10 +656,10 @@ def activate_NLP_options(*args):
             s=s.lstrip() # remove leading blanks since parsers are separated by ,blank
             m.add_command(label=s, command=lambda value=s: parser_menu_var.set(value))
     parser_lb = tk.Label(window, text=available_parsers)
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.get_labels_x_coordinate() + 40,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 40,
                                                    y_multiplier_integer_SV,
                                                    parser_lb, True, False, False, False, 90,
-                                                   GUI_IO_util.get_labels_x_coordinate(),
+                                                   GUI_IO_util.labels_x_coordinate,
                                                    "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
     # parser_lb.config(text=available_parsers)
     # print("available parsers",available_parsers)
