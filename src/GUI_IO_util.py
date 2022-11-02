@@ -303,8 +303,16 @@ if sys.platform == 'darwin':  # Mac OS
     widget_width_extra_long = 100
 
 # top line of widgets MAC
+    select_file_directory_button_width=25
+    IO_button_name_width=25
+    open_file_directory_button_width = 1
+
+    IO_configuration_menu = 350 # position of menu of default and GUI specific IO options
+    setup_pop_up_text_widget = 560  # widget to eventually open a text widget to enter text
+    setup_IO_brief_coordinate = 610 # Position of text entry for Input and Output display
+    entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
+
     IO_configuration_menu = 405 # position of menu of default and GUI specific IO options
-    IO_button_name_width=1
     setup_pop_up_text_widget = 638 # widget to eventually open a text widget to enter text
     setup_IO_brief_coordinate = 685 # Position of text entry for Input and Output display
     open_IO_config_button = 650
@@ -622,7 +630,28 @@ if sys.platform == 'darwin':  # Mac OS
     file_matcher_include_exclude_pos = 880
 
 # Mac NER
+    NER_NER_packages_menu_pos = 220
+    NER_NER_menu_pos = 220
+    NER_reset_NER_button_pos = 590
+    NER_NER_entry_lb_pos = 660
+    NER_NER_entry_pos = 720
 
+# Mac whats_in_your_corpus_main
+    whats_in_your_corpus_corpus_statistics_options_menu_lb_pos = IO_configuration_menu
+    whats_in_your_corpus_corpus_statistics_options_menu_pos = IO_configuration_menu+130
+    whats_in_your_corpus_corpus_options_menu_lb_pos = 920
+    whats_in_your_corpus_corpus_options_menu_pos = 1000
+
+    whats_in_your_corpus_open_wordclouds_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
+    whats_in_your_corpus_topics_Mallet_pos = 560
+    whats_in_your_corpus_topics_Gensim_pos = 690
+    whats_in_your_corpus_open_tm_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
+
+    whats_in_your_corpus_what_else_menu_pos = 560
+    whats_in_your_corpus_quote_checkbox_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
+    whats_in_your_corpus_open_GIS_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
+
+    whats_in_your_corpus_open_SVO_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
 
 # Windows --------------------------------------------------------------------------------------
 
@@ -979,6 +1008,22 @@ else: #windows and anything else
     NER_NER_entry_lb_pos = 660
     NER_NER_entry_pos = 720
 
+# Windows whats_in_your_corpus_main
+    whats_in_your_corpus_corpus_statistics_options_menu_lb_pos = IO_configuration_menu
+    whats_in_your_corpus_corpus_statistics_options_menu_pos = IO_configuration_menu+130
+    whats_in_your_corpus_corpus_options_menu_lb_pos = 920
+    whats_in_your_corpus_corpus_options_menu_pos = 1000
+
+    whats_in_your_corpus_open_wordclouds_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
+    whats_in_your_corpus_topics_Mallet_pos = 560
+    whats_in_your_corpus_topics_Gensim_pos = 690
+    whats_in_your_corpus_open_tm_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
+
+    whats_in_your_corpus_what_else_menu_pos = 560
+    whats_in_your_corpus_quote_checkbox_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
+    whats_in_your_corpus_open_GIS_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
+
+    whats_in_your_corpus_open_SVO_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
 
 def get_GUI_width(size_type=1):
     if sys.platform == 'darwin':  # Mac OS
