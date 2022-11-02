@@ -726,7 +726,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 corpus_statistics_options_menu_var.set('*')
 corpus_statistics_options_menu_lb = tk.Label(window, text='NLP tools options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+440,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_corpus_statistics_options_menu_lb_pos,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
+
 corpus_statistics_options_menu = tk.OptionMenu(window, corpus_statistics_options_menu_var,
                                                '*',
                                                'Compute statistics (sentences, words, syllables)',
@@ -744,13 +745,14 @@ corpus_statistics_options_menu = tk.OptionMenu(window, corpus_statistics_options
                                                'Words with capital initial (proper nouns)',
                                                'Unusual words (via NLTK)'
                                                )
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+570,y_multiplier_integer,corpus_statistics_options_menu, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_corpus_statistics_options_menu_pos,y_multiplier_integer,corpus_statistics_options_menu, True)
 
 corpus_text_options_menu_var.set('*')
 corpus_options_menu_lb = tk.Label(window, text='Text options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 680,y_multiplier_integer,corpus_options_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_corpus_options_menu_lb_pos,y_multiplier_integer,corpus_options_menu_lb,True)
+
 corpus_options_menu = tk.OptionMenu(window, corpus_text_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 780,y_multiplier_integer,corpus_options_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_corpus_options_menu_pos,y_multiplier_integer,corpus_options_menu)
 
 wordclouds_var.set(1)
 wordclouds_checkbox = tk.Checkbutton(window,text="Wordclouds", variable=wordclouds_var, onvalue=1, offvalue=0)
@@ -758,7 +760,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 open_wordclouds_GUI_var.set(0) # wordclouds GUI
 open_wordclouds_GUI_checkbox = tk.Checkbutton(window,text="Open wordclouds GUI", state='disabled', variable=open_wordclouds_GUI_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+440,y_multiplier_integer,open_wordclouds_GUI_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_open_wordclouds_GUI_pos,y_multiplier_integer,open_wordclouds_GUI_checkbox)
 
 def activate_wordclouds_GUI(*args):
     if wordclouds_var.get():
@@ -788,15 +790,15 @@ inputFilename.trace('w',changed_filename)
 
 topics_Mallet_var.set(0)
 topics_Mallet_checkbox = tk.Checkbutton(window,text="via MALLET", variable=topics_Mallet_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+440,y_multiplier_integer,topics_Mallet_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_topics_Mallet_pos,y_multiplier_integer,topics_Mallet_checkbox,True)
 
 topics_Gensim_var.set(1)
 topics_Gensim_checkbox = tk.Checkbutton(window,text="via Gensim", variable=topics_Gensim_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+570,y_multiplier_integer,topics_Gensim_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_topics_Gensim_pos,y_multiplier_integer,topics_Gensim_checkbox,True)
 
 open_tm_GUI_var.set(0) # topic modeling GUI
 open_GUI_checkbox = tk.Checkbutton(window,text="Open Gensim/MALLET GUI", variable=open_tm_GUI_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 500,y_multiplier_integer,open_GUI_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_open_tm_GUI_pos,y_multiplier_integer,open_GUI_checkbox)
 
 def activate_topics(*args):
     if topics_var.get()==True:
@@ -867,7 +869,7 @@ what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues (Cor
                                'References to nature (CoreNLP & WordNet)',
                                'Sentiments expressed (CoreNLP)')
 what_else_menu.config(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 440, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_what_else_menu_pos, y_multiplier_integer,
                                                what_else_menu, True)
 
 # set value of current GUI line to display correctly the single quotes widget
@@ -884,7 +886,7 @@ def activate_what_else_menu(*args):
             if y_multiplier_integer_SV!=0:
                 y_multiplier_integer = y_multiplier_integer_SV
             quote_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 500,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_quote_checkbox_pos,
                                                            y_multiplier_integer,
                                                            quote_checkbox)
             quote_checkbox.configure(state='normal')
@@ -905,7 +907,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 open_GIS_GUI_var.set(0) # GIS GUI
 open_GIS_GUI_checkbox = tk.Checkbutton(window,text="Open GIS GUI", state='disabled', variable=open_GIS_GUI_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 500,y_multiplier_integer,open_GIS_GUI_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_open_GIS_GUI_pos,y_multiplier_integer,open_GIS_GUI_checkbox)
 
 def activate_GIS_GUI(*args):
     if GIS_var.get():
@@ -923,7 +925,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 open_SVO_GUI_var.set(0) # SVO GUI
 open_SVO_GUI_checkbox = tk.Checkbutton(window,text="Open SVO GUI", state='disabled', variable=open_SVO_GUI_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+440,y_multiplier_integer,open_SVO_GUI_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_open_SVO_GUI_pos,y_multiplier_integer,open_SVO_GUI_checkbox)
 
 def activate_SVO_GUI(*args):
     if SVO_var.get():
