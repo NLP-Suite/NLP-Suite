@@ -323,7 +323,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 TOC_filename = tk.Entry(window, width=GUI_IO_util.widget_width_extra_long, textvariable=TOC_filename_var)
 TOC_filename.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                TOC_filename)
 
 docLength_var.set(0)
@@ -333,7 +333,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                docLength_checkbox, True)
 
 current_docLength_lb = tk.Label(window, text='Word count in selected file')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                current_docLength_lb, True)
 
 current_docLength = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short, state="disabled", textvariable=current_docLength_var)
@@ -372,7 +372,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 keyword_value_var.set('')
 keyword_value = tk.Entry(window, width=GUI_IO_util.widget_width_short, textvariable=keyword_value_var)
 keyword_value.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                keyword_value, True)
 
 lemmatize_var.set(0)
@@ -397,7 +397,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 extract_sentences_search_words_var.set('')
 search_words_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
 search_words_entry.configure(width=GUI_IO_util.widget_width_extra_long, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                search_words_entry)
 
 string_var.set(0)
@@ -409,7 +409,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 string_value_var.set('')
 string_value = tk.Entry(window, width=GUI_IO_util.widget_width_extra_long, textvariable=string_value_var)
 string_value.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                string_value)
 
 blankLine_var.set(0)

@@ -62,7 +62,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.website_url_p
 #     missing_software_var.set(missing_external_software)
 
 # missing_software_display_area = tk.Label(width=80, height=1, anchor='w', text=str(missing_external_software), state='disabled')
-# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_file_directory_coordinate + 100,
+# y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu + 100,
 #                                                y_multiplier_integer_SV, missing_software_display_area, True)
 
 def openConfigFile():

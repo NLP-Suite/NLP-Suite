@@ -427,7 +427,7 @@ ngrams_menu_var.set('Word')
 ngrams_menu_lb = tk.Label(window, text='N-grams type')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_ngrams_menu_pos,y_multiplier_integer,ngrams_menu_lb,True)
 ngrams_menu = tk.OptionMenu(window, ngrams_menu_var, 'Character', 'Word') #,'DEPREL','POSTAG')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate,y_multiplier_integer,ngrams_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,ngrams_menu)
 
 ngrams_options_menu_lb = tk.Label(window, text='N-grams options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ngrams_options_menu_lb,True)
@@ -482,7 +482,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 corpus_statistics_options_menu_var.set('*')
 corpus_statistics_options_menu_lb = tk.Label(window, text='Statistics options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
 
 corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_menu_var,
                                                 '*',
@@ -513,7 +513,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 complexity_readability_analysis_menu_var.set('*')
 complexity_readability_analysis_lb = tk.Label(window, text='Select the complexity/readability analysis you wish to perform')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate,y_multiplier_integer,complexity_readability_analysis_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,complexity_readability_analysis_lb,True)
 complexity_readability_analysis_menu = tk.OptionMenu(window,complexity_readability_analysis_menu_var,'*','Sentence complexity','Text readability')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_complexity_readability_analysis_menu_pos, y_multiplier_integer,complexity_readability_analysis_menu)
 
@@ -523,7 +523,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 vocabulary_analysis_menu_var.set('*')
 vocabulary_analysis_lb = tk.Label(window, text='Select the vocabulary analysis you wish to perform')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate,y_multiplier_integer,vocabulary_analysis_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,vocabulary_analysis_lb,True)
 vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*',
                                          'Vocabulary (via unigrams) - List of all words/tokens in input document(s)',
                                          'Vocabulary (via Stanza multilanguage lemmatizer) - List of all words/tokens in input document(s)',

@@ -287,9 +287,9 @@ openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_b
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.open_file_directory_coordinate,
+    GUI_IO_util.IO_configuration_menu,
     y_multiplier_integer,
-    openInputFile_button, True, False, True, False, 90, GUI_IO_util.open_file_directory_coordinate, "Open INPUT csv file")
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.IO_configuration_menu, "Open INPUT csv file")
 
 csv_file=tk.Entry(window, width=GUI_IO_util.WordNet_csv_file_width,textvariable=csv_file_var)
 csv_file.config(state='disabled')

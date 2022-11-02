@@ -368,7 +368,7 @@ mean_checkbox = tk.Checkbutton(window, text='Calculate sentence mean', variable=
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,mean_checkbox,True)
 
 median_checkbox = tk.Checkbutton(window, text='Calculate sentence median', variable=median_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200,y_multiplier_integer,median_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.sentiment_analysis_median_checkbox_pos,y_multiplier_integer,median_checkbox)
 
 def display_reminder(*args):
     if 'Neural network' in SA_algorithm_var.get() or 'Dictionar' in SA_algorithm_var.get():
@@ -407,8 +407,9 @@ SA_algorithms=['*','Neural networks:','   BERT','   spaCy','   Stanford CoreNLP'
 SA_algorithm_var.set('*')
 SA_algorithm_lb = tk.Label(window, text='Select sentiment analysis algorithm')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SA_algorithm_lb,True)
+
 SA_algorithm_menu = tk.OptionMenu(window,SA_algorithm_var,*SA_algorithms)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,SA_algorithm_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.sentiment_analysis_SA_algorithm_menu_pos, y_multiplier_integer,SA_algorithm_menu)
 
 y_multiplier_integerSV=y_multiplier_integer-1
 

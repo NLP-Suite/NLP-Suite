@@ -141,30 +141,32 @@ add_file_button = tk.Button(window, text='Select csv file', command=lambda: get_
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer, add_file_button,
     True, False, True, False, 90, GUI_IO_util.labels_x_coordinate, "Click on the button to select the csv file to be used to find file matches")
+
 openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, selectedCsvFile_var.get()))
 # place widget with hover-over info
-# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+100, y_multiplier_integer,openInputFile_button,
-    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate+100, "Open INPUT csv file")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_openInputFile_button_pos, y_multiplier_integer,openInputFile_button,
+    True, False, True, False, 90, GUI_IO_util.file_matcher_openInputFile_button_pos, "Open INPUT csv file")
 
 selectedCsvFile = tk.Entry(window,width=150,state='disabled',textvariable=selectedCsvFile_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+150,y_multiplier_integer,selectedCsvFile)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_selectedCsvFile_pos,y_multiplier_integer,selectedCsvFile)
 
 find_var.set(1)
 find_checkbox = tk.Checkbutton(window, text='Match files', variable=find_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer, find_checkbox,True)
 
 source_file_type_menu_lb = tk.Label(window, text='Source file type ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+110,y_multiplier_integer,source_file_type_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,source_file_type_menu_lb,True)
+
 source_file_type_menu = tk.OptionMenu(window,source_file_type_menu_var,'*','bmp','csv','doc','docx','gexf','html','jpg','kml','pdf','png','tif','txt','xls','xlsm','xlsx')
 source_file_type_menu.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+220,y_multiplier_integer,source_file_type_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_source_file_type_menu_pos,y_multiplier_integer,source_file_type_menu,True)
 
 target_file_type_menu_lb = tk.Label(window, text='Target file type ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+330,y_multiplier_integer,target_file_type_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_target_file_type_menu_lb_pos,y_multiplier_integer,target_file_type_menu_lb,True)
+
 target_file_type_menu = tk.OptionMenu(window,target_file_type_menu_var,'*','bmp','csv','doc','docx','gexf','html','jpg','kml','pdf','png','tif','txt','xls','xlsm','xlsx')
 target_file_type_menu.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+440,y_multiplier_integer,target_file_type_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_target_file_type_menu_pos,y_multiplier_integer,target_file_type_menu)
 
 matching_var.set(1)
 matching_checkbox = tk.Checkbutton(window, variable=matching_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(matching_var, matching_checkbox, "Exact match", "Partial match (by number of embedded items)"))
@@ -173,20 +175,22 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 
 character_value_var.set('_')
 character_lb = tk.Label(window, text='Separator character(s)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+370,y_multiplier_integer, character_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer, character_lb,True)
+
 character_value = tk.Entry(window, width=2,textvariable=character_value_var)
 character_value.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+520,y_multiplier_integer, character_value,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_character_value_pos,y_multiplier_integer, character_value,True)
 
 number_of_items_lb = tk.Label(window, text='Number of items')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+560,y_multiplier_integer, number_of_items_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_number_of_items_lb_pos,y_multiplier_integer, number_of_items_lb,True)
+
 number_of_items_value = tk.Entry(window, width=2,textvariable=number_of_items_var)
 number_of_items_value.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+670,y_multiplier_integer, number_of_items_value,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_number_of_items_value_pos,y_multiplier_integer, number_of_items_value,True)
 
 include_exclude_var.set(1)
 include_exclude_checkbox = tk.Checkbutton(window, variable=include_exclude_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox_NoLabel(include_exclude_var, include_exclude_checkbox, "Include first # items only", "Exclude first # items"))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+760,y_multiplier_integer, include_exclude_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_include_exclude_pos,y_multiplier_integer, include_exclude_checkbox)
 include_exclude_checkbox.config(text='Include first # items only',state="disabled")
 
 copy_var.set(0)
@@ -197,7 +201,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 move_var.set(0)
 move_checkbox = tk.Checkbutton(window, variable=move_var, onvalue=1, offvalue=0)
 move_checkbox.config(state='disabled',text="MOVE processed files")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200,y_multiplier_integer,move_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,move_checkbox)
 
 def activate_options(*args):
     copy_checkbox.config(state='normal')

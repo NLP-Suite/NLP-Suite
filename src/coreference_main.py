@@ -226,7 +226,7 @@ corefed_txt_file_var= tk.StringVar()
 def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
 
-pre_processing_button = tk.Button(window, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI)
+pre_processing_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Pre-processing tools (file checking & cleaning GUI)',command=open_GUI)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                pre_processing_button)
 
@@ -236,7 +236,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 CoRef_var.set('Stanford CoreNLP')
 CoRef_var_menu = tk.OptionMenu(window,CoRef_var,'BERT','spaCy','Stanford CoreNLP')
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+150, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.coreference_CoRef_var_menu_pos, y_multiplier_integer,
                     CoRef_var_menu, False, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate,
                     "Options currently available only for Stanford CoreNLP.\nSelect the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.")
@@ -292,11 +292,11 @@ openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_b
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.open_file_directory_coordinate,
+    GUI_IO_util.IO_configuration_menu,
     y_multiplier_integer,
-    openInputFile_button, True, False, True, False, 90, GUI_IO_util.open_file_directory_coordinate, "Open coreferenced txt file")
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.IO_configuration_menu, "Open coreferenced txt file")
 
-corefed_txt_file=tk.Entry(window, width=130,textvariable=corefed_txt_file_var)
+corefed_txt_file=tk.Entry(window, width=GUI_IO_util.coreference_corefed_txt_file_width,textvariable=corefed_txt_file_var)
 corefed_txt_file.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,corefed_txt_file)
 

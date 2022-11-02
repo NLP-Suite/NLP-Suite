@@ -313,11 +313,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 all_analyses.set('*')
 all_analyses_menu = tk.OptionMenu(window, all_analyses, '*', 'Clause analysis', 'Clause analysis', 'Noun analysis', 'Verb analysis', 'Function (junk/stop) words analysis')
 all_analyses_menu.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                all_analyses_menu)
 
 search_token_var = tk.IntVar()
-searchToken_checkbox = tk.Checkbutton(window, state='disabled', variable=search_token_var,  text='Search token/work', onvalue=1,
+searchToken_checkbox = tk.Checkbutton(window, state='disabled', variable=search_token_var,  text='Search token/word', onvalue=1,
                                   offvalue=0, command = lambda:  activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                     y_multiplier_integer, searchToken_checkbox,True)
@@ -327,12 +327,12 @@ searchField_kw_var.set('e.g.: father')
 # used to place noun/verb checkboxes starting at the top level
 y_multiplier_integer_top = y_multiplier_integer
 
-entry_searchField_kw = tk.Entry(window, state='disabled', textvariable=searchField_kw_var)
+entry_searchField_kw = tk.Entry(window, width=GUI_IO_util.combobox_width, state='disabled', textvariable=searchField_kw_var)
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
     y_multiplier_integer,
     entry_searchField_kw,
-    False, False, False, False, 90, GUI_IO_util.open_file_directory_coordinate,
+    False, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
     "Enter the CASE SENSITIVE word (ONE WORD ONLY) that you would like to search (* for any word). All searches are done WITHIN EACH SENTENCE for the EXACT word.")
 
 # Search type var (FORM/LEMMA)
@@ -342,8 +342,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                                searchedCoNLLdescription_csv_field_menu_lb,True)
 
 searchedCoNLLdescription_csv_field_menu_lb = tk.OptionMenu(window, searchedCoNLLField_var, 'FORM', 'LEMMA')
-searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+searchedCoNLLdescription_csv_field_menu_lb.configure(width=GUI_IO_util.combobox_width, state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                searchedCoNLLdescription_csv_field_menu_lb)
 
 # POSTAG variable
@@ -355,7 +355,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 postag_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = postag_var)
 postag_menu_lb['values'] = postag_menu
 postag_menu_lb.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                postag_menu_lb)
 
 # DEPREL variable
@@ -368,7 +368,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 deprel_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = deprel_var)
 deprel_menu_lb['values'] = deprel_menu
 deprel_menu_lb.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                deprel_menu_lb)
 
 # Co-Occurring POSTAG menu
@@ -382,7 +382,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 co_postag_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = co_postag_var)
 co_postag_menu_lb['values'] = postag_menu
 co_postag_menu_lb.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                co_postag_menu_lb)
 
 co_deprel_menu = '*','acl - clausal modifier of noun (adjectival clause)', 'acl:relcl - relative clause modifier', 'acomp - adjectival complement', 'advcl - adverbial clause modifier', 'advmod - adverbial modifier', 'agent - agent', 'amod - adjectival modifier', 'appos - appositional modifier', 'arg - argument', 'aux - auxiliary', 'auxpass - passive auxiliary', 'case - case marking', 'cc - coordinating conjunction', 'ccomp - clausal complement with internal subject', 'cc:preconj - preconjunct','compound - compound','compound:prt - phrasal verb particle','conj - conjunct','cop - copula conjunction','csubj - clausal subject','csubjpass - clausal passive subject','dep - unspecified dependency','det - determiner','det:predet - predeterminer','discourse - discourse element','dislocated - dislocated element','dobj - direct object','expl - expletive','foreign - foreign words','goeswith - goes with','iobj - indirect object','list - list','mark - marker','mod - modifier','mwe - multi-word expression','name - name','neg - negation modifier','nn - noun compound modifier','nmod - nominal modifier','nmod:npmod - noun phrase as adverbial modifier','nmod:poss - possessive nominal modifier','nmod:tmod - temporal modifier','nummod - numeric modifier','npadvmod - noun phrase adverbial modifier','nsubj - nominal subject','nsubjpass - passive nominal subject','num - numeric modifier','number - element of compound number','parataxis - parataxis','pcomp - prepositional complement','pobj - object of a preposition','poss - possession modifier', 'possessive - possessive modifier','preconj - preconjunct','predet - predeterminer','prep - prepositional modifier','prepc - prepositional clausal modifier','prt - phrasal verb particle','punct - punctuation','quantmod - quantifier phrase modifier','rcmod - relative clause modifier','ref - referent','remnant - remnant in ellipsis','reparandum - overridden disfluency','ROOT - root','sdep - semantic dependent','subj - subject','tmod - temporal modifier','vmod - reduced non-finite verbal modifier','vocative - vocative','xcomp - clausal complement with external subject','xsubj - controlling subject','# - #'
@@ -395,7 +395,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 co_deprel_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = co_deprel_var)
 co_deprel_menu_lb['values'] = deprel_menu
 co_deprel_menu_lb.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,co_deprel_menu_lb)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,co_deprel_menu_lb)
 
 def changed_filename(tracedInputFile):
     global error

@@ -436,7 +436,7 @@ if len(parsers) == 0:
 else:
     parser_menu = tk.OptionMenu(window, parser_menu_var, *parsers)
 #     # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_file_directory_coordinate,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu,
                                                y_multiplier_integer,
                                                parser_menu, False, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
@@ -462,7 +462,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                                CoNLL_table_analyzer_checkbox, True)
 CoNLL_table_analyzer_checkbox_msg = tk.Label()
 CoNLL_table_analyzer_checkbox_msg.config(text="Open the CoNLL table analyzer GUI")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                CoNLL_table_analyzer_checkbox_msg)
 
 def check_CoNLL_table(*args):
@@ -498,7 +498,7 @@ annotators_menu = tk.OptionMenu(window, annotators_menu_var,
         '   Normalized NER date annotator (via CoreNLP)',
         '   Quote/dialogue annotator (via CoreNLP Neural Network)')
 
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                annotators_menu)
 
 y_multiplier_integer_SV1=y_multiplier_integer
@@ -532,7 +532,7 @@ def activate_annotators_menu(*args):
         if '*' in annotators_menu_var.get() or 'dialogue' in annotators_menu_var.get():
             y_multiplier_integer=y_multiplier_integer_SV1-1
             quote_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 400,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 400,
                                                            y_multiplier_integer,
                                                            quote_checkbox,True)
             quote_checkbox.configure(state='normal')
@@ -542,12 +542,12 @@ def activate_annotators_menu(*args):
         if 'Coreference' in annotators_menu_var.get():
             y_multiplier_integer=y_multiplier_integer_SV1-1
             manual_Coref_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 400,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 400,
                                                            y_multiplier_integer,
                                                            manual_Coref_checkbox,True)
 
             open_GUI_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 550,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 550,
                                                            y_multiplier_integer,
                                                            open_GUI_checkbox)
             open_GUI_checkbox.configure(state='normal')

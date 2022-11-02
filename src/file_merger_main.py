@@ -138,7 +138,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 merge_embed_filenames_inStringSeparators_var.set(0)
 merge_embed_filenames_inStringSeparators_checkbox = tk.Checkbutton(window, text='Embed filename in separators', variable=merge_embed_filenames_inStringSeparators_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+220,y_multiplier_integer,merge_embed_filenames_inStringSeparators_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_merger_merge_embed_filenames_inStringSeparators_pos,y_multiplier_integer,merge_embed_filenames_inStringSeparators_checkbox,True)
 
 merge_separator_entry_begin = tk.Entry(window,width=10,textvariable=merge_separator_entry_begin_var)
 merge_separator_entry_end = tk.Entry(window,width=10,textvariable=merge_separator_entry_end_var)
@@ -146,23 +146,23 @@ merge_separator_entry_end = tk.Entry(window,width=10,textvariable=merge_separato
 def display_merge_separator(y_multiplier_integer):
 	merge_separator_entry_begin_var.set("<@#")
 	merge_separator_entry_begin.configure(state="disabled")
-	y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+440,y_multiplier_integer,merge_separator_entry_begin,True)
+	y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_merger_merge_separator_entry_begin_pos,y_multiplier_integer,merge_separator_entry_begin,True)
 
 	merge_separator_entry_end_var.set("#@>")
 	merge_separator_entry_end.configure(state="disabled")
-	y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+520,y_multiplier_integer,merge_separator_entry_end,True)
+	y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_merger_merge_separator_entry_end_pos,y_multiplier_integer,merge_separator_entry_end,True)
 display_merge_separator(y_multiplier_integer)
 
 merge_embed_subdir_name_var.set(0)
 merge_embed_subdir_name_checkbox = tk.Checkbutton(window, state='disabled', text='Embed subdirname', variable=merge_embed_subdir_name_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+610,y_multiplier_integer,merge_embed_subdir_name_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_merger_merge_embed_subdir_name_pos,y_multiplier_integer,merge_embed_subdir_name_checkbox,True)
 
 character_separator_lb = tk.Label(window, text='Character separator')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+770,y_multiplier_integer,character_separator_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_merger_character_separator_lb_pos,y_multiplier_integer,character_separator_lb,True)
 
 merge_character_separator_var.set("__")
 merge_character_separator = tk.Entry(window,width=5,state='disabled',textvariable=merge_character_separator_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+900,y_multiplier_integer,merge_character_separator)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_merger_merge_character_separator_pos,y_multiplier_integer,merge_character_separator)
 
 merge_subdir_var.set(0)
 merge_subdir_checkbox = tk.Checkbutton(window, text='Process subdirectories', variable=merge_subdir_var, onvalue=1, offvalue=0)

@@ -480,7 +480,7 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
 
     setup_IO_menu_var.set("Default I/O configuration")
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_file_directory_coordinate,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu,
                                                    y_multiplier_integer,
                                                    setup_IO_menu, True, False, False, False, 90,
                                                    GUI_IO_util.labels_x_coordinate,
@@ -513,33 +513,33 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
     update_display_area(IO_setup_display_string, IO_setup_brief_display_area)
 
     # setup buttons to open an input file, an input directory, an output directory, and a csv config file
-    x_coordinate_hover_over = GUI_IO_util.open_file_directory_coordinate+GUI_IO_util.open_file_button_brief
+    x_coordinate_hover_over = GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief
     # setup a button to open an input file
     openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda:IO_files_util.open_file_removing_date_from_filename(window,inputFilename.get(),True))
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate+GUI_IO_util.open_file_button_brief, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_file_button_brief, y_multiplier_integer,
                                                    openInputFile_button, True, False, True, False, 90, x_coordinate_hover_over, "Open INPUT file")
 
     # setup a button to open Windows Explorer on the selected INPUT directory
     openInputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get(),True))
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate+GUI_IO_util.open_inputDir_button_brief, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_inputDir_button_brief, y_multiplier_integer,
                                                    openInputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open INPUT files directory")
 
     # setup a button to open Windows Explorer on the selected OUTPUT directory
     openOutputDirectory_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate+GUI_IO_util.open_outputDir_button_brief, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_outputDir_button_brief, y_multiplier_integer,
                                                    openOutputDirectory_button, True, False, True,False, 90, x_coordinate_hover_over, "Open OUTPUT files directory")
 
     # Open csv config file
     openInputConfigFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: openConfigFile(setup_IO_menu_var.get(), scriptName, config_filename))
     # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate+GUI_IO_util.open_config_file_button_brief, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+GUI_IO_util.open_config_file_button_brief, y_multiplier_integer,
                                                    openInputConfigFile_button, True, False, True,False, 90,
                                                    x_coordinate_hover_over, "Open csv config file")
 def update_display_area(IO_setup_display_string,IO_setup_brief_display_area):
@@ -587,9 +587,9 @@ def IO_config_setup_full (window, y_multiplier_integer):
         openInputFile_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                             command=lambda: IO_files_util.open_file_removing_date_from_filename(window,inputFilename.get(),True))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
-            GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+            GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
             openInputFile_button, True, False, True, False, 90,
-            GUI_IO_util.open_file_directory_coordinate, "Open INPUT file")
+            GUI_IO_util.IO_configuration_menu, "Open INPUT file")
 
         inputFile_lb = tk.Label(window, textvariable=inputFilename)
         date_label=''
@@ -616,10 +616,10 @@ def IO_config_setup_full (window, y_multiplier_integer):
         openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width,
                             text='', command=lambda: IO_files_util.open_directory_removing_date_from_directory(window,input_main_dir_path.get(),True))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
-            GUI_IO_util.open_file_directory_coordinate,
+            GUI_IO_util.IO_configuration_menu,
             y_multiplier_integer,
             openDirectory_button,True, False, True, False, 90,
-                        GUI_IO_util.open_file_directory_coordinate, "Open INPUT files directory")
+                        GUI_IO_util.IO_configuration_menu, "Open INPUT files directory")
 
         inputMainDir_lb = tk.Label(window, textvariable=input_main_dir_path)
         date_label=''
@@ -644,9 +644,9 @@ def IO_config_setup_full (window, y_multiplier_integer):
         #setup a button to open Windows Explorer on the selected secondary input directory
         openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, input_secondary_dir_path.get()))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
-            GUI_IO_util.open_file_directory_coordinate,
+            GUI_IO_util.IO_configuration_menu,
             y_multiplier_integer,
-            openDirectory_button,True, False, True, False, 90, GUI_IO_util.open_file_directory_coordinate, "Open INPUT files SECONDARY directory")
+            openDirectory_button,True, False, True, False, 90, GUI_IO_util.IO_configuration_menu, "Open INPUT files SECONDARY directory")
 
         inputSecondaryDir_lb = tk.Label(window, textvariable=input_secondary_dir_path)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,
@@ -662,9 +662,9 @@ def IO_config_setup_full (window, y_multiplier_integer):
         # current_y_multiplier_integer4=y_multiplier_integer-1
         openDirectory_button  = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openExplorer(window, output_dir_path.get()))
         y_multiplier_integer = GUI_IO_util.placeWidget(window,
-            GUI_IO_util.open_file_directory_coordinate,
+            GUI_IO_util.IO_configuration_menu,
             y_multiplier_integer,
-            openDirectory_button, True, False, True, False, 90, GUI_IO_util.open_file_directory_coordinate, "Open OUTPUT files directory")
+            openDirectory_button, True, False, True, False, 90, GUI_IO_util.IO_configuration_menu, "Open OUTPUT files directory")
 
         outputDir_lb = tk.Label(window, textvariable=output_dir_path)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,

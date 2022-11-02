@@ -285,9 +285,9 @@ if __name__ == '__main__':
     #                                  command=lambda: IO_files_util.openFile(window,
     #                                                                         selectedCsvFile_var.get()))
     # # place widget with hover-over info
-    # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
+    # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
     #                                                openInputFile_button,True, False, True, False, 90,
-    #                                                GUI_IO_util.open_file_directory_coordinate, "Open displayed file")
+    #                                                GUI_IO_util.IO_configuration_menu, "Open displayed file")
 
     # selectedCsvFile_var = tk.StringVar()
     # selectedCsvFile = tk.Entry(window, width=100, textvariable=selectedCsvFile_var)
