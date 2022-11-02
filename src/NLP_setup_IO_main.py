@@ -143,7 +143,7 @@ if config_input_output_numeric_options[0]!=0: # input filename
                                                    y_multiplier_integer,
                                                    inputFile_lb,
                                                    False, False, False, False, 90,
-                                                   GUI_IO_util.open_file_directory_coordinate,
+                                                   GUI_IO_util.IO_configuration_menu,
                                                    date_hover_over_label)
 
 # TODO Must relay the widget here to display hover-over information, although the widget has been laid in GUI_util
@@ -177,7 +177,7 @@ if config_input_output_numeric_options[1]!=0: # input dir
                                                    y_multiplier_integer,
                                                    inputMainDir_lb,
                                                    False, False, False, False, 90,
-                                                   GUI_IO_util.open_file_directory_coordinate,
+                                                   GUI_IO_util.IO_configuration_menu,
                                                    date_hover_over_label)
 
 if config_input_output_numeric_options[2]!=0: # input secondary dir

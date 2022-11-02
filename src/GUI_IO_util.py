@@ -303,7 +303,7 @@ if sys.platform == 'darwin':  # Mac OS
     widget_width_extra_long = 100
 
 # top line of widgets MAC
-    open_file_directory_coordinate = 405 # position of menu of default and GUI specific IO options
+    IO_configuration_menu = 405 # position of menu of default and GUI specific IO options
     IO_button_name_width=1
     setup_pop_up_text_widget = 638 # widget to eventually open a text widget to enter text
     setup_IO_brief_coordinate = 685 # Position of text entry for Input and Output display
@@ -555,7 +555,7 @@ if sys.platform == 'darwin':  # Mac OS
     NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = NGrams_Co_occurrences_Viewer_add_viewer_button_pos + 40  # 690
     NGrams_Co_occurrences_Viewer_show_viewer_button_pos = NGrams_Co_occurrences_Viewer_reset_viewer_button_pos + 60  # 750
 
-    # Mac: visualization_main
+# Mac: visualization_main
 
     visualization_select_csv_field_menu_pos = 290
     visualization_OK_button_pos = 920
@@ -576,6 +576,56 @@ if sys.platform == 'darwin':  # Mac OS
 
     parsers_annotators_parser_lb_pos = 160
 
+# Mac Word2Vec
+    Word2Vec_vector_size_entry_pos = 260
+    Word2Vec_window_entry_pos = Word2Vec_vector_size_entry_pos
+    Word2Vec_min_count_pos = Word2Vec_vector_size_entry_pos
+    Word2Vec_dim_menu_pos = 660
+    Word2Vec_cluster_var_entry_pos = 170
+    Word2Vec_keywords_entry_pos = 280
+
+# Mac statistics_csv
+
+    statistics_csv_reset_csv_button_pos = 420
+    statistics_csv_show_csv_button_pos = 480
+    statistics_csv_csv_field_lb_pos = 550
+    statistics_csv_csv_field_menu_pos = 620
+    statistics_csv_csv_groupBy_field_lb_pos = 180
+    statistics_csv_csv_groupBy_field_menu_pos = 280
+    statistics_csv_add_field2_button_pos = statistics_csv_csv_field_menu_pos #620
+    statistics_csv_csv_hover_over_field_lb_pos = 660
+    statistics_csv_csv_hover_over_field_menu_pos = 760
+
+# Mac sentiment_analysis
+    sentiment_analysis_median_checkbox_pos = IO_configuration_menu
+    sentiment_analysis_SA_algorithm_menu_pos = IO_configuration_menu
+
+# Mac file_merger
+
+    file_merger_merge_embed_filenames_inStringSeparators_pos = IO_configuration_menu
+    file_merger_merge_separator_entry_begin_pos = 560
+    file_merger_merge_separator_entry_end_pos = 640
+    file_merger_merge_embed_subdir_name_pos = 730
+    file_merger_character_separator_lb_pos = 890
+    file_merger_merge_character_separator_pos = 1020
+
+# Mac file_matcher
+
+    file_matcher_openInputFile_button_pos = 220
+    file_matcher_selectedCsvFile_pos = 270
+    file_matcher_source_file_type_menu_pos = 490
+    file_matcher_target_file_type_menu_lb_pos = 650
+    file_matcher_target_file_type_menu_pos = 760
+    file_matcher_character_value_pos = 490
+    file_matcher_number_of_items_lb_pos = 650
+    file_matcher_number_of_items_value_pos = 760
+    file_matcher_include_exclude_pos = 880
+
+# Mac NER
+
+
+# Windows --------------------------------------------------------------------------------------
+
 else: #windows and anything else
     about_button_x_coordinate = 230
     release_history_button_x_coordinate = 400
@@ -595,7 +645,7 @@ else: #windows and anything else
     select_file_directory_button_width=30
     IO_button_name_width=30
     open_file_directory_button_width = 3
-    open_file_directory_coordinate = 350 # position of menu of default and GUI specific IO options
+    IO_configuration_menu = 350 # position of menu of default and GUI specific IO options
     setup_pop_up_text_widget = 560  # widget to eventually open a text widget to enter text
     setup_IO_brief_coordinate = 610 # Position of text entry for Input and Output display
     entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
@@ -871,6 +921,65 @@ else: #windows and anything else
     file_search_byWord_openInputFile_button_pos = 300
     file_search_byWord_keyword_value_pos = 510
     file_search_byWord_extract_sentences_search_words_entry_pos = 510
+
+# Windows Word2Vec
+    Word2Vec_vector_size_entry_pos = 260
+    Word2Vec_window_entry_pos = Word2Vec_vector_size_entry_pos
+    Word2Vec_min_count_pos = Word2Vec_vector_size_entry_pos
+    Word2Vec_dim_menu_pos = 660
+    Word2Vec_cluster_var_entry_pos = 170
+    Word2Vec_keywords_entry_pos = 280
+
+# Windows statistics_csv
+
+    statistics_csv_reset_csv_button_pos = 420
+    statistics_csv_show_csv_button_pos = 480
+    statistics_csv_csv_field_lb_pos = 550
+    statistics_csv_csv_field_menu_pos = 620
+    statistics_csv_csv_groupBy_field_lb_pos = 180
+    statistics_csv_csv_groupBy_field_menu_pos = 280
+    statistics_csv_add_field2_button_pos = statistics_csv_csv_field_menu_pos #620
+    statistics_csv_csv_hover_over_field_lb_pos = 660
+    statistics_csv_csv_hover_over_field_menu_pos = 760
+
+# Windows sentiment_analysis
+    sentiment_analysis_median_checkbox_pos = IO_configuration_menu
+    sentiment_analysis_SA_algorithm_menu_pos = IO_configuration_menu
+
+# Windows file_merger
+
+    file_merger_merge_embed_filenames_inStringSeparators_pos = IO_configuration_menu
+    file_merger_merge_separator_entry_begin_pos = 560
+    file_merger_merge_separator_entry_end_pos = 640
+    file_merger_merge_embed_subdir_name_pos = 730
+    file_merger_character_separator_lb_pos = 890
+    file_merger_merge_character_separator_pos = 1020
+
+# Windows file_matcher
+
+    file_matcher_openInputFile_button_pos = 220
+    file_matcher_selectedCsvFile_pos = 270
+    file_matcher_source_file_type_menu_pos = 490
+    file_matcher_target_file_type_menu_lb_pos = 650
+    file_matcher_target_file_type_menu_pos = 760
+    file_matcher_character_value_pos = 490
+    file_matcher_number_of_items_lb_pos = 650
+    file_matcher_number_of_items_value_pos = 760
+    file_matcher_include_exclude_pos = 880
+
+# Windows coreference
+    coreference_corefed_txt_file_width = 130
+    coreference_CoRef_var_menu_pos = 270
+
+# Windows NER
+
+    NER_NER_packages_menu_pos = 220
+    NER_NER_menu_pos = 220
+    NER_reset_NER_button_pos = 590
+    NER_NER_entry_lb_pos = 660
+    NER_NER_entry_pos = 720
+
+
 def get_GUI_width(size_type=1):
     if sys.platform == 'darwin':  # Mac OS
         if size_type == 1: # for now we have one basic size

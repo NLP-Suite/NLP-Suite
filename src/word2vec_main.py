@@ -147,39 +147,45 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coor
 ## option for vector size
 vector_size_lb = tk.Label(window,text='Vector size')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,vector_size_lb,True)
+
 vector_size_var.set(100)
 vector_size_entry = tk.Entry(window,width=5,textvariable=vector_size_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+120,y_multiplier_integer,vector_size_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_vector_size_entry_pos,y_multiplier_integer,vector_size_entry)
 ## option for window size
 window_lb = tk.Label(window,text='Window size')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,window_lb,True)
+
 window_var.set(5)
 window_entry = tk.Entry(window,width=5,textvariable=window_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+120,y_multiplier_integer,window_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_window_entry_pos,y_multiplier_integer,window_entry)
 ## option for minimum count
 min_count_lb = tk.Label(window,text='Minimum count')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,min_count_lb,True)
+
 min_count_var.set(5)
 min_count_entry = tk.Entry(window,width=5,textvariable=min_count_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+120,y_multiplier_integer,min_count_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_min_count_pos,y_multiplier_integer,min_count_entry)
 ## option for visualization method
 vis_var_lb = tk.Label(window,text='Select the visualization method')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,vis_var_lb,True)
 vis_menu_var.set('Plot all word vectors')
 vis_menu = tk.OptionMenu(window,vis_menu_var, 'Plot all word vectors', 'Clustering of word vectors')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,y_multiplier_integer,vis_menu, True)
+
 #### 2D or 3D plot
 dim_menu_var.set('2D')
 dim_menu = tk.OptionMenu(window,dim_menu_var, '2D', '3D')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+260,y_multiplier_integer,dim_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_dim_menu_pos,y_multiplier_integer,dim_menu)
+
 #### entry for clustering keywords
 keywords_var.set('')
 keywords_lb = tk.Label(window, text='Keywords')
 cluster_var_entry = tk.Entry(window,width=10,textvariable=keywords_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+50,y_multiplier_integer,keywords_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_cluster_var_entry_pos,y_multiplier_integer,keywords_lb,True)
+
 keywords_entry = tk.Entry(window, textvariable=keywords_var)
-keywords_entry.configure(state='disabled',width=100)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+160,y_multiplier_integer,keywords_entry)
+keywords_entry.configure(state='disabled',width=GUI_IO_util.widget_width_extra_long)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_keywords_entry_pos,y_multiplier_integer,keywords_entry)
 
 def activate_keywords_var(*args):
     if vis_menu_var.get() == 'Clustering of word vectors':
