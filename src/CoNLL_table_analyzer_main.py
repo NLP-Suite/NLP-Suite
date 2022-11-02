@@ -307,7 +307,7 @@ def custom_sort(s):
 all_analyses_var = tk.IntVar()
 all_analyses_checkbox = tk.Checkbutton(window, state='disabled', variable = all_analyses_var, text='Clause, noun, verb, function word',
                                 onvalue=1, offvalue=0, command = lambda: activate_all_options())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                     y_multiplier_integer, all_analyses_checkbox,True)
 
 all_analyses.set('*')
@@ -319,7 +319,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_dire
 search_token_var = tk.IntVar()
 searchToken_checkbox = tk.Checkbutton(window, state='disabled', variable=search_token_var,  text='Search token/work', onvalue=1,
                                   offvalue=0, command = lambda:  activate_all_options())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                     y_multiplier_integer, searchToken_checkbox,True)
 
 searchField_kw_var.set('e.g.: father')
@@ -338,7 +338,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_direct
 # Search type var (FORM/LEMMA)
 searchedCoNLLField_var.set('FORM')
 searchedCoNLLdescription_csv_field_menu_lb = tk.Label(window, text='CoNLL search field')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                searchedCoNLLdescription_csv_field_menu_lb,True)
 
 searchedCoNLLdescription_csv_field_menu_lb = tk.OptionMenu(window, searchedCoNLLField_var, 'FORM', 'LEMMA')
@@ -349,7 +349,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_dire
 # POSTAG variable
 postag_var.set('*')
 POS_lb = tk.Label(window, text='POSTAG of searched token')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                POS_lb, True)
 
 postag_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = postag_var)
@@ -362,7 +362,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_dire
 
 deprel_var.set('*')
 DEPREL_lb = tk.Label(window, text='DEPREL of searched token')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                DEPREL_lb, True)
 
 deprel_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = deprel_var)
@@ -376,7 +376,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_dire
 co_postag_var.set('*')
 
 POSTAG_CoOc_lb = tk.Label(window, text='POSTAG of co-occurring tokens')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                POSTAG_CoOc_lb, True)
 
 co_postag_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = co_postag_var)
@@ -389,7 +389,7 @@ co_deprel_menu = '*','acl - clausal modifier of noun (adjectival clause)', 'acl:
 
 co_deprel_var.set('*')
 DEPREL_CoOc_lb = tk.Label(window, text='DEPREL of co-occurring tokens')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                DEPREL_CoOc_lb, True)
 
 co_deprel_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = co_deprel_var)
@@ -415,18 +415,18 @@ k_sentences_var.set(0)
 k_sentences_checkbox = tk.Checkbutton(window, text="K sentences analyzer (repetition finder)",
                               variable=k_sentences_var, onvalue=1, offvalue=0, command = lambda: activate_all_options())
 # k_sentences_checkbox.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                k_sentences_checkbox)
 
 compute_sentence_var.set(0)
 sentence_table_checkbox = tk.Checkbutton(window, text='Compute sentence table', variable=compute_sentence_var,
                                          onvalue=1, offvalue=0, command = lambda: activate_all_options())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                sentence_table_checkbox)
 
 extract_fromCoNLL = tk.Button(window, text='Extract other fields/data from CoNLL table (Open GUI)', command = lambda: call("python data_manager_main.py", shell=True))
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
     y_multiplier_integer,
     extract_fromCoNLL,
     False, False, False, False, 90, GUI_IO_util.read_button_x_coordinate,
@@ -554,7 +554,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), increment)
+y_multiplier_integer = y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, increment)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script will allow you to analyze in depth the contents of the CoNLL table (CoNLL U format), the table produced by Stanford CoreNLP parser. You can do several things in this GUI.\n\nYou can get frequency distributions of various types of linguistic objects: clauses, nouns, verbs, and function words.\n\nYou can search all the tokens (i.e., words) related to a user-supplied keyword, found in either FORM or LEMMA of a user-supplied CoNLL table. You can filter your search by specific POSTAG and DEPREL values for both searched and co-occurring tokens (e.g., POSTAG ‘NN for nouns, DEPREL nsubjpass for passive nouns that are subjects.)\n\nYou can get frequency distributions of words and nouns, verbs, adjectives, and proper nouns in the first and last K sentences.\n\nIn INPUT the script expects a CoNLL table generated by the python script StanfordCoreNLP.py. \n\nIn OUTPUT the script creates a tab-separated csv file with a user-supplied filename and path.\n\nThe script also displays the same infomation in the command line." + GUI_IO_util.msg_multipleDocsCoNLL

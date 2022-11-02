@@ -45,7 +45,7 @@ def list_all_languages():
 
 # language_menu = ttk.Combobox(window, width = 70, textvariable = language_var)
 # language_menu['values'] = langs_full
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+100,
 #                                                y_multiplier_integer, language_menu,True)
 
 # Stanza annotate functions

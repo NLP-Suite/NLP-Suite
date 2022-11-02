@@ -306,7 +306,7 @@ y_multiplier_integerSV= y_multiplier_integer
 
 knowledge_graphs_DBpedia_var.set(0)
 knowledge_graphs_DBpedia_checkbox = tk.Checkbutton(window, text='HTML annotate corpus using DBpedia knowledge graph)', variable=knowledge_graphs_DBpedia_var, onvalue=1, offvalue=0,command=lambda: activate_DBpedia_YAGO_menu())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,knowledge_graphs_DBpedia_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,knowledge_graphs_DBpedia_checkbox,True)
 
 # http://yago.r2.enst.fr/
 # http://yago.r2.enst.fr/downloads/yago-4
@@ -318,7 +318,7 @@ confidence_level_lb = tk.Label(window, text='DBpedia confidence level')
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_graphs_YAGO_checkbox_pos,y_multiplier_integer,confidence_level_lb,True)
 
 confidence_level_entry = tk.Scale(window, from_=0.0, to=1.0, resolution = 0.1, orient=tk.HORIZONTAL)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+520,y_multiplier_integer,confidence_level_entry)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+520,y_multiplier_integer,confidence_level_entry)
 confidence_level_entry.set(.5)
 
 y_multiplier_integer=y_multiplier_integerSV+1
@@ -592,7 +592,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide ways of annotating text files for matching terms found in the knowledge graphs DBpedia or YAGO.\n\nDBpedia and YAGO tags can be selected from the class dropdown menu containing the DBpedia and YAGO ontology. The menu only includes the main classes in the ontology. For specific sub-classes, please, get the values from the TIPS_NLP_DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org) ontology classes.pdf and enter them in the Ontology sub-class field."

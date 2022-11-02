@@ -17,6 +17,7 @@ import re
 import IO_user_interface_util
 import Stanford_CoreNLP_util
 import reminders_util
+import GUI_IO_util
 
 # part of the code about search text function is adapted from
 # https://www.geeksforgeeks.org/create-find-and-replace-features-in-tkinter-text-widget/
@@ -34,7 +35,7 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, corefed
     findButton = Button(topFrame, text ='Find')
     findButton.pack()
 
-    text1 = tk.Text(top, height=40, width=70)
+    text1 = tk.Text(top, height=40, width=GUI_IO_util.widget_width_long)
     text1.pack(side=tk.LEFT)
     scroll = tk.Scrollbar(top, command=text1.yview)
     text1.configure(yscrollcommand=scroll.set)
@@ -57,7 +58,7 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, corefed
             text1.tag_config("coref",
                              background="blue", foreground="yellow")
 
-    text2 = tk.Text(top, height=40, width=70)
+    text2 = tk.Text(top, height=40, width=GUI_IO_util.widget_width_long)
     scroll = tk.Scrollbar(top, command=text2.yview)
     text2.configure(yscrollcommand=scroll.set)
 

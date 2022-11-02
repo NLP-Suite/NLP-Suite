@@ -283,6 +283,9 @@ def placeWidget(window,x_coordinate,y_multiplier_integer,widget_name,sameY=False
         y_multiplier_integer = y_multiplier_integer+1
     return y_multiplier_integer
 
+basic_y_coordinate = 90
+y_step = 40 #the line-by-line increment on the GUI
+
 if sys.platform == 'darwin':  # Mac OS
     about_button_x_coordinate = 330
     release_history_button_x_coordinate = 510
@@ -294,9 +297,12 @@ if sys.platform == 'darwin':  # Mac OS
     labels_x_indented_coordinate = 160
     entry_box_x_coordinate = 470 #start point of all labels in the third column (second column after ? HELP); where IO filename, dir, etc. are displayed
 
+    widget_width_extra_short = 10
+    widget_width_short = 50
+    widget_width_long = 70
+    widget_width_extra_long = 100
+
 # top line of widgets MAC
-    select_file_directory_button_width=23
-    open_file_directory_button_width = 1
     open_file_directory_coordinate = 405 # position of menu of default and GUI specific IO options
     IO_button_name_width=1
     setup_pop_up_text_widget = 638 # widget to eventually open a text widget to enter text
@@ -320,7 +326,9 @@ if sys.platform == 'darwin':  # Mac OS
     run_button_x_coordinate = 940
     close_button_x_coordinate = 1090
 
+
 # --------------------------------------------------- special internal GUI specific values MAC
+
 # Mac NLP_setup_package_language_main
     all_widget_pos = 500
     package_display_area_width = 60
@@ -368,7 +376,7 @@ if sys.platform == 'darwin':  # Mac OS
     display_icon = select_icon_color + 100
 
 # MAC GIS_distance_main.py
-    GIS_distance_labels_align = 150+370 #TODO changed from get_labels_x_coordinate()+350 to GIS_distance_labels_align
+    GIS_distance_labels_align = 150+370 #TODO changed from labels_x_coordinate+350 to GIS_distance_labels_align
 
 # MAC GIS_main.py
     geocoder_label_loc = 315
@@ -408,14 +416,6 @@ if sys.platform == 'darwin':  # Mac OS
 # MAC CoNLL_table_analyzer_main
     combobox_position = 210
     combobox_width = 40
-
-# MAC html_annotator_gender_main
-    annotator_dictionary_file_width = 80
-    select_dictionary_file_button = 400
-    select_dictionary_file_annotator = 475
-    SS_folder_width = 70
-    by_type_dropdown = 520
-    select_SS_folder = 1160
 
 # MAC narrative_analysis_ALL_main.py
 
@@ -469,6 +469,28 @@ if sys.platform == 'darwin':  # Mac OS
     knowledge_show_button = 1210
     knowledge_plus_button = 1290
 
+# Mac: file_splitter_main.py
+    file_splitter_post_num_string_value_lb_pos = 500
+    file_splitter_first_occurrence_pos = 950
+    file_splitter_post_num_string_value_pos = 900
+    file_splitter_ASCII_pos = 560
+    file_splitter_split_mergedFile_separator_entry_begin_pos = file_splitter_ASCII_pos
+    file_splitter_split_mergedFile_separator_entry_end_pos = 640
+    file_splitter_current_docLength_pos = 580
+    file_splitter_split_docLength_lb_pos = 670
+    file_splitter_split_docLength_pos = 880
+    file_splitter_lemmatize_pos = 820
+
+    # Mac: html_annotator_gender_main.py
+    html_annotator_gender_annotator_dictionary_file_width = 100
+    html_annotator_gender_select_dictionary_file_button = 310
+    html_annotator_gender_select_dictionary_file_annotator = 370
+    html_annotator_gender_SS_folder_width = 110
+    html_annotator_gender_by_type_dropdown = 470
+    html_annotator_gender_firstName_entry_lb_pos = 660
+    html_annotator_gender_firstName_entry_pos = 790
+    html_annotator_gender_select_SS_folder = 1070
+
 # Mac: html_annotator_main.py
     html_annotator_add_dictionary_description = 450
 
@@ -489,6 +511,71 @@ if sys.platform == 'darwin':  # Mac OS
     html_annotator_color_palette_dict_menu = 1190
     html_annotator_bold_checkbox = 1270
 
+# Mac: knowledge_graphs_WordNet_main
+    WordNet_csv_file_width = 130
+    WordNet_keyWord_entry_width = 40
+    WordNet_dict_WordNet_filename_width = 80
+
+    WordNet_reset_pos = 450
+    WordNet_show_pos = 500
+    WordNet_noun_verb_menu_pos = 570
+    WordNet_keyWord_menu_pos = 690
+    WordNet_keyWord_entry_lb_pos = 830
+    WordNet_keyWord_entry_pos = 950
+    WordNet_OK_button_pos = 1230
+
+    WordNet_extract_improper_nouns_pos = 650
+    WordNet_dict_WordNet_filename_pos = open_setup_x_coordinate
+    WordNet_dict_WordNet_filename_lb_pos = open_TIPS_x_coordinate
+
+# Mac: style_analysis_main
+    style_ngrams_menu_pos = 260
+    style_ngrams_options_menu_pos = 260
+    style_add_ngrams_button_pos = 950
+    style_reset_ngrams_button_pos = 990
+    style_show_ngrams_button_pos = 1050
+
+    style_corpus_statistics_options_menu_pos = 490
+
+    style_corpus_text_options_menu_lb_pos = 950
+    style_corpus_options_menu_men_pos = 1050
+
+    style_complexity_readability_analysis_menu_pos = 750
+
+    style_vocabulary_analysis_menu_pos = 750
+
+# Mac NGrams_Co_occurrences_Viewer
+    NGrams_Co_occurrences_Viewer_search_words_entry_pos = 260
+    NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
+    NGrams_Co_occurrences_Viewer_date_options_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = 500
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = 600
+    NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
+    NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos  # 650
+    NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = NGrams_Co_occurrences_Viewer_add_viewer_button_pos + 40  # 690
+    NGrams_Co_occurrences_Viewer_show_viewer_button_pos = NGrams_Co_occurrences_Viewer_reset_viewer_button_pos + 60  # 750
+
+    # Mac: visualization_main
+
+    visualization_select_csv_field_menu_pos = 290
+    visualization_OK_button_pos = 920
+    visualization_add_button_pos = 970
+    visualization_reset_button_pos = 1020
+
+    visualization_select_csv_field_dynamic_network_lb_pos = 440
+    visualization_dynamic_network_field_pos = 740
+
+# Mac: shape_of_stories
+
+    shape_of_stories_sentiment_analysis_lb_pos = 270
+    shape_of_stories_sentiment_analysis_menu_pos = 500
+    shape_of_stories_memory_lb_pos = 800
+    shape_of_stories_memory_pos = 870
+
+# Mac: parsers_annotators
+
+    parsers_annotators_parser_lb_pos = 160
+
 else: #windows and anything else
     about_button_x_coordinate = 230
     release_history_button_x_coordinate = 400
@@ -498,6 +585,11 @@ else: #windows and anything else
     help_button_x_coordinate = 50
     labels_x_coordinate = 120  # start point of all labels in the second column (first column after ? HELP)
     labels_x_indented_coordinate = 140
+
+    widget_width_extra_short = 10
+    widget_width_short = 50
+    widget_width_long = 70
+    widget_width_extra_long = 100
 
 # top line of widgets Windows
     select_file_directory_button_width=30
@@ -610,14 +702,6 @@ else: #windows and anything else
     combobox_position = 200
     combobox_width = 50
 
-# Windows html_annotator_gender_main
-    annotator_dictionary_file_width = 100
-    select_dictionary_file_button = 310
-    select_dictionary_file_annotator = 370
-    SS_folder_width = 110
-    by_type_dropdown = 470
-    select_SS_folder = 1070
-
 # Windows narrative_analysis_ALL_main.py
     narrative_analysis_2nd_column = 320
     narrative_analysis_3rd_column = 510
@@ -670,7 +754,30 @@ else: #windows and anything else
 
     knowledge_DBpedia_ontology_class_menu = setup_IO_brief_coordinate # 610
 
-#Windows: html_annotator_main.py
+# Windows: file_splitter_main.py
+    file_splitter_post_num_string_value_lb_pos = 500
+    file_splitter_first_occurrence_pos = 950
+    file_splitter_post_num_string_value_pos = 900
+    file_splitter_ASCII_pos = 560
+    file_splitter_split_mergedFile_separator_entry_begin_pos = file_splitter_ASCII_pos
+    file_splitter_split_mergedFile_separator_entry_end_pos = 640
+    file_splitter_current_docLength_pos = 580
+    file_splitter_split_docLength_lb_pos = 670
+    file_splitter_split_docLength_pos = 880
+    file_splitter_lemmatize_pos = 820
+
+
+# Windows: html_annotator_gender_main.py
+    html_annotator_gender_annotator_dictionary_file_width = 100
+    html_annotator_gender_select_dictionary_file_button = 310
+    html_annotator_gender_select_dictionary_file_annotator = 370
+    html_annotator_gender_SS_folder_width = 110
+    html_annotator_gender_by_type_dropdown = 470
+    html_annotator_gender_firstName_entry_lb_pos = 660
+    html_annotator_gender_firstName_entry_pos = 790
+    html_annotator_gender_select_SS_folder = 1070
+
+    #Windows: html_annotator_main.py
     html_annotator_add_dictionary_description = 420
 
     html_annotator_openInputFile_button = 320
@@ -690,9 +797,80 @@ else: #windows and anything else
     html_annotator_color_palette_dict_menu = 1080
     html_annotator_bold_checkbox = 1180
 
-basic_y_coordinate = 90
-y_step = 40 #the line-by-line increment on the GUI
+# Windows: knowledge_graphs_WordNet_main
+    WordNet_csv_file_width = 130
+    WordNet_keyWord_entry_width = 40
+    WordNet_dict_WordNet_filename_width = 80
 
+    WordNet_reset_pos = 450
+    WordNet_show_pos = 500
+    WordNet_noun_verb_menu_pos = 570
+    WordNet_keyWord_menu_pos = 690
+    WordNet_keyWord_entry_lb_pos = 830
+    WordNet_keyWord_entry_pos = 950
+    WordNet_OK_button_pos = 1230
+
+    WordNet_extract_improper_nouns_pos = 650
+    WordNet_dict_WordNet_filename_pos = open_setup_x_coordinate
+    WordNet_dict_WordNet_filename_lb_pos = open_TIPS_x_coordinate
+
+# Windows: style_analysis_main
+    style_ngrams_menu_pos = 260
+    style_ngrams_options_menu_pos = 260
+    style_add_ngrams_button_pos = 950
+    style_reset_ngrams_button_pos = 990
+    style_show_ngrams_button_pos = 1050
+
+    style_corpus_statistics_options_menu_pos = 490
+
+    style_corpus_text_options_menu_lb_pos = 950
+    style_corpus_options_menu_men_pos = 1050
+
+    style_complexity_readability_analysis_menu_pos = 750
+
+    style_vocabulary_analysis_menu_pos = 750
+
+# Windows NGrams_Co_occurrences_Viewer
+    NGrams_Co_occurrences_Viewer_search_words_entry_pos = 260
+    NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
+    NGrams_Co_occurrences_Viewer_date_options_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = 500
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = 600
+    NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
+    NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos  # 650
+    NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = NGrams_Co_occurrences_Viewer_add_viewer_button_pos + 40  # 690
+    NGrams_Co_occurrences_Viewer_show_viewer_button_pos = NGrams_Co_occurrences_Viewer_reset_viewer_button_pos + 60  # 750
+
+# Windows: visualization_main
+
+    visualization_select_csv_field_menu_pos = 290
+    visualization_OK_button_pos = 920
+    visualization_add_button_pos = 970
+    visualization_reset_button_pos = 1020
+
+    visualization_select_csv_field_dynamic_network_lb_pos = 440
+    visualization_dynamic_network_field_pos = 740
+
+# Windows: shape_of_stories
+
+    shape_of_stories_sentiment_analysis_lb_pos = 270
+    shape_of_stories_sentiment_analysis_menu_pos = 500
+    shape_of_stories_memory_lb_pos = 800
+    shape_of_stories_memory_pos = 870
+
+# Windows: parsers_annotators
+
+    parsers_annotators_parser_lb_pos = 160
+
+# Windows: file_search_byWord
+
+    file_search_byWord_selectedCsvFile_pos = 510
+    file_search_byWord_add_search_button_pos = setup_IO_brief_coordinate
+    file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate+35
+    file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate+100
+    file_search_byWord_openInputFile_button_pos = 300
+    file_search_byWord_keyword_value_pos = 510
+    file_search_byWord_extract_sentences_search_words_entry_pos = 510
 def get_GUI_width(size_type=1):
     if sys.platform == 'darwin':  # Mac OS
         if size_type == 1: # for now we have one basic size
@@ -712,26 +890,6 @@ def get_GUI_width(size_type=1):
             return 1300
         elif size_type==4:
             return 1300
-
-def get_basic_y_coordinate():
-    return basic_y_coordinate
-def get_y_step():
-    return y_step
-def get_help_button_x_coordinate():
-    return help_button_x_coordinate
-
-def get_labels_x_coordinate():
-    return labels_x_coordinate
-
-def get_labels_x_indented_coordinate():
-    return labels_x_indented_coordinate
-
-def get_entry_box_x_coordinate():
-    return entry_box_x_coordinate
-
-def get_open_file_directory_coordinate():
-    return open_file_directory_coordinate
-
 def about():
     url = "https://github.com/NLP-Suite/NLP-Suite/wiki/About"
     IO_libraries_util.open_url(NLP_Suite_website_name, url)

@@ -120,18 +120,18 @@ optimize_intervals_var = tk.IntVar()
 num_topics_var = tk.IntVar()
 
 num_topics_lb = tk.Label(window, text='Number of topics ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                num_topics_lb, True)
 
 num_topics_var.set(20)
 num_topics_entry = tk.Entry(window, width=5, textvariable=num_topics_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate() + 100,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate + 100,
                                                y_multiplier_integer, num_topics_entry)
 
 optimize_intervals_var.set(1)
 optimize_intervals_checkbox = tk.Checkbutton(window, text='Optimize topic intervals', variable=optimize_intervals_var,
                                              onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                optimize_intervals_checkbox)
 
 videos_lookup = {'No videos available': ''}
@@ -173,7 +173,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
+y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script analyzes a set of documents for topic modeling with Mallet" \
