@@ -26,8 +26,12 @@ class Visualizer:
         titles = []
         file_names = []
         for i in range(len(grouped_vectors)):
-            titles.append(method + "\n" + "Cluster " + str(i + 1) + " (N = " + str(len(cluster_file[i])) + "/" + str(numberOfSentimenFiles) + ")")
-            file_names.append(method_short + "_cluster_" + str(i + 1))
+            # cluster_file may not include all sequential indices; see function processCluster
+            try:
+                titles.append(method + "\n" + "Cluster " + str(i + 1) + " (N = " + str(len(cluster_file[i])) + "/" + str(numberOfSentimenFiles) + ")")
+                file_names.append(method_short + "_cluster_" + str(i + 1))
+            except:
+                continue
         for i in range(len(grouped_vectors)):
             cluster_arr = grouped_vectors[i]
             if modes is not None:
