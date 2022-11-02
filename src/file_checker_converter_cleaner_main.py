@@ -218,7 +218,7 @@ check_menu = tk.OptionMenu(window,check_tools_var,
                     # 'Vowel words')
 
 check_menu.configure(width=GUI_IO_util.widget_width_long)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,y_multiplier_integer,check_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate,y_multiplier_integer,check_menu)
 
 #setup GUI widgets
 # CONVERT ________________________________________________________
@@ -237,7 +237,7 @@ convert_menu = tk.OptionMenu(window,convert_tools_var,
                     'Document converter (rtf --> txt)')
 
 convert_menu.configure(width=GUI_IO_util.widget_width_long)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,y_multiplier_integer,convert_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate,y_multiplier_integer,convert_menu)
 
 clean_tools_var.set('')
 clean_lb = tk.Label(window, text='Clean Files')
@@ -253,7 +253,7 @@ clean_menu = tk.OptionMenu(window,clean_tools_var,
                     'Separate titles from documents (newspaper articles)')
 
 clean_menu.configure(width=GUI_IO_util.widget_width_long)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,y_multiplier_integer,clean_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate,y_multiplier_integer,clean_menu)
 
 
 def activate_allOptions(*args):

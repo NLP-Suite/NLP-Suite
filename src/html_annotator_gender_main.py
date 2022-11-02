@@ -197,7 +197,7 @@ CoreNLP_download_gender_file_checkbox = tk.Checkbutton(window, text='Download Co
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,CoreNLP_download_gender_file_checkbox,True)
 
 CoreNLP_upload_gender_file_checkbox = tk.Checkbutton(window, text='Upload CoreNLP gender file', variable=CoreNLP_upload_gender_file_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.select_dictionary_file_annotator,y_multiplier_integer,CoreNLP_upload_gender_file_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_gender_select_dictionary_file_annotator,y_multiplier_integer,CoreNLP_upload_gender_file_checkbox)
 
 annotator_dictionary_var.set(0)
 annotator_dictionary_checkbox = tk.Checkbutton(window, text='Annotate first names by gender (via selected dictionary file)', variable=annotator_dictionary_var, onvalue=1, offvalue=0)
@@ -212,13 +212,12 @@ openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', co
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.select_dictionary_file_button, y_multiplier_integer,
-    openInputFile_button, True, False, True, False, 90, GUI_IO_util.select_dictionary_file_button, "Open csv dictionary file")
+    GUI_IO_util.html_annotator_gender_select_dictionary_file_button, y_multiplier_integer,
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.html_annotator_gender_select_dictionary_file_button, "Open csv dictionary file")
 
-annotator_dictionary_file=tk.Entry(window, width=GUI_IO_util.annotator_dictionary_file_width,textvariable=annotator_dictionary_file_var)
+annotator_dictionary_file=tk.Entry(window, width=GUI_IO_util.html_annotator_gender_annotator_dictionary_file_width,textvariable=annotator_dictionary_file_var)
 annotator_dictionary_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.select_dictionary_file_annotator, y_multiplier_integer,annotator_dictionary_file)
-
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_gender_select_dictionary_file_annotator, y_multiplier_integer,annotator_dictionary_file)
 
 def get_dictionary_file(window,title,fileType):
     #annotator_dictionary_var.set('')
@@ -236,18 +235,18 @@ plot_checkbox = tk.Checkbutton(window, text='Plot names via US Social Security',
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,plot_checkbox,True)
 
 year_state_lb = tk.Label(window, text='By US state/year')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.select_dictionary_file_annotator,y_multiplier_integer,year_state_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_gender_select_dictionary_file_annotator,y_multiplier_integer,year_state_lb,True)
 
 year_state_menu = tk.OptionMenu(window,year_state_var,'State','Year','Year of birth','State & Year','State & Year of birth')
 year_state_menu.configure(width=20,state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.by_type_dropdown,y_multiplier_integer,year_state_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_gender_by_type_dropdown,y_multiplier_integer,year_state_menu,True)
 
 firstName_entry_lb = tk.Label(window, text='Enter first name(s)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 540,y_multiplier_integer,firstName_entry_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_gender_firstName_entry_lb_pos,y_multiplier_integer,firstName_entry_lb,True)
 
 firstName_entry = tk.Entry(window,width=GUI_IO_util.widget_width_short,textvariable=firstName_entry_var)
 firstName_entry.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+ 670,y_multiplier_integer,firstName_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_gender_firstName_entry_pos,y_multiplier_integer,firstName_entry)
 
 # https://www.ssa.gov/oact/babynames/limits.html
 new_SS_folders_var.set(0)
@@ -284,18 +283,18 @@ open_new_SS_folder_button = tk.Button(window, width=3, text='', command=lambda: 
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.select_dictionary_file_button,
+    GUI_IO_util.html_annotator_gender_select_dictionary_file_button,
     y_multiplier_integer,
-    open_new_SS_folder_button, True, False, True, False, 90, GUI_IO_util.select_dictionary_file_button, "Open SS file directory")
+    open_new_SS_folder_button, True, False, True, False, 90, GUI_IO_util.html_annotator_gender_select_dictionary_file_button, "Open SS file directory")
 
-new_SS_folder=tk.Entry(window, width=GUI_IO_util.SS_folder_width,textvariable=new_SS_folder_var)
+new_SS_folder=tk.Entry(window, width=GUI_IO_util.html_annotator_gender_SS_folder_width,textvariable=new_SS_folder_var)
 new_SS_folder.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.select_dictionary_file_annotator, y_multiplier_integer,new_SS_folder,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_gender_select_dictionary_file_annotator, y_multiplier_integer,new_SS_folder,True)
 
 last_SS_year_var.set(2018)
 last_SS_year=tk.Entry(window, width=6,textvariable=last_SS_year_var)
 last_SS_year.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.select_SS_folder, y_multiplier_integer,last_SS_year)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_gender_select_SS_folder, y_multiplier_integer,last_SS_year)
 
 def checkUSSSUpdate():
     if annotator_dictionary_var.get()==True or plot_var.get() == True:

@@ -41,7 +41,7 @@ def run(inputFilename,inputDir, outputDir,
             mb.showwarning(title='Input error', message='No search options have been selected.\n\nPlease, select a search option and try again.')
             return
 
-    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word/collocation search start',
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Word/collocation search start',
                         'Started running Word/collocation search at', True,
                         'SEARCH options: ' + str(search_options_list)+'\nSEARCH words: '+search_keyword_values,
                                        True, '', True)
@@ -150,17 +150,18 @@ window.bind("<Escape>", clear)
 search_options_menu_var.set('Case sensitive (default)')
 search_options_menu_lb = tk.Label(window, text='Search options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,search_options_menu_lb,True)
+
 search_options_menu = tk.OptionMenu(window, search_options_menu_var, 'Case sensitive (default)','Case insensitive','Exact match','Partial match (default)','Search within sentence (default)', 'Search within document','Lemmatize')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,y_multiplier_integer,search_options_menu, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate,y_multiplier_integer,search_options_menu, True)
 
 add_search_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_search_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate + 410,y_multiplier_integer,add_search_button, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_add_search_button_pos,y_multiplier_integer,add_search_button, True)
 
 reset_search_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_search_options_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate+450,y_multiplier_integer,reset_search_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_reset_search_button_pos,y_multiplier_integer,reset_search_button,True)
 
 show_search_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_search_options_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate+510,y_multiplier_integer,show_search_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_show_search_button_pos,y_multiplier_integer,show_search_button)
 
 def reset_search_options_list():
     search_options_list.clear()
@@ -234,20 +235,20 @@ openInputFile_button = tk.Button(window, width=3, text='', command=lambda: IO_fi
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.labels_x_coordinate+180, y_multiplier_integer,
-    openInputFile_button, True, False, True, False, 90, GUI_IO_util.labels_x_coordinate+180, "Open selected csv dictionary file")
+    GUI_IO_util.file_search_byWord_openInputFile_button_pos, y_multiplier_integer,
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.file_search_byWord_openInputFile_button_pos, "Open selected csv dictionary file")
 
-selectedCsvFile = tk.Entry(window,width=100,state='disabled',textvariable=selectedCsvFile_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+390,y_multiplier_integer,selectedCsvFile)
+selectedCsvFile = tk.Entry(window,width=GUI_IO_util.widget_width_extra_long,state='disabled',textvariable=selectedCsvFile_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_selectedCsvFile_pos,y_multiplier_integer,selectedCsvFile)
 
 search_by_keyword_var.set(0)
 search_by_keyword_checkbox = tk.Checkbutton(window, text='Search corpus by single word(s)/collocation(s)', variable=search_by_keyword_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,search_by_keyword_checkbox,True)
 
 keyword_value_var.set('')
-keyword_value = tk.Entry(window,width=100,textvariable=keyword_value_var)
+keyword_value = tk.Entry(window,width=GUI_IO_util.widget_width_extra_long,textvariable=keyword_value_var)
 keyword_value.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+390,y_multiplier_integer,keyword_value)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_keyword_value_pos,y_multiplier_integer,keyword_value)
 
 
 def activate_options():
@@ -261,8 +262,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 extract_sentences_search_words_var.set('')
 extract_sentences_search_words_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
-extract_sentences_search_words_entry.configure(width=100, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+390, y_multiplier_integer,
+extract_sentences_search_words_entry.configure(width=GUI_IO_util.widget_width_extra_long, state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
                                                extract_sentences_search_words_entry)
 
 open_GUI_button = tk.Button(window, text='Open GUI for N-grams/co-occurrences VIEWER',command=lambda: call("python NGrams_CoOccurrences_Viewer_main.py", shell=True))

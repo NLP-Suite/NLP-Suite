@@ -275,11 +275,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 ASCII_var.set(0)
 ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent', variable=ASCII_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+440,y_multiplier_integer,ASCII_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_ASCII_pos,y_multiplier_integer,ASCII_checkbox)
 
-split_mergedFile_separator_entry_begin = tk.Entry(window, width=10,
+split_mergedFile_separator_entry_begin = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short,
                                                   textvariable=split_mergedFile_separator_entry_begin_var)
-split_mergedFile_separator_entry_end = tk.Entry(window, width=10, textvariable=split_mergedFile_separator_entry_end_var)
+split_mergedFile_separator_entry_end = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=split_mergedFile_separator_entry_end_var)
 
 split_mergedFile_var.set(0)
 split_mergedFile_checkbox = tk.Checkbutton(window,
@@ -292,12 +292,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 def display_split_mergedFile_separator(y_multiplier_integer):
     split_mergedFile_separator_entry_begin_var.set("<#@")
     split_mergedFile_separator_entry_begin.configure(state="disabled")
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 440, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos, y_multiplier_integer,
                                                    split_mergedFile_separator_entry_begin, True)
 
     split_mergedFile_separator_entry_end_var.set("#@>")
     split_mergedFile_separator_entry_end.configure(state="disabled")
-    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 520, y_multiplier_integer,
+    y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos, y_multiplier_integer,
                                                    split_mergedFile_separator_entry_end)
 
 
@@ -321,9 +321,9 @@ TOC_checkbox = tk.Checkbutton(window, text='Split using Table of Contents (TOC)'
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                TOC_checkbox, True)
 
-TOC_filename = tk.Entry(window, width=80, textvariable=TOC_filename_var)
+TOC_filename = tk.Entry(window, width=GUI_IO_util.widget_width_extra_long, textvariable=TOC_filename_var)
 TOC_filename.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                TOC_filename)
 
 docLength_var.set(0)
@@ -333,20 +333,20 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                docLength_checkbox, True)
 
 current_docLength_lb = tk.Label(window, text='Word count in selected file')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                current_docLength_lb, True)
 
-current_docLength = tk.Entry(window, width=10, state="disabled", textvariable=current_docLength_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 180, y_multiplier_integer,
+current_docLength = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short, state="disabled", textvariable=current_docLength_var)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_current_docLength_pos, y_multiplier_integer,
                                                current_docLength, True)
 
 split_docLength_lb = tk.Label(window, text='Max word count in split files')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 270, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_split_docLength_lb_pos, y_multiplier_integer,
                                                split_docLength_lb, True)
 
-split_docLength = tk.Entry(window, width=10, textvariable=split_docLength_var)
+split_docLength = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=split_docLength_var)
 split_docLength.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 480, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_split_docLength_pos, y_multiplier_integer,
                                                split_docLength)
 
 
@@ -372,20 +372,20 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 keyword_value_var.set('')
 keyword_value = tk.Entry(window, width=GUI_IO_util.widget_width_short, textvariable=keyword_value_var)
 keyword_value.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                keyword_value, True)
 
 lemmatize_var.set(0)
 lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
 lemmatize_checkbox.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 420, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_lemmatize_pos, y_multiplier_integer,
                                                lemmatize_checkbox, True)
 
 first_occurrence_var.set(0)
 first_occurrence_checkbox = tk.Checkbutton(window, text='First occurrence', variable=first_occurrence_var, onvalue=1,
                                            offvalue=0)
 first_occurrence_checkbox.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 550, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_first_occurrence_pos, y_multiplier_integer,
                                                first_occurrence_checkbox)
 
 extract_sentences_var.set(0)
@@ -396,8 +396,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 extract_sentences_search_words_var.set('')
 search_words_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
-search_words_entry.configure(width=100, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+search_words_entry.configure(width=GUI_IO_util.widget_width_extra_long, state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                search_words_entry)
 
 string_var.set(0)
@@ -407,9 +407,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                string_checkbox, True)
 
 string_value_var.set('')
-string_value = tk.Entry(window, width=100, textvariable=string_value_var)
+string_value = tk.Entry(window, width=GUI_IO_util.widget_width_extra_long, textvariable=string_value_var)
 string_value.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_file_directory_coordinate, y_multiplier_integer,
                                                string_value)
 
 blankLine_var.set(0)
@@ -428,13 +428,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 post_num_string_value_lb = tk.Label(window,
                                     text='Enter characters to be expected after a bullet-point number (e.g., . )')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_post_num_string_value_lb_pos, y_multiplier_integer,
                                                post_num_string_value_lb, True)
 
 post_num_string_value_var.set('')
-post_num_string_value = tk.Entry(window, width=10, textvariable=post_num_string_value_var)
+post_num_string_value = tk.Entry(window, width=GUI_IO_util.widget_width_extra_short, textvariable=post_num_string_value_var)
 post_num_string_value.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 500, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_post_num_string_value_pos, y_multiplier_integer,
                                                post_num_string_value)
 
 split_csv_by_documentID_var.set(0)
