@@ -91,7 +91,7 @@ def run(inputFilename, inputDir, outputDir,
 
         # create a subdirectory of the output directory
         outputCorefedDir = IO_files_util.make_output_subdirectory('', '', outputCorefDir, '',
-                                                            silent=False)
+                                                            silent=True)
         if outputCorefedDir == '':
             return
 

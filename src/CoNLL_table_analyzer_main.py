@@ -66,9 +66,9 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         return
 
     if all_analyses_var.get():
-        # create a subdirectory of the output directory
+        # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
         outputDir_temp = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_analyses',
-                                                           silent=False)
+                                                           silent=True)
         if outputDir_temp == '':
             return
 

@@ -49,7 +49,7 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
     # create the appropriate subdirectory to better organize output files
     outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                        label='SVO',
-                                                       silent=False)
+                                                       silent=True)
 
     # check that the SENNA dir as been setup
     SENNAdir, missing_external_software = IO_libraries_util.get_external_software_dir('SVO SENNA', 'SENNA')

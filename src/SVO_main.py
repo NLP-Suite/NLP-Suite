@@ -155,14 +155,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     # create an SVO subdirectory of the output directory
     outputSVODir = IO_files_util.make_output_subdirectory('','',outputSVODir, label='',
-                                                              silent=False)
+                                                              silent=True)
     if outputSVODir == '':
         return
 
     if coref_var:
         # create a subdirectory of the output directory
         outputCorefDir = IO_files_util.make_output_subdirectory('', '', outputCorefDir, '',
-                                                            silent=False)
+                                                            silent=True)
 
     outputDir = outputSVODir # outputDir is the main subdir inside the main output directory inside which will go gender,
     # the outputDir folder inside the main output folder will contain subdir SVO, gender, GIS, quote, etc.

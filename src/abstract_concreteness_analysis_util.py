@@ -167,7 +167,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 
 	# create a subdirectory of the output directory
 	outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='abstr-concret',
-													   silent=False)
+													   silent=True)
 	if outputDir == '':
 		return
 

@@ -63,7 +63,7 @@ def run(inputDir, outputDir, openOutputFiles,createCharts,chartPackage, num_topi
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory('', inputDir, outputDir, label='TM-Gensim',
-                                                       silent=False)
+                                                       silent=True)
     if outputDir == '':
         return
 

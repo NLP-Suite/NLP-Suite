@@ -168,7 +168,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='corpus_stats',
-                                                       silent=False)
+                                                       silent=True)
     if outputDir == '':
         return
 
@@ -523,7 +523,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='Ngrams'+hapax_label,
-                                                       silent=False)
+                                                       silent=True)
     if outputDir == '':
         return
 
@@ -1296,7 +1296,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='readability',
-                                                              silent=False)
+                                                              silent=True)
     if outputDir == '':
         return
 
@@ -1672,7 +1672,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='complexity',
-                                                              silent=False)
+                                                              silent=True)
     if outputDir == '':
         return
 

@@ -94,7 +94,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     # create the appropriate subdirectory to better organize output files
     outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                        label=annotator + '_spaCy_' + tail,
-                                                       silent=False)
+                                                       silent=True)
 
     # check if selected language is one.
     lang = ''

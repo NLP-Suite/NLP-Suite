@@ -278,7 +278,7 @@ def display_wordCloud_sep_color(inputFilename, outputDir, text, color_to_words, 
 def display_wordCloud(inputFilename,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, collocation, prefer_horizontal,bg_image = None, bg_image_flag = True, font = None, max_words=100):
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='abstr-concret',
-                                                       silent=False)
+                                                       silent=True)
     if outputDir == '':
         return
 
@@ -394,7 +394,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='wordcloud',
-                                                       silent=False)
+                                                       silent=True)
     if outputDir == '':
         return filesToOpen
 

@@ -129,7 +129,7 @@ def run(inputFilename,
     if NER_extractor and csv_file=='':
         # create a subdirectory of the output directory
         outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
-                                                           silent=False)
+                                                           silent=True)
         if outputDir == '':
             return
 
