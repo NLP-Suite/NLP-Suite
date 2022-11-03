@@ -53,7 +53,7 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory('', inputDir, outputDir, label='TM-MALLET',
-                                                       silent=False)
+                                                       silent=True)
     if outputDir == '':
         return
 

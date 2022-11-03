@@ -274,7 +274,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if hierarchical_clustering:
         # create HC subdir
         outputHCDir = IO_files_util.make_output_subdirectory('', '', outputDir, label='HC_cluster',
-                                                              silent=False)
+                                                              silent=True)
         if outputHCDir == '':
             return
         hier = cl.Clustering(rec_n_clusters)
@@ -294,7 +294,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if SVD:
         # create SVD subdir
         outputSVDDir = IO_files_util.make_output_subdirectory('', '', outputDir, label='SVD_cluster',
-                                                              silent=False)
+                                                              silent=True)
         if outputSVDDir == '':
             return
         svd = cl.SVDClustering(rec_n_clusters)
@@ -321,7 +321,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if NMF:
         # create NMF subdir
         outputNMFDir = IO_files_util.make_output_subdirectory('', '', outputDir, label='NMF_cluster',
-                                                              silent=False)
+                                                              silent=True)
         if outputNMFDir == '':
             return
 

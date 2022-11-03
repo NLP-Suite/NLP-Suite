@@ -387,7 +387,7 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_search',
-                                                       silent=False)
+                                                       silent=True)
     if outputDir == '':
         return outputDir, filesToOpen
 

@@ -59,14 +59,14 @@ def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
         # create output subdirectory
         outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                            label=annotator,
-                                                           silent=False)
+                                                           silent=True)
     else:
         # when coming from coref annotator, the outputDir will contain an unnecessary NLP_CoreNLP_coref_ string
         # if 'NLP_CoreNLP_coref_' in inputFilename:
         #     inputFilename = inputFilename.replace('NLP_CoreNLP_coref_', 'coref_')
         outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
                                                            label=annotator + "_CoreNLP",
-                                                           silent=False)
+                                                           silent=True)
     # create a subdirectory of the output directory
     outputJsonDir=''
     if export_json_var:

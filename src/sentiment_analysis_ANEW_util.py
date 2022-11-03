@@ -312,7 +312,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
 
     # create output subdirectory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_ANEW',
-                                                       silent=False)
+                                                       silent=True)
     if outputDir == '':
         return
 

@@ -122,7 +122,8 @@ def run(inputFilename,inputDir, outputDir,
             reminders_util.message_GIS_redundancy,
             True)
 
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='corpus', silent=True)
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                       label='corpus', silent=True)
     if outputDir == '':
         return
 

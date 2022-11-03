@@ -26,7 +26,7 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
         k = int(k_str)
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_K-sent-' + k_str,
-                                                       silent=False)
+                                                       silent=True)
     if outputDir == '':
         return outputDir, filesToOpen
 
