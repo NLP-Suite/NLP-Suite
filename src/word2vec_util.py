@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"word2vec_main.py",['os','tkinter', 'gensim', 'spacy', 'plotly'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"word2vec_main.py",['os','tkinter', 'gensim', 'spacy', 'stanza', 'plotly'])==False:
     sys.exit(0)
 
 
@@ -20,7 +20,8 @@ import IO_csv_util
 #Gensim
 import gensim
 from gensim.models import Word2Vec
-from nltk.tokenize import sent_tokenize
+# from nltk.tokenize import sent_tokenize
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
 #Visualization
 import plotly.express as px
@@ -116,7 +117,8 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     documentID = []
     print('Tokenizing...')
     for idx, txt in enumerate(all_input_docs.items()):
-        sentences = sent_tokenize(txt[1])
+        # sentences = sent_tokenize(txt[1])
+        sentences = sent_tokenize_stanza(stanzaPipeLine(txt[1]))
         sId = 0
         for sent in sentences:
             sId += 1
@@ -326,7 +328,8 @@ def sent_to_words(sent):
 def make_sentences(all_input_docs):
     all_txt = []
     for doc in all_input_docs:
-        sentences = sent_tokenize(doc)
+        # sentences = sent_tokenize(doc)
+        sentences = sent_tokenize_stanza(stanzaPipeLine(doc))
         sentences = [list(sent_to_words(sent)) for sent in sentences]
         all_txt += sentences
     return all_txt
