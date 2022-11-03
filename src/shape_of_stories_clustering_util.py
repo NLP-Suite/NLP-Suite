@@ -105,7 +105,7 @@ class NMFClustering:
         vector_clusters = [[] for _ in range(len(cluster_ids))]
         for i in range(len(vectors)):
             cluster_idx = clusters_indices[i]
-            vector_clusters[cluster_idx].append(vectors[i])
+            vector_clusters[cluster_idx-1].append(vectors[i])
         return vector_clusters, clusters_indices, vectors
 
 
@@ -222,7 +222,11 @@ def processCluster(cluster_indices,scoresFile_list, file_list, sentiment_vectors
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for i in range(rec_n_clusters):
-            documents = cluster_file[i]
+            # cluster_file may not include all sequential indices
+            try:
+                documents = cluster_file[i]
+            except:
+                continue
             for each in documents: #each: (narratiefile, sentiment_vector)
                 #===============ANGEL==============
                 match=re.search("^=hyperlink", each[0])

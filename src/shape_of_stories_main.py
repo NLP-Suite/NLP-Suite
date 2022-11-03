@@ -61,12 +61,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if not os.path.exists(sosDir):
         os.mkdir(sosDir)
 
+    # get the NLP package and language options
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
 
     tail = ''
     if inputFilename!='':
         sentiment_scores_input = inputFilename  # INPUT
         head, tail = os.path.split(sentiment_scores_input)
-        outputDir = os.path.join(sosDir, os.path.basename(head))
+        outputDir = os.path.join(sosDir, os.path.basename(tail[:-4]))
     elif inputDir!='':
         sentiment_scores_input = inputDir  # INPUT
         head, tail = os.path.split(sentiment_scores_input)
@@ -75,15 +79,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # check that the specific default directory exists under "Shape of Stories"
     if not os.path.exists(outputDir):
         os.mkdir(outputDir)
-    if GUI_util.output_dir_path.get()!=outputDir:
-        # outputDir = head
-        GUI_util.output_dir_path.set(outputDir)
-        title_options_shape_of_stories = ['Output directory']
-        message_shape_of_stories = 'The output directory was changed to:\n\n'+str(outputDir)
-        reminders_util.checkReminder(config_filename,
-                                     title_options_shape_of_stories,
-                                     message_shape_of_stories,
-                                     True)
+    # if GUI_util.output_dir_path.get()!=outputDir:
+    #     # outputDir = head
+    #     GUI_util.output_dir_path.set(outputDir)
+    #     title_options_shape_of_stories = ['Output directory']
+    #     message_shape_of_stories = 'The output directory was changed to:\n\n'+str(outputDir)
+    #     reminders_util.checkReminder(config_filename,
+    #                                  title_options_shape_of_stories,
+    #                                  message_shape_of_stories,
+    #                                  True)
 
 # RUN SCRIPTS ---------------------------------------------------------------------------
 
@@ -97,6 +101,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if corpus_analysis:
         statistics_txt_util.compute_corpus_statistics(GUI_util.window, inputDir, inputDir, outputDir, openOutputFiles,
                                                       createCharts, chartPackage)
+
+# ----------------------------------------------------------------------------------------------------
     # step 1: run sentiment analysis
     if sentimentAnalysis == 1:
 
@@ -132,6 +138,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             if tempOutputFiles == None:
                 return
             if len(tempOutputFiles) > 0:
+                sentiment_scores_input = tempOutputFiles[0]
                 filesToOpen.extend(tempOutputFiles)
 
         # spaCy  _______________________________________________________
@@ -163,6 +170,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 return
 
             if len(tempOutputFiles) > 0:
+                sentiment_scores_input = tempOutputFiles[0]
                 filesToOpen.extend(tempOutputFiles)
 
         # Stanford CORENLP  _______________________________________________________
@@ -179,14 +187,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
             if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
                 return
-            outputFilename = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                     outputDir, openOutputFiles, createCharts,
                                                                     chartPackage, 'sentiment', False,
                                                                     language_var, export_json_var,
                                                                     memory_var)
             # outputFilename=outputFilename[0] # annotators return a list and not a string
-            if len(outputFilename) > 0:
-                filesToOpen.extend(outputFilename)
+            if len(tempOutputFiles) > 0:
+                sentiment_scores_input = tempOutputFiles[0]
+                filesToOpen.extend(tempOutputFiles)
 
         # Stanza  _______________________________________________________
 
@@ -217,8 +226,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 return
 
             if len(tempOutputFiles) > 0:
+                sentiment_scores_input = tempOutputFiles[0]
                 filesToOpen.extend(tempOutputFiles)
 
+# step 2 ----------------------------------------------------------------------------------------------------
 
     if hierarchical_clustering or SVD or NMF or best_topic_estimation:
         nSAscoreFiles = IO_csv_util.GetMaxValueInCSVField(sentiment_scores_input, 'Shape of Stories', 'Document ID')
@@ -261,54 +272,70 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     # hierarchical clustering
     if hierarchical_clustering:
+        # create HC subdir
+        outputHCDir = IO_files_util.make_output_subdirectory('', '', outputDir, label='HC_cluster',
+                                                              silent=False)
+        if outputHCDir == '':
+            return
         hier = cl.Clustering(rec_n_clusters)
 
-        DendogramFilename, grouped_vectors, clusters_indices, vectors = hier.cluster(sentiment_vectors, outputDir)
+        DendogramFilename, grouped_vectors, clusters_indices, vectors = hier.cluster(sentiment_vectors, outputHCDir)
         filesToOpen.append(DendogramFilename)
         sentiment_vectors = vectors
-        clusters_file = cl.processCluster(clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters, os.path.join(outputDir, "Hierarchical Clustering Documents.csv"), inputDir)
-        vis = viz.Visualizer(outputDir)
+        clusters_file = cl.processCluster(clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters, os.path.join(outputHCDir, "Hierarchical Clustering Documents.csv"), inputDir)
+        vis = viz.Visualizer(outputHCDir)
         vis.visualize_clusters(nSAscoreFiles, grouped_vectors, "Hierarchical Clustering (HC)", "HC", clusters_file)
         for i in range(rec_n_clusters):
-            filesToOpen.append(os.path.join(outputDir, "HC_Cluster_" + str(i + 1) + ".png"))
-            filesToOpen.append(os.path.join(outputDir, "HC_Cluster_" + str(i + 1) + "_subplot.png"))
-        filesToOpen.append(os.path.join(outputDir, "Hierarchical Clustering Documents.csv"))
+            filesToOpen.append(os.path.join(outputHCDir, "HC_Cluster_" + str(i + 1) + ".png"))
+            filesToOpen.append(os.path.join(outputHCDir, "HC_Cluster_" + str(i + 1) + "_subplot.png"))
+        filesToOpen.append(os.path.join(outputHCDir, "Hierarchical_Clustering_Documents.csv"))
 
     # svd
     if SVD:
+        # create SVD subdir
+        outputSVDDir = IO_files_util.make_output_subdirectory('', '', outputDir, label='SVD_cluster',
+                                                              silent=False)
+        if outputSVDDir == '':
+            return
         svd = cl.SVDClustering(rec_n_clusters)
         pos_vector_clusters, pos_clusters_indices, pos_modes, neg_vector_clusters, neg_clusters_indices, neg_modes = \
             svd.cluster(sentiment_vectors)
         clusters_file = cl.processCluster(pos_clusters_indices,scoresFile_list, file_list, sentiment_vectors, rec_n_clusters,
-                       os.path.join(outputDir, "SVD Positive Documents.csv"), inputDir)
-        vis = viz.Visualizer(outputDir)
-        vis.visualize_clusters(nSAscoreFiles, pos_vector_clusters, "Singular Value Decomposition Positive (SVD Positive)", "SVDPositive",
+                       os.path.join(outputSVDDir, "SVD_Positive_Documents.csv"), inputDir)
+        vis = viz.Visualizer(outputSVDDir)
+        vis.visualize_clusters(nSAscoreFiles, pos_vector_clusters, "Singular Value Decomposition Positive (SVD Positive)", "SVD_Positive",
                                clusters_file, modes=pos_modes)
         clusters_file = cl.processCluster(neg_clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters,
-                       os.path.join(outputDir, "SVD Negative Documents.csv"), inputDir)
-        vis = viz.Visualizer(outputDir)
-        vis.visualize_clusters(nSAscoreFiles, neg_vector_clusters, "Singular Value Decomposition Negative (SVD Negative)", "SVDNegative",
+                       os.path.join(outputSVDDir, "SVD_Negative_Documents.csv"), inputDir)
+        vis = viz.Visualizer(outputSVDDir)
+        vis.visualize_clusters(nSAscoreFiles, neg_vector_clusters, "Singular Value Decomposition Negative (SVD Negative)", "SVD_Negative",
                                clusters_file, modes=neg_modes)
         for i in range(rec_n_clusters):
-            filesToOpen.append(os.path.join(outputDir, "SVD_Positive_Cluster_" + str(i + 1) + ".png"))
+            filesToOpen.append(os.path.join(outputSVDDir, "SVD_Positive_Cluster_" + str(i + 1) + ".png"))
         for i in range(rec_n_clusters):
-            filesToOpen.append(os.path.join(outputDir, "SVD_Negative_Cluster_" + str(i + 1) + ".png"))
-        filesToOpen.append(os.path.join(outputDir, "SVD Positive Documents.csv"))
-        filesToOpen.append(os.path.join(outputDir, "SVD Negative Documents.csv"))
+            filesToOpen.append(os.path.join(outputSVDDir, "SVD_Negative_Cluster_" + str(i + 1) + ".png"))
+        filesToOpen.append(os.path.join(outputSVDDir, "SVD_Positive_Documents.csv"))
+        filesToOpen.append(os.path.join(outputSVDDir, "SVD_Negative_Documents.csv"))
 
     # NMF
     if NMF:
+        # create NMF subdir
+        outputNMFDir = IO_files_util.make_output_subdirectory('', '', outputDir, label='NMF_cluster',
+                                                              silent=False)
+        if outputNMFDir == '':
+            return
+
         nmf = cl.NMFClustering(rec_n_clusters)
         grouped_vectors, clusters_indices, vectors = nmf.cluster(sentiment_vectors)
         sentiment_vectors = vectors
         clusters_file = cl.processCluster(clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters,
-                       os.path.join(outputDir, "NMF Documents.csv"), inputDir)
-        vis = viz.Visualizer(outputDir)
+                       os.path.join(outputNMFDir, "NMF_Documents.csv"), inputDir)
+        vis = viz.Visualizer(outputNMFDir)
         vis.visualize_clusters(nSAscoreFiles, grouped_vectors, "Non-negative Matrix Factorization (NMF)", "NMF", clusters_file)
         for i in range(rec_n_clusters):
-            filesToOpen.append(os.path.join(outputDir, "NMF_Cluster_" + str(i + 1) + ".png"))
-            filesToOpen.append(os.path.join(outputDir, "NMF_Cluster_" + str(i + 1) + "_subplot.png"))
-        filesToOpen.append(os.path.join(outputDir, "NMF Documents.csv"))
+            filesToOpen.append(os.path.join(outputNMFDir, "NMF_Cluster_" + str(i + 1) + ".png"))
+            filesToOpen.append(os.path.join(outputNMFDir, "NMF_Cluster_" + str(i + 1) + "_subplot.png"))
+        filesToOpen.append(os.path.join(outputNMFDir, "NMF_Documents.csv"))
 
     # best topic estimate
     if best_topic_estimation:
@@ -560,12 +587,17 @@ def check_IO_requirements(inputFilename, inputDir):
         if nSAscoreFiles == 0:
             Error = True
             return Error
-        if nSAscoreFiles < 50:
-            # too few csv files
-            mb.showwarning(title="Data warning: Data reduction algorithms",
-                                 message=csv_fileWarning)
-            Error = True
-            return Error
+        # if nSAscoreFiles < 50:
+        #     # too few csv files
+        #     answer = mb.askyesno("Data reduction algorithms",
+        #                          message=csv_fileWarning)
+        #     if answer == False:
+        #         Error = True
+        #         return Error
+            # mb.showwarning(title="Data warning: Data reduction algorithms",
+            #                      message=csv_fileWarning)
+            # Error = True
+            # return Error
 
     # check that there is inputDir value if sentiment analysis and/or corpus are checked
     if inputDir=='' and (sentimentAnalysis == True or corpus_analysis_var.get() == True):
@@ -596,12 +628,12 @@ def check_IO_requirements(inputFilename, inputDir):
             Error = True
             return Error
 
-        if nSAscoreFiles < 50:
-            # too few csv files
-            mb.showwarning(title="Data warning: Data reduction algorithms",
-                                 message=csv_dirWarning)
-            Error = True
-            return Error
+        # if nSAscoreFiles < 50:
+        #     # too few csv files
+        #     mb.showwarning(title="Data warning: Data reduction algorithms",
+        #                          message=csv_dirWarning)
+        #     Error = True
+        #     return Error
 
     return Error
 
@@ -686,5 +718,4 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 check_IO_requirements(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get())
 
-mb.showwarning(title="Warning",message="The shape of stories GUI is currently under re-design.\n\nPlease, revisit the option soon...")
 GUI_util.window.mainloop()

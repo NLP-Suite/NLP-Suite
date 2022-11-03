@@ -575,8 +575,8 @@ if sys.platform == 'darwin':  # Mac OS
 
 # Mac: shape_of_stories
 
-    shape_of_stories_sentiment_analysis_lb_pos = 270
-    shape_of_stories_sentiment_analysis_menu_pos = 500
+    shape_of_stories_sentiment_analysis_lb_pos = IO_configuration_menu
+    shape_of_stories_sentiment_analysis_menu_pos = setup_IO_brief_coordinate
     shape_of_stories_memory_lb_pos = 800
     shape_of_stories_memory_pos = 870
 
@@ -932,8 +932,8 @@ else: #windows and anything else
 
 # Windows: shape_of_stories
 
-    shape_of_stories_sentiment_analysis_lb_pos = 270
-    shape_of_stories_sentiment_analysis_menu_pos = 500
+    shape_of_stories_sentiment_analysis_lb_pos = IO_configuration_menu
+    shape_of_stories_sentiment_analysis_menu_pos = setup_IO_brief_coordinate
     shape_of_stories_memory_lb_pos = 800
     shape_of_stories_memory_pos = 870
 
