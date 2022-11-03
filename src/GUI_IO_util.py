@@ -584,7 +584,17 @@ if sys.platform == 'darwin':  # Mac OS
 
     parsers_annotators_parser_lb_pos = 160
 
-# Mac Word2Vec
+# Mac: file_search_byWord
+
+    file_search_byWord_selectedCsvFile_pos = 510
+    file_search_byWord_add_search_button_pos = setup_IO_brief_coordinate
+    file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate + 35
+    file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate + 100
+    file_search_byWord_openInputFile_button_pos = 300
+    file_search_byWord_keyword_value_pos = 510
+    file_search_byWord_extract_sentences_search_words_entry_pos = 510
+
+    # Mac Word2Vec
     Word2Vec_vector_size_entry_pos = 260
     Word2Vec_window_entry_pos = Word2Vec_vector_size_entry_pos
     Word2Vec_min_count_pos = Word2Vec_vector_size_entry_pos

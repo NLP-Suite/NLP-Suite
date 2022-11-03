@@ -186,7 +186,7 @@ def checkIO_Filename_InputDir(script, IO_values_local=0, fileExtension=''):
 pydict = {}
 pydict[""] = ["", 0]  # not available
 # https://stanfordnlp.github.io/CoreNLP/quote.html
-pydict["Parsers & annotators (BERT,NER  CoreNLP, spaCy, Stanza)"] = ["parsers_annotators_main.py", 1]
+pydict["Parsers & annotators (BERT, CoreNLP, spaCy, Stanza)"] = ["parsers_annotators_main.py", 1]
 pydict["CoreNLP annotator - date (normalized date)"] = ["parsers_annotators_main.py", 1]
 pydict["CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)"] = ["html_annotator_gender_main.py", 1]
 pydict["CoreNLP annotator - quote"] = ["parsers_annotators_main.py", 1]
