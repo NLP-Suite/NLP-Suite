@@ -77,7 +77,6 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             extract_date_from_text_var = True
         if key == 'extract_date_from_filename_var' and value == True:
             extract_date_from_filename_var = True
-        # TODO MINO: check for google_earth_var
         if key == 'google_earth_var' and value == True:
             google_earth_var = True
 
@@ -154,7 +153,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         # create the appropriate subdirectory to better organize output files
         outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                            label=annotator+'_Stanza_'+tail,
-                                                           silent=True)
+                                                           silent=False)
 
         nlp = stanza.Pipeline(lang=lang, processors=processors, verbose=False)
 
@@ -265,7 +264,6 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
         filesToOpen.append(svo_df_outputFilename)
 
-        # TODO MINO: create locations file for GIS if google_earth_var exists
         if google_earth_var is True:
             loc_df = visualize_GIS_maps_Stanza(svo_df)
             loc_df_outputFilename = kwargs["location_filename"]
@@ -365,7 +363,6 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
             #     temp_df['Sentence'] = sentence_dictionary[i]
             out_df = out_df.append(temp_df)
 
-    # TODO MINO: change sentiment analysis output for visualization
     if annotator_params=='sentiment':
         for i, sentence in enumerate(stanza_doc.sentences):
             out_df.at[i, 'Sentiment score'] = sentence.sentiment
@@ -398,6 +395,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
                 'sentiment_score':'Sentiment score'
             }
         )
+        out_df['Multi-Word Expression'] = None
         out_df['Record ID'] = None
         out_df['Sentence ID'] = None
         out_df['Document ID'] = docID
@@ -405,13 +403,45 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
 
         i = 0
         sidx = 1
+        max_idx = len(out_df)-1
         for row in out_df.iterrows():
             if i != 0 and row[1]['ID'] == 1 :
                 sidx+=1
 
             out_df.at[i, 'Record ID'] = row[1]['ID']
             out_df.at[i, 'Sentence ID'] = sidx
-
+            if "NER" in annotator_params:
+                curr_ner = out_df.at[i, 'NER']
+                # process each NER tag based on BIOES representation
+                if curr_ner.startswith('S'):
+                    out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']
+                elif curr_ner.startswith('B'):
+                    tmp_ner = curr_ner
+                    tmp_idx = i
+                    # find the final index that starts with E
+                    while tmp_ner.startswith('E') is False:
+                        tmp_ner = out_df.at[tmp_idx, 'NER']
+                        tmp_idx+=1
+                    print('###### CHECK FOR KOREA ######')
+                    print(out_df.at[i, 'Form'])
+                    print(tmp_idx)
+                    print(i)
+                    tmp_idx+=1
+                    # handle possible edge case where the next NER tag starts with S or current tag is a single tag
+                    if tmp_idx==i+1 or (i<=max_idx and out_df.at[i+1, 'NER'].startswith('S')):
+                        out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']
+                    else:
+                        # reversely iterate through the MWE from final index to current index, and update MWE accordingly
+                        for j in reversed(range(i, tmp_idx-1)):
+                            if j == tmp_idx-2:
+                                out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j, 'Form']
+                            elif out_df.at[j, 'NER'].startswith('B') or out_df.at[j, 'NER'].startswith('S'):
+                                out_df.at[j, 'Multi-Word Expression'] = out_df.at[j+1, 'Multi-Word Expression']
+                                # when finally reach the first tag (B), update existing MWE with complete MWE
+                                for k in reversed(range(i, tmp_idx-1)):
+                                    out_df.at[k, 'Multi-Word Expression'] = out_df.at[j, 'Multi-Word Expression']
+                            elif out_df.at[j, 'NER'].startswith('I'):
+                                out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j+1 , 'Multi-Word Expression']
             i+=1
 
         if 'Language' in out_df.columns:
@@ -423,12 +453,12 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
     if "Lemma"  in annotator_params:
         out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "NER" in annotator_params:
-        out_df = out_df[['ID', 'Form', 'NER', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+        out_df = out_df[['ID', 'Form', 'NER', 'Multi-Word Expression','Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "All POS" in annotator_params:
         out_df = out_df[['ID', 'Form', 'POStag', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "depparse" in annotator_params or "SVO" in annotator_params:
         out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
-    elif "sentiment" in annotator_params: # TODO MINO: change sentiment analysis output for visualization
+    elif "sentiment" in annotator_params:
         out_df = out_df[['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
     return out_df
 
@@ -439,7 +469,6 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
     if inputDir != '':
         inputFilename = inputDir + os.sep + tail
 
-    # TODO MINO: add Sentence column for SVO DataFrame
     # output: svo_df
     if extract_date_from_filename_var:
         svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Date'})
@@ -483,7 +512,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
                     svo_df, NER_found = extractNER(token, svo_df, c, 'Time', NER_found)
         # check if SVO is found, then add Sentence ID
         if SVO_found:
-            svo_df.at[c, 'Sentence'] =  sentence.text # TODO MINO: add value to Sentence column
+            svo_df.at[c, 'Sentence'] =  sentence.text
             svo_df.at[c, 'Sentence ID'] =  c+1
             SVO_found = False
         c+=1
@@ -513,7 +542,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
 
     return svo_df
 
-# TODO MINO NER: now only different word will be separated by semi-colon
+# only different word will be separated by semi-colon
 # extract NERs
 # stanza returns NER tags with BIOES representation of the entities
 # i.e) "Doctor" -> "Doctor" : "S-PERSON"
@@ -589,7 +618,6 @@ def date_in_filename(document, **kwargs):
         date, date_str, month, day, year = IO_files_util.getDateFromFileName(document,  date_format, date_separator_var, date_position_var)
     return date_str
 
-# TODO MINO
 # create locations file for GIS
 def visualize_GIS_maps_Stanza(svo_df):
     loc_df = pd.DataFrame(columns=['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
