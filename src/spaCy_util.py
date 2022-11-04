@@ -1,6 +1,6 @@
-import sys
 import GUI_util
 import IO_libraries_util
+import sys
 
 if IO_libraries_util.install_all_packages(GUI_util.window,"spaCy_util",['os','spacy','tkinter','pandas','warnings','subprocess'])==False:
     sys.exit(0)
@@ -94,7 +94,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     # create the appropriate subdirectory to better organize output files
     outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                        label=annotator + '_spaCy_' + tail,
-                                                       silent=True)
+                                                       silent=False)
 
     # check if selected language is one.
     lang = ''
@@ -240,6 +240,7 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
             out_df.at[i, 'is_sent_start'] = token.is_sent_start
             if hasattr(token, 'ent_type_'): # check if NER is annotated for each token
                 out_df.at[i,'NER'] = token.ent_type_
+                out_df.at[i,'Multi-Word Expression'] = token.ent_iob_ # add IOB tag of NERs to process later
 
         # add necessary columns after the loop
         out_df['Record ID'] = None
@@ -248,19 +249,45 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
         out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
 
         # get sentence sentiment
-        if "sentiment" in annotator_params:
-            sentence_sentiment = [round(sent._.blob.polarity,2) for sent in spacy_doc.sents]
+        # if "sentiment" in annotator_params:
+        #     sentence_sentiment = [round(sent._.blob.polarity,2) for sent in spacy_doc.sents]
 
         # enter Record and Sentence IDs
         i = 0
         sidx = 1
+        max_idx = len(out_df)-1
         for row in out_df.iterrows():
             if i != 0 and row[1]['is_sent_start'] == True:
                 sidx+=1
-            if "sentiment" in annotator_params:
-                out_df.at[i, 'Sentiment score'] = sentence_sentiment[sidx-1]
+            # if "sentiment" in annotator_params:
+            #     out_df.at[i, 'Sentiment score'] = sentence_sentiment[sidx-1]
             out_df.at[i, 'Record ID'] = int(row[1]['ID'])
             out_df.at[i, 'Sentence ID'] = int(sidx)
+
+            # process IOB tags for Multi-Word Expression column
+            mwe = out_df.at[i, 'Multi-Word Expression']
+            if mwe == 'B':
+                tmp = mwe
+                tmp_idx = i
+                # find the last index of this MWE
+                while tmp!='O' and tmp_idx < max_idx:
+                    tmp = out_df.at[tmp_idx, 'Multi-Word Expression']
+                    tmp_idx+=1
+                # if the tag of the next token is B or if it's a single tag with one B, MWE is itself
+                if tmp_idx==i+2 or (i<=max_idx and out_df.at[i+1, 'Multi-Word Expression']=='B'):
+                    out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']
+                else:
+                    # iterate reversely from the last tag to the first tag, and update the MWE
+                    for j in reversed(range(i, tmp_idx-1)):
+                        if j==tmp_idx-2:
+                            out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j, 'Form']
+                        elif out_df.at[j, 'Multi-Word Expression'] == 'B':
+                            out_df.at[j, 'Multi-Word Expression'] = out_df.at[j+1, 'Multi-Word Expression']
+                            # when finally reach the first tag (B), update existing MWE with complete MWE
+                            for k in reversed(range(i, tmp_idx-1)):
+                                out_df.at[k, 'Multi-Word Expression'] = out_df.at[j, 'Multi-Word Expression']
+                        elif out_df.at[j, 'Multi-Word Expression'] == 'I':
+                            out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j+1 , 'Multi-Word Expression']
             i+=1
 
         # drop 'is_sent_start' column
@@ -273,7 +300,7 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
     if "sentiment" in annotator_params:
         out_df = out_df[['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
     else:
-        out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+        out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'NER', 'Multi-Word Expression', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
 
     return out_df
 
