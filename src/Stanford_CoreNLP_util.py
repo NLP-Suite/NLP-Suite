@@ -219,6 +219,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     date_str = ''
     # language initialized here and reset later in language = value
     NERs = []
+
     for key, value in kwargs.items():
         if key == 'extract_date_from_text_var' and value == True:
             extract_date_from_text_var = True
@@ -243,7 +244,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
     produce_split_files=False
 
-
+    # more annotators may be added to SVO later depending upon the annotators_params passed to SVO
+    #   you do not want to add coref, quote, gender, unless required
+    SVO_annotators=['tokenize', 'ssplit', 'pos', 'depparse', 'natlog', 'lemma', 'ner']
     params_option = {
         'Sentence': {'annotators':['ssplit']},
         'tokenize': {'annotators':['tokenize']},
@@ -259,7 +262,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'gender': {'annotators': ['coref']},
         'sentiment': {'annotators':['sentiment']},
         'normalized-date': {'annotators': ['tokenize','ssplit','ner']},
-        'SVO':{"annotators": ['tokenize','ssplit','pos','depparse','natlog','lemma', 'ner', 'coref', 'quote']},
+        # more annotators may be added to SVO later depending upon the annotators_params passed to SVO
+        #   you do not want to add coref, quote, gender, unless required
+        'SVO':{"annotators": SVO_annotators},
+        # 'SVO':{"annotators": ['tokenize','ssplit','pos','depparse','natlog','lemma', 'ner', 'coref', 'quote']},
         'OpenIE':{"annotators": ['tokenize','ssplit','natlog','openie','ner']},
         'parser (pcfg)':{"annotators": ['tokenize','ssplit','pos','lemma','ner', 'parse','regexner']},
         'parser (nn)' :{"annotators": ['tokenize','ssplit','pos','lemma','ner','depparse','regexner']}
@@ -345,6 +351,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
     corefed_pronouns = 0#pronouns that are corefed
     Json_question_already_asked = False
     for annotator in annotator_params:
+        if 'coref' in annotator and not 'coref' in SVO_annotators:
+            SVO_annotators.append('coref')
+        if 'quote' in annotator and not 'quote' in SVO_annotators:
+            SVO_annotators.append('quote')
+        if 'gender' in annotator and not 'gender' in SVO_annotators:
+            SVO_annotators.append('gender')
         if not check_CoreNLP_language(config_filename, annotator, language):
             continue
         if "gender" in annotator or "quote" in annotator or "coref" in annotator or "SVO" in annotator or "OpenIE" in annotator or ("parser" in annotator and "nn" in annotator):

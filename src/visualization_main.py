@@ -186,8 +186,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
                                    select_csv_field_menu,
                                    True, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_menu_pos,
                                    "Select the three fields to be used for the network graph in the order node1, edge, node2 (e.g., SVO)")
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_select_csv_field_menu_pos, y_multiplier_integer,
-#                                                select_csv_field_menu, True)
 
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
@@ -220,8 +218,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
                                    dynamic_network_field_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos,
                                    "Select the field to be used for a dynamic network graph (e.g., Sentence ID) if you wish to compute a dynamic network graph")
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_dynamic_network_field_pos, y_multiplier_integer,
-#                                                dynamic_network_field_menu)
 
 csv_file_fields=tk.Entry(window, width=150,textvariable=selected_csv_file_fields_var)
 csv_file_fields.config(state='disabled')

@@ -372,6 +372,7 @@ def geocode(window,locations, inputFilename, outputDir,
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address])
 
 				# TODO MINO GIS create kml record
+				print("   Processing geocoded record for kml file for Google Earth Pro")
 				pnt = kml.newpoint(coords=[(lng, lat)])
 				pnt.style.iconstyle.icon.href = icon_url
 				# pnt.name = itemToGeocode
