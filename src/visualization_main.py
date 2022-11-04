@@ -19,15 +19,15 @@ import IO_csv_util
 import Gephi_util
 import IO_files_util
 
-# csv_file_field_list contains the column header of node1, edge, node2 (e.g., SVO)
-
 def runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var):
     fileBase = os.path.basename(inputFilename)[0:-4]
+    # csv_file_field_list contains the column header of node1, edge, node2 (e.g., SVO), and, possibly, the field for dynamic network
     return Gephi_util.create_gexf(GUI_util.window, fileBase, outputDir, inputFilename,
                                   csv_file_field_list[0], csv_file_field_list[1],
                                   csv_file_field_list[2], dynamic_network_field_var)
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, csv_file_field_list, dynamic_network_field_var):
+    filesToOpen = []
     if Gephi_var==False:
         mb.showwarning("Warning",
                        "No options have been selected.\n\nPlease, select an option to run and try again.")
@@ -39,7 +39,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, csv_file_field_list
             mb.showwarning("Warning",
                            "The input file must be a csv file.")
             return
-        filesToOpen = []
+        else:
+            if len(csv_file_field_list)<3:
+                mb.showwarning("Warning",
+                               "You must select at least three csv fields to be used in the computation of the network graph, in the order of node, edge, node (e.g., SVO).\n\nIf you wish to create a dynamic network graph you can select a fourth field to be used as the dynamic index (e.g., Sentence ID).")
+                return
         gexf_file = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
         filesToOpen.append(gexf_file)
         if openOutputFiles and len(filesToOpen) > 0:
@@ -177,8 +181,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 csv_field_var = tk.StringVar()
 select_csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
 select_csv_field_menu.configure(state='disabled', width=12)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_select_csv_field_menu_pos, y_multiplier_integer,
-                                               select_csv_field_menu, True)
+                                   select_csv_field_menu,
+                                   True, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_menu_pos,
+                                   "Select the three fields to be used for the network graph in the order node1, edge, node2 (e.g., SVO)")
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_select_csv_field_menu_pos, y_multiplier_integer,
+#                                                select_csv_field_menu, True)
 
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
@@ -206,8 +215,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
 dynamic_network_field_var = tk.StringVar()
 dynamic_network_field_menu = tk.OptionMenu(window, dynamic_network_field_var, *menu_values)
 dynamic_network_field_menu.configure(state='disabled', width=12)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_dynamic_network_field_pos, y_multiplier_integer,
-                                               dynamic_network_field_menu)
+                                   dynamic_network_field_menu,
+                                   False, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos,
+                                   "Select the field to be used for a dynamic network graph (e.g., Sentence ID) if you wish to compute a dynamic network graph")
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_dynamic_network_field_pos, y_multiplier_integer,
+#                                                dynamic_network_field_menu)
 
 csv_file_fields=tk.Entry(window, width=150,textvariable=selected_csv_file_fields_var)
 csv_file_fields.config(state='disabled')
@@ -254,6 +268,7 @@ Gephi_var.trace('w', callback = lambda x,y,z: activate_csv_fields_selection(Fals
 csv_field_var.trace('w', callback = lambda x,y,z: activate_csv_fields_selection(False,False))
 dynamic_network_field_var.trace('w', callback = lambda x,y,z: activate_csv_fields_selection(False,False))
 
+activate_csv_fields_selection(False,False)
 def display_selected_csv_fields(comingFrom_OK,comingFrom_Plus):
     if csv_field_var.get() != '' and not csv_field_var.get() in csv_file_field_list:
         csv_file_field_list.append(csv_field_var.get())
