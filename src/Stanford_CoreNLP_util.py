@@ -889,6 +889,8 @@ def date_get_tense(norm_date):
         tense = 'FUTURE'
     elif 'THIS' in norm_date or 'PRESENT' in norm_date:
         tense = 'PRESENT'
+    elif 'NEXT' in norm_date:
+        tense = 'NEXT'
         # print('present')
     else:
         tense = "OTHER" # TODO separate out days of week, months of year

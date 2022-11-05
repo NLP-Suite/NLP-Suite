@@ -352,8 +352,11 @@ def get_image(window,title,fileType):
 differentColumns_differentColor_var.set(0)
 differentColumns_differentColor_checkbox = tk.Checkbutton(window, variable=differentColumns_differentColor_var, onvalue=1, offvalue=0)
 differentColumns_differentColor_checkbox.config(text="Use different colors for different columns (csv file)")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,differentColumns_differentColor_checkbox)
-
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   differentColumns_differentColor_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "The option is available only when a non-CoNLL csv file is selected. CoNLL files are automatically processed for wordcloud visualization.")
 def displayWarning(*args):
     if collocation_var.get()==True and differentPOS_differentColor_var.get()==True:
         mb.showwarning(title='Warning',
@@ -370,40 +373,44 @@ if os.path.isfile(inputFilename.get()):
 
 field_lb = tk.Label(window, text='Select csv field')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,field_lb,True)
+
 if menu_values!='':
     csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
 else:
     csv_field_menu = tk.OptionMenu(window, csv_field_var, menu_values)
 csv_field_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_select_csv_field,y_multiplier_integer,csv_field_menu,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_select_csv_field, y_multiplier_integer,
+                                   csv_field_menu,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "The option is available only when a non-CoNLL csv file is selected. CoNLL files are automatically processed for wordcloud visualization.")
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_select_csv_field,y_multiplier_integer,csv_field_menu,True)
 
-def activateCsvOptions(*args):
-    csv_field_var.set('')
-    if inputFilename.get()[-4:] == '.csv':
-        import CoNLL_util
-        if not CoNLL_util.check_CoNLL(inputFilename.get(),True):
-            mb.showwarning("Warning",
-                           "You have selected to use wordclouds with a csv file that is not a CoNLL table.\n\nYou must select below the fields you want to use for wordclouds visualization by ticking the checkbox 'Use different colors...' and then selecting the csv field(s).")
-            return
-    if differentColumns_differentColor_var.get()==True:
-        if os.path.isfile(inputFilename.get()):
-            if inputFilename.get()[-4:]!='.csv':
-                mb.showwarning(title='Input file error', message='The Python 3 wordclouds algorithm expects in input a csv type file.\n\nPlease, select a csv input file and try again.')
-                # differentColumns_differentColors_var.set(0)
-                return
-            differentColumns_differentColor_checkbox.config(state='normal')
-            csv_field_menu.configure(state='normal')
-
-    else:
-        differentColumns_differentColor_checkbox.config(state='disabled')
-        csv_field_menu.configure(state='disabled')
-differentColumns_differentColor_var.trace('w',activateCsvOptions)
-
-activateCsvOptions()
+# def activateCsvOptions(*args):
+#     csv_field_var.set('')
+#     if differentColumns_differentColor_var.get()==True:
+#         if os.path.isfile(inputFilename.get()):
+#             if inputFilename.get()[-4:]!='.csv':
+#                 mb.showwarning(title='Input file error', message='The Python 3 wordclouds algorithm expects in input a csv type file.\n\nPlease, select a csv input file and try again.')
+#                 # differentColumns_differentColors_var.set(0)
+#                 return
+#             differentColumns_differentColor_checkbox.config(state='normal')
+#             csv_field_menu.configure(state='normal')
+#
+#     else:
+#         differentColumns_differentColor_checkbox.config(state='disabled')
+#         csv_field_menu.configure(state='disabled')
+# differentColumns_differentColor_var.trace('w',activateCsvOptions)
+#
+# activateCsvOptions()
 
 color_var.set(0)
 color_checkbox = tk.Checkbutton(window, text='Color ', state='disabled',variable=color_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_color_checkbox_pos,y_multiplier_integer,color_checkbox,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_color_checkbox_pos, y_multiplier_integer,
+                                   color_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.wordclouds_color_checkbox_pos,
+                                   "Tick the 'Color' checkbox to open the RGB color pallette to select the desired color for your selected csv field")
 
 color_lb = tk.Label(window, text='RGB color code ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_RGB_lb,y_multiplier_integer,color_lb,True)
@@ -516,6 +523,7 @@ def changed_filename(*args):
     # menu_values is the number of headers in the csv dictionary file
     if os.path.isfile(inputFilename.get()):
         if not inputFilename.get().endswith('csv'):
+            differentColumns_differentColor_var.set(0)
             differentColumns_differentColor_checkbox.config(state='disabled')
             csv_field_menu.configure(state='disabled')
             return
@@ -527,8 +535,9 @@ def changed_filename(*args):
             m.delete(0, "end")
             for s in menu_values:
                 m.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
-            activateCsvOptions()
+            # activateCsvOptions()
     else:
+        differentColumns_differentColor_var.set(0)
         differentColumns_differentColor_checkbox.config(state='disabled')
         csv_field_menu.configure(state='disabled')
         return
@@ -585,7 +594,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","\n\nThe filter options are only available when selecting Python as the wordcloud service to use. When available,\n\n   1. enter the maximum number of words to be displayed;\n   2. tick the 'Lemmas' checkbox if you wish to lemmatize the words in the input file(s);\n   3. tick the 'Stopwords' checkbox if you wish to exclude from processing stopwords present in the input file(s);\n   4. tick the 'Punctuation' checkbox if you wish to exclude from processing punctuation symbols present in the input file(s);\n   5. tick the 'Lowercase' checkbox if you wish to convert all words to lowercase to avoid having some words capitalized simply because they are the first words in a sentence;\n   6. tick the 'Collocation' checkbox if you wish to keep together common combinations of words (South Carolina; White House);\n   7. tick the 'Different colors for different POS tags' checkbox if you wish to display different POSTAG values (namely, nouns, verbs, adjectives, and adverbs) in different colors (RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, and GREY for ADVERBS; YELLOW for any other POS tags). For greater control over the use of different colors for different items, you can use the csv file option below with a CoNLL table as input. You will then be able to use NER or DEPREL and not just POSTAG (or more POSTAG values).\n\nStanford CoreNLP STANZA will be used to tokenize sentences, lemmatize words, and compute POS tags. Depending upon the number of files processed and length of files, the process can be time consuming. Please, be patient.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to open the web service Removebg (https://www.remove.bg/) that will prepare an image for use in the Python wordcloud algorithm, removing all image background and turning it into white.\n\nYou can then use the output png image file to create the wordcloud (see the widget 'Select png image' file).\n\nYOU MUST BE CONNECTED TO THE INTERNET.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select a png image file to be used to dislay the word cloud in the image.\n\nThe image must have a white background.\n\nYou can use the image file created via removebg (see the widget 'Prepare image').\n\nClick on the button to the right of the widget 'Select png image file' to open the file.\n\nTick the checkbox 'Use image contour only' if you want to use the contour of the image rather than the full image.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to run the Python 3 Andreas Mueller's package WordCloud (https://amueller.github.io/word_cloud/) and assign different colors to the values of different columns of a csv file.\n\nThus, if, from a file, you have extracted SVOs (Subjects, Verbs, Objects) or POSTAG values (nouns, verbs, and adjectives), saving these values in in different columns, this function will allow you to display the values in the different columns in different, user-selected colors (e.g., RED for the column of NOUNS, BLUE for the column of VERBS).\n\nThe wordcloud algorithm can color all the values of a column differently from all the values of another column. The algorithm is NOT setup to color differently the different values within a column (to accomplish this goal, you would need to manipulate first the csv file; for instance, if the input file is a CoNLL table, you could extract all the NER values COUNTRY, CITY, and STATE_OR_PROVINCE and the NER tag PERSON and ORGANIZATION, save them as two separate columns, and then use this new csv file in the current wordcloud algorithm).\n\nIn INPUT the algorithm expects a single csv file (e.g., a CoNLL table) rather than a text file or a directory.\n\nIn OUTPUT the algorithm creates a word cloud image file.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you are using a csv file in input and you wish to run the Python 3 Andreas Mueller's package WordCloud (https://amueller.github.io/word_cloud/) assigning different colors to the values of different columns of the csv file.\n\nThus, if, from a file, you have extracted SVOs (Subjects, Verbs, Objects) or POSTAG values (nouns, verbs, and adjectives), saving these values in in different columns, this function will allow you to display the values in the different columns in different, user-selected colors (e.g., RED for the column of NOUNS, BLUE for the column of VERBS).\n\nThe wordcloud algorithm can color all the values of a column differently from all the values of another column. The algorithm is NOT setup to color differently the different values within a column (to accomplish this goal, you would need to manipulate first the csv file; for instance, if the input file is a CoNLL table, you could extract all the NER values COUNTRY, CITY, and STATE_OR_PROVINCE and the NER tag PERSON and ORGANIZATION, save them as two separate columns, and then use this new csv file in the current wordcloud algorithm).\n\nIn INPUT the algorithm expects a single csv file (e.g., a CoNLL table) rather than a text file or a directory.\n\nIn OUTPUT the algorithm creates a word cloud image file.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Pease, select the sets of csv file fields and colors.\n\nPress the + button to add more csv file fields.\n\nPress the RESET button (or simply ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, untick the checkbox if you want to create intermediate image files for every txt file in a directory when processing all the txt files in a directory. These image files will be in addition to the final file which will include the words from all files in the directory (so, if there is 1 file in the directory, this will lead to 2 files, although in this case, the image utput will be exactly the same for each of he 2 files).\n\nWARNING! Unticking the checkbox may result in a very large number of intermediate files (1 word cloud image file for every txt file in the directory).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
