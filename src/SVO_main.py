@@ -450,12 +450,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             if inputFilename[-4:] == ".csv":
                 nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
                 if nRecords > 1:  # including headers; file is empty
-                    if IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename) > 1:  # including headers; file is empty
-                        myfile = IO_files_util.openCSVFile(inputFilename, 'r')
-                        #CYNTHIA
-                        out_file = wordclouds_util.SVOWordCloud(myfile, inputFilename, outputSVODir + os.sep + 'SVO', "", prefer_horizontal=.9)
-                        myfile.close()
-                        filesToOpen.append(out_file)
+                    myfile = IO_files_util.openCSVFile(inputFilename, 'r')
+                    #CYNTHIA
+                    out_file = wordclouds_util.SVOWordCloud(myfile, inputFilename, outputSVODir + os.sep + 'SVO', "", prefer_horizontal=.9)
+                    myfile.close()
+                    filesToOpen.append(out_file)
             else:
                 for f in svo_result_list:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
@@ -465,7 +464,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         # out_file = wordclouds_util.SVOWordCloud(myfile, f, outputSVODir + os.sep + 'SVO', "", prefer_horizontal=.9)
                         out_file = wordclouds_util.SVOWordCloud(myfile, f, outputSVOSVODir, "", prefer_horizontal=.9)
                         myfile.close()
-                        if "CoreNLP" in f or "SENNA_SVO" in f:
+                        if "CoreNLP" in f or "OpenIE" in f or "SENNA_SVO" in f or "SpaCy" in f or "Stanza" in f:
                             filesToOpen.append(out_file)
 
 # GIS maps _____________________________________________________
@@ -1029,7 +1028,7 @@ warnUser()
 
 
 def activate_NLP_options(*args):
-    global error, package, language_list, y_multiplier_integer
+    global error, package_basics, package, language, language_var, language_list, y_multiplier_integer
 
     # after update no display
     error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.handle_setup_options(y_multiplier_integer, scriptName)

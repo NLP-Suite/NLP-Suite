@@ -303,7 +303,7 @@ if sys.platform == 'darwin':  # Mac OS
     widget_width_extra_long = 100
 
 # top line of widgets MAC
-    select_file_directory_button_width=25
+    select_file_directory_button_width=23
     IO_button_name_width=25
     open_file_directory_button_width = 1
 
@@ -553,15 +553,15 @@ if sys.platform == 'darwin':  # Mac OS
     style_vocabulary_analysis_menu_pos = 750
 
 # Mac NGrams_Co_occurrences_Viewer
-    NGrams_Co_occurrences_Viewer_search_words_entry_pos = 260
+    NGrams_Co_occurrences_Viewer_search_words_entry_pos = 300
     NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
     NGrams_Co_occurrences_Viewer_date_options_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = 500
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = 600
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = 535#510
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = 625 #600
     NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
-    NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos  # 650
-    NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = NGrams_Co_occurrences_Viewer_add_viewer_button_pos + 40  # 690
-    NGrams_Co_occurrences_Viewer_show_viewer_button_pos = NGrams_Co_occurrences_Viewer_reset_viewer_button_pos + 60  # 750
+    NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos
+    NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = 594
+    NGrams_Co_occurrences_Viewer_show_viewer_button_pos = 680
 
 # Mac: visualization_main
 
@@ -678,7 +678,7 @@ else: #windows and anything else
     widget_width_extra_short = 10
     widget_width_short = 50
     widget_width_long = 70
-    widget_width_extra_long = 100
+    widget_width_extra_long = 120
 
 # top line of widgets Windows
     select_file_directory_button_width=30

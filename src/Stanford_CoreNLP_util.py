@@ -3,6 +3,11 @@
 #2. Type in kill -9 ***** to kill that subprocess
 #P.S ***** is the 5 digit PID
 
+# originally designed by Yi Wang March 2020
+# extensively edited and finalized by Claude Hu Fall 2020-2021
+# edited for SVO by Cynthia Dong Fall 2020
+# Edited by Roberto, Mino Cha, Jeongrok Yu, Seong Kim Fall 2022
+
 """
 TODO
 https://stanfordnlp.github.io/CoreNLP/memory-time.html
@@ -265,7 +270,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
         # more annotators may be added to SVO later depending upon the annotators_params passed to SVO
         #   you do not want to add coref, quote, gender, unless required
         'SVO':{"annotators": SVO_annotators},
-        # 'SVO':{"annotators": ['tokenize','ssplit','pos','depparse','natlog','lemma', 'ner', 'coref', 'quote']},
         'OpenIE':{"annotators": ['tokenize','ssplit','natlog','openie','ner']},
         'parser (pcfg)':{"annotators": ['tokenize','ssplit','pos','lemma','ner', 'parse','regexner']},
         'parser (nn)' :{"annotators": ['tokenize','ssplit','pos','lemma','ner','depparse','regexner']}
@@ -502,7 +506,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # record the time consumption before annotating text in each file
     processing_doc = ''
 
-    # nlp = StanfordCoreNLP('http://localhost:9000')
+    # The following options were tested to expedite processing time of CoreNLP
+    # WORKED! 35% time reduction Test whether calling the local host inside or outside the for-loop is faster for various documents
+    # DOES NOT WORK Increase and decrease the total amount of words within file and test the performance
+    # DOES NOT WORK Test to see if file splitting process influences the performance
+
+    nlp = StanfordCoreNLP('http://localhost:9000')
     for docName in inputDocs:
         docID = docID + 1
         head, tail = os.path.split(docName)
@@ -532,7 +541,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_percent,
                                              reminders_util.message_CoreNLP_percent, True)
                 text=text.replace("%","percent")
-            nlp = StanfordCoreNLP('http://localhost:9000')
+            # nlp = StanfordCoreNLP('http://localhost:9000')
             # nlp = StanfordCoreNLP('http://point.dd.works:9000')
 
             #if there's only one annotator and it uses neural nerwork model, skip annoatiting with PCFG to save time

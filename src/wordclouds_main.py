@@ -53,6 +53,14 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
         mb.showerror(title='Warning', message='You have selected the option of using different colors for different columns of a csv file. But...you have not selected the combination of fields and colors.\n\nPlease, complete your selections and try again.')
         return
 
+    if inputFilename[-4:] == '.csv':
+        import CoNLL_util
+        if not CoNLL_util.check_CoNLL(inputFilename,True):
+            if not differentColumns_differentColors:
+                mb.showwarning("Warning",
+                               "You have selected to use wordclouds with a csv file that is not a CoNLL table.\n\nYou must select the fields you want to use for wordclouds visualization by ticking the checkbox 'Use different colors...' and then selecting the csv field(s).\n\nPlease, select those options and try again.")
+                return
+
     if differentColumns_differentColors == True:
         visualization_tools = 'Python WordCloud'
 
@@ -371,15 +379,23 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_selec
 
 def activateCsvOptions(*args):
     csv_field_var.set('')
+    if inputFilename.get()[-4:] == '.csv':
+        import CoNLL_util
+        if not CoNLL_util.check_CoNLL(inputFilename.get(),True):
+            mb.showwarning("Warning",
+                           "You have selected to use wordclouds with a csv file that is not a CoNLL table.\n\nYou must select below the fields you want to use for wordclouds visualization by ticking the checkbox 'Use different colors...' and then selecting the csv field(s).")
+            return
     if differentColumns_differentColor_var.get()==True:
         if os.path.isfile(inputFilename.get()):
             if inputFilename.get()[-4:]!='.csv':
                 mb.showwarning(title='Input file error', message='The Python 3 wordclouds algorithm expects in input a csv type file.\n\nPlease, select a csv input file and try again.')
                 # differentColumns_differentColors_var.set(0)
                 return
+            differentColumns_differentColor_checkbox.config(state='normal')
             csv_field_menu.configure(state='normal')
 
     else:
+        differentColumns_differentColor_checkbox.config(state='disabled')
         csv_field_menu.configure(state='disabled')
 differentColumns_differentColor_var.trace('w',activateCsvOptions)
 
@@ -496,19 +512,26 @@ activate_Python_options()
 
 def changed_filename(*args):
     # if differentColumns_differentColors_var.get()==True:
-
     clear_field_color_list()
     # menu_values is the number of headers in the csv dictionary file
     if os.path.isfile(inputFilename.get()):
         if not inputFilename.get().endswith('csv'):
+            differentColumns_differentColor_checkbox.config(state='disabled')
+            csv_field_menu.configure(state='disabled')
             return
+        else:
+            differentColumns_differentColor_checkbox.config(state='normal')
+            csv_field_menu.configure(state='normal')
+            menu_values = IO_csv_util.get_csvfile_headers(inputFilename.get())
+            m = csv_field_menu["menu"]
+            m.delete(0, "end")
+            for s in menu_values:
+                m.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
+            activateCsvOptions()
     else:
+        differentColumns_differentColor_checkbox.config(state='disabled')
+        csv_field_menu.configure(state='disabled')
         return
-    menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
-    m = csv_field_menu["menu"]
-    m.delete(0,"end")
-    for s in menu_values:
-        m.add_command(label=s,command=lambda value=s:csv_field_var.set(value))
 inputFilename.trace('w',changed_filename)
 input_main_dir_path.trace('w',changed_filename)
 
@@ -570,13 +593,13 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
-readMe_message="The Python 3 script and online services display the content of text files as word cloud.\n\nA word cloud, also known as text cloud or tag cloud, is a collection of words depicted visually in different sizes (and colors). The bigger and bolder the word appears, the more often it’s mentioned within a given text and the more important it is.\n\nDifferent, freeware, word cloud applications are available: 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle'. These applications require internet connection.\n\nThe script also provides Python word clouds (via Andreas Mueller's Python package WordCloud https://amueller.github.io/word_cloud/) for which no internet connection is required.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files or a csv file (e.g., a CoNLL table).\n\nIn OUTPUT the algorithms create word cloud image file(s)."
+readMe_message="The Python 3 script and online services display the content of text files as word cloud.\n\nA word cloud, also known as text cloud or tag cloud, is a collection of words depicted visually in different sizes (and colors). The bigger and bolder the word appears, the more often it’s mentioned within a given text and the more important it is.\n\nDifferent, freeware, word cloud applications are available: 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle'. These applications require internet connection.\n\nThe script also provides Python word clouds (via Andreas Mueller's Python package WordCloud https://amueller.github.io/word_cloud/) for which no internet connection is required.\n\nIn INPUT the algorithm expects a single txt file or a directory of txt files or a csv file (e.g., a CoNLL table). When a csv CoNLL file is selected the algorithm processes automatically the wordcloud visualization. When a non-CoNLL csv file is selected, you must select the csv field to be used for wordcloud visualization.\n\nIn OUTPUT the algorithms create word cloud image file(s)."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 
 def activate_NLP_options(*args):
-    global error, package_basics, package, language_list
+    global error, package_basics, package, language, language_var, language_list
     error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
@@ -587,9 +610,13 @@ if error:
     mb.showwarning(title='Warning',
                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
     call("python NLP_setup_package_language_main.py", shell=True)
+    # this will display the correct hover-over info after the python call, in case options were changed
+    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
-title=["NLP setup options"]
-message="Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " + ', '.join(language_list) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " + package_basics + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
+title = ["NLP setup options"]
+message = "Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " \
+          + language + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " \
+          + package_basics + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
 reminders_util.checkReminder(config_filename, title, message)
 
 GUI_util.window.mainloop()

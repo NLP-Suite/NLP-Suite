@@ -224,7 +224,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 # by DOCUMENT
         if byDoc:
             remove_hyperlinks=True
-            if n_documents > 1:
+            if n_documents > 0:
 # by DOCUMENT counting the qualitative values ---------------------------------------------------------------------------
                 if count_var==1: # for alphabetic fields that need to be counted for display in a chart
                     # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted to be used
@@ -237,10 +237,10 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
                                                                     inputFilename, None, outputDir,
                                                                     False, createCharts, chartPackage,
-                                                                    selected_col=columns_to_be_plotted_numeric,
+                                                                    # selected_col=columns_to_be_plotted_numeric,
+                                                                    selected_col=columns_to_be_plotted_yAxis,
                                                                     hover_col=[],
-                                                                    # group_col=[[columns_to_be_plotted_byDoc[0][1]]],
-                                                                    group_col=columns_to_be_plotted_byDoc,
+                                                                    group_col=['Document ID','Document'],
                                                                     fileNameType='CSV', chartType='',pivot = pivot)
                     new_inputFilename=temp_outputFilename[0]
                     # temp_outputFilename[0] is the frequency filename (with no hyperlinks)
@@ -259,13 +259,16 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                         for i in range(columns_to_be_plotted_byDoc_len,len(headers)):
                             columns_to_be_plotted_byDoc.append([columns_to_be_plotted_byDoc_len-1,i])
                     else:
-                        # 0 is the Document with no-hyperlinks,
-                        # 2 is Frequency,
-                        # 1 is the column plotted (e.g., Gender) in temp_outputFilename
+                        # 1 is the Document with no-hyperlinks,
+                        # 3 is Frequency,
+                        # 2 is the column plotted (e.g., Gender) in temp_outputFilename
                         # TODO TONY we should ask the same type of question for columns that are already in quantitative form if we want to compute a single MEAN value
                         sel_column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,2)
                         # columns_to_be_plotted_byDoc = [[0, 2]] # will give one bar
-                        columns_to_be_plotted_byDoc = [[0, 2, 1]] # will give different bars for each value
+                        if n_documents == 1:
+                            columns_to_be_plotted_byDoc = [[2, 3]]  # will give different bars for each value
+                        else:
+                            columns_to_be_plotted_byDoc = [[1, 3, 2]] # will give different bars for each value
                         # columns_to_be_plotted_byDoc = [[0, 1, 2]] # No!!!!!!!!!!!
                         if chartPackage=="Excel":
                             column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,1)
@@ -281,7 +284,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                             #         # Document, Field to be plotted (e.g., POStag), Sentence ID
                             #         columns_to_be_plotted_byDoc = [[1, 3, 2]]
                     # reset the original value to be used in charts by sentence index
-# by DOCUMENT NOT counting quantitative values ---------------------------------------------------------------------------
+# by DOCUMENT NOT counting; quantitative values ---------------------------------------------------------------------------
                 else:
                     new_inputFilename=inputFilename
                 if outputFileNameType != '':
@@ -400,13 +403,13 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         # TODO THE FIELD MUST CONTAIN NUMERIC VALUES
         # plotList (a list []) contains the columns headers to be used to compute their stats
         if len(groupByList)>0: # compute only if list is not empty
-            # if count_var==1:
-            #     outputFilename = temp_outputFilename[0]
-            # else:
-            #     outputFilename = inputFilename
+            if count_var==1:
+                temp_inputFilename = temp_outputFilename[0]
+            else:
+                temp_inputFilename = inputFilename
             if plotList == []:
                 plotList = ['Frequency']
-            tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, inputFilename, outputDir,
+            tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, temp_inputFilename, outputDir,
                                                                                outputFileNameType, groupByList, plotList, chart_title_label,
                                                                                createCharts,
                                                                                chartPackage)
