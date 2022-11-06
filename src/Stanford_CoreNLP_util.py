@@ -309,9 +309,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'coref table': ["Pronoun", "Reference", "Reference Start ID in Sentence",
                         "First Reference Sentence ID", "First Reference Sentence", "Pronoun Start ID in Reference Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
         'gender':['Word', 'Gender', 'Sentence ID', 'Sentence','Document ID', 'Document'],
-        'normalized-date':["Word", "Normalized date", "tid","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
-        'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Date type','Normalized date','Sentence ID', 'Sentence','Document ID', 'Document'],
-        'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Location", 'Person', 'Date type',
+        'normalized-date':["Date expression", "Normalized date", "tid","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
+        'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Date expression','Normalized date','Sentence ID', 'Sentence','Document ID', 'Document'],
+        'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Location", 'Person', 'Date expression',
                    'Normalized date', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         # Chen
         # added Deps column

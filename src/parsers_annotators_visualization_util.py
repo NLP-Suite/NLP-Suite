@@ -95,10 +95,23 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
             (('SVO' in str(annotator_params) and 'SVO' in outputFilename)) or \
             ('OpenIE' in str(annotator_params) and 'OpenIE' in outputFilename):
 
-        # TODO Mino
-        # if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True:
-        #     visualize_GIS_maps(kwargs, locations, documentID, document, date_str)
+        # Date expressions are in the form yesterday, tomorrow morning, the day before Christmas
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                           outputDir,
+                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date expression'],
+                                                           chartTitle='Frequency Distribution of Date Expressions',
+                                                           # count_var = 1 for columns of alphabetic values
+                                                           count_var=1, hover_label=[],
+                                                           outputFileNameType='date-express', #'NER_info_bar',
+                                                           column_xAxis_label='Date expression',
+                                                           groupByList=['Document ID','Document'],
+                                                           plotList=['Frequency'],
+                                                           chart_title_label='Date Expressions')
+        if chart_outputFilename!=None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
+        # normalized dates are in the form PAST_REF, NEXT_IMMEDIATE P1D, ...
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Normalized date'],
@@ -114,6 +127,7 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
 
+        # Date types are in the form PAST, PRESENT, OTHER
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date type'],

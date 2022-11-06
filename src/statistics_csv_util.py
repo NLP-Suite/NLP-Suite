@@ -180,8 +180,9 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
         except ValueError as e:
             IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Input file error',
                     "There was an error reading the input file\n\n" + \
-                    str(inputFilename) + "\n\nto group by " + str(groupByField) + "\n\nERROR RAISED: " + str(e), \
-                    False, '', False, silent=False)
+                    str(inputFilename) + "\n\nto group by " + str(groupByField) + "\n\nERROR RAISED: " + str(e) +
+                    "\n\nIn terminal/command line and in the NLP environment, try pip install scipy --upgrade and pip install numpy --upgrade", \
+                    False, '', True, silent=False)
             return None
     if len(plotField) > 0:
         column_name=plotField[0]
