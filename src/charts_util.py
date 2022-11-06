@@ -38,8 +38,8 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
                                count_var=0, column_yAxis_field_list = []):
     # TODO change to pandas half of this function relies on csv half on pandas, reading in data twice!
     # TODO temporary to measure process time
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Excel prepare_data_to_be_plotted_inExcel at',
-                                                 True, '', True, '', True)
+    # startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Excel prepare_data_to_be_plotted_inExcel at',
+    #                                              True, '', True, '', True)
     withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
     data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
     if len(data)==0:
@@ -68,8 +68,8 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
                 return
         data_to_be_plotted = get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,data)
     # TODO temporary to measure process time
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Excel prepare_data_to_be_plotted_inExcel at',
-                                       True, '', True, startTime, True)
+    # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Excel prepare_data_to_be_plotted_inExcel at',
+    #                                    True, '', True, startTime, True)
     return data_to_be_plotted
 
 

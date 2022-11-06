@@ -173,7 +173,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
     if len(groupByField)>0:
         try:
             # np as numpy
-            df_group = df.groupby(groupByField).agg([np.sum, np.mean, lambda x: stats.mode(x)[0], np.median,
+            df_group = df.groupby(groupByField).agg([np.sum, np.mean, lambda x: stats.mode(x, keepdims=False)[0], np.median,
                                                      np.std, np.min, np.max,
                                                      stats.skew, stats.kurtosis,
                                                      percentile(25), percentile(50), percentile(75)])

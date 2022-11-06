@@ -194,7 +194,7 @@ def SVOWordCloud(svoFile, inputFilename, outputDir, transformed_image_mask, pref
             color_list[green_code].append(" ".join(["".join(filter(str.isalnum, s)) for s in row["Object (O)"].lower().split(" ")]))
     words_count_dict = Counter(words_list)
     # print (words_count_dict)
-    max_words = 100
+    max_words = 1000 # TODO MINO: make max_words bigger to include generally lower frequency "Object (O)" words
     if len(transformed_image_mask) != 0:
         wc = WordCloud(width = 800, height = 800, max_words=max_words, prefer_horizontal=prefer_horizontal, mask=transformed_image_mask,
                        contour_width=3, contour_color='firebrick', background_color ='white').generate_from_frequencies(words_count_dict)

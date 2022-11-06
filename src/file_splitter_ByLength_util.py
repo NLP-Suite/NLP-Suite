@@ -80,7 +80,7 @@ def splitDocument_byLength(window, config_filename, filename_path,output_path=''
             # print("length",length)
     F.close()
     if length > maxLength:
-        # IO_user_interface_util.timed_alert(window, 3000, 'File split warning', 'The file ' + filename_path + ' was too long for ' + software + ' to process, and was split into sub-files and stored in the split_files sub-folder:\n\n' + new_splitFiles_folder)
+        # IO_user_interface_util.timed_alert(window, 2000, 'File split warning', 'The file ' + filename_path + ' was too long for ' + software + ' to process, and was split into sub-files and stored in the split_files sub-folder:\n\n' + new_splitFiles_folder)
         if os.path.exists(new_splitFiles_folder):
             shutil.rmtree(new_splitFiles_folder)
         try:
@@ -137,7 +137,7 @@ def split_byLength(window,input_path,filename,output_path, maxLength, inSentence
         sentences = sent_tokenize_stanza(stanzaPipeLine(text)) #sentnece list of the input txt
     F.close()
     if maxLength > len(word_tokenize_stanza(stanzaPipeLine(text))):
-        IO_user_interface_util.timed_alert(window, 3000, 'File split warning', 'The length of file ' + filename + ' is less than ' + str(maxLength))
+        IO_user_interface_util.timed_alert(window, 2000, 'File split warning', 'The length of file ' + filename + ' is less than ' + str(maxLength))
         subfile = open(output_path+"/"+title+"_1"+".txt", 'w',encoding='utf-8',errors='ignore')
         subfile.write(text)
         return

@@ -104,7 +104,7 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
 def computePairwiseDistances(window,inputFilename,outputDir,createCharts, headers,locationColumnNumber,locationColumnNumber2,locationColumnName,locationColumnName2,distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue):
     filesToOpen=[]
     currList=[]
-    startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS distance at',
+    startTime=IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS distance at',
                                                  True, '', True, '', True)
     if distinctValues==True:
         distanceoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', locationColumnName, locationColumnName2, 'DISTINCT', False, True)
@@ -183,7 +183,7 @@ def computePairwiseDistances(window,inputFilename,outputDir,createCharts, header
         # 	filesToOpen.append(chart_outputFilename)
 
 
-    IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime, True)
+    IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime, True)
     return filesToOpen
 
 # The function computes the distance between a pre-selected city and all cities in a list
@@ -195,7 +195,7 @@ def computePairwiseDistances(window,inputFilename,outputDir,createCharts, header
 def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createCharts, geolocator,geocoder,InputIsGeocoded,baselineLocation,headers,locationColumnNumber,locationColumnName,distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue):
     currList=[]
     filesToOpen=[]
-    startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS distance from ' + baselineLocation + ' at',
+    startTime=IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS distance from ' + baselineLocation + ' at',
                                                  True, '', True, '', True)
     if distinctValues==True:
         distanceoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', 'distance', baselineLocation, locationColumnName, 'DISTINCT', False, True)
@@ -212,7 +212,7 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createCh
         import IO_internet_util
         if not IO_internet_util.check_internet_availability_warning('GIS geocoder'):
             return
-        startTime=IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS geocoder at',
+        startTime=IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS geocoder at',
                                                      True, '', True, '', True)
         geoName='geo-'+str(geocoder[:3])
         geocodedLocationsoutputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS', geoName, locationColumnName, '', '', False, True)
@@ -314,5 +314,5 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createCh
         # if len(chart_outputFilename) > 0:
         # 	filesToOpen.append(chart_outputFilename)
 
-    IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime,True)
+    IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running GIS distance at', True, '', True, startTime,True)
     return filesToOpen

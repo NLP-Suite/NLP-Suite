@@ -15,12 +15,6 @@ conda activate NLP
 conda install pytorch torchvision cudatoolkit -c pytorch
 pip install -r ../src/requirements.txt
 
-conda activate NLP
-python src\NLP_setup_download_nltk_stanza.py
-
-conda activate NLP
-python -m spacy download en
-
 $WshShell = New-Object -comObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\NLP_Suite.lnk")
 $Shortcut.TargetPath = "${PSScriptRoot}\run_NLP-Suite.bat"

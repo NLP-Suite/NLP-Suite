@@ -117,8 +117,13 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     if GoogleEarthProDir == None:
         return
 
-    startTime = IO_user_interface_util.timed_alert(window, 3000, 'Analysis start', 'Started running GIS pipeline at',
+    startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS pipeline at',
                                                    True, '', True, '', False)
+
+    reminders_util.checkReminder(config_filename,
+                                 reminders_util.title_options_GIS_timing,
+                                 reminders_util.message_GIS_timing,
+                                 True)
 
     #
     # ------------------------------------------------------------------------------------
@@ -198,6 +203,8 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         kmloutputFilename = \
             GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
                 locationColumnName,geocoder,country_bias,area_var,restrict,encodingValue,split_locations_prefix,split_locations_suffix)
+        if kmloutputFilename!='':
+            filesToOpen.append(kmloutputFilename)
         if geocodedLocationsOutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
             return
     else:
@@ -296,38 +303,39 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     # Google Earth Pro
     # ------------------------------------------------------------------------------------
 
-    if 'Google Earth Pro' in mapping_package and kmloutputFilename == '':
-        if kmloutputFilename == '':
-            reminders_util.checkReminder(config_filename,
-                            reminders_util.title_options_Google_Earth_Pro_download,
-                            reminders_util.message_Google_Earth_Pro_download)
-
-        if inputIsCoNLL==True:
-            inputFilename=outputCsvLocationsOnly
-        headers=IO_csv_util.get_csvfile_headers(inputFilename)
-        for header in headers:
-            if 'Sentence' == header:
-                if len(description_csv_field_var_list)==0:
-                    description_csv_field_var_list = ['Sentence']
-        if not 'Sentence' in description_csv_field_var_list:
-            description_csv_field_var_list = ['Location']
-        description_var_list = [1]
-
-        kmloutputFilename = GIS_KML_util.generate_kml(window, inputFilename, geocodedLocationsOutputFilename,
-                            datePresent,
-                            locationColumnName,
-                            encodingValue,
-                            group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
-                            icon_var_list, specific_icon_var_list,
-                            name_var_list, scale_var_list, color_var_list, color_style_var_list,
-                            bold_var_list, italic_var_list,
-                            description_var_list, description_csv_field_var_list)
-
-        if kmloutputFilename!='':
-            filesToOpen.append(kmloutputFilename)
+    # TODO this the old approach; a SLOW way of processing kml; now kml files are produced above as part of the geocoding process
+    # if 'Google Earth Pro' in mapping_package and kmloutputFilename == '':
+    #     if kmloutputFilename == '':
+    #         reminders_util.checkReminder(config_filename,
+    #                         reminders_util.title_options_Google_Earth_Pro_download,
+    #                         reminders_util.message_Google_Earth_Pro_download)
+    #
+    #     if inputIsCoNLL==True:
+    #         inputFilename=outputCsvLocationsOnly
+    #     headers=IO_csv_util.get_csvfile_headers(inputFilename)
+    #     for header in headers:
+    #         if 'Sentence' == header:
+    #             if len(description_csv_field_var_list)==0:
+    #                 description_csv_field_var_list = ['Sentence']
+    #     if not 'Sentence' in description_csv_field_var_list:
+    #         description_csv_field_var_list = ['Location']
+    #     description_var_list = [1]
+    #
+    #     kmloutputFilename = GIS_KML_util.generate_kml(window, inputFilename, geocodedLocationsOutputFilename,
+    #                         datePresent,
+    #                         locationColumnName,
+    #                         encodingValue,
+    #                         group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
+    #                         icon_var_list, specific_icon_var_list,
+    #                         name_var_list, scale_var_list, color_var_list, color_style_var_list,
+    #                         bold_var_list, italic_var_list,
+    #                         description_var_list, description_csv_field_var_list)
+    #
+    #     if kmloutputFilename!='':
+    #         filesToOpen.append(kmloutputFilename)
 
     # ------------------------------------------------------------------------------------
-    # Google Maps
+    # Google Maps heat map
     # ------------------------------------------------------------------------------------
 
     if 'Google Maps' in mapping_package:
@@ -355,5 +363,5 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         GIS_Google_Maps_util.create_js(heatMapoutputFilename, coordList, geocoder, True)
         filesToOpen.append(heatMapoutputFilename)
 
-    IO_user_interface_util.timed_alert(window, 5000, 'Analysis end', 'Finished running GIS pipeline at', True, '', True, startTime)
+    IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running GIS pipeline at', True, '', True, startTime)
     return filesToOpen

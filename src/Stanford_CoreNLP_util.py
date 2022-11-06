@@ -325,6 +325,32 @@ def CoreNLP_annotate(config_filename,inputFilename,
     outputDirSV=outputDir
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True)
 
+    # display the timing of various algorithms
+    if 'coref' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_coref_timing,
+                                     reminders_util.message_CoreNLP_coref_timing,
+                                     True)
+    if 'SVO' in str(annotator_params) and 'gender' in str(annotator_params) and 'quote' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_SVO_gender_quote_timing,
+                                     reminders_util.message_CoreNLP_SVO_gender_quote_timing,
+                                     True)
+    if 'SVO' in str(annotator_params) and not 'gender' in str(annotator_params) and not 'quote' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_SVO_timing,
+                                     reminders_util.message_CoreNLP_SVO_timing,
+                                     True)
+    if 'gender' in str(annotator_params) and not 'SVO' in str(annotator_params) :
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_gender_timing,
+                                     reminders_util.message_CoreNLP_gender_timing,
+                                     True)
+    if 'quote' in str(annotator_params) and not 'SVO' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_quote_timing,
+                                     reminders_util.message_CoreNLP_quote_timing,
+                                     True)
 
     lang_models = language_models(CoreNLPdir, language)
     if lang_models == None:
@@ -356,6 +382,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
     Json_question_already_asked = False
     for annotator in annotator_params:
         if 'coref' in annotator and not 'coref' in SVO_annotators:
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_CoreNLP_coref_timing,
+                                         reminders_util.message_CoreNLP_coref_timing,
+                                         True)
             SVO_annotators.append('coref')
         if 'quote' in annotator and not 'quote' in SVO_annotators:
             SVO_annotators.append('quote')

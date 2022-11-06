@@ -127,7 +127,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 				 bold_var_list, italic_var_list,
 				 description_var_list, description_csv_field_var_list, colorize=True):
 
-	startTime = IO_user_interface_util.timed_alert(window, 3000, 'GIS kml generator', 'Started running KML algorithm at',
+	startTime = IO_user_interface_util.timed_alert(window, 2000, 'GIS kml generator', 'Started running KML algorithm at',
 												   True, '', True, '', silent=True)
 
 	colorList = ['93730E', '503DD3', '3C2D66', '3B817B', 'ED6651', '1F4825', '786A53', 'E90167', '7A2FCA', 'AA711C',
@@ -348,7 +348,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 											 description_csv_field_var_list,
 											 bold_var_list, italic_var_list, group_number_var, j=0)
 				index = index + 1
-	IO_user_interface_util.timed_alert(window, 3000, 'GIS kml generator', 'Finished running KML algorithm at', True, '',
+	IO_user_interface_util.timed_alert(window, 2000, 'GIS kml generator', 'Finished running KML algorithm at', True, '',
 									   True, startTime, silent=True)
 	try:
 		kml.save(kmloutputFilename)
