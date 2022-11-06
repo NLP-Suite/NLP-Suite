@@ -241,7 +241,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                                     selected_col=columns_to_be_plotted_yAxis,
                                                                     hover_col=[],
                                                                     group_col=['Document ID','Document'],
-                                                                    fileNameType='CSV', chartType='',pivot = pivot)
+                                                                    fileNameType=columns_to_be_plotted_yAxis[0], chartType='',pivot = pivot)
                     new_inputFilename=temp_outputFilename[0]
                     # temp_outputFilename[0] is the frequency filename (with no hyperlinks)
                     count_var=0
@@ -260,8 +260,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                             columns_to_be_plotted_byDoc.append([columns_to_be_plotted_byDoc_len-1,i])
                     else:
                         # 1 is the Document with no-hyperlinks,
-                        # 3 is Frequency,
                         # 2 is the column plotted (e.g., Gender) in temp_outputFilename
+                        # 3 is Frequency,
                         # TODO TONY we should ask the same type of question for columns that are already in quantitative form if we want to compute a single MEAN value
                         sel_column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,2)
                         # columns_to_be_plotted_byDoc = [[0, 2]] # will give one bar
@@ -399,7 +399,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                'Finished running Excel bySent at',
                                                True, '', True, startTime, True)
 
-        # compute field STATISTICS ---------------------------------------------------------------------------
+# compute field STATISTICS (mean, median, skeweness, kurtosis...)--------------------------------------------------------------
         # TODO THE FIELD MUST CONTAIN NUMERIC VALUES
         # plotList (a list []) contains the columns headers to be used to compute their stats
         if len(groupByList)>0: # compute only if list is not empty

@@ -316,8 +316,8 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='S-filtr',  # 'POS_bar',
                                                            column_xAxis_label='Subjects (filtered)',
-                                                           groupByList=[],
-                                                           plotList=[],
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Frequency'],
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
@@ -330,8 +330,8 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='V-filtr',  # 'POS_bar',
                                                            column_xAxis_label='Verbs (filtered)',
-                                                           groupByList=[],
-                                                           plotList=[],
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Frequency'],
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
@@ -344,8 +344,8 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='O-filtr',  # 'POS_bar',
                                                            column_xAxis_label='Objects (filtered)',
-                                                           groupByList=[],
-                                                           plotList=[],
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Frequency'],
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:

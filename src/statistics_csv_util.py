@@ -178,8 +178,10 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
                                                      stats.skew, stats.kurtosis,
                                                      percentile(25), percentile(50), percentile(75)])
         except ValueError as e:
-            mb.showerror(title='Input file error', message="There was an error reading the input file\n" + str(
-                inputFilename) + "\nto group by " + str(groupByField) + "\n\nError raised: " + str(e))
+            IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Input file error',
+                    "There was an error reading the input file\n\n" + \
+                    str(inputFilename) + "\n\nto group by " + str(groupByField) + "\n\nERROR RAISED: " + str(e), \
+                    False, '', False, silent=False)
             return None
     if len(plotField) > 0:
         column_name=plotField[0]
@@ -533,7 +535,8 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     removed_hyperlinks, inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
     data = pd.read_csv(inputFilename,encoding='utf-8',error_bad_lines=False)
     # TODO check if data is empty exit
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'col-freq')
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
+                    '.csv', 'col-freq_'+fileNameType)
 
     if len(selected_col) == 0:
         mb.showwarning('Missing field', 'You have not selected the csv field for which to compute frequencies.\n\nPlease, select the field and try again.')

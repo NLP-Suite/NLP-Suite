@@ -313,8 +313,8 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='S-unfiltr', #'S_bar',
                                                            column_xAxis_label='Subjects (unfiltered)',
-                                                           groupByList=[],
-                                                           plotList=[],
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Frequency'],
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
@@ -329,8 +329,8 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='V-unfiltr', #'V_bar',
                                                            column_xAxis_label='Verbs (unfiltered)',
-                                                           groupByList=[],
-                                                           plotList=[],
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Frequency'],
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
@@ -345,8 +345,8 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='O-unfiltr', #'O_bar',
                                                            column_xAxis_label='Objects (unfiltered)',
-                                                           groupByList=[],
-                                                           plotList=[],
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Frequency'],
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
