@@ -300,6 +300,12 @@ message_CoreNLP_gender_timing = "Beware that the gender algortithm on the 296 fi
 title_options_CoreNLP_quote_timing = ['CoreNLP quote timing']
 message_CoreNLP_quote_timing = "Beware that the quote annotator on the 296 files (2042312 words total) of the President of the United States inaugural and state of union speeches, takes approximately 3 hours on a standard laptop."
 
+title_options_CoreNLP_normalized_date_timing = ['CoreNLP normalized date timing']
+message_CoreNLP_normalized_date_timing = "Beware that the normalized date algortithm on the 296 files (2042312 words total) of the President of the United States inaugural and state of union speeches, takes approximately 50 minutes on a standard laptop."
+
+title_options_CoreNLP_sentiment_timing = ['CoreNLP sentiment timing']
+message_CoreNLP_sentiment_timing = "Beware that the sentiment algortithm on the 296 files (2042312 words total) of the President of the United States inaugural and state of union speeches, takes approximately 3 hours on a standard laptop."
+
 title_options_GIS_timing = ['GIS timing']
 message_GIS_timing = "Beware that geocoding some 30,000 locations via Nominatim and preparing the KML file for map visualization in Goodgle Earth Pro takes approximately 15 minutes on a standard laptop."
 
