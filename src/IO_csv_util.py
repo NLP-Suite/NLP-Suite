@@ -151,7 +151,7 @@ def GetMaxValueInCSVField(inputFilename,algorithm='',columnHeader='Document ID',
                        message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + columnHeader + msg + "\n\nPlease, select a different csv file in input and try again!")
         return 0
     maxvalue = column.max()
-    return maxvalue
+    return int(maxvalue)
 
 
 # triggered by a df.to_csv

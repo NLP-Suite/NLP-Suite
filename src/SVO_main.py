@@ -371,6 +371,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                 lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
                                 outputSVOSVODir, createCharts, chartPackage)
             if output != None:
+                SVO_filtered_filename=output[0]
                 filesToOpen.extend(output)
 
         if lemmatize_verbs:
@@ -508,8 +509,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     if openOutputFiles == True and len(filesToOpen) > 0:
         filesToOpenSubset = []
-        # add the SVO main file
-        filesToOpenSubset.append(SVO_filename)
+        # add the SVO main file,
+        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
+            filesToOpenSubset.append(SVO_filtered_filename)
+        else:
+            filesToOpenSubset.append(SVO_filename)
         for file in filesToOpen:
             # open all charts, all Google Earth and Google Maps maps, Gephi gexf network graph, html files, and wordclouds png files
             if file[-4:] == '.kml' or file[-5:] == '.html' or file[-4:] == '.png' or file[-5:] == '.gexf' or \
