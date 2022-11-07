@@ -147,7 +147,7 @@ openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_b
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_openInputFile_button_pos, y_multiplier_integer,openInputFile_button,
     True, False, True, False, 90, GUI_IO_util.file_matcher_openInputFile_button_pos, "Open INPUT csv file")
 
-selectedCsvFile = tk.Entry(window,width=150,state='disabled',textvariable=selectedCsvFile_var)
+selectedCsvFile = tk.Entry(window,width=GUI_IO_util.widget_width_extra_long,state='disabled',textvariable=selectedCsvFile_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_matcher_selectedCsvFile_pos,y_multiplier_integer,selectedCsvFile)
 
 find_var.set(1)

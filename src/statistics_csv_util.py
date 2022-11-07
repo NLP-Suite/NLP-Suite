@@ -142,12 +142,12 @@ def percentile(n):
     return percentile_
 
 
-#written by Yi Wang March 2020, edited Landau/Franzosi February 2021
+#written by Yi Wang March 2020, edited Landau/Franzosi February 2021, November 2022
 
-# lists are the columns to be used for grouping (e.g., Document ID, Document) ['Document ID', 'Document']
-# plotField are the columns to be used for plotting (e.g., Mean, Mode)) ['Mean', 'Mode'] or ['Mean']
-#   columns MUST contain NUMERIC values
-# chart_title_label is used as part of the the chart_title
+# lists are the columns to be used for grouping (e.g., Document ID, Document) as ['Document ID', 'Document']
+# plotField are the columns to be used for plotting (e.g., Mean, Mode)) as ['Mean', 'Mode'] or ['Mean']
+#   plotField columns MUST contain NUMERIC values
+# chart_title_label is used as part of the chart_title
 def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outputFileNameLabel, groupByField: list, plotField: list, chart_title_label, createCharts, chartPackage):
     filesToOpen=[]
     outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', outputFileNameLabel + '_group_stats')
@@ -169,23 +169,27 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
                        message="The input file\n\n" + inputFilename + "\n\nhas character encoding that breaks the code. The statistical function only works with utf-8 compliant files.\n\nPlease, check your input file encoding and try again!")
         return None
 
+    # group the data frame by group columns
     if len(groupByField)>0:
         try:
-            df_group = df.groupby(groupByField).agg([np.sum, np.mean, lambda x: stats.mode(x)[0], np.median,
+            # np as numpy
+            df_group = df.groupby(groupByField).agg([np.sum, np.mean, lambda x: stats.mode(x, keepdims=False)[0], np.median,
                                                      np.std, np.min, np.max,
                                                      stats.skew, stats.kurtosis,
                                                      percentile(25), percentile(50), percentile(75)])
-        except: # the np.sum etc. will break the code if the field passed is alphabetic
-            IO_user_interface_util.timed_alert(window, 4000, 'Warning',
-                                               "The fields to be grouped by " + str(groupByField) + " are alphabetic and statistical measures cannot be computed.",
-                                               False, '', True, '', False)
-            return
+        except ValueError as e:
+            IO_user_interface_util.timed_alert(GUI_util.window, 5000, 'Input file error',
+                    "There was an error reading the input file\n\n" + \
+                    str(inputFilename) + "\n\nto group by " + str(groupByField) + "\n\nERROR RAISED: " + str(e) +
+                    "\n\nIn terminal/command line and in the NLP environment, try pip install scipy --upgrade and pip install numpy --upgrade", \
+                    False, '', True, silent=False)
+            return None
     if len(plotField) > 0:
         column_name=plotField[0]
         try:
             df_group = df_group[[column_name]]
         except:
-            return filesToOpen
+            return None
         df_list = [pd.concat([df_group[column_name]],keys=[column_name],names=['Column header'])]
     else:
         df_list = [pd.concat([df_group[index]],keys=[index],names=['Column header']) for index in df_group.columns.levels[0]]
@@ -532,7 +536,8 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     removed_hyperlinks, inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
     data = pd.read_csv(inputFilename,encoding='utf-8',error_bad_lines=False)
     # TODO check if data is empty exit
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'col-freq')
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
+                    '.csv', 'col-freq_'+fileNameType)
 
     if len(selected_col) == 0:
         mb.showwarning('Missing field', 'You have not selected the csv field for which to compute frequencies.\n\nPlease, select the field and try again.')
@@ -572,6 +577,7 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             i = 0
             while i<len(temp_group_column_names):
                 t = temp_group_column_names[i]
+                header = t
                 # check that t is not already in the list group_column_names
                 if isinstance(t, (int, float)):
                     header = IO_csv_util.get_headerValue_from_columnNumber(headers, t)

@@ -51,6 +51,7 @@ IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNe
 
 from nltk.corpus import wordnet as wn
 from nltk.corpus import sentiwordnet as swn
+from nltk import word_tokenize, pos_tag
 
 fin = open('../lib/wordLists/stopwords.txt', 'r')
 stops = set(fin.read().splitlines())
@@ -108,7 +109,7 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
     # analyze each sentence s for sentiment
     sentenceID = 1
     for s in sentences:
-        # tagged_sentence = pos_tag(word_tokenize(s))
+        tagged_sentence = pos_tag(word_tokenize(s))
         # TODO Mino I cannot simply substitute the NLTK pos_tag; what is the Stanza equivalent?
         # tagged_sentence = pos_tag(word_tokenize_stanza(stanzaPipeLine(s)))
         sentiment = 0

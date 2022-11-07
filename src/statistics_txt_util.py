@@ -19,15 +19,15 @@ import stanza
 
 # from nltk import tokenize
 # from nltk import word_tokenize
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
-
-import ast
-import textstat
-import subprocess
-import spacy
-from nltk.tree import Tree
-from nltk.draw import TreeView
-from PIL import Image
+# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+#
+# import ast
+# import textstat
+# import subprocess
+# import spacy
+# from nltk.tree import Tree
+# from nltk.draw import TreeView
+# from PIL import Image
 
 # Sentence Complexity
 import tree
@@ -36,9 +36,9 @@ import node_sentence_complexity as Node
 # from gensim.utils import lemmatize
 from itertools import groupby
 import pandas as pd
-import ast
-import textstat
-import subprocess
+# import ast
+# import textstat
+# import subprocess
 import spacy
 import csv
 import nltk
@@ -1724,7 +1724,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
         import sys
         # subprocess.check_call([sys.executable, "-m", "pip", "install", "git+https://github.com/stanfordnlp/stanza.git@dev"])
         subprocess.check_call([sys.executable, "-m", "pip", "install", "stanza==1.4.0"])
-        import stanza
+        # import stanza
         nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,constituency',use_gpu=False)
     op = pd.DataFrame(columns=columns)
     for idx, txt in enumerate(all_input_docs.items()):

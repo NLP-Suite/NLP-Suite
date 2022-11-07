@@ -14,7 +14,7 @@ import GUI_util
 import IO_libraries_util
 import IO_user_interface_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"file_converter_util",['os','__main__','tkinter','docx','pdfminer','striprtf'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"file_converter_util",['os','__main__','tkinter','docx','pdfminer','striprtf','errno'])==False:
     sys.exit(0)
 
 import os
@@ -23,8 +23,9 @@ import io
 import csv
 import tkinter as tk
 import tkinter.messagebox as mb
+import errno
 # pip install pdfminer.six --user (since it may ask for permission) rather than pip install pdfminer
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter 
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.pdfpage import PDFPage
 from pdfminer.converter import XMLConverter, HTMLConverter, TextConverter
 from pdfminer.layout import LAParams
@@ -237,7 +238,7 @@ def rtf_converter(window,fileName,inputdirectory,outputdirectory,openOutputFiles
                 textFile.write(text)
     if openOutputFiles and len(fileName)>0:
         IO_files_util.openFile(window, textFilename)
-    
+
 # the tsv file (fileName) has the full path embedded
 # File Converter (tsv --> csv)
 def tsv_converter(window,fileName,outputdirectory):

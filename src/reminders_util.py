@@ -285,6 +285,30 @@ message_input_csv_file = "You have a csv file in the 'Select INPUT CSV file' wid
 title_options_wordclouds = ['Web-based word clouds services']
 message_wordclouds = "After the selected web-based word-clouds service opens up on your browser, you will need to either copy/paste the text you want to visualize or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file."
 
+title_options_CoreNLP_coref_timing = ['CoreNLP coreference timing']
+message_CoreNLP_coref_timing = "Beware that coreference resolution on the 296 files (2042312 words total) of the President of the United States inaugural and state of union speeches, takes approximately 3 hours on a standard laptop."
+
+title_options_CoreNLP_SVO_timing = ['CoreNLP SVO timing']
+message_CoreNLP_SVO_timing = "Beware that the SVO algorithms on the 296 files (2042312 words total) of the President of the United States inaugural and state of union speeches, takes approximately 1 hour and 20 minutes on a standard laptop."
+
+title_options_CoreNLP_SVO_gender_quote_timing = ['CoreNLP SVO + gender + quote timing']
+message_CoreNLP_SVO_gender_quote_timing = "Beware that the SVO + gender + quote algorithms on the 296 files (2042312 words total) of the President of the United States inaugural and state of union speeches, takes approximately 4 hours on a standard laptop."
+
+title_options_CoreNLP_gender_timing = ['CoreNLP gender timing']
+message_CoreNLP_gender_timing = "Beware that the gender algortithm on the 296 files (2042312 words total) of the President of the United States inaugural and state of union speeches, takes approximately 3 hours on a standard laptop."
+
+title_options_CoreNLP_quote_timing = ['CoreNLP quote timing']
+message_CoreNLP_quote_timing = "Beware that the quote annotator on the 296 files (2042312 words total) of the President of the United States inaugural and state of union speeches, takes approximately 3 hours on a standard laptop."
+
+title_options_CoreNLP_normalized_date_timing = ['CoreNLP normalized date timing']
+message_CoreNLP_normalized_date_timing = "Beware that the normalized date algortithm on the 296 files (2042312 words total) of the President of the United States inaugural and state of union speeches, takes approximately 50 minutes on a standard laptop."
+
+title_options_CoreNLP_sentiment_timing = ['CoreNLP sentiment timing']
+message_CoreNLP_sentiment_timing = "Beware that the sentiment algortithm on the 296 files (2042312 words total) of the President of the United States inaugural and state of union speeches, takes approximately 3 hours on a standard laptop."
+
+title_options_GIS_timing = ['GIS timing']
+message_GIS_timing = "Beware that geocoding some 30,000 locations via Nominatim and preparing the KML file for map visualization in Goodgle Earth Pro takes approximately 15 minutes on a standard laptop."
+
 title_options_data_manager_merge = ['Merge option']
 message_data_manager_merge1 = "Please, select next the field to be used as KEY for merging files."
 message_data_manager_merge2 = "Please, click next the + sign on this line to select another KEY to be used for merging files or click OK to accept current selection."

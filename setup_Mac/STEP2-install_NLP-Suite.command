@@ -1,4 +1,4 @@
-echo "STEP2 will take a while to install. STEP2 isntalls Python and all Python and Java packages used by the NLP Suite. Please, be patient and wait for the message Installation Completed!"
+echo "STEP2 will take a while to install. STEP2 intalls Python and all Python and Java packages used by the NLP Suite. Please, be patient and wait for the message Installation Completed!"
 echo
 echo "STEP2 relies on Git. If you have not done so already, please download Git at this link https://git-scm.com/downloads (select the macOS link and then download and install Xcode (if space allows; if you have limited disk space, use the binary installer)."
 echo
@@ -33,11 +33,5 @@ conda activate NLP
 
 conda install pytorch torchvision cudatoolkit -c pytorch
 pip install -r ../src/requirements.txt
-
-conda activate NLP
-python ../src/NLP_setup_download_nltk_stanza.py
-
-conda activate NLP
-python -m spacy download en
 
 echo "\033[0;31m Errors may have occurred in the installation of specific Python packages. Please, scroll up to see if errors occurred or use CTRL+F to search for words such as error or fail"

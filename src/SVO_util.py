@@ -298,10 +298,11 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
 
         filtered_svo[i] = unfiltered_svo[i]
 
-    IO_user_interface_util.timed_alert(window, 3000, 'Analysis end', 'Finished running the filter algorithm for Subject-Verb-Object (SVO) at', True, '', True,
+    IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running the filter algorithm for Subject-Verb-Object (SVO) at', True, '', True,
                                        startTime, True)
 
     # Replacing the original csv file with any SVOs to one containing filtered SVOs
+    # TODO this replaces the original SVO file; should we make a copy filtr_SVO instead?
     pd.DataFrame.from_dict(filtered_svo, orient='index').to_csv(svo_file_name, encoding='utf-8', index=False)
 
     filesToOpen = []
@@ -315,8 +316,8 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='S-filtr',  # 'POS_bar',
                                                            column_xAxis_label='Subjects (filtered)',
-                                                           groupByList=[],
-                                                           plotList=[],
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Frequency'],
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
@@ -329,8 +330,8 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='V-filtr',  # 'POS_bar',
                                                            column_xAxis_label='Verbs (filtered)',
-                                                           groupByList=[],
-                                                           plotList=[],
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Frequency'],
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
@@ -343,8 +344,8 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='O-filtr',  # 'POS_bar',
                                                            column_xAxis_label='Objects (filtered)',
-                                                           groupByList=[],
-                                                           plotList=[],
+                                                           groupByList=['Document ID', 'Document'],
+                                                           plotList=['Frequency'],
                                                            chart_title_label='')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:

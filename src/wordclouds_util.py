@@ -171,7 +171,7 @@ def SVOWordCloud(svoFile, inputFilename, outputDir, transformed_image_mask, pref
     svo_df = pd.read_csv(svoFile, encoding='utf-8',error_bad_lines=False)
     svo_df = svo_df.fillna("")
     words_list = []
-    # red for S, blue for V, green for O
+    # RGB color codes: red for S, blue for V, green for O
     red_code = "(250, 0, 0)"
     blue_code = "(0, 0, 250)"
     green_code = "(0, 250, 0)"
@@ -194,7 +194,7 @@ def SVOWordCloud(svoFile, inputFilename, outputDir, transformed_image_mask, pref
             color_list[green_code].append(" ".join(["".join(filter(str.isalnum, s)) for s in row["Object (O)"].lower().split(" ")]))
     words_count_dict = Counter(words_list)
     # print (words_count_dict)
-    max_words = 100
+    max_words = 1000 # TODO MINO: make max_words bigger to include generally lower frequency "Object (O)" words
     if len(transformed_image_mask) != 0:
         wc = WordCloud(width = 800, height = 800, max_words=max_words, prefer_horizontal=prefer_horizontal, mask=transformed_image_mask,
                        contour_width=3, contour_color='firebrick', background_color ='white').generate_from_frequencies(words_count_dict)
@@ -368,7 +368,7 @@ def check_file_empty(currenttext,inputFilename,nDocs,NumEmptyDocs):
     else:
         return False, False, NumEmptyDocs
 
-#Mortified by Tony 01/23/2022  add bg_image and bg_image_flag
+#Modified by Tony 01/23/2022  add bg_image and bg_image_flag
 def processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles,csvField_color_list, doNotListIndividualFiles, bg_image=None, bg_image_flag=False):
     transformed_image_mask=[]
     collocation=False
@@ -380,8 +380,8 @@ def processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles,csvFie
             # process csvField_color_list
             currenttext, color_to_words = processColorList(currenttext, color_to_words, csvField_color_list, myfile)
             tempOutputfile = display_wordCloud_sep_color(inputFilename, outputDir, currenttext, color_to_words, transformed_image_mask, collocation, prefer_horizontal, bg_image = bg_image, bg_image_flag= bg_image_flag)
-            filesToOpen.append(tempOutputfile)
-            # IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+    myfile.close()
+    return tempOutputfile
 
 def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_contour_only, prefer_horizontal, font, max_words, lemmatize, exclude_stopwords, exclude_punctuation, lowercase, differentPOS_differentColors, differentColumns_differentColors, csvField_color_list, doNotListIndividualFiles,openOutputFiles, collocation):
     # https://www.geeksforgeeks.org/generating-word-cloud-python/
@@ -452,13 +452,13 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
         # if i==1: #only print once
         print("transformed_image_mask (SHOULD ALL BE 255 VALUES)",transformed_image_mask)
 
-    # can only process a single conll table
+    # can only process a single conll table or a csv file (e.g., SVO reasults where the user selects the columns to be used for color display
     if len(inputDir)>0:
         fileType='.txt'
 
-    if differentColumns_differentColors:
-        processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles, csvField_color_list, doNotListIndividualFiles, bg_image=img, bg_image_flag=use_contour_only)
-        return
+    # if differentColumns_differentColors:
+    #     processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles, csvField_color_list, doNotListIndividualFiles, bg_image=img, bg_image_flag=use_contour_only)
+    #     return
 
     inputDocs=IO_files_util.getFileList(inputFilename, inputDir,fileType, silent=False)
     nDocs=len(inputDocs)
@@ -467,6 +467,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
 
     # RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, GREY for ADVERBS
     #   YELLOW for anything else; no longer used
+    # RGB color codes
     red_code = "(250, 0, 0)"
     blue_code = "(0, 0, 250)"
     green_code = "(0, 250, 0)"
@@ -510,8 +511,6 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
             stannlp = stanza.Pipeline(lang='en', processors='tokenize,mwt,lemma,pos')
             runStanza = True
 
-        # stannlp = stanza.Pipeline(lang='en', processors='tokenize,ner,mwt,pos,lemma')
-
     if runStanza:
         startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Running STANZA & wordcloud',
                                            'Started running STANZA and wordcloud at', True,
@@ -521,43 +520,53 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
         head, tail = os.path.split(doc)
         print("Processing file " + str(i) + "/" + str(nDocs) + ' ' + tail)
         if doc[-4:]=='.csv':#processing CoNLL table that contains pos values
-            try:
-                df = pd.read_csv(doc, encoding='utf-8',error_bad_lines=False)
-                postags_ = df['POStag']
-                forms_ = df['Form']
-                lemmas_ = df['Lemma']
+            # check that input file is a CoNLL table
+            import CoNLL_util
+            if not CoNLL_util.check_CoNLL(doc,True):
+                if differentColumns_differentColors:
+                    tempOutputfile = processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles, csvField_color_list,
+                                      doNotListIndividualFiles, bg_image=img, bg_image_flag=use_contour_only)
+                    if tempOutputfile!='':
+                        filesToOpen.append(tempOutputfile)
+            else:
+                try:
+                    # this assumes that the input csv file is a CoNLL table
+                    df = pd.read_csv(doc, encoding='utf-8',error_bad_lines=False)
+                    postags_ = df['POStag']
+                    forms_ = df['Form']
+                    lemmas_ = df['Lemma']
 
-                #text: summing tokens in each line together
-                words_ = []
-                if lemmatize:
-                    currenttext = (" ").join(lemmas_)
-                    words_ = lemmas_
-                else:
-                    currenttext = (" ").join(forms_)
-                    words_ = forms_
+                    #text: summing tokens in each line together
+                    words_ = []
+                    if lemmatize:
+                        currenttext = (" ").join(lemmas_)
+                        words_ = lemmas_
+                    else:
+                        currenttext = (" ").join(forms_)
+                        words_ = forms_
 
-                for j in range(len(words_)):
-                    # print("word: ", forms_[i])
-                    # print("pos: ", postags_[i])
-                    # RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, GREY for ADVERBS
-                    #   YELLOW for anything else; no longer used
-                    if len(postags_[j]) >= 2 and postags_[j][0:2] == "VB":
-                        color_to_words[blue_code].append(words_[j])
-                    elif len(postags_[j]) >= 2 and postags_[j][0:2] == "NN":
-                        color_to_words[red_code].append(words_[j])
-                    elif len(postags_[j]) >= 2 and postags_[j][0:2] == "JJ":
-                        color_to_words[green_code].append(words_[j])
-                    elif len(postags_[j]) >= 2 and postags_[j][0:2] == "RB":
-                        color_to_words[grey_code].append(words_[j])
-                    # else:  # should not process? Skip any other tags?
-                    #     color_to_words[yellow_code].append(words_[j])
-                    if postags_[j][0:2] == "NN" or postags_[j][0:2] == "VB" or \
-                            postags_[j][0:2] == "JJ" or postags_[j][0:2] == "RB":
-                        textToProcess = textToProcess + ' ' + words_[j]
-            except:
-                mb.showwarning(title='Not a CoNLL table',
-                               message=doc + " is not a CoNLL table.\n\nPlease, select in input a proper csv CoNLL file with Form, Lemma, and POStag columns and try again.")
-                return
+                    for j in range(len(words_)):
+                        # print("word: ", forms_[i])
+                        # print("pos: ", postags_[i])
+                        # RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, GREY for ADVERBS
+                        #   YELLOW for anything else; no longer used
+                        if len(postags_[j]) >= 2 and postags_[j][0:2] == "VB":
+                            color_to_words[blue_code].append(words_[j])
+                        elif len(postags_[j]) >= 2 and postags_[j][0:2] == "NN":
+                            color_to_words[red_code].append(words_[j])
+                        elif len(postags_[j]) >= 2 and postags_[j][0:2] == "JJ":
+                            color_to_words[green_code].append(words_[j])
+                        elif len(postags_[j]) >= 2 and postags_[j][0:2] == "RB":
+                            color_to_words[grey_code].append(words_[j])
+                        # else:  # should not process? Skip any other tags?
+                        #     color_to_words[yellow_code].append(words_[j])
+                        if postags_[j][0:2] == "NN" or postags_[j][0:2] == "VB" or \
+                                postags_[j][0:2] == "JJ" or postags_[j][0:2] == "RB":
+                            textToProcess = textToProcess + ' ' + words_[j]
+                except:
+                    mb.showwarning(title='Not a CoNLL table',
+                                   message=doc + " is not a CoNLL table.\n\nPlease, select in input a proper csv CoNLL file with Form, Lemma, and POStag columns and try again.")
+                    return
         elif doc[-4:]=='.txt':
             with open(doc, 'r', encoding='utf-8', errors='ignore') as myfile:
                 textToProcess = ''
@@ -608,18 +617,18 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
                     if len(textToProcess) == 0:
                         textToProcess = currenttext
 
-        if doNotListIndividualFiles==False or len(inputFilename)>0:
-            if differentPOS_differentColors:
-                tempOutputfile = display_wordCloud_sep_color(doc, outputDir, textToProcess, color_to_words,
-                                                             transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
-            else:
-                tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only , font = font, max_words = max_words)
-            filesToOpen.append(tempOutputfile)
-            # write an output txt file that can be used for internet wordclouds services
-            if lemmatize or exclude_stopwords:
-                with open(tempOutputfile[:-8]+'.txt', 'w', encoding='utf-8', errors='ignore') as f:
-                    f.write(textToProcess)
-        combinedtext = combinedtext + textToProcess
+            if doNotListIndividualFiles==False or len(inputFilename)>0:
+                if differentPOS_differentColors:
+                    tempOutputfile = display_wordCloud_sep_color(doc, outputDir, textToProcess, color_to_words,
+                                                                 transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
+                else:
+                    tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only , font = font, max_words = max_words)
+                filesToOpen.append(tempOutputfile)
+                # write an output txt file that can be used for internet wordclouds services
+                if lemmatize or exclude_stopwords:
+                    with open(tempOutputfile[:-8]+'.txt', 'w', encoding='utf-8', errors='ignore') as f:
+                        f.write(textToProcess)
+            combinedtext = combinedtext + textToProcess
 
     if len(inputDir)>0:
         if differentPOS_differentColors:
@@ -637,16 +646,16 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Python wordclouds txt files output',
                                                'The Python 3 wordclouds algorithm has produced '+ str(nDocsRewritten)+' txt file(s) without stopwords, punctuation, and with lemmatized words, depending upon your selected filter options.\n\nYou will find the file(s) in your output directory.\n\nYou can use the file(s) to produce wordclouds using any of the internet wordcloud services.')
 
-    if len(combinedtext) < 1:
-        print('All ' + str(NumEmptyDocs) + ' txt files in your input directory\n' + str(
-            inputDir) + ' are empty.\n\nPlease, check your directory and try again.')
-        mb.showerror(title='Files empty',
-                     message='All ' + str(NumEmptyDocs) + ' txt files are empty in your input directory\n' + str(
-                         inputDir) + '\n\nPlease, check your directory and try again.')
-    if NumEmptyDocs > 0:
-        mb.showerror(title='Empty file(s)',
-                     message=str(NumEmptyDocs) + ' file(s) empty in the input directory\n' + str(
-                         inputDir) + '\n\nFile(s) listed in command line. Please, make sure to check the file(s) content.')
+        if len(combinedtext) < 1:
+            print('All ' + str(NumEmptyDocs) + ' txt files in your input directory\n' + str(
+                inputDir) + ' are empty.\n\nPlease, check your directory and try again.')
+            mb.showerror(title='Files empty',
+                         message='All ' + str(NumEmptyDocs) + ' txt files are empty in your input directory\n' + str(
+                             inputDir) + '\n\nPlease, check your directory and try again.')
+        if NumEmptyDocs > 0:
+            mb.showerror(title='Empty file(s)',
+                         message=str(NumEmptyDocs) + ' file(s) empty in the input directory\n' + str(
+                             inputDir) + '\n\nFile(s) listed in command line. Please, make sure to check the file(s) content.')
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

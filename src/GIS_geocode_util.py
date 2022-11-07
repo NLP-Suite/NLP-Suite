@@ -190,7 +190,7 @@ def geocode(window,locations, inputFilename, outputDir,
 		headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
 	input_df = pd.read_csv(inputFilename, encoding=encodingValue)
 
-	startTime=IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Started geocoding locations via the online service '" + geocoder + "' at",
+	startTime=IO_user_interface_util.timed_alert(window, 2000, "GIS geocoder", "Started geocoding locations via the online service '" + geocoder + "' at",
 												 True, '', True,'',True)
 	# if geocoder=='Nominatim':
 	# 	config_filename='GIS-geocode_config.csv'
@@ -372,6 +372,7 @@ def geocode(window,locations, inputFilename, outputDir,
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address])
 
 				# TODO MINO GIS create kml record
+				print("   Processing geocoded record for kml file for Google Earth Pro")
 				pnt = kml.newpoint(coords=[(lng, lat)])
 				pnt.style.iconstyle.icon.href = icon_url
 				# pnt.name = itemToGeocode
@@ -411,5 +412,5 @@ def geocode(window,locations, inputFilename, outputDir,
 		if locationsNotFound==index:
 			geocodedLocationsOutputFilename='' #used NOT to open the file since there are no records
 			# this warning is already given
-	IO_user_interface_util.timed_alert(window, 3000, "GIS geocoder", "Finished geocoding " + str(len(locations)) + " locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime, True)
+	IO_user_interface_util.timed_alert(window, 2000, "GIS geocoder", "Finished geocoding " + str(len(locations)) + " locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime, True)
 	return geocodedLocationsOutputFilename, locationsNotFoundoutputFilename, locationsNotFoundNonDistinctoutputFilename, kmloutputFilename

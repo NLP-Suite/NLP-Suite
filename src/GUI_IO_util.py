@@ -298,19 +298,20 @@ if sys.platform == 'darwin':  # Mac OS
     entry_box_x_coordinate = 470 #start point of all labels in the third column (second column after ? HELP); where IO filename, dir, etc. are displayed
 
     widget_width_extra_short = 10
-    widget_width_short = 50
-    widget_width_long = 70
+    widget_width_short = 35
+    widget_width_medium = 70
+    widget_width_long = 90
     widget_width_extra_long = 100
 
+    add_button_width = 1
+    reset_button_width = 3
+    show_button_width = 3
+    OK_button_width = 2
+
 # top line of widgets MAC
-    select_file_directory_button_width=25
+    select_file_directory_button_width=23
     IO_button_name_width=25
     open_file_directory_button_width = 1
-
-    IO_configuration_menu = 350 # position of menu of default and GUI specific IO options
-    setup_pop_up_text_widget = 560  # widget to eventually open a text widget to enter text
-    setup_IO_brief_coordinate = 610 # Position of text entry for Input and Output display
-    entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
 
     IO_configuration_menu = 405 # position of menu of default and GUI specific IO options
     setup_pop_up_text_widget = 638 # widget to eventually open a text widget to enter text
@@ -478,23 +479,26 @@ if sys.platform == 'darwin':  # Mac OS
     knowledge_plus_button = 1290
 
 # Mac: file_splitter_main.py
-    file_splitter_post_num_string_value_lb_pos = 500
-    file_splitter_first_occurrence_pos = 950
-    file_splitter_post_num_string_value_pos = 900
+    file_splitter_post_num_string_value_lb_pos = 600
+    file_splitter_first_occurrence_pos = 1000
+    file_splitter_post_num_string_value_pos = 1020
     file_splitter_ASCII_pos = 560
     file_splitter_split_mergedFile_separator_entry_begin_pos = file_splitter_ASCII_pos
+
     file_splitter_split_mergedFile_separator_entry_end_pos = 640
     file_splitter_current_docLength_pos = 580
-    file_splitter_split_docLength_lb_pos = 670
-    file_splitter_split_docLength_pos = 880
-    file_splitter_lemmatize_pos = 820
+    file_splitter_split_docLength_lb_pos = 735
+    file_splitter_split_docLength_pos = 925
 
-    # Mac: html_annotator_gender_main.py
-    html_annotator_gender_annotator_dictionary_file_width = 100
-    html_annotator_gender_select_dictionary_file_button = 310
-    html_annotator_gender_select_dictionary_file_annotator = 370
-    html_annotator_gender_SS_folder_width = 110
-    html_annotator_gender_by_type_dropdown = 470
+    file_splitter_lemmatize_pos = 880
+
+# Mac: html_annotator_gender_main.py
+
+    html_annotator_gender_annotator_dictionary_file_width = 60
+    html_annotator_gender_select_dictionary_file_button = 385
+    html_annotator_gender_select_dictionary_file_annotator = 460
+    html_annotator_gender_SS_folder_width = 65
+    html_annotator_gender_by_type_dropdown = 575
     html_annotator_gender_firstName_entry_lb_pos = 660
     html_annotator_gender_firstName_entry_pos = 790
     html_annotator_gender_select_SS_folder = 1070
@@ -520,19 +524,35 @@ if sys.platform == 'darwin':  # Mac OS
     html_annotator_bold_checkbox = 1270
 
 # Mac: knowledge_graphs_WordNet_main
-    WordNet_csv_file_width = 130
-    WordNet_keyWord_entry_width = 40
-    WordNet_dict_WordNet_filename_width = 80
+#     WordNet_csv_file_width = 130
+#     WordNet_keyWord_entry_width = et_b40
+#     WordNet_dict_WordNet_filename_width = 80
+#
+#     WordNet_reset_pos = 450
+#     WordNet_show_pos = 500
+#     WordNet_noun_verb_menu_pos = 570
+#     WordNet_keyWord_menu_pos = 690
+#     WordNet_keyWord_entry_lb_pos = 830
+#     WordNet_keyWord_entry_pos = 950
+#     WordNet_OK_button_pos = 1230
+#
+#     WordNet_extract_improper_nouns_pos = 650
+#     WordNet_dict_WordNet_filename_pos = open_setup_x_coordinate
+#     WordNet_dict_WordNet_filename_lb_pos = open_TIPS_x_coordinate
 
-    WordNet_reset_pos = 450
-    WordNet_show_pos = 500
-    WordNet_noun_verb_menu_pos = 570
-    WordNet_keyWord_menu_pos = 690
-    WordNet_keyWord_entry_lb_pos = 830
+    WordNet_csv_file_width = 90
+    WordNet_keyWord_entry_width = 52
+    WordNet_dict_WordNet_filename_width = 45
+
+    WordNet_reset_pos = 516
+    WordNet_show_pos = 580
+    WordNet_noun_verb_menu_pos = 660
+    WordNet_keyWord_menu_pos = 780
+    WordNet_keyWord_entry_lb_pos = 840
     WordNet_keyWord_entry_pos = 950
-    WordNet_OK_button_pos = 1230
+    WordNet_OK_button_pos = IO_configuration_menu+open_config_file_button_brief
 
-    WordNet_extract_improper_nouns_pos = 650
+    WordNet_extract_improper_nouns_pos = 690
     WordNet_dict_WordNet_filename_pos = open_setup_x_coordinate
     WordNet_dict_WordNet_filename_lb_pos = open_TIPS_x_coordinate
 
@@ -553,22 +573,30 @@ if sys.platform == 'darwin':  # Mac OS
     style_vocabulary_analysis_menu_pos = 750
 
 # Mac NGrams_Co_occurrences_Viewer
-    NGrams_Co_occurrences_Viewer_search_words_entry_pos = 260
+    NGrams_Co_occurrences_Viewer_search_words_entry_pos = 300
     NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
     NGrams_Co_occurrences_Viewer_date_options_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = 500
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = 600
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = 535#510
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = 625 #600
     NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
-    NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos  # 650
-    NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = NGrams_Co_occurrences_Viewer_add_viewer_button_pos + 40  # 690
-    NGrams_Co_occurrences_Viewer_show_viewer_button_pos = NGrams_Co_occurrences_Viewer_reset_viewer_button_pos + 60  # 750
+    NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos
+    NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = 594
+    NGrams_Co_occurrences_Viewer_show_viewer_button_pos = 680
 
 # Mac: visualization_main
 
+    # visualization_select_csv_field_menu_pos = 290
+    # visualization_OK_button_pos = 920
+    # visualization_add_button_pos = 970
+    # visualization_reset_button_pos = 1020
+    #
+    # visualization_select_csv_field_dynamic_network_lb_pos = 440
+    # visualization_dynamic_network_field_pos = 740
+
     visualization_select_csv_field_menu_pos = 290
     visualization_OK_button_pos = 920
-    visualization_add_button_pos = 970
-    visualization_reset_button_pos = 1020
+    visualization_add_button_pos = 983
+    visualization_reset_button_pos = 1038
 
     visualization_select_csv_field_dynamic_network_lb_pos = 440
     visualization_dynamic_network_field_pos = 740
@@ -629,8 +657,8 @@ if sys.platform == 'darwin':  # Mac OS
 
 # Mac file_matcher
 
-    file_matcher_openInputFile_button_pos = 220
-    file_matcher_selectedCsvFile_pos = 270
+    file_matcher_openInputFile_button_pos = 270
+    file_matcher_selectedCsvFile_pos = 320
     file_matcher_source_file_type_menu_pos = 490
     file_matcher_target_file_type_menu_lb_pos = 650
     file_matcher_target_file_type_menu_pos = 760
@@ -639,7 +667,11 @@ if sys.platform == 'darwin':  # Mac OS
     file_matcher_number_of_items_value_pos = 760
     file_matcher_include_exclude_pos = 880
 
-# Mac NER
+# Mac coreference
+    coreference_corefed_txt_file_width = 90
+    coreference_CoRef_var_menu_pos = 320
+
+    # Mac NER
     NER_NER_packages_menu_pos = 220
     NER_NER_menu_pos = 220
     NER_reset_NER_button_pos = 590
@@ -677,8 +709,14 @@ else: #windows and anything else
 
     widget_width_extra_short = 10
     widget_width_short = 50
-    widget_width_long = 70
-    widget_width_extra_long = 100
+    widget_width_medium = 70
+    widget_width_long = 100
+    widget_width_extra_long = 120
+
+    add_button_width = 2
+    reset_button_width = 4
+    show_button_width = 4
+    OK_button_width = 3
 
 # top line of widgets Windows
     select_file_directory_button_width=30
@@ -820,28 +858,26 @@ else: #windows and anything else
     wordclouds_RGB_lb = wordclouds_lowercase_pos #730
     wordclouds_RGB = wordclouds_lowercase_pos + 100 #800
     wordclouds_add_button = wordclouds_color_by_POS_tags # 1010
-    wordclouds_reset_button = wordclouds_color_by_POS_tags + 30
-    wordclouds_show_button = wordclouds_color_by_POS_tags + 80
-
+    wordclouds_reset_button = wordclouds_color_by_POS_tags + 35
+    wordclouds_show_button = wordclouds_color_by_POS_tags + 85
 #Windows: knowledge_graphs_DBpedia_YAGO_main.py
     knowledge_graphs_YAGO_checkbox_pos = setup_IO_brief_coordinate
     confidence_level_entry_pos = 770
 
-    knowledge_databases_menu = 200
-    knowledge_ontology_class_lb = 280
-    knowledge_ontology_class_menu = 330
-    knowledge_sub_class_entry_lb = 570
-    knowledge_sub_class_entry = 650
+    knowledge_databases_menu = 250
+    knowledge_ontology_class_lb = 330
+    knowledge_ontology_class_menu = 380
+    knowledge_sub_class_entry_lb = 620 #setup_IO_brief_coordinate
+    knowledge_sub_class_entry = 700
+    knowledge_sub_class_entry_width = 50
 
-    knowledge_color_label = 900
-    knowledge_color_menu = 950
-    knowledge_bold_checkbox = 1020
+    knowledge_color_label = 950
+    knowledge_color_menu = knowledge_databases_menu
+    knowledge_bold_checkbox = knowledge_ontology_class_lb
 
-    knowledge_reset_button = 1090
-    knowledge_show_button = 1155
-    knowledge_plus_button = 1220
-
-    knowledge_DBpedia_ontology_class_menu = setup_IO_brief_coordinate # 610
+    knowledge_plus_button = open_TIPS_x_coordinate + 35
+    knowledge_reset_button = knowledge_plus_button + 43
+    knowledge_show_button = knowledge_reset_button + 60
 
 # Windows: file_splitter_main.py
     file_splitter_post_num_string_value_lb_pos = 500
@@ -850,10 +886,11 @@ else: #windows and anything else
     file_splitter_ASCII_pos = 560
     file_splitter_split_mergedFile_separator_entry_begin_pos = file_splitter_ASCII_pos
     file_splitter_split_mergedFile_separator_entry_end_pos = 640
-    file_splitter_current_docLength_pos = 580
-    file_splitter_split_docLength_lb_pos = 670
-    file_splitter_split_docLength_pos = 880
-    file_splitter_lemmatize_pos = 820
+    current_docLength_lb_pos = IO_configuration_menu
+    file_splitter_current_docLength_pos = 520
+    file_splitter_split_docLength_lb_pos = 650
+    file_splitter_split_docLength_pos = 830
+    file_splitter_lemmatize_pos = file_splitter_split_docLength_pos
 
 
 # Windows: html_annotator_gender_main.py
@@ -888,16 +925,16 @@ else: #windows and anything else
 
 # Windows: knowledge_graphs_WordNet_main
     WordNet_csv_file_width = 130
-    WordNet_keyWord_entry_width = 40
+    WordNet_keyWord_entry_width = 85
     WordNet_dict_WordNet_filename_width = 80
 
-    WordNet_reset_pos = 450
-    WordNet_show_pos = 500
+    WordNet_reset_pos = 430
+    WordNet_show_pos = 475
     WordNet_noun_verb_menu_pos = 570
     WordNet_keyWord_menu_pos = 690
     WordNet_keyWord_entry_lb_pos = 830
     WordNet_keyWord_entry_pos = 950
-    WordNet_OK_button_pos = 1230
+    WordNet_OK_button_pos = IO_configuration_menu+open_config_file_button_brief
 
     WordNet_extract_improper_nouns_pos = 650
     WordNet_dict_WordNet_filename_pos = open_setup_x_coordinate
@@ -953,13 +990,13 @@ else: #windows and anything else
 
 # Windows: file_search_byWord
 
-    file_search_byWord_selectedCsvFile_pos = 510
+    file_search_byWord_selectedCsvFile_pos = 430
     file_search_byWord_add_search_button_pos = setup_IO_brief_coordinate
     file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate+35
     file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate+100
     file_search_byWord_openInputFile_button_pos = 300
-    file_search_byWord_keyword_value_pos = 510
-    file_search_byWord_extract_sentences_search_words_entry_pos = 510
+    file_search_byWord_keyword_value_pos = 430
+    file_search_byWord_extract_sentences_search_words_entry_pos = 430
 
 # Windows Word2Vec
     Word2Vec_vector_size_entry_pos = 260

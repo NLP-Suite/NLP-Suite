@@ -3,6 +3,11 @@
 #2. Type in kill -9 ***** to kill that subprocess
 #P.S ***** is the 5 digit PID
 
+# originally designed by Yi Wang March 2020
+# extensively edited and finalized by Claude Hu Fall 2020-2021
+# edited for SVO by Cynthia Dong Fall 2020
+# Edited by Roberto, Mino Cha, Jeongrok Yu, Seong Kim Fall 2022
+
 """
 TODO
 https://stanfordnlp.github.io/CoreNLP/memory-time.html
@@ -219,6 +224,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     date_str = ''
     # language initialized here and reset later in language = value
     NERs = []
+
     for key, value in kwargs.items():
         if key == 'extract_date_from_text_var' and value == True:
             extract_date_from_text_var = True
@@ -243,7 +249,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
     produce_split_files=False
 
-
+    # more annotators may be added to SVO later depending upon the annotators_params passed to SVO
+    #   you do not want to add coref, quote, gender, unless required
+    SVO_annotators=['tokenize', 'ssplit', 'pos', 'depparse', 'natlog', 'lemma', 'ner']
     params_option = {
         'Sentence': {'annotators':['ssplit']},
         'tokenize': {'annotators':['tokenize']},
@@ -259,7 +267,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'gender': {'annotators': ['coref']},
         'sentiment': {'annotators':['sentiment']},
         'normalized-date': {'annotators': ['tokenize','ssplit','ner']},
-        'SVO':{"annotators": ['tokenize','ssplit','pos','depparse','natlog','lemma', 'ner', 'coref', 'quote']},
+        # more annotators may be added to SVO later depending upon the annotators_params passed to SVO
+        #   you do not want to add coref, quote, gender, unless required
+        'SVO':{"annotators": SVO_annotators},
         'OpenIE':{"annotators": ['tokenize','ssplit','natlog','openie','ner']},
         'parser (pcfg)':{"annotators": ['tokenize','ssplit','pos','lemma','ner', 'parse','regexner']},
         'parser (nn)' :{"annotators": ['tokenize','ssplit','pos','lemma','ner','depparse','regexner']}
@@ -299,9 +309,9 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'coref table': ["Pronoun", "Reference", "Reference Start ID in Sentence",
                         "First Reference Sentence ID", "First Reference Sentence", "Pronoun Start ID in Reference Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
         'gender':['Word', 'Gender', 'Sentence ID', 'Sentence','Document ID', 'Document'],
-        'normalized-date':["Word", "Normalized date", "tid","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
-        'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Date type','Normalized date','Sentence ID', 'Sentence','Document ID', 'Document'],
-        'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Location", 'Person', 'Date type',
+        'normalized-date':["Date expression", "Normalized date", "tid","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
+        'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Date expression','Normalized date','Sentence ID', 'Sentence','Document ID', 'Document'],
+        'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Location", 'Person', 'Date expression',
                    'Normalized date', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         # Chen
         # added Deps column
@@ -315,6 +325,32 @@ def CoreNLP_annotate(config_filename,inputFilename,
     outputDirSV=outputDir
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True)
 
+    # display the timing of various algorithms
+    if 'coref' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_coref_timing,
+                                     reminders_util.message_CoreNLP_coref_timing,
+                                     True)
+    if 'SVO' in str(annotator_params) and 'gender' in str(annotator_params) and 'quote' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_SVO_gender_quote_timing,
+                                     reminders_util.message_CoreNLP_SVO_gender_quote_timing,
+                                     True)
+    if 'SVO' in str(annotator_params) and not 'gender' in str(annotator_params) and not 'quote' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_SVO_timing,
+                                     reminders_util.message_CoreNLP_SVO_timing,
+                                     True)
+    if 'gender' in str(annotator_params) and not 'SVO' in str(annotator_params) :
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_gender_timing,
+                                     reminders_util.message_CoreNLP_gender_timing,
+                                     True)
+    if 'quote' in str(annotator_params) and not 'SVO' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_quote_timing,
+                                     reminders_util.message_CoreNLP_quote_timing,
+                                     True)
 
     lang_models = language_models(CoreNLPdir, language)
     if lang_models == None:
@@ -345,6 +381,16 @@ def CoreNLP_annotate(config_filename,inputFilename,
     corefed_pronouns = 0#pronouns that are corefed
     Json_question_already_asked = False
     for annotator in annotator_params:
+        if 'coref' in annotator and not 'coref' in SVO_annotators:
+            reminders_util.checkReminder(config_filename,
+                                         reminders_util.title_options_CoreNLP_coref_timing,
+                                         reminders_util.message_CoreNLP_coref_timing,
+                                         True)
+            SVO_annotators.append('coref')
+        if 'quote' in annotator and not 'quote' in SVO_annotators:
+            SVO_annotators.append('quote')
+        if 'gender' in annotator and not 'gender' in SVO_annotators:
+            SVO_annotators.append('gender')
         if not check_CoreNLP_language(config_filename, annotator, language):
             continue
         if "gender" in annotator or "quote" in annotator or "coref" in annotator or "SVO" in annotator or "OpenIE" in annotator or ("parser" in annotator and "nn" in annotator):
@@ -490,7 +536,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # record the time consumption before annotating text in each file
     processing_doc = ''
 
-    # nlp = StanfordCoreNLP('http://localhost:9000')
+    # The following options were tested to expedite processing time of CoreNLP
+    # WORKED! 35% time reduction Test whether calling the local host inside or outside the for-loop is faster for various documents
+    # DOES NOT WORK Increase and decrease the total amount of words within file and test the performance
+    # DOES NOT WORK Test to see if file splitting process influences the performance
+
+    nlp = StanfordCoreNLP('http://localhost:9000')
     for docName in inputDocs:
         docID = docID + 1
         head, tail = os.path.split(docName)
@@ -520,7 +571,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_percent,
                                              reminders_util.message_CoreNLP_percent, True)
                 text=text.replace("%","percent")
-            nlp = StanfordCoreNLP('http://localhost:9000')
+            # nlp = StanfordCoreNLP('http://localhost:9000')
             # nlp = StanfordCoreNLP('http://point.dd.works:9000')
 
             #if there's only one annotator and it uses neural nerwork model, skip annoatiting with PCFG to save time
@@ -868,6 +919,8 @@ def date_get_tense(norm_date):
         tense = 'FUTURE'
     elif 'THIS' in norm_date or 'PRESENT' in norm_date:
         tense = 'PRESENT'
+    elif 'NEXT' in norm_date:
+        tense = 'NEXT'
         # print('present')
     else:
         tense = "OTHER" # TODO separate out days of week, months of year
