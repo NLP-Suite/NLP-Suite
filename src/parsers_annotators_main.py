@@ -89,10 +89,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     annotator='parser (nn)'
             else:
                 if annotators_var and annotators_menu_var != '':
-                    if 'NER (GUI)' in annotators_menu_var: # NER annotator
-                        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_NER_main.py') == False:
+                    if 'NER (Open GUI)' in annotators_menu_var: # NER annotator
+                        if IO_libraries_util.check_inputPythonJavaProgramFile('NER_main.py') == False:
                             return
-                        call("python Stanford_CoreNLP_NER_main.py", shell=True)
+                        call("python NER_main.py", shell=True)
                     elif 'Sentence splitter (with sentence length)' in annotators_menu_var:
                         annotator = 'Sentence'
                     elif 'Lemma annotator' in annotators_menu_var:
@@ -486,7 +486,7 @@ annotators_menu = tk.OptionMenu(window, annotators_menu_var,
         '   Sentence splitter (with sentence length)',
         '   Lemma annotator',
         '   POS annotator',
-        '   NER (GUI)',
+        '   NER (Open GUI)',
         'Special annotators (via BERT, CoreNLP, spaCy, Stanza) -----------------------------------------',
         '   Coreference PRONOMINAL resolution (via BERT, CoreNLP, spaCy Neural Network)',
         '   Sentiment analysis (Neural Network)',

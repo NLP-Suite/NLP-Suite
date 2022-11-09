@@ -351,6 +351,31 @@ def CoreNLP_annotate(config_filename,inputFilename,
                                      reminders_util.title_options_CoreNLP_quote_timing,
                                      reminders_util.message_CoreNLP_quote_timing,
                                      True)
+    if 'parser (nn)' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_nn_parser_timing,
+                                     reminders_util.message_CoreNLP_nn_parser_timing,
+                                     True)
+    if 'parser (pcfg)' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_PCFG_parser_timing,
+                                     reminders_util.message_CoreNLP_PCFG_parser_timing,
+                                     True)
+    if 'All POS' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_POS_timing,
+                                     reminders_util.message_CoreNLP_POS_timing,
+                                     True)
+    if 'NER' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_NER_timing,
+                                     reminders_util.message_CoreNLP_NER_timing,
+                                     True)
+    if 'normalized-date' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_normalized_date_timing,
+                                     reminders_util.message_CoreNLP_normalized_date_timing,
+                                     True)
 
     lang_models = language_models(CoreNLPdir, language)
     if lang_models == None:

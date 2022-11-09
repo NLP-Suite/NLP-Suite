@@ -993,7 +993,7 @@ else: #windows and anything else
     file_search_byWord_selectedCsvFile_pos = 430
     file_search_byWord_add_search_button_pos = setup_IO_brief_coordinate
     file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate+35
-    file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate+100
+    file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate+85
     file_search_byWord_openInputFile_button_pos = 300
     file_search_byWord_keyword_value_pos = 430
     file_search_byWord_extract_sentences_search_words_entry_pos = 430

@@ -39,15 +39,9 @@ from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tok
 
 # if SentiWordNet fails, run: "python -m nltk.downloader all"
 
-IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
-# check WordNet
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
-# from nltk.stem.wordnet import WordNetLemmatizer
-# lemmatizer = WordNetLemmatizer()
-# check stopwords
-# IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/stopwords','stopwords')
-# from nltk.corpus import stopwords
-# stops = set(stopwords.words("english"))
+IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','wordnet')
+IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','omw-1.4')
+IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','sentiwordnet')
 
 from nltk.corpus import wordnet as wn
 from nltk.corpus import sentiwordnet as swn

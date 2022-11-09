@@ -252,8 +252,11 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                    'Started running the filter algorithm for Subject-Verb-Object (SVO) at',
                                                    True, '', True)
 
-    # create an SVO subdirectory of the output directory
-    outputSVOFilterDir = IO_files_util.make_output_subdirectory('','',outputSVODir, label='Filter',
+    # place the filtered SVO files in a subdir under the main output directory,
+    #   rather than inside the SVO subdir
+    head, tail = os.path.split(outputSVODir)
+    # create an SVO-filtered subdirectory of the main output directory
+    outputSVOFilterDir = IO_files_util.make_output_subdirectory('','',head, label='SVO-filtered',
                                                               silent=True)
     if outputSVOFilterDir == '':
         return
