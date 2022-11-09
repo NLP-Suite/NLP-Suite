@@ -269,6 +269,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
+            # TODO MINO: create normalize_date subdir and outputs
+            outputNormalizedDateDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
+                                                                label='normalized-date',
+                                                                silent=True)
+            nDateOutput = SVO_util.normalize_date_svo(SVO_filename, outputNormalizedDateDir, createCharts, chartPackage)
+            if nDateOutput != None:
+                nDateSVOFilename=nDateOutput[0]
+                filesToOpen.extend(nDateOutput)
+            
+
 # CoreNLP OpenIE _____________________________________________________
     if 'OpenIE' in package_var:
         if language_var != 'English':
@@ -514,6 +524,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             filesToOpenSubset.append(SVO_filtered_filename)
         else:
             filesToOpenSubset.append(SVO_filename)
+            # filesToOpenSubset.append(nDateSVOFilename)
         for file in filesToOpen:
             # open all charts, all Google Earth and Google Maps maps, Gephi gexf network graph, html files, and wordclouds png files
             if file[-4:] == '.kml' or file[-5:] == '.html' or file[-4:] == '.png' or file[-5:] == '.gexf' or \

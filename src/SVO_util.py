@@ -370,6 +370,60 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
 
     return filesToOpen
 
+# TODO MINO: add normalize_date visualization function for SVO
+def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackage='Excel'):
+    filesToOpen = []
+
+    # Date expressions are in the form yesterday, tomorrow morning, the day before Christmas
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                        outputDir,
+                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date expression'],
+                                                        chartTitle='Frequency Distribution of Date Expressions',
+                                                        # count_var = 1 for columns of alphabetic values
+                                                        count_var=1, hover_label=[],
+                                                        outputFileNameType='date-express', #'NER_info_bar',
+                                                        column_xAxis_label='Date expression',
+                                                        groupByList=['Document ID','Document'],
+                                                        plotList=['Frequency'],
+                                                        chart_title_label='Date Expressions')
+    if chart_outputFilename!=None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
+
+    # normalized dates are in the form PAST_REF, NEXT_IMMEDIATE P1D, ...
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                        outputDir,
+                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Normalized date'],
+                                                        chartTitle='Frequency Distribution of Normalized Dates',
+                                                        # count_var = 1 for columns of alphabetic values
+                                                        count_var=1, hover_label=[],
+                                                        outputFileNameType='date', #'NER_date_bar',
+                                                        column_xAxis_label='Normalized date',
+                                                        groupByList=['Document ID','Document'],
+                                                        plotList=['Frequency'],
+                                                        chart_title_label='Normalized Dates')
+    if chart_outputFilename!=None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
+
+    # Date types are in the form PAST, PRESENT, OTHER
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                        outputDir,
+                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date type'],
+                                                        chartTitle='Frequency Distribution of Date Types',
+                                                        # count_var = 1 for columns of alphabetic values
+                                                        count_var=1, hover_label=[],
+                                                        outputFileNameType='date-types', #'NER_info_bar',
+                                                        column_xAxis_label='Date type',
+                                                        groupByList=['Document ID','Document'],
+                                                        plotList=['Frequency'],
+                                                        chart_title_label='Date Types')
+    if chart_outputFilename!=None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
+
+    return filesToOpen
+
 if __name__ == '__main__':
     senna_csv = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/test_output/SVO_Result/NLP_SENNA_SVO_Dir_test.csv'
     CoreNLP_csv = '/Users/admin/Desktop/EMORY/Academics/Spring_2021/SOC497R/test_output/SVO_Result/test-merge-svo.csv'
