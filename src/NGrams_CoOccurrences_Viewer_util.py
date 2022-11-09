@@ -3,16 +3,19 @@
 # completed by Austin Cai October 2021
 
 import os
-import GUI_util
+import tkinter.messagebox as mb
 import pandas as pd
 import csv
 import numpy as np
 import pprint
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+import stanza
 
+import GUI_util
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
+import constants_util
 
 """
 NGramsCoOccurrences implements the ability to generate NGram and CoOccurrences data
@@ -24,6 +27,8 @@ def run(inputDir="relative_path_here",
         n_grams_viewer=False,
         CoOcc_Viewer=True,
         search_wordsLists=None,
+        language_list=['English'],
+        useLemma=False,
         dateOption=False,
         temporal_aggregation='year',
         number_of_years=0,
@@ -40,6 +45,22 @@ def run(inputDir="relative_path_here",
         search_wordsLists = []
     checkCoOccList = False
 
+    lang_dict = dict(constants_util.languages)
+    lang = ''
+    lang_list = []
+    for k,v in lang_dict.items():
+        if v == language_list[0]:
+            lang = k
+            lang_list.append(lang)
+            break
+    try:
+        if useLemma:
+            stanzaPipeLine = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
+        else:
+            stanzaPipeLine = stanza.Pipeline(lang=lang, processors='tokenize')
+    except:
+        mb.showwarning(title='Warning', message='You must enter an integer value. The value ' + str(result[0]) + ' is not an integer.')
+        return
     case_sensitive = False
     normalize = False
     scaleData = False
@@ -55,7 +76,6 @@ def run(inputDir="relative_path_here",
     if 'Scale' in str(viewer_options_list):
         scaleData = True
     if 'Lemmatize' in str(viewer_options_list):
-        useLemma = True
         useLemma = True
 
 

@@ -1,5 +1,6 @@
 import pandas as pd
 from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+import os
 
 import IO_files_util
 import IO_user_interface_util
@@ -245,9 +246,20 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
     :param filter_o_fileName: the object dict file path
     """
 
+    filesToOpen = []
+
     startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
                                                    'Started running the filter algorithm for Subject-Verb-Object (SVO) at',
                                                    True, '', True)
+
+    # place the filtered SVO files in a subdir under the main output directory,
+    #   rather than inside the SVO subdir
+    head, tail = os.path.split(outputSVODir)
+    # create an SVO-filtered subdirectory of the main output directory
+    outputSVOFilterDir = IO_files_util.make_output_subdirectory('','',head, label='SVO-filtered',
+                                                              silent=True)
+    if outputSVOFilterDir == '':
+        return
 
     df = pd.read_csv(svo_file_name, encoding='utf-8',error_bad_lines=False)
     unfiltered_svo = df.to_dict('index')
@@ -302,19 +314,24 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                        startTime, True)
 
     # Replacing the original csv file with any SVOs to one containing filtered SVOs
-    # TODO this replaces the original SVO file; should we make a copy filtr_SVO instead?
-    pd.DataFrame.from_dict(filtered_svo, orient='index').to_csv(svo_file_name, encoding='utf-8', index=False)
+    head, tail = os.path.split(svo_file_name)
+    tail = tail.replace('NLP_CoreNLP_SVO_','NLP_CoreNLP_SVO_filter_')
+    svo_filter_file_name = os.path.join(outputSVOFilterDir, tail)
+    pd.DataFrame.from_dict(filtered_svo, orient='index').to_csv(svo_filter_file_name, encoding='utf-8', index=False)
+    filesToOpen.append(svo_filter_file_name)
 
-    filesToOpen = []
+    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_filter_file_name)
+    filtered_records = num_rows - nRecords
+    IO_user_interface_util.timed_alert(window,6000,'Filtered records', 'The filter algorithms have filtered ' + str(filtered_records) + \
+        ' records. \nNumber of original SVO records: ' + str(num_rows) + '\nNumber of filtered SVO records: ' + str(nRecords))
 
-    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_file_name)
     if nRecords>1:
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
-                                                           outputSVODir,
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_filter_file_name,
+                                                           outputSVOFilterDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Subject (S)'],
                                                            chartTitle='Frequency Distribution of Subjects (filtered)',
                                                            count_var=1, hover_label=[],
-                                                           outputFileNameType='S-filtr',  # 'POS_bar',
+                                                           outputFileNameType='S-filter',  # 'POS_bar',
                                                            column_xAxis_label='Subjects (filtered)',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
@@ -323,12 +340,12 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
 
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
-                                                           outputSVODir,
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_filter_file_name,
+                                                           outputSVOFilterDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Verb (V)'],
                                                            chartTitle='Frequency Distribution of Verbs (filtered)',
                                                            count_var=1, hover_label=[],
-                                                           outputFileNameType='V-filtr',  # 'POS_bar',
+                                                           outputFileNameType='V-filter',  # 'POS_bar',
                                                            column_xAxis_label='Verbs (filtered)',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
@@ -337,12 +354,12 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
 
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_file_name,
-                                                           outputSVODir,
+        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, svo_filter_file_name,
+                                                           outputSVOFilterDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Object (O)'],
                                                            chartTitle='Frequency Distribution of Objects (filtered)',
                                                            count_var=1, hover_label=[],
-                                                           outputFileNameType='O-filtr',  # 'POS_bar',
+                                                           outputFileNameType='O-filter',  # 'POS_bar',
                                                            column_xAxis_label='Objects (filtered)',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
@@ -350,6 +367,60 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
+
+    return filesToOpen
+
+# TODO MINO: add normalize_date visualization function for SVO
+def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackage='Excel'):
+    filesToOpen = []
+
+    # Date expressions are in the form yesterday, tomorrow morning, the day before Christmas
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                        outputDir,
+                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date expression'],
+                                                        chartTitle='Frequency Distribution of Date Expressions',
+                                                        # count_var = 1 for columns of alphabetic values
+                                                        count_var=1, hover_label=[],
+                                                        outputFileNameType='date-express', #'NER_info_bar',
+                                                        column_xAxis_label='Date expression',
+                                                        groupByList=['Document ID','Document'],
+                                                        plotList=['Frequency'],
+                                                        chart_title_label='Date Expressions')
+    if chart_outputFilename!=None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
+
+    # normalized dates are in the form PAST_REF, NEXT_IMMEDIATE P1D, ...
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                        outputDir,
+                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Normalized date'],
+                                                        chartTitle='Frequency Distribution of Normalized Dates',
+                                                        # count_var = 1 for columns of alphabetic values
+                                                        count_var=1, hover_label=[],
+                                                        outputFileNameType='date', #'NER_date_bar',
+                                                        column_xAxis_label='Normalized date',
+                                                        groupByList=['Document ID','Document'],
+                                                        plotList=['Frequency'],
+                                                        chart_title_label='Normalized Dates')
+    if chart_outputFilename!=None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
+
+    # Date types are in the form PAST, PRESENT, OTHER
+    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                        outputDir,
+                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date type'],
+                                                        chartTitle='Frequency Distribution of Date Types',
+                                                        # count_var = 1 for columns of alphabetic values
+                                                        count_var=1, hover_label=[],
+                                                        outputFileNameType='date-types', #'NER_info_bar',
+                                                        column_xAxis_label='Date type',
+                                                        groupByList=['Document ID','Document'],
+                                                        plotList=['Frequency'],
+                                                        chart_title_label='Date Types')
+    if chart_outputFilename!=None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
 
     return filesToOpen
 

@@ -310,7 +310,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         "First Reference Sentence ID", "First Reference Sentence", "Pronoun Start ID in Reference Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
         'gender':['Word', 'Gender', 'Sentence ID', 'Sentence','Document ID', 'Document'],
         'normalized-date':["Date expression", "Normalized date", "tid","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
-        'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Date expression','Normalized date','Sentence ID', 'Sentence','Document ID', 'Document'],
+        'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Date expression','Normalized date', 'Date type', 'Sentence ID', 'Sentence','Document ID', 'Document'],
         'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Location", 'Person', 'Date expression',
                    'Normalized date', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         # Chen
@@ -350,6 +350,31 @@ def CoreNLP_annotate(config_filename,inputFilename,
         reminders_util.checkReminder(config_filename,
                                      reminders_util.title_options_CoreNLP_quote_timing,
                                      reminders_util.message_CoreNLP_quote_timing,
+                                     True)
+    if 'parser (nn)' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_nn_parser_timing,
+                                     reminders_util.message_CoreNLP_nn_parser_timing,
+                                     True)
+    if 'parser (pcfg)' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_PCFG_parser_timing,
+                                     reminders_util.message_CoreNLP_PCFG_parser_timing,
+                                     True)
+    if 'All POS' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_POS_timing,
+                                     reminders_util.message_CoreNLP_POS_timing,
+                                     True)
+    if 'NER' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_NER_timing,
+                                     reminders_util.message_CoreNLP_NER_timing,
+                                     True)
+    if 'normalized-date' in str(annotator_params):
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_CoreNLP_normalized_date_timing,
+                                     reminders_util.message_CoreNLP_normalized_date_timing,
                                      True)
 
     lang_models = language_models(CoreNLPdir, language)
@@ -1445,20 +1470,21 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         sentenceID = sentenceID + 1
         check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
+        # TODO MINO: add Date Type columns
         # CYNTHIA: feed another information sentence['entitymentions'] to SVO_extraction to get locations
-        SVO, L, NER_value, T, T_S, P, N = Stanford_CoreNLP_SVO_enhanced_dependencies_util.SVO_extraction(sent_data, sentence['entitymentions'])# main function
+        SVO, L, NER_value, T, T_S, T_T, P, N = Stanford_CoreNLP_SVO_enhanced_dependencies_util.SVO_extraction(sent_data, sentence['entitymentions'])# main function
         nidx = 0
 
         #CYNTHIA: " ".join(L) => "; ".join(L)
         # ; added list of locations in SVO output (e.g., Los Angeles; New York; Washington)
-        # TODO Mino
+        # TODO Mino: add Date Type columns
         for row in SVO:
             # SVO_brief.append([sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2]])
             SVO_brief.append([row[0], row[1], row[2], sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
             if extract_date_from_filename_var:
-                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document),date_str])
+                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), "; ".join(T_T), sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document),date_str])
             else:
-                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), "; ".join(T_T), sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
             nidx += 1
         # for each sentence, get locations
         if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(L) != 0:

@@ -12,7 +12,6 @@ import difflib
 import pprint
 import sys
 
-
 def SVO_enhanced_dependencies_sent_data_reorg(sentence):#reorganize the dependencies output of stanford corenlp
     result = {}#store each token's information
     tokens = sentence['tokens']
@@ -486,6 +485,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
     NER_value = []
     T = []#list that stores the time information appear in sentences
     T_S = []#list that stores normalized form of the time information appear in sentences
+    T_T = []#list that stores Date Type of normalized date
     P = []#list that stores person names appear in sentences
     N = []#list that stores negation booleans (T=negation; F= without negation)
     acl = []#list that stores modifier
@@ -509,6 +509,11 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
             T.append(token["word"])
             
             T_S.append(token['normalizedNER'])
+            # get Date Type values (T_T) using normalized_date (T_S)
+            info = date_get_info(token['normalizedNER'])
+            if info == "OTHER":
+                info = date_get_tense(token['normalizedNER'])
+            T_T.append(info)
 
         if token["ner"] == "PERSON": 
             P.append(token["word"])
@@ -583,7 +588,51 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
                     SVO.extend(svo_acl)
                     N.extend(negation_acl)
  
-    return SVO, L, NER_value, T, T_S, P, N
+    return SVO, L, NER_value, T, T_S, T_T, P, N
             
                         
 # Dec. 21
+
+# functions from Stanford_CoreNLP_util.py
+# placed here to avoid circular imports
+def date_get_info(norm_date):
+    norm_date = norm_date.strip()
+    tense = 'OTHER'
+        # print(norm_date)
+    if norm_date.isdigit() or (norm_date[0] == "-" and norm_date.replace('-', '').isdigit()):
+        tense = "YEAR"
+    elif norm_date[-2:] == "XX" and (norm_date[0:-2].isdigit() or (norm_date[0] == "-" and norm_date[0:-2].replace('-', '').isdigit())):
+        tense = "CENTURY"
+    elif len(norm_date) == 7 and norm_date[-2:].isdigit() and norm_date[4] == "-":
+        tense = "MONTH"
+    elif norm_date.replace('-', '').isdigit() or norm_date.replace('/', '').isdigit() or ("XXXX" in norm_date and norm_date.split("XXXX")[1].replace("-", '').isdigit()):#(len(norm_date) > 4 and norm_date[0:4] == 'XXXX' and norm_date[4:].replace("-", '').isdigit()):#specific year,month, day
+        tense = "DATE"
+        # print("date")
+    elif 'WXX' in norm_date or "WE" in norm_date:#weekdays
+        tense = "DAY"
+        # print("day")
+    elif 'SP' in norm_date or 'SU' in norm_date or 'FA' in norm_date or 'WI' in norm_date:
+        tense = "SEASON"
+        # print("season")
+    # else:
+    #     tense = "OTHER"
+    return tense
+
+# ["Word", "Normalized date", "tid","tense","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
+def date_get_tense(norm_date):
+    tense = ''
+    # print(norm_date)
+    if (len(norm_date) >= 9 and "PREV" in norm_date) or "OFFSET P" in norm_date or "PAST" in norm_date:
+        # print('past')
+        tense = 'PAST'
+    elif (len(norm_date) >= 6 and 'OFFSET' in norm_date) or "FUTURE" in norm_date:
+        # print("future")
+        tense = 'FUTURE'
+    elif 'THIS' in norm_date or 'PRESENT' in norm_date:
+        tense = 'PRESENT'
+    elif 'NEXT' in norm_date:
+        tense = 'NEXT'
+        # print('present')
+    else:
+        tense = "OTHER" # TODO separate out days of week, months of year
+    return tense

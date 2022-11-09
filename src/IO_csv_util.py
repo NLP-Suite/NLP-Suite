@@ -141,6 +141,7 @@ def GetNumberOf_Records_Columns_inCSVFile(inputFilename,encodingValue='utf-8'):
 
 # inputFile has path
 def GetMaxValueInCSVField(inputFilename,algorithm='',columnHeader='Document ID',encodingValue='utf-8'):
+    maxvalue = 0
     df = pd.read_csv(inputFilename)
     try:
         column = df[columnHeader]
@@ -151,6 +152,8 @@ def GetMaxValueInCSVField(inputFilename,algorithm='',columnHeader='Document ID',
                        message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + columnHeader + msg + "\n\nPlease, select a different csv file in input and try again!")
         return 0
     maxvalue = column.max()
+    if maxvalue=='': # to avoid an error
+        maxvalue = 0
     return maxvalue
 
 

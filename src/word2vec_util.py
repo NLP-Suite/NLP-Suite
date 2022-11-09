@@ -85,11 +85,12 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     if len(inputFilename)>0:
         doc = inputFilename
+        head, tail = os.path.split(doc)
         if doc.endswith('.txt'):
             with open(doc, 'r', encoding='utf-8', errors='ignore') as file:
                 dId += 1
                 text = file.read()
-                print('importing single file')
+                print('Importing single file ' + tail)
                 documentID.append(dId)
                 document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
                 all_input_docs[dId] = text
@@ -102,11 +103,13 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
             return
 
         for doc in os.listdir(inputDir):
+            doc = inputFilename
+            head, tail = os.path.split(doc)
             if doc.endswith('.txt'):
                 with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
                     dId += 1
                     text = file.read()
-                    print('importing ' + str(dId) + '/' + str(numFiles) + ' file')
+                    print('Importing file ' + str(dId) + '/' + str(numFiles)) + tail
                     documentID.append(dId)
                     document.append(os.path.join(inputDir, doc))
                     all_input_docs[dId] = text
@@ -169,7 +172,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     else:
         sg_var = 1
 
-    print('learning architecture: ', sg_menu_var)
+    print('Learning architecture: ', sg_menu_var)
 
     ## train model
 

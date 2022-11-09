@@ -269,6 +269,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             filesToOpen.extend(tempOutputFiles)
             svo_result_list.append(tempOutputFiles[0])
 
+            # TODO MINO: create normalize_date subdir and outputs
+            outputNormalizedDateDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
+                                                                label='normalized-date',
+                                                                silent=True)
+            nDateOutput = SVO_util.normalize_date_svo(SVO_filename, outputNormalizedDateDir, createCharts, chartPackage)
+            if nDateOutput != None:
+                nDateSVOFilename=nDateOutput[0]
+                filesToOpen.extend(nDateOutput)
+            
+
 # CoreNLP OpenIE _____________________________________________________
     if 'OpenIE' in package_var:
         if language_var != 'English':
@@ -371,6 +381,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                 lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
                                 outputSVOSVODir, createCharts, chartPackage)
             if output != None:
+                SVO_filtered_filename=output[0]
                 filesToOpen.extend(output)
 
         if lemmatize_verbs:
@@ -435,13 +446,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     if nRecords > 1:  # including headers; file is empty
                         gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], outputSVOSVODir, f, "Subject (S)", "Verb (V)", "Object (O)",
                                                            "Sentence ID")
-                        if "CoreNLP" in f or "SENNA_SVO" in f or "SpaCy" in f or "Stanza" in f:
+                        if "CoreNLP" in f or "SENNA_SVO" in f or "spaCy" in f or "Stanza" in f:
                             filesToOpen.append(gexf_file)
                         if not save_intermediate_file:
                             gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputSVOSVODir) if
                                           f.endswith('.gexf')]
                             for f in gexf_files:
-                                if "CoreNLP" not in f and "SENNA_SVO" not in f and "SpaCy" not in f and "Stanza" not in f: #CoreNLP accounts for both ++ and OpenIE
+                                if "CoreNLP" not in f and "SENNA_SVO" not in f and "spaCy" not in f and "Stanza" not in f: #CoreNLP accounts for both ++ and OpenIE
                                     os.remove(f)
 
 # wordcloud  _________________________________________________
@@ -464,7 +475,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         # out_file = wordclouds_util.SVOWordCloud(myfile, f, outputSVODir + os.sep + 'SVO', "", prefer_horizontal=.9)
                         out_file = wordclouds_util.SVOWordCloud(myfile, f, outputSVOSVODir, "", prefer_horizontal=.9)
                         myfile.close()
-                        if "CoreNLP" in f or "OpenIE" in f or "SENNA_SVO" in f or "SpaCy" in f or "Stanza" in f:
+                        if "CoreNLP" in f or "OpenIE" in f or "SENNA_SVO" in f or "spaCy" in f or "Stanza" in f:
                             filesToOpen.append(out_file)
 
 # GIS maps _____________________________________________________
@@ -508,8 +519,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     if openOutputFiles == True and len(filesToOpen) > 0:
         filesToOpenSubset = []
-        # add the SVO main file
-        filesToOpenSubset.append(SVO_filename)
+        # add the SVO main file,
+        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
+            filesToOpenSubset.append(SVO_filtered_filename)
+        else:
+            filesToOpenSubset.append(SVO_filename)
+            # filesToOpenSubset.append(nDateSVOFilename)
         for file in filesToOpen:
             # open all charts, all Google Earth and Google Maps maps, Gephi gexf network graph, html files, and wordclouds png files
             if file[-4:] == '.kml' or file[-5:] == '.html' or file[-4:] == '.png' or file[-5:] == '.gexf' or \

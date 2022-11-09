@@ -206,7 +206,6 @@ class Vectorizer:
     def compute_suggested_n_clusters(sentiment_vectors, expl_var_thr=0.9):
         n_features = len(sentiment_vectors[0])
         pca = PCA(n_components=n_features)
-
         if len(sentiment_vectors)<n_features:
             messagebox.showwarning(title='Corpus size error',
                            message='The corpus you have selected is too small for data reduction algorithms. These algorithms require a LARGE number of files.\n\nPlease, select a different corpus directory and try again.')
