@@ -61,6 +61,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         n_grams_viewer_var,
         CoOcc_Viewer_var,
         search_words,
+        # language_list,
         date_options,
         temporal_aggregation_var,
         viewer_options_list):
@@ -211,6 +212,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             n_grams_viewer_var,
             CoOcc_Viewer_var,
             search_words,
+            language_list,
+            useLemma,
             date_options,
             temporal_aggregation_var,
             number_of_years,
@@ -455,6 +458,7 @@ def activate_viewer_var():
     # Disable the + after clicking on it and enable the menu
     add_viewer_button.configure(state='disabled')
     viewer_options_menu.configure(state='normal')
+    activate_viewer_options()
 
 def activate_viewer_options(*args):
     if viewer_options_menu_var.get()!='':
@@ -462,7 +466,6 @@ def activate_viewer_options(*args):
             mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
             return
         if 'Partial match' in viewer_options_menu_var.get() or \
-                'Lemmatize' in viewer_options_menu_var.get() or \
                 'Normalize' in viewer_options_menu_var.get() or \
                 'Scale' in viewer_options_menu_var.get():
                 mb.showwarning(title='Warning', message='The option is not available yet.\n\nSorry!')
@@ -472,11 +475,11 @@ def activate_viewer_options(*args):
             viewer_options_list.remove('Case sensitive (default)')
         if 'sensitive' in viewer_options_menu_var.get() and 'insensitive' in str(viewer_options_list):
             viewer_options_list.remove('Case insensitive')
-        if len(viewer_options_list) > 0:
-            add_viewer_button.configure(state='normal')
-            reset_viewer_button.configure(state='normal')
-            show_viewer_button.configure(state='normal')
-            return
+        # if len(viewer_options_list) > 0:
+        #     add_viewer_button.configure(state='normal')
+        #     reset_viewer_button.configure(state='normal')
+        #     show_viewer_button.configure(state='normal')
+        #     return
         viewer_options_list.append(viewer_options_menu_var.get())
         viewer_options_menu.configure(state="disabled")
         add_viewer_button.configure(state='normal')

@@ -151,9 +151,10 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             processors='tokenize,sentiment'
 
         # create the appropriate subdirectory to better organize output files
-        outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-                                                           label=annotator+'_Stanza_'+tail,
-                                                           silent=False)
+        # outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+        #                                                    label=annotator+'_Stanza_'+tail,
+        #                                                    silent=False)
+        outputDir = create_output_directory(inputFilename, inputDir, outputDir, annotator)
 
         nlp = stanza.Pipeline(lang=lang, processors=processors, verbose=False)
 
@@ -185,76 +186,56 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                 annotator_params+'_Stanza')
 
-    for docName in inputDocs:
+    for doc in inputDocs:
         docID = docID + 1
-        head, tail = os.path.split(docName)
+        head, tail = os.path.split(doc)
+
+        # extract date in file_name
+        if extract_date_from_filename_var:
+            global date_str
+            date_str = date_in_filename(doc, **kwargs)
         print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
-        docTitle = os.path.basename(docName)
-        sentenceID = 0
-        # if ("SVO" in annotator_params or "OpenIE" in annotator_params) and "coref" in docName.split("_"):
-        #     split_file = file_splitter_merged_txt_util.run(docName, "<@#", "#@>", outputDir)
-        #     if len(split_file)>1:
-        #         split_file = IO_files_util.getFileList("", split_file[0], fileType=".txt")
-        if "Sentence" in annotator_params:
-            split_file = file_splitter_ByLength_util.splitDocument_byLength(GUI_util.window,config_filename,docName,'',document_length)
-        else:
-            split_file = []
-            split_file.append(docName)
 
-        nSplitDocs = len(split_file)
-        split_docID = 0
-
-        for doc in split_file:
-            split_docID = split_docID + 1
-            head, tail = os.path.split(doc)
-            # extract date in file_name
-            if extract_date_from_filename_var:
-                global date_str
-                date_str = date_in_filename(doc, **kwargs)
-
-            if docName != doc:
-                print("   Processing split file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail)
-
-            if len(language) > 1 or 'multilingual' in language: # if language detection + annotation, need to open a txt file into a list
-                with open(doc, encoding=language_encoding) as f:
-                    text = f.read()
-                    if text == '':
-                        mb.showinfo("Warning",
-                                    "The input file\n" + tail + "\nis empty. The file will be skipped from processing.\n\nPlease, check the file and try again.")
-                        break
-                    text = text.split('\n\n')
-                    text = [t for t in text if not re.match(r'^\s*$', t)]
-            else: # if regular annotation, open file with as string
-                text = open(doc, 'r', encoding=language_encoding, errors='ignore').read().replace("\n", " ")
-
-            if "%" in text:
-                text = text.replace("%","percent")
-
-            # process given text with customed Stanza pipeline
-            Stanza_output = []
-            try:
-                Stanza_output = nlp(text)
-            except:
-                if 'multilingual' in language:
-                    try:
-                        nlp = MultilingualPipeline(lang_id_config={"langid_lang_subset":["en", "multilingual"]})
-                        Stanza_output = nlp(text)
-                    except:
-                        mb.showinfo("Warning",
-                                    "Stanza encountered an error trying to download the language pack " + str(language) + "\n\nTry manually selecting the appropriate language rather than multilingual.")
-                        return
-                else:
+        if len(language) > 1 or 'multilingual' in language: # if language detection + annotation, need to open a txt file into a list
+            with open(doc, encoding=language_encoding) as f:
+                text = f.read()
+                if text == '':
                     mb.showinfo("Warning",
-                                "Stanza encountered an error trying to download the selected language pack " + str(language))
+                                "The input file\n" + tail + "\nis empty. The file will be skipped from processing.\n\nPlease, check the file and try again.")
+                    break
+                text = text.split('\n\n')
+                text = [t for t in text if not re.match(r'^\s*$', t)]
+        else: # if regular annotation, open file with as string
+            text = open(doc, 'r', encoding=language_encoding, errors='ignore').read().replace("\n", " ")
+
+        if "%" in text:
+            text = text.replace("%","percent")
+
+        # process given text with customed Stanza pipeline
+        Stanza_output = []
+        try:
+            Stanza_output = nlp(text)
+        except:
+            if 'multilingual' in language:
+                try:
+                    nlp = MultilingualPipeline(lang_id_config={"langid_lang_subset":["en", "multilingual"]})
+                    Stanza_output = nlp(text)
+                except:
+                    mb.showinfo("Warning",
+                                "Stanza encountered an error trying to download the language pack " + str(language) + "\n\nTry manually selecting the appropriate language rather than multilingual.")
                     return
+            else:
+                mb.showinfo("Warning",
+                            "Stanza encountered an error trying to download the selected language pack " + str(language))
+                return
 
-            temp_df = convertStanzaDoctoDf(Stanza_output, inputFilename, inputDir, tail, docID, annotator_params, lang_list)
-            df = pd.concat([df, temp_df], ignore_index=True, axis=0)
+        temp_df = convertStanzaDoctoDf(Stanza_output, inputFilename, inputDir, tail, docID, annotator_params, lang_list)
+        df = pd.concat([df, temp_df], ignore_index=True, axis=0)
 
-            # extract SVO
-            if "SVO" in annotator_params:
-                temp_svo_df = extractSVO(Stanza_output, docID, inputFilename, inputDir, tail, extract_date_from_filename_var) if len(language)==1 and 'multilingual' not in language else extractSVOMultilingual(Stanza_output, docID, inputFilename, inputDir, tail, extract_date_from_filename_var)
-                svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
+        # extract SVO
+        if "SVO" in annotator_params:
+            temp_svo_df = extractSVO(Stanza_output, docID, inputFilename, inputDir, tail, extract_date_from_filename_var) if len(language)==1 and 'multilingual' not in language else extractSVOMultilingual(Stanza_output, docID, inputFilename, inputDir, tail, extract_date_from_filename_var)
+            svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
 
     df.to_csv(outputFilename, index=False, encoding=language_encoding)
     filesToOpen.append(outputFilename)
@@ -471,9 +452,9 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
 
     # output: svo_df
     if extract_date_from_filename_var:
-        svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Date'})
+        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Date'])
     else:
-        svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence'})
+        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence'])
     empty_verb_idx = []
     SVO_found = False
     NER_found = False # boolean value for NER tags
@@ -628,6 +609,22 @@ def visualize_GIS_maps_Stanza(svo_df):
                 if loc != '':
                     loc_df.loc[len(loc_df.index)] = [loc, 'LOCATION', row['Sentence ID'], row['Sentence'], row['Document ID'], 'Document']
     return loc_df
+
+# modified from StanfordCoreNLP_util
+def create_output_directory(inputFilename, inputDir, outputDir,
+                            annotator):
+    outputDirSV=GUI_util.output_dir_path.get()
+    if outputDirSV != outputDir:
+        # create output subdirectory
+        outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                           label=annotator,
+                                                           silent=True)
+    else:
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                           label=annotator + "_Stanza",
+                                                           silent=True)
+
+    return outputDir
 
 # Python dictionary of language (values) and their acronyms (keys)
 lang_dict  = dict(constants_util.languages)

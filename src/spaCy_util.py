@@ -91,10 +91,8 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     elif "sentiment" in annotator_params:
         annotator = 'sentiment'
 
-    # create the appropriate subdirectory to better organize output files
-    outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-                                                       label=annotator + '_spaCy_' + tail,
-                                                       silent=False)
+    # create the appropriate subdirectory to better organize output files                                               silent=False)
+    outputDir = create_output_directory(inputFilename, inputDir, outputDir, annotator)
 
     # check if selected language is one.
     lang = ''
@@ -313,9 +311,9 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
 
     # output: svo_df
     if extract_date_from_filename_var:
-        svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Date'})
+        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Date'])
     else:
-        svo_df = pd.DataFrame(columns={'Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID'})
+        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID'])
 
     # subject,verb and object constants
     SUBJECT_DEPS = {"nsubj", "nsubjpass", "csubj", "agent", "expl"}
@@ -444,6 +442,22 @@ def visualize_GIS_maps_spaCy(svo_df):
                 if loc != '':
                     loc_df.loc[len(loc_df.index)] = [loc, 'LOCATION', row['Sentence ID'], row['Sentence'], row['Document ID'], 'Document']
     return loc_df
+
+# modified from StanfordCoreNLP_util
+def create_output_directory(inputFilename, inputDir, outputDir,
+                            annotator):
+    outputDirSV=GUI_util.output_dir_path.get()
+    if outputDirSV != outputDir:
+        # create output subdirectory
+        outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                           label=annotator,
+                                                           silent=True)
+    else:
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                           label=annotator + "_spaCy",
+                                                           silent=True)
+
+    return outputDir
 
 # Python dictionary of language (values) and their acronyms (keys)
 lang_dict  = dict(constants_util.languages)
