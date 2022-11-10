@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"statistics_txt_util",['nltk','csv','tkinter','os','string','collections','re','textstat','itertools','stanza'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"statistics_txt_util",['nltk','csv','tkinter','os','string','collections','re','textstat','itertools','stanza','spacy'])==False:
     sys.exit(0)
 
 import os
@@ -48,8 +48,6 @@ from PIL import Image
 
 #For objectivity/subjectivity
 from spacytextblob.spacytextblob import SpacyTextBlob
-import en_core_web_sm
-
 
 #whether stopwordst were already downloaded can be tested, see stackoverflow
 #   https://stackoverflow.com/questions/23704510/how-do-i-test-whether-an-nltk-resource-is-already-installed-on-the-machine-runni
@@ -979,8 +977,6 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
 
 # SUBJECTIVITY/OBJECTIVITY PER SENTENCE---------------------------------------------------------------------------------------------
             if "Objectivity/subjectivity" in processType:
-
-
                 nlp = spacy.load('en_core_web_sm')
                 nlp.add_pipe('spacytextblob')
 
