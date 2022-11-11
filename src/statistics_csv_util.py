@@ -449,6 +449,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
     data.to_csv(name, encoding='utf-8')
     # complete sentence id if needed
     if(complete_sid):
+        # TODO Samir
         print("Completing sentence index...")
         charts_util.add_missing_IDs(name, name)
     print(name)
@@ -513,8 +514,14 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
 #   selected_col=['POStag'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
 def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputDataFrame, outputDir,
             openOutputFiles,createCharts,chartPackage,
-            selected_col, hover_col, group_col,
+            selected_col, hover_col, group_col, complete_sid = True,
             fileNameType='CSV',chartType='line',pivot=True):
+
+    name = outputDir + os.sep + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
+    if(complete_sid):
+        # TODO Samir
+        print("Completing sentence index...")
+        charts_util.add_missing_IDs(name, name)
 
     filesToOpen = []
     container = []
@@ -529,7 +536,6 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             headers = next(reader)
         header_indices = [i for i, item in enumerate(headers) if item]
         data = pd.read_csv(inputFilename, usecols=header_indices,encoding='utf-8',error_bad_lines=False)
-
 
     # remove hyperlink before processing
     data.to_csv(inputFilename,encoding='utf-8', index=False)

@@ -79,6 +79,8 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             extract_date_from_filename_var = True
         if key == 'google_earth_var' and value == True:
             google_earth_var = True
+        else:
+            google_earth_var = False
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Stanza ' + str(annotator_params) + ' annotator at',
                                             True, '', True, '', False)
@@ -403,10 +405,6 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
                     while tmp_ner.startswith('E') is False:
                         tmp_ner = out_df.at[tmp_idx, 'NER']
                         tmp_idx+=1
-                    print('###### CHECK FOR KOREA ######')
-                    print(out_df.at[i, 'Form'])
-                    print(tmp_idx)
-                    print(i)
                     tmp_idx+=1
                     # handle possible edge case where the next NER tag starts with S or current tag is a single tag
                     if tmp_idx==i+1 or (i<=max_idx and out_df.at[i+1, 'NER'].startswith('S')):
@@ -420,7 +418,10 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
                                 out_df.at[j, 'Multi-Word Expression'] = out_df.at[j+1, 'Multi-Word Expression']
                                 # when finally reach the first tag (B), update existing MWE with complete MWE
                                 for k in reversed(range(i, tmp_idx-1)):
-                                    out_df.at[k, 'Multi-Word Expression'] = out_df.at[j, 'Multi-Word Expression']
+                                    if k==i:
+                                        out_df.at[k, 'Multi-Word Expression'] = out_df.at[j, 'Multi-Word Expression']
+                                    else:
+                                        out_df.at[k, 'Multi-Word Expression'] = ''
                             elif out_df.at[j, 'NER'].startswith('I'):
                                 out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j+1 , 'Multi-Word Expression']
             i+=1

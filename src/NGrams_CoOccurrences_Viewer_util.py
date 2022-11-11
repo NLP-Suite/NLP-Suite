@@ -239,8 +239,12 @@ def run(inputDir="relative_path_here",
                     if iterations > 0:
                         for i in range(length_of_search_list):
                             if i == 0:
-                                if split_search_word[i] == token:
-                                    checker = True
+                                if "Chinese" in language_list:
+                                    if split_search_word[i] in token:
+                                        checker = True
+                                else:
+                                    if split_search_word[i] == token:
+                                        checker = True
                             else:
                                 if checker and (collocationIndex + i) < len(tokens_):
                                     if split_search_word[i] == tokens_[collocationIndex + i]:
@@ -250,8 +254,14 @@ def run(inputDir="relative_path_here",
                         if checker:
                             ngram_results[search_word][str(year)][str(month).zfill(2)]["Frequency"] += 1
                     else:
-                        if search_word == token:
-                            ngram_results[search_word][str(year)][str(month).zfill(2)]["Frequency"] += 1
+                        if "Chinese" in language_list:
+                            if search_word in token:
+                                ngram_results[search_word][str(year)][str(month).zfill(2)]["Frequency"] += 1
+                        else:
+                            if search_word == token:
+                                ngram_results[search_word][str(year)][str(month).zfill(2)]["Frequency"] += 1
+
+
 # aggregate by quarter
         if byQuarter:
             quarter_ngram_results = {}
@@ -322,8 +332,12 @@ def run(inputDir="relative_path_here",
                             if iterations > 0:
                                 for i in range(length_of_search_list):
                                     if i == 0:
-                                        if split_search_word[i] == token:
-                                            checker = True
+                                        if "Chinese" in language_list:
+                                            if split_search_word[i] in token:
+                                                checker = True
+                                        else:
+                                            if split_search_word[i] == token:
+                                                checker = True
                                     else:
                                         if checker and (collocationIndex + i) < len(tokens_):
                                             if split_search_word[i] == tokens_[collocationIndex + i]:
@@ -333,8 +347,12 @@ def run(inputDir="relative_path_here",
                                 if checker:
                                     coOcc_results[search_word] = 2
                             else:
-                                if search_word == token:
-                                    coOcc_results[search_word] = 1
+                                if "Chinese" in language_list:
+                                    if search_word in token:
+                                        coOcc_results[search_word] = 1
+                                else:
+                                    if search_word == token:
+                                        coOcc_results[search_word] = 1
                         co_occurrence_checker = True
                         for word in search_word_list:
                             if word not in list(coOcc_results.keys()):

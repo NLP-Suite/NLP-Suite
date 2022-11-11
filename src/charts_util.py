@@ -241,6 +241,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                                     selected_col=columns_to_be_plotted_yAxis,
                                                                     hover_col=[],
                                                                     group_col=['Document ID','Document'],
+                                                                    complete_sid=False,
                                                                     fileNameType=columns_to_be_plotted_yAxis[0], chartType='',pivot = pivot)
                     new_inputFilename=temp_outputFilename[0]
                     # temp_outputFilename[0] is the frequency filename (with no hyperlinks)
@@ -335,7 +336,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                           chartPackage,
                                                           selected_col=columns_to_be_plotted_numeric,
                                                           hover_col=[],
-                                                          group_col=[[docCol, docCol+1, sentCol]],
+                                                          group_col=[['Document ID', 'Document', 'Sentence ID']],
+                                                          complete_sid=True,
                                                           fileNameType='CSV',
                                                           chartType='',
                                                           pivot=pivot)
@@ -684,8 +686,8 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
                 temp[j] = i
                 # when adding a new Sentence ID, insert a frequency value of 0,
                 #   in every occurrence of a frequency column, whatever the name may be (Frequency, Frequencies, Number of, Score)
-                for i in range (0,len(frequency_pos)):
-                    if frequency_pos[i]!='':
+                for k in range (0,len(frequency_pos)):
+                    if frequency_pos[k]!='':
                         temp[frequency_pos[i]] = 0
             elif j == docCol_pos:
                 # insert Document ID
