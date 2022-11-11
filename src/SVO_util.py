@@ -322,7 +322,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
 
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_filter_file_name)
     filtered_records = num_rows - nRecords
-    IO_user_interface_util.timed_alert(window,6000,'Filtered records', 'The filter algorithms have filtered ' + str(filtered_records) + \
+    IO_user_interface_util.timed_alert(window,6000,'Filtered records', 'The filter algorithms have filtered out ' + str(filtered_records) + \
         ' records. \nNumber of original SVO records: ' + str(num_rows) + '\nNumber of filtered SVO records: ' + str(nRecords))
 
     if nRecords>1:

@@ -67,6 +67,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     # iterate through kwarg items
     extract_date_from_text_var = False
     extract_date_from_filename_var = False
+    google_earth_var = False
     for key, value in kwargs.items():
         if key == 'extract_date_from_text_var' and value == True:
             extract_date_from_text_var = True
@@ -74,7 +75,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
             extract_date_from_filename_var = True
         if key == 'google_earth_var' and value == True:
             google_earth_var = True
-
+            
     # annotating each input file
     docID = 0
 
@@ -283,7 +284,10 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
                             out_df.at[j, 'Multi-Word Expression'] = out_df.at[j+1, 'Multi-Word Expression']
                             # when finally reach the first tag (B), update existing MWE with complete MWE
                             for k in reversed(range(i, tmp_idx-1)):
-                                out_df.at[k, 'Multi-Word Expression'] = out_df.at[j, 'Multi-Word Expression']
+                                if k==i:
+                                    out_df.at[k, 'Multi-Word Expression'] = out_df.at[j, 'Multi-Word Expression']
+                                else:
+                                    out_df.at[k, 'Multi-Word Expression'] = 'O'
                         elif out_df.at[j, 'Multi-Word Expression'] == 'I':
                             out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j+1 , 'Multi-Word Expression']
             i+=1
