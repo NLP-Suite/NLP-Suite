@@ -128,9 +128,38 @@ lemmatize_var.set(1)
 lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,lemmatize_checkbox)
 
+vis_var_lb = tk.Label(window,text='Select the visualization method')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,vis_var_lb,True)
+vis_menu_var.set('Plot all word vectors')
+vis_menu = tk.OptionMenu(window,vis_menu_var, 'Plot all word vectors', 'Clustering of word vectors')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,vis_menu, True)
+
+#### 2D or 3D plot
+dim_menu_var.set('2D')
+dim_menu = tk.OptionMenu(window,dim_menu_var, '2D', '3D')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,dim_menu)
+
+### entry for clustering keywords
+keywords_var.set('')
+keywords_lb = tk.Label(window, text='Keywords')
+cluster_var_entry = tk.Entry(window,width=10,textvariable=keywords_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,keywords_lb,True)
+
+keywords_entry = tk.Entry(window, textvariable=keywords_var)
+keywords_entry.configure(state='disabled',width=GUI_IO_util.widget_width_extra_long)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,keywords_entry)
+
+def activate_keywords_var(*args):
+    if vis_menu_var.get() == 'Clustering of word vectors':
+        keywords_entry.config(state='normal')
+    else:
+        keywords_entry.config(state='disabled')
+
+vis_menu_var.trace('w', activate_keywords_var)
+
 ## option for BERT
 BERT_var.set(0)
-BERT_checkbox = tk.Checkbutton(window, text='Word2Vec (via BERT)', variable=BERT_var, onvalue=1, offvalue=0)
+BERT_checkbox = tk.Checkbutton(window, text='Word embeddings (via BERT)', variable=BERT_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,BERT_checkbox)
 
 ## option for Gensim
@@ -139,11 +168,11 @@ Gensim_checkbox = tk.Checkbutton(window, text='Word2Vec (via Gensim)', variable=
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,Gensim_checkbox)
 
 ## option for model architecture
-sg_lb = tk.Label(window,text='Select the training model architecture')
+sg_lb = tk.Label(window,text='Training model architecture')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,sg_lb,True)
 sg_menu_var.set('Skip-Gram')
 sg_menu = tk.OptionMenu(window,sg_menu_var, 'Skip-Gram','CBOW')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,y_multiplier_integer,sg_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,sg_menu)
 ## option for vector size
 vector_size_lb = tk.Label(window,text='Vector size')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,vector_size_lb,True)
@@ -166,44 +195,18 @@ min_count_var.set(5)
 min_count_entry = tk.Entry(window,width=5,textvariable=min_count_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_min_count_pos,y_multiplier_integer,min_count_entry)
 ## option for visualization method
-vis_var_lb = tk.Label(window,text='Select the visualization method')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,vis_var_lb,True)
-vis_menu_var.set('Plot all word vectors')
-vis_menu = tk.OptionMenu(window,vis_menu_var, 'Plot all word vectors', 'Clustering of word vectors')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,y_multiplier_integer,vis_menu, True)
 
-#### 2D or 3D plot
-dim_menu_var.set('2D')
-dim_menu = tk.OptionMenu(window,dim_menu_var, '2D', '3D')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_dim_menu_pos,y_multiplier_integer,dim_menu)
-
-#### entry for clustering keywords
-keywords_var.set('')
-keywords_lb = tk.Label(window, text='Keywords')
-cluster_var_entry = tk.Entry(window,width=10,textvariable=keywords_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_cluster_var_entry_pos,y_multiplier_integer,keywords_lb,True)
-
-keywords_entry = tk.Entry(window, textvariable=keywords_var)
-keywords_entry.configure(state='disabled',width=GUI_IO_util.widget_width_extra_long)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_keywords_entry_pos,y_multiplier_integer,keywords_entry)
-
-def activate_keywords_var(*args):
-    if vis_menu_var.get() == 'Clustering of word vectors':
-        keywords_entry.config(state='normal')
-    else:
-        keywords_entry.config(state='disabled')
-
-vis_menu_var.trace('w', activate_keywords_var)
-
+#
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
 TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf",
+               "Word embeddings with BERT": "TIPS_NLP_BERT word embeddings.pdf",
                "Word2Vec with Gensim":"TIPS_NLP_Word2Vec.pdf",
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
 
-TIPS_options = 'Lemmas & stopwords', 'Word2Vec with Gensim', 'csv files - Problems & solutions', 'Statistical measures'
+TIPS_options = 'Lemmas & stopwords', 'Word embeddings with BERT', 'Word2Vec with Gensim', 'csv files - Problems & solutions', 'Statistical measures'
 
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if not IO_setup_display_brief:
@@ -224,10 +227,16 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                   "Please, tick the checkbox to lemmatize nouns (using the singular version instead of plural, e.g., ox iinstead of oxen, child instead of children) and verbs (using the infinitive form instead of any verb forms, e.g., go gor going, went, goes).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
-                                  "Please, tick the checkbox to run Word2Vec word embeddings via BERT.")
+                                  "Please, using the dropdown menus, select the types of preferred display.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
-                                  "Please, tick the checkbox to run Word2Vec word embeddings via Gensim.")
+                                  "Enter comma-separated keywords you want to focus on for semantic similarity. The words MUST be in the file(s) you are analyzing.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
+                                  "Please, tick the checkbox to run word embeddings via BERT.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
+                                  "Please, tick the checkbox to run Word2Vec via Gensim.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Please, using the dropdown menu, select the preferred model architecture for training Word2Vec: Skip-Gram and CBOW (Continuous Bag of Words).\n\nWhich model is better?\n\nAccording to the original paper by Mikolov et al. (2013) Skip-Gram works well with small datasets, and can better represent less frequent words. However, CBOW is found to train faster than Skip-Gram, and can better represent more frequent words.\n\nMikolov, Tomas, Kai Chen, Greg Corrado, and Jeffrey Dean. 2013. 'Efficient Estimation of Word Representations in Vector Space' arXiv:1301.3781.")
@@ -240,12 +249,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "'Minimum count' refers to the minimum frequency threshold. The words with total frequency lower than this will be ignored.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                  "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
                                   # "NLP Suite Help", "Please, using the dropdown menu, select the architecture to be used in training Word2Vec: CBOW (Continuous Bag-of-Words) and Skip-gram. Both approaches are based on neural networks. Generally, CBOW is much faster and with slightly better accuracy for larger corpora. Skip-gram is better for smaller corpora.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                  "NLP Suite Help",
-                                  "Enter comma-separated keywords you want to focus on for semantic similarity. The words MUST be in the file(s) you are analyzing.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

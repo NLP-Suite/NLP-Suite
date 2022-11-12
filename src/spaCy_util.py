@@ -273,7 +273,9 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
                     tmp = out_df.at[tmp_idx, 'Multi-Word Expression']
                     tmp_idx+=1
                 # if the tag of the next token is B or if it's a single tag with one B, MWE is itself
-                if tmp_idx==i+2 or (i<=max_idx and out_df.at[i+1, 'Multi-Word Expression']=='B'):
+                if i==max_idx and out_df.at[i, 'Multi-Word Expression']=='B':
+                    out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']
+                elif tmp_idx==i+2 or (i<=max_idx and out_df.at[i+1, 'Multi-Word Expression']=='B'):
                     out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']
                 else:
                     # iterate reversely from the last tag to the first tag, and update the MWE

@@ -585,20 +585,13 @@ if sys.platform == 'darwin':  # Mac OS
 
 # Mac: visualization_main
 
-    # visualization_select_csv_field_menu_pos = 290
-    # visualization_OK_button_pos = 920
-    # visualization_add_button_pos = 970
-    # visualization_reset_button_pos = 1020
-    #
-    # visualization_select_csv_field_dynamic_network_lb_pos = 440
-    # visualization_dynamic_network_field_pos = 740
-
-    visualization_select_csv_field_menu_pos = 290
+    visualization_select_csv_field_menu_pos = IO_configuration_menu
     visualization_OK_button_pos = 920
     visualization_add_button_pos = 983
     visualization_reset_button_pos = 1038
+    visualization_show_button_pos = 1058
 
-    visualization_select_csv_field_dynamic_network_lb_pos = 440
+    visualization_select_csv_field_dynamic_network_lb_pos = setup_pop_up_text_widget
     visualization_dynamic_network_field_pos = 740
 
 # Mac: shape_of_stories
@@ -610,7 +603,12 @@ if sys.platform == 'darwin':  # Mac OS
 
 # Mac: parsers_annotators
 
-    parsers_annotators_parser_lb_pos = 160
+    parsers_annotators_parser_lb_pos = 150
+    parsers_annotators_parser_menu_pos = IO_configuration_menu
+    parsers_annotators_parser_open_CoNLL_pos = 290
+    parsers_annotators_parser_annotator_pos = 230
+    parsers_annotators_parser_manual_coref_edit_pos = 800
+    parsers_annotators_parser_openGUI_pos = 920
 
 # Mac: file_search_byWord
 
@@ -963,21 +961,32 @@ else: #windows and anything else
     NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = 500
     NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = 600
     NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
-    NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos  # 650
-    NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = NGrams_Co_occurrences_Viewer_add_viewer_button_pos + 40  # 690
-    NGrams_Co_occurrences_Viewer_show_viewer_button_pos = NGrams_Co_occurrences_Viewer_reset_viewer_button_pos + 60  # 750
+    NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos  # 500
+    NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = NGrams_Co_occurrences_Viewer_add_viewer_button_pos + 40  # 540
+    NGrams_Co_occurrences_Viewer_show_viewer_button_pos = NGrams_Co_occurrences_Viewer_reset_viewer_button_pos + 60  # 560
 
 # Windows: visualization_main
 
-    visualization_select_csv_field_menu_pos = 290
-    visualization_OK_button_pos = 920
-    visualization_add_button_pos = 970
-    visualization_reset_button_pos = 1020
+    visualization_select_csv_field_menu_pos = IO_configuration_menu
+    visualization_add_button_pos = 1105
+    visualization_reset_button_pos = 1140
+    visualization_show_button_pos = 1190
 
-    visualization_select_csv_field_dynamic_network_lb_pos = 440
-    visualization_dynamic_network_field_pos = 740
+    visualization_select_csv_field_dynamic_network_lb_pos = setup_pop_up_text_widget
+    visualization_dynamic_network_field_pos = 830
 
-# Windows: shape_of_stories
+    visualization_field_separator_lb_pos = 300
+    visualization_field_separator_pos = 290
+    visualization_field_position_lb_pos = IO_configuration_menu
+    visualization_field_position_pos = visualization_field_position_lb_pos + 60
+
+    # visualization_K_sent_begin_lb_pos = 700
+    visualization_K_sent_begin_pos = 260
+    visualization_K_sent_end_lb_pos = IO_configuration_menu
+    visualization_K_sent_end_pos = 460
+    visualization_split_pos = open_reminders_x_coordinate
+
+    # Windows: shape_of_stories
 
     shape_of_stories_sentiment_analysis_lb_pos = IO_configuration_menu
     shape_of_stories_sentiment_analysis_menu_pos = setup_IO_brief_coordinate
@@ -986,7 +995,12 @@ else: #windows and anything else
 
 # Windows: parsers_annotators
 
-    parsers_annotators_parser_lb_pos = 160
+    parsers_annotators_parser_lb_pos = 150
+    parsers_annotators_parser_menu_pos = IO_configuration_menu
+    parsers_annotators_parser_open_CoNLL_pos = 290
+    parsers_annotators_parser_annotator_pos = 230
+    parsers_annotators_parser_manual_coref_edit_pos = 800
+    parsers_annotators_parser_openGUI_pos = 920
 
 # Windows: file_search_byWord
 
@@ -1002,9 +1016,6 @@ else: #windows and anything else
     Word2Vec_vector_size_entry_pos = 260
     Word2Vec_window_entry_pos = Word2Vec_vector_size_entry_pos
     Word2Vec_min_count_pos = Word2Vec_vector_size_entry_pos
-    Word2Vec_dim_menu_pos = 660
-    Word2Vec_cluster_var_entry_pos = 170
-    Word2Vec_keywords_entry_pos = 280
 
 # Windows statistics_csv
 

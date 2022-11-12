@@ -20,43 +20,83 @@ import Gephi_util
 import IO_files_util
 
 def runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var):
+
     fileBase = os.path.basename(inputFilename)[0:-4]
     # csv_file_field_list contains the column header of node1, edge, node2 (e.g., SVO), and, possibly, the field for dynamic network
     return Gephi_util.create_gexf(GUI_util.window, fileBase, outputDir, inputFilename,
                                   csv_file_field_list[0], csv_file_field_list[1],
                                   csv_file_field_list[2], dynamic_network_field_var)
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, csv_file_field_list, dynamic_network_field_var):
+def run(inputFilename, inputDir, outputDir, openOutputFiles,
+        Gephi_var,
+        csv_file_field_list,
+        dynamic_network_field_var,
+        interactive_Sunburster_var,
+        field_separator_var,
+        field_position_var,
+        K_sent_begin_var,
+        K_sent_end_var,
+        split_var,
+        interactive_time_mapper_var):
+
+
     filesToOpen = []
-    if Gephi_var==False:
+    if Gephi_var==False and interactive_Sunburster_var == False and interactive_time_mapper_var==False:
         mb.showwarning("Warning",
                        "No options have been selected.\n\nPlease, select an option to run and try again.")
         # Gephi_var.set(0)
         return
     else:
         # check if input file is csv
-        if os.path.basename(inputFilename)[-4:] != ".csv":
+        if inputDir!='' or os.path.basename(inputFilename)[-4:] != ".csv":
             mb.showwarning("Warning",
-                           "The input file must be a csv file.")
+                           "The visualization options requires in input a csv file.\n\nPlease, select a csv file and try again.")
             return
         else:
-            if len(csv_file_field_list)<3:
+            if Gephi_var and len(csv_file_field_list)<3:
                 mb.showwarning("Warning",
-                               "You must select at least three csv fields to be used in the computation of the network graph, in the order of node, edge, node (e.g., SVO).\n\nIf you wish to create a dynamic network graph you can select a fourth field to be used as the dynamic index (e.g., Sentence ID).")
+                               "You must select at least three csv fields to be used in the computation of the network graph, in the order of node, edge, node (e.g., Subject, Verb, Object).\n\nIf you wish to create a dynamic network graph you can select a fourth field to be used as the dynamic index (e.g., Sentence ID).")
                 return
-        gexf_file = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
-        filesToOpen.append(gexf_file)
+        if Gephi_var:
+            gexf_file = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
+            filesToOpen.append(gexf_file)
+
+        # check that Begin and End K sentences are numeric
+        if interactive_Sunburster_var:
+            try:
+                if type(int(K_sent_begin_var))!= int:
+                    pass
+            except:
+                mb.showwarning("Warning",
+                               "The value entered for Begin K sentences MUST be a numeric integer.\n\nPlease, enter a numeric value and try again.")
+                return
+
+            try:
+                if type(int(K_sent_end_var))!= int:
+                    pass
+            except:
+                mb.showwarning("Warning",
+                               "The value entered for End K sentences MUST be a numeric integer.\n\nPlease, enter a numeric value and try again.")
+                return
+
         if openOutputFiles and len(filesToOpen) > 0:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
+                            Gephi_var.get(),
                             csv_file_field_list,
-                            dynamic_network_field_var.get())
+                            dynamic_network_field_var.get(),
+                            interactive_Sunburster_var.get(),
+                            field_separator_var.get(),
+                            field_position_var.get(),
+                            K_sent_begin_var.get(),
+                            K_sent_end_var.get(),
+                            split_var.get(),
+                            interactive_time_mapper_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -67,8 +107,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=520, # height at brief display
-                             GUI_height_full=600, # height at full display
+                             GUI_height_brief=640, # height at brief display
+                             GUI_height_full=720, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -100,6 +140,15 @@ input_main_dir_path=GUI_util.input_main_dir_path
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 def clear(e):
+    reset()
+    Gephi_var.set(0)
+    interactive_Sunburster_var.set(0)
+    field_separator_var.set('_')
+    field_position_var.set(2)
+    K_sent_begin_var.set('')
+    K_sent_end_var.set('')
+    split_var.set(0)
+    interactive_time_mapper_var.set(0)
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -111,6 +160,14 @@ csv_file_field_list = []
 menu_values = []
 
 dynamic_network_field_var = tk.IntVar()
+
+interactive_Sunburster_var = tk.IntVar()
+field_separator_var = tk.StringVar()
+field_position_var = tk.IntVar()
+K_sent_begin_var = tk.StringVar()
+K_sent_end_var = tk.StringVar()
+split_var = tk.IntVar()
+interactive_time_mapper_var = tk.IntVar()
 
 Excel_button = tk.Button(window, text='Open Excel GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
                                command=lambda: call("python charts_Excel_main.py", shell=True))
@@ -137,7 +194,7 @@ Gephi_checkbox = tk.Checkbutton(window, text='Visualize relations in a Gephi net
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                Gephi_checkbox)
 
-if GUI_util.inputFilename.get() != '':
+if GUI_util.inputFilename.get() != '' and GUI_util.inputFilename.get()[-4:] == ".csv":
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(GUI_util.inputFilename.get())
     if IO_csv_util.csvFile_has_header(GUI_util.inputFilename.get()) == False:
         menu_values = range(1, nColumns + 1)
@@ -180,7 +237,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 
 csv_field_var = tk.StringVar()
 select_csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
-select_csv_field_menu.configure(state='disabled', width=12)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_select_csv_field_menu_pos, y_multiplier_integer,
                                    select_csv_field_menu,
@@ -191,93 +247,141 @@ GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inpu
 
 changed_filename(GUI_util.inputFilename.get())
 
-OK_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
-                            command=lambda: display_selected_csv_fields(True,False))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_OK_button_pos, y_multiplier_integer,
-                                               OK_button,True)
-
-add_button_var = tk.IntVar()
-add_button = tk.Button(window, text='+', width=2, height=1, state='disabled',
-                              # command=lambda: add_field_to_list(selected_csv_file_fields_var.get()))
-                                command = lambda: activate_csv_fields_selection(True,False))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_add_button_pos, y_multiplier_integer,
-                                               add_button, True)
-
-reset_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_reset_button_pos,y_multiplier_integer,reset_button, True)
-
 select_csv_field_dynamic_network_lb = tk.Label(window, text='Select csv file field for dynamic network graph')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos, y_multiplier_integer,
                                                select_csv_field_dynamic_network_lb, True)
 
 dynamic_network_field_var = tk.StringVar()
 dynamic_network_field_menu = tk.OptionMenu(window, dynamic_network_field_var, *menu_values)
-dynamic_network_field_menu.configure(state='disabled', width=12)
+dynamic_network_field_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_dynamic_network_field_pos, y_multiplier_integer,
                                    dynamic_network_field_menu,
-                                   False, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos,
+                                   True, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos,
                                    "Select the field to be used for a dynamic network graph (e.g., Sentence ID) if you wish to compute a dynamic network graph")
 
-csv_file_fields=tk.Entry(window, width=150,textvariable=selected_csv_file_fields_var)
-csv_file_fields.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,csv_file_fields)
-
-def activate_csv_fields_selection(comingFrom_Plus, comingFrom_OK):
-    # check if input file is csv
-    if Gephi_var.get()==True:
-        if os.path.basename(inputFilename.get())[-4:] != ".csv":
-            mb.showwarning("Warning",
-                           "The Gephi algorithm expects in input a csv file.\n\nPlease, select a csv file and try again.")
-            return
-    reset_button.config(state='normal')
-    if dynamic_network_field_var.get() != '':
-        OK_button.config(state='normal')
-    if csv_field_var.get() != '':
-        select_csv_field_menu.config(state='disabled')
-        # add_button.config(state='normal')
-        OK_button.config(state='normal')
-        add_button.config(state='disabled')
-        if comingFrom_Plus == True:
-            OK_button.config(state='disabled')
-            if len(csv_file_field_list) == 3:
-                select_csv_field_menu.configure(state='disabled')
-                dynamic_network_field_menu.config(state='normal')
-            else:
-                select_csv_field_menu.configure(state='normal')
-                dynamic_network_field_menu.config(state='disabled')
-        if comingFrom_OK == True or len(csv_file_field_list) == 4:
-            select_csv_field_menu.configure(state='disabled')
-            add_button.config(state='normal') # RF
-            OK_button.config(state='disabled')
-            select_csv_field_menu.configure(state='disabled')
-        if dynamic_network_field_var.get() != '':
-            OK_button.config(state='normal')
-    else:
-        select_csv_field_menu.config(state='normal')
-        reset_button.config(state='disabled')
-
-    # clear content of current variables when selecting a different main option
-    # csv_file_field_list.clear()
-
-Gephi_var.trace('w', callback = lambda x,y,z: activate_csv_fields_selection(False,False))
-csv_field_var.trace('w', callback = lambda x,y,z: activate_csv_fields_selection(False,False))
-dynamic_network_field_var.trace('w', callback = lambda x,y,z: activate_csv_fields_selection(False,False))
-
-activate_csv_fields_selection(False,False)
-def display_selected_csv_fields(comingFrom_OK,comingFrom_Plus):
+def display_selected_csv_fields():
     if csv_field_var.get() != '' and not csv_field_var.get() in csv_file_field_list:
         csv_file_field_list.append(csv_field_var.get())
-    if dynamic_network_field_var.get() != '' and not dynamic_network_field_var.get() in csv_file_field_list:
-        csv_file_field_list.append(dynamic_network_field_var.get())
+        # select_csv_field_menu.configure(state='disabled')
+    else:
+        mb.showwarning(title='Warning',
+                       message='The option "' + csv_field_var.get() + '" has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
+        select_csv_field_menu.configure(state='normal')
+    # if dynamic_network_field_var.get() != '' and not dynamic_network_field_var.get() in csv_file_field_list:
+    #     csv_file_field_list.append(dynamic_network_field_var.get())
     selected_csv_file_fields_var.set(str(csv_file_field_list))
-    activate_csv_fields_selection(comingFrom_Plus, comingFrom_OK)
+    activate_csv_fields_selection(True)
 
 def reset():
     csv_file_field_list.clear()
     csv_field_var.set('')
     dynamic_network_field_var.set('')
     selected_csv_file_fields_var.set('')
+
+add_button_var = tk.IntVar()
+add_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
+                                command=lambda: display_selected_csv_fields())
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_add_button_pos, y_multiplier_integer,
+                                   add_button,
+                                   True, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos,
+                                   "Click on the + button to add a selected csv field to the list of Gephy parameters (edge1, node, edge2)")
+
+reset_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset())
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_reset_button_pos, y_multiplier_integer,
+                                   reset_button,
+                                   True, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos,
+                                   "Click on the Reset button to clear the list of selected fields and start again")
+def show_Gephi_options_list():
+    if len(csv_file_field_list)==0:
+        mb.showwarning(title='Warning', message='There are no currently selected Gephi options.')
+    else:
+        mb.showwarning(title='Warning', message='The currently selected Gephi options are:\n\n  ' + '\n  '.join(csv_file_field_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+
+show_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_Gephi_options_list())
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_show_button_pos, y_multiplier_integer,
+                                   show_button,
+                                   False, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos,
+                                   "Click on the Show button to display the list of currently selected csv fields")
+
+def activate_csv_fields_selection(comingFromPlus=False):
+    if csv_field_var.get() != '':
+        if comingFromPlus:
+            select_csv_field_menu.config(state='normal')
+        else:
+            select_csv_field_menu.config(state='disabled')
+        add_button.config(state='normal')
+        reset_button.config(state='normal')
+        show_button.config(state='normal')
+        if len(csv_file_field_list) == 3:
+            select_csv_field_menu.configure(state='disabled')
+            dynamic_network_field_menu.config(state='normal')
+            mb.showwarning(title='Warning', message='The "Select csv file field" has been disabled. You have selected the 3 fields required by Gephi for node1, edge, node2.\n\nPress the "Show" button to display your selection. Press the "Reset" button to clear your selection and start again.')
+    else:
+        select_csv_field_menu.config(state='normal')
+        dynamic_network_field_menu.config(state='normal')
+        reset_button.config(state='disabled')
+        show_button.config(state='disabled')
+csv_field_var.trace('w', callback = lambda x,y,z: activate_csv_fields_selection())
+dynamic_network_field_var.trace('w', callback = lambda x,y,z: activate_csv_fields_selection())
+
+# activate_csv_fields_selection()
+
+interactive_Sunburster_var.set(0)
+interactive_Sunburster_checkbox = tk.Checkbutton(window, text='Visualize data in interactive Sunburster graph', variable=interactive_Sunburster_var,
+                                    onvalue=1)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               interactive_Sunburster_checkbox)
+
+field_separator_var.set('_')
+field_separator_lb = tk.Label(window, text='Filename field separator ')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,
+                                               y_multiplier_integer, field_separator_lb, True)
+
+field_separator = tk.Entry(window, textvariable=field_separator_var, width=3)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_field_separator_pos,
+                                               y_multiplier_integer, field_separator, True)
+
+field_position_menu_lb = tk.Label(window, text='Position ')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_field_position_lb_pos,
+                                               y_multiplier_integer, field_position_menu_lb, True)
+field_position_var.set(2)
+field_position_menu = tk.OptionMenu(window,field_position_var,1,2,3,4,5)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_field_position_pos,
+                                               y_multiplier_integer, field_position_menu)
+
+K_sent_begin_var.set('')
+K_sent_begin_lb = tk.Label(window, text='Begin K sentences')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,
+                                               y_multiplier_integer, K_sent_begin_lb, True)
+
+K_sent_begin = tk.Entry(window, textvariable=K_sent_begin_var, width=3)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_begin_pos,
+                                               y_multiplier_integer, K_sent_begin, True)
+
+K_sent_end_var.set('')
+K_sent_end_lb = tk.Label(window, text='End K sentences')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_end_lb_pos,
+                                               y_multiplier_integer, K_sent_end_lb, True)
+K_sent_end = tk.Entry(window, textvariable=K_sent_end_var, width=3)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_end_pos,
+                                               y_multiplier_integer, K_sent_end, True)
+
+split_var.set(0)
+split_checkbox = tk.Checkbutton(window, text='Split documents in equal halves', variable=split_var,
+                                    onvalue=1)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_split_pos, y_multiplier_integer,
+                                               split_checkbox)
+
+interactive_time_mapper_var.set(0)
+interactive_time_mapper_checkbox = tk.Checkbutton(window, text='Visualize time-dependent data in interactive graph', variable=interactive_time_mapper_var,
+                                    onvalue=1)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               interactive_time_mapper_checkbox)
+
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -301,7 +405,7 @@ TIPS_options='Lemmas & stopwords', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     resetAll = "\n\nPress the RESET button to clear all selected values, and start fresh."
     plusButton = "\n\nPress the + buttons, when available, to add a new field."
-    OKButton = "\n\nPress the OK button, when available, to accept the selections made, then press the RUN button to process the query."
+    # OKButton = "\n\nPress the OK button, when available, to accept the selections made, then press the RUN button to process the query."
     if not IO_setup_display_brief:
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_CoNLL)
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_corpusData)
@@ -315,8 +419,11 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the HTML annotator GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the wordcloud GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize a network graph in Gephi.\n\nOptions become available in succession.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","\n\nOptions become available in succession.\n\nThe first field selected is the first node; the second field selected is the edge; the third field selected is the second node.\n\nOnce all three fields have been selected, the widget 'Field to be used for dynamic network graphs' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID) or ignore the option if the network should not be dynamic." + plusButton + OKButton + resetAll)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","\n\nThe widget is always disabled; it is for display only. When pressing OK, the selected csv fields will be displayed." + plusButton + OKButton + resetAll)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Options become available in succession after the Gephi option is selected.\n\nThe first field selected is the first node; the second field selected is the edge; the third field selected is the second node.\n\nOnce all three fields have been selected, the widget 'Field to be used for dynamic network graphs' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID) or ignore the option if the network should not be dynamic." + resetAll)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in an interactive Sunburster visual display.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
@@ -325,5 +432,8 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,
 readMe_message="The Python 3 script and online services display the content of text files as word cloud.\n\nA word cloud, also known as text cloud or tag cloud, is a collection of words depicted visually in different sizes (and colors). The bigger and bolder the word appears, the more often it’s mentioned within a given text and the more important it is.\n\nDifferent, freeware, word cloud applications are available: 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle'. These applications require internet connection.\n\nThe script also provides Python word clouds (via Andreas Mueller's Python package WordCloud https://amueller.github.io/word_cloud/) for which no internet connection is required."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+mb.showwarning(title='Warning',
+               message='The interactive visualization options for Sunburster and time mapper are under construction.\n\nPlease, check back soon for these great options.')
 
 GUI_util.window.mainloop()
