@@ -96,7 +96,7 @@ def get_file(window,title,fileType):
 
 y_multiplier_integer= y_multiplier_integer +.5
 
-sample_by_documentID_button = tk.Button(window, text='Sample files by Document ID in csv file',width=GUI_IO_util.widget_width_long,command=lambda: get_file(window,'Select INPUT csv file', [("csv files", "*.csv")]))
+sample_by_documentID_button = tk.Button(window, text='Sample files by Document ID in csv file',width=GUI_IO_util.widget_width_medium,command=lambda: get_file(window,'Select INPUT csv file', [("csv files", "*.csv")]))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                sample_by_documentID_button, True, False, True, False, 90,
@@ -122,7 +122,7 @@ def activate_options():
     search_words_entry.configure(state='normal')
 
 extract_sentences_var.set(0)
-sample_sentences_button = tk.Button(window, text='Sample files by search word(s) (extract sentences) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: call("python file_search_byWord_main.py", shell=True))
+sample_sentences_button = tk.Button(window, text=' Sample files by search word(s) (extract sentences) (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python file_search_byWord_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    sample_sentences_button,
@@ -138,17 +138,17 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+500, y_multiplier_integer,
 #                                                search_words_entry)
 
-sample_sentences_by_documentID_button = tk.Button(window, text='Sample sentences by Document ID and other fields values in csv file (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: call("python data_manager_main.py", shell=True))
+sample_sentences_by_documentID_button = tk.Button(window, text='Sample sentences by Document ID and other fields values in csv file (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python data_manager_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    sample_sentences_by_documentID_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-sample_by_date_button = tk.Button(window, text='Sample files by date in filename',width=GUI_IO_util.widget_width_long,command=lambda: option_not_available())
+sample_by_date_button = tk.Button(window, text='Sample files by date in filename',width=GUI_IO_util.widget_width_medium,command=lambda: option_not_available())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,sample_by_date_button)
 
-export_csv_field_GUI_button = tk.Button(window, text='Export csv field content in csv file to csv/txt file (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: call("python data_manager_main.py", shell=True))
+export_csv_field_GUI_button = tk.Button(window, text='Export csv field content in csv file to csv/txt file (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python data_manager_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    export_csv_field_GUI_button,

@@ -1,7 +1,3 @@
-# Created on Thu Nov 21 09:45:47 2019
-# @author: jack hester
-# rewritten by Roberto Franzosi April 2020, April 2022, October 2022
-
 import sys
 import GUI_util
 import IO_libraries_util
