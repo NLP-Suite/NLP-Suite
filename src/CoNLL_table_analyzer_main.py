@@ -30,7 +30,7 @@ import reminders_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         searchedCoNLLField, searchField_kw, postag, deprel, co_postag, co_deprel):
 
     global recordID_position, documentId_position, data, all_CoNLL_records
@@ -200,6 +200,7 @@ def run(inputFilename, outputDir, openOutputFiles, createCharts, chartPackage,
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
+                                 GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_chart_output_checkbox.get(),

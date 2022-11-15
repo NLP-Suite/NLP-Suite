@@ -397,11 +397,11 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Pronoun'],
-                                                               chartTitle='Frequency Distribution of Pronouns',
+                                                               chartTitle='Frequency Distribution of Pronouns (Antecedents)',
                                                                # count_var = 1 for columns of alphabetic values
                                                                count_var=1, hover_label=[],
-                                                               outputFileNameType='pron',  # 'O_bar',
-                                                               column_xAxis_label='Pronoun',
+                                                               outputFileNameType='pronouns',  # 'O_bar',
+                                                               column_xAxis_label='Pronouns (antecedents)',
                                                                groupByList=[],
                                                                plotList=[],
                                                                chart_title_label='')
@@ -411,12 +411,12 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
 
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                outputDir,
-                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Reference'],
-                                                               chartTitle='Frequency Distribution of Coreferences',
+                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Referent'],
+                                                               chartTitle='Frequency Distribution of Coreferences (Referents)',
                                                                # count_var = 1 for columns of alphabetic values
                                                                count_var=1, hover_label=[],
-                                                               outputFileNameType='coref',  # 'O_bar',
-                                                               column_xAxis_label='Coreferences',
+                                                               outputFileNameType='referents',  # 'O_bar',
+                                                               column_xAxis_label='Coreferences (referents)',
                                                                groupByList=[],
                                                                plotList=[],
                                                                chart_title_label='')

@@ -15,39 +15,10 @@ from subprocess import call
 import IO_csv_util
 import IO_files_util
 import GUI_IO_util
+import TIPS_util
+import DB_PCACE_data_analyzer_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
-
-def dbFromCSV(inpath, outpath):
-    inpath=inpath.get()
-    outpath=outpath.get()
-    dbOutput = outpath + os.sep + dbFileName
-    dirSearch = os.listdir(inpath)
-    tableList = []
-
-    for file in dirSearch:
-        # Only include .csv files from the input dir
-        if ".csv" in file and len(file) > 4:
-            # Strip off the .csv extension
-            tableList.append(file[:len(file) - 4])
-    if len(tableList) == 0:
-        mb.showwarning(title='Warning',
-                       message='There are no csv files in the input directory.\n\nThe script expects a set of csv files with overlapping ID fields across files in order to construct an SQLite relational database.\n\nPlease, select an input directory that contains csv files and try again.')
-        return -1
-    print("Found", len(tableList), ".csv files, creating database...")
-
-    if os.path.exists(dbOutput):
-        # Delete the DB if it already exists, we will replace it.
-        os.unlink(dbOutput)
-
-    # for t in tableList:
-    #     # Replace dashes with underscore, SQLite bug.
-    #     tableName = t.replace("-", "_")
-    #     # Read in fullpath of csv file
-    #     df = pd.read_csv(inpath + os.sep + t + ".csv", encoding='utf-8', error_bad_lines=False)
-    #     df.to_sql(name=tableName, con=conn, index=False)
-
-    print("Database saved as", dbOutput)
 
 def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage):
     print('')
@@ -69,13 +40,13 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=400, # height at brief display
-                                                 GUI_height_full=460, # height at full display
+                                                 GUI_height_brief=720, # height at brief display
+                                                 GUI_height_full=760, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
 
-GUI_label='Graphical User Interface (GUI) for Relational Database SQL queries'
+GUI_label='Graphical User Interface (GUI) for PC-ACE Tables Analyzer (via Pandas)'
 head, scriptName = os.path.split(os.path.basename(__file__))
 config_filename = scriptName.replace('main.py', 'config.csv')
 
@@ -111,29 +82,26 @@ SQL_query_var=tk.StringVar()
 distinct_var=tk.IntVar()
 view_relations_var=tk.IntVar()
 
+complex_parent_var = tk.IntVar()
+complex_child_var = tk.IntVar()
+simplex_complex_var = tk.IntVar()
+semantic_triplet_var = tk.IntVar()
+actors_var = tk.IntVar()
+time_var = tk.IntVar()
+space_var = tk.IntVar()
+
 def clear(e):
     GUI_util.tips_dropdown_field.set('Open TIPS files')
 window.bind("<Escape>", clear)
 
+table_list = []
+table_menu_list = []
 
-table_menu_values = []
-# TODO Anna please add comments about what this function does
-def get_table_list(*args):
-    select_DB_table_fields_menu.configure(state='disabled')
-    if select_SQLite_DB_var.get()=='':
-        select_DB_tables_menu.configure(state='disabled')
-        return
-    # get_complex_simplex_list('setup_Complex')
-    # construct menu values
-select_SQLite_DB_var.trace('w',get_table_list)
-
-# TODO Anna, I tried to get a list of row values in setup_Complex or setup_Simplex but... could not get it to work
-# TODO  please finish the function
 def get_complex_simplex_list(tableName):
-    if select_SQLite_DB_var.get() == '':
-        return
-    menu=''
-    return menu
+    print("")
+
+view_relations_button = tk.Button(window, text='View table relations', width=20,height=1,state='normal', command=lambda: view_relations())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,view_relations_button)
 
 complex_objects_lb = tk.Label(window, text='Select complex object ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complex_objects_lb,True)
@@ -143,6 +111,15 @@ menu = get_complex_simplex_list('setup_Complex')
 complex_objects = tk.OptionMenu(window,complex_objects_var, menu)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,complex_objects)
 
+complex_parent_checkbox = tk.Checkbutton(window, text='Complex parent (higher level complex)', variable=complex_parent_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,complex_parent_checkbox)
+
+complex_child_checkbox = tk.Checkbutton(window, text='Complex child (lower level complex)', variable=complex_child_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,complex_child_checkbox)
+
+simplex_complex_checkbox = tk.Checkbutton(window, text='Simplex object in complex', variable=simplex_complex_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,simplex_complex_checkbox)
+
 simplex_objects_lb = tk.Label(window, text='Select simplex object ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,simplex_objects_lb,True)
 
@@ -151,49 +128,95 @@ menu = get_complex_simplex_list('setup_Simplex')
 simplex_objects = tk.OptionMenu(window,simplex_objects_var, menu)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,simplex_objects)
 
+semantic_triplet_checkbox = tk.Checkbutton(window, text='Semantic triplet (SVO)', variable=semantic_triplet_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,semantic_triplet_checkbox)
+
+actors_checkbox = tk.Checkbutton(window, text='Actors', variable=actors_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,actors_checkbox)
+
+time_checkbox = tk.Checkbutton(window, text='Time', variable=time_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,time_checkbox)
+
+space_checkbox = tk.Checkbutton(window, text='Space', variable=space_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,space_checkbox)
+
 select_DB_tables_lb = tk.Label(window, text='Select DB table ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_DB_tables_lb,True)
-if len(table_menu_values)==0:
-    select_DB_tables_menu = tk.OptionMenu(window, select_DB_tables_var, table_menu_values)
+
+menu_values = ''
+if os.path.isdir(inputDir.get()):
+    table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get())
+    menu_values = ", ".join(table_list)
+
+if menu_values=='':
+    select_DB_tables_menu = tk.OptionMenu(window, select_DB_tables_var, menu_values)
+    # select_DB_tables_menu.configure(state='disabled')
 else:
-    select_DB_tables_menu = tk.OptionMenu(window,select_DB_tables_var, *table_menu_values)
-select_DB_tables_menu.configure(state='disabled')
+    # menu_values = ", ".join(table_menu_list)
+    select_DB_tables_menu = tk.OptionMenu(window,select_DB_tables_var, *menu_values)
+    select_DB_tables_menu.configure(state='normal')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+100,y_multiplier_integer,select_DB_tables_menu,True)
+
+error = False
+table_values = []
+def changed_filename(*args):
+    global error
+    # 25 PC-ACE files
+    if GUI_util.input_main_dir_path.get()!='':
+        GUI_util.run_button.configure(state='normal')
+        table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get())
+        # menu_values = table_list
+        # 25 files including all comments files
+        if (len(table_list) == 0) or ((len(table_list) > 18) and (not "data_Document.csv" in str(table_list) and not "data_Complex.csv" in str(table_list))):
+                GUI_util.run_button.configure(state='disabled')
+                error = True
+        else:
+            for table in table_list:
+                # keep only table name and Strip off the .csv extension
+                table_values.append(table[:len(table)-4])
+            menu_values = table_values # ", ".join(table_values)
+            m = select_DB_tables_menu["menu"]
+            m.delete(0, "end")
+            for s in menu_values:
+                m.add_command(label=s, command=lambda value=s: select_DB_tables_var.set(value))
+            if len(menu_values)>0:
+                select_DB_tables_menu.configure(state='normal')
+            else:
+                select_DB_tables_menu.configure(state='disabled')
+    else:
+        if inputFilename.get()!='':
+            GUI_util.run_button.configure(state='disabled')
+            error = True
+GUI_util.inputFilename.trace('w', changed_filename)
+GUI_util.input_main_dir_path.trace('w', changed_filename)
+
+changed_filename()
 
 table_fields_menu_values = []
 
-# TODO Anna please add comments about what this function does
-def get_table_fields_list():
-    tableName=select_DB_tables_var.get()
-    if tableName=='':
-        select_DB_table_fields_menu.configure(state='disabled')
-        return
-    select_DB_table_fields_menu.configure(state='normal')
+# def get_table_fields_list(*args):
+#     tableName=select_DB_tables_var.get()
+#     if tableName=='':
+#         select_DB_table_fields_menu.configure(state='disabled')
+#         return
+#     select_DB_table_fields_menu.configure(state='normal')
+#
+# select_DB_tables_var.trace('w',get_table_fields_list)
 
-select_DB_tables_var.trace('w',get_table_fields_list)
+# select_DB_table_fields_lb = tk.Label(window, text='Select DB table field')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350,y_multiplier_integer,select_DB_table_fields_lb,True)
+# if len(table_fields_menu_values)==0:
+#     select_DB_table_fields_menu = tk.OptionMenu(window, select_DB_table_fields_var, table_fields_menu_values)
+# else:
+#     select_DB_table_fields_menu = tk.OptionMenu(window,select_DB_table_fields_var, *table_fields_menu_values)
+# select_DB_table_fields_menu.configure(state='disabled')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+480,y_multiplier_integer,select_DB_table_fields_menu)
 
-select_DB_table_fields_lb = tk.Label(window, text='Select DB table field')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350,y_multiplier_integer,select_DB_table_fields_lb,True)
-if len(table_fields_menu_values)==0:
-    select_DB_table_fields_menu = tk.OptionMenu(window, select_DB_table_fields_var, table_fields_menu_values)
-else:
-    select_DB_table_fields_menu = tk.OptionMenu(window,select_DB_table_fields_var, *table_fields_menu_values)
-select_DB_table_fields_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+480,y_multiplier_integer,select_DB_table_fields_menu,True)
-
-def import_query(window, title, fileType):
-    filePath = tk.filedialog.askopenfilename(title=title, initialdir=GUI_util.input_main_dir_path,
-                                             filetypes=fileType)
-
-distinct_checkbox = tk.Checkbutton(window, text='Distinct', variable=distinct_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+800,y_multiplier_integer,distinct_checkbox)
+# distinct_checkbox = tk.Checkbutton(window, text='Distinct', variable=distinct_var, onvalue=1, offvalue=0)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+800,y_multiplier_integer,distinct_checkbox)
 
 def view_relations():
-    return
-
-# view_relations_button = tk.Button(window, text='View table relations', width=5,height=1,state='disabled',command=lambda: clear_DBpedia_YAGO_class_list())
-view_relations_button = tk.Button(window, text='View table relations', width=20,height=1,state='normal', command=lambda: view_relations())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,view_relations_button)
+    TIPS_util.open_TIPS('TIPS_NLP_PC-ACE table relations.pdf')
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -223,6 +246,13 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          "NLP Suite Help",
                                                          "Please, using the dropdown menu, select the SIMPLEX object for which you would like to obtain query results." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
 "COUNT Display a template SQL COUNT query."
@@ -236,4 +266,10 @@ readMe_message="This Python 3 script can construct an SQLite relational database
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
+if error:
+    mb.showwarning(title='Warning',
+                   message="The PC-ACE Table Analyzer scripts require in input a set of csv PC-ACE tables in a directory.\n\nPlease, select in input a PC-ACE tables directory and try again.")
+    select_DB_tables_menu.configure(state='disabled')
+    error = False
 GUI_util.window.mainloop()
+

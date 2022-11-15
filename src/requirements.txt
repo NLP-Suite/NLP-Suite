@@ -89,7 +89,8 @@ contextualSpellCheck
 tensorflow
 protobuf==3.20
 sentencepiece
-
+summarizer
+bert-extractive-summarizer
 
 #used by charts_Excel_util.py for visualzing Excel charts
 openpyxl~=3.0.6

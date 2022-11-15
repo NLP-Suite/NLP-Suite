@@ -330,7 +330,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
                 out_df = out_df.append(temp_df)
 
     # Stanza doc to Pandas DataFrame conversion logic for single language annotation
-    else:
+    elif annotator_params!='sentiment':
         # check if the annotator is sentiment
         # if annotator_params=='sentiment':
         #     sentiment_dictionary = {}
