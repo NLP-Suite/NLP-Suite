@@ -306,8 +306,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'sentiment': ['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         'quote': ['Speakers', 'Number of Quotes', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         'coref': 'text',
-        'coref table': ["Pronoun", "Reference", "Reference Start ID in Sentence",
-                        "First Reference Sentence ID", "First Reference Sentence", "Pronoun Start ID in Reference Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
+        'coref table': ["Pronoun", "Referent", "Referent Start ID in Sentence",
+                        "First Referent Sentence ID", "First Referent Sentence", "Pronoun Start ID in Referent Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
         'gender':['Word', 'Gender', 'Sentence ID', 'Sentence','Document ID', 'Document'],
         'normalized-date':["Date expression", "Normalized date", "tid","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
         'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Date expression','Normalized date', 'Date type', 'Sentence ID', 'Sentence','Document ID', 'Document'],
@@ -1268,13 +1268,13 @@ def process_json_coref_table(config_filename, documentID, document, sentenceID, 
     result = []  # the collection of information of each coreference
     for coref in json['corefs']:
         mentions = json['corefs'][coref]
-        reference = mentions[0]  # First Reference in context
+        reference = mentions[0]  # First Referent in context
 
         ref_sent = json['sentences'][reference["sentNum"] - 1]
-        ref_sent_ID = reference["sentNum"]  # First Reference Sentence ID
-        ref_sent_string = build_sentence_string(ref_sent)  # First Reference Sentence
-        ref_start_ID = reference["startIndex"]  # Reference Start ID in Sentence
-        ref_text = reference["text"]  # first reference
+        ref_sent_ID = reference["sentNum"]  # First Referent Sentence ID
+        ref_sent_string = build_sentence_string(ref_sent)  # First Referent Sentence
+        ref_start_ID = reference["startIndex"]  # Referent Start ID in Sentence
+        ref_text = reference["text"]  # first Referent
         for j in range(1, len(mentions)):
 
             mention = mentions[j]

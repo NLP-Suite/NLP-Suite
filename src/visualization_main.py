@@ -17,6 +17,7 @@ from subprocess import call
 import GUI_IO_util
 import IO_csv_util
 import Gephi_util
+import charts_Sunburster_util
 import IO_files_util
 
 def runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var):
@@ -78,6 +79,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 mb.showwarning("Warning",
                                "The value entered for End K sentences MUST be a numeric integer.\n\nPlease, enter a numeric value and try again.")
                 return
+
+            # TODO Samir we normally pass a csv file rather than a dataframe; we could have both, I suppose?
+            #   but in the NLP Suite, _main only checks for appropriateness of selections and all computational stuff is done in _util
+            # you would use the os.path.split for the last field in the csv file passed with header "Document"
+            #   head, tail = os.path.split(Document)
+            #   you would then slit tail for the field to be used
+            charts_Sunburster_util.Sunburster(inputFilename, field_separator_var, field_position_var, int(K_sent_begin_var), int(K_sent_end_var), split_var)
 
         if openOutputFiles and len(filesToOpen) > 0:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -337,21 +345,27 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                interactive_Sunburster_checkbox)
 
 field_separator_var.set('_')
-field_separator_lb = tk.Label(window, text='Filename field separator ')
+field_separator_lb = tk.Label(window, text='Character(s) used in the filename to separate fields')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,
                                                y_multiplier_integer, field_separator_lb, True)
 
 field_separator = tk.Entry(window, textvariable=field_separator_var, width=3)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_field_separator_pos,
-                                               y_multiplier_integer, field_separator, True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_field_separator_pos, y_multiplier_integer,
+                                   field_separator,
+                                   True, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_menu_pos,
+                                   "Enter the character(s) used to separate different fields embedded in the filename (e.g., _ in Harry Potter_Book1_1) to be used to visualize differences in the data")
 
-field_position_menu_lb = tk.Label(window, text='Position ')
+field_position_menu_lb = tk.Label(window, text='Field position in filename')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_field_position_lb_pos,
                                                y_multiplier_integer, field_position_menu_lb, True)
 field_position_var.set(2)
 field_position_menu = tk.OptionMenu(window,field_position_var,1,2,3,4,5)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_field_position_pos,
-                                               y_multiplier_integer, field_position_menu)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_field_position_pos, y_multiplier_integer,
+                                   field_position_menu,
+                                   False, False, True, False, 90, GUI_IO_util.visualization_field_position_lb_pos,
+                                   "Select the position in the filename of the field to be used to visualize differences in the data")
 
 K_sent_begin_var.set('')
 K_sent_begin_lb = tk.Label(window, text='Begin K sentences')
@@ -359,22 +373,31 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                                y_multiplier_integer, K_sent_begin_lb, True)
 
 K_sent_begin = tk.Entry(window, textvariable=K_sent_begin_var, width=3)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_begin_pos,
-                                               y_multiplier_integer, K_sent_begin, True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_begin_pos, y_multiplier_integer,
+                                   K_sent_begin,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Enter the number of sentences at the beginning of each document to be used to visualize differences in the data")
 
 K_sent_end_var.set('')
 K_sent_end_lb = tk.Label(window, text='End K sentences')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_end_lb_pos,
                                                y_multiplier_integer, K_sent_end_lb, True)
 K_sent_end = tk.Entry(window, textvariable=K_sent_end_var, width=3)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_end_pos,
-                                               y_multiplier_integer, K_sent_end, True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_end_pos, y_multiplier_integer,
+                                   K_sent_end,
+                                   True, False, True, False, 90, GUI_IO_util.visualization_K_sent_end_lb_pos,
+                                   "Enter the number of sentences at the end of each document to be used to visualize differences in the data")
 
 split_var.set(0)
 split_checkbox = tk.Checkbutton(window, text='Split documents in equal halves', variable=split_var,
                                     onvalue=1)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_split_pos, y_multiplier_integer,
-                                               split_checkbox)
+                                   split_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.visualization_split_pos,
+                                   "Tick the checkbox if you wish to visualize differences in the data by splitting each document in two halves")
 
 interactive_time_mapper_var.set(0)
 interactive_time_mapper_checkbox = tk.Checkbutton(window, text='Visualize time-dependent data in interactive graph', variable=interactive_time_mapper_var,
@@ -421,15 +444,15 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize a network graph in Gephi.\n\nOptions become available in succession.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Options become available in succession after the Gephi option is selected.\n\nThe first field selected is the first node; the second field selected is the edge; the third field selected is the second node.\n\nOnce all three fields have been selected, the widget 'Field to be used for dynamic network graphs' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID) or ignore the option if the network should not be dynamic." + resetAll)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in an interactive Sunburster visual display.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select the character(s) useed to separate fields in the filename (e.g., in the filename, Harry Potter_Book1_1, the _ separates the first field, Harry Potter, from the second field, Book1, and the third field, 1, that refers to the chapter).\n\nThe position widget refers to the position in the filename of the label you wish to use to compute interactive Sunburster chart (e.g., 2 if you wish to focus on one of the 7 books).\n\nThe number of distinct values in the selected field should be small (e.g., the 7 Harry otter books).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the begin and end K sentences if you want to separate the visualization of specific sentences.\n\nTick the 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to analyze time-dependent data in an interactive bar chart.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
-readMe_message="The Python 3 script and online services display the content of text files as word cloud.\n\nA word cloud, also known as text cloud or tag cloud, is a collection of words depicted visually in different sizes (and colors). The bigger and bolder the word appears, the more often it’s mentioned within a given text and the more important it is.\n\nDifferent, freeware, word cloud applications are available: 'TagCrowd', 'Tagul', 'Tagxedo', 'Wordclouds', and 'Wordle'. These applications require internet connection.\n\nThe script also provides Python word clouds (via Andreas Mueller's Python package WordCloud https://amueller.github.io/word_cloud/) for which no internet connection is required."
+readMe_message="The Python 3 script provides access to different GUIs to be used to visualize data (e.g., wordclouds) and network graphs via Gephi and different interactive charts via Sunburster and time mapper."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
