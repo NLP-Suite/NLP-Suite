@@ -201,6 +201,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # only the inputDir will be used when coreferencing, whether it will contain a set of files or just one file
         inputFilename=''
 
+
+    # create an SVO-filtered subdirectory of the main output directory
+    if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
+        outputSVOFilterDir = outputSVODir + os.sep + 'SVO-filtered'
+
     if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
         WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('SVO_main',
                                                                                             'WordNet')
@@ -277,7 +282,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             if nDateOutput != None:
                 nDateSVOFilename=nDateOutput[0]
                 filesToOpen.extend(nDateOutput)
-            
+
 
 # CoreNLP OpenIE _____________________________________________________
     if 'OpenIE' in package_var:
@@ -383,6 +388,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             if output != None:
                 SVO_filtered_filename=output[0]
                 filesToOpen.extend(output)
+                svo_result_list.append(SVO_filtered_filename)
 
         if lemmatize_verbs:
             # tempOutputFiles[0] is the filename with lemmatized SVO values
@@ -427,6 +433,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if ('SVO_' in inputFilename) or (len(svo_result_list) > 0):
         # Gephi network graphs _________________________________________________
         if gephi_var:
+            i = 0
             # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
             if inputFilename[-4:] == ".csv":
                 nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue='utf-8')
@@ -437,27 +444,33 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 else:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_result_list[0])
                     if nRecords > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputSVOSVODir, svo_result_list[0],
+                        gexf_file = Gephi_util.create_gexf(window,inputFileBase, inputFilename, svo_result_list[0],
                                                            "Subject (S)", "Verb (V)", "Object (O)", "Sentence ID")
                         filesToOpen.append(gexf_file)
             else:  # txt input file
                 for f in svo_result_list:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
                     if nRecords > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], outputSVOSVODir, f, "Subject (S)", "Verb (V)", "Object (O)",
+                        if 'SVO-filter' in svo_result_list[i]:
+                            tempOutputDir = outputSVOFilterDir
+                        else:
+                            tempOutputDir = outputSVOSVODir
+                        gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], tempOutputDir, f, "Subject (S)", "Verb (V)", "Object (O)",
                                                            "Sentence ID")
                         if "CoreNLP" in f or "SENNA_SVO" in f or "spaCy" in f or "Stanza" in f:
                             filesToOpen.append(gexf_file)
                         if not save_intermediate_file:
-                            gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputSVOSVODir) if
+                            gexf_files = [os.path.join(outputDir, f) for f in os.listdir(tempOutputDir) if
                                           f.endswith('.gexf')]
                             for f in gexf_files:
                                 if "CoreNLP" not in f and "SENNA_SVO" not in f and "spaCy" not in f and "Stanza" not in f: #CoreNLP accounts for both ++ and OpenIE
                                     os.remove(f)
+                    i +=1
 
 # wordcloud  _________________________________________________
 
         if wordcloud_var:
+            i = 0
             if inputFilename[-4:] == ".csv":
                 nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
                 if nRecords > 1:  # including headers; file is empty
@@ -473,10 +486,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         myfile = IO_files_util.openCSVFile(f, "r")
                         #CYNTHIA
                         # out_file = wordclouds_util.SVOWordCloud(myfile, f, outputSVODir + os.sep + 'SVO', "", prefer_horizontal=.9)
-                        out_file = wordclouds_util.SVOWordCloud(myfile, f, outputSVOSVODir, "", prefer_horizontal=.9)
+                        if 'SVO-filter' in svo_result_list[i]:
+                            tempOutputDir = outputSVOFilterDir
+                        else:
+                            tempOutputDir = outputSVOSVODir
+                        out_file = wordclouds_util.SVOWordCloud(myfile, f, tempOutputDir, "", prefer_horizontal=.9)
                         myfile.close()
                         if "CoreNLP" in f or "OpenIE" in f or "SENNA_SVO" in f or "spaCy" in f or "Stanza" in f:
                             filesToOpen.append(out_file)
+                    i +=1
 
 # GIS maps _____________________________________________________
 

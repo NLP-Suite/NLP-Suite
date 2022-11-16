@@ -329,7 +329,7 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                                                            column_xAxis_label='Subjects (unfiltered)',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
-                                                           chart_title_label='')
+                                                           chart_title_label='Subjects (unfiltered)')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
@@ -345,7 +345,7 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                                                            column_xAxis_label='Verbs (unfiltered)',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
-                                                           chart_title_label='')
+                                                           chart_title_label='Verbs (unfiltered)')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
@@ -361,7 +361,7 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                                                            column_xAxis_label='Objects (unfiltered)',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
-                                                           chart_title_label='')
+                                                           chart_title_label='Objects (unfiltered)')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)

@@ -180,11 +180,11 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      **kwargs):
 
     # These values can be zero if the setup has specified e.g., spaCy but in SVO or other annotators, the user selects to run CoreNLP
-    if memory_var==0:
+    if memory_var<4:
         memory_var=4
-    if document_length==0:
+    if document_length<50000:
         document_length=90000
-    if sentence_length==0:
+    if sentence_length<50:
         sentence_length=100  # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
 
     silent=True

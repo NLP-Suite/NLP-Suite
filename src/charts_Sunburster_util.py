@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"charts_Sunburster_util",['pandas','numpy','tkinter','plotly','re','warnings'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"charts_Sunburster_util",['pandas','numpy','tkinter','plotly','re'])==False:
     sys.exit(0)
 
 import pandas as pd
@@ -13,8 +13,8 @@ import plotly.graph_objects as go
 import plotly.express as px
 import re
 from plotly.subplots import make_subplots
-import warnings
-warnings.filterwarnings("ignore")
+# import warnings
+# warnings.filterwarnings("ignore")
 
 # Function creates a new column that identifies the documents based on a specific interest variable
 #two inputs taken: data is the dataset in question, interest is a vector that the user will have to define, as it changes depending on the corpus
@@ -43,6 +43,10 @@ def separator(data,interest):
 #half_text is a boolean defining whether to split the text in half or not
 def Sunburster(data,interest,label,first_sentences=None,last_sentences=None,half_text=None):
     #the last 3 arguments are optional. If first_sentences is specified and last_sentences is not or vice versa, we return a message stating they must both be specified or absent at the same time
+    # can read in inpput either a dataframe or a csv file
+    if type(data)==str:
+        data=pd.read_csv(data)
+
     if (first_sentences==None and last_sentences!=None) or (first_sentences!=None and last_sentences==None):
         return 'both number of first sentences and number of last sentences have to be specified or absent at the same time'
     else: #Otherwise, we run the Sunburster

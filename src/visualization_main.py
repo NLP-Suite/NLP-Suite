@@ -85,7 +85,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             # you would use the os.path.split for the last field in the csv file passed with header "Document"
             #   head, tail = os.path.split(Document)
             #   you would then slit tail for the field to be used
-            charts_Sunburster_util.Sunburster(inputFilename, field_separator_var, field_position_var, int(K_sent_begin_var), int(K_sent_end_var), split_var)
+            # interest pass a list [] of labels embedded in the filename, e.g. Book1, Book2, ... or Chinese, Arabian,...
+            # label is a string that has the header field in the csv file to be used for display
+            interest=[filename_label_var.get()]
+            label=csv_field2_var.get()
+            charts_Sunburster_util.Sunburster(inputFilename, interest, label, int(K_sent_begin_var), int(K_sent_end_var), split_var)
 
         if openOutputFiles and len(filesToOpen) > 0:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -237,6 +241,13 @@ def changed_filename(tracedInputFile):
     for s in menu_values:
         m1.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
         m2.add_command(label=s, command=lambda value=s: dynamic_network_field_var.set(value))
+
+    m3 = select_csv_field2_menu["menu"]
+    m3.delete(0, "end")
+
+    for s in menu_values:
+        m3.add_command(label=s, command=lambda value=s: csv_field2_var.set(value))
+
     clear("<Escape>")
 
 select_csv_field_lb = tk.Label(window, text='Select csv file field')
@@ -344,28 +355,32 @@ interactive_Sunburster_checkbox = tk.Checkbutton(window, text='Visualize data in
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                interactive_Sunburster_checkbox)
 
-field_separator_var.set('_')
-field_separator_lb = tk.Label(window, text='Character(s) used in the filename to separate fields')
+
+
+filename_label_lb = tk.Label(window, text='Label/part in the filename to be used for visualization')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,
-                                               y_multiplier_integer, field_separator_lb, True)
+                                               y_multiplier_integer, filename_label_lb, True)
 
-field_separator = tk.Entry(window, textvariable=field_separator_var, width=3)
+filename_label_var = tk.StringVar()
+filename_label_var.set('')
+filename_label = tk.Entry(window, textvariable=filename_label_var, width=70)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_field_separator_pos, y_multiplier_integer,
-                                   field_separator,
-                                   True, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_menu_pos,
-                                   "Enter the character(s) used to separate different fields embedded in the filename (e.g., _ in Harry Potter_Book1_1) to be used to visualize differences in the data")
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_pos, y_multiplier_integer,
+                                   filename_label,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Enter the comma-separated label/part of a filename to be used to sample the corpus for visualization (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...)")
 
-field_position_menu_lb = tk.Label(window, text='Field position in filename')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_field_position_lb_pos,
-                                               y_multiplier_integer, field_position_menu_lb, True)
-field_position_var.set(2)
-field_position_menu = tk.OptionMenu(window,field_position_var,1,2,3,4,5)
+select_csv_field2_lb = tk.Label(window, text='Select csv file field')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_lb_pos, y_multiplier_integer,
+                                               select_csv_field2_lb, True)
+
+csv_field2_var = tk.StringVar()
+select_csv_field2_menu = tk.OptionMenu(window, csv_field2_var, *menu_values)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_field_position_pos, y_multiplier_integer,
-                                   field_position_menu,
-                                   False, False, True, False, 90, GUI_IO_util.visualization_field_position_lb_pos,
-                                   "Select the position in the filename of the field to be used to visualize differences in the data")
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_select_csv_field2_menu_pos, y_multiplier_integer,
+                                   select_csv_field2_menu,
+                                   False, False, True, False, 90, GUI_IO_util.visualization_K_sent_end_pos,
+                                   "Select the csv file field to be visualize specific data (e.g., 'Sentiment score' in a sentiment analysis csv output file")
 
 K_sent_begin_var.set('')
 K_sent_begin_lb = tk.Label(window, text='Begin K sentences')

@@ -20,8 +20,10 @@ import IO_csv_util
 #Gensim
 import gensim
 from gensim.models import Word2Vec
-# from nltk.tokenize import sent_tokenize
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+
+# Stanza for tokenization and lemmatization
+from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
+import stanza
 
 #Visualization
 import plotly.express as px
@@ -30,9 +32,6 @@ from sklearn.manifold import TSNE
 
 
 #stopwords
-# from nltk.corpus import stopwords
-# stop_words = stopwords.words('english')
-
 fin = open('../lib/wordLists/stopwords.txt', 'r')
 stop_words = set(fin.read().splitlines())
 
@@ -63,22 +62,15 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                         remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var,
                         vis_menu_var, dim_menu_var, keywords_var,
                         word_vector=None):
-    ## list for csv file
+    # initialize necessary variables
     word = []
-    lemmatized_word = []
-    unlemmatized_word = []
-    sentenceID = []
-    sentence = []
-    documentID = []
     document = []
-
-    ## word list for word2vec
-    word_list = []
-
+    tail_list = {}
     all_input_docs = {}
     dId = 0
-
+    numFiles = 1
     filesToOpen = []
+    sentences_out = []
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running Word2Vec at', True)
@@ -91,81 +83,75 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                 dId += 1
                 text = file.read()
                 print('Importing single file ' + tail)
-                documentID.append(dId)
                 document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
                 all_input_docs[dId] = text
-
+                tail_list[dId] = tail
     else:
         numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
         if numFiles == 0:
             mb.showerror(title='Number of files error',
                         message='The selected input directory does NOT contain any file of txt type.\n\nPlease, select a different directory and try again.')
-            return
-
-        for doc in os.listdir(inputDir):
-            doc = inputFilename
+        for doc in list(os.listdir(inputDir)):
             head, tail = os.path.split(doc)
             if doc.endswith('.txt'):
                 with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
                     dId += 1
                     text = file.read()
-                    print('Importing file ' + str(dId) + '/' + str(numFiles)) + tail
-                    documentID.append(dId)
+                    print('Importing file ' + str(dId) + '/' + str(numFiles) + ' ' + tail)
                     document.append(os.path.join(inputDir, doc))
                     all_input_docs[dId] = text
-
-    document_df = pd.DataFrame({'Document ID': documentID, 'Document': document})
-    document_df = document_df.astype('str')
-
-    documentID = []
-    print('Tokenizing...')
-    for idx, txt in enumerate(all_input_docs.items()):
-        # sentences = sent_tokenize(txt[1])
-        sentences = sent_tokenize_stanza(stanzaPipeLine(txt[1]))
-        sId = 0
-        for sent in sentences:
-            sId += 1
-            words = make_words(sent)
-            word_list.append(words)
-            for w in words:
-                documentID.append(txt[0])
-                sentenceID.append(sId)
-                sentence.append(sent)
-                word.append(w)
-
-    sentence_df = pd.DataFrame({'Word': word, 'Sentence ID': sentenceID, 'Sentence': sentence, 'Document ID': documentID})
-    sentence_df = sentence_df.astype(str)
-
-    if remove_stopwords_var == True:
-        print('Removing stopwords..')
-        ## sentence_df = remove_stopwords_df(sentence_df)
-        word_list = list(remove_stopwords(word_list))
+                    tail_list[dId] = tail
+    
+    # initialize different annotators for Stanza
+    if lemmatize_var is True:
+        stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize, lemma')
+        print('Tokenizing and Lemmatizing...')
     else:
-        word_list = list(word_list)
+        stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize, lemma')
+        print('Tokenizing...')
+    
+    # process input file(s)
+    out_df = pd.DataFrame()
+    for doc_idx, txt in enumerate(all_input_docs.items()):
+        print('Processing file ' + str(doc_idx+1) + '/' + str(numFiles) + ' ' + tail_list[doc_idx+1])
+        temp_out_df = pd.DataFrame()
+        stanza_doc = stanzaPipeLine(txt[1])
+        
+        # convert stanza doc variable to python dict
+        dicts = stanza_doc.to_dict()
+        for i in range(len(dicts)):
+            temp_df = pd.DataFrame.from_dict(dicts[i])
+            temp_out_df = pd.concat([temp_out_df, temp_df], ignore_index=True)
 
-    ## lemmatize
-    if lemmatize_var == True:
-        print('Lemmatizing...')
+        # drop and rename columns + reset indices
+        temp_out_df = temp_out_df.drop(['start_char', 'end_char'], axis=1, errors='ignore')
+        temp_out_df = temp_out_df.reset_index(drop=True)
+        temp_out_df = temp_out_df.rename(columns = {'id':'ID', 'text':'Word', 'lemma':'Lemma', 'head':'Head'})
+        sentences = [sent.text for sent in stanza_doc.sentences]
 
-    sentences_out = []
-    for word_in_sent in word_list:
-        doc = nlp(" ".join(word_in_sent))
-        if lemmatize_var == True:
-            sentences_out.append([token.lemma_ for token in doc])
-            unlemmatized_word.append([token for token in doc])
-            lemmatized_word.append([token.lemma_ for token in doc])
-        else:
-            sentences_out.append([token for token in doc])
+        # remove rows that include stop words from the dataframe
+        if remove_stopwords_var == True:
+            for idx, row in temp_out_df.iterrows():
+                if row['Word'] in stop_words:
+                    temp_out_df.drop(idx, inplace=True)
+        
+        # get sentenece, sentenceID for result_df
+        # get sentences_out for gensim
+        sidx = 1
+        temp_sentences_out = []
+        for i, row in temp_out_df.iterrows():
+            if i != 0 and row['ID'] == 1:
+                sidx+=1
+                sentences_out.append(temp_sentences_out)
+                temp_sentences_out = []
+            temp_out_df.at[i, 'Sentence ID'] = sidx
+            temp_out_df.at[i, 'Sentence'] = sentences[sidx-1]
+            temp_sentences_out.append(temp_out_df.at[i, 'Lemma'])
+        temp_out_df['Document ID'] = doc_idx+1
+        temp_out_df['Document'] = document[doc_idx]
 
-    word_df = pd.DataFrame({'Word': unlemmatized_word})
-    if (len(lemmatized_word)>0):
-        word_df['Lemmatized word'] = lemmatized_word
-
-    word_df = word_df.astype(str)
-    word_df = word_df.drop_duplicates()
-    sent_word_df = pd.merge(sentence_df, word_df, on='Word', how='inner')
-    sent_word_df = sent_word_df.astype(str)
-
+        # concat to output df
+        out_df = pd.concat([out_df,temp_out_df], ignore_index=True)
 
     if sg_menu_var == 'CBOW':
         sg_var = 0
@@ -291,22 +277,16 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     for v in words:
         word_vector_df = word_vector_df.append(pd.Series([v, word_vectors[v]]), ignore_index=True)
 
-    if(lemmatize_var == True):
-        word_vector_df.columns = ['Lemmatized word', 'Vector']
+    # merge out_df with word_vector coordinates values
+    if lemmatize_var is True:
+        word_vector_df.columns = ['Lemma', 'Vector']
         word_vector_df = word_vector_df.astype(str)
-        sent_word_vector = pd.merge(word_vector_df, sent_word_df, on='Lemmatized word', how='inner')
+        result_df = pd.merge(word_vector_df, out_df, on='Lemma', how='inner')
+        result_df = result_df[["Word", "Lemma", "Vector", "Sentence ID", "Sentence", "Document ID", "Document"]]
     else:
         word_vector_df.columns = ['Word', 'Vector']
         word_vector_df = word_vector_df.astype(str)
-        sent_word_vector = pd.merge(word_vector_df, sent_word_df, on='Word', how='inner')
-
-    sent_word_vector = sent_word_vector.astype(str)
-    result_df = pd.merge(document_df, sent_word_vector, on='Document ID', how='inner')
-    result_df = result_df.sort_values(by=["Document ID","Sentence ID"])
-
-    if (lemmatize_var == True):
-        result_df = result_df[["Word", "Lemmatized word", "Vector", "Sentence ID", "Sentence", "Document ID", "Document"]]
-    else:
+        result_df = pd.merge(word_vector_df, out_df, on='Word', how='inner')
         result_df = result_df[["Word", "Vector", "Sentence ID", "Sentence", "Document ID", "Document"]]
 
     # write csv file
