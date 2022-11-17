@@ -28,20 +28,23 @@ def runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_fiel
                                   csv_file_field_list[0], csv_file_field_list[1],
                                   csv_file_field_list[2], dynamic_network_field_var)
 
+
 def run(inputFilename, inputDir, outputDir, openOutputFiles,
         Gephi_var,
         csv_file_field_list,
         dynamic_network_field_var,
         interactive_Sunburster_var,
-        field_separator_var,
-        field_position_var,
+        filename_label_var,
+        csv_field2_var,
         K_sent_begin_var,
         K_sent_end_var,
         split_var,
         interactive_time_mapper_var):
 
-
     filesToOpen = []
+    int_K_sent_begin_var=None
+    int_K_sent_end_var=None
+
     if Gephi_var==False and interactive_Sunburster_var == False and interactive_time_mapper_var==False:
         mb.showwarning("Warning",
                        "No options have been selected.\n\nPlease, select an option to run and try again.")
@@ -62,34 +65,50 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             gexf_file = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
             filesToOpen.append(gexf_file)
 
-        # check that Begin and End K sentences are numeric
         if interactive_Sunburster_var:
-            try:
-                if type(int(K_sent_begin_var))!= int:
-                    pass
-            except:
+            if K_sent_begin_var=='' and K_sent_end_var=='' and split_var==False:
                 mb.showwarning("Warning",
-                               "The value entered for Begin K sentences MUST be a numeric integer.\n\nPlease, enter a numeric value and try again.")
+                               "The Sunburster function requires a selection of either Begin/End K sentences or Split documents in equal halves.\n\nPlease, make a selection and try again.")
                 return
+            # check that K_sent_begin_var and K_sent_end_var values are numeric
+            if split_var==False:
+                try:
+                    if type(int(K_sent_begin_var))!= int:
+                        int_K_sent_begin_var = int(K_sent_begin_var)
+                        pass
+                except:
+                    mb.showwarning("Warning",
+                                   "The value entered for Begin K sentences MUST be a numeric integer.\n\nPlease, enter a numeric value and try again.")
+                    return
+                try:
+                    if type(int(K_sent_end_var))!= int:
+                        int_K_sent_end_var = int(K_sent_end_var)
+                        pass
+                except:
+                    mb.showwarning("Warning",
+                                   "The value entered for End K sentences MUST be a numeric integer.\n\nPlease, enter a numeric value and try again.")
+                    return
+            else:
+                int_K_sent_begin_var=None
+                int_K_sent_end_var=None
 
-            try:
-                if type(int(K_sent_end_var))!= int:
-                    pass
-            except:
+            if filename_label_var=='':
                 mb.showwarning("Warning",
-                               "The value entered for End K sentences MUST be a numeric integer.\n\nPlease, enter a numeric value and try again.")
+                               "The Sunburster visualization function requires a set of comma-separated entries in the 'Label/part in the filename to be used for visualization' widget.\n\nPlease, enter value(s) and try again.")
                 return
-
-            # TODO Samir we normally pass a csv file rather than a dataframe; we could have both, I suppose?
-            #   but in the NLP Suite, _main only checks for appropriateness of selections and all computational stuff is done in _util
-            # you would use the os.path.split for the last field in the csv file passed with header "Document"
-            #   head, tail = os.path.split(Document)
-            #   you would then slit tail for the field to be used
+            if csv_field2_var=='':
+                mb.showwarning("Warning",
+                               "The Sunburster visualization function requires a value for 'Select csv file field.'\n\nPlease, select a value and try again.")
+                return
             # interest pass a list [] of labels embedded in the filename, e.g. Book1, Book2, ... or Chinese, Arabian,...
+            interest = []
+            temp_interest=[]
+            interest = filename_label_var.split(', ')
+            for i in range(len(interest)):
+                temp_interest.append(interest[i].lstrip())
             # label is a string that has the header field in the csv file to be used for display
-            interest=[filename_label_var.get()]
-            label=csv_field2_var.get()
-            charts_Sunburster_util.Sunburster(inputFilename, interest, label, int(K_sent_begin_var), int(K_sent_end_var), split_var)
+            label=csv_field2_var
+            charts_Sunburster_util.Sunburster(inputFilename, case_sensitive_var, temp_interest, label, int_K_sent_begin_var, int_K_sent_end_var, split_var)
 
         if openOutputFiles and len(filesToOpen) > 0:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -103,8 +122,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             csv_file_field_list,
                             dynamic_network_field_var.get(),
                             interactive_Sunburster_var.get(),
-                            field_separator_var.get(),
-                            field_position_var.get(),
+                            filename_label_var.get(),
+                            csv_field2_var.get(),
                             K_sent_begin_var.get(),
                             K_sent_end_var.get(),
                             split_var.get(),
@@ -155,11 +174,16 @@ def clear(e):
     reset()
     Gephi_var.set(0)
     interactive_Sunburster_var.set(0)
-    field_separator_var.set('_')
-    field_position_var.set(2)
+    case_sensitive_var.set(0)
+    case_sensitive_checkbox.configure(text="Case sensitive")
+    filename_label_var.set('')
+    csv_field2_var.set('')
     K_sent_begin_var.set('')
     K_sent_end_var.set('')
+    K_sent_begin.configure(state='disabled')
+    K_sent_end.configure(state='disabled')
     split_var.set(0)
+    split_checkbox.configure(state='disabled')
     interactive_time_mapper_var.set(0)
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
@@ -168,18 +192,19 @@ window.bind("<Escape>", clear)
 Gephi_var = tk.IntVar()
 selected_csv_file_fields_var = tk.StringVar()
 
-csv_file_field_list = []
-menu_values = []
-
-dynamic_network_field_var = tk.IntVar()
-
+csv_field_var = tk.StringVar()
+dynamic_network_field_var = tk.StringVar()
 interactive_Sunburster_var = tk.IntVar()
-field_separator_var = tk.StringVar()
-field_position_var = tk.IntVar()
+case_sensitive_var = tk.IntVar()
+filename_label_var = tk.StringVar()
+csv_field2_var = tk.StringVar()
 K_sent_begin_var = tk.StringVar()
 K_sent_end_var = tk.StringVar()
 split_var = tk.IntVar()
 interactive_time_mapper_var = tk.IntVar()
+
+csv_file_field_list = []
+menu_values = []
 
 Excel_button = tk.Button(window, text='Open Excel GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
                                command=lambda: call("python charts_Excel_main.py", shell=True))
@@ -219,42 +244,41 @@ else:
 if nColumns == -1:
     pass
 
-def changed_filename(tracedInputFile):
-    menu_values = []
-    if tracedInputFile != '':
-        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tracedInputFile)
-        if nColumns == 0 or nColumns == None:
-            return False
-        if IO_csv_util.csvFile_has_header(tracedInputFile) == False:
-            menu_values = range(1, nColumns + 1)
-        else:
-            data, headers = IO_csv_util.get_csv_data(tracedInputFile, True)
-            menu_values = headers
-    else:
-        menu_values.clear()
-        return
-    m1 = select_csv_field_menu["menu"]
-    m2 = dynamic_network_field_menu["menu"]
-    m1.delete(0, "end")
-    m2.delete(0, "end")
-
-    for s in menu_values:
-        m1.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
-        m2.add_command(label=s, command=lambda value=s: dynamic_network_field_var.set(value))
-
-    m3 = select_csv_field2_menu["menu"]
-    m3.delete(0, "end")
-
-    for s in menu_values:
-        m3.add_command(label=s, command=lambda value=s: csv_field2_var.set(value))
-
-    clear("<Escape>")
-
+# def changed_filename(tracedInputFile):
+#     menu_values = []
+#     if tracedInputFile != '':
+#         nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tracedInputFile)
+#         if nColumns == 0 or nColumns == None:
+#             return False
+#         if IO_csv_util.csvFile_has_header(tracedInputFile) == False:
+#             menu_values = range(1, nColumns + 1)
+#         else:
+#             data, headers = IO_csv_util.get_csv_data(tracedInputFile, True)
+#             menu_values = headers
+#     else:
+#         menu_values.clear()
+#         return
+#     m1 = select_csv_field_menu["menu"]
+#     m2 = dynamic_network_field_menu["menu"]
+#     m1.delete(0, "end")
+#     m2.delete(0, "end")
+#
+#     for s in menu_values:
+#         m1.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
+#         m2.add_command(label=s, command=lambda value=s: dynamic_network_field_var.set(value))
+#
+#     m3 = select_csv_field2_menu["menu"]
+#     m3.delete(0, "end")
+#
+#     for s in menu_values:
+#         m3.add_command(label=s, command=lambda value=s: csv_field2_var.set(value))
+#
+#     clear("<Escape>")
+#
 select_csv_field_lb = tk.Label(window, text='Select csv file field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                select_csv_field_lb, True)
 
-csv_field_var = tk.StringVar()
 select_csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_select_csv_field_menu_pos, y_multiplier_integer,
@@ -264,13 +288,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
 
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
-changed_filename(GUI_util.inputFilename.get())
-
 select_csv_field_dynamic_network_lb = tk.Label(window, text='Select csv file field for dynamic network graph')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos, y_multiplier_integer,
                                                select_csv_field_dynamic_network_lb, True)
 
-dynamic_network_field_var = tk.StringVar()
 dynamic_network_field_menu = tk.OptionMenu(window, dynamic_network_field_var, *menu_values)
 dynamic_network_field_menu.configure(state='disabled')
 # place widget with hover-over info
@@ -291,6 +312,7 @@ def display_selected_csv_fields():
     #     csv_file_field_list.append(dynamic_network_field_var.get())
     selected_csv_file_fields_var.set(str(csv_file_field_list))
     activate_csv_fields_selection(True)
+
 
 def reset():
     csv_file_field_list.clear()
@@ -349,45 +371,58 @@ dynamic_network_field_var.trace('w', callback = lambda x,y,z: activate_csv_field
 
 # activate_csv_fields_selection()
 
-interactive_Sunburster_var.set(0)
 interactive_Sunburster_checkbox = tk.Checkbutton(window, text='Visualize data in interactive Sunburster graph', variable=interactive_Sunburster_var,
                                     onvalue=1)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                interactive_Sunburster_checkbox)
 
+case_sensitive_var.set(0)
+case_sensitive_checkbox = tk.Checkbutton(window, state='disabled',text='Case sensitive', variable=case_sensitive_var,
+                                    onvalue=1, offvalue=0)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                   case_sensitive_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Tick/untick the checkbox if you wish to process filename labels/parts as case sensitive or insensitive")
 
+def activate_case_label(*args):
+    if case_sensitive_var.get():
+        case_sensitive_checkbox.configure(text="Case sensitive")
+    else:
+        case_sensitive_checkbox.configure(text="Case insensitive")
+case_sensitive_var.trace('w',activate_case_label)
 
-filename_label_lb = tk.Label(window, text='Label/part in the filename to be used for visualization')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,
+filename_label_lb = tk.Label(window, text='Filename label/part')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_lb_pos,
                                                y_multiplier_integer, filename_label_lb, True)
 
-filename_label_var = tk.StringVar()
 filename_label_var.set('')
-filename_label = tk.Entry(window, textvariable=filename_label_var, width=70)
+filename_label = tk.Entry(window, state='disabled', textvariable=filename_label_var, width=GUI_IO_util.widget_width_medium)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_pos, y_multiplier_integer,
                                    filename_label,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Enter the comma-separated label/part of a filename to be used to sample the corpus for visualization (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...)")
 
+
 select_csv_field2_lb = tk.Label(window, text='Select csv file field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_lb_pos, y_multiplier_integer,
                                                select_csv_field2_lb, True)
 
-csv_field2_var = tk.StringVar()
 select_csv_field2_menu = tk.OptionMenu(window, csv_field2_var, *menu_values)
+select_csv_field2_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_select_csv_field2_menu_pos, y_multiplier_integer,
                                    select_csv_field2_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_K_sent_end_pos,
-                                   "Select the csv file field to be visualize specific data (e.g., 'Sentiment score' in a sentiment analysis csv output file")
+                                   "Select the csv file field to be used to visualize specific data (e.g., 'Sentiment score' in a sentiment analysis csv output file")
 
 K_sent_begin_var.set('')
 K_sent_begin_lb = tk.Label(window, text='Begin K sentences')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,
                                                y_multiplier_integer, K_sent_begin_lb, True)
 
-K_sent_begin = tk.Entry(window, textvariable=K_sent_begin_var, width=3)
+K_sent_begin = tk.Entry(window, state='disabled', textvariable=K_sent_begin_var, width=3)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_begin_pos, y_multiplier_integer,
                                    K_sent_begin,
@@ -398,7 +433,7 @@ K_sent_end_var.set('')
 K_sent_end_lb = tk.Label(window, text='End K sentences')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_end_lb_pos,
                                                y_multiplier_integer, K_sent_end_lb, True)
-K_sent_end = tk.Entry(window, textvariable=K_sent_end_var, width=3)
+K_sent_end = tk.Entry(window, state='disabled',textvariable=K_sent_end_var, width=3)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_end_pos, y_multiplier_integer,
                                    K_sent_end,
@@ -406,7 +441,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
                                    "Enter the number of sentences at the end of each document to be used to visualize differences in the data")
 
 split_var.set(0)
-split_checkbox = tk.Checkbutton(window, text='Split documents in equal halves', variable=split_var,
+split_checkbox = tk.Checkbutton(window, state='disabled',text='Split documents in equal halves', variable=split_var,
                                     onvalue=1)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_split_pos, y_multiplier_integer,
@@ -414,12 +449,79 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
                                    False, False, True, False, 90, GUI_IO_util.visualization_split_pos,
                                    "Tick the checkbox if you wish to visualize differences in the data by splitting each document in two halves")
 
+
+def activate_options(*args):
+    if interactive_Sunburster_var.get():
+        case_sensitive_checkbox.configure(state='normal')
+        filename_label.configure(state='normal')
+        K_sent_begin.configure(state='normal')
+        K_sent_end.configure(state='normal')
+        select_csv_field2_menu.configure(state='normal')
+        split_checkbox.configure(state='normal')
+    else:
+        case_sensitive_checkbox.configure(state='disabled')
+        filename_label.configure(state='disabled')
+        K_sent_begin.configure(state='disabled')
+        K_sent_end.configure(state='disabled')
+        select_csv_field2_menu.configure(state='disabled')
+        split_checkbox.configure(state='disabled')
+interactive_Sunburster_var.trace('w',activate_options)
+
+def activate_visualization_options(*args):
+    if (interactive_Sunburster_var.get()==False) or split_var.get():
+        K_sent_begin_var.set('')
+        K_sent_end_var.set('')
+        K_sent_begin.configure(state='disabled')
+        K_sent_end.configure(state='disabled')
+    else:
+        K_sent_begin.configure(state='normal')
+        K_sent_end.configure(state='normal')
+        if K_sent_begin_var.get() != '' or K_sent_end_var.get()  != '':
+            split_checkbox.configure(state='disabled')
+        else:
+            split_checkbox.configure(state='normal')
+split_var.trace('w',activate_visualization_options)
+K_sent_begin_var.trace('w',activate_visualization_options)
+K_sent_end_var.trace('w',activate_visualization_options)
+
 interactive_time_mapper_var.set(0)
 interactive_time_mapper_checkbox = tk.Checkbutton(window, text='Visualize time-dependent data in interactive graph', variable=interactive_time_mapper_var,
                                     onvalue=1)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                interactive_time_mapper_checkbox)
 
+def changed_filename(tracedInputFile):
+    menu_values = []
+    if tracedInputFile != '':
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tracedInputFile)
+        if nColumns == 0 or nColumns == None:
+            return False
+        if IO_csv_util.csvFile_has_header(tracedInputFile) == False:
+            menu_values = range(1, nColumns + 1)
+        else:
+            data, headers = IO_csv_util.get_csv_data(tracedInputFile, True)
+            menu_values = headers
+    else:
+        menu_values.clear()
+        return
+    m1 = select_csv_field_menu["menu"]
+    m2 = dynamic_network_field_menu["menu"]
+    m1.delete(0, "end")
+    m2.delete(0, "end")
+
+    for s in menu_values:
+        m1.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
+        m2.add_command(label=s, command=lambda value=s: dynamic_network_field_var.set(value))
+
+    m3 = select_csv_field2_menu["menu"]
+    m3.delete(0, "end")
+
+    for s in menu_values:
+        m3.add_command(label=s, command=lambda value=s: csv_field2_var.set(value))
+
+    clear("<Escape>")
+
+changed_filename(GUI_util.inputFilename.get())
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -459,8 +561,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize a network graph in Gephi.\n\nOptions become available in succession.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Options become available in succession after the Gephi option is selected.\n\nThe first field selected is the first node; the second field selected is the edge; the third field selected is the second node.\n\nOnce all three fields have been selected, the widget 'Field to be used for dynamic network graphs' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID) or ignore the option if the network should not be dynamic." + resetAll)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in an interactive Sunburster visual display.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select the character(s) useed to separate fields in the filename (e.g., in the filename, Harry Potter_Book1_1, the _ separates the first field, Harry Potter, from the second field, Book1, and the third field, 1, that refers to the chapter).\n\nThe position widget refers to the position in the filename of the label you wish to use to compute interactive Sunburster chart (e.g., 2 if you wish to focus on one of the 7 books).\n\nThe number of distinct values in the selected field should be small (e.g., the 7 Harry otter books).")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the begin and end K sentences if you want to separate the visualization of specific sentences.\n\nTick the 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the comma-separated labels/parts of a filename to be used to separate fields in the filename (e.g., in the filename, Harry Potter_Book1_1, Harry Potter_Book2_3, ..., Harry Potter_Book4_1... you could enter Book1, Book3 to sample the files to be used for visualization.\n\nThe number of distinct labels/parts of filename should be small (e.g., the 7 Harry Potter books).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to analyze time-dependent data in an interactive bar chart.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

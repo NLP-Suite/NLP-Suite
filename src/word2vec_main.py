@@ -28,7 +28,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
 
     if BERT_var:
         BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts,
-                                                   chartPackage)
+                                                   chartPackage, dim_menu_var)
         filesToOpen.append(BERT_output)
 
     if Gensim_var:

@@ -92,9 +92,9 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
 # date ________________________________________________________________
     # dates are extracted by the date annotator, but also as part of SVO and OpenIE
     elif (('date' in str(annotator_params) and 'date' in outputFilename)) or \
-            (('SVO' in str(annotator_params) and 'SVO' in outputFilename)) or \
             ('OpenIE' in str(annotator_params) and 'OpenIE' in outputFilename):
-
+            # (('SVO' in str(annotator_params) and 'SVO' in outputFilename)) or \
+            # visualizing normalized-date for SVO is done in SVO_util called in SVO_main
         # Date expressions are in the form yesterday, tomorrow morning, the day before Christmas
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
@@ -185,8 +185,8 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
 
 # generate visualization output ----------------------------------------------------------------
 # parser ________________________________________________________________
-
-    elif ('parse' in str(annotator_params) and 'CoNLL' in outputFilename) or ('depparse' in str(annotator_params)): # TODO MINO: add 'depparse' for Stanza and spaCy
+    # 'depparse' used for Stanza and spaCy
+    elif ('parse' in str(annotator_params) and 'CoNLL' in outputFilename) or ('depparse' in str(annotator_params)):
 
         # Form & Lemma values
         # reminders_util.checkReminder(config_filename, reminders_util.lemma_frequencies,

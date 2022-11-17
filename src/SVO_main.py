@@ -884,7 +884,7 @@ gender_checkbox = tk.Checkbutton(window, text='S & O gender',
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    gender_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "The gender annotator is available only via Stanford CoreNLP")
+                                   "The neural network gender annotator is available only via Stanford CoreNLP and for the English language only")
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
 #                                                gender_checkbox, True)
 
@@ -904,7 +904,7 @@ quote_checkbox = tk.Checkbutton(window, text='S & O quote/speaker',
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
                                    quote_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
-                                   "The quote annotator is available only via Stanford CoreNLP")
+                                   "The neural network quote annotator is available only via Stanford CoreNLP")
 
 def activateQuote(*args):
     if quote_var.get() and ((package_var.get() != 'Stanford CoreNLP') or (package_var.get() == 'Stanford CoreNLP' and 'English' not in str(language_list))):
@@ -1028,8 +1028,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "The three widgets display the currently selected dictionary filter files for Subjects, Verbs, and Objects (Objects share the same file as Subjects and you may wish to change that).\n\nThe filter file social-actor-list, created via WordNet with person as keyword and saved in the \'lib/wordLists\' subfolder, will be automatically set as the DEFAULT filter for subjects (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly set as the DEFAULT dictionary file for verbs.\n\nThe widgets are disabled because you are not allowed to tamper with these values. If you wish to change a selected file, please tick the appropriate checkbox in the line above (e.g., Filter Subject) and you will be prompted to select a new file."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the S & O gender checkbox if you wish to run Stanford CoreNLP gender annotator to extract the gender (female, male) for every Subject and Object extracted by the SVO script.\n\n"
-                                  "Tick the S & O quote/speaker checkbox if you wish to run Stanford CoreNLP quote annotator to extract the speaker involved in direct discourse for every Subject and Object extracted by the SVO script.\n\n"
+                                  "Please, tick the S & O gender checkbox if you wish to run Stanford CoreNLP neural network gender annotator to extract the gender (female, male) for every Subject and Object extracted by the SVO script.\n\n"
+                                  "Tick the S & O quote/speaker checkbox if you wish to run Stanford CoreNLP neural network quote annotator to extract the speaker involved in direct discourse for every Subject and Object extracted by the SVO script.\n\n"
                                   "THE GENDER AND QUOTE/SPEAKER ANNOTATORS ARE AVAILABLE FOR STANFORD CORENLP AND ENGLISH LANGUAGE ONLY.\n\n"
                                   "Tick the SRL checkbox if you wish to run Jinho Choi's SRL (Semantic Role Labeling) algorithm (https://github.com/emorynlp/elit/blob/main/docs/semantic_role_labeling.md). THE OPTION IS CURRENTLY DISABLED."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -1077,7 +1077,7 @@ def activate_NLP_options(*args):
     else:
         filter_subjects_var.set(1)
         filter_verbs_var.set(1)
-        filter_objects_var.set(1)
+        filter_objects_var.set(0)
         activate_filter_dictionaries()
 GUI_util.setup_menu.trace('w', activate_NLP_options)
 activate_NLP_options()

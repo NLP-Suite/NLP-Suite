@@ -37,6 +37,7 @@ import charts_util
 import statistics_txt_util
 import word2vec_util
 import parsers_annotators_visualization_util
+import IO_user_interface_util
 
 # Provides NER tags per sentence for every doc and stores in a csv file
 def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts, chartPackage):
@@ -132,11 +133,17 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     filesToOpen = []
     Ndocs = str(len(inputDocs))
-
+    header = ["Word", "Embeddings", "Sentence ID", "Sentence", "Document ID", "Document"]
+    csv_result = []
     result = []
     documentID = 0
     all_words = []
     words_without_Stop = []
+
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
+                                                   'Started running BERT word embeddings at', True)
+
+
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         documentID = documentID + 1
@@ -155,6 +162,11 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
         # Words are encoded by calling model.encode()
     embeddings = model.encode(words_without_Stop)
+
+
+
+
+
 
     # Print the embeddings
     # for word, embedding in zip(words, embeddings):
@@ -185,6 +197,37 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         fig = word2vec_util.plot_interactive_3D_graph(tsne_df)
         fig_words = word2vec_util.plot_interactive_3D_graph_words(tsne_df)
 
+    documentID = 0
+    for doc in inputDocs:
+        head, tail = os.path.split(doc)
+        documentID = documentID + 1
+        print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
+
+        fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
+        fullText = fullText.replace('\n', ' ')
+
+        sentenceID = 0
+
+        sentences = split_into_sentences(fullText)
+
+        for s in sentences:
+            sentenceID = sentenceID + 1
+
+            words = word_tokenize_stanza(stanzaPipeLine(s))
+
+            wrds_no_stop = statistics_txt_util.excludeStopWords_list(words)
+
+            if dim_menu_var == '2D':
+                for w, coord in zip(wrds_no_stop, xys):
+                    csv_result.append([w, coord, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+            else:
+                for w, coord in zip(wrds_no_stop, xyzs):
+                    csv_result.append([w, coord, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+
+    csv_result.insert(0, header)
+
+
+
     ### write output html graph
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html',
                                                              'Word_Embeddings_BERT')
@@ -195,6 +238,16 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'Word2Vec_BERT')
     fig.write_html(outputFilename)
     filesToOpen.append(outputFilename)
+
+    # write csv file
+    outputFilename = outputFilename.replace(".html", ".csv")
+    IO_error=IO_csv_util.list_to_csv(window, csv_result, outputFilename)
+    if not IO_error:
+        filesToOpen.append(outputFilename)
+
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
+                                       'Finished running BERT word embeddings at', True, '', True, startTime)
+
 
     return filesToOpen
 
