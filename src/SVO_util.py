@@ -335,7 +335,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            column_xAxis_label='Subjects (filtered)',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
-                                                           chart_title_label='')
+                                                           chart_title_label='Subjects (filtered)')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
@@ -349,7 +349,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            column_xAxis_label='Verbs (filtered)',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
-                                                           chart_title_label='')
+                                                           chart_title_label='Verbs (filtered)')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
@@ -363,7 +363,7 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
                                                            column_xAxis_label='Objects (filtered)',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
-                                                           chart_title_label='')
+                                                           chart_title_label='Objects (filtered)')
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)

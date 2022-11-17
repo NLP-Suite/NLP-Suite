@@ -593,15 +593,15 @@ if sys.platform == 'darwin':  # Mac OS
     visualization_select_csv_field_dynamic_network_lb_pos = setup_pop_up_text_widget
     visualization_dynamic_network_field_pos = 740
 
-    visualization_field_separator_lb_pos = 300
-    visualization_field_separator_pos = 460
-    visualization_field_position_lb_pos = setup_pop_up_text_widget
-    visualization_field_position_pos = setup_pop_up_text_widget + 160
+    visualization_filename_label_lb_pos = 320 # IO_configuration_menu
+    visualization_filename_label_pos = 470 #open_reminders_x_coordinate
 
-    # visualization_K_sent_begin_lb_pos = 700
-    visualization_K_sent_begin_pos = 260
-    visualization_K_sent_end_lb_pos = IO_configuration_menu
-    visualization_K_sent_end_pos = 460
+    visualization_csv_field2_lb_pos = 920
+    visualization_select_csv_field2_menu_pos = visualization_csv_field2_lb_pos + 120#1020
+
+    visualization_K_sent_begin_pos = visualization_select_csv_field_menu_pos
+    visualization_K_sent_end_lb_pos = visualization_filename_label_lb_pos
+    visualization_K_sent_end_pos = visualization_filename_label_pos
     visualization_split_pos = open_reminders_x_coordinate
 
 # Mac: shape_of_stories
@@ -977,7 +977,7 @@ else: #windows and anything else
 
 # Windows: visualization_main
 
-    visualization_select_csv_field_menu_pos = IO_configuration_menu
+    visualization_select_csv_field_menu_pos = 260 # IO_configuration_menu
     visualization_add_button_pos = 1105
     visualization_reset_button_pos = 1140
     visualization_show_button_pos = 1190
@@ -985,15 +985,15 @@ else: #windows and anything else
     visualization_select_csv_field_dynamic_network_lb_pos = setup_pop_up_text_widget
     visualization_dynamic_network_field_pos = 830
 
-    visualization_field_separator_lb_pos = 300
-    visualization_field_separator_pos = 460
-    visualization_field_position_lb_pos = setup_pop_up_text_widget
-    visualization_field_position_pos = setup_pop_up_text_widget + 160
+    visualization_filename_label_lb_pos = 320 # IO_configuration_menu
+    visualization_filename_label_pos = 470 #open_reminders_x_coordinate
 
-    # visualization_K_sent_begin_lb_pos = 700
-    visualization_K_sent_begin_pos = 260
-    visualization_K_sent_end_lb_pos = IO_configuration_menu
-    visualization_K_sent_end_pos = 460
+    visualization_csv_field2_lb_pos = 920
+    visualization_select_csv_field2_menu_pos = visualization_csv_field2_lb_pos + 120#1020
+
+    visualization_K_sent_begin_pos = visualization_select_csv_field_menu_pos
+    visualization_K_sent_end_lb_pos = visualization_filename_label_lb_pos
+    visualization_K_sent_end_pos = visualization_filename_label_pos
     visualization_split_pos = open_reminders_x_coordinate
 
     # Windows: shape_of_stories

@@ -201,6 +201,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # only the inputDir will be used when coreferencing, whether it will contain a set of files or just one file
         inputFilename=''
 
+
+    # create an SVO-filtered subdirectory of the main output directory
+    if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
+        outputSVOFilterDir = outputSVODir + os.sep + 'SVO-filtered'
+
     if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
         WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('SVO_main',
                                                                                             'WordNet')
@@ -277,7 +282,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             if nDateOutput != None:
                 nDateSVOFilename=nDateOutput[0]
                 filesToOpen.extend(nDateOutput)
-            
+
 
 # CoreNLP OpenIE _____________________________________________________
     if 'OpenIE' in package_var:
@@ -383,6 +388,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             if output != None:
                 SVO_filtered_filename=output[0]
                 filesToOpen.extend(output)
+                svo_result_list.append(SVO_filtered_filename)
 
         if lemmatize_verbs:
             # tempOutputFiles[0] is the filename with lemmatized SVO values
@@ -427,6 +433,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if ('SVO_' in inputFilename) or (len(svo_result_list) > 0):
         # Gephi network graphs _________________________________________________
         if gephi_var:
+            i = 0
             # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
             if inputFilename[-4:] == ".csv":
                 nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue='utf-8')
@@ -437,27 +444,33 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 else:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_result_list[0])
                     if nRecords > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputSVOSVODir, svo_result_list[0],
+                        gexf_file = Gephi_util.create_gexf(window,inputFileBase, inputFilename, svo_result_list[0],
                                                            "Subject (S)", "Verb (V)", "Object (O)", "Sentence ID")
                         filesToOpen.append(gexf_file)
             else:  # txt input file
                 for f in svo_result_list:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
                     if nRecords > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], outputSVOSVODir, f, "Subject (S)", "Verb (V)", "Object (O)",
+                        if 'SVO-filter' in svo_result_list[i]:
+                            tempOutputDir = outputSVOFilterDir
+                        else:
+                            tempOutputDir = outputSVOSVODir
+                        gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], tempOutputDir, f, "Subject (S)", "Verb (V)", "Object (O)",
                                                            "Sentence ID")
                         if "CoreNLP" in f or "SENNA_SVO" in f or "spaCy" in f or "Stanza" in f:
                             filesToOpen.append(gexf_file)
                         if not save_intermediate_file:
-                            gexf_files = [os.path.join(outputDir, f) for f in os.listdir(outputSVOSVODir) if
+                            gexf_files = [os.path.join(outputDir, f) for f in os.listdir(tempOutputDir) if
                                           f.endswith('.gexf')]
                             for f in gexf_files:
                                 if "CoreNLP" not in f and "SENNA_SVO" not in f and "spaCy" not in f and "Stanza" not in f: #CoreNLP accounts for both ++ and OpenIE
                                     os.remove(f)
+                    i +=1
 
 # wordcloud  _________________________________________________
 
         if wordcloud_var:
+            i = 0
             if inputFilename[-4:] == ".csv":
                 nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
                 if nRecords > 1:  # including headers; file is empty
@@ -473,10 +486,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         myfile = IO_files_util.openCSVFile(f, "r")
                         #CYNTHIA
                         # out_file = wordclouds_util.SVOWordCloud(myfile, f, outputSVODir + os.sep + 'SVO', "", prefer_horizontal=.9)
-                        out_file = wordclouds_util.SVOWordCloud(myfile, f, outputSVOSVODir, "", prefer_horizontal=.9)
+                        if 'SVO-filter' in svo_result_list[i]:
+                            tempOutputDir = outputSVOFilterDir
+                        else:
+                            tempOutputDir = outputSVOSVODir
+                        out_file = wordclouds_util.SVOWordCloud(myfile, f, tempOutputDir, "", prefer_horizontal=.9)
                         myfile.close()
                         if "CoreNLP" in f or "OpenIE" in f or "SENNA_SVO" in f or "spaCy" in f or "Stanza" in f:
                             filesToOpen.append(out_file)
+                    i +=1
 
 # GIS maps _____________________________________________________
 
@@ -866,7 +884,7 @@ gender_checkbox = tk.Checkbutton(window, text='S & O gender',
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    gender_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "The gender annotator is available only via Stanford CoreNLP")
+                                   "The neural network gender annotator is available only via Stanford CoreNLP and for the English language only")
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
 #                                                gender_checkbox, True)
 
@@ -886,7 +904,7 @@ quote_checkbox = tk.Checkbutton(window, text='S & O quote/speaker',
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
                                    quote_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
-                                   "The quote annotator is available only via Stanford CoreNLP")
+                                   "The neural network quote annotator is available only via Stanford CoreNLP")
 
 def activateQuote(*args):
     if quote_var.get() and ((package_var.get() != 'Stanford CoreNLP') or (package_var.get() == 'Stanford CoreNLP' and 'English' not in str(language_list))):
@@ -1010,8 +1028,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "The three widgets display the currently selected dictionary filter files for Subjects, Verbs, and Objects (Objects share the same file as Subjects and you may wish to change that).\n\nThe filter file social-actor-list, created via WordNet with person as keyword and saved in the \'lib/wordLists\' subfolder, will be automatically set as the DEFAULT filter for subjects (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly set as the DEFAULT dictionary file for verbs.\n\nThe widgets are disabled because you are not allowed to tamper with these values. If you wish to change a selected file, please tick the appropriate checkbox in the line above (e.g., Filter Subject) and you will be prompted to select a new file."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the S & O gender checkbox if you wish to run Stanford CoreNLP gender annotator to extract the gender (female, male) for every Subject and Object extracted by the SVO script.\n\n"
-                                  "Tick the S & O quote/speaker checkbox if you wish to run Stanford CoreNLP quote annotator to extract the speaker involved in direct discourse for every Subject and Object extracted by the SVO script.\n\n"
+                                  "Please, tick the S & O gender checkbox if you wish to run Stanford CoreNLP neural network gender annotator to extract the gender (female, male) for every Subject and Object extracted by the SVO script.\n\n"
+                                  "Tick the S & O quote/speaker checkbox if you wish to run Stanford CoreNLP neural network quote annotator to extract the speaker involved in direct discourse for every Subject and Object extracted by the SVO script.\n\n"
                                   "THE GENDER AND QUOTE/SPEAKER ANNOTATORS ARE AVAILABLE FOR STANFORD CORENLP AND ENGLISH LANGUAGE ONLY.\n\n"
                                   "Tick the SRL checkbox if you wish to run Jinho Choi's SRL (Semantic Role Labeling) algorithm (https://github.com/emorynlp/elit/blob/main/docs/semantic_role_labeling.md). THE OPTION IS CURRENTLY DISABLED."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -1059,7 +1077,7 @@ def activate_NLP_options(*args):
     else:
         filter_subjects_var.set(1)
         filter_verbs_var.set(1)
-        filter_objects_var.set(1)
+        filter_objects_var.set(0)
         activate_filter_dictionaries()
 GUI_util.setup_menu.trace('w', activate_NLP_options)
 activate_NLP_options()
