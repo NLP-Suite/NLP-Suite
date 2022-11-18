@@ -172,7 +172,7 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                                                            column_xAxis_label='Gender words',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
-                                                           chart_title_label='Statistical Measures for Genedered Words')
+                                                           chart_title_label='Statistical Measures for Gendered Words')
         if chart_outputFilename!=None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
