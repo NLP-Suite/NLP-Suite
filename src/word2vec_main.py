@@ -9,6 +9,7 @@ import os
 import tkinter as tk
 import tkinter.messagebox as mb
 
+import reminders_util
 import GUI_IO_util
 import IO_files_util
 import word2vec_util
@@ -256,8 +257,20 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
-readMe_message="This Python 3 script analyzes a set of documents for Word2Vec with Gensim."
+readMe_message="This Python 3 script analyzes a set of documents for Gensim Word2Vec or BERT conte-dependent word embeddings.\n\nIn INPUT the algorithms expect either a single txt file or a set of txt files in a directory.\n\nIn OUTPUT, the algorithms display the multi-dimensional output vectors in an html interactive file in either a 2- or 3-dimensional space. To facilitate the search for words in the vsual output, the algorithms also produce a csv file with the Eucledian distances of every word with every other word for the 10 most-frequent words."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+reminders_util.checkReminder(
+    config_filename,
+    reminders_util.title_options_Word2Vec,
+    reminders_util.message_Word2Vec,
+    True)
+
+reminders_util.checkReminder(
+    config_filename,
+    reminders_util.title_options_Word2Vec_eucledian_distance,
+    reminders_util.message_Word2Vec_eucledian_distance,
+    True)
 
 GUI_util.window.mainloop()

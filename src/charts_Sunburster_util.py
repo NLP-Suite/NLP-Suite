@@ -7,6 +7,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_packages(GUI_util.window,"charts_Sunburster_util",['pandas','numpy','tkinter','plotly','re'])==False:
     sys.exit(0)
 
+import os
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
@@ -42,7 +43,7 @@ def separator(data,interest):
 #first_sentences is the n first sentences
 #last_sentences is the n last sentences
 #half_text is a boolean defining whether to split the text in half or not
-def Sunburster(data,case_sensitive, interest, label,first_sentences=None,last_sentences=None,half_text=None):
+def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,first_sentences=None,last_sentences=None,half_text=None):
     if type(data)==str:
         data=pd.read_csv(data)
     #the last 3 arguments are optional. If first_sentences is specified and last_sentences is not or vice versa, we return a message stating they must both be specified or absent at the same time
@@ -83,7 +84,7 @@ def Sunburster(data,case_sensitive, interest, label,first_sentences=None,last_se
 
             fig=px.sunburst(finaldata,path=['interest','Beginning or End',label]) #return sunburster
 
-            return plotly.offline.plot(fig)
+            # return plotly.offline.plot(fig)
 
         else:
             tempdata1=tempdata[tempdata['Sentence ID']<=first_sentences] #all observations with the first n sentences
@@ -102,4 +103,6 @@ def Sunburster(data,case_sensitive, interest, label,first_sentences=None,last_se
 
             fig=px.sunburst(finaldata,path=['interest','Beginning or End',label]) #create sunburst plot
 
-            return plotly.offline.plot(fig)
+        fig.write_html(outputFilename)
+
+        return outputFilename

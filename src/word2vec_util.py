@@ -11,6 +11,7 @@ import os
 import tkinter as tk
 import pandas as pd
 import tkinter.messagebox as mb
+import math
 
 import GUI_IO_util
 import IO_files_util
@@ -31,32 +32,12 @@ import plotly.express as px
 from sklearn.manifold import TSNE
 
 
-#stopwords
+#stopwords and punctuations
+import string
 fin = open('../lib/wordLists/stopwords.txt', 'r')
 stop_words = set(fin.read().splitlines())
+punctuations = set(string.punctuation)
 
-#spacy for lemmatization
-import spacy
-
-try:
-    spacy.load('en_core_web_sm')
-except:
-    if platform == 'darwin':
-        msg = '\n\nAt terminal, type sudo python -m spacy download en_core_web_sm'
-    if platform == 'win32':
-        msg = '\n\nClick on left-hand start icon in task bar' + \
-                '\n  Scroll down to Anaconda' + \
-                '\n  Click on the dropdown arrow to display available options' + \
-                '\n  Right click on Anaconda Prompt' + \
-                '\n  Click on More' + \
-                '\n  Click on Run as Administrator' + \
-                '\n  At the command prompt, Enter "conda activate NLP" (if NLP is your environment)' + \
-                '\n  Then enter: "python -m spacy download en_core_web_sm" and Return'
-    msg = msg + '\n\nThis imports the package.'
-    mb.showerror(title='Library error', message='The Gensim tool could not find the English language spacy library. This needs to be installed. At command promp type:\npython -m spacy download en_core_web_sm\n\nYOU MAY HAVE TO RUN THE COMMAND AS ADMINISTRATOR.\n\nHOW DO YOU DO THAT?' + msg)
-    sys.exit(0)
-
-nlp = spacy.load('en_core_web_sm')
 
 def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                         remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var,
@@ -74,7 +55,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running Word2Vec at', True)
-
+    # process inputFile/inputDir
     if len(inputFilename)>0:
         doc = inputFilename
         head, tail = os.path.split(doc)
@@ -103,11 +84,11 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                     tail_list[dId] = tail
     
     # initialize different annotators for Stanza
-    if lemmatize_var is True:
+    if lemmatize_var:
         stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize, lemma')
         print('Tokenizing and Lemmatizing...')
     else:
-        stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize, lemma')
+        stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize')
         print('Tokenizing...')
     
     # process input file(s)
@@ -130,9 +111,9 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         sentences = [sent.text for sent in stanza_doc.sentences]
 
         # remove rows that include stop words from the dataframe
-        if remove_stopwords_var == True:
+        if remove_stopwords_var:
             for idx, row in temp_out_df.iterrows():
-                if row['Word'] in stop_words:
+                if row['Word'].lower() in stop_words or row['Word'] in punctuations or len(row['Word'])==1:
                     temp_out_df.drop(idx, inplace=True)
         
         # get sentenece, sentenceID for result_df
@@ -146,7 +127,10 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                 temp_sentences_out = []
             temp_out_df.at[i, 'Sentence ID'] = sidx
             temp_out_df.at[i, 'Sentence'] = sentences[sidx-1]
-            temp_sentences_out.append(temp_out_df.at[i, 'Lemma'])
+            if lemmatize_var:
+                temp_sentences_out.append(temp_out_df.at[i, 'Lemma'])
+            else:
+                temp_sentences_out.append(temp_out_df.at[i, 'Word'])
         temp_out_df['Document ID'] = doc_idx+1
         temp_out_df['Document'] = document[doc_idx]
 
@@ -161,7 +145,6 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     print('Learning architecture: ', sg_menu_var)
 
     ## train model
-
     print('Training Word2Vec model...')
     model = gensim.models.Word2Vec(
         sentences=sentences_out,
@@ -173,7 +156,12 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     word_vectors = model.wv
     words = word_vectors.key_to_index
-    word_vector_list = [word_vectors[v] for v in words]
+    word_vector_list = []
+    filtered_words = {}
+    for v in words:
+        if isinstance(v, str):
+            word_vector_list.append(word_vectors[v])
+            filtered_words[v] = words[v]
 
     ## visualization
     print('Visualizing via t-SNE...')
@@ -187,7 +175,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
             xs = xys[:, 0]
             ys = xys[:, 1]
-            word = words.keys()
+            word = filtered_words.keys()
 
             tsne_df = pd.DataFrame({'Word': word, 'x': xs, 'y': ys})
             fig = plot_interactive_graph(tsne_df)
@@ -269,30 +257,58 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         filesToOpen.append(outputFilename)
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'Word2Vec')
+    dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_Euclidean_dist')
     fig.write_html(outputFilename)
     filesToOpen.append(outputFilename)
 
     ### csv file
     word_vector_df = pd.DataFrame()
     for v in words:
-        word_vector_df = word_vector_df.append(pd.Series([v, word_vectors[v]]), ignore_index=True)
+        if isinstance(v, str):
+            # word_vector_df = word_vector_df.append(pd.Series([v, word_vectors[v]]), ignore_index=True)
+            word_vector_df = pd.concat([word_vector_df, pd.Series([v, word_vectors[v]]).to_frame().T], ignore_index=True)
 
     # merge out_df with word_vector coordinates values
-    if lemmatize_var is True:
+    if lemmatize_var:
         word_vector_df.columns = ['Lemma', 'Vector']
-        word_vector_df = word_vector_df.astype(str)
+        # word_vector_df = word_vector_df.astype(str)
         result_df = pd.merge(word_vector_df, out_df, on='Lemma', how='inner')
         result_df = result_df[["Word", "Lemma", "Vector", "Sentence ID", "Sentence", "Document ID", "Document"]]
     else:
         word_vector_df.columns = ['Word', 'Vector']
-        word_vector_df = word_vector_df.astype(str)
+        # word_vector_df = word_vector_df.astype(str)
         result_df = pd.merge(word_vector_df, out_df, on='Word', how='inner')
         result_df = result_df[["Word", "Vector", "Sentence ID", "Sentence", "Document ID", "Document"]]
+
+    # find top 10 frequent Words
+    tmp_result = result_df['Word'].value_counts().index.tolist()[:10]
+    tmp_result_df = result_df.loc[result_df['Word'].isin(tmp_result)]
+    tmp_result_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
+    tmp_result_df = tmp_result_df.reset_index(drop=True)
+
+    # look at only specific keywords
+    # tmp_result_df = result_df.loc[result_df['Word'].isin(['man', 'woman', 'Man', 'Woman', 'men', 'women', 'Men', 'Women'])]
+    # tmp_result_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
+    # tmp_result_df = tmp_result_df.reset_index(drop=True)
+    
+    # calculate euclidean distance of the vectors of top 10 freq words
+    dist_df = pd.DataFrame()
+    dist_idx = 0
+    for i, row in tmp_result_df.iterrows():
+        j = len(tmp_result_df)-1
+        while i < j:
+            dist_df.at[dist_idx, 'Word_1'] = row['Word']
+            dist_df.at[dist_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
+            dist_df.at[dist_idx, 'Euclidean distance'] = euclidean_dist(row['Vector'], tmp_result_df.at[j, 'Vector'])
+            dist_idx+=1
+            j-=1
 
     # write csv file
     outputFilename = outputFilename.replace(".html", ".csv")
     result_df.to_csv(outputFilename, encoding='utf-8', index=False)
+    dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)    
     filesToOpen.append(outputFilename)
+    filesToOpen.append(dist_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Word2Vec at', True, '', True, startTime)
@@ -300,6 +316,11 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     return filesToOpen
 
 ###########################################
+# functions
+
+# calculate euclidean distance of vectors (different from x,y coordinates)
+def euclidean_dist(x, y):
+    return math.sqrt(sum((p1 - p2)**2 for p1, p2 in zip(x,y)))
 
 def make_words(sent):
     words = list(sent_to_words(sent))

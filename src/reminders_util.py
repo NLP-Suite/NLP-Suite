@@ -117,6 +117,9 @@ message_topic_modelling_number_of_topics = 'You are running the topic modelling 
 title_options_Word2Vec = ['Word2Vec HTML visual']
 message_Word2Vec = 'The Word2Vec HTML visual may be very messy.\n\nDepending upon the number of words displayed, it will be impossible to see anything but a black blotch.\n\nIf that happens, with your mouse, draw an area you want to focus on in the Cartesian plane where the image is displayed. It will re-displayed with a much clearer focus. You can repeat that operation in the new display to further zoom in.\n\nYOU CAN GO BACK TO THE ORIGINAL DISPLAY BY CLICKING THE REFRESH BUTTON IN YOUR BROWSER.'
 
+title_options_Word2Vec_eucledian_distance = ['Word2Vec Eucledian distance']
+message_Word2Vec_eucledian_distance = 'The Word2Vec algorithms compute the Eucledian distance of every word with every other word for the 10 most frequent words. You can use this csv file to locate the most significant words in the Cartesian space.'
+
 title_options_CoreNLP_Sentiment_Analysis_system_requirements = ['Stanford CoreNLP Sentiment Analysis system requirements']
 message_CoreNLP_Sentiment_Analysis_system_requirements = 'The Stanford CoreNLP Sentiment Analysis tool requires two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/'
 

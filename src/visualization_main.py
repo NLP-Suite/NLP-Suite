@@ -103,12 +103,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             # interest pass a list [] of labels embedded in the filename, e.g. Book1, Book2, ... or Chinese, Arabian,...
             interest = []
             temp_interest=[]
-            interest = filename_label_var.split(', ')
+            interest = filename_label_var.split(',')
             for i in range(len(interest)):
                 temp_interest.append(interest[i].lstrip())
             # label is a string that has the header field in the csv file to be used for display
             label=csv_field2_var
-            charts_Sunburster_util.Sunburster(inputFilename, case_sensitive_var, temp_interest, label, int_K_sent_begin_var, int_K_sent_end_var, split_var)
+            outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
+                                                                     '.html', 'Sunburster')
+
+            chart_outputFilename = charts_Sunburster_util.Sunburster(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label, int_K_sent_begin_var, int_K_sent_end_var, split_var)
+            if chart_outputFilename != '':
+                filesToOpen.append(chart_outputFilename)
 
         if openOutputFiles and len(filesToOpen) > 0:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -174,8 +179,9 @@ def clear(e):
     reset()
     Gephi_var.set(0)
     interactive_Sunburster_var.set(0)
-    case_sensitive_var.set(0)
-    case_sensitive_checkbox.configure(text="Case sensitive")
+    case_sensitive_var.set(1)
+    # for now always set to disabled
+    case_sensitive_checkbox.configure(state='disabled',text="Case sensitive")
     filename_label_var.set('')
     csv_field2_var.set('')
     K_sent_begin_var.set('')
@@ -376,7 +382,7 @@ interactive_Sunburster_checkbox = tk.Checkbutton(window, text='Visualize data in
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                interactive_Sunburster_checkbox)
 
-case_sensitive_var.set(0)
+case_sensitive_var.set(1)
 case_sensitive_checkbox = tk.Checkbutton(window, state='disabled',text='Case sensitive', variable=case_sensitive_var,
                                     onvalue=1, offvalue=0)
 # place widget with hover-over info
@@ -452,7 +458,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
 
 def activate_options(*args):
     if interactive_Sunburster_var.get():
-        case_sensitive_checkbox.configure(state='normal')
+        # case_sensitive_checkbox.configure(state='normal')
+        # for now always set to disabled
+        case_sensitive_checkbox.configure(state='disabled')
         filename_label.configure(state='normal')
         K_sent_begin.configure(state='normal')
         K_sent_end.configure(state='normal')
@@ -572,8 +580,5 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,
 readMe_message="The Python 3 script provides access to different GUIs to be used to visualize data (e.g., wordclouds) and network graphs via Gephi and different interactive charts via Sunburster and time mapper."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
-
-mb.showwarning(title='Warning',
-               message='The interactive visualization options for Sunburster and time mapper are under construction.\n\nPlease, check back soon for these great options.')
 
 GUI_util.window.mainloop()
