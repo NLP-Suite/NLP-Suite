@@ -28,7 +28,7 @@ import contextualSpellCheck
 import plotly.express as px
 ##from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
-from summarizer import Summarizer,TransformerSummarizer
+from summarizer import Summarizer
 
 
 import IO_csv_util
