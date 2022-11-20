@@ -19,7 +19,7 @@ import BERT_util
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartPackage,
         remove_stopwords_var, lemmatize_var,
-        BERT_var, Gensim_var,
+        BERT_var, Gensim_var, compute_distances_var, top_words_var,
         sg_menu_var, vector_size_var, window_var, min_count_var,
         vis_menu_var, dim_menu_var, keywords_var):
 
@@ -47,7 +47,10 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
             mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
             return
         filesToOpen = word2vec_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir,openOutputFiles, createCharts, chartPackage,
-                                 remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var, vis_menu_var, dim_menu_var, keywords_var)
+                                 remove_stopwords_var, lemmatize_var,
+                                 keywords_var,
+                                 compute_distances_var, top_words_var,
+                                 sg_menu_var, vector_size_var, window_var, min_count_var, vis_menu_var, dim_menu_var)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, Word2Vec_Dir)
@@ -63,6 +66,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 lemmatize_var.get(),
                                 BERT_var.get(),
                                 Gensim_var.get(),
+                                compute_distances_var.get(),
+                                top_words_var.get(),
                                 sg_menu_var.get(),
                                 vector_size_var.get(),
                                 window_var.get(),
@@ -80,8 +85,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=640, # height at brief display
-                             GUI_height_full=720, # height at full display
+                             GUI_height_brief=680, # height at brief display
+                             GUI_height_full=760, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -120,6 +125,8 @@ lemmatize_var=tk.IntVar()
 
 BERT_var=tk.IntVar()
 Gensim_var=tk.IntVar()
+compute_distances_var=tk.IntVar()
+top_words_var=tk.StringVar()
 
 sg_menu_var=tk.StringVar()
 vector_size_var=tk.IntVar()
@@ -169,12 +176,17 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_tex
 ### entry for clustering keywords
 keywords_var.set('')
 keywords_lb = tk.Label(window, text='Keywords')
-cluster_var_entry = tk.Entry(window,width=10,textvariable=keywords_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,keywords_lb,True)
 
 keywords_entry = tk.Entry(window, textvariable=keywords_var)
 keywords_entry.configure(state='normal',width=GUI_IO_util.widget_width_extra_long)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,keywords_entry)
+# cluster_var_entry = tk.Entry(window,width=10,textvariable=keywords_var)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
+    y_multiplier_integer,
+    keywords_entry,
+    False, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
+    "Enter the comma-separated words to be used to visualize Euclidean distances between selected words.")
 
 def activate_keywords_var(*args):
     if vis_menu_var.get() == 'Clustering of word vectors':
@@ -194,12 +206,39 @@ Gensim_var.set(0)
 Gensim_checkbox = tk.Checkbutton(window, text='Word2Vec (via Gensim)', variable=Gensim_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,Gensim_checkbox)
 
+compute_distances_var.set(1)
+compute_distances_checkbox = tk.Checkbutton(window, text='Compute word distances', variable=compute_distances_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,
+    y_multiplier_integer,
+    compute_distances_checkbox,
+    True, False, False, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+    "Tick/untick the checkbox to (not)compute Eucledian 2-dimensional and n-dimensional distances and cosine similarity between words.\nComputing word similarities is computationally demanding and time consuming, but VERY useful in locating words in a semantic space.")
+
+## option for vector size
+top_words_lb = tk.Label(window,text='Number of top words for distance combinations')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,top_words_lb,True)
+
+top_words_var.set(5)
+top_words_entry = tk.Entry(window,width=5,textvariable=top_words_var)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+300,
+    y_multiplier_integer,
+    top_words_entry,
+    False, False, False, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+    "Enter the number of top words to be used in computing distances (the more words, the longer it takes to compute distances)")
+
+## option for window size
+window_lb = tk.Label(window,text='Window size')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,window_lb,True)
+
 ## option for model architecture
 sg_lb = tk.Label(window,text='Training model architecture')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,sg_lb,True)
 sg_menu_var.set('Skip-Gram')
 sg_menu = tk.OptionMenu(window,sg_menu_var, 'Skip-Gram','CBOW')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,sg_menu)
+
 ## option for vector size
 vector_size_lb = tk.Label(window,text='Vector size')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,vector_size_lb,True)
@@ -264,6 +303,9 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Please, tick the checkbox to run Word2Vec via Gensim.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
+                                  "Please, tick the checkbox to compute Eucledian distances and cosine similarity between words.\n\n2-dimentional distances reflect the position of words in the two-dimentional html graph. But... it may not reflect the 'true' semantic distance between words, more accurately measured by the n-dimenional distance (which, of course, you cannot see).\n\nCosine similarity varies betwteen 0 and 1 (a value 0 indicates that the words are orthgonal to each other, i.e., they are distant in the semantic space; a value of 1 indicates the opposite.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Please, using the dropdown menu, select the preferred model architecture for training Word2Vec: Skip-Gram and CBOW (Continuous Bag of Words).\n\nWhich model is better?\n\nAccording to the original paper by Mikolov et al. (2013) Skip-Gram works well with small datasets, and can better represent less frequent words. However, CBOW is found to train faster than Skip-Gram, and can better represent more frequent words.\n\nMikolov, Tomas, Kai Chen, Greg Corrado, and Jeffrey Dean. 2013. 'Efficient Estimation of Word Representations in Vector Space' arXiv:1301.3781.")
