@@ -39,6 +39,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         K_sent_begin_var,
         K_sent_end_var,
         split_var,
+        do_not_split_var,
         interactive_time_mapper_var):
 
     filesToOpen = []
@@ -66,12 +67,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             filesToOpen.append(gexf_file)
 
         if interactive_Sunburster_var:
-            if K_sent_begin_var=='' and K_sent_end_var=='' and split_var==False:
+            if K_sent_begin_var=='' and K_sent_end_var=='' and split_var==False and do_not_split_var==False:
                 mb.showwarning("Warning",
-                               "The Sunburster function requires a selection of either Begin/End K sentences or Split documents in equal halves.\n\nPlease, make a selection and try again.")
+                               "The Sunburster function requires a selection of Begin/End K sentences or Split documents in equal halves or Do not split documents.\n\nPlease, make a selection and try again.")
                 return
             # check that K_sent_begin_var and K_sent_end_var values are numeric
-            if split_var==False:
+            if split_var==False and do_not_split_var==False:
                 try:
                     if type(int(K_sent_begin_var))!= int:
                         int_K_sent_begin_var = int(K_sent_begin_var)
@@ -111,7 +112,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
                                                                      '.html', 'Sunburster')
 
-            chart_outputFilename = charts_Sunburster_util.Sunburster(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label, int_K_sent_begin_var, int_K_sent_end_var, split_var)
+            chart_outputFilename = charts_Sunburster_util.Sunburster(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
+                                            do_not_split_var, int_K_sent_begin_var, int_K_sent_end_var, split_var)
             if chart_outputFilename != '':
                 filesToOpen.append(chart_outputFilename)
 
@@ -132,6 +134,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             K_sent_begin_var.get(),
                             K_sent_end_var.get(),
                             split_var.get(),
+                            do_not_split_var.get(),
                             interactive_time_mapper_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -190,6 +193,8 @@ def clear(e):
     K_sent_end.configure(state='disabled')
     split_var.set(0)
     split_checkbox.configure(state='disabled')
+    do_not_split_var.set(0)
+    do_not_split_checkbox.configure(state='disabled')
     interactive_time_mapper_var.set(0)
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
@@ -207,6 +212,7 @@ csv_field2_var = tk.StringVar()
 K_sent_begin_var = tk.StringVar()
 K_sent_end_var = tk.StringVar()
 split_var = tk.IntVar()
+do_not_split_var = tk.IntVar()
 interactive_time_mapper_var = tk.IntVar()
 
 csv_file_field_list = []
@@ -452,8 +458,19 @@ split_checkbox = tk.Checkbutton(window, state='disabled',text='Split documents i
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_split_pos, y_multiplier_integer,
                                    split_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.visualization_split_pos,
+                                   True, False, True, False, 90, GUI_IO_util.visualization_split_pos,
                                    "Tick the checkbox if you wish to visualize differences in the data by splitting each document in two halves")
+
+do_not_split_var.set(0)
+do_not_split_checkbox = tk.Checkbutton(window, state='disabled', text='Do NOT split documents', variable=do_not_split_var,
+                 onvalue=1)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_do_not_split_pos, y_multiplier_integer,
+                                   do_not_split_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.visualization_split_pos,
+                                   "Tick the checkbox if you wish to visualize the entire data")
+
+do_not_split_checkbox.configure(state='disabled')
 
 
 def activate_options(*args):
@@ -466,6 +483,7 @@ def activate_options(*args):
         K_sent_end.configure(state='normal')
         select_csv_field2_menu.configure(state='normal')
         split_checkbox.configure(state='normal')
+        do_not_split_checkbox.configure(state='normal')
     else:
         case_sensitive_checkbox.configure(state='disabled')
         filename_label.configure(state='disabled')
@@ -473,22 +491,39 @@ def activate_options(*args):
         K_sent_end.configure(state='disabled')
         select_csv_field2_menu.configure(state='disabled')
         split_checkbox.configure(state='disabled')
+        do_not_split_checkbox.configure(state='disabled')
 interactive_Sunburster_var.trace('w',activate_options)
 
 def activate_visualization_options(*args):
-    if (interactive_Sunburster_var.get()==False) or split_var.get():
+    if (interactive_Sunburster_var.get()==False):
         K_sent_begin_var.set('')
         K_sent_end_var.set('')
         K_sent_begin.configure(state='disabled')
         K_sent_end.configure(state='disabled')
+        split_checkbox.configure(state='disabled')
+        do_not_split_checkbox.configure(state='disabled')
     else:
         K_sent_begin.configure(state='normal')
         K_sent_end.configure(state='normal')
+        split_checkbox.configure(state='normal')
+        do_not_split_checkbox.configure(state='normal')
+        if split_var.get():
+            K_sent_begin_var.set('')
+            K_sent_end_var.set('')
+            K_sent_begin.configure(state='disabled')
+            K_sent_end.configure(state='disabled')
+            do_not_split_checkbox.configure(state='disabled')
+        if do_not_split_var.get():
+            K_sent_begin_var.set('')
+            K_sent_end_var.set('')
+            K_sent_begin.configure(state='disabled')
+            K_sent_end.configure(state='disabled')
+            split_checkbox.configure(state='disabled')
         if K_sent_begin_var.get() != '' or K_sent_end_var.get()  != '':
             split_checkbox.configure(state='disabled')
-        else:
-            split_checkbox.configure(state='normal')
+            do_not_split_checkbox.configure(state='disabled')
 split_var.trace('w',activate_visualization_options)
+do_not_split_var.trace('w',activate_visualization_options)
 K_sent_begin_var.trace('w',activate_visualization_options)
 K_sent_end_var.trace('w',activate_visualization_options)
 
@@ -570,7 +605,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Options become available in succession after the Gephi option is selected.\n\nThe first field selected is the first node; the second field selected is the edge; the third field selected is the second node.\n\nOnce all three fields have been selected, the widget 'Field to be used for dynamic network graphs' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID) or ignore the option if the network should not be dynamic." + resetAll)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in an interactive Sunburster visual display.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the comma-separated labels/parts of a filename to be used to separate fields in the filename (e.g., in the filename, Harry Potter_Book1_1, Harry Potter_Book2_3, ..., Harry Potter_Book4_1... you could enter Book1, Book3 to sample the files to be used for visualization.\n\nThe number of distinct labels/parts of filename should be small (e.g., the 7 Harry Potter books).")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the checkbox 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.\n\nTick the checkbox 'Do NOT split documents' if you wish to visualize an entire document.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to analyze time-dependent data in an interactive bar chart.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

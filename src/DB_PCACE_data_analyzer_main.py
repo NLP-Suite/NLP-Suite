@@ -8,6 +8,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "DB_PC-ACE_data_analy
 
 import os
 import tkinter as tk
+from tkinter import ttk
 import tkinter.messagebox as mb
 import pandas as pd
 from subprocess import call
@@ -78,9 +79,14 @@ construct_SQLite_DB_var=tk.IntVar()
 select_SQLite_DB_var=tk.StringVar()
 select_DB_tables_var=tk.StringVar()
 select_DB_table_fields_var=tk.StringVar()
-SQL_query_var=tk.StringVar()
-distinct_var=tk.IntVar()
 view_relations_var=tk.IntVar()
+
+
+simplex_objects_var = tk.StringVar()
+complex_objects_var = tk.StringVar()
+
+complex_frequencies_var = tk.IntVar()
+simplex_frequencies_var = tk.IntVar()
 
 complex_parent_var = tk.IntVar()
 complex_child_var = tk.IntVar()
@@ -90,43 +96,91 @@ actors_var = tk.IntVar()
 time_var = tk.IntVar()
 space_var = tk.IntVar()
 
+select_parents_var = tk.StringVar()
+select_children_var = tk.StringVar()
+gephi_var = tk.IntVar()
+wordcloud_var = tk.IntVar()
+google_earth_var = tk.IntVar()
+
 def clear(e):
+    select_DB_tables.set('')
+    setup_complex.set('')
+    setup_simplex.set('')
     GUI_util.tips_dropdown_field.set('Open TIPS files')
 window.bind("<Escape>", clear)
 
 table_list = []
 table_menu_list = []
 
-def get_complex_simplex_list(tableName):
-    print("")
-
 view_relations_button = tk.Button(window, text='View table relations', width=20,height=1,state='normal', command=lambda: view_relations())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,view_relations_button)
+
+select_DB_tables_lb = tk.Label(window, text='Select DB table ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_DB_tables_lb,True)
+
+table_menu_values = ''
+table_list=[]
+if os.path.isdir(inputDir.get()):
+    table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get())
+    table_menu_values = ", ".join(table_list)
+select_DB_tables = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=select_DB_tables_var)
+select_DB_tables.configure(state='disabled')
+select_DB_tables['values'] = table_menu_values
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200,y_multiplier_integer,select_DB_tables)
 
 complex_objects_lb = tk.Label(window, text='Select complex object ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complex_objects_lb,True)
 
-complex_objects_var = tk.StringVar()
-menu = get_complex_simplex_list('setup_Complex')
-complex_objects = tk.OptionMenu(window,complex_objects_var, menu)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,complex_objects)
+setup_complex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_complex.csv'))
 
-complex_parent_checkbox = tk.Checkbutton(window, text='Complex parent (higher level complex)', variable=complex_parent_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,complex_parent_checkbox)
+setup_complex = ttk.Combobox(window, width=GUI_IO_util.widget_width_short)
+# setup_complex.configure(state='disabled')
+setup_complex['values'] = setup_complex_menu
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,setup_complex, True)
 
-complex_child_checkbox = tk.Checkbutton(window, text='Complex child (lower level complex)', variable=complex_child_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,complex_child_checkbox)
+complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies', variable=complex_frequencies_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+600,y_multiplier_integer,complex_objects_checkbox)
 
-simplex_complex_checkbox = tk.Checkbutton(window, text='Simplex object in complex', variable=simplex_complex_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,simplex_complex_checkbox)
+def activate_complex_label(*args):
+    if complex_frequencies_var.get():
+        complex_objects_checkbox.configure(text='Get value frequencies for SELECTED object')
+    else:
+        complex_objects_checkbox.configure(text='Get value frequencies for ALL objects')
+complex_frequencies_var.trace('w',activate_complex_label)
 
 simplex_objects_lb = tk.Label(window, text='Select simplex object ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,simplex_objects_lb,True)
 
-simplex_objects_var = tk.StringVar()
-menu = get_complex_simplex_list('setup_Simplex')
-simplex_objects = tk.OptionMenu(window,simplex_objects_var, menu)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,simplex_objects)
+setup_simplex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_simplex.csv'))
+
+setup_simplex = ttk.Combobox(window, width=GUI_IO_util.widget_width_short)
+# setup_complex.configure(state='disabled')
+setup_simplex['values'] = setup_simplex_menu
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,setup_simplex, True)
+
+simplex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies', variable=simplex_frequencies_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+600,y_multiplier_integer,simplex_objects_checkbox)
+
+def activate_simplex_label(*args):
+    if simplex_frequencies_var.get():
+        simplex_objects_checkbox.configure(text='Get value frequencies for SELECTED object')
+    else:
+        simplex_objects_checkbox.configure(text='Get value frequencies for ALL objects')
+simplex_frequencies_var.trace('w',activate_simplex_label)
+
+select_parents_lb = tk.Label(window, text='Select parent objects ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_parents_lb,True)
+
+select_parents = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=select_parents_var)
+select_parents.configure(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,select_parents)
+
+select_children_lb = tk.Label(window, text='Select children objects ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_children_lb,True)
+
+select_children = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=select_children_var)
+select_children.configure(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,select_children)
 
 semantic_triplet_checkbox = tk.Checkbutton(window, text='Semantic triplet (SVO)', variable=semantic_triplet_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,semantic_triplet_checkbox)
@@ -140,22 +194,23 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 space_checkbox = tk.Checkbutton(window, text='Space', variable=space_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,space_checkbox)
 
-select_DB_tables_lb = tk.Label(window, text='Select DB table ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_DB_tables_lb,True)
+gephi_var.set(1)
+gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network graphs (via Gephi) ',
+                                variable=gephi_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               gephi_checkbox, True)
 
-menu_values = ''
-if os.path.isdir(inputDir.get()):
-    table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get())
-    menu_values = ", ".join(table_list)
+wordcloud_var.set(1)
+wordcloud_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in wordcloud', variable=wordcloud_var,
+                                    onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, wordcloud_checkbox,
+                                               True)
 
-if menu_values=='':
-    select_DB_tables_menu = tk.OptionMenu(window, select_DB_tables_var, menu_values)
-    # select_DB_tables_menu.configure(state='disabled')
-else:
-    # menu_values = ", ".join(table_menu_list)
-    select_DB_tables_menu = tk.OptionMenu(window,select_DB_tables_var, *menu_values)
-    select_DB_tables_menu.configure(state='normal')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+100,y_multiplier_integer,select_DB_tables_menu,True)
+google_earth_var.set(1)
+google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Maps & Google Earth Pro)',
+                                       variable=google_earth_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
+                                               google_earth_checkbox)
 
 error = False
 table_values = []
@@ -165,24 +220,39 @@ def changed_filename(*args):
     if GUI_util.input_main_dir_path.get()!='':
         GUI_util.run_button.configure(state='normal')
         table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get())
-        # menu_values = table_list
         # 25 files including all comments files
         if (len(table_list) == 0) or ((len(table_list) > 18) and (not "data_Document.csv" in str(table_list) and not "data_Complex.csv" in str(table_list))):
                 GUI_util.run_button.configure(state='disabled')
+                table_menu_values=[]
                 error = True
         else:
             for table in table_list:
                 # keep only table name and Strip off the .csv extension
                 table_values.append(table[:len(table)-4])
-            menu_values = table_values # ", ".join(table_values)
-            m = select_DB_tables_menu["menu"]
-            m.delete(0, "end")
-            for s in menu_values:
-                m.add_command(label=s, command=lambda value=s: select_DB_tables_var.set(value))
-            if len(menu_values)>0:
-                select_DB_tables_menu.configure(state='normal')
-            else:
-                select_DB_tables_menu.configure(state='disabled')
+            table_menu_values = table_values # ", ".join(table_values)
+            select_DB_tables['values'] = table_menu_values
+        if len(table_menu_values)>0:
+            select_DB_tables.configure(state='normal')
+            select_DB_tables.set(table_menu_values[0])
+        else:
+            select_DB_tables.set('')
+            select_DB_tables.configure(state='disabled')
+        setup_complex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(), 'setup_complex.csv'))
+        setup_complex['values'] = setup_complex_menu
+        if len(setup_complex_menu)>0:
+            setup_complex.configure(state='normal')
+            setup_complex.set(setup_complex_menu[0])
+        else:
+            setup_complex.set('')
+            setup_complex.configure(state='disabled')
+        setup_simplex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(), 'setup_simplex.csv'))
+        setup_simplex['values'] = setup_simplex_menu
+        if len(setup_simplex_menu)>0:
+            setup_simplex.configure(state='normal')
+            setup_simplex.set(setup_simplex_menu[0])
+        else:
+            setup_simplex.set('')
+            setup_simplex.configure(state='disabled')
     else:
         if inputFilename.get()!='':
             GUI_util.run_button.configure(state='disabled')
@@ -193,27 +263,6 @@ GUI_util.input_main_dir_path.trace('w', changed_filename)
 changed_filename()
 
 table_fields_menu_values = []
-
-# def get_table_fields_list(*args):
-#     tableName=select_DB_tables_var.get()
-#     if tableName=='':
-#         select_DB_table_fields_menu.configure(state='disabled')
-#         return
-#     select_DB_table_fields_menu.configure(state='normal')
-#
-# select_DB_tables_var.trace('w',get_table_fields_list)
-
-# select_DB_table_fields_lb = tk.Label(window, text='Select DB table field')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350,y_multiplier_integer,select_DB_table_fields_lb,True)
-# if len(table_fields_menu_values)==0:
-#     select_DB_table_fields_menu = tk.OptionMenu(window, select_DB_table_fields_var, table_fields_menu_values)
-# else:
-#     select_DB_table_fields_menu = tk.OptionMenu(window,select_DB_table_fields_var, *table_fields_menu_values)
-# select_DB_table_fields_menu.configure(state='disabled')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+480,y_multiplier_integer,select_DB_table_fields_menu)
-
-# distinct_checkbox = tk.Checkbutton(window, text='Distinct', variable=distinct_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+800,y_multiplier_integer,distinct_checkbox)
 
 def view_relations():
     TIPS_util.open_TIPS('TIPS_NLP_PC-ACE table relations.pdf')
@@ -269,7 +318,9 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 if error:
     mb.showwarning(title='Warning',
                    message="The PC-ACE Table Analyzer scripts require in input a set of csv PC-ACE tables in a directory.\n\nPlease, select in input a PC-ACE tables directory and try again.")
-    select_DB_tables_menu.configure(state='disabled')
+    select_DB_tables.configure(state='disabled')
+    setup_complex.configure(state='disabled')
+    setup_simplex.configure(state='disabled')
     error = False
 GUI_util.window.mainloop()
 

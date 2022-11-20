@@ -603,6 +603,7 @@ if sys.platform == 'darwin':  # Mac OS
     visualization_K_sent_end_lb_pos = visualization_filename_label_lb_pos
     visualization_K_sent_end_pos = visualization_filename_label_pos
     visualization_split_pos = open_reminders_x_coordinate
+    visualization_do_not_split_pos = open_reminders_x_coordinate + 200
 
 # Mac: shape_of_stories
 
@@ -995,6 +996,7 @@ else: #windows and anything else
     visualization_K_sent_end_lb_pos = visualization_filename_label_lb_pos
     visualization_K_sent_end_pos = visualization_filename_label_pos
     visualization_split_pos = open_reminders_x_coordinate
+    visualization_do_not_split_pos = open_reminders_x_coordinate + 400
 
     # Windows: shape_of_stories
 
