@@ -19,6 +19,8 @@ from geopy.geocoders import GoogleV3
 from geopy.exc import GeocoderTimedOut
 import simplekml # TODO MINO GIS create kml record
 import pandas as pd # TODO MINO GIS create kml record
+from datetime import datetime # TODO MINO GIS date option
+import dateutil
 
 import GIS_location_util
 import GIS_file_check_util
@@ -291,7 +293,7 @@ def geocode(window,locations, inputFilename, outputDir,
 				elif NER_Tag == 'CITY':
 					NER_Tag_nominatim = 'city'
 
-				if datePresent==True:
+				if datePresent:
 					date=item[1]
 
 			# avoid repetition so as not to access the geocoder service several times for the same location;
@@ -361,12 +363,12 @@ def geocode(window,locations, inputFilename, outputDir,
 			#print(currRecord + itemToGeocode + str(lat) + str(lng) + address+"\n")
 			if lat!=0 and lng!=0:
 				if inputIsCoNLL==True:
-					if datePresent==True:
+					if datePresent:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, sentenceID, sentence, documentID, filename, date])
 					else:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, sentenceID, sentence, documentID, filename])
 				else:
-					if datePresent==True:
+					if datePresent:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, date])
 					else:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address])
@@ -384,6 +386,11 @@ def geocode(window,locations, inputFilename, outputDir,
 				pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
 									"<i><b>Sentence</b></i>: " + sentence + "<br/><br/>" + \
 									"<i><b>Document</b></i>: " + document
+				# TODO MINO GIS date option
+				if datePresent:
+					GGPdateFormat = convertToGGP(date)
+					pnt.timespan.begin = GGPdateFormat
+					pnt.timespan.end = GGPdateFormat
 
 	[geowriterNotFoundNonDistinct.writerow([item[0], item[1]]) for item in nonDistinctNotGeocodedFull]
 	csvfile.close()
@@ -414,3 +421,30 @@ def geocode(window,locations, inputFilename, outputDir,
 			# this warning is already given
 	IO_user_interface_util.timed_alert(window, 2000, "GIS geocoder", "Finished geocoding " + str(len(locations)) + " locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime, True)
 	return geocodedLocationsOutputFilename, locationsNotFoundoutputFilename, locationsNotFoundNonDistinctoutputFilename, kmloutputFilename
+
+# TODO MINO GIS date option
+# from GIS_KML_util
+def convertToGGP(date):
+	GGPdateFormat = ''
+	if date != 'nan' and date != '':
+		fmts = ('%Y', '%y', '%Y-%m-%d', '%y-%m-%d', '%Y-%m', '%y-%m',
+				'%Y-%B-%d', '%y-%B-%d', '%Y-%b-%d', '%y-%b-%d', '%Y-%B', '%y-%B', '%Y-%b', '%y-%b'
+				'%m-%d-%Y', '%m-%d-%y', '%d-%m-%Y', '%d-%m-%y', '%m-%Y', '%m-%y',
+				'%B-%d-%Y', '%B-%d-%y', '%b-%d-%Y', '%b-%d-%y', '%d-%B-%Y', '%d-%B-%y',
+				'%d-%b-%Y', '%d-%b-%y', '%m-%Y', '%m-%y', '%B-%Y', '%B-%y', '%b-%Y', '%b-%y')
+		for e in date.splitlines():
+			for fmt in fmts:
+				try:
+					t = datetime.strptime(e, fmt)
+					break
+				except ValueError as err:
+					pass
+		currentDateFormat = dateutil.parser.parse(date)
+		# years before 1900 cannot be used
+		# pre 1900 dates may give a problem in Windows: ValueError: format %y requires year >= 1900 on Windows
+		try:
+			GGPdateFormat = currentDateFormat.strftime('%Y-%m-%d')			
+		except:
+			mb.showerror(title='Date error',
+							message="There was an error in processing the date '" + date + "'.\n\nThe date format '" + fmt + "' was automatically applied to process the date, where format values are as follows:\n%B or %b   alphabetic month name in full or first 3 characters;\n%m   2-digit month (1 to 12);\n%d   2-digit day of the month (1 to 31);\n%Y   4-digit and %y 2-digit year (1918, 18).\n\nBut... either\n1.   the format automatically applied is incorrect for the date;\n2.   the date is in unrecognized format (e.g., it contains time besides date);\n3.   the date is prior to 1900. The library 'strftime' used here to deal with dates cannot process dates prior to 1900 in Windows.")
+		return GGPdateFormat
