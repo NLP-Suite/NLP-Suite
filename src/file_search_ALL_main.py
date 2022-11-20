@@ -67,10 +67,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_word_search_GUI_button = tk.Button(window, text='Words/collocations searches (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: call("python file_search_byWord_main.py", shell=True))
+
+open_file_search_GUI_button = tk.Button(window, text='File searches (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: call("python file_manager_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   open_word_search_GUI_button,
+                                   open_file_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
@@ -88,13 +89,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_file_search_GUI_button = tk.Button(window, text='File searches (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: call("python file_manager_main.py", shell=True))
+open_word_search_GUI_button = tk.Button(window, text='Words/collocations searches (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: call("python file_search_byWord_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   open_file_search_GUI_button,
+                                   open_word_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
-
 export_csv_field_GUI_button = tk.Button(window, text='Export csv field content to csv/txt file (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: call("python data_manager_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -113,10 +113,10 @@ TIPS_options='No TIPS available'
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the button to open the GUI for searching a CoNLL table.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the button to open the GUI for searching words and collocations in text file(s).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for searching (and manipulating) files saved in your machine.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for an N-grams/Co_occurrences VIEWER similar to Google Ngrams Viewer (https://books.google.com/ngrams) but applied to your own corpus.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for searching words in the WordNet knowledge graph.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for searching (and manipulating) files saved in your machine.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the button to open the GUI for searching words and collocations in text file(s).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help",
                               "Please, click on the button to open the GUI for exporting the content of csv field(s) to a text or csv file.\n\nYou can use this option, for instance, to export all the sentences extracted via any of the searches to a txt file for further analysis.")
     return y_multiplier_integer

@@ -23,12 +23,22 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
         sg_menu_var, vector_size_var, window_var, min_count_var,
         vis_menu_var, dim_menu_var, keywords_var):
 
+    if not BERT_var and not Gensim_var:
+        mb.showwarning(title='Warning',message='No option has been selected.\n\nPlease select the Word2Vec package you wish to use (BERT and/or Gensim) and try again.')
+        return
+
     filesToOpen = []
+
+    # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
+    Word2Vec_Dir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='Word2Vec',
+                                                            silent=True)
+    if Word2Vec_Dir == '':
+        return
 
     ## if statements for any requirements
 
     if BERT_var:
-        BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts,
+        BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, Word2Vec_Dir, openOutputFiles, createCharts,
                                                    chartPackage, dim_menu_var)
         filesToOpen.append(BERT_output)
 
@@ -36,11 +46,11 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
         if 'Clustering' in vis_menu_var and keywords_var=='':
             mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
             return
-        filesToOpen = word2vec_util.run_Gensim_word2vec(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartPackage,
+        filesToOpen = word2vec_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir,openOutputFiles, createCharts, chartPackage,
                                  remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var, vis_menu_var, dim_menu_var, keywords_var)
 
     if openOutputFiles==True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, Word2Vec_Dir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -91,7 +101,7 @@ config_filename = scriptName.replace('main.py', 'config.csv')
 #   input dir
 #   input secondary dir
 #   output dir
-config_input_output_numeric_options=[2,1,0,1]
+config_input_output_numeric_options=[6,1,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -118,6 +128,22 @@ min_count_var=tk.IntVar()
 vis_menu_var=tk.StringVar()
 dim_menu_var=tk.StringVar()
 keywords_var=tk.StringVar()
+
+def clear(e):
+    # all_analyses_var.set(0)
+    # all_analyses_checkbox.configure(state='normal')
+    # all_analyses_menu.configure(state='disabled')
+    # all_analyses.set('*')
+    # search_token_var.set(0)
+    # searchField_kw_var.set('e.g.: father')
+    # postag_var.set('*')
+    # deprel_var.set('*')
+    # co_postag_var.set('*')
+    # co_postag_var.set('*')
+    # co_deprel_var.set('*')
+    # activate_all_options()
+    GUI_util.clear("Escape")
+window.bind("<Escape>", clear)
 
 ## option for stopwords
 remove_stopwords_var.set(1)
@@ -147,7 +173,7 @@ cluster_var_entry = tk.Entry(window,width=10,textvariable=keywords_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,keywords_lb,True)
 
 keywords_entry = tk.Entry(window, textvariable=keywords_var)
-keywords_entry.configure(state='disabled',width=GUI_IO_util.widget_width_extra_long)
+keywords_entry.configure(state='normal',width=GUI_IO_util.widget_width_extra_long)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,keywords_entry)
 
 def activate_keywords_var(*args):
@@ -256,8 +282,20 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
+error=False
+def changed_filename(tracedInputFile):
+    global error
+    if os.path.isfile(tracedInputFile):
+        if not tracedInputFile.endswith('.csv') and not tracedInputFile.endswith('.txt'):
+            error = True
+            return
+        else:
+            error = False
+    clear("<Escape>")
+GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
+
 # change the value of the readMe_message
-readMe_message="This Python 3 script analyzes a set of documents for Gensim Word2Vec or BERT conte-dependent word embeddings.\n\nIn INPUT the algorithms expect either a single txt file or a set of txt files in a directory.\n\nIn OUTPUT, the algorithms display the multi-dimensional output vectors in an html interactive file in either a 2- or 3-dimensional space. To facilitate the search for words in the vsual output, the algorithms also produce a csv file with the Eucledian distances of every word with every other word for the 10 most-frequent words."
+readMe_message="This Python 3 script analyzes a set of documents for Gensim Word2Vec or BERT context-dependent word embeddings.\n\nIn INPUT the algorithms expect either a single txt file or a set of txt files in a directory or a Euclidean distance csv file, the output of a previous Word2Vec run.\n\nIn OUTPUT, the algorithms display the multi-dimensional output vectors in an html interactive file in either a 2- or 3-dimensional space. To facilitate the search for words in the vsual output, the algorithms also produce a csv file with the Eucledian distances of every word with every other word for the 10 most-frequent words."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
@@ -273,4 +311,11 @@ reminders_util.checkReminder(
     reminders_util.message_Word2Vec_eucledian_distance,
     True)
 
+reminders_util.checkReminder(config_filename,
+                             reminders_util.title_options_Gensim_Word2Vec_timing,
+                             reminders_util.message_Gensim_Word2Vec_timing_timing,
+                             True)
+
+if error:
+    mb.showwarning(title='Warning',message='The Word2Vec algorithms expect in input either a txt file/directory of txt files or a csv file of previosuly computed Euclidean distances.')
 GUI_util.window.mainloop()

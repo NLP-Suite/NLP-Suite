@@ -31,6 +31,8 @@ import plotly.express as px
 ##from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
+# for calculating the distance
+import itertools
 
 #stopwords and punctuations
 import string
@@ -54,7 +56,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     sentences_out = []
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
-                                                   'Started running Word2Vec at', True)
+                                                   'Started running Gensim Word2Vec at', True)
     # process inputFile/inputDir
     if len(inputFilename)>0:
         doc = inputFilename
@@ -82,7 +84,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                     document.append(os.path.join(inputDir, doc))
                     all_input_docs[dId] = text
                     tail_list[dId] = tail
-    
+
     # initialize different annotators for Stanza
     if lemmatize_var:
         stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize, lemma')
@@ -90,14 +92,14 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     else:
         stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize')
         print('Tokenizing...')
-    
+
     # process input file(s)
     out_df = pd.DataFrame()
     for doc_idx, txt in enumerate(all_input_docs.items()):
         print('Processing file ' + str(doc_idx+1) + '/' + str(numFiles) + ' ' + tail_list[doc_idx+1])
         temp_out_df = pd.DataFrame()
         stanza_doc = stanzaPipeLine(txt[1])
-        
+
         # convert stanza doc variable to python dict
         dicts = stanza_doc.to_dict()
         for i in range(len(dicts)):
@@ -115,7 +117,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
             for idx, row in temp_out_df.iterrows():
                 if row['Word'].lower() in stop_words or row['Word'] in punctuations or len(row['Word'])==1:
                     temp_out_df.drop(idx, inplace=True)
-        
+
         # get sentenece, sentenceID for result_df
         # get sentences_out for gensim
         sidx = 1
@@ -257,7 +259,10 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         filesToOpen.append(outputFilename)
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'Word2Vec')
+    cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_Cos_Similarity')
+    tsne_dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_TSNE_dist')
     dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_Euclidean_dist')
+
     fig.write_html(outputFilename)
     filesToOpen.append(outputFilename)
 
@@ -281,17 +286,58 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         result_df = result_df[["Word", "Vector", "Sentence ID", "Sentence", "Document ID", "Document"]]
 
     # find top 10 frequent Words
+    # word vectors
     tmp_result = result_df['Word'].value_counts().index.tolist()[:10]
     tmp_result_df = result_df.loc[result_df['Word'].isin(tmp_result)]
     tmp_result_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
     tmp_result_df = tmp_result_df.reset_index(drop=True)
 
+    # TSNE x,y (z) coordinates
+    tmp_tsne = tsne_df['Word'].value_counts().index.tolist()[:10]
+    tmp_tsne_df = tsne_df.loc[tsne_df['Word'].isin(tmp_tsne)]
+    tmp_tsne_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
+    tmp_tsne_df = tmp_tsne_df.reset_index(drop=True)
+
     # look at only specific keywords
     # tmp_result_df = result_df.loc[result_df['Word'].isin(['man', 'woman', 'Man', 'Woman', 'men', 'women', 'Men', 'Women'])]
     # tmp_result_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
     # tmp_result_df = tmp_result_df.reset_index(drop=True)
-    
-    # calculate euclidean distance of the vectors of top 10 freq words
+
+    # calculate cos similarity
+    cos_sim_df = pd.DataFrame()
+    cos_idx = 0
+    for i, row in tmp_result_df.iterrows():
+        j = len(tmp_result_df)-1
+        while i < j:
+            try:
+                sim_score = word_vectors.similarity(str(row['Word']), str(tmp_result_df.at[j, 'Word']))
+                cos_sim_df.at[cos_idx, 'Word_1'] = row['Word']
+                cos_sim_df.at[cos_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
+                cos_sim_df.at[cos_idx, 'Cosine similarity'] = sim_score
+            except KeyError:
+                cos_idx+=1
+                j-=1
+                continue
+            cos_idx+=1
+            j-=1
+
+    # calculate 2-dimensional euclidean distance
+    # TSNE x,y (z) coordinates
+    tsne_dist_df = pd.DataFrame()
+    dist_idx = 0
+    for i, row in tmp_tsne_df.iterrows():
+        j = len(tmp_tsne_df)-1
+        while i < j:
+            tsne_dist_df.at[dist_idx, 'Word_1'] = row['Word']
+            tsne_dist_df.at[dist_idx, 'Word_2'] = tmp_tsne_df.at[j, 'Word']
+            if len(tmp_tsne_df.columns) == 3:
+                tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = euclidean_dist( [row['x'],row['y']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y']] )
+            else:
+                tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = euclidean_dist( [row['x'],row['y'],row['z']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y'],tmp_tsne_df.at[j, 'z']] )
+            dist_idx+=1
+            j-=1
+
+    # vectors of top 10 freq words n-dimensional distance
     dist_df = pd.DataFrame()
     dist_idx = 0
     for i, row in tmp_result_df.iterrows():
@@ -299,19 +345,41 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         while i < j:
             dist_df.at[dist_idx, 'Word_1'] = row['Word']
             dist_df.at[dist_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
-            dist_df.at[dist_idx, 'Euclidean distance'] = euclidean_dist(row['Vector'], tmp_result_df.at[j, 'Vector'])
+            dist_df.at[dist_idx, 'n-dimensional Euclidean distance'] = euclidean_dist(row['Vector'], tmp_result_df.at[j, 'Vector'])
             dist_idx+=1
             j-=1
+
+    # keyword cos similarity
+    if keywords_var:
+        keyword_df = pd.DataFrame()
+        keywords_list = [x.strip() for x in keywords_var.split(',')]
+        i = 0
+        for a, b in itertools.combinations(keywords_list, 2):
+            try:
+                sim_score = word_vectors.similarity(a, b)
+                keyword_df.at[i, 'Word_1'] = a
+                keyword_df.at[i, 'Word_2'] = b
+                keyword_df.at[i, 'Cosine similarity'] = sim_score
+            except KeyError:
+                i+=1
+                continue
+            i+=1
+        keyword_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_Keyword_Similarity')
+        keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
+        filesToOpen.append(keyword_sim_outputFilename)
 
     # write csv file
     outputFilename = outputFilename.replace(".html", ".csv")
     result_df.to_csv(outputFilename, encoding='utf-8', index=False)
-    dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)    
+    dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)
+    tsne_dist_df.to_csv(tsne_dist_outputFilename, encoding='utf-8', index=False)
+    cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
     filesToOpen.append(outputFilename)
     filesToOpen.append(dist_outputFilename)
+    filesToOpen.append(tsne_dist_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
-                                       'Finished running Word2Vec at', True, '', True, startTime)
+                                       'Finished running Gensim Word2Vec at', True, '', True, startTime)
 
     return filesToOpen
 
