@@ -18,6 +18,7 @@ import pandas as pd
 import os
 import csv
 import time
+import stanza
 import argparse
 import tkinter.messagebox as mb
 from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
@@ -129,7 +130,7 @@ def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, createCha
 
 # Creates a list of vectors/word embeddings for input files and subsequently plots them on a 2d graph
 def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, dim_menu_var):
-    model = SentenceTransformer('sentence-transformers/stsb-roberta-base-v2')
+    model = SentenceTransformer('sentence-transformers/all-distilroberta-v1')
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     filesToOpen = []
     Ndocs = str(len(inputDocs))
@@ -139,10 +140,10 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     documentID = 0
     all_words = []
     words_without_Stop = []
-
+    bad_chars = [';', ':', '', "*", "\"", "\'", "“", "”", "—", "’s", "n’t"]
     startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running BERT word embeddings at', True)
-
+    
 
     for doc in inputDocs:
         head, tail = os.path.split(doc)
@@ -152,16 +153,22 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
         fullText = fullText.replace('\n', ' ')
 
-        sentenceID = 0
+
 
         sentences = split_into_sentences(fullText)
         for s in sentences:
-            all_words.extend(s.split())
 
-        words_without_Stop.extend(statistics_txt_util.excludeStopWords_list(all_words))
+            all_words.extend(word_tokenize_stanza(stanzaPipeLine(s)))
 
-        # Words are encoded by calling model.encode()
+
+    words_without_Stop = statistics_txt_util.excludeStopWords_list(all_words)
+
+            
+            
+
+
     embeddings = model.encode(words_without_Stop)
+
 
 
 
@@ -196,12 +203,12 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
         fig = word2vec_util.plot_interactive_3D_graph(tsne_df)
         fig_words = word2vec_util.plot_interactive_3D_graph_words(tsne_df)
+    
 
     documentID = 0
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         documentID = documentID + 1
-        print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
 
         fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
         fullText = fullText.replace('\n', ' ')
@@ -219,12 +226,15 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
             if dim_menu_var == '2D':
                 for w, coord in zip(wrds_no_stop, xys):
-                    csv_result.append([w, coord, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                    if w not in bad_chars:
+                        csv_result.append([w, coord, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
             else:
                 for w, coord in zip(wrds_no_stop, xyzs):
-                    csv_result.append([w, coord, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                    if w not in bad_chars:
+                        csv_result.append([w, coord, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+    
 
-    csv_result.insert(0, header)
+    #csv_result.insert(0, header)
 
 
 
@@ -232,18 +242,41 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html',
                                                              'Word_Embeddings_BERT')
     if not fig_words == 'none':
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '_words.html', 'Word2Vec_BERT')
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '_words.html', 'Word_Embeddings_BERT')
         fig_words.write_html(outputFilename)
         filesToOpen.append(outputFilename)
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'Word2Vec_BERT')
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'Word_Embeddings_BERT')
+    dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word_Embeddings_BERT_Euclidean_dist')
     fig.write_html(outputFilename)
     filesToOpen.append(outputFilename)
 
+    csv_result_df = pd.DataFrame(csv_result, columns=header)
+
+    # find top 10 frequent Words
+    tmp_result = csv_result_df['Word'].value_counts().index.tolist()[:10]
+    tmp_result_df = csv_result_df.loc[csv_result_df['Word'].isin(tmp_result)]
+    tmp_result_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
+    tmp_result_df = tmp_result_df.reset_index(drop=True)
+
+    # calculate euclidean distance of the vectors of top 10 freq words
+    dist_df = pd.DataFrame()
+    dist_idx = 0
+    for i, row in tmp_result_df.iterrows():
+        j = len(tmp_result_df)-1
+        while i < j:
+            dist_df.at[dist_idx, 'Word_1'] = row['Word']
+            dist_df.at[dist_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
+            dist_df.at[dist_idx, 'Euclidean distance'] = word2vec_util.euclidean_dist(row['Embeddings'], tmp_result_df.at[j, 'Embeddings'])
+            dist_idx+=1
+            j-=1
+    
+   
     # write csv file
     outputFilename = outputFilename.replace(".html", ".csv")
-    IO_error=IO_csv_util.list_to_csv(window, csv_result, outputFilename)
-    if not IO_error:
-        filesToOpen.append(outputFilename)
+    csv_result_df.to_csv(outputFilename, encoding='utf-8', index=False)
+    dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)    
+    filesToOpen.append(outputFilename)
+    filesToOpen.append(dist_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running BERT word embeddings at', True, '', True, startTime)

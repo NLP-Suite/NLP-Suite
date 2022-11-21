@@ -33,6 +33,8 @@ from sklearn.manifold import TSNE
 
 # for calculating the distance
 import itertools
+import numpy as np
+from numpy.linalg import norm
 
 #stopwords and punctuations
 import string
@@ -42,8 +44,11 @@ punctuations = set(string.punctuation)
 
 
 def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
-                        remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var,
-                        vis_menu_var, dim_menu_var, keywords_var,
+                        remove_stopwords_var, lemmatize_var,
+                        keywords_var,
+                        compute_distances_var, top_words_var,
+                        sg_menu_var, vector_size_var, window_var, min_count_var,
+                        vis_menu_var, dim_menu_var,
                         word_vector=None):
     # initialize necessary variables
     word = []
@@ -57,6 +62,56 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running Gensim Word2Vec at', True)
+    # compute only distances if inputFile is csv
+    if inputFilename.endswith('csv'):
+        # read csv
+        w2v_df = pd.read_csv(inputFilename, encoding='utf-8')
+        # check if csv file has Vector column
+        if 'Vector' in w2v_df.columns:
+            w2v_df['Vector'] = w2v_df['Vector'].astype(object)
+            
+            # keyword cos similarity
+            if keywords_var:
+                keyword_df = pd.DataFrame()
+                keywords_list = [x.strip() for x in keywords_var.split(',')]
+                i = 0
+                for a, b in itertools.combinations(keywords_list, 2):
+                    try:
+                        # only compute similarity score of words that exists in the csv file
+                        if a in w2v_df['Word'].values and b in w2v_df['Word'].values:
+                            # convert items in Vector into Python list
+                            A = w2v_df['Vector'][w2v_df['Word']==a].values[0]
+                            B = w2v_df['Vector'][w2v_df['Word']==b].values[0]
+                            A = ' '.join(A.strip('][').split(' ')).split()
+                            B = ' '.join(B.strip('][').split(' ')).split()
+                            A = list(map(float, A))
+                            B = list(map(float, B))
+                            
+                            # calculate cos similarity
+                            sim_score = np.dot(A,B)/(norm(A)*norm(B))
+
+                            # write to dataframe
+                            keyword_df.at[i, 'Word_1'] = a
+                            keyword_df.at[i, 'Word_2'] = b
+                            keyword_df.at[i, 'Cosine similarity'] = sim_score
+                    except KeyError:
+                        i+=1
+                        continue
+                    i+=1
+                
+                # write output file
+                keyword_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', f'Word2Vec_Keyword_Similarity')
+                keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
+                filesToOpen.append(keyword_sim_outputFilename)
+
+            IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
+                                        'Finished running Gensim Word2Vec at', True, '', True, startTime)
+            return filesToOpen
+        
+        else:
+            mb.showerror(title='csv file error',
+            message='The selected csv file does NOT contain Vector column.\n\nPlease, select a different csv file and try again.')
+                                    
     # process inputFile/inputDir
     if len(inputFilename)>0:
         doc = inputFilename
@@ -160,6 +215,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     words = word_vectors.key_to_index
     word_vector_list = []
     filtered_words = {}
+    # filter words that is not string and not recognized by vector model
     for v in words:
         if isinstance(v, str):
             word_vector_list.append(word_vectors[v])
@@ -190,7 +246,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
             xs = xyzs[:, 0]
             ys = xyzs[:, 1]
             zs = xyzs[:, 2]
-            word = words.keys()
+            word = filtered_words.keys()
 
             tsne_df = pd.DataFrame({'Word': word, 'x': xs, 'y': ys, 'z': zs})
             fig = plot_interactive_3D_graph(tsne_df)
@@ -213,9 +269,16 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         if len(result_word)==0:
             mb.showwarning(title="No words found",message="None of the keywords entered were found in the corpus.\n\nRoutine aborted.")
             return
-        similar_word = [word[0] for word in result_word]
-        similarity = [word[1] for word in result_word]
-        labels = [word[2] for word in result_word]
+
+        # assort similar words into lists
+        similar_word = []
+        similarity = []
+        labels = []
+        for item_list in result_word:
+            for item in item_list:
+                similar_word.append(item[0])
+                similarity.append(item[1])
+                labels.append(item[2])
 
         sim_word_vector_list = [word_vectors[sw] for sw in similar_word]
 
@@ -258,10 +321,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         fig_words.write_html(outputFilename)
         filesToOpen.append(outputFilename)
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'Word2Vec')
-    cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_Cos_Similarity')
-    tsne_dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_TSNE_dist')
-    dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_Euclidean_dist')
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'Word2Vec')  
 
     fig.write_html(outputFilename)
     filesToOpen.append(outputFilename)
@@ -285,69 +345,79 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         result_df = pd.merge(word_vector_df, out_df, on='Word', how='inner')
         result_df = result_df[["Word", "Vector", "Sentence ID", "Sentence", "Document ID", "Document"]]
 
-    # find top 10 frequent Words
-    # word vectors
-    tmp_result = result_df['Word'].value_counts().index.tolist()[:10]
-    tmp_result_df = result_df.loc[result_df['Word'].isin(tmp_result)]
-    tmp_result_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
-    tmp_result_df = tmp_result_df.reset_index(drop=True)
+    # compute distances
+    if compute_distances_var:
+        # find top 10 frequent Words
+        # word vectors
+        tmp_result = result_df['Word'].value_counts().index.tolist()[:top_words_var]
+        tmp_result_df = result_df.loc[result_df['Word'].isin(tmp_result)]
+        tmp_result_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
+        tmp_result_df = tmp_result_df.reset_index(drop=True)
 
-    # TSNE x,y (z) coordinates
-    tmp_tsne = tsne_df['Word'].value_counts().index.tolist()[:10]
-    tmp_tsne_df = tsne_df.loc[tsne_df['Word'].isin(tmp_tsne)]
-    tmp_tsne_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
-    tmp_tsne_df = tmp_tsne_df.reset_index(drop=True)
+        # TSNE x,y (z) coordinates
+        tmp_tsne = tsne_df['Word'].value_counts().index.tolist()[:top_words_var]
+        tmp_tsne_df = tsne_df.loc[tsne_df['Word'].isin(tmp_tsne)]
+        tmp_tsne_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
+        tmp_tsne_df = tmp_tsne_df.reset_index(drop=True)
 
-    # look at only specific keywords
-    # tmp_result_df = result_df.loc[result_df['Word'].isin(['man', 'woman', 'Man', 'Woman', 'men', 'women', 'Men', 'Women'])]
-    # tmp_result_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
-    # tmp_result_df = tmp_result_df.reset_index(drop=True)
-
-    # calculate cos similarity
-    cos_sim_df = pd.DataFrame()
-    cos_idx = 0
-    for i, row in tmp_result_df.iterrows():
-        j = len(tmp_result_df)-1
-        while i < j:
-            try:
-                sim_score = word_vectors.similarity(str(row['Word']), str(tmp_result_df.at[j, 'Word']))
-                cos_sim_df.at[cos_idx, 'Word_1'] = row['Word']
-                cos_sim_df.at[cos_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
-                cos_sim_df.at[cos_idx, 'Cosine similarity'] = sim_score
-            except KeyError:
+        # calculate cos similarity
+        cos_sim_df = pd.DataFrame()
+        cos_idx = 0
+        for i, row in tmp_result_df.iterrows():
+            j = len(tmp_result_df)-1
+            while i < j:
+                try:
+                    sim_score = word_vectors.similarity(str(row['Word']), str(tmp_result_df.at[j, 'Word']))
+                    cos_sim_df.at[cos_idx, 'Word_1'] = row['Word']
+                    cos_sim_df.at[cos_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
+                    cos_sim_df.at[cos_idx, 'Cosine similarity'] = sim_score
+                except KeyError:
+                    cos_idx+=1
+                    j-=1
+                    continue
                 cos_idx+=1
                 j-=1
-                continue
-            cos_idx+=1
-            j-=1
 
-    # calculate 2-dimensional euclidean distance
-    # TSNE x,y (z) coordinates
-    tsne_dist_df = pd.DataFrame()
-    dist_idx = 0
-    for i, row in tmp_tsne_df.iterrows():
-        j = len(tmp_tsne_df)-1
-        while i < j:
-            tsne_dist_df.at[dist_idx, 'Word_1'] = row['Word']
-            tsne_dist_df.at[dist_idx, 'Word_2'] = tmp_tsne_df.at[j, 'Word']
-            if len(tmp_tsne_df.columns) == 3:
-                tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = euclidean_dist( [row['x'],row['y']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y']] )
-            else:
-                tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = euclidean_dist( [row['x'],row['y'],row['z']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y'],tmp_tsne_df.at[j, 'z']] )
-            dist_idx+=1
-            j-=1
+        # calculate 2-dimensional euclidean distance
+        # TSNE x,y (z) coordinates
+        tsne_dist_df = pd.DataFrame()
+        dist_idx = 0
+        for i, row in tmp_tsne_df.iterrows():
+            j = len(tmp_tsne_df)-1
+            while i < j:
+                tsne_dist_df.at[dist_idx, 'Word_1'] = row['Word']
+                tsne_dist_df.at[dist_idx, 'Word_2'] = tmp_tsne_df.at[j, 'Word']
+                if 'z' not in tmp_tsne_df.columns:
+                    tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = euclidean_dist( [row['x'],row['y']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y']] )
+                else:
+                    tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = euclidean_dist( [row['x'],row['y'],row['z']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y'],tmp_tsne_df.at[j, 'z']] )
+                dist_idx+=1
+                j-=1
 
-    # vectors of top 10 freq words n-dimensional distance
-    dist_df = pd.DataFrame()
-    dist_idx = 0
-    for i, row in tmp_result_df.iterrows():
-        j = len(tmp_result_df)-1
-        while i < j:
-            dist_df.at[dist_idx, 'Word_1'] = row['Word']
-            dist_df.at[dist_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
-            dist_df.at[dist_idx, 'n-dimensional Euclidean distance'] = euclidean_dist(row['Vector'], tmp_result_df.at[j, 'Vector'])
-            dist_idx+=1
-            j-=1
+        # vectors of top 10 freq words n-dimensional distance
+        dist_df = pd.DataFrame()
+        dist_idx = 0
+        for i, row in tmp_result_df.iterrows():
+            j = len(tmp_result_df)-1
+            while i < j:
+                dist_df.at[dist_idx, 'Word_1'] = row['Word']
+                dist_df.at[dist_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
+                dist_df.at[dist_idx, 'n-dimensional Euclidean distance'] = euclidean_dist(row['Vector'], tmp_result_df.at[j, 'Vector'])
+                dist_idx+=1
+                j-=1
+        
+        # create outputFilenames and save them
+        cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_Cos_Similarity')
+        tsne_dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_TSNE_dist')
+        dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_Euclidean_dist')
+
+        dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)
+        tsne_dist_df.to_csv(tsne_dist_outputFilename, encoding='utf-8', index=False)
+        cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
+
+        filesToOpen.append(dist_outputFilename)
+        filesToOpen.append(tsne_dist_outputFilename)
+        filesToOpen.append(cos_sim_outputFilename)
 
     # keyword cos similarity
     if keywords_var:
@@ -371,12 +441,8 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     # write csv file
     outputFilename = outputFilename.replace(".html", ".csv")
     result_df.to_csv(outputFilename, encoding='utf-8', index=False)
-    dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)
-    tsne_dist_df.to_csv(tsne_dist_outputFilename, encoding='utf-8', index=False)
-    cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
+    
     filesToOpen.append(outputFilename)
-    filesToOpen.append(dist_outputFilename)
-    filesToOpen.append(tsne_dist_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Gensim Word2Vec at', True, '', True, startTime)
