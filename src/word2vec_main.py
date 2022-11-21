@@ -19,16 +19,26 @@ import BERT_util
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartPackage,
         remove_stopwords_var, lemmatize_var,
-        BERT_var, Gensim_var,
+        BERT_var, Gensim_var, compute_distances_var, top_words_var,
         sg_menu_var, vector_size_var, window_var, min_count_var,
         vis_menu_var, dim_menu_var, keywords_var):
 
+    if not BERT_var and not Gensim_var:
+        mb.showwarning(title='Warning',message='No option has been selected.\n\nPlease select the Word2Vec package you wish to use (BERT and/or Gensim) and try again.')
+        return
+
     filesToOpen = []
+
+    # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
+    Word2Vec_Dir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='Word2Vec',
+                                                            silent=True)
+    if Word2Vec_Dir == '':
+        return
 
     ## if statements for any requirements
 
     if BERT_var:
-        BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts,
+        BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, Word2Vec_Dir, openOutputFiles, createCharts,
                                                    chartPackage, dim_menu_var)
         filesToOpen.append(BERT_output)
 
@@ -36,11 +46,14 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
         if 'Clustering' in vis_menu_var and keywords_var=='':
             mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
             return
-        filesToOpen = word2vec_util.run_Gensim_word2vec(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartPackage,
-                                 remove_stopwords_var, lemmatize_var, sg_menu_var, vector_size_var, window_var, min_count_var, vis_menu_var, dim_menu_var, keywords_var)
+        filesToOpen = word2vec_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir,openOutputFiles, createCharts, chartPackage,
+                                 remove_stopwords_var, lemmatize_var,
+                                 keywords_var,
+                                 compute_distances_var, top_words_var,
+                                 sg_menu_var, vector_size_var, window_var, min_count_var, vis_menu_var, dim_menu_var)
 
     if openOutputFiles==True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, Word2Vec_Dir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -53,6 +66,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 lemmatize_var.get(),
                                 BERT_var.get(),
                                 Gensim_var.get(),
+                                compute_distances_var.get(),
+                                top_words_var.get(),
                                 sg_menu_var.get(),
                                 vector_size_var.get(),
                                 window_var.get(),
@@ -70,8 +85,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=640, # height at brief display
-                             GUI_height_full=720, # height at full display
+                             GUI_height_brief=680, # height at brief display
+                             GUI_height_full=760, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -91,7 +106,7 @@ config_filename = scriptName.replace('main.py', 'config.csv')
 #   input dir
 #   input secondary dir
 #   output dir
-config_input_output_numeric_options=[2,1,0,1]
+config_input_output_numeric_options=[6,1,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -110,6 +125,8 @@ lemmatize_var=tk.IntVar()
 
 BERT_var=tk.IntVar()
 Gensim_var=tk.IntVar()
+compute_distances_var=tk.IntVar()
+top_words_var=tk.IntVar()
 
 sg_menu_var=tk.StringVar()
 vector_size_var=tk.IntVar()
@@ -118,6 +135,22 @@ min_count_var=tk.IntVar()
 vis_menu_var=tk.StringVar()
 dim_menu_var=tk.StringVar()
 keywords_var=tk.StringVar()
+
+def clear(e):
+    # all_analyses_var.set(0)
+    # all_analyses_checkbox.configure(state='normal')
+    # all_analyses_menu.configure(state='disabled')
+    # all_analyses.set('*')
+    # search_token_var.set(0)
+    # searchField_kw_var.set('e.g.: father')
+    # postag_var.set('*')
+    # deprel_var.set('*')
+    # co_postag_var.set('*')
+    # co_postag_var.set('*')
+    # co_deprel_var.set('*')
+    # activate_all_options()
+    GUI_util.clear("Escape")
+window.bind("<Escape>", clear)
 
 ## option for stopwords
 remove_stopwords_var.set(1)
@@ -140,24 +173,6 @@ dim_menu_var.set('2D')
 dim_menu = tk.OptionMenu(window,dim_menu_var, '2D', '3D')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,dim_menu)
 
-### entry for clustering keywords
-keywords_var.set('')
-keywords_lb = tk.Label(window, text='Keywords')
-cluster_var_entry = tk.Entry(window,width=10,textvariable=keywords_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,keywords_lb,True)
-
-keywords_entry = tk.Entry(window, textvariable=keywords_var)
-keywords_entry.configure(state='disabled',width=GUI_IO_util.widget_width_extra_long)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,keywords_entry)
-
-def activate_keywords_var(*args):
-    if vis_menu_var.get() == 'Clustering of word vectors':
-        keywords_entry.config(state='normal')
-    else:
-        keywords_entry.config(state='disabled')
-
-vis_menu_var.trace('w', activate_keywords_var)
-
 ## option for BERT
 BERT_var.set(0)
 BERT_checkbox = tk.Checkbutton(window, text='Word embeddings (via BERT)', variable=BERT_var, onvalue=1, offvalue=0)
@@ -168,12 +183,52 @@ Gensim_var.set(0)
 Gensim_checkbox = tk.Checkbutton(window, text='Word2Vec (via Gensim)', variable=Gensim_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,Gensim_checkbox)
 
+keywords_var.set('')
+keywords_lb = tk.Label(window, text='Keywords')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,keywords_lb,True)
+
+keywords_entry = tk.Entry(window, textvariable=keywords_var)
+keywords_entry.configure(state='normal',width=GUI_IO_util.widget_width_extra_long)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
+    y_multiplier_integer,
+    keywords_entry,
+    False, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
+    "Enter the comma-separated words to be used to visualize Euclidean distances and cosine similarity between selected words.\nCosine similarity will always be computed whether the checkbox 'Compute word distances' is ticked or not.")
+
+compute_distances_var.set(1)
+compute_distances_checkbox = tk.Checkbutton(window, text='Compute word distances', variable=compute_distances_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,
+    y_multiplier_integer,
+    compute_distances_checkbox,
+    True, False, False, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+    "Tick/untick the checkbox to (not)compute Eucledian 2-dimensional and n-dimensional distances and cosine similarity between words.\nComputing word similarities is computationally demanding and time consuming, but VERY useful in locating words in a semantic space.")
+
+## option for vector size
+top_words_lb = tk.Label(window,text='Number of top words for distance combinations')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,top_words_lb,True)
+
+top_words_var.set(5)
+top_words_entry = tk.Entry(window,width=5,textvariable=top_words_var)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+300,
+    y_multiplier_integer,
+    top_words_entry,
+    False, False, False, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+    "Enter the number of top words to be used in computing distances (the more words, the longer it takes to compute distances)")
+
+## option for window size
+window_lb = tk.Label(window,text='Window size')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,window_lb,True)
+
 ## option for model architecture
 sg_lb = tk.Label(window,text='Training model architecture')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,sg_lb,True)
 sg_menu_var.set('Skip-Gram')
 sg_menu = tk.OptionMenu(window,sg_menu_var, 'Skip-Gram','CBOW')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,sg_menu)
+
 ## option for vector size
 vector_size_lb = tk.Label(window,text='Vector size')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,vector_size_lb,True)
@@ -231,13 +286,16 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                   "Please, using the dropdown menus, select the types of preferred display.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
-                                  "Enter comma-separated keywords you want to focus on for semantic similarity. The words MUST be in the file(s) you are analyzing.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                  "NLP Suite Help",
                                   "Please, tick the checkbox to run word embeddings via BERT.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Please, tick the checkbox to run Word2Vec via Gensim.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
+                                  "Enter comma-separated keywords you want to focus on for semantic similarity. The words MUST be in the file(s) being analyzed, either as lemma or as the original word. Words not present in the document(s) will be skipped silently.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
+                                  "Please, tick the checkbox to compute Eucledian distances and cosine similarity between words. Cosine similarity measure will be computed whether the checkbox 'Compute word distances' is ticked or not.\n\n2-dimentional distances reflect the position of words in the two-dimentional html graph. But... it may not reflect the 'true' semantic distance between words, more accurately measured by the n-dimenional distance (which, of course, you cannot see).\n\nCosine similarity varies betwteen 0 and 1 (a value 0 indicates that the words are orthgonal to each other, i.e., they are distant in the semantic space; a value of 1 indicates the opposite.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Please, using the dropdown menu, select the preferred model architecture for training Word2Vec: Skip-Gram and CBOW (Continuous Bag of Words).\n\nWhich model is better?\n\nAccording to the original paper by Mikolov et al. (2013) Skip-Gram works well with small datasets, and can better represent less frequent words. However, CBOW is found to train faster than Skip-Gram, and can better represent more frequent words.\n\nMikolov, Tomas, Kai Chen, Greg Corrado, and Jeffrey Dean. 2013. 'Efficient Estimation of Word Representations in Vector Space' arXiv:1301.3781.")
@@ -256,8 +314,20 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
+error=False
+def changed_filename(tracedInputFile):
+    global error
+    if os.path.isfile(tracedInputFile):
+        if not tracedInputFile.endswith('.csv') and not tracedInputFile.endswith('.txt'):
+            error = True
+            return
+        else:
+            error = False
+    clear("<Escape>")
+GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
+
 # change the value of the readMe_message
-readMe_message="This Python 3 script analyzes a set of documents for Gensim Word2Vec or BERT conte-dependent word embeddings.\n\nIn INPUT the algorithms expect either a single txt file or a set of txt files in a directory.\n\nIn OUTPUT, the algorithms display the multi-dimensional output vectors in an html interactive file in either a 2- or 3-dimensional space. To facilitate the search for words in the vsual output, the algorithms also produce a csv file with the Eucledian distances of every word with every other word for the 10 most-frequent words."
+readMe_message="This Python 3 script analyzes a set of documents for Gensim Word2Vec or BERT context-dependent word embeddings.\n\nIn INPUT the algorithms expect either a single txt file or a set of txt files in a directory or a csv file containing each word, their n-dimensional vectors, sentence, document, the output of a previous Word2Vec run with txt file(s) in input.\n\nIn OUTPUT, the algorithms display the multi-dimensional output vectors in an html interactive file in either a 2- or 3-dimensional space. To facilitate the search for words in the vsual output, the algorithms also produce a csv file with the Eucledian distances of every word with every other word for the 10 most-frequent words."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
@@ -273,4 +343,11 @@ reminders_util.checkReminder(
     reminders_util.message_Word2Vec_eucledian_distance,
     True)
 
+reminders_util.checkReminder(config_filename,
+                             reminders_util.title_options_Gensim_Word2Vec_timing,
+                             reminders_util.message_Gensim_Word2Vec_timing_timing,
+                             True)
+
+if error:
+    mb.showwarning(title='Warning',message='The Word2Vec algorithms expect in input either a txt file/directory of txt files or a csv file of previosuly computed Euclidean distances.')
 GUI_util.window.mainloop()
