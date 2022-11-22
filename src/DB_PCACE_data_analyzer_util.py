@@ -68,22 +68,46 @@ def give_all_simplex_name(setup_Simplex):
 # give data for the input simplex name
 # parameter: name: simplex name in list type
 # return: dataframe: name, value, frequency
-def dist(name, setup_Simplex, setup_xref_Simplex_Complex, data_xref_Simplex_Complex, data_Simplex, data_SimplexText):
-  simplex_id = find_setup_id_simplex(name, setup_Simplex)
-  id = simplex_id.iat[0,0]
-  xref_id = setup_xref_Simplex_Complex[setup_xref_Simplex_Complex['ID_setup_simplex']==id].iat[0,0]
-  xref_data = data_xref_Simplex_Complex[data_xref_Simplex_Complex['ID_setup_xref_simplex_complex']==xref_id]
-  xref_data = xref_data[['ID_data_simplex', 'ID_data_complex']]
-  count = xref_data.groupby(['ID_data_simplex']).count()
+def dist(name, inputDir, outputDir):
+    setup_Simplex = os.path.join(inputDir, 'setup_Simplex.csv')
+    if os.path.isfile(setup_Simplex):
+        setup_Simplex_df = pd.read_csv(setup_Simplex)
 
-  data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
-  data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
-  count = pd.merge(count, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-  count = count[['ID_data_simplex', 'Value', 'ID_data_complex']]
+    setup_xref_Simplex_Complex = os.path.join(inputDir, 'setup_xref_Simplex_Complex.csv')
+    if os.path.isfile(setup_xref_Simplex_Complex):
+        setup_xref_Simplex_Complex_df = pd.read_csv(setup_xref_Simplex_Complex)
 
-  count = count.rename(columns = {'ID_data_simplex':name[0], 'ID_data_complex':'Frequency'})
+    data_xref_Simplex_Complex = os.path.join(inputDir, 'data_xref_Simplex_Complex.csv')
+    if os.path.isfile(data_xref_Simplex_Complex):
+        data_xref_Simplex_Complex_df = pd.read_csv(data_xref_Simplex_Complex)
 
-  return count
+    data_Simplex = os.path.join(inputDir, 'data_Simplex.csv')
+    if os.path.isfile(data_Simplex):
+        data_Simplex_df = pd.read_csv(data_Simplex)
+
+    data_SimplexText = os.path.join(inputDir, 'data_SimplexText.csv')
+    if os.path.isfile(data_SimplexText):
+        data_SimplexText_df = pd.read_csv(data_SimplexText)
+
+    simplex_id = find_setup_id_simplex(name, setup_Simplex_df)
+    id = simplex_id.iat[0,0]
+    xref_id = setup_xref_Simplex_Complex_df[setup_xref_Simplex_Complex_df['ID_setup_simplex']==id].iat[0,0]
+    xref_data = data_xref_Simplex_Complex_df[data_xref_Simplex_Complex_df['ID_setup_xref_simplex_complex']==xref_id]
+    xref_data = xref_data[['ID_data_simplex', 'ID_data_complex']]
+    count = xref_data.groupby(['ID_data_simplex']).count()
+
+    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+    count = pd.merge(count, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+    count = count[['ID_data_simplex', 'Value', 'ID_data_complex']]
+
+    count = count.rename(columns = {'ID_data_simplex':name[0], 'ID_data_complex':'Frequency'})
+
+    simplex_frequency_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
+                                                                       'spell_pyspellchecker')
+    count.to_csv(simplex_frequency_file_name, encoding='utf-8', index=False)
+
+    return simplex_frequency_file_name
 
 
 # find the id of the input complex (name)
@@ -118,6 +142,8 @@ def corresponding_name_simplex_complex(complexes, setup_Complex, setup_xref_Simp
 # parameter: name of an complex in list type, dataframe of setup_Complex
 # return: a dataframe: id, name of the input complex
 def find_setup_id_simplex(simplex, setup_Simplex):
+    if isinstance(simplex, str):
+        simplex=[simplex]
     data = setup_Simplex[setup_Simplex['Name'].isin(simplex)]
     data = data[['ID_setup_simplex', 'Name']]
     data['ID_setup_simplex'] = [int(x) for x in data['ID_setup_simplex']]
@@ -586,7 +612,8 @@ def find_simplex_identifier_one_complextype(complex_name, data_Simplex, data_Sim
 # give distribution frequency for the input simplex name
 # parameter: name: simplex name in list type
 # return: dataframe: name, value, frequency
-def dist(name, setup_Simplex, setup_xref_Simplex_Complex, data_xref_Simplex_Complex, data_Simplex, data_SimplexText):
+# duplicate function name
+def dist_1(name, setup_Simplex, setup_xref_Simplex_Complex, data_xref_Simplex_Complex, data_Simplex, data_SimplexText):
   simplex_id = find_setup_id_simplex(name, setup_Simplex)
   id = simplex_id.iat[0,0]
   xref_id = setup_xref_Simplex_Complex[setup_xref_Simplex_Complex['ID_setup_simplex']==id].iat[0,0]
@@ -703,7 +730,7 @@ def process_simplex(setup_Simplex, data_Simplex, data_SimplexText, data_xref_Sim
 # give the semantic triplet with simplex
 # return: dataframe: Semantic triplet data id, S data id, S Type, S Simplex, V data id, V Simplex, O data id, O Type, O Simplex
 # p.s. Type = Individual / Orgaization / Collective actor
-def semantic_triplet_simplex(inputDir):
+def semantic_triplet_simplex(inputDir, outputDir):
     setup_Complex=os.path.join(inputDir,'setup_Complex.csv')
     if os.path.isfile(setup_Complex):
         setup_Complex_df=pd.read_csv(setup_Complex)
@@ -749,4 +776,8 @@ def semantic_triplet_simplex(inputDir):
     simplex_version = simplex_version.loc[:, ['Semantic Triplet', 'S', 'S Type', 'S Simplex', 'V', 'Value', 'O', 'O Type', 'O Simplex']]
     simplex_version = simplex_version.rename(columns = {'Value':'V Simplex'})
 
-    return simplex_version
+    triplet_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
+                                                                       'triplet (SVO)')
+    simplex_version.to_csv(triplet_file_name, encoding='utf-8', index=False)
+
+    return triplet_file_name

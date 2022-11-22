@@ -39,7 +39,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
 
     if BERT_var:
         BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, Word2Vec_Dir, openOutputFiles, createCharts,
-                                                   chartPackage, dim_menu_var)
+                                                   chartPackage, dim_menu_var, compute_distances_var, top_words_var, keywords_var)
         filesToOpen.append(BERT_output)
 
     if Gensim_var:
