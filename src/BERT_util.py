@@ -15,9 +15,15 @@ from transformers import BertTokenizerFast, EncoderDecoderModel
 from transformers import pipeline
 from sentence_transformers import SentenceTransformer
 import pandas as pd
+import re
+import math
+from collections import Counter
 import os
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 import csv
 import time
+import itertools
 import stanza
 import argparse
 import tkinter.messagebox as mb
@@ -50,6 +56,7 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts
     Ndocs = str(len(inputDocs))
 
     result = []
+    
 
     documentID = 0
     for doc in inputDocs:
@@ -129,7 +136,7 @@ def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, createCha
     return tempOutputFiles
 
 # Creates a list of vectors/word embeddings for input files and subsequently plots them on a 2d graph
-def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, dim_menu_var):
+def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, dim_menu_var, compute_distances_var, top_words_var, keywords_var):
     model = SentenceTransformer('sentence-transformers/all-distilroberta-v1')
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     filesToOpen = []
@@ -140,6 +147,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     documentID = 0
     all_words = []
     words_without_Stop = []
+    embeds = {}
     bad_chars = [';', ':', '', "*", "\"", "\'", "“", "”", "—", "’s", "n’t"]
     startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running BERT word embeddings at', True)
@@ -168,6 +176,9 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
 
     embeddings = model.encode(words_without_Stop)
+
+    for w, e in zip(words_without_Stop, embeddings):
+        embeds[w] = e
 
 
 
@@ -225,13 +236,11 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
             wrds_no_stop = statistics_txt_util.excludeStopWords_list(words)
 
             if dim_menu_var == '2D':
-                for w, coord in zip(wrds_no_stop, xys):
-                    if w not in bad_chars:
-                        csv_result.append([w, coord, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                for w in wrds_no_stop:
+                    csv_result.append([w, embeds[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
             else:
-                for w, coord in zip(wrds_no_stop, xyzs):
-                    if w not in bad_chars:
-                        csv_result.append([w, coord, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                for w in wrds_no_stop:
+                    csv_result.append([w, embeds[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
     
 
     #csv_result.insert(0, header)
@@ -252,31 +261,112 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
     csv_result_df = pd.DataFrame(csv_result, columns=header)
 
-    # find top 10 frequent Words
-    tmp_result = csv_result_df['Word'].value_counts().index.tolist()[:10]
-    tmp_result_df = csv_result_df.loc[csv_result_df['Word'].isin(tmp_result)]
-    tmp_result_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
-    tmp_result_df = tmp_result_df.reset_index(drop=True)
+      # compute distances
+    if compute_distances_var:
+        # find top 10 frequent Words
+        # word vectors
+        tmp_result = csv_result_df['Word'].value_counts().index.tolist()[:top_words_var]
+        tmp_result_df = csv_result_df.loc[csv_result_df['Word'].isin(tmp_result)]
+        tmp_result_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
+        tmp_result_df = tmp_result_df.reset_index(drop=True)
 
-    # calculate euclidean distance of the vectors of top 10 freq words
-    dist_df = pd.DataFrame()
-    dist_idx = 0
-    for i, row in tmp_result_df.iterrows():
-        j = len(tmp_result_df)-1
-        while i < j:
-            dist_df.at[dist_idx, 'Word_1'] = row['Word']
-            dist_df.at[dist_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
-            dist_df.at[dist_idx, 'Euclidean distance'] = word2vec_util.euclidean_dist(row['Embeddings'], tmp_result_df.at[j, 'Embeddings'])
-            dist_idx+=1
-            j-=1
+        # TSNE x,y (z) coordinates
+        tmp_tsne = tsne_df['Word'].value_counts().index.tolist()[:top_words_var]
+        tmp_tsne_df = tsne_df.loc[tsne_df['Word'].isin(tmp_tsne)]
+        tmp_tsne_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
+        tmp_tsne_df = tmp_tsne_df.reset_index(drop=True)
+
+        # calculate cos similarity
+        cos_sim_df = pd.DataFrame()
+        cos_idx = 0
+        for i, row in tmp_result_df.iterrows():
+            j = len(tmp_result_df)-1
+            while i < j:
+                try:
+                    tfidf_vectorizer = TfidfVectorizer(analyzer="char")
+                    sparse_matrix = tfidf_vectorizer.fit_transform([str(row['Word'])] + [str(tmp_result_df.at[j, 'Word'])])
+                    sim_score = cosine_similarity(sparse_matrix[0],sparse_matrix[1])
+                    cos_sim_df.at[cos_idx, 'Word_1'] = row['Word']
+                    cos_sim_df.at[cos_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
+                    cos_sim_df.at[cos_idx, 'Cosine similarity'] = sim_score
+                except KeyError:
+                    cos_idx+=1
+                    j-=1
+                    continue
+                cos_idx+=1
+                j-=1
+
+        # calculate 2-dimensional euclidean distance
+        # TSNE x,y (z) coordinates
+        tsne_dist_df = pd.DataFrame()
+        dist_idx = 0
+        for i, row in tmp_tsne_df.iterrows():
+            j = len(tmp_tsne_df)-1
+            while i < j:
+                tsne_dist_df.at[dist_idx, 'Word_1'] = row['Word']
+                tsne_dist_df.at[dist_idx, 'Word_2'] = tmp_tsne_df.at[j, 'Word']
+                if 'z' not in tmp_tsne_df.columns:
+                    tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = word2vec_util.euclidean_dist( [row['x'],row['y']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y']] )
+                else:
+                    tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = word2vec_util.euclidean_dist( [row['x'],row['y'],row['z']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y'],tmp_tsne_df.at[j, 'z']] )
+                dist_idx+=1
+                j-=1
+        
+        # vectors of top 10 freq words n-dimensional distance
+        dist_df = pd.DataFrame()
+        dist_idx = 0
+        for i, row in tmp_result_df.iterrows():
+            j = len(tmp_result_df)-1
+            while i < j:
+                dist_df.at[dist_idx, 'Word_1'] = row['Word']
+                dist_df.at[dist_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
+                dist_df.at[dist_idx, 'n-dimensional Euclidean distance'] = word2vec_util.euclidean_dist(row['Embeddings'], tmp_result_df.at[j, 'Embeddings'])
+                dist_idx+=1
+                j-=1
+        
+        # create outputFilenames and save them
+        cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word_Embeddings_BERT_Cos_Similarity')
+        tsne_dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word_Embeddings_BERT_TSNE_dist')
+        dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word_Embeddings_BERT_Euclidean_dist')
+
+        dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)
+        tsne_dist_df.to_csv(tsne_dist_outputFilename, encoding='utf-8', index=False)
+        cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
+
+        dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)
+        tsne_dist_df.to_csv(tsne_dist_outputFilename, encoding='utf-8', index=False)
+        cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
+
+        filesToOpen.append(dist_outputFilename)
+        filesToOpen.append(tsne_dist_outputFilename)
+        filesToOpen.append(cos_sim_outputFilename)
     
+    # keyword cos similarity
+    if keywords_var:
+        keyword_df = pd.DataFrame()
+        keywords_list = [x.strip() for x in keywords_var.split(',')]
+        i = 0
+        for a, b in itertools.combinations(keywords_list, 2):
+            try:
+                tfidf_vectorizer = TfidfVectorizer(analyzer="char")
+                sparse_matrix = tfidf_vectorizer.fit_transform([a]+[b])
+                sim_score = cosine_similarity(sparse_matrix[0],sparse_matrix[1])
+                keyword_df.at[i, 'Word_1'] = a
+                keyword_df.at[i, 'Word_2'] = b
+                keyword_df.at[i, 'Cosine similarity'] = sim_score
+            except KeyError:
+                i+=1
+                continue
+            i+=1
+        keyword_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word_Embeddings_BERT_Keyword_Similarity')
+        keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
+        filesToOpen.append(keyword_sim_outputFilename)
    
     # write csv file
     outputFilename = outputFilename.replace(".html", ".csv")
     csv_result_df.to_csv(outputFilename, encoding='utf-8', index=False)
-    dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)    
+    
     filesToOpen.append(outputFilename)
-    filesToOpen.append(dist_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running BERT word embeddings at', True, '', True, startTime)
@@ -482,7 +572,4 @@ def split_into_sentences(text):
     sentences = sentences[:-1]
     sentences = [s.strip() for s in sentences]
     return sentences
-
-# Looking for good model
-# def coreference_BERT(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage):
 

@@ -209,7 +209,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 top_words_lb = tk.Label(window,text='Number of top words for distance combinations')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,top_words_lb,True)
 
-top_words_var.set(5)
+top_words_var.set(10)
 top_words_entry = tk.Entry(window,width=5,textvariable=top_words_var)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+300,
