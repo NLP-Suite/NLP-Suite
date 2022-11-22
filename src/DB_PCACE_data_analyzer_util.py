@@ -581,3 +581,172 @@ def find_simplex_identifier_one_complextype(complex_name, data_Simplex, data_Sim
     complexes = find_simplex_data(complexes, complex_name, data_xref_Simplex_Complex, data_Simplex, data_SimplexText)
 
     return complexes
+
+
+# give distribution frequency for the input simplex name
+# parameter: name: simplex name in list type
+# return: dataframe: name, value, frequency
+def dist(name, setup_Simplex, setup_xref_Simplex_Complex, data_xref_Simplex_Complex, data_Simplex, data_SimplexText):
+  simplex_id = find_setup_id_simplex(name, setup_Simplex)
+  id = simplex_id.iat[0,0]
+  xref_id = setup_xref_Simplex_Complex[setup_xref_Simplex_Complex['ID_setup_simplex']==id].iat[0,0]
+  xref_data = data_xref_Simplex_Complex[data_xref_Simplex_Complex['ID_setup_xref_simplex_complex']==xref_id]
+  xref_data = xref_data[['ID_data_simplex', 'ID_data_complex']]
+  count = xref_data.groupby(['ID_data_simplex']).count()
+
+  data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+  data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+  count = pd.merge(count, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+  count = count[['ID_data_simplex', 'Value', 'ID_data_complex']]
+
+  count = count.rename(columns = {'ID_data_simplex':name[0], 'ID_data_complex':'Frequency'})
+
+  return count
+
+# give identifier version of semantic triplet
+# return: dataframe: Semantic triplet data id, S data id, S Identifier, V data id, V Identifier, O data id, O Identifier
+def semantic_triplet_complex(setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex, data_Complex):
+  id = find_setup_id(['Semantic Triplet'], setup_Complex).iat[0,0]
+
+  save = setup_xref_Complex_Complex[setup_xref_Complex_Complex['HigherComplex'] == id]
+  save = save['ID_setup_xref_complex-complex'].values.tolist()
+  save = save[:3]
+
+  triplet = data_xref_Complex_Complex[data_xref_Complex_Complex['ID_setup_xref_complex_complex'].isin(save)]
+  triplet = triplet.pivot_table(
+      index = ['ID_data_complex'],
+      columns = 'ID_setup_xref_complex_complex',
+      values = 'ID_data_complex.1'
+  ).reset_index()
+  triplet = triplet.rename(columns = {'ID_data_complex': 'Semantic Triplet',63: 'S', 64: 'V', 65: 'O'})
+
+  complexes = ['S', 'V', 'O']
+
+  for i in range(3):
+    complex = complexes[i]
+    triplet = pd.merge(triplet, data_Complex, how = 'left', left_on = complex, right_on = 'ID_data_complex')
+    pop = triplet.pop('Identifier')
+    name = complex + ' Identifier'
+    triplet.insert((i+1)*2, name, pop)
+    triplet = triplet.drop('ID_data_complex', axis = 1)
+    triplet = triplet.drop('ID_setup_complex', axis = 1)
+
+  return triplet
+
+# give data for Participant-S or Participant-O
+# parameter: "Participant-S" or "Participant-O"
+# return: dataframe: Participant-S data id, Value = simplex, Type = simplex name
+def participant_simplex(participant, data_Simplex, data_SimplexText, setup_Complex, setup_Simplex, data_Complex, data_xref_Simplex_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex):
+  data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+  data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+  xref_sc_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+  xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+
+  simplexes = []
+
+  lower_complexes = {'Individual':'Name of individual actor', 'Collective actor':'Name of collective actor', 'Organization':'Name of organization'}
+
+  for lower in lower_complexes:
+    simplex = lower_complexes[lower]
+
+    simplex_id = find_setup_id_simplex([simplex], setup_Simplex)
+    simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+
+    xref_sc_value = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
+
+    path = find_path(participant, lower, setup_Complex, setup_xref_Complex_Complex)
+    id_data = link_data_id(path, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
+
+    data = pd.merge(id_data, xref_sc_value, how = 'left', left_on = lower, right_on = 'ID_data_complex')
+    data = data[data[participant].notna()]
+    data = data.drop_duplicates(subset=[participant])
+    data = data[[participant, lower, 'Value']]
+    data = data.drop(lower, axis = 1)
+    data[['Type']] = lower
+
+    simplexes.append(data)
+
+  simplexes_combined = pd.concat([simplexes[0], simplexes[1], simplexes[2]])
+
+  return simplexes_combined
+
+# give data for Process
+# return: dataframe: Process data id, Simple process data id, Value = simplex
+def process_simplex(setup_Simplex, data_Simplex, data_SimplexText, data_xref_Simplex_Complex, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex):
+  simplex_id = find_setup_id_simplex(['Negation', 'Modal verb', 'Verbal phrase'], setup_Simplex)
+  simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+
+  data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+  data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
+  xref_sc_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+  xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
+  xref_sc_value = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
+
+  path = ['Process', 'Simple process']
+  id_data_simple_process_oneLevel = link_data_id(path, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
+  data_simple_process_oneLevel = pd.merge(id_data_simple_process_oneLevel, xref_sc_value, how = 'left', left_on = 'Simple process', right_on = 'ID_data_complex')
+  data_simple_process_oneLevel = data_simple_process_oneLevel.sort_values(by = ['ID_data_complex','ID_setup_simplex'], ascending = False)
+  data_simple_process_oneLevel = data_simple_process_oneLevel.groupby(['Process'])['Value'].apply(lambda x: x.str.cat(sep=' ')).reset_index()
+  data_oneLevel = pd.merge(id_data_simple_process_oneLevel, data_simple_process_oneLevel, how = 'left', left_on = 'Process', right_on = 'Process')
+
+  path = ['Process', 'Complex process', 'Simple process']
+  id_data_simple_process_twoLevel = link_data_id(path, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
+  data_simple_process_twoLevel = pd.merge(id_data_simple_process_twoLevel, xref_sc_value, how = 'left', left_on = 'Simple process', right_on = 'ID_data_complex')
+  data_simple_process_twoLevel = data_simple_process_twoLevel.sort_values(by = ['ID_data_complex','ID_setup_simplex'], ascending = False)
+  data_simple_process_twoLevel = data_simple_process_twoLevel.groupby(['Process'])['Value'].apply(lambda x: x.str.cat(sep=' ')).reset_index()
+  data_twoLevel = pd.merge(id_data_simple_process_twoLevel, data_simple_process_twoLevel, how = 'left', left_on = 'Process', right_on = 'Process')
+
+  data_process_simplex = pd.concat([data_oneLevel, data_twoLevel])
+
+  return data_process_simplex
+
+# give the semantic triplet with simplex
+# return: dataframe: Semantic triplet data id, S data id, S Type, S Simplex, V data id, V Simplex, O data id, O Type, O Simplex
+# p.s. Type = Individual / Orgaization / Collective actor
+def semantic_triplet_simplex(inputDir):
+    setup_Complex=os.path.join(inputDir,'setup_Complex.csv')
+    if os.path.isfile(setup_Complex):
+        setup_Complex_df=pd.read_csv(setup_Complex)
+
+    setup_Simplex=os.path.join(inputDir,'setup_Simplex.csv')
+    if os.path.isfile(setup_Simplex):
+        setup_Simplex_df=pd.read_csv(setup_Simplex)
+
+    setup_xref_Complex_Complex=os.path.join(inputDir,'setup_xref_Complex_Complex.csv')
+    if os.path.isfile(setup_xref_Complex_Complex):
+        setup_xref_Complex_Complex_df=pd.read_csv(setup_xref_Complex_Complex)
+
+    data_xref_Complex_Complex=os.path.join(inputDir,'data_xref_Complex_Complex.csv')
+    if os.path.isfile(data_xref_Complex_Complex):
+        data_xref_Complex_Complex_df=pd.read_csv(data_xref_Complex_Complex)
+
+    data_Complex=os.path.join(inputDir,'data_Complex.csv')
+    if os.path.isfile(data_Complex):
+        data_Complex_df=pd.read_csv(data_Complex)
+
+    data_Simplex=os.path.join(inputDir,'data_Simplex.csv')
+    if os.path.isfile(data_Simplex):
+        data_Simplex_df=pd.read_csv(data_Simplex)
+
+    data_SimplexText=os.path.join(inputDir,'data_SimplexText.csv')
+    if os.path.isfile(data_SimplexText):
+        data_SimplexText_df=pd.read_csv(data_SimplexText)
+
+    data_xref_Simplex_Complex = os.path.join(inputDir, 'data_xref_Simplex_Complex.csv')
+    if os.path.isfile(data_xref_Simplex_Complex):
+        data_xref_Simplex_Complex_df = pd.read_csv(data_xref_Simplex_Complex)
+
+    triplet = semantic_triplet_complex(setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df)
+    s = participant_simplex('Participant-S', data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_Simplex_df, data_Complex_df, data_xref_Simplex_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
+    s = s.rename(columns = {'Value':'S Simplex', 'Type':'S Type'})
+    v = process_simplex(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
+    o = participant_simplex('Participant-O', data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_Simplex_df, data_Complex_df, data_xref_Simplex_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
+    o = o.rename(columns = {'Value':'O Simplex', 'Type':'O Type'})
+
+    simplex_version = pd.merge(triplet, s, how = 'left', left_on = 'S', right_on = 'Participant-S')
+    simplex_version = pd.merge(simplex_version, v, how = 'left', left_on = 'V', right_on = 'Process')
+    simplex_version = pd.merge(simplex_version, o, how = 'left', left_on = 'O', right_on = 'Participant-O')
+    simplex_version = simplex_version.loc[:, ['Semantic Triplet', 'S', 'S Type', 'S Simplex', 'V', 'Value', 'O', 'O Type', 'O Simplex']]
+    simplex_version = simplex_version.rename(columns = {'Value':'V Simplex'})
+
+    return simplex_version

@@ -21,8 +21,10 @@ import DB_PCACE_data_analyzer_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage):
-    print('')
+def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage, semantic_triplet_var):
+
+    if semantic_triplet_var:
+        DB_PCACE_data_analyzer_util.semantic_triplet_simplex(inputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(
@@ -30,7 +32,8 @@ run_script_command=lambda: run(
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
-                                GUI_util.charts_dropdown_field.get())
+                                GUI_util.charts_dropdown_field.get(),
+                                semantic_triplet_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -80,7 +83,6 @@ select_SQLite_DB_var=tk.StringVar()
 select_DB_tables_var=tk.StringVar()
 select_DB_table_fields_var=tk.StringVar()
 view_relations_var=tk.IntVar()
-
 
 simplex_objects_var = tk.StringVar()
 complex_objects_var = tk.StringVar()
