@@ -303,6 +303,7 @@ def remove_hyperlinks(inputFilename):
     return True, no_hyperlink_filename
 
 # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location' in GIS files
+# header1 is old header, header2 is new header
 def rename_header(inputFilename, header1, header2):
     headerFound=False
     if not inputFilename.endswith('.csv'):

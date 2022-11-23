@@ -1067,7 +1067,7 @@ class GexfImport:
 
 # returns a gexf file
 
-def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spellCol):
+def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spellCol=''):
     """
     Create gexf format file that can be used in Gephi to visualize result dynamically.
     :param corpus: A Corpus Object

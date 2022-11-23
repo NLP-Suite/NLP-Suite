@@ -436,15 +436,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             i = 0
             # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
             if inputFilename[-4:] == ".csv":
+                fileBase = os.path.basename(inputFilename)[0:-4]
                 nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue='utf-8')
                 if nRecords > 1:   # including headers; file is empty
-                    gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputSVOSVODir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
+                    gexf_file = Gephi_util.create_gexf(window,fileBase, outputSVOSVODir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
                                                        "Sentence ID")
                     filesToOpen.append(gexf_file)
                 else:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_result_list[0])
                     if nRecords > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(window,inputFileBase, inputFilename, svo_result_list[0],
+                        gexf_file = Gephi_util.create_gexf(window,fileBase, inputFilename, svo_result_list[0],
                                                            "Subject (S)", "Verb (V)", "Object (O)", "Sentence ID")
                         filesToOpen.append(gexf_file)
             else:  # txt input file

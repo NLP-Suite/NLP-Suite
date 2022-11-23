@@ -380,12 +380,16 @@ def geocode(window,locations, inputFilename, outputDir,
 				# pnt.name = itemToGeocode
 				pnt.style.labelstyle.scale = '1'
 				# pnt.style.labelstyle.color = simplekml.Color.rgb(int(r_value), int(g_value), int(b_value))
-				sentence = input_df.at[index-1, 'Sentence']
-				document = input_df.at[index-1, 'Document']
-				document = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document))[1]
-				pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
-									"<i><b>Sentence</b></i>: " + sentence + "<br/><br/>" + \
-									"<i><b>Document</b></i>: " + document
+				# the code would break if no sentence is passed (e.g., from DB_PC-ACE)
+				try:
+					sentence = input_df.at[index-1, 'Sentence']
+					document = input_df.at[index - 1, 'Document']
+					document = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document))[1]
+					pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
+																				   "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>" + \
+									  "<i><b>Document</b></i>: " + document
+				except:
+					pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>"
 				# TODO MINO GIS date option
 				if datePresent:
 					GGPdateFormat = convertToGGP(date)
@@ -443,7 +447,7 @@ def convertToGGP(date):
 		# years before 1900 cannot be used
 		# pre 1900 dates may give a problem in Windows: ValueError: format %y requires year >= 1900 on Windows
 		try:
-			GGPdateFormat = currentDateFormat.strftime('%Y-%m-%d')			
+			GGPdateFormat = currentDateFormat.strftime('%Y-%m-%d')
 		except:
 			mb.showerror(title='Date error',
 							message="There was an error in processing the date '" + date + "'.\n\nThe date format '" + fmt + "' was automatically applied to process the date, where format values are as follows:\n%B or %b   alphabetic month name in full or first 3 characters;\n%m   2-digit month (1 to 12);\n%d   2-digit day of the month (1 to 31);\n%Y   4-digit and %y 2-digit year (1918, 18).\n\nBut... either\n1.   the format automatically applied is incorrect for the date;\n2.   the date is in unrecognized format (e.g., it contains time besides date);\n3.   the date is prior to 1900. The library 'strftime' used here to deal with dates cannot process dates prior to 1900 in Windows.")
