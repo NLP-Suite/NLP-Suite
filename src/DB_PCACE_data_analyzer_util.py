@@ -26,10 +26,14 @@ def import_PCACE_tables(inputDir):
 
     for file in dirSearch:
         # Only include .csv files from the input dir
-        if ".csv" in file and len(file) > 4:
+        if (file.startswith('data_') or file.startswith('setup_')) and (file.endswith('.csv')):
             # Strip off the .csv extension
             # tableList.append(file[:len(file) - 4])
-            tableList.append(file)
+            if not file in str(tableList):
+                if file=='data_Complex.csv':
+                    print('')
+                print(file)
+                tableList.append(file)
     # if len(tableList) == 0:
     #     mb.showwarning(title='Warning',
     #                    message='There are no csv files in the input directory.\n\nThe script expects a set of csv files with overlapping ID fields across files in order to construct an SQLite relational database.\n\nPlease, select an input directory that contains 18 csv PC-ACE tables and try again.')

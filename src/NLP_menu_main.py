@@ -44,7 +44,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_chart_output_checkbox.get(),
-                            GUI_util.charts_dropdown_field.get(),
+                            GUI_util.charts_package_options_widget.get(),
                             script_to_run,
                             IO_values)
 
@@ -567,10 +567,22 @@ reminders_util.checkReminder('NLP_config.csv',
                              True)
 routine_options = reminders_util.getReminders_list('NLP_config.csv')
 
+reminders_util.checkReminder('NLP_config.csv',
+                             reminders_util.title_options_NLP_Suite_welcome,
+                             reminders_util.message_NLP_Suite_welcome,
+                             True)
+
+if sys.platform == 'darwin':
+    reminders_util.checkReminder('NLP_config.csv',
+                                 reminders_util.title_options_TensorFlow,
+                                 reminders_util.message_TensorFlow,
+                                 True)
+
 # check for missing I/O configuration options
 setup_IO_checkbox()
 
 # check for missing external software
 setup_external_programs_checkbox('')
+
 
 GUI_util.window.mainloop()

@@ -38,11 +38,20 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
     ## if statements for any requirements
 
     if BERT_var:
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_BERT_Word2Vec_timing,
+                                     reminders_util.message_BERT_Word2Vec_timing,
+                                     True)
+
         BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, Word2Vec_Dir, openOutputFiles, createCharts,
                                                    chartPackage, dim_menu_var, compute_distances_var, top_words_var, keywords_var)
         filesToOpen.append(BERT_output)
 
     if Gensim_var:
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_Gensim_Word2Vec_timing,
+                                     reminders_util.message_Gensim_Word2Vec_timing,
+                                     True)
         if 'Clustering' in vis_menu_var and keywords_var=='':
             mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
             return
@@ -61,7 +70,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
-                                GUI_util.charts_dropdown_field.get(),
+                                GUI_util.charts_package_options_widget.get(),
                                 remove_stopwords_var.get(),
                                 lemmatize_var.get(),
                                 BERT_var.get(),
@@ -342,11 +351,6 @@ reminders_util.checkReminder(
     reminders_util.title_options_Word2Vec_eucledian_distance,
     reminders_util.message_Word2Vec_eucledian_distance,
     True)
-
-reminders_util.checkReminder(config_filename,
-                             reminders_util.title_options_Gensim_Word2Vec_timing,
-                             reminders_util.message_Gensim_Word2Vec_timing_timing,
-                             True)
 
 if error:
     mb.showwarning(title='Warning',message='The Word2Vec algorithms expect in input either a txt file/directory of txt files or a csv file of previosuly computed Euclidean distances.')

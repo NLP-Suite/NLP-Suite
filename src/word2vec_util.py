@@ -69,7 +69,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         # check if csv file has Vector column
         if 'Vector' in w2v_df.columns:
             w2v_df['Vector'] = w2v_df['Vector'].astype(object)
-            
+
             # keyword cos similarity
             if keywords_var:
                 keyword_df = pd.DataFrame()
@@ -86,7 +86,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                             B = ' '.join(B.strip('][').split(' ')).split()
                             A = list(map(float, A))
                             B = list(map(float, B))
-                            
+
                             # calculate cos similarity
                             sim_score = np.dot(A,B)/(norm(A)*norm(B))
 
@@ -98,7 +98,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                         i+=1
                         continue
                     i+=1
-                
+
                 # write output file
                 keyword_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', f'Word2Vec_Keyword_Similarity')
                 keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
@@ -107,11 +107,11 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
             IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                         'Finished running Gensim Word2Vec at', True, '', True, startTime)
             return filesToOpen
-        
+
         else:
             mb.showerror(title='csv file error',
             message='The selected csv file does NOT contain Vector column.\n\nPlease, select a different csv file and try again.')
-                                    
+
     # process inputFile/inputDir
     if len(inputFilename)>0:
         doc = inputFilename
@@ -222,7 +222,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
             filtered_words[v] = words[v]
 
     ## visualization
-    print('Visualizing via t-SNE...')
+    print('Preparing charts via t-SNE...')
 
     if vis_menu_var == 'Plot all word vectors':
 
@@ -321,7 +321,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         fig_words.write_html(outputFilename)
         filesToOpen.append(outputFilename)
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'Word2Vec')  
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'Word2Vec')
 
     fig.write_html(outputFilename)
     filesToOpen.append(outputFilename)
@@ -347,6 +347,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     # compute distances
     if compute_distances_var:
+        print('Compute word distances...')
         # find top 10 frequent Words
         # word vectors
         tmp_result = result_df['Word'].value_counts().index.tolist()[:top_words_var]
@@ -363,6 +364,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         # calculate cos similarity
         cos_sim_df = pd.DataFrame()
         cos_idx = 0
+        print('Compute cosine similarity between words...')
         for i, row in tmp_result_df.iterrows():
             j = len(tmp_result_df)-1
             while i < j:
@@ -382,6 +384,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         # TSNE x,y (z) coordinates
         tsne_dist_df = pd.DataFrame()
         dist_idx = 0
+        print('Compute t-SNE 2-dimensional euclidean distance between words...')
         for i, row in tmp_tsne_df.iterrows():
             j = len(tmp_tsne_df)-1
             while i < j:
@@ -397,6 +400,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         # vectors of top 10 freq words n-dimensional distance
         dist_df = pd.DataFrame()
         dist_idx = 0
+        print('Compute n-dimensional euclidean distance between words...')
         for i, row in tmp_result_df.iterrows():
             j = len(tmp_result_df)-1
             while i < j:
@@ -405,7 +409,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                 dist_df.at[dist_idx, 'n-dimensional Euclidean distance'] = euclidean_dist(row['Vector'], tmp_result_df.at[j, 'Vector'])
                 dist_idx+=1
                 j-=1
-        
+
         # create outputFilenames and save them
         cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_Cos_Similarity')
         tsne_dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_TSNE_dist')
@@ -421,6 +425,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     # keyword cos similarity
     if keywords_var:
+        print('Compute cosine similarity between selected keywords...')
         keyword_df = pd.DataFrame()
         keywords_list = [x.strip() for x in keywords_var.split(',')]
         i = 0
@@ -441,7 +446,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     # write csv file
     outputFilename = outputFilename.replace(".html", ".csv")
     result_df.to_csv(outputFilename, encoding='utf-8', index=False)
-    
+
     filesToOpen.append(outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',

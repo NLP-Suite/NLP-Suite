@@ -56,7 +56,7 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts
     Ndocs = str(len(inputDocs))
 
     result = []
-    
+
 
     documentID = 0
     for doc in inputDocs:
@@ -151,7 +151,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     bad_chars = [';', ':', '', "*", "\"", "\'", "“", "”", "—", "’s", "n’t"]
     startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running BERT word embeddings at', True)
-    
+
 
     for doc in inputDocs:
         head, tail = os.path.split(doc)
@@ -171,8 +171,8 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
     words_without_Stop = statistics_txt_util.excludeStopWords_list(all_words)
 
-            
-            
+
+
 
 
     embeddings = model.encode(words_without_Stop)
@@ -194,7 +194,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
     # Plotting the word embeddings
      ## visualization
-    print('Visualizing via t-SNE...')
+    print('Preparing charts via t-SNE...')
     if dim_menu_var == '2D':
         tsne = TSNE(n_components=2)
         xys = tsne.fit_transform(embeddings)
@@ -214,7 +214,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
         fig = word2vec_util.plot_interactive_3D_graph(tsne_df)
         fig_words = word2vec_util.plot_interactive_3D_graph_words(tsne_df)
-    
+
 
     documentID = 0
     for doc in inputDocs:
@@ -241,11 +241,9 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
             else:
                 for w in wrds_no_stop:
                     csv_result.append([w, embeds[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
-    
+
 
     #csv_result.insert(0, header)
-
-
 
     ### write output html graph
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html',
@@ -263,6 +261,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
       # compute distances
     if compute_distances_var:
+        print('Compute distances between words...')
         # find top 10 frequent Words
         # word vectors
         tmp_result = csv_result_df['Word'].value_counts().index.tolist()[:top_words_var]
@@ -279,6 +278,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         # calculate cos similarity
         cos_sim_df = pd.DataFrame()
         cos_idx = 0
+        print('Compute cosine similarity between words...')
         for i, row in tmp_result_df.iterrows():
             j = len(tmp_result_df)-1
             while i < j:
@@ -300,6 +300,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         # TSNE x,y (z) coordinates
         tsne_dist_df = pd.DataFrame()
         dist_idx = 0
+        print('Compute t-SNE 2-dimensional euclidean distance between words...')
         for i, row in tmp_tsne_df.iterrows():
             j = len(tmp_tsne_df)-1
             while i < j:
@@ -311,10 +312,11 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
                     tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = word2vec_util.euclidean_dist( [row['x'],row['y'],row['z']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y'],tmp_tsne_df.at[j, 'z']] )
                 dist_idx+=1
                 j-=1
-        
+
         # vectors of top 10 freq words n-dimensional distance
         dist_df = pd.DataFrame()
         dist_idx = 0
+        print('Compute n-dimensional euclidean distance between words...')
         for i, row in tmp_result_df.iterrows():
             j = len(tmp_result_df)-1
             while i < j:
@@ -323,7 +325,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
                 dist_df.at[dist_idx, 'n-dimensional Euclidean distance'] = word2vec_util.euclidean_dist(row['Embeddings'], tmp_result_df.at[j, 'Embeddings'])
                 dist_idx+=1
                 j-=1
-        
+
         # create outputFilenames and save them
         cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word_Embeddings_BERT_Cos_Similarity')
         tsne_dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word_Embeddings_BERT_TSNE_dist')
@@ -340,9 +342,10 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         filesToOpen.append(dist_outputFilename)
         filesToOpen.append(tsne_dist_outputFilename)
         filesToOpen.append(cos_sim_outputFilename)
-    
+
     # keyword cos similarity
     if keywords_var:
+        print('Compute cosine similarity between selected keywords...')
         keyword_df = pd.DataFrame()
         keywords_list = [x.strip() for x in keywords_var.split(',')]
         i = 0
@@ -361,11 +364,11 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         keyword_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word_Embeddings_BERT_Keyword_Similarity')
         keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
         filesToOpen.append(keyword_sim_outputFilename)
-   
+
     # write csv file
     outputFilename = outputFilename.replace(".html", ".csv")
     csv_result_df.to_csv(outputFilename, encoding='utf-8', index=False)
-    
+
     filesToOpen.append(outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',

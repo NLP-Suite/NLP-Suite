@@ -61,7 +61,7 @@ def set_window(size, label, config, config_option):
 # scrollbar.config(command=listbox.yview)
 
 def clear(e):
-    charts_dropdown_field.set('Excel')
+    charts_package_options_widget.set('Excel')
     videos_dropdown_field.set('Watch videos')
     tips_dropdown_field.set('Open TIPS files')
     reminders_dropdown_field.set('Open reminders')
@@ -102,7 +102,8 @@ GitHub_release_version_var=tk.StringVar()
 
 open_csv_output_checkbox = tk.IntVar()
 create_chart_output_checkbox = tk.IntVar()
-charts_dropdown_field = tk.StringVar()
+charts_package_options_widget = tk.StringVar()
+charts_type_options_widget = tk.StringVar()
 
 videos_dropdown_field = tk.StringVar()
 tips_dropdown_field = tk.StringVar()
@@ -909,20 +910,32 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         create_chart_output_checkbox.set(1)
         # y_multiplier_integer=y_multiplier_integer+1
         # y_multiplier_integer=y_multiplier_integer+1
-        charts_options = ['Excel','Python plotLy (dynamic)','Python plotLy (static)']
-        # TODO EXCEL BUTTON (same as setup)
-        charts_dropdown_field.set('Excel')
-        charts_menu_lb = tk.OptionMenu(window,charts_dropdown_field,*charts_options)
+        charts_package_options = ['Excel','Python plotLy (dynamic)','Python plotLy (static)']
+        # TODO EXCEL widget (same as open reminders)
+        charts_package_options_widget.set('Excel')
+        charts_package_menu_lb = tk.OptionMenu(window,charts_package_options_widget,*charts_package_options)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
                                                        y_multiplier_integer,
-                                                       charts_menu_lb,False,False,False)
+                                                       charts_package_menu_lb,True,False,False)
+
+        # TODO chart type widget (same as setup)
+        charts_type_options = ['Bar chart','Line chart','Pie chart', 'Scatter plot', 'Box plot', 'Sankey plot', 'Treemap']
+        charts_type_options_widget.set('Bar chart')
+        charts_type_menu_lb = tk.OptionMenu(window,charts_type_options_widget,*charts_type_options)
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       charts_type_menu_lb,
+                                                       False,False,False,False,90,
+                                                       GUI_IO_util.open_setup_x_coordinate,
+                                                       "The selection of specific chart types is still under development.\nCharts are currently automatically visualized as bar or line charts.")
 
     # def warning_message(*args):
-    #     if charts_dropdown_field.get()!='Excel':
+    #     if charts_package_options_widget.get()!='Excel':
     #         mb.showwarning(title='Warning',
     #                        message="The 'Python plotLy' option to draw charts is still under development. By and large working well, but... little improvements are under way.")
-    #         charts_dropdown_field.set('plotLy')
-    # charts_dropdown_field.trace('w',warning_message)
+    #         charts_package_options_widget.set('plotLy')
+    # charts_package_options_widget.trace('w',warning_message)
 
     readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)
     # In NLP_setup_IO_main and NLP_setup_package_language_main an extra line of widgets is added to the GUI

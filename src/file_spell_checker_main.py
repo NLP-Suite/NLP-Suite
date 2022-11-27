@@ -119,7 +119,7 @@ run_similarity_command = lambda: run(
                                      GUI_util.output_dir_path.get(),
                                      GUI_util.open_csv_output_checkbox.get(),
                                      GUI_util.create_chart_output_checkbox.get(),
-                                     GUI_util.charts_dropdown_field.get(),
+                                     GUI_util.charts_package_options_widget.get(),
                                      by_all_tokens_var.get(),
                                      byNER_value_var.get(),
                                      NER_list,

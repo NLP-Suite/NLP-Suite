@@ -290,7 +290,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get(), GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_chart_output_checkbox.get(),
-                                 GUI_util.charts_dropdown_field.get(),
+                                 GUI_util.charts_package_options_widget.get(),
                                  n_grams_list,
                                  n_grams_viewer_var.get(),
                                  CoOcc_Viewer_var.get(),
