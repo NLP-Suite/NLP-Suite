@@ -184,7 +184,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
     # Plotting the word embeddings
      ## visualization
-    print('Preparing charts via t-SNE...')
+    print('\Started preparing charts via t-SNE at ' + str(time.time))
     if dim_menu_var == '2D':
         tsne = TSNE(n_components=2)
         xys = tsne.fit_transform(embeddings)

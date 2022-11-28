@@ -223,7 +223,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
             filtered_words[v] = words[v]
 
     ## visualization
-    print('Preparing charts via t-SNE...')
+    print('\Started preparing charts via t-SNE at ' + str(time.time))
 
     if vis_menu_var == 'Plot all word vectors':
 
