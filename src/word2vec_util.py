@@ -312,7 +312,9 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
 
     ## saving output
-    print('Saving csv vector file and html graph output for top ' + str(top_words_var) + ' of ' + str(len(words)) + ' distinct words...')
+    print('\nComputed the vector space for ' + str(len(words)) + ' distinct words in the input file(s)...')
+
+    print('\nSaving csv vector file and html graph output for top ' + str(top_words_var) + ' of ' + str(len(words)) + ' distinct words...')
     ### write output html graph
 
     if not fig_words == 'none':

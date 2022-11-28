@@ -232,8 +232,9 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
                 for w in wrds_no_stop:
                     csv_result.append([w, embeds[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
+    print('\nComputed the vector space for ' + str(len(words)) + ' distinct words in the input file(s)...')
 
-    print('Saving csv vector file and html graph output for top ' + str(top_words_var) + ' of ' + str(len(words)) + ' distinct words...')
+    print('\nSaving csv vector file and html graph output for top ' + str(top_words_var) + ' of ' + str(len(words)) + ' distinct words...')
 
     ### write output html graph
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html',
