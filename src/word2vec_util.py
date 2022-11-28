@@ -12,6 +12,7 @@ import tkinter as tk
 import pandas as pd
 import tkinter.messagebox as mb
 import math
+import time
 
 import GUI_IO_util
 import IO_files_util
@@ -351,7 +352,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     # compute word distances
     if compute_distances_var:
-        print('\nCompute word distances between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words...')
+        print('\nStarted computing word distances between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time))
         # find user-selected top most-frequent words
         # word vectors
         tmp_result = result_df['Word'].value_counts().index.tolist()[:top_words_var]
@@ -368,7 +369,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         # calculate cos similarity
         cos_sim_df = pd.DataFrame()
         cos_idx = 0
-        print('\nCompute cosine similarity between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words...')
+        print('\nStarted computing cosine similarity between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time))
         for i, row in tmp_result_df.iterrows():
             j = len(tmp_result_df)-1
             while i < j:
@@ -388,7 +389,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         # TSNE x,y (z) coordinates
         tsne_dist_df = pd.DataFrame()
         dist_idx = 0
-        print('\nCompute t-SNE 2-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words...')
+        print('\nStarted computing t-SNE 2-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time))
         for i, row in tmp_tsne_df.iterrows():
             j = len(tmp_tsne_df)-1
             while i < j:
@@ -404,7 +405,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         # vectors of top 10 freq words n-dimensional Euclidean distance
         dist_df = pd.DataFrame()
         dist_idx = 0
-        print('\nCompute n-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words...')
+        print('\nStarted computing n-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time))
         for i, row in tmp_result_df.iterrows():
             j = len(tmp_result_df)-1
             while i < j:
@@ -431,7 +432,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     if keywords_var:
         keyword_df = pd.DataFrame()
         keywords_list = [x.strip() for x in keywords_var.split(',')]
-        print('\nCompute cosine similarity between words for ' + str(len(keywords_list)) + ' selected keywords...')
+        print('\nStarted computing cosine similarity between words for ' + str(len(keywords_list)) + ' selected keywords at ' + str(time.time))
         i = 0
         for a, b in itertools.combinations(keywords_list, 2):
             try:
