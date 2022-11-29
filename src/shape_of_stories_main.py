@@ -28,7 +28,6 @@ import IO_csv_util
 import reminders_util
 
 import Stanford_CoreNLP_util
-import BERT_util
 import spaCy_util
 import Stanza_util
 
@@ -134,6 +133,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # BERT ---------------------------------------------------------
 
         if 'BERT' in sentimentAnalysisMethod:
+            import BERT_util
             tempOutputFiles = BERT_util.main(inputFilename, inputDir, outputDir, '', createCharts, chartPackage)
             if tempOutputFiles == None:
                 return

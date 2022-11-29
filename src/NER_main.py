@@ -17,7 +17,6 @@ import GUI_IO_util
 import IO_files_util
 import reminders_util
 import config_util
-import BERT_util
 import spaCy_util
 import Stanford_CoreNLP_util
 import Stanza_util
@@ -57,6 +56,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         return
 
     if 'BERT' in NER_package:
+        import BERT_util
         tempOutputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, '', createCharts, chartPackage)
         if tempOutputFiles != '':
             filesToOpen.append(tempOutputFiles)

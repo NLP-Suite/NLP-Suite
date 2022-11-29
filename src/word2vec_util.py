@@ -223,7 +223,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
             filtered_words[v] = words[v]
 
     ## visualization
-    print('\Started preparing charts via t-SNE at ' + str(time.time))
+    print('\Started preparing charts via t-SNE at ' + str(time.time()))
 
     if vis_menu_var == 'Plot all word vectors':
 
@@ -312,7 +312,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
 
     ## saving output
-    print('\nComputed the vector space for ' + str(len(words)) + ' distinct words in the input file(s)...')
+    print('\nFinished computing the vector space for ' + str(len(words)) + ' distinct words in the input file(s) at ' + str(time.time()))
 
     print('\nSaving csv vector file and html graph output for top ' + str(top_words_var) + ' of ' + str(len(words)) + ' distinct words...')
     ### write output html graph
@@ -354,7 +354,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     # compute word distances
     if compute_distances_var:
-        print('\nStarted computing word distances between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time))
+        print('\nStarted computing word distances between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time()))
         # find user-selected top most-frequent words
         # word vectors
         tmp_result = result_df['Word'].value_counts().index.tolist()[:top_words_var]
@@ -371,7 +371,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         # calculate cos similarity
         cos_sim_df = pd.DataFrame()
         cos_idx = 0
-        print('\nStarted computing cosine similarity between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time))
+        print('\nStarted computing cosine similarity between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time()))
         for i, row in tmp_result_df.iterrows():
             j = len(tmp_result_df)-1
             while i < j:
@@ -391,7 +391,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         # TSNE x,y (z) coordinates
         tsne_dist_df = pd.DataFrame()
         dist_idx = 0
-        print('\nStarted computing t-SNE 2-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time))
+        print('\nStarted computing t-SNE 2-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time()))
         for i, row in tmp_tsne_df.iterrows():
             j = len(tmp_tsne_df)-1
             while i < j:
@@ -407,7 +407,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         # vectors of top 10 freq words n-dimensional Euclidean distance
         dist_df = pd.DataFrame()
         dist_idx = 0
-        print('\nStarted computing n-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time))
+        print('\nStarted computing n-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time()))
         for i, row in tmp_result_df.iterrows():
             j = len(tmp_result_df)-1
             while i < j:
@@ -434,7 +434,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     if keywords_var:
         keyword_df = pd.DataFrame()
         keywords_list = [x.strip() for x in keywords_var.split(',')]
-        print('\nStarted computing cosine similarity between words for ' + str(len(keywords_list)) + ' selected keywords at ' + str(time.time))
+        print('\nStarted computing cosine similarity between words for ' + str(len(keywords_list)) + ' selected keywords at ' + str(time.time()))
         i = 0
         for a, b in itertools.combinations(keywords_list, 2):
             try:

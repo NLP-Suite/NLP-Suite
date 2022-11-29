@@ -13,7 +13,6 @@ import reminders_util
 import GUI_IO_util
 import IO_files_util
 import word2vec_util
-import BERT_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -47,6 +46,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
                                      reminders_util.title_options_BERT_Word2Vec_timing,
                                      reminders_util.message_BERT_Word2Vec_timing,
                                      True)
+        import BERT_util
 
         BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, Word2Vec_Dir, openOutputFiles, createCharts,
                                                    chartPackage, dim_menu_var, compute_distances_var, top_words_var, keywords_var)

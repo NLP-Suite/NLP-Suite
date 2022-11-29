@@ -341,9 +341,12 @@ def check_CoreNLPVersion(CoreNLPdir,calling_script=''):
 
 # the function checks that external programs (e.g., Gephi, StanfordCoreNLP) have been properly installed
 def check_inputExternalProgramFile(calling_script, software_dir, programName):
-
+    unarchive_msg = ''
+    head, tail = os.path.split(software_dir)
+    if os.path.isdir(os.path.join(software_dir,tail)):
+        unarchive_msg = '\n\nIt looks like your ' + programName + ' directory ' + software_dir + ' contains a ' + tail + ' directory inside. '
     wrong_dir_msg = 'The selected software directory\n  ' + software_dir + '\nis NOT the expected ' + programName.upper() + ' directory.'
-    unarchive_msg = '\n\nDO MAKE SURE THAT WHEN YOU UNARCHIVE THE ' + programName.upper() + ' ARCHIVE YOU DO NOT END UP WITH A ' + programName.upper() + ' DIRECTORY INSIDE A ' + programName.upper() + ' DIRECTORY.'
+    unarchive_msg = unarchive_msg + 'DO MAKE SURE THAT WHEN YOU UNARCHIVE THE ' + programName.upper() + ' ARCHIVE YOU DO NOT END UP WITH A ' + programName.upper() + ' DIRECTORY INSIDE A ' + programName.upper() + ' DIRECTORY.'
     select_directory_msg = '\n\nPlease, select the appropriate ' + programName.upper() + ' directory and try again!'
     directory_content = '' # initialize variable
     Mac_msg = '\n\nOnce you have downloaded ' + programName.upper() + ' click on the downloaded .dmg file and drag the ' + programName.upper() + ' application in your Mac Applications folder.'
@@ -425,7 +428,7 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName):
     if message!='':
         mb.showwarning(title=programName.upper() + ' installation error',
                 message=message)
-        get_external_software_dir(calling_script, programName)
+        # get_external_software_dir(calling_script, programName)
     return False
 
 def open_url(website_name, url, ask_to_open = False, message_title='', message='', config_filename='', reminder_title='', reminder_message=''):
@@ -498,6 +501,7 @@ def get_missing_external_software_list(calling_script, external_software_config_
     index = 0
     missing_index = 0
     missing_software=''
+    # external_software_config_file=external_software_config_file[1:]  # skip header line
     for row in external_software_config_file[1:]:  # skip header line
         software_name = row[0]
         software_dir = row[1]
