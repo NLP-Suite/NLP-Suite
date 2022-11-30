@@ -158,25 +158,30 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         documentID = documentID + 1
         print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
 
-        fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
-        fullText = fullText.replace('\n', ' ')
+        # TODO Naman instead of the one-liner open...read which then does not close the input file leading to increased reduction of resources when dealing with loads of files
+        # with will automatically close the open file
+        with open(doc, "r", encoding="utf-8", errors="ignore") as f:
+            fullText = f.read()
+            fullText = fullText.replace('\n', ' ')
 
-        sentences = split_into_sentences(fullText)
-        for s in sentences:
-
-            all_words.extend(word_tokenize_stanza(stanzaPipeLine(s)))
+        # TODO Naman why do you need to spli into sentences if you use the word_tokenize_stanza(stanzaPipeLine(s))
+        #   it seems much ado about nothing
+        # sentences = split_into_sentences(fullText)
+        # for s in sentences:
+        #     all_words.extend(word_tokenize_stanza(stanzaPipeLine(s)))
+        all_words.extend(word_tokenize_stanza(stanzaPipeLine(fullText)))
 
     words_without_Stop = statistics_txt_util.excludeStopWords_list(all_words)
 
-    print('\nStarted running BERT Word2Vec model at ' + str(time.time))
+    print('\nStarted running BERT Word2Vec model on ' + str(len(words_without_Stop)) + ' words at ' + time.time)
     embeddings = model.encode(words_without_Stop)
 
-    # print('\nFinished running BERT computing the vector space for ' + str(len(words)) + ' distinct words in the input file(s) at ' + str(time.time()))
+    # print('\nFinished running BERT computing the vector space for ' + str(len(words)) + ' distinct words in the input file(s) at ' + time.time())
 
     for w, e in zip(words_without_Stop, embeddings):
         embeds[w] = e
 
-    print('\nFinished running BERT Word2Vec model exporting ' + str(len(embeds)) + ' non-distinct words at ' + str(time.time))
+    print('\nFinished running BERT Word2Vec model exporting ' + str(len(embeds)) + ' non-distinct words at ' + time.time)
 
     # Print the embeddings
     # for word, embedding in zip(words, embeddings):
@@ -186,7 +191,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
     # Plotting the word embeddings
      ## visualization
-    print('\nStarted preparing charts via t-SNE for ' + str(len(embeds)) + ' non-distinct words at ' + str(time.time))
+    print('\nStarted preparing charts via t-SNE for ' + str(len(embeds)) + ' non-distinct words at ' + time.time)
     if dim_menu_var == '2D':
         tsne = TSNE(n_components=2)
         xys = tsne.fit_transform(embeddings)
@@ -233,7 +238,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
                 for w in wrds_no_stop:
                     csv_result.append([w, embeds[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
-    print('\nSaving csv vector file and html graph output for top ' + str(top_words_var) + ' of ' + str(len(embeds)) + ' non-distinct words at ' + str(time.time()))
+    print('\nSaving csv vector file and html graph output for top ' + str(top_words_var) + ' of ' + str(len(embeds)) + ' non-distinct words at ' + time.time())
 
     ### write output html graph
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html',
@@ -257,7 +262,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
       # compute distances
     if compute_distances_var:
-        print('\nStarted computing word distances between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time()))
+        print('\nStarted computing word distances between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + time.time())
         # find user-selected top most-frequent words
         # word vectors
         tmp_result = csv_result_df['Word'].value_counts().index.tolist()[:top_words_var]
@@ -274,7 +279,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         # calculate cos similarity
         cos_sim_df = pd.DataFrame()
         cos_idx = 0
-        print('\nStarted computing cosine similarity between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time()))
+        print('\nStarted computing cosine similarity between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + time.time())
         for i, row in tmp_result_df.iterrows():
             j = len(tmp_result_df)-1
             while i < j:
@@ -296,7 +301,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         # TSNE x,y (z) coordinates
         tsne_dist_df = pd.DataFrame()
         dist_idx = 0
-        print('\nStarted computing t-SNE 2-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time()))
+        print('\nStarted computing t-SNE 2-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + time.time())
         for i, row in tmp_tsne_df.iterrows():
             j = len(tmp_tsne_df)-1
             while i < j:
@@ -312,7 +317,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         # vectors of top 10 freq words n-dimensional distance
         dist_df = pd.DataFrame()
         dist_idx = 0
-        print('\nStarted computing n-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + str(time.time()))
+        print('\nStarted computing n-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + time.time())
         for i, row in tmp_result_df.iterrows():
             j = len(tmp_result_df)-1
             while i < j:
@@ -343,7 +348,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     if keywords_var:
         keyword_df = pd.DataFrame()
         keywords_list = [x.strip() for x in keywords_var.split(',')]
-        print('\nStarted computing cosine similarity between words for ' + str(len(keywords_list)) + ' selected keywords at ' + str(time.time()))
+        print('\nStarted computing cosine similarity between words for ' + str(len(keywords_list)) + ' selected keywords at ' + time.time())
         i = 0
         for a, b in itertools.combinations(keywords_list, 2):
             try:
