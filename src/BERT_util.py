@@ -168,12 +168,15 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
     words_without_Stop = statistics_txt_util.excludeStopWords_list(all_words)
 
+    print('\nStarted running BERT Word2Vec model at ' + str(time.time))
     embeddings = model.encode(words_without_Stop)
 
     # print('\nFinished running BERT computing the vector space for ' + str(len(words)) + ' distinct words in the input file(s) at ' + str(time.time()))
 
     for w, e in zip(words_without_Stop, embeddings):
         embeds[w] = e
+
+    print('\nFinished running BERT Word2Vec model exporting ' + str(len(embeds)) + ' non-distinct words at ' + str(time.time))
 
     # Print the embeddings
     # for word, embedding in zip(words, embeddings):
@@ -183,7 +186,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
     # Plotting the word embeddings
      ## visualization
-    print('\nStarted preparing charts via t-SNE at ' + str(time.time))
+    print('\nStarted preparing charts via t-SNE for ' + str(len(embeds)) + ' non-distinct words at ' + str(time.time))
     if dim_menu_var == '2D':
         tsne = TSNE(n_components=2)
         xys = tsne.fit_transform(embeddings)
@@ -230,9 +233,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
                 for w in wrds_no_stop:
                     csv_result.append([w, embeds[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
-    print('\nFinished computing the vector space for ' + str(len(words)) + ' distinct words in the input file(s) at ' + str(time.time()))
-
-    print('\nSaving csv vector file and html graph output for top ' + str(top_words_var) + ' of ' + str(len(words)) + ' distinct words...')
+    print('\nSaving csv vector file and html graph output for top ' + str(top_words_var) + ' of ' + str(len(embeds)) + ' non-distinct words at ' + str(time.time()))
 
     ### write output html graph
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html',
