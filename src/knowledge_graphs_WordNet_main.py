@@ -53,7 +53,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
 
     language_var='English' # WordNet works only for English language
 
-    WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('knowledge_graphs_WordNet_main', 'WordNet')
+    WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('knowledge_graphs_WordNet_main', 'WordNet', silent=True, only_check_missing=False)
     if WordNetDir == None:
         return
 

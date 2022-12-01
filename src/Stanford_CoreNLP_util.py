@@ -194,7 +194,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # start_time = time.time()#start time
     filesToOpen = []
     # check that the CoreNLPdir has been setup
-    CoreNLPdir, missing_external_software=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_annotator', 'Stanford CoreNLP')
+    CoreNLPdir, software_url,            missing_external_software=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_annotator', 'Stanford CoreNLP', silent=True, only_check_missing=False)
     if CoreNLPdir== '' or CoreNLPdir== None or 'corenlp' in missing_external_software.lower():
         return filesToOpen
     # check the version of CoreNLP

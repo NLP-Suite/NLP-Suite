@@ -1024,7 +1024,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # TODO SETUP button (same as EXCEL)
     y_multiplier_integer_SV = y_multiplier_integer
-    if not 'package_language' in config_filename and not 'NLP_menu_main' in scriptName:
+    # do not display the setup widget when calling from a setup GUI or from NLP_menu_main
+    if not 'NLP_menu_main' in scriptName and not 'package_language' in config_filename and not 'external_software' in config_filename:
         # window.nametowidget(setup_menu_lb)
         # error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
         handle_setup_options(y_multiplier_integer, scriptName)
