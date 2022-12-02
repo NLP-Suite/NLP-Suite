@@ -19,8 +19,8 @@ import IO_files_util
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(1),
-                                                 GUI_height_brief=340, # height at brief display
-                                                 GUI_height_full=380, # height at full display
+                                                 GUI_height_brief=280, # height at brief display
+                                                 GUI_height_full=320, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -77,7 +77,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                y_multiplier_integer, software_download_lb, True)
 software_download_var.set('')
 # 'SENNA' was removed from SVO options; way too slow
-software_download_menu = tk.OptionMenu(window, software_download_var, '*','Stanford CoreNLP', 'Gephi','Google Earth Pro','MALLET','WordNet')
+# temporarily excluded '*'
+software_download_menu = tk.OptionMenu(window, software_download_var, 'Stanford CoreNLP', 'Gephi','Google Earth Pro','MALLET','WordNet')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,
                                                software_download_menu, True, False, True, False, 90,
@@ -119,11 +120,12 @@ software_install_lb = tk.Label(window,text='Software install')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, software_install_lb, True)
 software_install_var.set('')
-software_install_menu = tk.OptionMenu(window, software_install_var, '*','Stanford CoreNLP', 'Gephi','Google Earth Pro','MALLET','WordNet')
+# temporarily excluded '*'
+software_install_menu = tk.OptionMenu(window, software_install_var, 'Stanford CoreNLP', 'Gephi','Google Earth Pro','MALLET','WordNet')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,
                                                software_install_menu, True, False, True, False, 90,
-                                               GUI_IO_util.labels_x_coordinate+200, "Select the external software to be installed after having downloaded it; the software installation directory will be displayed after selection.")
+                                               GUI_IO_util.labels_x_coordinate+200, "Select the external software to be installed after having downloaded it; the software installation directory will be displayed after selection.\nThe software installation directory will be automatically saved in the config file NLP_setup_external_software_config.csv.")
 
 software_install_dir_var=tk.StringVar()
 software_install_area = tk.Entry(width=80, state='disabled', textvariable=software_install_dir_var)
@@ -161,6 +163,16 @@ def activate_software_install(*args):
             software_install_var.set(software_download_var.get())
         software_install_dir_var.set(software_dir)
         software_install_area=software_install_dir_var.get()
+        # refresh missing_software_display_area
+        temp_missing_software=missing_software_var.get()
+        new_missing_software=temp_missing_software.replace(software_install_var.get().upper()+ ', ','')
+        # if the software is the last item in a list it will not be followed by ,
+        if software_install_var.get().upper() in missing_software_var.get():
+            new_missing_software = temp_missing_software.replace(software_install_var.get().upper(), '')
+        missing_software_var.set(new_missing_software)
+        if missing_software_var.get()=='':
+            missing_software_var.set('All external software has been installed')
+        missing_software_display_area=new_missing_software
     else:
         # software_download_var contains the external software download options
         if software_download_var.get() != '':
@@ -169,13 +181,15 @@ def activate_software_install(*args):
             software_install_area = software_install_dir_var.get()
 software_install_var.trace('w',activate_software_install)
 
-def save_external_software_config(parsers):
-    # config_util.save_NLP_package_language_config(window, currently_selected_package_language, parsers_display_area['text'])
-    config_util.save_external_software_config_config(window)
+# def save_external_software_config():
+#     # config_util.save_NLP_package_language_config(window, currently_selected_package_language, parsers_display_area['text'])
+#     # config_util.save_external_software_config(window)
+#     return
 
-save_button = tk.Button(window, text='SAVE', width=10, height=2, command=lambda: save_external_software_config(parsers))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate,
-                                               y_multiplier_integer, save_button)
+# after every installation the confiig is automatically updated; no need for SAVE
+# save_button = tk.Button(window, text='SAVE', width=10, height=2, command=lambda: save_external_software_config())
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate,
+#                                                y_multiplier_integer, save_button)
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
@@ -192,10 +206,10 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, using the dropdown menu, select the external software that you wish to download."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the external software that you wish to install on your machine after dowloading it."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, hit the SAVE button to save any changes made.")
-    y_multiplier_integer = 5.5 # 4.5
-    return y_multiplier_integer-1
+    # y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+    #                               "Please, hit the SAVE button to save any changes made.")
+    # y_multiplier_integer = 5.5 # 4.5
+    return y_multiplier_integer
 
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 

@@ -257,7 +257,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
     y_multiplier_integer,
     compute_distances_checkbox,
     True, False, False, False, 90, GUI_IO_util.labels_x_coordinate,
-    "Tick/untick the checkbox to (not)compute Eucledian 2-dimensional and n-dimensional distances and cosine similarity between words.\nComputing word similarities is computationally demanding and time consuming, but VERY useful in locating words in a semantic space.\nYOU DO NOT NEED TO RE-RUN WORD2VC ON A SET OF TXT FILES. YOU CAN USE A CSV VECTOR FILE PREVIOUSLY COMPUTED.")
+    "Tick/untick the checkbox to (not)compute Eucledian 2-dimensional and n-dimensional distances and cosine similarity between words.\nComputing word similarities can be computationally demanding and time consuming, but VERY useful in locating words in a semantic space.\nYOU DO NOT NEED TO RE-RUN WORD2VC ON A SET OF TXT FILES. YOU CAN USE A CSV VECTOR FILE PREVIOUSLY COMPUTED.")
 
 ## option for number of words for Euclidean distance
 top_words_lb = tk.Label(window,text='Number of top words for Euclidean distance & cosine similarity combinations')
