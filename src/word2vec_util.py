@@ -222,110 +222,111 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
             word_vector_list.append(word_vectors[v])
             filtered_words[v] = words[v]
 
-    ## visualization
-    print('\Started preparing charts via t-SNE at ' + time.time())
+    if not 'Do not' in vis_menu_var:
 
-    if vis_menu_var == 'Plot all word vectors':
+        ## visualization
+        print(f'\nStarted preparing charts via t-SNE for {len(words)} distinct words at {time.asctime( time.localtime(time.time()))}')
 
-        if dim_menu_var == '2D':
+        if vis_menu_var == 'Plot all word vectors':
 
-            tsne = TSNE(n_components=2)
-            xys = tsne.fit_transform(word_vector_list)
+            if dim_menu_var == '2D':
 
-            xs = xys[:, 0]
-            ys = xys[:, 1]
-            word = filtered_words.keys()
+                tsne = TSNE(n_components=2)
+                xys = tsne.fit_transform(word_vector_list)
 
-            tsne_df = pd.DataFrame({'Word': word, 'x': xs, 'y': ys})
-            fig = plot_interactive_graph(tsne_df)
-            fig_words = plot_interactive_graph_words(tsne_df)
+                xs = xys[:, 0]
+                ys = xys[:, 1]
+                word = filtered_words.keys()
 
-        else:
+                tsne_df = pd.DataFrame({'Word': word, 'x': xs, 'y': ys})
+                fig = plot_interactive_graph(tsne_df)
+                fig_words = plot_interactive_graph_words(tsne_df)
 
-            tsne = TSNE(n_components=3)
-            xyzs = tsne.fit_transform(word_vector_list)
-            xs = xyzs[:, 0]
-            ys = xyzs[:, 1]
-            zs = xyzs[:, 2]
-            word = filtered_words.keys()
+            else:
 
-            tsne_df = pd.DataFrame({'Word': word, 'x': xs, 'y': ys, 'z': zs})
-            fig = plot_interactive_3D_graph(tsne_df)
-            fig_words = plot_interactive_3D_graph_words(tsne_df)
+                tsne = TSNE(n_components=3)
+                xyzs = tsne.fit_transform(word_vector_list)
+                xs = xyzs[:, 0]
+                ys = xyzs[:, 1]
+                zs = xyzs[:, 2]
+                word = filtered_words.keys()
 
-    else:
-
-        keywords_list = [x.strip() for x in keywords_var.split(',')]
-        result_word = []
-
-        for keyword in keywords_list:
-            try:
-                sim_words = model.wv.most_similar(keyword, topn=30)
-            except:
-                IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Keyword',
-                                                   '"' + keyword + '" keyword not in the corpus. Keyword skipped...')
-                continue
-            sim_words = append_list(sim_words, keyword)
-            result_word.append(sim_words)
-        if len(result_word)==0:
-            mb.showwarning(title="No words found",message="None of the keywords entered were found in the corpus.\n\nRoutine aborted.")
-            return
-
-        # assort similar words into lists
-        similar_word = []
-        similarity = []
-        labels = []
-        for item_list in result_word:
-            for item in item_list:
-                similar_word.append(item[0])
-                similarity.append(item[1])
-                labels.append(item[2])
-
-        sim_word_vector_list = [word_vectors[sw] for sw in similar_word]
-
-        if dim_menu_var == '2D':
-
-            tsne = TSNE(n_components=2, perplexity=30)
-            xys = tsne.fit_transform(sim_word_vector_list)
-            xs = xys[:, 0]
-            ys = xys[:, 1]
-
-            print(similar_word)
-
-            tsne_df = pd.DataFrame({'Word': similar_word, 'x': xs, 'y': ys, 'similarity': similarity, 'label': labels})
-            fig = plot_similar_graph(tsne_df)
-            fig_words = 'none'
+                tsne_df = pd.DataFrame({'Word': word, 'x': xs, 'y': ys, 'z': zs})
+                fig = plot_interactive_3D_graph(tsne_df)
+                fig_words = plot_interactive_3D_graph_words(tsne_df)
 
         else:
 
-            tsne = TSNE(n_components=3, perplexity=30)
-            xyzs = tsne.fit_transform(sim_word_vector_list)
-            xs = xyzs[:, 0]
-            ys = xyzs[:, 1]
-            zs = xyzs[:, 2]
+            keywords_list = [x.strip() for x in keywords_var.split(',')]
+            result_word = []
 
-            print(similar_word)
+            for keyword in keywords_list:
+                try:
+                    sim_words = model.wv.most_similar(keyword, topn=top_words_var)
+                except:
+                    IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Keyword',
+                                                       '"' + keyword + '" keyword not in the corpus. Keyword skipped...')
+                    continue
+                sim_words = append_list(sim_words, keyword)
+                result_word.append(sim_words)
+            if len(result_word)==0:
+                mb.showwarning(title="No words found",message="None of the keywords entered were found in the corpus.\n\nRoutine aborted.")
+                return
 
-            tsne_df = pd.DataFrame({'Word': similar_word, 'x': xs, 'y': ys, 'z': zs, 'similarity': similarity, 'label': labels})
-            fig = plot_similar_3D_graph(tsne_df)
-            fig_words = 'none'
+            # assort similar words into lists
+            similar_word = []
+            similarity = []
+            labels = []
+            for item_list in result_word:
+                for item in item_list:
+                    similar_word.append(item[0])
+                    similarity.append(item[1])
+                    labels.append(item[2])
 
+            sim_word_vector_list = [word_vectors[sw] for sw in similar_word]
 
-    ## saving output
-    print('\nFinished computing the vector space for ' + str(len(words)) + ' distinct words in the input file(s) at ' + time.time())
+            if dim_menu_var == '2D':
 
-    print('\nSaving csv vector file and html graph output for top ' + str(top_words_var) + ' of ' + str(len(words)) + ' distinct words...')
-    ### write output html graph
+                tsne = TSNE(n_components=2, perplexity=30)
+                xys = tsne.fit_transform(sim_word_vector_list)
+                xs = xys[:, 0]
+                ys = xys[:, 1]
 
-    if not fig_words == 'none':
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '_words.html', 'Word2Vec_vector_ALL_words')
-        fig_words.write_html(outputFilename)
+                print(similar_word)
+
+                tsne_df = pd.DataFrame({'Word': similar_word, 'x': xs, 'y': ys, 'similarity': similarity, 'label': labels})
+                fig = plot_similar_graph(tsne_df)
+                fig_words = 'none'
+
+            else:
+
+                tsne = TSNE(n_components=3, perplexity=30)
+                xyzs = tsne.fit_transform(sim_word_vector_list)
+                xs = xyzs[:, 0]
+                ys = xyzs[:, 1]
+                zs = xyzs[:, 2]
+
+                print(similar_word)
+
+                tsne_df = pd.DataFrame({'Word': similar_word, 'x': xs, 'y': ys, 'z': zs, 'similarity': similarity, 'label': labels})
+                fig = plot_similar_3D_graph(tsne_df)
+                fig_words = 'none'
+
+        ## saving output
+        print('\nFinished computing the vector space for ' + str(len(words)) + ' distinct words in the input file(s) at ' + time.time())
+
+        print('\nSaving csv vector file and html graph output for top ' + str(top_words_var) + ' of ' + str(len(words)) + ' distinct words...')
+        ### write output html graph
+
+        if not fig_words == 'none':
+            outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '_words.html', 'Word2Vec_vector_ALL_words')
+            fig_words.write_html(outputFilename)
+            filesToOpen.append(outputFilename)
+
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'Word2Vec_vector_ALL_words')
+
+        fig.write_html(outputFilename)
         filesToOpen.append(outputFilename)
-
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html', 'Word2Vec_vector_ALL_words')
-
-    fig.write_html(outputFilename)
-    filesToOpen.append(outputFilename)
 
     ### csv file
     word_vector_df = pd.DataFrame()
@@ -347,14 +348,15 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         result_df = result_df[["Word", "Vector", "Sentence ID", "Sentence", "Document ID", "Document"]]
 
     # write csv file
-    outputFilename = outputFilename.replace(".html", ".csv")
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                             'Word2Vec_vector_ALL_words')
     result_df.to_csv(outputFilename, encoding='utf-8', index=False)
 
     filesToOpen.append(outputFilename)
 
     # compute word distances
     if compute_distances_var:
-        print('\nStarted computing word distances between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + time.time())
+        print(f'\nStarted computing word distances between top {top_words_var} words at {time.asctime( time.localtime(time.time()))}')
         # find user-selected top most-frequent words
         # word vectors
         tmp_result = result_df['Word'].value_counts().index.tolist()[:top_words_var]
@@ -362,16 +364,38 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         tmp_result_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
         tmp_result_df = tmp_result_df.reset_index(drop=True)
 
-        # TSNE x,y (z) coordinates
-        tmp_tsne = tsne_df['Word'].value_counts().index.tolist()[:top_words_var]
-        tmp_tsne_df = tsne_df.loc[tsne_df['Word'].isin(tmp_tsne)]
-        tmp_tsne_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
-        tmp_tsne_df = tmp_tsne_df.reset_index(drop=True)
+        if not 'Do not' in vis_menu_var:
+            # TSNE x,y (z) coordinates
+            tmp_tsne = tsne_df['Word'].value_counts().index.tolist()[:top_words_var]
+            tmp_tsne_df = tsne_df.loc[tsne_df['Word'].isin(tmp_tsne)]
+            tmp_tsne_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
+            tmp_tsne_df = tmp_tsne_df.reset_index(drop=True)
+
+            # calculate 2-dimensional Euclidean distance
+            # TSNE x,y (z) coordinates
+            tsne_dist_df = pd.DataFrame()
+            dist_idx = 0
+            print('\nStarted computing t-SNE 2-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + time.time())
+            for i, row in tmp_tsne_df.iterrows():
+                j = len(tmp_tsne_df)-1
+                while i < j:
+                    tsne_dist_df.at[dist_idx, 'Word_1'] = row['Word']
+                    tsne_dist_df.at[dist_idx, 'Word_2'] = tmp_tsne_df.at[j, 'Word']
+                    if 'z' not in tmp_tsne_df.columns:
+                        tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = euclidean_dist( [row['x'],row['y']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y']] )
+                    else:
+                        tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = euclidean_dist( [row['x'],row['y'],row['z']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y'],tmp_tsne_df.at[j, 'z']] )
+                    dist_idx+=1
+                    j-=1
+            tsne_dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_TSNE_dist')
+            tsne_dist_df.to_csv(tsne_dist_outputFilename, encoding='utf-8', index=False)
+            filesToOpen.append(tsne_dist_outputFilename)
 
         # calculate cos similarity
         cos_sim_df = pd.DataFrame()
         cos_idx = 0
-        print('\nStarted computing cosine similarity between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + time.time())
+        print(
+            f'\nStarted computing cosine similarity between top {top_words_var} words at {time.asctime(time.localtime(time.time()))}')
         for i, row in tmp_result_df.iterrows():
             j = len(tmp_result_df)-1
             while i < j:
@@ -387,27 +411,11 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                 cos_idx+=1
                 j-=1
 
-        # calculate 2-dimensional Euclidean distance
-        # TSNE x,y (z) coordinates
-        tsne_dist_df = pd.DataFrame()
-        dist_idx = 0
-        print('\nStarted computing t-SNE 2-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + time.time())
-        for i, row in tmp_tsne_df.iterrows():
-            j = len(tmp_tsne_df)-1
-            while i < j:
-                tsne_dist_df.at[dist_idx, 'Word_1'] = row['Word']
-                tsne_dist_df.at[dist_idx, 'Word_2'] = tmp_tsne_df.at[j, 'Word']
-                if 'z' not in tmp_tsne_df.columns:
-                    tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = euclidean_dist( [row['x'],row['y']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y']] )
-                else:
-                    tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = euclidean_dist( [row['x'],row['y'],row['z']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y'],tmp_tsne_df.at[j, 'z']] )
-                dist_idx+=1
-                j-=1
 
         # vectors of top 10 freq words n-dimensional Euclidean distance
         dist_df = pd.DataFrame()
         dist_idx = 0
-        print('\nStarted computing n-dimensional Euclidean distance between top ' + str(top_words_var) + ' words of ' + str(len(words)) + ' distinct words at ' + time.time())
+        print(f'\nStarted computing n-dimensional Euclidean distance between top {top_words_var} words at {time.asctime( time.localtime(time.time()))}')
         for i, row in tmp_result_df.iterrows():
             j = len(tmp_result_df)-1
             while i < j:
@@ -419,22 +427,19 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
         # create outputFilenames and save them
         cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_Cos_Similarity')
-        tsne_dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_TSNE_dist')
         dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_Euclidean_dist')
 
         dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)
-        tsne_dist_df.to_csv(tsne_dist_outputFilename, encoding='utf-8', index=False)
         cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
 
         filesToOpen.append(dist_outputFilename)
-        filesToOpen.append(tsne_dist_outputFilename)
         filesToOpen.append(cos_sim_outputFilename)
 
     # keyword cos similarity
     if keywords_var:
         keyword_df = pd.DataFrame()
         keywords_list = [x.strip() for x in keywords_var.split(',')]
-        print('\nStarted computing cosine similarity between words for ' + str(len(keywords_list)) + ' selected keywords at ' + time.time())
+        print(f'\nStarted computing cosine similarity between words for {len(keywords_list)} selected keywords at {time.asctime( time.localtime(time.time()))}')
         i = 0
         for a, b in itertools.combinations(keywords_list, 2):
             try:
@@ -451,12 +456,6 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                                                                                  len(keywords_list)) + '_Keywords_Cos_Similarity')
         keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
         filesToOpen.append(keyword_sim_outputFilename)
-
-    # # write csv file
-    # outputFilename = outputFilename.replace(".html", ".csv")
-    # result_df.to_csv(outputFilename, encoding='utf-8', index=False)
-    #
-    # filesToOpen.append(outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Gensim Word2Vec at', True, '', True, startTime)

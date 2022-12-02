@@ -516,6 +516,7 @@ def get_missing_external_software_list(calling_script, external_software_config_
 
     return missing_software
 
+
 def save_software_config(new_csv, package):
     software_config = GUI_IO_util.configPath + os.sep + 'NLP_setup_external_software_config.csv'
     if not os.path.isfile(software_config):
@@ -523,12 +524,20 @@ def save_software_config(new_csv, package):
         with open(software_config, 'w+', newline='') as csv_file:
             writer = csv.writer(csv_file)
             writer.writerows(csv_fields)
+
+    # read the existing values of csv
+    csv_fields = get_existing_software_config(software_config)
+    for i, row in enumerate(csv_fields):
+        if row[0] == package:
+            csv_fields[i][1] = new_csv  # update path of csv_fields
+
+    # overwrite the csv file with updated csv_fields
     with open(software_config, 'w+', newline='') as csv_file:
         writer = csv.writer(csv_file)
-        writer.writerows(new_csv)
+        writer.writerows(csv_fields)
 
     mb.showwarning(title=package.upper() + ' installation path saved',
-                               message="The installation path of " + package.upper() + " was successfully saved to\n\n" + software_config)
+                   message="The installation path of " + package.upper() + " was successfully saved to\n\n" + software_config)
 
 
 # package is != '' when ...

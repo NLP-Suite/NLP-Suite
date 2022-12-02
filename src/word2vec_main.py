@@ -28,6 +28,12 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
 
     filesToOpen = []
 
+    if not 'Do not' in vis_menu_var:
+        result = mb.askyesno('Visualization via t-SNE',
+                             'You have selected to run Word2Vec with the t-SNE visualization option. Depending upon the total number of words in your corpus, this option is computationally VERY demanding (it can take many hours on a standard laptop, particularly with BERT). Compressing an n-dimensional space into a a 2D or 3D graph can also be somewhat misleading (cosine similarities provide a better alternative).\n\nAre you sure you want to continue?')
+        if not result:
+            return
+
     # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
     label=''
     if BERT_var:
@@ -49,7 +55,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
         import BERT_util
 
         BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, Word2Vec_Dir, openOutputFiles, createCharts,
-                                                   chartPackage, dim_menu_var, compute_distances_var, top_words_var, keywords_var)
+                                                   chartPackage, vis_menu_var, dim_menu_var, compute_distances_var, top_words_var, keywords_var)
         filesToOpen.append(BERT_output)
 
     if Gensim_var:
@@ -153,12 +159,13 @@ keywords_var=tk.StringVar()
 def clear(e):
     remove_stopwords_var.set(1)
     lemmatize_var.set(1)
-    dim_menu_var.set('2D')
+    vis_menu_var.set('Do not plot word vectors')
+    dim_menu_var.set('')
     sg_menu_var.set('Skip-Gram')
     vector_size_var.set(100)
     window_var.set(5)
     min_count_var.set(5)
-    top_words_var.set(10)
+    top_words_var.set(200)
     keywords_var.set('')
     activate_all_options()
     GUI_util.clear("Escape")
@@ -174,16 +181,30 @@ lemmatize_var.set(1)
 lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,lemmatize_checkbox)
 
-vis_var_lb = tk.Label(window,text='Select the visualization method')
+vis_var_lb = tk.Label(window,text='Select visualization option')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,vis_var_lb,True)
-vis_menu_var.set('Plot all word vectors')
-vis_menu = tk.OptionMenu(window,vis_menu_var, 'Plot all word vectors', 'Clustering of word vectors')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,vis_menu, True)
+vis_menu_var.set('Do not plot word vectors')
+vis_menu = tk.OptionMenu(window,vis_menu_var, 'Do not plot word vectors', 'Plot word vectors', 'Clustering of word vectors')
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
+    y_multiplier_integer,
+    vis_menu,
+    True, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
+    "The visualizaton of an n-dimensional space in a 2 or 3 dimensional space is\n1. computationally very demanding (depending upon the number of words)\n2. somewhat misleading (you are better off looking at cosine similarities).")
 
 #### 2D or 3D plot
-dim_menu_var.set('2D')
+dim_menu_var.set('')
 dim_menu = tk.OptionMenu(window,dim_menu_var, '2D', '3D')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,dim_menu)
+
+def activate_plot_options(*args):
+    if not 'Do not' in vis_menu_var.get():
+        dim_menu_var.set('2D')
+        dim_menu.configure(state='normal')
+    else:
+        dim_menu_var.set('')
+        dim_menu.configure(state='disabled')
+vis_menu_var.trace('w',activate_plot_options)
 
 ## option for BERT
 BERT_var.set(0)
@@ -242,7 +263,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 top_words_lb = tk.Label(window,text='Number of top words for Euclidean distance & cosine similarity combinations')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,top_words_lb,True)
 
-top_words_var.set(10)
+top_words_var.set(200)
 top_words_entry = tk.Entry(window,width=5,textvariable=top_words_var)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+450,
