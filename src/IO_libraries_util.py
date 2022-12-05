@@ -516,7 +516,7 @@ def get_missing_external_software_list(calling_script, external_software_config_
 
     return missing_software
 
-def save_software_config(softwareDir, package):
+def get_software_config(softwareDir, package, existing_software_config):
     software_config = GUI_IO_util.configPath + os.sep + 'NLP_setup_external_software_config.csv'
     if not os.path.isfile(software_config):
         csv_fields = get_existing_software_config(software_config)
@@ -531,13 +531,31 @@ def save_software_config(softwareDir, package):
             csv_fields[i][1] = softwareDir  # update path of csv_fields
         else:
             csv_fields[i][1] = csv_fields[i][1] # copy current value
+    return existing_software_config
 
+# returns a double list [[]] of updated external software in NLP_setup_external_software_config.csv
+def update_software_config(softwareDir, package, existing_software_config):
+    for i, row in enumerate(existing_software_config):
+        if row[0] == package:
+            existing_software_config[i][1] = softwareDir  # update path of csv_fields
+        else:
+            existing_software_config[i][1] = existing_software_config[i][1] # copy current value
+    return existing_software_config
+
+def save_software_config(existing_software_config, missing_software_string):
+    software_config = GUI_IO_util.configPath + os.sep + 'NLP_setup_external_software_config.csv'
     # overwrite the csv file with updated csv_fields
     with open(software_config, 'w+', newline='') as csv_file:
         writer = csv.writer(csv_file)
-        writer.writerows(csv_fields)
-        mb.showwarning(title=package.upper() + ' installation path saved',
-                   message="The installation path of " + package.upper() + " was successfully saved to\n\n" + software_config)
+        writer.writerows(existing_software_config)
+        message="The config file 'NLP_setup_external_software_config.csv' was successfully saved to\n\n" + software_config
+        # convert comma-separated string to list []
+        missing_software_list = missing_software_string.split(",")
+        if len(missing_software_list)>0:
+            missing_software_string=", ".join(missing_software_list)
+            message = message + "\n\nDon\'t forget that you have " + str(len(missing_software_list)) + " other remaining missing software to download/install: " + missing_software_string
+        mb.showwarning(title='Config installation file saved',
+                   message=message)
 
 # package is != '' when ...
 #   1. the function is called from a specific script that uses the package (e.g., parsers_annotators_main)
@@ -670,7 +688,7 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
 # #     software_website_url= "https://ronan.collobert.com/senna/download.html"
 # if 'WordNet' in software_download_var.get():
 #     software_website_url="https://wordnet.princeton.edu/download/current-version"
-def external_software_download(calling_script, software_name):
+def external_software_download(calling_script, software_name, existing_software_config):
     software_dir, software_url, missing_software = get_external_software_dir(calling_script, software_name, silent=False, only_check_missing=False)
     if software_dir == None:
         software_dir = ''
@@ -760,11 +778,13 @@ def external_software_download(calling_script, software_name):
         if errorFound:
             Java_required = software_name + ' requires the freeware Java (by Oracle) installed on our machine.\n\nTo download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a FREE Oracle account if you do not have one).\n\nThe NLP Suite will open the Java download website.\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable.'
             open_url('Java', url, ask_to_open = True, message_title = 'Java', message = Java_required)
-    software_dir = external_software_install(calling_script, software_name)
+    software_dir, existing_software_config = external_software_install(calling_script, software_name, existing_software_config)
     return software_dir, software_url
 
 # INSTALLING -------------------------------------------------------------------------------
-def external_software_install(calling_script, software_name):
+# updates the array existing_software_config with the value of software_dir
+# returns the software_dir and the double list existing_software_config = [[]]
+def external_software_install(calling_script, software_name, existing_software_config):
 
     software_dir, software_url, missing_software = get_external_software_dir(calling_script, software_name, silent=False, only_check_missing=False)
     if software_dir == None:
@@ -772,14 +792,14 @@ def external_software_install(calling_script, software_name):
 
     if software_dir == '': #  and package.lower() in software_name.lower():
         if platform == 'darwin' and (software_name != 'Google Earth Pro' and software_name != 'Gephi'):
-            message2 = "You will be asked next to select the directory (NOT Mac Applications!) where the software\n\n" + software_name.upper() + "\n\nwas downloaded; you can press CANCEL or ESC if you have not downloaded the software yet."
+            message2 = "You will be asked next to select the directory (NOT Mac Applications!) where the software\n\n" + software_name.upper() + "\n\nwas downloaded, so that it can be installed on your machine.\n\nYou can press CANCEL or ESC if you have not downloaded the software yet or you do not want to install the software now."
         if platform == 'darwin' and (software_name == 'Google Earth Pro' or software_name == 'Gephi'):
-            message2 = "You will be asked next to select the Mac Applications directory where the software\n\n" + software_name.upper() + "\n\nwas downloaded; you can press CANCEL or ESC if you have not downloaded the software yet."
+            message2 = "You will be asked next to select the Mac Applications directory where the software\n\n" + software_name.upper() + "\n\nwas downloaded, so that it can be installed on your machine.\n\nYou can press CANCEL or ESC if you have not downloaded the software yet or you do not want to install the software now."
         if platform == 'win32':
-            message2 = "You will be asked next to select the directory where the software\n\n" + software_name.upper() + "\n\nwas downloaded; you can press CANCEL or ESC if you have not downloaded the software yet."
+            message2 = "You will be asked next to select the directory where the software\n\n" + software_name.upper() + "\n\nwas downloaded, so that it can be installed on your machine.\n\nYou can press CANCEL or ESC if you have not downloaded the software yet or you do not want to install the software now."
         if platform != 'darwin' and (software_name != 'Google Earth Pro' and software_name != 'Gephi'):
-            message1 = "\n\nYou will then be asked to select the directory where the software\n\n" + software_name.upper() + "\n\nwas downloaded; you can press CANCEL or ESC if you have not downloaded the software yet."
-            message3 = ". Please, select the directory where the software was downloaded; you can press CANCEL or ESC if you have not downloaded the software yet."
+            message1 = "\n\nYou will then be asked to select the directory where the software\n\n" + software_name.upper() + "\n\nwas downloaded, so that it can be installed on your machine.\n\nYou can press CANCEL or ESC if you have not downloaded the software yet or you do not want to install the software now."
+            message3 = ". Please, select the directory where the software was downloaded, so that it can be installed on your machine.\n\nYou can press CANCEL or ESC if you have not downloaded the software yet or you do not want to install the software now."
         else:
             message1 = ""
             message3 = ""
@@ -839,5 +859,5 @@ def external_software_install(calling_script, software_name):
 
             # update the array existing_software_config with the value of software_dir
             if software_dir != '' and software_dir != None:
-                save_software_config(software_dir, software_name)
-    return software_dir
+                existing_software_config = update_software_config(software_dir, software_name, existing_software_config)
+    return software_dir, existing_software_config

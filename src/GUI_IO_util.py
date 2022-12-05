@@ -632,12 +632,11 @@ if sys.platform == 'darwin':  # Mac OS
     file_search_byWord_extract_sentences_search_words_entry_pos = 510
 
     # Mac Word2Vec
-    Word2Vec_vector_size_entry_pos = 260
-    Word2Vec_window_entry_pos = Word2Vec_vector_size_entry_pos
-    Word2Vec_min_count_pos = Word2Vec_vector_size_entry_pos
-    Word2Vec_dim_menu_pos = 660
-    Word2Vec_cluster_var_entry_pos = 170
-    Word2Vec_keywords_entry_pos = 280
+    Word2Vec_vector_size_entry_pos = 250
+    Word2Vec_window_size_lb_pos = Word2Vec_vector_size_entry_pos
+    Word2Vec_window_size_entry_pos= Word2Vec_window_size_lb_pos+220
+    Word2Vec_min_count_lb_pos=setup_pop_up_text_widget
+    Word2Vec_min_count_entry_pos = Word2Vec_min_count_lb_pos +150
 
 # Mac statistics_csv
 
@@ -1025,9 +1024,11 @@ else: #windows and anything else
     file_search_byWord_extract_sentences_search_words_entry_pos = 430
 
 # Windows Word2Vec
-    Word2Vec_vector_size_entry_pos = 260
-    Word2Vec_window_entry_pos = Word2Vec_vector_size_entry_pos
-    Word2Vec_min_count_pos = Word2Vec_vector_size_entry_pos
+    Word2Vec_vector_size_entry_pos = 250
+    Word2Vec_window_size_lb_pos = Word2Vec_vector_size_entry_pos
+    Word2Vec_window_size_entry_pos= Word2Vec_window_size_lb_pos+220
+    Word2Vec_min_count_lb_pos=setup_pop_up_text_widget
+    Word2Vec_min_count_entry_pos = Word2Vec_min_count_lb_pos +150
 
 # Windows statistics_csv
 

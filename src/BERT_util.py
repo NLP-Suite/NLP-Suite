@@ -42,8 +42,7 @@ import IO_csv_util
 import IO_files_util
 import charts_util
 import statistics_txt_util
-import word2vec_util
-import parsers_annotators_visualization_util
+import word2vec_tsne_plot_util
 import IO_user_interface_util
 
 # Provides NER tags per sentence for every doc and stores in a csv file
@@ -149,17 +148,22 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     documentID = 0
     all_words = []
     words_without_Stop = []
-    embeds = {}
+    words = {}
+    tsne_df=None
+
     bad_chars = [';', ':', '', "*", "\"", "\'", "“", "”", "—", "’s", "n’t"]
     startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running BERT word embeddings at', True)
 
 
-    # TODO Naman notice how Word2Vec_util has the option of using a .csv file of already computed vectors
+    # TODO Naman notice how Word2Vec_Gensim_util has the option of using a .csv file of already computed vectors
     #   so that you can simply use this file to visualize different cosine similarities or
     #   compute distances if you had not previously done so
     # compute only distances if inputFile is csv
     # if inputFilename.endswith('csv'):
+
+    # TODO Naman notice how Word2Vec_main has the option of lemmatzing
+    #   this needs to be implemented similarly to Word2Vec_Gensim_util
 
     for doc in inputDocs:
         head, tail = os.path.split(doc)
@@ -191,20 +195,14 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     #Creates key-value pairs of words and their corresponding vectors to be added to csv file output
     # showing words and their corresponding multidimensional vectors
     for w, e in zip(words_without_Stop, embeddings):
-        embeds[w] = e
+        words[w] = e
 
-    print(f'\nFinished running BERT Word2Vec model exporting {len(embeds)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
-
-    # Print the embeddings
-    # for word, embedding in zip(words, embeddings):
-    #   print("Word:", word)
-    #  print("Embedding:", embedding)
-    # print("")
+    print(f'\nFinished running BERT Word2Vec model exporting {len(words)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
 
     # Plotting the word embeddings
      ## visualization
-    if not 'Do not' in vis_menu_var:
-        print(f'\nStarted preparing charts via t-SNE for {len(embeds)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
+    if not 'Do not plot' in vis_menu_var:
+        print(f'\nStarted preparing charts via t-SNE for {len(words)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
         if dim_menu_var == '2D':
             tsne = TSNE(n_components=2)
             xys = tsne.fit_transform(embeddings)
@@ -212,8 +210,8 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
             ys = xys[:, 1]
             tsne_df = pd.DataFrame({'Word': words_without_Stop, 'x': xs, 'y': ys})
 
-            fig = word2vec_util.plot_interactive_graph(tsne_df)
-            fig_words = word2vec_util.plot_interactive_graph_words(tsne_df)
+            fig = word2vec_tsne_plot_util.plot_interactive_graph(tsne_df)
+            fig_words = word2vec_tsne_plot_util.plot_interactive_graph_words(tsne_df)
         else:
             tsne = TSNE(n_components=3)
             xyzs = tsne.fit_transform(embeddings)
@@ -222,10 +220,10 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
             zs = xyzs[:, 2]
             tsne_df = pd.DataFrame({'Word': words_without_Stop, 'x': xs, 'y': ys, 'z': zs})
 
-            fig = word2vec_util.plot_interactive_3D_graph(tsne_df)
-            fig_words = word2vec_util.plot_interactive_3D_graph_words(tsne_df)
+            fig = word2vec_tsne_plot_util.plot_interactive_3D_graph(tsne_df)
+            fig_words = word2vec_tsne_plot_util.plot_interactive_3D_graph_words(tsne_df)
 
-            print(f'\nSaving csv vector file and html graph output for top {top_words_var} of {len(embeds)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
+            print(f'\nSaving csv vector file and html graph output for top {top_words_var} of {len(words)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
 
             ### write output html graph
             outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.html',
@@ -265,108 +263,151 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
             if dim_menu_var == '2D':
                 #Adding rows to our output for the csv file with words, their vectors, and the sentences they are found in
                 for w in wrds_no_stop:
-                    csv_result.append([w, embeds[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                    csv_result.append([w, words[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
             else:
                 for w in wrds_no_stop:
-                    csv_result.append([w, embeds[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                    csv_result.append([w, words[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
-    print(f'\nSaving csv vector file for top {top_words_var} of {len(embeds)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
+    print(f'\nSaving csv vector file for top {top_words_var} of {len(words)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
 
     csv_result_df = pd.DataFrame(csv_result, columns=header)
 
     # write csv file
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                              'Word2Vec_vector_ALL_words')
-    csv_result_df.to_csv(outputFilename, encoding='utf-8', index=False)
+    result_df.to_csv(outputFilename, encoding='utf-8', index=False)
 
     filesToOpen.append(outputFilename)
 
       # compute distances
     if compute_distances_var:
-        print(f'\nStarted computing word distances between top {top_words_var} words at {time.asctime( time.localtime(time.time()))}')
-        # find user-selected top most-frequent words
-        # word vectors
-        tmp_result = csv_result_df['Word'].value_counts().index.tolist()[:top_words_var]
-        tmp_result_df = csv_result_df.loc[csv_result_df['Word'].isin(tmp_result)]
-        tmp_result_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
-        tmp_result_df = tmp_result_df.reset_index(drop=True)
 
-        if not 'Do not' in vis_menu_var:
-            # TSNE x,y (z) coordinates
-            tmp_tsne = tsne_df['Word'].value_counts().index.tolist()[:top_words_var]
-            tmp_tsne_df = tsne_df.loc[tsne_df['Word'].isin(tmp_tsne)]
-            tmp_tsne_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
-            tmp_tsne_df = tmp_tsne_df.reset_index(drop=True)
+        import word2vec_distances_util
+        result_df=None
+        word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts, chartPackage,
+                                   embeddings,
+                                   result_df,
+                                   tsne_df,
+                                   keywords_var,
+                                   compute_distances_var, top_words_var,
+                                   vis_menu_var)
 
-            # calculate 2-dimensional euclidean distance
-            # TSNE x,y (z) coordinates
-            tsne_dist_df = pd.DataFrame()
-            dist_idx = 0
-            print(f'\nStarted computing t-SNE 2-dimensional Euclidean distance between top {top_words_var} words at {time.asctime( time.localtime(time.time()))}')
-            for i, row in tmp_tsne_df.iterrows():
-                j = len(tmp_tsne_df)-1
-                while i < j:
-                    tsne_dist_df.at[dist_idx, 'Word_1'] = row['Word']
-                    tsne_dist_df.at[dist_idx, 'Word_2'] = tmp_tsne_df.at[j, 'Word']
-                    if 'z' not in tmp_tsne_df.columns:
-                        tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = word2vec_util.euclidean_dist( [row['x'],row['y']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y']] )
-                    else:
-                        tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = word2vec_util.euclidean_dist( [row['x'],row['y'],row['z']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y'],tmp_tsne_df.at[j, 'z']] )
-                    dist_idx+=1
-                    j-=1
-            tsne_dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_TSNE_dist')
-            tsne_dist_df.to_csv(tsne_dist_outputFilename, encoding='utf-8', index=False)
-            tsne_dist_df.to_csv(tsne_dist_outputFilename, encoding='utf-8', index=False)
-            filesToOpen.append(tsne_dist_outputFilename)
-
-        # calculate cos similarity
-        cos_sim_df = pd.DataFrame()
-        cos_idx = 0
-        print(
-            f'\nStarted computing cosine similarity between top {top_words_var} words at {time.asctime(time.localtime(time.time()))}')
-        for i, row in tmp_result_df.iterrows():
-            j = len(tmp_result_df) - 1
-            while i < j:
-                try:
-                    tfidf_vectorizer = TfidfVectorizer(analyzer="char")
-                    sparse_matrix = tfidf_vectorizer.fit_transform(
-                        [str(row['Word'])] + [str(tmp_result_df.at[j, 'Word'])])
-                    sim_score = cosine_similarity(sparse_matrix[0], sparse_matrix[1])
-                    cos_sim_df.at[cos_idx, 'Word_1'] = row['Word']
-                    cos_sim_df.at[cos_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
-                    cos_sim_df.at[cos_idx, 'Cosine similarity'] = sim_score
-                except KeyError:
-                    cos_idx += 1
-                    j -= 1
-                    continue
-                cos_idx += 1
-                j -= 1
-
-        # vectors of top 10 freq words n-dimensional distance
-        dist_df = pd.DataFrame()
-        dist_idx = 0
-        print(f'\nStarted computing n-dimensional Euclidean distance between top {top_words_var} words at {time.asctime( time.localtime(time.time()))}')
-        for i, row in tmp_result_df.iterrows():
-            j = len(tmp_result_df)-1
-            while i < j:
-                dist_df.at[dist_idx, 'Word_1'] = row['Word']
-                dist_df.at[dist_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
-                dist_df.at[dist_idx, 'n-dimensional Euclidean distance'] = word2vec_util.euclidean_dist(row['Embeddings'], tmp_result_df.at[j, 'Embeddings'])
-                dist_idx+=1
-                j-=1
-
-        # create outputFilenames and save them
-        cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_Cos_Similarity')
-        dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_Euclidean_dist')
-
-        dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)
-        cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
-
-        dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)
-        cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
-
-        filesToOpen.append(dist_outputFilename)
-        filesToOpen.append(cos_sim_outputFilename)
+        # print(f'\nStarted computing word distances between top {top_words_var} words at {time.asctime( time.localtime(time.time()))}')
+        # # find user-selected top most-frequent words
+        # # word vectors
+        # tmp_result = result_df['Word'].value_counts().index.tolist()[:top_words_var]
+        # tmp_result_df = result_df.loc[result_df['Word'].isin(tmp_result)]
+        # tmp_result_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
+        # tmp_result_df = tmp_result_df.reset_index(drop=True)
+        #
+        # if not 'Do not' in vis_menu_var:
+        #     # TSNE x,y (z) coordinates
+        #     tmp_tsne = tsne_df['Word'].value_counts().index.tolist()[:top_words_var]
+        #     tmp_tsne_df = tsne_df.loc[tsne_df['Word'].isin(tmp_tsne)]
+        #     tmp_tsne_df.drop_duplicates(subset=['Word'], keep='first', inplace=True)
+        #     tmp_tsne_df = tmp_tsne_df.reset_index(drop=True)
+        #
+        #     # calculate 2-dimensional euclidean distance
+        #     # TSNE x,y (z) coordinates
+        #     tsne_dist_df = pd.DataFrame()
+        #     dist_idx = 0
+        #     print(f'\nStarted computing t-SNE 2-dimensional Euclidean distance between top {top_words_var} words at {time.asctime( time.localtime(time.time()))}')
+        #     for i, row in tmp_tsne_df.iterrows():
+        #         j = len(tmp_tsne_df)-1
+        #         while i < j:
+        #             tsne_dist_df.at[dist_idx, 'Word_1'] = row['Word']
+        #             tsne_dist_df.at[dist_idx, 'Word_2'] = tmp_tsne_df.at[j, 'Word']
+        #             if 'z' not in tmp_tsne_df.columns:
+        #                 tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = word2vec_util.euclidean_dist( [row['x'],row['y']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y']] )
+        #             else:
+        #                 tsne_dist_df.at[dist_idx, '2-dimensional Euclidean distance'] = word2vec_util.euclidean_dist( [row['x'],row['y'],row['z']], [tmp_tsne_df.at[j, 'x'],tmp_tsne_df.at[j, 'y'],tmp_tsne_df.at[j, 'z']] )
+        #             dist_idx+=1
+        #             j-=1
+        #     tsne_dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_TSNE_dist')
+        #     tsne_dist_df.to_csv(tsne_dist_outputFilename, encoding='utf-8', index=False)
+        #     tsne_dist_df.to_csv(tsne_dist_outputFilename, encoding='utf-8', index=False)
+        #     filesToOpen.append(tsne_dist_outputFilename)
+        #
+        # # calculate cos similarity
+        # cos_sim_df = pd.DataFrame()
+        # cos_idx = 0
+        # print(
+        #     f'\nStarted computing cosine similarity between top {top_words_var} words at {time.asctime(time.localtime(time.time()))}')
+        # for i, row in tmp_result_df.iterrows():
+        #     j = len(tmp_result_df) - 1
+        #     while i < j:
+        #         try:
+        #             tfidf_vectorizer = TfidfVectorizer(analyzer="char")
+        #             sparse_matrix = tfidf_vectorizer.fit_transform(
+        #                 [str(row['Word'])] + [str(tmp_result_df.at[j, 'Word'])])
+        #             sim_score = cosine_similarity(sparse_matrix[0], sparse_matrix[1])
+        #             cos_sim_df.at[cos_idx, 'Word_1'] = row['Word']
+        #             cos_sim_df.at[cos_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
+        #             cos_sim_df.at[cos_idx, 'Cosine similarity'] = sim_score
+        #         except KeyError:
+        #             cos_idx += 1
+        #             j -= 1
+        #             continue
+        #         cos_idx += 1
+        #         j -= 1
+        #
+        # # vectors of top 10 freq words n-dimensional distance
+        # dist_df = pd.DataFrame()
+        # dist_idx = 0
+        # print(f'\nStarted computing n-dimensional Euclidean distance between top {top_words_var} words at {time.asctime( time.localtime(time.time()))}')
+        # for i, row in tmp_result_df.iterrows():
+        #     j = len(tmp_result_df)-1
+        #     while i < j:
+        #         dist_df.at[dist_idx, 'Word_1'] = row['Word']
+        #         dist_df.at[dist_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
+        #         dist_df.at[dist_idx, 'n-dimensional Euclidean distance'] = word2vec_util.euclidean_dist(row['Embeddings'], tmp_result_df.at[j, 'Embeddings'])
+        #         dist_idx+=1
+        #         j-=1
+        #
+        # # create outputFilenames and save them
+        # cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_Cos_Similarity')
+        # dist_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_Euclidean_dist')
+        #
+        # dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)
+        # cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
+        #
+        # dist_df.to_csv(dist_outputFilename, encoding='utf-8', index=False)
+        # cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
+        #
+        # filesToOpen.append(dist_outputFilename)
+        # filesToOpen.append(cos_sim_outputFilename)
+        #
+        # chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, dist_outputFilename,
+        #                                                    outputDir,
+        #                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['n-dimensional Euclidean distance'],
+        #                                                    chartTitle='Frequency Distribution of n-dimensional Euclidean distances',
+        #                                                    # count_var = 1 for columns of alphabetic values
+        #                                                    count_var=0, hover_label=[],
+        #                                                    outputFileNameType='nDim_dist', #'POS_bar',
+        #                                                    column_xAxis_label='Euclidean distance',
+        #                                                    groupByList=[],
+        #                                                    plotList=[],
+        #                                                    chart_title_label='')
+        #
+        # if chart_outputFilename!=None:
+        #     if len(chart_outputFilename) > 0:
+        #         filesToOpen.extend(chart_outputFilename)
+        #
+        # chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, cos_sim_outputFilename,
+        #                                                    outputDir,
+        #                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Cosine similarity'],
+        #                                                    chartTitle='Frequency Distribution of cosine similarities',
+        #                                                    # count_var = 1 for columns of alphabetic values
+        #                                                    count_var=0, hover_label=[],
+        #                                                    outputFileNameType='coos_simil', #'POS_bar',
+        #                                                    column_xAxis_label='Cosine similarity',
+        #                                                    groupByList=[],
+        #                                                    plotList=[],
+        #                                                    chart_title_label='')
+        #
+        # if chart_outputFilename!=None:
+        #     if len(chart_outputFilename) > 0:
+        #         filesToOpen.extend(chart_outputFilename)
 
     # keyword cos similarity
     if keywords_var:

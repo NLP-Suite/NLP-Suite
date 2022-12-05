@@ -12,7 +12,7 @@ import tkinter.messagebox as mb
 import reminders_util
 import GUI_IO_util
 import IO_files_util
-import word2vec_util
+import word2vec_Gensim_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -53,7 +53,6 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
                                      reminders_util.message_BERT_Word2Vec_timing,
                                      True)
         import BERT_util
-
         BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, Word2Vec_Dir, openOutputFiles, createCharts,
                                                    chartPackage, vis_menu_var, dim_menu_var, compute_distances_var, top_words_var, keywords_var)
         filesToOpen.append(BERT_output)
@@ -66,7 +65,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
         if 'Clustering' in vis_menu_var and keywords_var=='':
             mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
             return
-        filesToOpen = word2vec_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir,openOutputFiles, createCharts, chartPackage,
+        filesToOpen = word2vec_Gensim_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir,openOutputFiles, createCharts, chartPackage,
                                  remove_stopwords_var, lemmatize_var,
                                  keywords_var,
                                  compute_distances_var, top_words_var,
@@ -105,8 +104,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=680, # height at brief display
-                             GUI_height_full=760, # height at full display
+                             GUI_height_brief=600, # height at brief display
+                             GUI_height_full=680, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -184,7 +183,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 vis_var_lb = tk.Label(window,text='Select visualization option')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,vis_var_lb,True)
 vis_menu_var.set('Do not plot word vectors')
-vis_menu = tk.OptionMenu(window,vis_menu_var, 'Do not plot word vectors', 'Plot word vectors', 'Clustering of word vectors')
+vis_menu = tk.OptionMenu(window,vis_menu_var, 'Do not plot word vectors', 'Plot word vectors')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
     y_multiplier_integer,
@@ -233,21 +232,24 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 
 vector_size_var.set(100)
 vector_size_entry = tk.Entry(window,width=5,textvariable=vector_size_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_vector_size_entry_pos,y_multiplier_integer,vector_size_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_vector_size_entry_pos,y_multiplier_integer,vector_size_entry, True)
+
 ## option for window size
 window_lb = tk.Label(window,text='Window size')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,window_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,window_lb,True)
 
 window_var.set(5)
-window_entry = tk.Entry(window,width=5,textvariable=window_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_window_entry_pos,y_multiplier_integer,window_entry)
+window_size_entry = tk.Entry(window,width=5,textvariable=window_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_window_size_entry_pos,y_multiplier_integer,window_size_entry, True)
+
 ## option for minimum count
 min_count_lb = tk.Label(window,text='Minimum count')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,min_count_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_min_count_lb_pos,y_multiplier_integer,min_count_lb,True)
 
 min_count_var.set(5)
 min_count_entry = tk.Entry(window,width=5,textvariable=min_count_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_min_count_pos,y_multiplier_integer,min_count_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_min_count_entry_pos,y_multiplier_integer,min_count_entry)
+
 ## option for visualization method
 
 compute_distances_var.set(1)
@@ -290,19 +292,19 @@ def activate_all_options():
     Gensim_checkbox.configure(state='normal')
     sg_menu.configure(state='normal')
     vector_size_entry.configure(state='normal')
-    window_entry.configure(state='normal')
+    window_size_entry.configure(state='normal')
     min_count_entry.configure(state='normal')
     if BERT_var.get():
         Gensim_checkbox.configure(state='disabled')
         sg_menu.configure(state='disabled')
         vector_size_entry.configure(state='disabled')
-        window_entry.configure(state='disabled')
+        window_size_entry.configure(state='disabled')
         min_count_entry.configure(state='disabled')
     if Gensim_var.get():
         BERT_checkbox.configure(state='disabled')
         sg_menu.configure(state='normal')
         vector_size_entry.configure(state='normal')
-        window_entry.configure(state='normal')
+        window_size_entry.configure(state='normal')
         min_count_entry.configure(state='normal')
 #
 videos_lookup = {'No videos available':''}
@@ -347,14 +349,9 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                   "Please, using the dropdown menu, select the preferred model architecture for training Word2Vec: Skip-Gram and CBOW (Continuous Bag of Words).\n\nWhich model is better?\n\nAccording to the original paper by Mikolov et al. (2013) Skip-Gram works well with small datasets, and can better represent less frequent words. However, CBOW is found to train faster than Skip-Gram, and can better represent more frequent words.\n\nMikolov, Tomas, Kai Chen, Greg Corrado, and Jeffrey Dean. 2013. 'Efficient Estimation of Word Representations in Vector Space' arXiv:1301.3781.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
-                                  "'Vector size' refers to the dimensionality of the word vectors. If you have a large corpus (> billions of tokens), you can go up to 100-300 dimensions. Generally word vectors with more dimensions give better results.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                  "NLP Suite Help",
-                                  "'Window size' refers to the maximum distance between the current and predicted word within a sentence. In other words, how many words come before and after your given word.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                  "NLP Suite Help",
-                                  "'Minimum count' refers to the minimum frequency threshold. The words with total frequency lower than this will be ignored.")
-                                  # "NLP Suite Help", "Please, using the dropdown menu, select the architecture to be used in training Word2Vec: CBOW (Continuous Bag-of-Words) and Skip-gram. Both approaches are based on neural networks. Generally, CBOW is much faster and with slightly better accuracy for larger corpora. Skip-gram is better for smaller corpora.")
+                                  "'Vector size' refers to the dimensionality of the word vectors. If you have a large corpus (> billions of tokens), you can go up to 100-300 dimensions. Generally word vectors with more dimensions give better results." \
+                                  "\n\n'Window size' refers to the maximum distance between the current and predicted word within a sentence. In other words, how many words come before and after your given word." \
+                                  "\n\n'Minimum count' refers to the minimum frequency threshold. The words with total frequency lower than this will be ignored.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Please, tick the checkbox to compute Euclidean distances and cosine similarity between words. Cosine similarity measure will be computed whether the checkbox 'Compute word distances' is ticked or not.\n\n2-dimentional distances reflect the position of words in the two-dimentional html graph. But... it may not reflect the 'true' semantic distance between words, more accurately measured by the n-dimenional distance (which, of course, you cannot see).\n\nCosine similarity varies betwteen 0 and 1 (a value 0 indicates that the words are orthgonal to each other, i.e., they are distant in the semantic space; a value of 1 indicates the opposite.")
