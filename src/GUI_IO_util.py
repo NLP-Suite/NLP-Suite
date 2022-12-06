@@ -360,8 +360,9 @@ if sys.platform == 'darwin':  # Mac OS
     date_position_coordinate = 970
 
 # MAC NLP_setup_external_software_main.py
-    missing_software_display_area_width = 60
-    website_url_placement = 500
+    missing_software_display_area_width = 55
+    dowload_install = 320
+    website_url_placement = 600
 
 # MAC OK
     countdownLabelOK1_X = 70
@@ -632,12 +633,12 @@ if sys.platform == 'darwin':  # Mac OS
     file_search_byWord_extract_sentences_search_words_entry_pos = 510
 
     # Mac Word2Vec
-    Word2Vec_vector_size_entry_pos = 260
-    Word2Vec_window_entry_pos = Word2Vec_vector_size_entry_pos
-    Word2Vec_min_count_pos = Word2Vec_vector_size_entry_pos
-    Word2Vec_dim_menu_pos = 660
-    Word2Vec_cluster_var_entry_pos = 170
-    Word2Vec_keywords_entry_pos = 280
+    Word2Vec_vector_size_entry_pos = 270
+    Word2Vec_window_size_lb_pos = Word2Vec_vector_size_entry_pos
+    Word2Vec_window_size_entry_pos= Word2Vec_window_size_lb_pos+260
+    Word2Vec_min_count_lb_pos=setup_pop_up_text_widget
+    Word2Vec_min_count_entry_pos = Word2Vec_min_count_lb_pos +150
+    Word2Vec_top_words_pos = 930
 
 # Mac statistics_csv
 
@@ -778,8 +779,9 @@ else: #windows and anything else
     date_position_coordinate = 880
 
 # Windows  NLP_setup_external_software_main.py
-    missing_software_display_area_width = 80
-    website_url_placement = 640
+    missing_software_display_area_width = 85
+    dowload_install = 320
+    website_url_placement = 600
 
 # Windows OK
     countdownLabelOK1_X = 40
@@ -1025,9 +1027,12 @@ else: #windows and anything else
     file_search_byWord_extract_sentences_search_words_entry_pos = 430
 
 # Windows Word2Vec
-    Word2Vec_vector_size_entry_pos = 260
-    Word2Vec_window_entry_pos = Word2Vec_vector_size_entry_pos
-    Word2Vec_min_count_pos = Word2Vec_vector_size_entry_pos
+    Word2Vec_vector_size_entry_pos = 250
+    Word2Vec_window_size_lb_pos = Word2Vec_vector_size_entry_pos
+    Word2Vec_window_size_entry_pos= Word2Vec_window_size_lb_pos+220
+    Word2Vec_min_count_lb_pos=setup_pop_up_text_widget
+    Word2Vec_min_count_entry_pos = Word2Vec_min_count_lb_pos +150
+    Word2Vec_top_words_pos = 800
 
 # Windows statistics_csv
 

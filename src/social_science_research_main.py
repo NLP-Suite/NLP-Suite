@@ -260,7 +260,7 @@ def run(inputDir, input_secondary_dir_path, outputDir, openOutputFiles, createCh
     global filesToOpen
     filesToOpen = []
     # check that the CoreNLPdir as been setup
-    CoreNLPdir, missing_external_software = IO_libraries_util.get_external_software_dir('social_science_research', 'Stanford CoreNLP')
+    CoreNLPdir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('social_science_research', 'Stanford CoreNLP', silent=True, only_check_missing=False)
     if CoreNLPdir==None:
         return filesToOpen
 
@@ -297,7 +297,7 @@ run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_chart_output_checkbox.get(),
-                                 GUI_util.charts_dropdown_field.get(),
+                                 GUI_util.charts_package_options_widget.get(),
                                  fileName_embeds_date.get(),
                                  date_format.get(),
                                  date_position_var.get(),

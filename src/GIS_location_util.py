@@ -159,7 +159,11 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 				if datePresent == True:
 					locList.append([row[locationColumnNumber], row[dateColumnNumber], row['NER Tag']])
 				else:
-					locList.append([row[locationColumnNumber],[index],[0], row['NER Tag']])
+					# the code would break if no NER Tag is passed (e.g., from DB_PC-ACE)
+					try:
+						locList.append([row[locationColumnNumber],[index],[0], row['NER Tag']])
+					except:
+						locList.append([row[locationColumnNumber], [index], [0]])
 
 	if len(locList)==0:
 		mb.showwarning(title='Locations', message="There are no locations in your input file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.\n\nNo map via Google Earth Pro and Google Maps can be done.")

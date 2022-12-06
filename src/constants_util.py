@@ -613,7 +613,7 @@ NLP_Suite_corpus_document_tools_menu = \
 '', \
 'Special annotators ---------------------------------------------------------------------------', \
 '', \
-'CoreNLP annotator - date (NER normalized date)', \
+'CoreNLP annotator - date (normalized NER date)', \
 'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)', \
 'CoreNLP annotator - quote', \
 'CoreNLP annotator - coreference (pronominal)', \

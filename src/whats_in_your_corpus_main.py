@@ -36,7 +36,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_chart_output_checkbox.get(),
-                            GUI_util.charts_dropdown_field.get(),
+                            GUI_util.charts_package_options_widget.get(),
                             utf8_var.get(),
                             ASCII_var.get(),
                             corpus_statistics_var.get(),
@@ -382,7 +382,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                   silent=True)
         if nouns_var or verbs_var:
             if nouns_var or verbs_var or what_else_menu_var == '*':
-                WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('whats_in_your_corpus', 'WordNet')
+                WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('whats_in_your_corpus', 'WordNet', silent=True, only_check_missing=False)
                 if WordNetDir == None:
                     return
                 if language_var != 'English':

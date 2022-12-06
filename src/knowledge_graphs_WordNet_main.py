@@ -53,7 +53,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
 
     language_var='English' # WordNet works only for English language
 
-    WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('knowledge_graphs_WordNet_main', 'WordNet')
+    WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('knowledge_graphs_WordNet_main', 'WordNet', silent=True, only_check_missing=False)
     if WordNetDir == None:
         return
 
@@ -190,7 +190,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_chart_output_checkbox.get(),
-                            GUI_util.charts_dropdown_field.get(),
+                            GUI_util.charts_package_options_widget.get(),
                             csv_file_var.get(),
                             aggregate_POS_var.get(),
                             noun_verb_menu_var.get(),

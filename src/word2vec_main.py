@@ -12,8 +12,7 @@ import tkinter.messagebox as mb
 import reminders_util
 import GUI_IO_util
 import IO_files_util
-import word2vec_util
-import BERT_util
+import word2vec_Gensim_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -29,8 +28,19 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
 
     filesToOpen = []
 
+    if not 'Do not' in vis_menu_var:
+        result = mb.askyesno('Visualization via t-SNE',
+                             'You have selected to run Word2Vec with the t-SNE visualization option. Depending upon the total number of words in your corpus, this option is computationally VERY demanding (it can take many hours on a standard laptop, particularly with BERT). Compressing an n-dimensional space into a a 2D or 3D graph can also be somewhat misleading (cosine similarities provide a better alternative).\n\nAre you sure you want to continue?')
+        if not result:
+            return
+
     # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
-    Word2Vec_Dir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='Word2Vec',
+    label=''
+    if BERT_var:
+        label='Word2Vec_BERT'
+    else:
+        label='Word2Vec_Gensim'
+    Word2Vec_Dir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label=label,
                                                             silent=True)
     if Word2Vec_Dir == '':
         return
@@ -38,15 +48,24 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
     ## if statements for any requirements
 
     if BERT_var:
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_BERT_Word2Vec_timing,
+                                     reminders_util.message_BERT_Word2Vec_timing,
+                                     True)
+        import BERT_util
         BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, Word2Vec_Dir, openOutputFiles, createCharts,
-                                                   chartPackage, dim_menu_var, compute_distances_var, top_words_var, keywords_var)
+                                                   chartPackage, vis_menu_var, dim_menu_var, compute_distances_var, top_words_var, keywords_var, lemmatize_var)
         filesToOpen.append(BERT_output)
 
     if Gensim_var:
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_Gensim_Word2Vec_timing,
+                                     reminders_util.message_Gensim_Word2Vec_timing,
+                                     True)
         if 'Clustering' in vis_menu_var and keywords_var=='':
             mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
             return
-        filesToOpen = word2vec_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir,openOutputFiles, createCharts, chartPackage,
+        filesToOpen = word2vec_Gensim_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir,openOutputFiles, createCharts, chartPackage,
                                  remove_stopwords_var, lemmatize_var,
                                  keywords_var,
                                  compute_distances_var, top_words_var,
@@ -61,7 +80,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
-                                GUI_util.charts_dropdown_field.get(),
+                                GUI_util.charts_package_options_widget.get(),
                                 remove_stopwords_var.get(),
                                 lemmatize_var.get(),
                                 BERT_var.get(),
@@ -85,8 +104,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=680, # height at brief display
-                             GUI_height_full=760, # height at full display
+                             GUI_height_brief=600, # height at brief display
+                             GUI_height_full=680, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -137,24 +156,23 @@ dim_menu_var=tk.StringVar()
 keywords_var=tk.StringVar()
 
 def clear(e):
-    # all_analyses_var.set(0)
-    # all_analyses_checkbox.configure(state='normal')
-    # all_analyses_menu.configure(state='disabled')
-    # all_analyses.set('*')
-    # search_token_var.set(0)
-    # searchField_kw_var.set('e.g.: father')
-    # postag_var.set('*')
-    # deprel_var.set('*')
-    # co_postag_var.set('*')
-    # co_postag_var.set('*')
-    # co_deprel_var.set('*')
-    # activate_all_options()
+    remove_stopwords_var.set(1)
+    lemmatize_var.set(1)
+    vis_menu_var.set('Do not plot word vectors')
+    dim_menu_var.set('')
+    sg_menu_var.set('Skip-Gram')
+    vector_size_var.set(100)
+    window_var.set(5)
+    min_count_var.set(5)
+    top_words_var.set(200)
+    keywords_var.set('')
+    activate_all_options()
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
 ## option for stopwords
 remove_stopwords_var.set(1)
-remove_stopwords_checkbox = tk.Checkbutton(window, text='Remove stopwords', variable=remove_stopwords_var, onvalue=1, offvalue=0)
+remove_stopwords_checkbox = tk.Checkbutton(window, text='Remove stopwords & punctuation', variable=remove_stopwords_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,remove_stopwords_checkbox)
 
 ## option for Lemmatization
@@ -162,30 +180,103 @@ lemmatize_var.set(1)
 lemmatize_checkbox = tk.Checkbutton(window, text='Lemmatize', variable=lemmatize_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,lemmatize_checkbox)
 
-vis_var_lb = tk.Label(window,text='Select the visualization method')
+vis_var_lb = tk.Label(window,text='Select visualization option')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,vis_var_lb,True)
-vis_menu_var.set('Plot all word vectors')
-vis_menu = tk.OptionMenu(window,vis_menu_var, 'Plot all word vectors', 'Clustering of word vectors')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,vis_menu, True)
+vis_menu_var.set('Do not plot word vectors')
+vis_menu = tk.OptionMenu(window,vis_menu_var, 'Do not plot word vectors', 'Plot word vectors')
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
+    y_multiplier_integer,
+    vis_menu,
+    True, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
+    "The visualizaton of an n-dimensional space in a 2 or 3 dimensional space is\n1. computationally very demanding (depending upon the number of words)\n2. somewhat misleading (you are better off looking at cosine similarities).")
 
 #### 2D or 3D plot
-dim_menu_var.set('2D')
+dim_menu_var.set('')
 dim_menu = tk.OptionMenu(window,dim_menu_var, '2D', '3D')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,dim_menu)
 
+def activate_plot_options(*args):
+    if not 'Do not' in vis_menu_var.get():
+        dim_menu_var.set('2D')
+        dim_menu.configure(state='normal')
+    else:
+        dim_menu_var.set('')
+        dim_menu.configure(state='disabled')
+vis_menu_var.trace('w',activate_plot_options)
+
 ## option for BERT
 BERT_var.set(0)
-BERT_checkbox = tk.Checkbutton(window, text='Word embeddings (via BERT)', variable=BERT_var, onvalue=1, offvalue=0)
+BERT_checkbox = tk.Checkbutton(window, text='Word embeddings (via BERT)', variable=BERT_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,BERT_checkbox)
 
 ## option for Gensim
 Gensim_var.set(0)
-Gensim_checkbox = tk.Checkbutton(window, text='Word2Vec (via Gensim)', variable=Gensim_var, onvalue=1, offvalue=0)
+Gensim_checkbox = tk.Checkbutton(window, text='Word2Vec (via Gensim)', variable=Gensim_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,Gensim_checkbox)
+
+## option for Gensim model architecture
+sg_lb = tk.Label(window,text='Training model architecture')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,sg_lb,True)
+sg_menu_var.set('Skip-Gram')
+sg_menu = tk.OptionMenu(window,sg_menu_var, 'Skip-Gram','CBOW')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,sg_menu)
+
+## option for Gensim window size
+window_lb = tk.Label(window,text='Window size')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,window_lb,True)
+
+## option for Gensim vector size
+vector_size_lb = tk.Label(window,text='Vector size')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,vector_size_lb,True)
+
+vector_size_var.set(100)
+vector_size_entry = tk.Entry(window,width=5,textvariable=vector_size_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_vector_size_entry_pos,y_multiplier_integer,vector_size_entry, True)
+
+## option for window size
+window_lb = tk.Label(window,text='Window size')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,window_lb,True)
+
+window_var.set(5)
+window_size_entry = tk.Entry(window,width=5,textvariable=window_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_window_size_entry_pos,y_multiplier_integer,window_size_entry, True)
+
+## option for minimum count
+min_count_lb = tk.Label(window,text='Minimum count')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_min_count_lb_pos,y_multiplier_integer,min_count_lb,True)
+
+min_count_var.set(5)
+min_count_entry = tk.Entry(window,width=5,textvariable=min_count_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_min_count_entry_pos,y_multiplier_integer,min_count_entry)
+
+## option for visualization method
+
+compute_distances_var.set(1)
+compute_distances_checkbox = tk.Checkbutton(window, text='Compute word distances', variable=compute_distances_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
+    y_multiplier_integer,
+    compute_distances_checkbox,
+    True, False, False, False, 90, GUI_IO_util.labels_x_coordinate,
+    "Tick/untick the checkbox to (not)compute Eucledian 2-dimensional and n-dimensional distances and cosine similarity between words.\nComputing word similarities can be computationally demanding and time consuming, but VERY useful in locating words in a semantic space.\nYOU DO NOT NEED TO RE-RUN WORD2VC ON A SET OF TXT FILES. YOU CAN USE A CSV VECTOR FILE PREVIOUSLY COMPUTED.")
+
+## option for number of words for Euclidean distance
+top_words_lb = tk.Label(window,text='Number of top words for Euclidean distance & cosine similarity combinations')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,top_words_lb,True)
+
+top_words_var.set(200)
+top_words_entry = tk.Entry(window,width=5,textvariable=top_words_var)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_top_words_pos,
+    y_multiplier_integer,
+    top_words_entry,
+    False, False, False, False, 90, GUI_IO_util.labels_x_coordinate,
+    "Enter the number of top words to be used in computing distances (the more words, the longer it takes to compute distances)")
 
 keywords_var.set('')
 keywords_lb = tk.Label(window, text='Keywords')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,keywords_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,keywords_lb,True)
 
 keywords_entry = tk.Entry(window, textvariable=keywords_var)
 keywords_entry.configure(state='normal',width=GUI_IO_util.widget_width_extra_long)
@@ -194,64 +285,27 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
     y_multiplier_integer,
     keywords_entry,
     False, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
-    "Enter the comma-separated words to be used to visualize Euclidean distances and cosine similarity between selected words.\nCosine similarity will always be computed whether the checkbox 'Compute word distances' is ticked or not.")
+    "Enter the comma-separated words to be used to visualize Euclidean distances and cosine similarity between selected words.\nCosine similarity will always be computed for the top selected n words whether the checkbox 'Compute word distances' is ticked or not.")
 
-compute_distances_var.set(1)
-compute_distances_checkbox = tk.Checkbutton(window, text='Compute word distances', variable=compute_distances_var, onvalue=1, offvalue=0)
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,
-    y_multiplier_integer,
-    compute_distances_checkbox,
-    True, False, False, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-    "Tick/untick the checkbox to (not)compute Eucledian 2-dimensional and n-dimensional distances and cosine similarity between words.\nComputing word similarities is computationally demanding and time consuming, but VERY useful in locating words in a semantic space.")
-
-## option for vector size
-top_words_lb = tk.Label(window,text='Number of top words for distance combinations')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,top_words_lb,True)
-
-top_words_var.set(10)
-top_words_entry = tk.Entry(window,width=5,textvariable=top_words_var)
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+300,
-    y_multiplier_integer,
-    top_words_entry,
-    False, False, False, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-    "Enter the number of top words to be used in computing distances (the more words, the longer it takes to compute distances)")
-
-## option for window size
-window_lb = tk.Label(window,text='Window size')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,window_lb,True)
-
-## option for model architecture
-sg_lb = tk.Label(window,text='Training model architecture')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,sg_lb,True)
-sg_menu_var.set('Skip-Gram')
-sg_menu = tk.OptionMenu(window,sg_menu_var, 'Skip-Gram','CBOW')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,sg_menu)
-
-## option for vector size
-vector_size_lb = tk.Label(window,text='Vector size')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,vector_size_lb,True)
-
-vector_size_var.set(100)
-vector_size_entry = tk.Entry(window,width=5,textvariable=vector_size_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_vector_size_entry_pos,y_multiplier_integer,vector_size_entry)
-## option for window size
-window_lb = tk.Label(window,text='Window size')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,window_lb,True)
-
-window_var.set(5)
-window_entry = tk.Entry(window,width=5,textvariable=window_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_window_entry_pos,y_multiplier_integer,window_entry)
-## option for minimum count
-min_count_lb = tk.Label(window,text='Minimum count')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,min_count_lb,True)
-
-min_count_var.set(5)
-min_count_entry = tk.Entry(window,width=5,textvariable=min_count_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_min_count_pos,y_multiplier_integer,min_count_entry)
-## option for visualization method
-
+def activate_all_options():
+    BERT_checkbox.configure(state='normal')
+    Gensim_checkbox.configure(state='normal')
+    sg_menu.configure(state='normal')
+    vector_size_entry.configure(state='normal')
+    window_size_entry.configure(state='normal')
+    min_count_entry.configure(state='normal')
+    if BERT_var.get():
+        Gensim_checkbox.configure(state='disabled')
+        sg_menu.configure(state='disabled')
+        vector_size_entry.configure(state='disabled')
+        window_size_entry.configure(state='disabled')
+        min_count_entry.configure(state='disabled')
+    if Gensim_var.get():
+        BERT_checkbox.configure(state='disabled')
+        sg_menu.configure(state='normal')
+        vector_size_entry.configure(state='normal')
+        window_size_entry.configure(state='normal')
+        min_count_entry.configure(state='normal')
 #
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -292,23 +346,18 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                   "Please, tick the checkbox to run Word2Vec via Gensim.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
-                                  "Enter comma-separated keywords you want to focus on for semantic similarity. The words MUST be in the file(s) being analyzed, either as lemma or as the original word. Words not present in the document(s) will be skipped silently.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                  "NLP Suite Help",
-                                  "Please, tick the checkbox to compute Eucledian distances and cosine similarity between words. Cosine similarity measure will be computed whether the checkbox 'Compute word distances' is ticked or not.\n\n2-dimentional distances reflect the position of words in the two-dimentional html graph. But... it may not reflect the 'true' semantic distance between words, more accurately measured by the n-dimenional distance (which, of course, you cannot see).\n\nCosine similarity varies betwteen 0 and 1 (a value 0 indicates that the words are orthgonal to each other, i.e., they are distant in the semantic space; a value of 1 indicates the opposite.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                  "NLP Suite Help",
                                   "Please, using the dropdown menu, select the preferred model architecture for training Word2Vec: Skip-Gram and CBOW (Continuous Bag of Words).\n\nWhich model is better?\n\nAccording to the original paper by Mikolov et al. (2013) Skip-Gram works well with small datasets, and can better represent less frequent words. However, CBOW is found to train faster than Skip-Gram, and can better represent more frequent words.\n\nMikolov, Tomas, Kai Chen, Greg Corrado, and Jeffrey Dean. 2013. 'Efficient Estimation of Word Representations in Vector Space' arXiv:1301.3781.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
-                                  "'Vector size' refers to the dimensionality of the word vectors. If you have a large corpus (> billions of tokens), you can go up to 100-300 dimensions. Generally word vectors with more dimensions give better results.")
+                                  "'Vector size' refers to the dimensionality of the word vectors. If you have a large corpus (> billions of tokens), you can go up to 100-300 dimensions. Generally word vectors with more dimensions give better results." \
+                                  "\n\n'Window size' refers to the maximum distance between the current and predicted word within a sentence. In other words, how many words come before and after your given word." \
+                                  "\n\n'Minimum count' refers to the minimum frequency threshold. The words with total frequency lower than this will be ignored.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
-                                  "'Window size' refers to the maximum distance between the current and predicted word within a sentence. In other words, how many words come before and after your given word.")
+                                  "Please, tick the checkbox to compute Euclidean distances and cosine similarity between words. Cosine similarity measure will be computed whether the checkbox 'Compute word distances' is ticked or not.\n\n2-dimentional distances reflect the position of words in the two-dimentional html graph. But... it may not reflect the 'true' semantic distance between words, more accurately measured by the n-dimenional distance (which, of course, you cannot see).\n\nCosine similarity varies betwteen 0 and 1 (a value 0 indicates that the words are orthgonal to each other, i.e., they are distant in the semantic space; a value of 1 indicates the opposite.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
-                                  "'Minimum count' refers to the minimum frequency threshold. The words with total frequency lower than this will be ignored.")
-                                  # "NLP Suite Help", "Please, using the dropdown menu, select the architecture to be used in training Word2Vec: CBOW (Continuous Bag-of-Words) and Skip-gram. Both approaches are based on neural networks. Generally, CBOW is much faster and with slightly better accuracy for larger corpora. Skip-gram is better for smaller corpora.")
+                                  "Enter comma-separated keywords you want to focus on for semantic similarity. The words MUST be in the file(s) being analyzed, either as lemma or as the original word. Words not present in the document(s) will be skipped silently.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
@@ -342,11 +391,6 @@ reminders_util.checkReminder(
     reminders_util.title_options_Word2Vec_eucledian_distance,
     reminders_util.message_Word2Vec_eucledian_distance,
     True)
-
-reminders_util.checkReminder(config_filename,
-                             reminders_util.title_options_Gensim_Word2Vec_timing,
-                             reminders_util.message_Gensim_Word2Vec_timing_timing,
-                             True)
 
 if error:
     mb.showwarning(title='Warning',message='The Word2Vec algorithms expect in input either a txt file/directory of txt files or a csv file of previosuly computed Euclidean distances.')

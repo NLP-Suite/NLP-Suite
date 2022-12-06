@@ -207,8 +207,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         outputSVOFilterDir = outputSVODir + os.sep + 'SVO-filtered'
 
     if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-        WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('SVO_main',
-                                                                                            'WordNet')
+        WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('SVO_main',
+                                                                                            'WordNet',
+                                                                                            silent=True, only_check_missing=False)
         if WordNetDir == None:
             return
 
@@ -436,15 +437,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             i = 0
             # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
             if inputFilename[-4:] == ".csv":
+                fileBase = os.path.basename(inputFilename)[0:-4]
                 nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue='utf-8')
                 if nRecords > 1:   # including headers; file is empty
-                    gexf_file = Gephi_util.create_gexf(window,inputFileBase, outputSVOSVODir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
+                    gexf_file = Gephi_util.create_gexf(window,fileBase, outputSVOSVODir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
                                                        "Sentence ID")
                     filesToOpen.append(gexf_file)
                 else:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_result_list[0])
                     if nRecords > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(window,inputFileBase, inputFilename, svo_result_list[0],
+                        gexf_file = Gephi_util.create_gexf(window,fileBase, inputFilename, svo_result_list[0],
                                                            "Subject (S)", "Verb (V)", "Object (O)", "Sentence ID")
                         filesToOpen.append(gexf_file)
             else:  # txt input file
@@ -558,7 +560,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_chart_output_checkbox.get(),
-                                 GUI_util.charts_dropdown_field.get(),
+                                 GUI_util.charts_package_options_widget.get(),
                                  coref_var.get(),
                                  manual_coref_var.get(),
                                  normalized_NER_date_extractor_var.get(),

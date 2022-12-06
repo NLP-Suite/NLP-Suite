@@ -26,10 +26,14 @@ def import_PCACE_tables(inputDir):
 
     for file in dirSearch:
         # Only include .csv files from the input dir
-        if ".csv" in file and len(file) > 4:
+        if (file.startswith('data_') or file.startswith('setup_')) and (file.endswith('.csv')):
             # Strip off the .csv extension
             # tableList.append(file[:len(file) - 4])
-            tableList.append(file)
+            if not file in str(tableList):
+                if file=='data_Complex.csv':
+                    print('')
+                print(file)
+                tableList.append(file)
     # if len(tableList) == 0:
     #     mb.showwarning(title='Warning',
     #                    message='There are no csv files in the input directory.\n\nThe script expects a set of csv files with overlapping ID fields across files in order to construct an SQLite relational database.\n\nPlease, select an input directory that contains 18 csv PC-ACE tables and try again.')
@@ -68,7 +72,7 @@ def give_all_simplex_name(setup_Simplex):
 # give data for the input simplex name
 # parameter: name: simplex name in list type
 # return: dataframe: name, value, frequency
-def dist(name, inputDir, outputDir):
+def get_simplex_frequencies(name, inputDir, outputDir):
     setup_Simplex = os.path.join(inputDir, 'setup_Simplex.csv')
     if os.path.isfile(setup_Simplex):
         setup_Simplex_df = pd.read_csv(setup_Simplex)
@@ -91,20 +95,25 @@ def dist(name, inputDir, outputDir):
 
     simplex_id = find_setup_id_simplex(name, setup_Simplex_df)
     id = simplex_id.iat[0,0]
-    xref_id = setup_xref_Simplex_Complex_df[setup_xref_Simplex_Complex_df['ID_setup_simplex']==id].iat[0,0]
-    xref_data = data_xref_Simplex_Complex_df[data_xref_Simplex_Complex_df['ID_setup_xref_simplex_complex']==xref_id]
-    xref_data = xref_data[['ID_data_simplex', 'ID_data_complex']]
-    count = xref_data.groupby(['ID_data_simplex']).count()
+    name = simplex_id.iat[0,1]
+
+    temp = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_df, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
+    select = temp[temp['ID_setup_simplex']==id]
+    select = select[['ID_data_simplex', 'ID_data_complex']]
+    count = select.groupby(['ID_data_simplex']).count()
 
     data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
     count = pd.merge(count, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-    count = count[['ID_data_simplex', 'Value', 'ID_data_complex']]
 
-    count = count.rename(columns = {'ID_data_simplex':name[0], 'ID_data_complex':'Frequency'})
+    count = count[['Value', 'ID_data_complex']]
+    count = count.rename(columns = {'Value':name, 'ID_data_complex':'Frequency'})
+    count = count.sort_values(by=['Frequency'], ascending=False)
+
+    # TODO Anna: The first column should have a header "Name of Simplex Object"
 
     simplex_frequency_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
-                                                                       'spell_pyspellchecker')
+                                                                       'simplex_freq')
     count.to_csv(simplex_frequency_file_name, encoding='utf-8', index=False)
 
     return simplex_frequency_file_name
@@ -343,17 +352,22 @@ def semantic_triplet_complex(setup_Complex, setup_xref_Complex_Complex, data_xre
         columns='ID_setup_xref_complex_complex',
         values='ID_data_complex.1'
     ).reset_index()
+    # TODO Anna: ID_data_complex is renamed to Semantic Triplet but then it is used a few lines down
     triplet = triplet.rename(columns={'ID_data_complex': 'Semantic Triplet', 63: 'S', 64: 'V', 65: 'O'})
 
     complexes = ['S', 'V', 'O']
 
     for i in range(3):
         complex = complexes[i]
+        # TODO Anna: ID_data_complex has been renamed to Semantic Triplet above
         triplet = pd.merge(triplet, data_Complex, how='left', left_on=complex, right_on='ID_data_complex')
+        # TODO Anna: Identifier is not an item retrieved above
         pop = triplet.pop('Identifier')
         name = complex + ' Identifier'
         triplet.insert((i + 1) * 2, name, pop)
+        # TODO Anna: ID_data_complex has been renamed to Semantic Triplet above
         triplet = triplet.drop('ID_data_complex', axis=1)
+        # TODO Anna: ID_data_complex has been renamed to Semantic Triplet above
         triplet = triplet.drop('ID_setup_complex', axis=1)
 
     return triplet
@@ -671,7 +685,7 @@ def participant_simplex(participant, data_Simplex, data_SimplexText, setup_Compl
 
   simplexes = []
 
-  lower_complexes = {'Individual':'Name of individual actor', 'Collective actor':'Name of collective actor', 'Organization':'Name of organization'}
+  lower_complexes = {'Individual':'Name of individual actor', 'Collective actor':'Name of collective actor', 'Organization':'Role in the Organization'}
 
   for lower in lower_complexes:
     simplex = lower_complexes[lower]
@@ -679,12 +693,12 @@ def participant_simplex(participant, data_Simplex, data_SimplexText, setup_Compl
     simplex_id = find_setup_id_simplex([simplex], setup_Simplex)
     simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
 
-    xref_sc_value = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
+    xref_sc_value_select = xref_sc_value[xref_sc_value['ID_setup_simplex'].isin(simplex_id)]
 
     path = find_path(participant, lower, setup_Complex, setup_xref_Complex_Complex)
     id_data = link_data_id(path, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
 
-    data = pd.merge(id_data, xref_sc_value, how = 'left', left_on = lower, right_on = 'ID_data_complex')
+    data = pd.merge(id_data, xref_sc_value_select, how = 'left', left_on = lower, right_on = 'ID_data_complex')
     data = data[data[participant].notna()]
     data = data.drop_duplicates(subset=[participant])
     data = data[[participant, lower, 'Value']]
@@ -765,16 +779,16 @@ def semantic_triplet_simplex(inputDir, outputDir):
 
     triplet = semantic_triplet_complex(setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df)
     s = participant_simplex('Participant-S', data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_Simplex_df, data_Complex_df, data_xref_Simplex_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
-    s = s.rename(columns = {'Value':'S Simplex', 'Type':'S Type'})
+    s = s.rename(columns = {'Value':'Subject (S)', 'Type':'S Type'})
     v = process_simplex(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
     o = participant_simplex('Participant-O', data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_Simplex_df, data_Complex_df, data_xref_Simplex_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
-    o = o.rename(columns = {'Value':'O Simplex', 'Type':'O Type'})
+    o = o.rename(columns = {'Value':'Object (O)', 'Type':'O Type'})
 
     simplex_version = pd.merge(triplet, s, how = 'left', left_on = 'S', right_on = 'Participant-S')
     simplex_version = pd.merge(simplex_version, v, how = 'left', left_on = 'V', right_on = 'Process')
     simplex_version = pd.merge(simplex_version, o, how = 'left', left_on = 'O', right_on = 'Participant-O')
-    simplex_version = simplex_version.loc[:, ['Semantic Triplet', 'S', 'S Type', 'S Simplex', 'V', 'Value', 'O', 'O Type', 'O Simplex']]
-    simplex_version = simplex_version.rename(columns = {'Value':'V Simplex'})
+    simplex_version = simplex_version.loc[:, ['Semantic Triplet', 'S', 'S Type', 'Subject (S)', 'V', 'Value', 'O', 'O Type', 'Object (O)']]
+    simplex_version = simplex_version.rename(columns = {'Value':'Verb (V)'})
 
     triplet_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'triplet (SVO)')

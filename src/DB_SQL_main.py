@@ -113,7 +113,7 @@ run_script_command=lambda: run(
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
-                                GUI_util.charts_dropdown_field.get(),
+                                GUI_util.charts_package_options_widget.get(),
                                 SQL_query_entry.get("1.0", "end-1c"),
                                 construct_SQLite_DB_var.get())
 
@@ -247,16 +247,20 @@ def get_complex_simplex_list(tableName):
     menu=''
     return menu
 
-complex_objects_lb = tk.Label(window, text='Select complex object ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complex_objects_lb,True)
+# complex_objects_lb = tk.Label(window, text='Select complex object ')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complex_objects_lb,True)
 
 complex_objects_var = tk.StringVar()
 menu = get_complex_simplex_list('setup_Complex')
 complex_objects = tk.OptionMenu(window,complex_objects_var, menu)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,complex_objects)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,
+                                   complex_objects,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Use the dropdown menu to select a specific complex object for which to compute frequencies.\nWhen a hierarchical complex objcet is selectd (e.g., macro-event or event) and the checkbox Semantic triplets is ticked, semantic triplets will be listed in chronological order within a specific higher-level hierarchical complex object selected (e.g., macro-events, events).")
 
-simplex_objects_lb = tk.Label(window, text='Select simplex object ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,simplex_objects_lb,True)
+# simplex_objects_lb = tk.Label(window, text='Select simplex object ')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,simplex_objects_lb,True)
 
 simplex_objects_var = tk.StringVar()
 menu = get_complex_simplex_list('setup_Simplex')

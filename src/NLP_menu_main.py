@@ -44,7 +44,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_chart_output_checkbox.get(),
-                            GUI_util.charts_dropdown_field.get(),
+                            GUI_util.charts_package_options_widget.get(),
                             script_to_run,
                             IO_values)
 
@@ -187,7 +187,7 @@ pydict = {}
 pydict[""] = ["", 0]  # not available
 # https://stanfordnlp.github.io/CoreNLP/quote.html
 pydict["Parsers & annotators (BERT, CoreNLP, spaCy, Stanza)"] = ["parsers_annotators_main.py", 1]
-pydict["CoreNLP annotator - date (normalized date)"] = ["parsers_annotators_main.py", 1]
+pydict["CoreNLP annotator - date (normalized NER date)"] = ["parsers_annotators_main.py", 1]
 pydict["CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)"] = ["html_annotator_gender_main.py", 1]
 pydict["CoreNLP annotator - quote"] = ["parsers_annotators_main.py", 1]
 pydict["CoreNLP annotator - coreference (pronominal)"] = ["coreference_main.py", 1]
@@ -344,35 +344,38 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                open_default_NLP_package_language_config_button, False, False, True, False, 90, GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_IO_config_button-300, "Open the NLP_default_package_language_config.csv file containing the default NLP parser and annotators and corpus language options")
 
 setup_software_checkbox = tk.Checkbutton(window, state='disabled',
-                                         variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0)
+                                         variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0, command=lambda: setup_external_programs_checkbox('',False))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                setup_software_checkbox,True)
 software_dir = ''
 
-def setup_external_programs_checkbox(software):
+def setup_external_programs_checkbox(software, only_check_missing=False):
     global software_dir
     silent = False
-    only_check_missing = False
     if setup_software_OK_checkbox_var.get()==0 or software != '':
         if software_dir == None and software == '':
             return
-        software_dir, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu', software, silent, only_check_missing)
-        if len(missing_external_software) > 0:
+        # missing_external_software = IO_libraries_util.get_missing_external_software_list('NLP_menu', '', '',True)
+        software_dir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu', software, silent, only_check_missing)
+        if missing_external_software!='':
+
             setup_software_OK_checkbox_var.set(0)
         else:
             setup_software_OK_checkbox_var.set(1)
-setup_software_OK_checkbox_var.trace('w', lambda x, y, z: setup_external_programs_checkbox(''))
+    return missing_external_software
+# setup_software_OK_checkbox_var.trace('w', lambda x, y, z: setup_external_programs_checkbox(''))
 
 def callback(software: str):
+    print('IN CALLBACK')
     software_setup_var.set(software)
-    setup_external_programs_checkbox(software)
+    setup_external_programs_checkbox(software,False)
 
 def setup_software_warning():
     global software
     mb.showwarning('External software option', 'Please, select next the external software that you would like to download/install using the dropdown menu.')
-    software = GUI_IO_util.dropdown_menu_widget(window, "Please, select the external software to setup using the dropdown menu on the left, then click OK to accept your selection", ['Stanford CoreNLP', 'Gephi', 'Google Earth Pro', 'MALLET', 'SENNA', 'WordNet'],'Stanford CoreNLP',callback)
+    software = GUI_IO_util.dropdown_menu_widget(window, "Please, select the external software to setup using the dropdown menu on the left, then click OK to accept your selection", ['Stanford CoreNLP', 'Gephi', 'Google Earth Pro', 'MALLET', 'WordNet'],'Stanford CoreNLP',callback)
     if software != None:
-        setup_external_programs_checkbox(software)
+        setup_external_programs_checkbox(software,True)
 
 # software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_software_warning())
 software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_external_software_main.py", shell=True))
@@ -554,23 +557,33 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 if platform == 'darwin':
     window.update()
 
-routine_options = reminders_util.getReminders_list('NLP_config.csv')
+temp_config_filename = config_filename # 'NLP_menu_config.csv'
+routine_options = reminders_util.getReminders_list(temp_config_filename)
 
-reminders_util.checkReminder('NLP_config.csv',
-                             reminders_util.title_options_NLP_Suite_welcome,
-                             reminders_util.message_NLP_Suite_welcome,
-                             True)
-
-reminders_util.checkReminder('NLP_config.csv',
+reminders_util.checkReminder(temp_config_filename,
                              reminders_util.title_options_NLP_Suite_architecture,
                              reminders_util.message_NLP_Suite_architecture,
                              True)
-routine_options = reminders_util.getReminders_list('NLP_config.csv')
+routine_options = reminders_util.getReminders_list(temp_config_filename)
+
+if sys.platform == 'darwin':
+    reminders_util.checkReminder(temp_config_filename,
+                                 reminders_util.title_options_TensorFlow,
+                                 reminders_util.message_TensorFlow,
+                                 True)
+    routine_options = reminders_util.getReminders_list(temp_config_filename)
 
 # check for missing I/O configuration options
 setup_IO_checkbox()
 
 # check for missing external software
-setup_external_programs_checkbox('')
+missing_external_software = setup_external_programs_checkbox('', True)
+
+if missing_external_software!='':
+    reminders_util.checkReminder(temp_config_filename,
+                                 reminders_util.title_options_missing_external_software_NLP_main_GUI,
+                                 reminders_util.message_missing_external_software_NLP_main_GUI,
+                                 True)
+    routine_options = reminders_util.getReminders_list(temp_config_filename)
 
 GUI_util.window.mainloop()

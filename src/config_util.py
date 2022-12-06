@@ -153,24 +153,6 @@ def write_external_software_config_file(window, config_filename, currently_selec
         mb.showwarning(title='Permission error?',
                        message="The command failed to save the config file\n\n" + config_filename + "\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
 
-def save_external_software_config(window, currently_selected_options, currently_selected_parsers):
-    config_filename = GUI_IO_util.configPath + os.sep + 'NLP_setup_external_software_config.csv'
-    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, limit_document_length_var, limit_sentence_length_var = read_NLP_package_language_config()
-    if error or len(parsers)==0:
-        saved_NLP_package_language_options = ''
-        save_config = True
-    else:
-        # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
-        #   several times in this scripts (search for instance for MAIN NLP PACKAGE and change
-        #   they also need to be changed in one line in NLP_setup_package_language_main.py
-        saved_NLP_package_language_options= {'MAIN NLP PACKAGE': package, 'LEMMATIZER PACKAGE': package_basics, 'LANGUAGE(S)': language}
-        save_config=False
-    if saved_NLP_package_language_options!='' and currently_selected_options!=saved_NLP_package_language_options:
-        save_config = mb.askyesno("Save external software options",
-                                  'The selected external software options are different from the values previously saved in\n\n' + config_filename + '\n\nDo you want to replace the previously saved values with the current ones?')
-    if save_config:
-        write_NLP_package_language_config_file(window, config_filename, currently_selected_options, currently_selected_parsers)
-
 def read_NLP_package_language_config():
     package = ''
     parsers = []
