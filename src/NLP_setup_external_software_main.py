@@ -57,7 +57,7 @@ y_multiplier_integer_SV=y_multiplier_integer
 
 missing_software_var = tk.StringVar()
 
-missing_software_display_area = tk.Entry(width=80, state='disabled', textvariable=missing_software_var)
+missing_software_display_area = tk.Entry(width=GUI_IO_util.missing_software_display_area_width, state='disabled', textvariable=missing_software_var)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.website_url_placement,
                                                y_multiplier_integer, missing_software_display_area, True)
 
@@ -81,7 +81,7 @@ software_download_var.set('')
 # temporarily excluded '*'
 software_download_menu = tk.OptionMenu(window, software_download_var, 'Stanford CoreNLP', 'Gephi','Google Earth Pro','MALLET','WordNet')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.dowload_install, y_multiplier_integer,
                                                software_download_menu, True, False, True, False, 90,
                                                GUI_IO_util.watch_videos_x_coordinate, "Select the external software to be downloaded; the software website url will be displayed after selection..\nThe software installation directory will be automatically displayed after selection so that it can be saved in the config file NLP_setup_external_software_config.csv.")
 
@@ -90,7 +90,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.website_url_p
                                                y_multiplier_integer, software_website, True)
 
 software_website_url_var=tk.StringVar()
-software_website_display_area = tk.Entry(width=80, state='disabled', textvariable=software_website_url_var)
+software_website_display_area = tk.Entry(width=GUI_IO_util.missing_software_display_area_width, state='disabled', textvariable=software_website_url_var)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.website_url_placement,
                                                y_multiplier_integer, software_website_display_area, True)
 
@@ -125,12 +125,12 @@ software_install_var.set('')
 # temporarily excluded '*'
 software_install_menu = tk.OptionMenu(window, software_install_var, 'Stanford CoreNLP', 'Gephi','Google Earth Pro','MALLET','WordNet')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.dowload_install, y_multiplier_integer,
                                                software_install_menu, True, False, True, False, 90,
                                                GUI_IO_util.watch_videos_x_coordinate, "Select the external software to be installed after having downloaded it; the software installation directory will be displayed after selection.\nThe software installation directory will be automatically saved in the config file NLP_setup_external_software_config.csv.")
 
 software_install_dir_var=tk.StringVar()
-software_install_area = tk.Entry(width=80, state='disabled', textvariable=software_install_dir_var)
+software_install_area = tk.Entry(width=GUI_IO_util.missing_software_display_area_width, state='disabled', textvariable=software_install_dir_var)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.website_url_placement,
                                                y_multiplier_integer, software_install_area, True)
 

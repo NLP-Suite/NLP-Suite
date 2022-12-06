@@ -10,6 +10,8 @@ import pandas as pd
 import tkinter.messagebox as mb
 import math
 import time
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
 import IO_files_util
 import IO_user_interface_util
@@ -24,14 +26,14 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts,
                         word_vectors,
                         result_df,
                         keywords_var,
-                        compute_distances_var, top_words_var):
+                        compute_distances_var, top_words_var, BERT=False):
 
     filesToOpen = []
 
     # two_dim_Euclidean distances are always computed when plots are computed 2D 3D in word2vec_tsne_plot_util
 
     n_dim_Euclidean = compute_distances_var # always computed when distances are computed
-    cosine_similarity = True  # always computed
+    compute_cosine_similarity = True  # always computed
 
     # compute only distances if inputFile is csv
     if inputFilename.endswith('csv'):
@@ -126,68 +128,136 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts,
         if chart_outputFilename!=None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
-
-    if cosine_similarity: # now always set to True
-        # calculate cos similarity
-        cos_sim_df = pd.DataFrame()
-        cos_idx = 0
-        print(
-            f'\nStarted computing cosine similarity between top {top_words_var} words at {time.asctime(time.localtime(time.time()))}')
-        for i, row in tmp_result_df.iterrows():
-            j = len(tmp_result_df)-1
-            while i < j:
-                try:
-                    sim_score = word_vectors.similarity(str(row['Word']), str(tmp_result_df.at[j, 'Word']))
-                    cos_sim_df.at[cos_idx, 'Word_1'] = row['Word']
-                    cos_sim_df.at[cos_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
-                    cos_sim_df.at[cos_idx, 'Cosine similarity'] = sim_score
-                except KeyError:
+    
+    #BERT requires separate handling of cosine similarity since similarity(...) is a gensim word2vec function, so we have different cases for the two 
+    if not BERT: 
+        if compute_cosine_similarity:# now always set to True
+            # calculate cos similarity
+            cos_sim_df = pd.DataFrame()
+            cos_idx = 0
+            print(
+                f'\nStarted computing cosine similarity between top {top_words_var} words at {time.asctime(time.localtime(time.time()))}')
+            for i, row in tmp_result_df.iterrows():
+                j = len(tmp_result_df)-1
+                while i < j:
+                    try:
+                        sim_score = word_vectors.similarity(str(row['Word']), str(tmp_result_df.at[j, 'Word']))
+                        cos_sim_df.at[cos_idx, 'Word_1'] = row['Word']
+                        cos_sim_df.at[cos_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
+                        cos_sim_df.at[cos_idx, 'Cosine similarity'] = sim_score
+                    except KeyError:
+                        cos_idx+=1
+                        j-=1
+                        continue
                     cos_idx+=1
                     j-=1
-                    continue
-                cos_idx+=1
-                j-=1
+        
 
-        cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_Cos_Similarity')
-        cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
-        filesToOpen.append(cos_sim_outputFilename)
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, cos_sim_outputFilename,
-                                                           outputDir,
-                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Cosine similarity'],
-                                                           chartTitle='Frequency Distribution of cosine similarities',
-                                                           # count_var = 1 for columns of alphabetic values
-                                                           count_var=0, hover_label=[],
-                                                           outputFileNameType='coos_simil', #'POS_bar',
-                                                           column_xAxis_label='Cosine similarity',
-                                                           groupByList=[],
-                                                           plotList=[],
-                                                           chart_title_label='')
+            cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_Cos_Similarity')
+            cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
+            filesToOpen.append(cos_sim_outputFilename)
+            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, cos_sim_outputFilename,
+                                                            outputDir,
+                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Cosine similarity'],
+                                                            chartTitle='Frequency Distribution of cosine similarities',
+                                                            # count_var = 1 for columns of alphabetic values
+                                                            count_var=0, hover_label=[],
+                                                            outputFileNameType='coos_simil', #'POS_bar',
+                                                            column_xAxis_label='Cosine similarity',
+                                                            groupByList=[],
+                                                            plotList=[],
+                                                            chart_title_label='')
 
-        if chart_outputFilename!=None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+            if chart_outputFilename!=None:
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
 
-        # compute cosine similarity for selected keywords
-        if keywords_var:
-            keyword_df = pd.DataFrame()
-            keywords_list = [x.strip() for x in keywords_var.split(',')]
-            print(f'\nStarted computing cosine similarity between words for {len(keywords_list)} selected keywords at {time.asctime( time.localtime(time.time()))}')
-            i = 0
-            for a, b in itertools.combinations(keywords_list, 2):
-                try:
-                    sim_score = word_vectors.similarity(a, b)
-                    keyword_df.at[i, 'Word_1'] = a
-                    keyword_df.at[i, 'Word_2'] = b
-                    keyword_df.at[i, 'Cosine similarity'] = sim_score
-                except KeyError:
+            # compute cosine similarity for selected keywords
+            if keywords_var:
+                keyword_df = pd.DataFrame()
+                keywords_list = [x.strip() for x in keywords_var.split(',')]
+                print(f'\nStarted computing cosine similarity between words for {len(keywords_list)} selected keywords at {time.asctime( time.localtime(time.time()))}')
+                i = 0
+                for a, b in itertools.combinations(keywords_list, 2):
+                    try:
+                        sim_score = word_vectors.similarity(a, b)
+                        keyword_df.at[i, 'Word_1'] = a
+                        keyword_df.at[i, 'Word_2'] = b
+                        keyword_df.at[i, 'Cosine similarity'] = sim_score
+                    except KeyError:
+                        i+=1
+                        continue
                     i+=1
-                    continue
-                i+=1
-            keyword_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                                 f'Word2Vec_' + str(
-                                                                                     len(keywords_list)) + '_Keywords_Cos_Similarity')
-            keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
-            filesToOpen.append(keyword_sim_outputFilename)
+                keyword_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                                    f'Word2Vec_' + str(
+                                                                                        len(keywords_list)) + '_Keywords_Cos_Similarity')
+                keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
+                filesToOpen.append(keyword_sim_outputFilename)
+        
+    else:
+        if compute_cosine_similarity:
+            cos_sim_df = pd.DataFrame()
+            cos_idx = 0
+            print(f'\nStarted computing cosine similarity between top {top_words_var} words at {time.asctime(time.localtime(time.time()))}')
+            for i, row in tmp_result_df.iterrows():
+                j = len(tmp_result_df)-1
+                while i < j:
+                    try:
+                        tfidf_vectorizer = TfidfVectorizer(analyzer="char")
+                        sparse_matrix = tfidf_vectorizer.fit_transform([str(row['Word'])] + [str(tmp_result_df.at[j, 'Word'])])
+                        sim_score = cosine_similarity(sparse_matrix[0], sparse_matrix[1])
+                        cos_sim_df.at[cos_idx, 'Word_1'] = row['Word']
+                        cos_sim_df.at[cos_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
+                        cos_sim_df.at[cos_idx, 'Cosine similarity'] = sim_score
+                    except KeyError:
+                        cos_idx+=1
+                        j-=1
+                        continue
+                    cos_idx+=1
+                    j-=1
+
+            cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_Cos_Similarity')
+            cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
+            filesToOpen.append(cos_sim_outputFilename)
+            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, cos_sim_outputFilename,
+                                                            outputDir,
+                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Cosine similarity'],
+                                                            chartTitle='Frequency Distribution of cosine similarities',
+                                                            # count_var = 1 for columns of alphabetic values
+                                                            count_var=0, hover_label=[],
+                                                            outputFileNameType='coos_simil', #'POS_bar',
+                                                            column_xAxis_label='Cosine similarity',
+                                                            groupByList=[],
+                                                            plotList=[],
+                                                            chart_title_label='')
+
+            if chart_outputFilename!=None:
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
+
+            if keywords_var:
+                keyword_df = pd.DataFrame()
+                keywords_list = [x.strip() for x in keywords_var.split(',')]
+                print(f'\nStarted computing cosine similarity between words for {len(keywords_list)} selected keywords at {time.asctime( time.localtime(time.time()))}')
+                i = 0
+                for a, b in itertools.combinations(keywords_list, 2):
+                    try:
+                        tfidf_vectorizer = TfidfVectorizer(analyzer="char")
+                        sparse_matrix = tfidf_vectorizer.fit_transform([a]+[b])
+                        sim_score = cosine_similarity(sparse_matrix[0],sparse_matrix[1])
+                        keyword_df.at[i, 'Word_1'] = a
+                        keyword_df.at[i, 'Word_2'] = b
+                        keyword_df.at[i, 'Cosine similarity'] = sim_score
+                    except KeyError:
+                        i+=1
+                        continue
+                    i+=1
+                keyword_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                                    f'Word2Vec_' + str(
+                                                                                        len(keywords_list)) + '_Keywords_Cos_Similarity')
+                keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
+                filesToOpen.append(keyword_sim_outputFilename)
+
 
     return filesToOpen
 

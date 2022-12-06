@@ -54,7 +54,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
                                      True)
         import BERT_util
         BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, Word2Vec_Dir, openOutputFiles, createCharts,
-                                                   chartPackage, vis_menu_var, dim_menu_var, compute_distances_var, top_words_var, keywords_var)
+                                                   chartPackage, vis_menu_var, dim_menu_var, compute_distances_var, top_words_var, keywords_var, lemmatize_var)
         filesToOpen.append(BERT_output)
 
     if Gensim_var:
@@ -215,16 +215,16 @@ Gensim_var.set(0)
 Gensim_checkbox = tk.Checkbutton(window, text='Word2Vec (via Gensim)', variable=Gensim_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,Gensim_checkbox)
 
-## option for Gensim window size
-window_lb = tk.Label(window,text='Window size')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,window_lb,True)
-
 ## option for Gensim model architecture
 sg_lb = tk.Label(window,text='Training model architecture')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,sg_lb,True)
 sg_menu_var.set('Skip-Gram')
 sg_menu = tk.OptionMenu(window,sg_menu_var, 'Skip-Gram','CBOW')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,sg_menu)
+
+## option for Gensim window size
+window_lb = tk.Label(window,text='Window size')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,window_lb,True)
 
 ## option for Gensim vector size
 vector_size_lb = tk.Label(window,text='Vector size')
@@ -268,7 +268,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
 top_words_var.set(200)
 top_words_entry = tk.Entry(window,width=5,textvariable=top_words_var)
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+450,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.Word2Vec_top_words_pos,
     y_multiplier_integer,
     top_words_entry,
     False, False, False, False, 90, GUI_IO_util.labels_x_coordinate,
