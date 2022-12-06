@@ -44,7 +44,7 @@ import IO_user_interface_util
 
 # RUN section __________________________________________________________________________________________________________
 
-def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, OptimizeInterval, numTopics):
+def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, OptimizeInterval, numTopics):
     # to setup environment variable programmatically
     #   https://stackoverflow.com/questions/4906977/how-to-access-environment-variable-values
     # to get an environment variable
@@ -138,10 +138,12 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
                         'results. That is true even if the available file contains several different documents morged'
                         ' together.')
         return
-    elif numFiles < 10:
-        mb.showwarning(title='Number of files', message='The selected input directory contains only ' + str(
-            numFiles) + ' file(s) of txt type.\n\nTopic modeling requires a large number of files to produce valid '
-                        'results.')
+    elif numFiles < 50:
+        result = mb.askyesno(title='Number of files', message='The selected input directory contains only ' + str(
+            numFiles) + ' files of txt type.\n\nTopic modeling requires a large number of files (in the hundreds at least; read TIPS file) to produce valid results.\n\nAre you sure you want to continue?',
+                             default='no')
+        if result == False:
+            return
 
     """
     All OUTPUT file names can be changed and Mallet will still run successfully
@@ -302,5 +304,8 @@ def run(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, Optimi
         if chart_outputFilename != None:
             filesToOpen.append(chart_outputFilename)
 
-    if openOutputFiles:
+    if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        filesToOpen=[] # to avoid opening files twice, here and in calling function
+
+    return filesToOpen

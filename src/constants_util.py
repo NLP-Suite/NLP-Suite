@@ -599,8 +599,7 @@ NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample d
 
 NLP_Suite_corpus_tools_menu = 'Co-Occurrences viewer', 'N-grams viewer', \
 'Shape of stories', 'Similarities between documents (via Python difflib)', \
-'Similarities between documents (via Java Lucene)', 'Topic modeling (via Gensim)', \
-'Topic modeling (via MALLET)'
+'Similarities between documents (via Java Lucene)', 'Topic modeling (via MALLET & Gensim)'
 
 NLP_Suite_corpus_document_tools_menu = \
 'Fundamental NLP tools ---------------------------------------------------------------------------', \
@@ -636,9 +635,7 @@ NLP_Suite_corpus_document_tools_menu = \
 'SVO (Subject-Verb-Object) extractor & visualization', \
 'Wordclouds (ALL options GUI)', \
 'WordNet', \
-'Word embeddings (Word2Vec) (via BERT)', \
-'Word embeddings (Word2Vec) (via Gensim)', \
-'Word embeddings (Word2Vec) (via spaCy)', \
+'Word embeddings (Word2Vec) (via BERT & Gensim)', \
 '', \
 'Style analysis tools -----------------------------------------------------------------------------------', \
 '', \
