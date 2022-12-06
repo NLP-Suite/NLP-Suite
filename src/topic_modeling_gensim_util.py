@@ -521,7 +521,7 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
                                                    lda_model, data)
 
     if openOutputFiles==True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-            filesToOpen=[] # to avoid opening files twice, here and in calling function
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        filesToOpen=[] # to avoid opening files twice, here and in calling function
 
     return filesToOpen

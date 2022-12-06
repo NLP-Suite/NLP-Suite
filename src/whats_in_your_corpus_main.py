@@ -333,7 +333,7 @@ def run(inputFilename,inputDir, outputDir,
                         True)
                 else:
                     # running with default values
-                    output = topic_modeling_mallet_util.run(inputDir, outputDir_TM, openOutputFiles=openOutputFiles, createCharts=createCharts, chartPackage=chartPackage, OptimizeInterval=True, numTopics=20)
+                    output = topic_modeling_mallet_util.run_MALLET(inputDir, outputDir_TM, openOutputFiles=openOutputFiles, createCharts=createCharts, chartPackage=chartPackage, OptimizeInterval=True, numTopics=20)
                     if output != None:
                         filesToOpen.append(output)
 
