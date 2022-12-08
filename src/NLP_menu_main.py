@@ -296,8 +296,12 @@ sentence_tools_var = tk.StringVar()
 
 setup_IO_OK_checkbox = tk.Checkbutton(window, state='disabled',
                                       variable=setup_IO_OK_checkbox_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               setup_IO_OK_checkbox, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                             setup_IO_OK_checkbox,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "The checkbox, always disabled, is ticked ON when the I/O options have been setup.\nIf the checkbox is OFF, click on the 'Setup default I/O options...' button to set up.")
 
 def setup_IO():
     GUI_util.setup_IO_configuration_options(False,scriptName,True)
@@ -320,8 +324,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 handle_setup_options_OK_checkbox = tk.Checkbutton(window, state='disabled',
                                       variable=handle_setup_options_OK_checkbox_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               handle_setup_options_OK_checkbox, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                             handle_setup_options_OK_checkbox,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "The checkbox, always disabled, is ticked ON when the parser/annotator and corpus language options have been setup.\nIf the checkbox is OFF, click on the 'Setup default NLP parser...' button to set up.")
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+#                                                handle_setup_options_OK_checkbox, True)
 
 NLP_package_language_config = GUI_IO_util.configPath+os.sep+'NLP_default_package_language_config.csv'
 def handle_setup_options_checkbox(NLP_package_language_config):
@@ -343,8 +353,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 setup_software_checkbox = tk.Checkbutton(window, state='disabled',
                                          variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0, command=lambda: setup_external_programs_checkbox('',False))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               setup_software_checkbox,True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                             setup_software_checkbox,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "The checkbox, always disabled, is ticked ON when all external software have been installed.\nIf the checkbox is OFF, click on the 'Setup external software' button to set up.")
+
 software_dir = ''
 
 def setup_external_programs_checkbox(software, only_check_missing=False):
@@ -396,7 +411,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 data_file_handling_tools_menu = ttk.Combobox(window, width = 90, textvariable = data_file_handling_tools_var)
 data_file_handling_tools_menu['values'] = constants_util.NLP_Suite_data_file_handling_tools_menu
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, data_file_handling_tools_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, data_file_handling_tools_menu,
+                                             False, False, True, False,
+                                             90, GUI_IO_util.entry_box_x_coordinate,
+                                             "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
 
 pre_processing_tools_var.set('')
 pre_processing_lb = tk.Label(window, text='Pre-Processing Tools')

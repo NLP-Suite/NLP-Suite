@@ -12,7 +12,7 @@ import GUI_IO_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(window, inputFilename, inputDir, outputDir, extract_sentences_search_words_var):
+def run(window, inputFilename, inputDir, outputDir, selectedFile, extract_sentences_search_words_var):
 
     # if extract_sentences_var:
         # it is better to open the GUI that will allow search options (e.g., case sensitive)
@@ -22,6 +22,10 @@ def run(window, inputFilename, inputDir, outputDir, extract_sentences_search_wor
         # search_words_entry.configure(state='disabled')
         # return
 
+    if selectedFile=='':
+        mb.showwarning(title='Warning',
+                       message='The RUN command needs a csv file to be used to sample files by Document ID. Alternatively... click on any of the buttons to open a GUI.')
+        return
     import sample_corpus_util
     sample_corpus_util.sample_corpus_by_document_id(selectedFile, inputDir, outputDir)
 
@@ -30,6 +34,7 @@ def run(window, inputFilename, inputDir, outputDir, extract_sentences_search_wor
 run_script_command=lambda: run(window, GUI_util.inputFilename.get(),
                                GUI_util.input_main_dir_path.get(),
                                GUI_util.output_dir_path.get(),
+                               selectedFile.get(),
                                extract_sentences_search_words_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)

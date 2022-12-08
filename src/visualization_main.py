@@ -8,9 +8,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"Wordclouds",['os','tk
     sys.exit(0)
 
 import os
-import webbrowser
 import tkinter as tk
-import tkinter.ttk as ttk
 import tkinter.messagebox as mb
 from subprocess import call
 

@@ -564,6 +564,9 @@ NLP_Suite_data_file_handling_tools_menu = \
 'File manager (List, Rename, Copy, Move, Delete, Count, Split)', 'SQL database (via SQLite)'
 
 NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample data (ALL options GUI)', 'Search (ALL options GUI)',\
+'', \
+'-----------------------------------------------------------------------------------------', \
+'', \
 'File checker (file content)', \
 'File checker (file content utf-8 encoding)', \
 'File checker (file name)', \

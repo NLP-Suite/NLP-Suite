@@ -6,6 +6,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"data_manager_main.py"
     sys.exit(0)
 
 import tkinter as tk
+from subprocess import call
 import pandas as pd
 import tkinter.messagebox as mb
 from pandas import DataFrame
@@ -1223,9 +1224,17 @@ if __name__ == '__main__':
 
     def purgeSelection(*args):
         activate_csv_fields_selection('purge', purge_var.get(), False, False)
-
-
     purge_var.trace('w', purgeSelection)
+
+    visualize_csv_data_GUI_button = tk.Button(window,
+                                            text='Visualize csv data (Open GUI)',
+                                            width=GUI_IO_util.widget_width_medium,
+                                            command=lambda: call("python visualization_main.py", shell=True))
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                                   visualize_csv_data_GUI_button,
+                                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                                   "Click on the button to open the GUI")
 
     videos_lookup = {'No videos available': ''}
     videos_options = 'No videos available'

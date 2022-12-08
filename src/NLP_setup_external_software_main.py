@@ -83,7 +83,7 @@ software_download_menu = tk.OptionMenu(window, software_download_var, 'Stanford 
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.dowload_install, y_multiplier_integer,
                                                software_download_menu, True, False, True, False, 90,
-                                               GUI_IO_util.watch_videos_x_coordinate, "Select the external software to be downloaded; the software website url will be displayed after selection..\nThe software installation directory will be automatically displayed after selection so that it can be saved in the config file NLP_setup_external_software_config.csv.")
+                                               GUI_IO_util.watch_videos_x_coordinate, "Select the external software to be downloaded; the software website url will be displayed after selection.\nThe software installation directory will be automatically displayed after selection so that it can be saved in the config file NLP_setup_external_software_config.csv.")
 
 software_website = tk.Label(height=1, anchor='w', text='Website url')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.website_url_placement,

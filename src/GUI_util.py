@@ -897,7 +897,10 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         open_csv_output_label.configure(text="Open output files")
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.watch_videos_x_coordinate,
                                                        y_multiplier_integer,
-                                                       open_csv_output_label,True,False,False)
+                                                       open_csv_output_label,
+                                                       True,False,False,False,
+                                                       90,GUI_IO_util.watch_videos_x_coordinate,
+                                                       "Untick the checkbox to NOT open automatically all files created in output by the algorithms")
         open_csv_output_checkbox.set(1)
 
         #creat Excel chart files widget defined above since it is used earlier
@@ -905,7 +908,10 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         create_Excel_chart_output_label.configure(text="Create chart(s)")
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
                                                        y_multiplier_integer,
-                                                       create_Excel_chart_output_label,True,False,False)
+                                                       create_Excel_chart_output_label,
+                                                       True,False,False,False,
+                                                       90,GUI_IO_util.open_TIPS_x_coordinate,
+                                                       "Untick the checkbox to NOT create charts in output")
 
         create_chart_output_checkbox.set(1)
         # y_multiplier_integer=y_multiplier_integer+1
@@ -916,7 +922,10 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         charts_package_menu_lb = tk.OptionMenu(window,charts_package_options_widget,*charts_package_options)
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
                                                        y_multiplier_integer,
-                                                       charts_package_menu_lb,True,False,False)
+                                                       charts_package_menu_lb,
+                                                       True,False,False,False,
+                                                       90,GUI_IO_util.open_reminders_x_coordinate,
+                                                       "Select the package you wish to use to visualize charts: Excel or plotLy (dynamic/static)")
 
         # TODO chart type widget (same as setup)
         charts_type_options = ['Bar chart','Line chart','Pie chart', 'Scatter plot', 'Box plot', 'Sankey plot', 'Treemap']
