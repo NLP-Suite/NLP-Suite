@@ -293,7 +293,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 else:
                     outputFileLabel = 'byDoc'
 
-                # TODO Tony when plotting bar charts in plotLy with documents in the X-axis we need to remove the path and just keep the tail
+                # TODO Tony when plotting bar charts in Plotly with documents in the X-axis we need to remove the path and just keep the tail
                 #   or the display is too messy; it works like that in Excel
 
                 chart_outputFilename = run_all(columns_to_be_plotted_byDoc, new_inputFilename, outputDir,

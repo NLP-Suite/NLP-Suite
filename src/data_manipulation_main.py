@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"data_manager_main.py", ['os', 'tkinter', 'pandas', 'functools'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"data_manipulation_main.py", ['os', 'tkinter', 'pandas', 'functools'])==False:
     sys.exit(0)
 
 import tkinter as tk
@@ -16,7 +16,7 @@ import IO_files_util
 import GUI_util
 import GUI_IO_util
 import IO_csv_util
-import data_manager_util
+import data_manipulation_util
 import reminders_util
 
 # RUN section ________________________________________________________________________________________________________
@@ -32,9 +32,9 @@ def run(inputFilename,
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
-    # data_files = [file for file in data_manager_util.select_csv(filePath)]  # dataframes
+    # data_files = [file for file in data_manipulation_util.select_csv(filePath)]  # dataframes
     # headers = [s.split(',')[1] for s in operation_results_text_list]  # headers
-    # data_cols = [file for file in data_manager_util.get_cols(data_files, headers)]  # selected cols
+    # data_cols = [file for file in data_manipulation_util.get_cols(data_files, headers)]  # selected cols
 
     if (operation=='CONCATENATE' or operation=='APPEND') and selected_csv_fields_var.get().count(',')<1:
         mb.showwarning(title='Warning',
@@ -60,7 +60,7 @@ def run(inputFilename,
 # APPEND ______________________________________________________________________________
 
     if append_var:
-        outputFilename=data_manager_util.append(outputDir,operation_results_text_list)
+        outputFilename=data_manipulation_util.append(outputDir,operation_results_text_list)
         if outputFilename!=None:
             filesToOpen.append(outputFilename)
 
@@ -68,7 +68,7 @@ def run(inputFilename,
 # CONCATENATE ______________________________________________________________________________
 
     if concatenate_var:
-        outputFilename=data_manager_util.concatenate(outputDir, operation_results_text_list)
+        outputFilename=data_manipulation_util.concatenate(outputDir, operation_results_text_list)
         if outputFilename!=None:
             filesToOpen.append(outputFilename)
 
@@ -80,7 +80,7 @@ def run(inputFilename,
                            message='You have selected the merge operation. This requires two different csv files in input.\n\nPlease, click on the + button next to File, select another csv file, select the field that yu want to use in this file as the overlaping field(s) with the previous file (the key(s)), click OK and RUN.')
             return
         operation_results_text_list = operation_results_text.get(0.1, tk.END)
-        outputFilename = data_manager_util.merge(outputDir, operation_results_text_list)
+        outputFilename = data_manipulation_util.merge(outputDir, operation_results_text_list)
         if outputFilename != None:
             filesToOpen.append(outputFilename)
 
@@ -102,7 +102,7 @@ def run(inputFilename,
             export_type = '.csv'
         else:
             export_type = '.txt'
-        outputFilename = data_manager_util.export_csv_to_csv_txt(outputDir,operation_results_text_list,export_type)
+        outputFilename = data_manipulation_util.export_csv_to_csv_txt(outputDir,operation_results_text_list,export_type)
         if outputFilename != None:
             filesToOpen.append(outputFilename)
 
@@ -133,15 +133,15 @@ if __name__ == '__main__':
     IO_setup_display_brief=True
     GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                      GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                     GUI_height_brief=640,
+                                                     GUI_height_brief=600,
                                                      # height at brief display
-                                                     GUI_height_full=680,  # height at full display
+                                                     GUI_height_full=640,  # height at full display
                                                      y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                      y_multiplier_integer_add=1,
                                                      # to be added for full display
                                                      increment=1)  # to be added for full display
 
-    GUI_label = 'Graphical User Interface (GUI) for Data Manager'
+    GUI_label = 'Graphical User Interface (GUI) for csv Data Manipulation'
     config_filename = 'data-manager_config.csv'
     # The 4 values of config_option refer to:
     #   input file
@@ -1226,15 +1226,25 @@ if __name__ == '__main__':
         activate_csv_fields_selection('purge', purge_var.get(), False, False)
     purge_var.trace('w', purgeSelection)
 
+    SQL_GUI_button = tk.Button(window,
+                                            text='Manipulate csv data with SQL (Open GUI)',
+                                            width=GUI_IO_util.widget_width_medium,
+                                            command=lambda: call("python DB_SQL_main.py", shell=True))
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                                   SQL_GUI_button,
+                                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                                   "Click on the button to open the GUI to manipulate csv data via SQL")
+
     visualize_csv_data_GUI_button = tk.Button(window,
                                             text='Visualize csv data (Open GUI)',
                                             width=GUI_IO_util.widget_width_medium,
-                                            command=lambda: call("python visualization_main.py", shell=True))
+                                            command=lambda: call("python data_visualization_main.py", shell=True))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                    visualize_csv_data_GUI_button,
                                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                                   "Click on the button to open the GUI")
+                                                   "Click on the button to open the GUI to visualize csv data with various Python Plotly options")
 
     videos_lookup = {'No videos available': ''}
     videos_options = 'No videos available'
@@ -1278,8 +1288,6 @@ if __name__ == '__main__':
                                       "The EXTRACT option allows you to select specific fields, even by specific values, from a csv file and save the output as a new csv or txt file.\n\nYOU CAN SAVE THE OUTPUT TO CSV FILE OR TO A TEXT FILE. Just tick the Output csv checkbox as desired.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value, and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll + "\n\nIn INPUT, the EXTRACT option takes 1 csv file.\n\nIn OUTPUT, the EXTRACT option creates either a csv or a text file containing only the fields selected for extraction from the input file.")
                                       # "The EXTRACT option allows you to select specific fields, even by specific values, from one or more csv files and save the output as a new file.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value in the \'WHERE\' widget (case sensitive!), and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "The PURGE DUPLICATE ROWS option allows you to delete duplicate records in a csv file.\n\n" + GUI_IO_util.msg_Esc + "\n\nIn INPUT, the PURGE option takes 1 csv file.\n\nIn OUTPUT, the PURGE option creates a csv file containing all the same fields of the input file but with fewer rows.")
-        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_openOutputFiles)
         return y_multiplier_integer -1
 
@@ -1291,7 +1299,7 @@ if __name__ == '__main__':
     GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,'data_manager_main.py',True)
 
     mb.showwarning(title='Warning',
-                   message="The Data manager GUI is currently under redesign. It is not usable.\n\nSorry!\n\nCheck back soon.")
+                   message="The csv Data manipulation GUI is currently under redesign. It is not usable.\n\nSorry!\n\nCheck back soon.")
 
     # TODO must uncomment
     # GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))

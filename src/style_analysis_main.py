@@ -424,15 +424,23 @@ ngrams_checkbox = tk.Checkbutton(window, text='Compute n-grams', variable=ngrams
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,ngrams_checkbox,True)
 
 ngrams_menu_var.set('Word')
-ngrams_menu_lb = tk.Label(window, text='N-grams type')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_ngrams_menu_pos,y_multiplier_integer,ngrams_menu_lb,True)
+# ngrams_menu_lb = tk.Label(window, text='N-grams type')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_ngrams_menu_pos,y_multiplier_integer,ngrams_menu_lb,True)
 ngrams_menu = tk.OptionMenu(window, ngrams_menu_var, 'Character', 'Word') #,'DEPREL','POSTAG')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,ngrams_menu)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   ngrams_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select the N-grams type")
 
 ngrams_options_menu_lb = tk.Label(window, text='N-grams options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ngrams_options_menu_lb,True)
 ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax legomena (once-occurring words/unigrams)','Normalize n-grams', 'Exclude punctuation (word n-grams only)','By sentence index','Repetition of words (last K words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_ngrams_options_menu_pos,y_multiplier_integer,ngrams_options_menu,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   ngrams_options_menu,
+                                   True, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select the N-grams option; hit + button to add multiple options; Reset to start fresh; Show to display current selection.")
 
 add_ngrams_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_ngrams_analysis_var())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_add_ngrams_button_pos,y_multiplier_integer,add_ngrams_button, True)
@@ -481,8 +489,8 @@ corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute document(s) sta
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,corpus_statistics_checkbox,True)
 
 corpus_statistics_options_menu_var.set('*')
-corpus_statistics_options_menu_lb = tk.Label(window, text='Statistics options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
+# corpus_statistics_options_menu_lb = tk.Label(window, text='Statistics options')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
 
 corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_menu_var,
                                                 '*',
@@ -490,7 +498,13 @@ corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_
                                                'Compute sentence length',
                                                'Compute line length',
                                                )
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_corpus_statistics_options_menu_pos,y_multiplier_integer,corpus_statistics_options_menu, True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   corpus_statistics_options_menu,
+                                   True, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select the statistics option for your document(s) (* for all); widget disabled until checkbox ticked.")
+
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_corpus_statistics_options_menu_pos,y_multiplier_integer,corpus_statistics_options_menu, True)
 
 corpus_text_options_menu_var.set('')
 corpus_options_menu_lb = tk.Label(window, text='Text options')
@@ -512,18 +526,23 @@ complexity_readability_analysis_checkbox = tk.Checkbutton(window, text='Complexi
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complexity_readability_analysis_checkbox,True)
 
 complexity_readability_analysis_menu_var.set('*')
-complexity_readability_analysis_lb = tk.Label(window, text='Select the complexity/readability analysis you wish to perform')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,complexity_readability_analysis_lb,True)
+# complexity_readability_analysis_lb = tk.Label(window, text='Select the complexity/readability analysis you wish to perform')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,complexity_readability_analysis_lb,True)
 complexity_readability_analysis_menu = tk.OptionMenu(window,complexity_readability_analysis_menu_var,'*','Sentence complexity','Text readability')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_complexity_readability_analysis_menu_pos, y_multiplier_integer,complexity_readability_analysis_menu)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   complexity_readability_analysis_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select the complexity/readability analysis you wish to perform (* for all); widget disabled until checkbox ticked.")
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_complexity_readability_analysis_menu_pos, y_multiplier_integer,complexity_readability_analysis_menu)
 
 vocabulary_analysis_var.set(0)
 vocabulary_analysis_checkbox = tk.Checkbutton(window, text='Vocabulary analysis', variable=vocabulary_analysis_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,vocabulary_analysis_checkbox,True)
 
-vocabulary_analysis_menu_var.set('*')
-vocabulary_analysis_lb = tk.Label(window, text='Select the vocabulary analysis you wish to perform')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,vocabulary_analysis_lb,True)
+# # vocabulary_analysis_menu_var.set('*')
+# # vocabulary_analysis_lb = tk.Label(window, text='Select the vocabulary analysis you wish to perform')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,vocabulary_analysis_lb,True)
 vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*',
                                          'Vocabulary (via unigrams) - List of all words/tokens in input document(s)',
                                          'Vocabulary (via Stanza multilanguage lemmatizer) - List of all words/tokens in input document(s)',
@@ -540,7 +559,12 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Repetition: Words in first K and last K sentences',
                                          'Repetition: Last K words of a sentence/First K words of next sentence',
                                          'Repetition across sentences (special ngrams)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_vocabulary_analysis_menu_pos, y_multiplier_integer,vocabulary_analysis_menu)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   vocabulary_analysis_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select the vocabulary analysis you wish to perform (* for all); widget disabled until checkbox ticked,")
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_vocabulary_analysis_menu_pos, y_multiplier_integer,vocabulary_analysis_menu)
 
 gender_guesser_var.set(0)
 gender_guesser_checkbox = tk.Checkbutton(window, text='Who wrote the text - Gender guesser', variable=gender_guesser_var, onvalue=1, offvalue=0)
