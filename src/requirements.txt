@@ -113,7 +113,7 @@ spacytextblob
 # used by Word2Vec
 plotly
 
-# used by Plot plotLy (static)
+# used by Plot Plotly (static)
 kaleido
 
 future~=0.18.2

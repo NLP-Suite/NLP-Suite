@@ -895,11 +895,11 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         #open output csv files widget defined above since it is used earlier
         open_csv_output_label = tk.Checkbutton(window, variable=open_csv_output_checkbox, onvalue=1, offvalue=0, command=lambda: trace_checkbox(open_csv_output_label, open_csv_output_checkbox, "Open output files", "Do NOT open output files"))
         open_csv_output_label.configure(text="Open output files")
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.watch_videos_x_coordinate,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                        y_multiplier_integer,
                                                        open_csv_output_label,
                                                        True,False,False,False,
-                                                       90,GUI_IO_util.watch_videos_x_coordinate,
+                                                       90,GUI_IO_util.labels_x_coordinate,
                                                        "Untick the checkbox to NOT open automatically all files created in output by the algorithms")
         open_csv_output_checkbox.set(1)
 
@@ -916,7 +916,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         create_chart_output_checkbox.set(1)
         # y_multiplier_integer=y_multiplier_integer+1
         # y_multiplier_integer=y_multiplier_integer+1
-        charts_package_options = ['Excel','Python plotLy (dynamic)','Python plotLy (static)']
+        charts_package_options = ['Excel','Python Plotly (dynamic)','Python Plotly (static)']
         # TODO EXCEL widget (same as open reminders)
         charts_package_options_widget.set('Excel')
         charts_package_menu_lb = tk.OptionMenu(window,charts_package_options_widget,*charts_package_options)
@@ -925,7 +925,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        charts_package_menu_lb,
                                                        True,False,False,False,
                                                        90,GUI_IO_util.open_reminders_x_coordinate,
-                                                       "Select the package you wish to use to visualize charts: Excel or plotLy (dynamic/static)")
+                                                       "Select the package you wish to use to visualize charts: Excel or Plotly (dynamic/static)")
 
         # TODO chart type widget (same as setup)
         charts_type_options = ['Bar chart','Line chart','Pie chart', 'Scatter plot', 'Box plot', 'Sankey plot', 'Treemap']
@@ -935,15 +935,25 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,
                                                        y_multiplier_integer,
                                                        charts_type_menu_lb,
-                                                       False,False,False,False,90,
+                                                       True,False,False,False,90,
                                                        GUI_IO_util.open_setup_x_coordinate,
                                                        "The selection of specific chart types is still under development.\nCharts are currently automatically visualized as bar or line charts.")
+
+        # TODO manipulate csv data widget (same as RUN)
+        manipulate_scv_data_button = tk.Button(window, text='Manipulate & visualize csv data (open GUI)', command=lambda: call("python data_manipulation_main.py", shell=True))
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       manipulate_scv_data_button,
+                                                       False,False,False,False,90,
+                                                       GUI_IO_util.open_TIPS_x_coordinate,
+                                                       "Click on the button to open the csv data manipulation GUI where you can append, concatenate, merge, and purge rows and columns in csv file(s).")
 
     # def warning_message(*args):
     #     if charts_package_options_widget.get()!='Excel':
     #         mb.showwarning(title='Warning',
-    #                        message="The 'Python plotLy' option to draw charts is still under development. By and large working well, but... little improvements are under way.")
-    #         charts_package_options_widget.set('plotLy')
+    #                        message="The 'Python Plotly' option to draw charts is still under development. By and large working well, but... little improvements are under way.")
+    #         charts_package_options_widget.set('Plotly')
     # charts_package_options_widget.trace('w',warning_message)
 
     readme_button = tk.Button(window, text='Read Me',command=readMe_command,width=10,height=2)

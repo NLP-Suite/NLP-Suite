@@ -584,7 +584,7 @@ if sys.platform == 'darwin':  # Mac OS
     NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = 594
     NGrams_Co_occurrences_Viewer_show_viewer_button_pos = 680
 
-# Mac: visualization_main
+# Mac: data_visualization_main
 
     visualization_select_csv_field_menu_pos = IO_configuration_menu
     visualization_add_button_pos = 983
@@ -778,7 +778,7 @@ else: #windows and anything else
     date_position_lb_coordinate = 810
     date_position_coordinate = 880
 
-# Windows  NLP_setup_external_software_main.py
+# Windows NLP_setup_external_software_main.py
     missing_software_display_area_width = 85
     dowload_install = 320
     website_url_placement = 600
@@ -836,7 +836,7 @@ else: #windows and anything else
     GIS_open_API = 250
     GIS_openAPI_file = 420
 
-    # Windows CoNLL_table_analyzer_main
+# Windows CoNLL_table_analyzer_main
     combobox_position = 200
     combobox_width = 50
 
@@ -871,7 +871,8 @@ else: #windows and anything else
     wordclouds_add_button = wordclouds_color_by_POS_tags # 1010
     wordclouds_reset_button = wordclouds_color_by_POS_tags + 35
     wordclouds_show_button = wordclouds_color_by_POS_tags + 85
-#Windows: knowledge_graphs_DBpedia_YAGO_main.py
+
+# Windows: knowledge_graphs_DBpedia_YAGO_main.py
     knowledge_graphs_YAGO_checkbox_pos = setup_IO_brief_coordinate
     confidence_level_entry_pos = 770
 
@@ -903,7 +904,6 @@ else: #windows and anything else
     file_splitter_split_docLength_pos = 830
     file_splitter_lemmatize_pos = file_splitter_split_docLength_pos
 
-
 # Windows: html_annotator_gender_main.py
     html_annotator_gender_annotator_dictionary_file_width = 100
     html_annotator_gender_select_dictionary_file_button = 310
@@ -914,7 +914,7 @@ else: #windows and anything else
     html_annotator_gender_firstName_entry_pos = 790
     html_annotator_gender_select_SS_folder = 1070
 
-    #Windows: html_annotator_main.py
+# Windows: html_annotator_main.py
     html_annotator_add_dictionary_description = 420
 
     html_annotator_openInputFile_button = 320
@@ -978,7 +978,7 @@ else: #windows and anything else
     NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = NGrams_Co_occurrences_Viewer_add_viewer_button_pos + 40  # 540
     NGrams_Co_occurrences_Viewer_show_viewer_button_pos = NGrams_Co_occurrences_Viewer_reset_viewer_button_pos + 60  # 560
 
-# Windows: visualization_main
+# Windows: data_visualization_main
 
     visualization_select_csv_field_menu_pos = 260 # IO_configuration_menu
     visualization_add_button_pos = 1105
@@ -1000,7 +1000,7 @@ else: #windows and anything else
     visualization_split_pos = open_reminders_x_coordinate
     visualization_do_not_split_pos = open_reminders_x_coordinate + 400
 
-    # Windows: shape_of_stories
+# Windows: shape_of_stories
 
     shape_of_stories_sentiment_analysis_lb_pos = IO_configuration_menu
     shape_of_stories_sentiment_analysis_menu_pos = setup_IO_brief_coordinate
