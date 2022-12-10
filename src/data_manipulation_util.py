@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"data_manager_util.py", ['os', 'tkinter', 'pandas', 'functools'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"data_manipulation_util.py", ['os', 'tkinter', 'pandas', 'functools'])==False:
     sys.exit(0)
 
 import pandas as pd
@@ -166,9 +166,9 @@ def append(outputDir, operation_results_text_list):
     return outputFilename
 
 # filePath = [s.split(',')[0] for s in operation_results_text_list]  # file filePath
-# data_files = [file for file in data_manager_util.select_csv(filePath)]  # dataframes
+# data_files = [file for file in data_manipulation_util.select_csv(filePath)]  # dataframes
 # headers = [s.split(',')[1] for s in operation_results_text_list]  # headers
-# data_cols = [file for file in data_manager_util.get_cols(data_files, headers)]  # selected cols
+# data_cols = [file for file in data_manipulation_util.get_cols(data_files, headers)]  # selected cols
 
 # CONCATENATE ------------------------------------------------------------------------------------------
 
