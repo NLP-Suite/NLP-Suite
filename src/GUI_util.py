@@ -940,7 +940,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        "The selection of specific chart types is still under development.\nCharts are currently automatically visualized as bar or line charts.")
 
         # TODO manipulate csv data widget (same as RUN)
-        manipulate_scv_data_button = tk.Button(window, text='Manipulate & visualize csv data (open GUI)', command=lambda: call("python data_manipulation_main.py", shell=True))
+        manipulate_scv_data_button = tk.Button(window, text='Manipulate & visualize csv data (Open GUI)', command=lambda: call("python data_manipulation_main.py", shell=True))
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate,
                                                        y_multiplier_integer,

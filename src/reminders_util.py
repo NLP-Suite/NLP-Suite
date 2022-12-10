@@ -294,8 +294,11 @@ message_Excel_Charts = 'The Excel chart to be displayed has hover-over effects (
 title_options_input_csv_file = ["Input csv file"]
 message_input_csv_file = "You have a csv file in the 'Select INPUT CSV file' widget. The RUN command would process this file in input rather than the file stored in the I/O configuration.\n\nPress ESC if you want to clear the 'Select INPUT CSV file' widget."
 
-title_options_wordclouds = ['Web-based word clouds services']
-message_wordclouds = "After the selected web-based word-clouds service opens up on your browser, you will need to either copy/paste the text you want to visualize or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file."
+title_options_python_wordclouds_horizontal = ['Python wordclouds']
+message_python_wordclouds_horizontal = "You have selected to visualize words only horizontally in the wordclouds image. Some of the lower-frequency words may need to be dropped from the wordclouds image since there may not be enough room for their display.\n\nCombining horizontal and vertical displays maximizes the number of words visualized in the wordclouds image."
+
+title_options_wordclouds = ['Web-based wordclouds services']
+message_wordclouds = "After the selected web-based wordclouds service opens up on your browser, you will need to either copy/paste the text you want to visualize or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file."
 
 title_options_Gensim_Word2Vec_timing = ['Gensim Word2Vec timing']
 message_Gensim_Word2Vec_timing = "Beware that Gensim Word2Vec on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, with the tokenizing, lemmatzing, and Eucledian distance options, takes approximately 2 hours on a standard laptop. Eucledian distance is the item taking the longest."

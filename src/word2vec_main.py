@@ -63,7 +63,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
                                      reminders_util.message_Gensim_Word2Vec_timing,
                                      True)
         if 'Clustering' in vis_menu_var and keywords_var=='':
-            mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
+            mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of case-sensitive keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
             return
         filesToOpen = word2vec_Gensim_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir,openOutputFiles, createCharts, chartPackage,
                                  remove_stopwords_var, lemmatize_var,
@@ -285,7 +285,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
     y_multiplier_integer,
     keywords_entry,
     False, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
-    "Enter the comma-separated words to be used to visualize Euclidean distances and cosine similarity between selected words.\nCosine similarity will always be computed for the top selected n words whether the checkbox 'Compute word distances' is ticked or not.")
+    "Enter the comma-separated, case-sensitive words to be used to visualize Euclidean distances and cosine similarity between selected words.\nCosine similarity will always be computed for the top selected n words whether the checkbox 'Compute word distances' is ticked or not.")
 
 def activate_all_options():
     BERT_checkbox.configure(state='normal')
@@ -357,7 +357,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                   "Please, tick the checkbox to compute Euclidean distances and cosine similarity between words. Cosine similarity measure will be computed whether the checkbox 'Compute word distances' is ticked or not.\n\n2-dimentional distances reflect the position of words in the two-dimentional html graph. But... it may not reflect the 'true' semantic distance between words, more accurately measured by the n-dimenional distance (which, of course, you cannot see).\n\nCosine similarity varies betwteen 0 and 1 (a value 0 indicates that the words are orthgonal to each other, i.e., they are distant in the semantic space; a value of 1 indicates the opposite.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
-                                  "Enter comma-separated keywords you want to focus on for semantic similarity. The words MUST be in the file(s) being analyzed, either as lemma or as the original word. Words not present in the document(s) will be skipped silently.")
+                                  "Enter comma-separated, case-sensitive keywords you want to focus on for semantic similarity. The words MUST be in the file(s) being analyzed, either as lemma or as the original word. Words not present in the document(s) will be skipped silently.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

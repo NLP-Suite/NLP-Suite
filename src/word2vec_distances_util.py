@@ -103,6 +103,7 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts,
             while i < j:
                 dist_df.at[dist_idx, 'Word_1'] = row['Word']
                 dist_df.at[dist_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
+                dist_df.at[dist_idx, 'Word_1_2'] = row['Word'] + '_' + tmp_result_df.at[j, 'Word']
                 dist_df.at[dist_idx, 'n-dimensional Euclidean distance'] = euclidean_dist(row['Vector'], tmp_result_df.at[j, 'Vector'])
                 dist_idx+=1
                 j-=1
@@ -115,7 +116,7 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts,
         filesToOpen.append(dist_outputFilename)
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, dist_outputFilename,
                                                            outputDir,
-                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['n-dimensional Euclidean distance'],
+                                                           columns_to_be_plotted_xAxis=['Word_1_2'], columns_to_be_plotted_yAxis=['n-dimensional Euclidean distance'],
                                                            chartTitle='Frequency Distribution of n-dimensional Euclidean distances',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=0, hover_label=[],
@@ -128,9 +129,9 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts,
         if chart_outputFilename!=None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
-    
-    #BERT requires separate handling of cosine similarity since similarity(...) is a gensim word2vec function, so we have different cases for the two 
-    if not BERT: 
+
+    #BERT requires separate handling of cosine similarity since similarity(...) is a gensim word2vec function, so we have different cases for the two
+    if not BERT:
         if compute_cosine_similarity:# now always set to True
             # calculate cos similarity
             cos_sim_df = pd.DataFrame()
@@ -144,6 +145,7 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts,
                         sim_score = word_vectors.similarity(str(row['Word']), str(tmp_result_df.at[j, 'Word']))
                         cos_sim_df.at[cos_idx, 'Word_1'] = row['Word']
                         cos_sim_df.at[cos_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
+                        cos_sim_df.at[cos_idx, 'Word_1_2'] = row['Word'] + '_' + tmp_result_df.at[j, 'Word']
                         cos_sim_df.at[cos_idx, 'Cosine similarity'] = sim_score
                     except KeyError:
                         cos_idx+=1
@@ -151,18 +153,18 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts,
                         continue
                     cos_idx+=1
                     j-=1
-        
+
 
             cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_Cos_Similarity')
             cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
             filesToOpen.append(cos_sim_outputFilename)
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, cos_sim_outputFilename,
                                                             outputDir,
-                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Cosine similarity'],
+                                                            columns_to_be_plotted_xAxis=['Word_1_2'], columns_to_be_plotted_yAxis=['Cosine similarity'],
                                                             chartTitle='Frequency Distribution of cosine similarities',
                                                             # count_var = 1 for columns of alphabetic values
                                                             count_var=0, hover_label=[],
-                                                            outputFileNameType='coos_simil', #'POS_bar',
+                                                            outputFileNameType='cos_simil', #'POS_bar',
                                                             column_xAxis_label='Cosine similarity',
                                                             groupByList=[],
                                                             plotList=[],
@@ -183,6 +185,7 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts,
                         sim_score = word_vectors.similarity(a, b)
                         keyword_df.at[i, 'Word_1'] = a
                         keyword_df.at[i, 'Word_2'] = b
+                        keyword_df.at[i, 'Word_1_2'] = a + '_' + b
                         keyword_df.at[i, 'Cosine similarity'] = sim_score
                     except KeyError:
                         i+=1
@@ -193,7 +196,23 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts,
                                                                                         len(keywords_list)) + '_Keywords_Cos_Similarity')
                 keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
                 filesToOpen.append(keyword_sim_outputFilename)
-        
+
+                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, keyword_sim_outputFilename,
+                                                                outputDir,
+                                                                columns_to_be_plotted_xAxis=['Word_1_2'], columns_to_be_plotted_yAxis=['Cosine similarity'],
+                                                                chartTitle='Frequency Distribution of cosine similarities',
+                                                                # count_var = 1 for columns of alphabetic values
+                                                                count_var=0, hover_label=[],
+                                                                outputFileNameType='cos_simil', #'POS_bar',
+                                                                column_xAxis_label='Cosine similarity',
+                                                                groupByList=[],
+                                                                plotList=[],
+                                                                chart_title_label='')
+
+                if chart_outputFilename!=None:
+                    if len(chart_outputFilename) > 0:
+                        filesToOpen.extend(chart_outputFilename)
+
     else:
         if compute_cosine_similarity:
             cos_sim_df = pd.DataFrame()
@@ -208,6 +227,7 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts,
                         sim_score = cosine_similarity(sparse_matrix[0], sparse_matrix[1])
                         cos_sim_df.at[cos_idx, 'Word_1'] = row['Word']
                         cos_sim_df.at[cos_idx, 'Word_2'] = tmp_result_df.at[j, 'Word']
+                        cos_sim_df.at[cos_idx, 'Word_1_2'] = row['Word'] + '_' + tmp_result_df.at[j, 'Word']
                         cos_sim_df.at[cos_idx, 'Cosine similarity'] = sim_score
                     except KeyError:
                         cos_idx+=1
@@ -219,13 +239,14 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts,
             cos_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_top_' + str(top_words_var)+'_Cos_Similarity')
             cos_sim_df.to_csv(cos_sim_outputFilename, encoding='utf-8', index=False)
             filesToOpen.append(cos_sim_outputFilename)
+
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, cos_sim_outputFilename,
                                                             outputDir,
-                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Cosine similarity'],
+                                                            columns_to_be_plotted_xAxis=['Word_1_2'], columns_to_be_plotted_yAxis=['Cosine similarity'],
                                                             chartTitle='Frequency Distribution of cosine similarities',
                                                             # count_var = 1 for columns of alphabetic values
                                                             count_var=0, hover_label=[],
-                                                            outputFileNameType='coos_simil', #'POS_bar',
+                                                            outputFileNameType='cos_simil', #'POS_bar',
                                                             column_xAxis_label='Cosine similarity',
                                                             groupByList=[],
                                                             plotList=[],
@@ -247,6 +268,7 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts,
                         sim_score = cosine_similarity(sparse_matrix[0],sparse_matrix[1])
                         keyword_df.at[i, 'Word_1'] = a
                         keyword_df.at[i, 'Word_2'] = b
+                        keyword_df.at[i, 'Word_1_2'] = a + '_' + b
                         keyword_df.at[i, 'Cosine similarity'] = sim_score
                     except KeyError:
                         i+=1
@@ -258,6 +280,21 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts,
                 keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
                 filesToOpen.append(keyword_sim_outputFilename)
 
+                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, keyword_sim_outputFilename,
+                                                                outputDir,
+                                                                columns_to_be_plotted_xAxis=['Word_1_2'], columns_to_be_plotted_yAxis=['Cosine similarity'],
+                                                                chartTitle='Frequency Distribution of cosine similarities',
+                                                                # count_var = 1 for columns of alphabetic values
+                                                                count_var=0, hover_label=[],
+                                                                outputFileNameType='cos_simil', #'POS_bar',
+                                                                column_xAxis_label='Cosine similarity',
+                                                                groupByList=[],
+                                                                plotList=[],
+                                                                chart_title_label='')
+
+                if chart_outputFilename!=None:
+                    if len(chart_outputFilename) > 0:
+                        filesToOpen.extend(chart_outputFilename)
 
     return filesToOpen
 

@@ -177,6 +177,7 @@ def generate_kml(window, inputFilename, inputGeocodedCsvFile,
 	index_list, data, headers, locationColumnNumber = GIS_location_util.extract_index(inputFilename, inputGeocodedCsvFile,
 								encodingValue, locationColumnName)
 	# Icon selection
+	# icon_url = GIS_Google_pin_util.pin_icon_select(['Pushpins'], ['red'])
 	icon_url = GIS_Google_pin_util.pin_icon_select(icon_var_list[j], specific_icon_var_list[j])
 
 	if len(index_list) == 0:
