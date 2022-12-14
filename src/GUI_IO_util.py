@@ -460,24 +460,11 @@ if sys.platform == 'darwin':  # Mac OS
     wordclouds_show_button = wordclouds_color_by_POS_tags + 128 # 1038
 
 #Mac: knowledge_graphs_DBpedia_YAGO_main.py
-    knowledge_graphs_YAGO_checkbox_pos = setup_IO_brief_coordinate
-
-    knowledge_databases_menu = 250
-    knowledge_ontology_class_lb = 330
-    knowledge_ontology_class_menu = 380
-    DBpedia_YAGO_ontology_width = 70
-    knowledge_sub_class_entry_lb = 620
-    knowledge_sub_class_entry = 700
-    knowledge_DBpedia_ontology_class_menu = setup_IO_brief_coordinate # 685
-    knowledge_sub_class_entry_width = 70
-
     confidence_level_entry_pos = 770
-
-    knowledge_color_label = 950
-    knowledge_color_menu = 1000
-    knowledge_bold_checkbox = 1060
-
-    knowledge_plus_button = labels_x_indented_coordinate
+    DBpedia_YAGO_ontology_width = 70
+    knowledge_sub_class_entry_width = 70
+    knowledge_bold_checkbox = open_reminders_x_coordinate
+    knowledge_plus_button =  labels_x_indented_coordinate
     knowledge_reset_button = knowledge_plus_button + 35
     knowledge_show_button = knowledge_reset_button + 50
 
@@ -877,21 +864,10 @@ else: #windows and anything else
     wordclouds_show_button = wordclouds_color_by_POS_tags + 85
 
 # Windows: knowledge_graphs_DBpedia_YAGO_main.py
-    knowledge_graphs_YAGO_checkbox_pos = setup_IO_brief_coordinate
     confidence_level_entry_pos = 770
-
-    knowledge_databases_menu = 250
     DBpedia_YAGO_ontology_width = 70
-    knowledge_ontology_class_lb = 330
-    knowledge_ontology_class_menu = 300
-    knowledge_sub_class_entry_lb = 620 #setup_IO_brief_coordinate
-    knowledge_sub_class_entry = 300
     knowledge_sub_class_entry_width = 70
-
-    knowledge_color_label = 950
-    knowledge_color_menu = knowledge_databases_menu
     knowledge_bold_checkbox = open_reminders_x_coordinate
-
     knowledge_plus_button =  labels_x_indented_coordinate
     knowledge_reset_button = knowledge_plus_button + 35
     knowledge_show_button = knowledge_reset_button + 50
