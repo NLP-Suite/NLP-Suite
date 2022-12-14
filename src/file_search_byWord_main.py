@@ -33,7 +33,9 @@ def run(inputFilename,inputDir, outputDir,
     search_by_keyword,
     search_keyword_values,
     extract_sentences_var,
-    extract_sentences_search_words_var_str):
+    extract_sentences_search_words_var_str,
+    minus_K_var,
+    plus_K_var):
 
     filesToOpen = []
 
@@ -56,6 +58,7 @@ def run(inputFilename,inputDir, outputDir,
                                                   createCharts, chartPackage)
 
     if extract_sentences_var:
+        # TODO must pass and process minus_K_var and plus_K_var
         file_search_byWord_util.search_extract_sentences(window, inputFilename, inputDir, outputDir,
                                                  extract_sentences_search_words_var_str, search_options_list,
                                                  createCharts, chartPackage)
@@ -79,8 +82,10 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             search_by_keyword_var.get(),
                             keyword_value_var.get(),
                             extract_sentences_var.get(),
-                            extract_sentences_search_words_var.get()
-                               )
+                            extract_sentences_search_words_var.get(),
+                            minus_K_var.get(),
+                            plus_K_var.get()
+                            )
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -134,6 +139,8 @@ keyword_value_var=tk.StringVar()
 search_options_list=[]
 extract_sentences_var = tk.IntVar()
 extract_sentences_search_words_var = tk.StringVar()
+minus_K_var = tk.IntVar()
+plus_K_var = tk.IntVar()
 selectedFile_var=tk.StringVar()
 
 def clear(e):
@@ -247,12 +254,16 @@ search_by_keyword_checkbox = tk.Checkbutton(window, text='Search corpus by word(
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                     search_by_keyword_checkbox, True, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate,
-                    "Enter the comma-separated words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend)")
+                    "Tick the checkbox to search for word(s) in your document(s) (e.g, coming out, standing in line, boyfriend)")
 
 keyword_value_var.set('')
 keyword_value = tk.Entry(window,width=GUI_IO_util.widget_width_long,textvariable=keyword_value_var)
 keyword_value.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_keyword_value_pos,y_multiplier_integer,keyword_value)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
+                    keyword_value, False, False, True, False,
+                    90, GUI_IO_util.watch_videos_x_coordinate,
+                    "Enter the comma-separated, case-sensitive words/set of words that a sentence must contain in your document(s) (e.g, coming out, standing in line, boyfriend).")
 
 def activate_options():
     extract_sentences_search_words_entry.configure(state='normal')
@@ -264,13 +275,40 @@ extract_sentences_checkbox = tk.Checkbutton(window, text='Search corpus by word(
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                     extract_sentences_checkbox, True, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate,
-                    "Enter the comma-separated words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\nThis will extract all sentences containing the search word(s).")
+                    "Tick the checkbox to search for and extract words/set of words in your document(s) (e.g, coming out, standing in line, boyfriend) extracting the sentences in txt files for further analysis.")
 
 extract_sentences_search_words_var.set('')
 extract_sentences_search_words_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
 extract_sentences_search_words_entry.configure(width=GUI_IO_util.widget_width_long, state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
-                                               extract_sentences_search_words_entry)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
+                    extract_sentences_search_words_entry, True, False, True, False,
+                    90, GUI_IO_util.watch_videos_x_coordinate,
+                    "Enter the comma-separated, case-sensitive words/set of words to be searched in your document(s) (e.g, coming out, standing in line, boyfriend).\nSentences containing the search word(s) will be exported in txt files along with all the sentences NOT containg the search word(s).")
+
+minus_K_lb = tk.Label(window, text='-K')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,1050,y_multiplier_integer,minus_K_lb,True)
+
+minus_K_var.set(0)
+minus_K_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
+minus_K_entry.configure(width=3, state='disabled')
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
+                    minus_K_entry, True, False, True, False,
+                    90, GUI_IO_util.watch_videos_x_coordinate,
+                    "Enter the number of sentences preceding the search sentences to be extracted, for context, together with the search sentences")
+
+plus_K_lb = tk.Label(window, text='+K')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,1120,y_multiplier_integer,plus_K_lb,True)
+
+plus_K_var.set(0)
+plus_K_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
+plus_K_entry.configure(width=3, state='disabled')
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer,
+                    plus_K_entry, False, False, True, False,
+                    90, GUI_IO_util.watch_videos_x_coordinate,
+                    "Enter the number of sentences following the search sentences to be extracted, for context, together with the search sentences")
 
 open_GUI_button = tk.Button(window, text='Open GUI for N-grams/co-occurrences VIEWER',command=lambda: call("python NGrams_CoOccurrences_Viewer_main.py", shell=True))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,open_GUI_button)
@@ -283,6 +321,8 @@ def activate_allOptions(*args):
     keyword_value_var.set('')
     extract_sentences_checkbox.configure(state='normal')
     extract_sentences_search_words_entry.configure(state='disabled')
+    minus_K_entry.configure(state='disabled')
+    plus_K_entry.configure(state='disabled')
     extract_sentences_search_words_var.set('')
     if search_by_dictionary_var.get()==True:
         dictionary_button.config(state='normal')
@@ -291,6 +331,8 @@ def activate_allOptions(*args):
         keyword_value_var.set('')
         extract_sentences_checkbox.configure(state='disabled')
         extract_sentences_search_words_entry.configure(state='disabled')
+        minus_K_entry.configure(state='disabled')
+        plus_K_entry.configure(state='disabled')
         extract_sentences_search_words_var.set('')
     elif search_by_keyword_var.get() == True:
         search_by_dictionary_checkbox.configure(state='disabled')
@@ -299,7 +341,11 @@ def activate_allOptions(*args):
         keyword_value.configure(state='normal')
         extract_sentences_checkbox.configure(state='disabled')
         extract_sentences_search_words_entry.configure(state='disabled')
+        minus_K_entry.configure(state='disabled')
+        plus_K_entry.configure(state='disabled')
         extract_sentences_search_words_var.set('')
+        minus_K_var.set(0)
+        plus_K_var.set(0)
     elif extract_sentences_var.get()==True:
         search_by_dictionary_checkbox.configure(state='disabled')
         dictionary_button.config(state='disabled')
@@ -308,6 +354,8 @@ def activate_allOptions(*args):
         keyword_value.configure(state='disabled')
         extract_sentences_search_words_var.set('')
         extract_sentences_search_words_entry.configure(state='normal')
+        minus_K_entry.configure(state='normal')
+        plus_K_entry.configure(state='normal')
 
 search_by_dictionary_var.trace('w',activate_allOptions)
 search_by_keyword_var.trace('w',activate_allOptions)
@@ -338,9 +386,9 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, use the dropdown menu to set up the search criteria. Multiple criteria can be selected by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nWhen running the search as case sensitive, a sentence containing the word 'King' will not be selected in output if you search for 'King')\n\nWhen lemmatizing, the scripts would search 'coming out' in all its lemmatized forms: 'coming out', 'come out', 'comes out', 'came out'.\n\nWhen searching 'Within sentence' combinations of words or collocations will be searched and displayed within SENTENCE otherwise within DOCUMENT.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to search input txt file(s) using the values contained in a csv dictionary file.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click to select a csv file containing a list of values to be used as a dictionary for searching the input file(s).\n\nEntries in the file, one per line, can be single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe little square button to the right will allow you to open the selected csv file.\n\nThe csv filename will be displayed in the entry widget to the right.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe widget where you can enter your comma-separated words/collocations will become available once you select the option. Enter there the comma-separated words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe widget where you can enter your comma-separated, case-sensitive words/collocations will become available once you select the option. Enter there the comma-separated, case-sensitive words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words, such as coming out, falling in love).\n\nThe widget where you can enter your your comma-separated words/collocations will become available once you select the option. Enter there the comma-separated words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nIn INPUT, the script expects a single txt file or a directory of txt files.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract_with_searchword.txt and containing, for each input file, all the sentences that have the search word(s) in them;\n2. files ending with _extract_wo_searchword.txt and containing, for each input file, the sentences that do NOT have the search word(s) in them." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words, such as coming out, falling in love).\n\nThe widget where you can enter your comma-separated, case-sensitive words/collocations will become available once you select the option. Enter there the comma-separated, case-sensitive words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nYou can also enter the number of sentences preceeding and following the found sentences to provide context. Again, the widgets will become available when the checkbox is ticked.\n\nIn INPUT, the script expects a single txt file or a directory of txt files.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract_with_searchword.txt and containing, for each input file, all the sentences that have the search word(s) in them;\n2. files ending with _extract_wo_searchword.txt and containing, for each input file, the sentences that do NOT have the search word(s) in them." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open a GUI with more options for an N-grams/Co_occurrences VIEWER similar to Google Ngrams Viewer (https://books.google.com/ngrams) but applied to your own corpus.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

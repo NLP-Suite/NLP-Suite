@@ -44,6 +44,7 @@ import charts_util
 import statistics_txt_util
 import word2vec_tsne_plot_util
 import IO_user_interface_util
+import word2vec_distances_util
 
 # Provides NER tags per sentence for every doc and stores in a csv file
 def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts, chartPackage):
@@ -137,7 +138,7 @@ def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, createCha
     return tempOutputFiles
 
 # Creates a list of vectors/word embeddings for input files and subsequently plots them on a 2d graph
-def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, vis_menu_var, dim_menu_var, compute_distances_var, top_words_var, keywords_var, lemmatize_var):
+def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, vis_menu_var, dim_menu_var, compute_distances_var, top_words_var, keywords_var, lemmatize_var, remove_stopwords_var):
     model = SentenceTransformer('sentence-transformers/all-distilroberta-v1')
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
     filesToOpen = []
@@ -147,14 +148,14 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     result = []
     documentID = 0
     all_words = []
-    words_without_Stop = []
+    words_to_embed = []
     word_embeddings = {}
     tsne_df=None
 
     bad_chars = [';', ':', '', "*", "\"", "\'", "“", "”", "—", "’s", "n’t"]
     startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running BERT word embeddings at', True)
-    
+
 
     if inputFilename.endswith('csv'):
         word_vectors=None
@@ -168,14 +169,17 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         return filesToOpen
 
 
+
     # TODO Naman notice how Word2Vec_Gensim_util has the option of using a .csv file of already computed vectors
     #   so that you can simply use this file to visualize different cosine similarities or
     #   compute distances if you had not previously done so
     # compute only distances if inputFile is csv
     # if inputFilename.endswith('csv'):
+    #DONE
 
     # TODO Naman notice how Word2Vec_main has the option of lemmatzing
     #   this needs to be implemented similarly to Word2Vec_Gensim_util
+    #DONE
     if lemmatize_var:
         stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize, lemma')
         print('Tokenizing and Lemmatizing...')
@@ -201,18 +205,21 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
              #add all the words from the docs into a list
             all_words.extend(word_tokenize_stanza(stanzaPipeLine(s)))
 
-    #remove stop words from all_words list
-    words_without_Stop = statistics_txt_util.excludeStopWords_list(all_words)
+    #remove stop words from all_words list if that option has been selected in the GUI
+    if remove_stopwords_var:
+        words_to_embed = statistics_txt_util.excludeStopWords_list(all_words)
+    else:
+        words_to_embed = all_words
 
-    print(f'\nStarted running BERT Word2Vec model on {len(words_without_Stop)} words at {time.asctime( time.localtime(time.time()))}')
+    print(f'\nStarted running BERT Word2Vec model on {len(words_to_embed)} words at {time.asctime( time.localtime(time.time()))}')
     #Creates the word embeddings per word and stores each embedding as an element in a list called embeddings
-    word_vectors = model.encode(words_without_Stop)
+    word_vectors = model.encode(words_to_embed)
 
     # print('\nFinished running BERT computing the vector space for ' + str(len(words)) + ' distinct words in the input file(s) at ' + time.asctime( time.localtime(time.time())))
 
     #Creates key-value pairs of words and their corresponding vectors to be added to csv file output
     # showing words and their corresponding multidimensional vectors
-    for w, e in zip(words_without_Stop, word_vectors):
+    for w, e in zip(words_to_embed, word_vectors):
         word_embeddings[w] = e
 
     print(f'\nFinished running BERT Word2Vec model exporting {len(word_embeddings)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
@@ -226,19 +233,19 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
             xys = tsne.fit_transform(word_vectors)
             xs = xys[:, 0]
             ys = xys[:, 1]
-            tsne_df = pd.DataFrame({'Word': words_without_Stop, 'x': xs, 'y': ys})
+            tsne_df = pd.DataFrame({'Word': words_to_embed, 'x': xs, 'y': ys})
 
             fig = word2vec_tsne_plot_util.plot_interactive_graph(tsne_df)
             fig_words = word2vec_tsne_plot_util.plot_interactive_graph_words(tsne_df)
 
-            
+
         else:
             tsne = TSNE(n_components=3)
             xyzs = tsne.fit_transform(word_vectors)
             xs = xyzs[:, 0]
             ys = xyzs[:, 1]
             zs = xyzs[:, 2]
-            tsne_df = pd.DataFrame({'Word': words_without_Stop, 'x': xs, 'y': ys, 'z': zs})
+            tsne_df = pd.DataFrame({'Word': words_to_embed, 'x': xs, 'y': ys, 'z': zs})
 
             fig = word2vec_tsne_plot_util.plot_interactive_3D_graph(tsne_df)
             fig_words = word2vec_tsne_plot_util.plot_interactive_3D_graph_words(tsne_df)
@@ -278,14 +285,15 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
             # that sentence only, and not one that comes later
             words = word_tokenize_stanza(stanzaPipeLine(s))
 
-            wrds_no_stop = statistics_txt_util.excludeStopWords_list(words)
+            if remove_stopwords_var:
+                words = statistics_txt_util.excludeStopWords_list(words)
 
             if dim_menu_var == '2D':
                 #Adding rows to our output for the csv file with words, their vectors, and the sentences they are found in
-                for w in wrds_no_stop:
+                for w in words:
                     csv_result.append([w, word_embeddings[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
             else:
-                for w in wrds_no_stop:
+                for w in words:
                     csv_result.append([w, word_embeddings[w], sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
     print(f'\nSaving csv vector file for top {top_words_var} of {len(words)} non-distinct words at {time.asctime( time.localtime(time.time()))}')
@@ -302,8 +310,8 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
       # compute distances
     if compute_distances_var:
 
-        import word2vec_distances_util
-        
+
+
         word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts, chartPackage,
                                    word_vectors,
                                    result_df,
@@ -427,7 +435,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         #     if len(chart_outputFilename) > 0:
         #         filesToOpen.extend(chart_outputFilename)
 
-    
+
         #keyword_sim_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Word2Vec_' + str(
                                                                                 # len(keywords_list)) + '_Keywords_Cos_Similarity')
         #keyword_df.to_csv(keyword_sim_outputFilename, encoding='utf-8', index=False)
@@ -442,8 +450,8 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
 # Performs sentiment analysis using roBERTa model
 def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Document_ID, Document):
-    model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
-
+    model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
+    # model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
     # sentiment_task = pipeline("sentiment-analysis",
     #  model=model_path, tokenizer=model_path, max_length=512, truncation=True)
     sentiment_task = pipeline("sentiment-analysis", model=model_path, tokenizer=model_path, truncation=True)
