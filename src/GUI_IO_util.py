@@ -465,9 +465,11 @@ if sys.platform == 'darwin':  # Mac OS
     knowledge_databases_menu = 250
     knowledge_ontology_class_lb = 330
     knowledge_ontology_class_menu = 380
+    DBpedia_YAGO_ontology_width = 70
     knowledge_sub_class_entry_lb = 620
     knowledge_sub_class_entry = 700
     knowledge_DBpedia_ontology_class_menu = setup_IO_brief_coordinate # 685
+    knowledge_sub_class_entry_width = 70
 
     confidence_level_entry_pos = 770
 
@@ -475,9 +477,9 @@ if sys.platform == 'darwin':  # Mac OS
     knowledge_color_menu = 1000
     knowledge_bold_checkbox = 1060
 
-    knowledge_reset_button = 1130
-    knowledge_show_button = 1210
-    knowledge_plus_button = 1290
+    knowledge_plus_button = labels_x_indented_coordinate
+    knowledge_reset_button = knowledge_plus_button + 35
+    knowledge_show_button = knowledge_reset_button + 50
 
 # Mac: file_splitter_main.py
     file_splitter_post_num_string_value_lb_pos = 600
@@ -757,6 +759,8 @@ else: #windows and anything else
 
 # WINDOWS special internal GUI specific values WINDOWS -----------------------------------------------------------
 
+    # all + Reset Show are separeted by 35 points and 50 points
+
 # Windows NLP_setup_package_language_main
     all_widget_pos = 450
     package_display_area_width = 80
@@ -877,19 +881,20 @@ else: #windows and anything else
     confidence_level_entry_pos = 770
 
     knowledge_databases_menu = 250
+    DBpedia_YAGO_ontology_width = 70
     knowledge_ontology_class_lb = 330
-    knowledge_ontology_class_menu = 380
+    knowledge_ontology_class_menu = 300
     knowledge_sub_class_entry_lb = 620 #setup_IO_brief_coordinate
-    knowledge_sub_class_entry = 700
-    knowledge_sub_class_entry_width = 50
+    knowledge_sub_class_entry = 300
+    knowledge_sub_class_entry_width = 70
 
     knowledge_color_label = 950
     knowledge_color_menu = knowledge_databases_menu
-    knowledge_bold_checkbox = knowledge_ontology_class_lb
+    knowledge_bold_checkbox = open_reminders_x_coordinate
 
-    knowledge_plus_button = open_TIPS_x_coordinate + 35
-    knowledge_reset_button = knowledge_plus_button + 43
-    knowledge_show_button = knowledge_reset_button + 60
+    knowledge_plus_button =  labels_x_indented_coordinate
+    knowledge_reset_button = knowledge_plus_button + 35
+    knowledge_show_button = knowledge_reset_button + 50
 
 # Windows: file_splitter_main.py
     file_splitter_post_num_string_value_lb_pos = 500
