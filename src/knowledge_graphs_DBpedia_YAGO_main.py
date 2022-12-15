@@ -28,6 +28,7 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPa
         databases_var,
         sub_class_entry,
         DBpedia_YAGO_class_list,
+        create_HTML_files_var,
         DBpedia_YAGO_color_list,
         bold_DBpedia_YAGO_var):
 
@@ -100,7 +101,7 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPa
                                                                      outputDir,0,
                                                                      ontology_list, colorls, confidence_level)
 
-    elif 'YAGO' in knowledge_graphs_var.get():
+    elif 'YAGO' in knowledge_graphs_var:
         if not IO_internet_util.check_internet_availability_warning('knowledge_graphs_DBpedia_YAGO_main.py'):
             return
         import knowledge_graphs_YAGO_util
@@ -140,6 +141,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 databases_var.get(),
                 sub_class_entry_var.get(),
                 DBpedia_YAGO_class_list,
+                create_HTML_files_var.get(),
                 DBpedia_YAGO_color_list,
                 bold_DBpedia_YAGO_var.get())
 
@@ -207,6 +209,7 @@ confidence_level_var=tk.StringVar()
 databases_var=tk.StringVar()
 ontology_class_var = tk.StringVar()
 sub_class_entry_var = tk.StringVar()
+create_HTML_files_var = tk.IntVar()
 color_palette_DBpedia_YAGO_var= tk.StringVar() # the color selected for DBpedia/YAGO annotation
 bold_DBpedia_YAGO_var= tk.IntVar() # display in bod the selected color selected for DBpedia/YAGO annotation
 
@@ -356,13 +359,17 @@ def accept_DBpedia_YAGO_list():
         DBpedia_YAGO_color_map[ontology_class_var.get()] = color
         DBpedia_YAGO_class_list.append(ontology_class_var.get())
         DBpedia_YAGO_color_list.append(color)
-    else:
-        mb.showwarning(title='Warning', message='You have pressed the OK button, but you must first select your class(es).\n\nPlease, select the class(es) and try again.')
+    # else:
+    #     color = 'blue'
+    #     DBpedia_YAGO_color_map[ontology_class_var.get()] = color
+    #     DBpedia_YAGO_class_list.append(ontology_class_var.get())
+    #     DBpedia_YAGO_color_list.append(color)
+    #     mb.showwarning(title='Warning', message='You have pressed the + button, but you must first select your class(es).\n\nPlease, select the class(es) and try again.')
 
-def add_DBpedia_sub_class(*args):
+def add_DBpedia_YAGO_sub_class(*args):
     if sub_class_entry_var.get()!='':
         activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry)
-sub_class_entry_var.trace ('w',add_DBpedia_sub_class)
+sub_class_entry_var.trace ('w',add_DBpedia_YAGO_sub_class)
 
 ontology_class_lb = tk.Label(window, text='Ontology class')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ontology_class_lb,True)
@@ -391,16 +398,35 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configurat
                                                GUI_IO_util.labels_x_indented_coordinate,
                                                "Enter the comma-separated ontology sub-classes you wish to use; get the sub-classes from the TIPS_NLP_DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org) Ontology Classes.pdf.")
 
+create_HTML_files_var.set(0)
+create_HTML_files_checkbox = tk.Checkbutton(window, text='Create HTML output files', state='disabled',variable=create_HTML_files_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate,
+                                               y_multiplier_integer,
+                                               create_HTML_files_checkbox, True, False, False, False, 90,
+                                               GUI_IO_util.labels_x_indented_coordinate,
+                                               "Create in output separate HTML files for every input txt file in addition to the default csv file output. Keep in mind that the process is relatively slow...")
+
 color_palette_DBpedia_YAGO_var.set('')
 color_palette_DBpedia_YAGO_lb = tk.Label(window, text='Color')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,color_palette_DBpedia_YAGO_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,color_palette_DBpedia_YAGO_lb,True)
 color_palette_DBpedia_YAGO_menu = tk.OptionMenu(window, color_palette_DBpedia_YAGO_var,'black','blue','green','pink','red','yellow')
 color_palette_DBpedia_YAGO_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,color_palette_DBpedia_YAGO_menu,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu+50,
+                                               y_multiplier_integer,
+                                               color_palette_DBpedia_YAGO_menu, True, False, False, False, 90,
+                                               GUI_IO_util.IO_configuration_menu+50,
+                                               "When creating output HTML files, you can choose a specific color for a specific ontology class...")
 
 bold_DBpedia_YAGO_var.set(1)
 bold_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text='Bold', state='disabled',variable=bold_DBpedia_YAGO_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_bold_checkbox,y_multiplier_integer,bold_DBpedia_YAGO_checkbox)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.knowledge_bold_checkbox,
+                                               y_multiplier_integer,
+                                               bold_DBpedia_YAGO_checkbox, False, False, False, False, 90,
+                                               GUI_IO_util.knowledge_bold_checkbox,
+                                               "When creating output HTML files, you can choose to annotate in bold (typically more visible...)")
 
 add_class_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_class_var())
 # place widget with hover-over info
@@ -412,7 +438,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.knowledge_plu
 
 def activate_class_var(*args):
     if ontology_class_var.get() or sub_class_entry_var.get():
-        # accept_DBpedia_YAGO_list()  # get current vale and stores into the dict
+        accept_DBpedia_YAGO_list()  # get current value and store into the dict
         ontology_class_var.set('')
         color_palette_DBpedia_YAGO_var.set('')
         sub_class_entry_var.set('')
@@ -431,12 +457,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.knowledge_res
                                                "Click the Reset button to clear all selected values")
 
 def show_class_color_list():
-    # if len(DBpedia_YAGO_color_list)==0:
-    #     if len(DBpedia_YAGO_class_list)==0:
-    #         mb.showwarning(title='Warning', message='There are no currently selected combinations of ontology class and color.')
-    #     else:
-    #         mb.showwarning(title='Warning',
-    #                        message='The currently selected ontology class list\n  ' + str(DBpedia_YAGO_class_list) + '\nhas no colors associated with it.')
     if not DBpedia_YAGO_color_map:
         if color_palette_DBpedia_YAGO_var.get()!='':
             mb.showwarning(title='Warning',
@@ -458,7 +478,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.knowledge_sho
                                                show_class_color_button, False, False, False, False, 90,
                                                GUI_IO_util.knowledge_show_button,
                                                "Click the Show button to see all selected options")
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.knowledge_show_button,y_multiplier_integer,show_class_color_button)
 
 firstTime = False
 
@@ -510,8 +529,9 @@ sub_class_entry_var.trace('w',activate_OK_buttton)
 ontology_class_var.trace('w', activate_OK_buttton)
 
 def activate_class_color_combo(*args):
+    accept_DBpedia_YAGO_list()  # get current value and store into the dict
     if color_palette_DBpedia_YAGO_var.get()!='':
-        accept_DBpedia_YAGO_list()  # get current vale and stores into the dict
+        # accept_DBpedia_YAGO_list()  # get current value and store into the dict
         state = str(color_palette_DBpedia_YAGO_menu['state'])
         # 'active' for mac; 'normal' for windows
         if state != 'disabled': # normal/active
@@ -519,6 +539,8 @@ def activate_class_color_combo(*args):
             add_class_button.configure(state='normal')
             reset_class_button.configure(state='normal')
             show_class_color_button.configure(state='normal')
+    # else:
+    #     accept_DBpedia_YAGO_list()  # get current value and store into the dict
 color_palette_DBpedia_YAGO_var.trace('w',activate_class_color_combo)
 
 def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry,*args):
@@ -584,7 +606,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, using the dropdown menu, select the knowledge base/graph, DBpedia, YAGO, or Wikipedia, you wish to use to annotate the input corpus by terms found in either DBpedia or YAGO.\n\nDBpedia will allow you to set confidence levels for your annotation (.5 is the recommended default value in a range between 0 and 1). THE HIGHER THE CONFIDENCE LEVEL THE LESS LIKELY YOU ARE TO FIND DBpedia ENTRIES; THE LOWER THE LEVEL AND THE MORE LIKELY YOU ARE TO FIND EXTRANEOUS ENTRIES.\n\nDBpedia and YAGO are enormous databases (DB for database) designed to extract structured content from the information created in Wikipedia, Wikidata and other knowledge bases. DBpedia and YAGO allow users to semantically query relationships and properties of Wikipedia data (including links to other related datasets) via a large ontology of search values (for a complete listing, see the TIPS files TIPS_NLP_DBpedia Ontology Classes.pdf or TIPS_NLP_YAGO (schema.org) Ontology Classes.pdf).\n\nFor more information, see https://wiki.DBpedia.org/ and https://yago-knowledge.org/.\n\nIn INPUT the scripts expect one or more txt files.\n\nIn OUTPUT the scripts generate as many annotated html files as selected in input.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Once you select DBpedia or YAGO, the "Ontology class" options will become available.\n\nUsing the class dropdown menu, select the DPpedia or YAGO ontology class you wish to use.\n\nYou can add multiple ontology classes by pressing the + button.\n\nIF NO CLASS IS SELECTED, ALL CLASSES WILL BE PROCESSED, WITH \'THING\' AS THE DEFAULT CLASS.\n\nThe class dropdown menu only includes the main classes in the DBpedia or YAGO ontology. For specific sub-classes, please, get the values from the TIPS_NLP_DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org) Ontology Classes.pdf and enter them, comma-separated, in Ontology sub-class field. CLICK + AFTER ENTERING CLASS AND/OR SUB-CLASS VALUES.\n\nYAGO DOES NOT USE THE COMPLETE SCHEMA CLASSES AND SUB-CLASSES. PLEASE, REFER TO THE REDUCED LIST FOR ALL THE SCHEMA CLASSES USED.\n\nYou can test the resulting annotations directly on DBpedia Spotlight at https://www.dbpedia-spotlight.org/demo/\n\nYou can select a specific color for a specific ontology class (Press the \'Show\' widget to display the combination of selected values).\n\nPress RESET (or ESCape) to delete all values entered and start fresh.\nPress SHOW to display all selected values.\n\nThe +, RESET, and SHOW widgets become available only after selecting an ontology class or sub-class.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Once you select DBpedia or YAGO, the "Ontology sub-class" widget will become available.\n\nSince the ontology class dropdown menu only includes the main classes in the DBpedia or YAGO ontology, enter in the "Ontology sub-class" widget more specific, comma-separated, sub-classes. You obtain these sub-classes from the TIPS_NLP_DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org).')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'You can select a specific color for a specific ontology class.\n\nYou can also select to tag in bold the output HTML file(s).\n\nThe options in this line become available only after selecting a specific ontology class.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox to create separate annotated HTML files in output in addition to a csv file.\n\nKeep in mind that the process of annotating files is slow and that the algorithm will create in output as many HTML annotated files as there are txt files in input.\n\nWhen creating HTML files, you can select a specific color for a specific ontology class.\n\nYou can also select to tag in bold the output HTML file(s).\n\nThe options in this line become available only after selecting a specific ontology class.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Press the + button to add another ontology class.\n\nPress RESET (or ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

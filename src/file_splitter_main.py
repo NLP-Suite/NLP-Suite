@@ -52,10 +52,7 @@ def run(inputFilename,inputDir, outputDir,
     split_csv_by_documentID_var,
     menu_option):
 
-    if extract_sentences_var:
-        import sentence_analysis_util
-        sentence_analysis_util.extract_sentences(window, inputFilename, inputDir, outputDir, extract_sentences_search_words_var)
-        return
+    filesToOpen=[]
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                       "Started running " + menu_option + " at", True)
@@ -67,97 +64,103 @@ def run(inputFilename,inputDir, outputDir,
     if len(files) == 0:
         return
 
-    for file in files:
-        #print("file",file)
-        docname = os.path.split(file)[1]
-        title = docname.partition('.')[0]
-        keyword_value_var=keyword_value_var.strip()
+    if extract_sentences_var:
+        import sentence_analysis_util
+        sentence_analysis_util.extract_sentences(window, inputFilename, inputDir, outputDir, extract_sentences_search_words_var)
+        return
+    # split by Beginning Middle and End K sentences
+    elif extract_BME_K_sentences:
+        import file_splitter_ByBME_K_sentences_util
+        filesToOpen = file_splitter_ByBME_K_sentences_util.sample_doc_beginning_middle_end(window, config_filename, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, Begin_K_sent, End_K_sent)
+    else:
+        for file in files:
+            #print("file",file)
+            docname = os.path.split(file)[1]
+            title = docname.partition('.')[0]
+            keyword_value_var=keyword_value_var.strip()
 
-        # split by Beginning Middle and End K sentences
-        if extract_BME_K_sentences:
-            import file_splitter_ByBME_K_sentences_util
-            file_splitter_ByBME_K_sentences_util.sample_doc_beginning_middle_end(window, config_filename, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, Begin_K_sent, End_K_sent)
+            # split TOC --------------------------------------------------------------------------------------
+            if splitByTOC:
+                if TOC_filename == '':
+                    mb.showwarning(title='Input error',
+                                   message='The selected option - ' + menu_option + ' - requires a Table of Content file in input.\n\nPlease, select the file and try again.')
+                    return
+                import file_splitter_ByTOC_util
+                file_splitter_ByTOC_util.splitDocument_byTOC(GUI_util.window,file,TOC_filename, outputDir,openOutputFiles)
+            # split <@# #@> --------------------------------------------------------------------------------------
+            elif split_mergedFile:
+                subDir=''
+                nFiles=0
+                import file_splitter_merged_txt_util
+                subDir, nFiles=file_splitter_merged_txt_util.run(file,
+                                              split_mergedFile_separator_entry_begin,
+                                              split_mergedFile_separator_entry_end,
+                                              outputDir)
+                mb.showwarning(title='Exported files',
+                               message=str(nFiles) + ' split files were created in the subdirectory of the output directory\n\n' + subDir)
+                return
+            # split file length --------------------------------------------------------------------------------------
+            elif splitByFileLength:
+                specialOutputPath = inputDir + os.sep +"split_files_"+split_docLength+"_"+title
+                # no matter what the input of outputfile is, it will always generate a subfile that includes all output
+                if not os.path.exists(specialOutputPath):
+                    os.mkdir(specialOutputPath)
+                if splitByFileLength and split_docLength=='':
+                    mb.showwarning(title='Input error', message='The selected option - ' + menu_option + ' - requires a valid number of words for splitting the document.\n\nPlease, enter a value and try again.')
+                    return
+                import file_splitter_ByLength_util
+                file_splitter_ByLength_util.split_byLength(GUI_util.window,inputDir,file,specialOutputPath,maxLength=int(split_docLength), inSentence=True)
+            # split keyword --------------------------------------------------------------------------------------
+            elif splitByKeyword:
+                # The following reserved characters for Windows filenames and directory names:
+                # < (less than)
+                # > (greater than)
+                # : (colon)
+                # " (double quote)
+                # / (forward slash)
+                # \ (backslash)
+                # | (vertical bar or pipe)
+                # ? (question mark)
+                # * (asterisk)
+                # if '<' or '>' or ':' or '"' or '/' or '\\' or '|' or '?' or '*' in keyword_value_var:
+                # Strip the keyword_value_var of any character that would leaad to an illegal folder name
+                title_var = keyword_value_var
+                for letter in title_var:
+                    if letter == '<' or letter == '>' or letter ==':' or letter =='"' or letter =='/' or letter =='\\' or letter =='|' or letter =='?' or letter =='*':
+                        title_var = title_var.replace(letter,"")
+                specialOutputPath = inputDir + os.sep + "split_files_"+title_var+"_"+title
+                # no matter what the input of outputfile is, it will always generate a subfile that includes all output
+                if not os.path.exists(specialOutputPath):
+                    os.mkdir(specialOutputPath)
+                if file[-4:]=='.txt':
+                    import file_splitter_ByKeyword_txt_util
+                    file_splitter_ByKeyword_txt_util.run(file, specialOutputPath, keyword_value_var, first_occurrence_var, lemmatize_var)
+                elif file[-4:]=='.csv':
+                    import file_splitter_ByKeyword_conll_util
+                    file_splitter_ByKeyword_conll_util.run(file, specialOutputPath, keyword_value_var, first_occurrence_var, generateForm = False)
 
-        # split TOC --------------------------------------------------------------------------------------
-        if splitByTOC:
-            if TOC_filename == '':
-                mb.showwarning(title='Input error',
-                               message='The selected option - ' + menu_option + ' - requires a Table of Content file in input.\n\nPlease, select the file and try again.')
-                return
-            import file_splitter_ByTOC_util
-            file_splitter_ByTOC_util.splitDocument_byTOC(GUI_util.window,file,TOC_filename, outputDir,openOutputFiles)
-        # split <@# #@> --------------------------------------------------------------------------------------
-        elif split_mergedFile:
-            subDir=''
-            nFiles=0
-            import file_splitter_merged_txt_util
-            subDir, nFiles=file_splitter_merged_txt_util.run(file,
-                                          split_mergedFile_separator_entry_begin,
-                                          split_mergedFile_separator_entry_end,
-                                          outputDir)
-            mb.showwarning(title='Exported files',
-                           message=str(nFiles) + ' split files were created in the subdirectory of the output directory\n\n' + subDir)
-            return
-        # split file length --------------------------------------------------------------------------------------
-        elif splitByFileLength:
-            specialOutputPath = inputDir + os.sep +"split_files_"+split_docLength+"_"+title
-            # no matter what the input of outputfile is, it will always generate a subfile that includes all output
-            if not os.path.exists(specialOutputPath):
-                os.mkdir(specialOutputPath)
-            if splitByFileLength and split_docLength=='':
-                mb.showwarning(title='Input error', message='The selected option - ' + menu_option + ' - requires a valid number of words for splitting the document.\n\nPlease, enter a value and try again.')
-                return
-            import file_splitter_ByLength_util
-            file_splitter_ByLength_util.split_byLength(GUI_util.window,inputDir,file,specialOutputPath,maxLength=int(split_docLength), inSentence=True)
-        # split keyword --------------------------------------------------------------------------------------
-        elif splitByKeyword:
-            # The following reserved characters for Windows filenames and directory names:
-            # < (less than)
-            # > (greater than)
-            # : (colon)
-            # " (double quote)
-            # / (forward slash)
-            # \ (backslash)
-            # | (vertical bar or pipe)
-            # ? (question mark)
-            # * (asterisk)
-            # if '<' or '>' or ':' or '"' or '/' or '\\' or '|' or '?' or '*' in keyword_value_var:
-            # Strip the keyword_value_var of any character that would leaad to an illegal folder name
-            title_var = keyword_value_var
-            for letter in title_var:
-                if letter == '<' or letter == '>' or letter ==':' or letter =='"' or letter =='/' or letter =='\\' or letter =='|' or letter =='?' or letter =='*':
-                    title_var = title_var.replace(letter,"")
-            specialOutputPath = inputDir + os.sep + "split_files_"+title_var+"_"+title
-            # no matter what the input of outputfile is, it will always generate a subfile that includes all output
-            if not os.path.exists(specialOutputPath):
-                os.mkdir(specialOutputPath)
-            if file[-4:]=='.txt':
-                import file_splitter_ByKeyword_txt_util
-                file_splitter_ByKeyword_txt_util.run(file, specialOutputPath, keyword_value_var, first_occurrence_var, lemmatize_var)
-            elif file[-4:]=='.csv':
-                import file_splitter_ByKeyword_conll_util
-                file_splitter_ByKeyword_conll_util.run(file, specialOutputPath, keyword_value_var, first_occurrence_var, generateForm = False)
-
-        elif splitByString: # created for MLK comments
-            import file_splitter_ByString_util
-            target='pp.'
-            spot_one=-7
-            spot_two=-5
-            file_splitter_ByString_util.splitDocument_byStrings(file, outputDir, target, spot_one, spot_two, True)
-        elif blankLine_var:
-            import file_splitter_ByString_util
-            file_splitter_ByString_util.split_by_blanks(file, outputDir)
-        elif number_var:
-            import file_splitter_ByNumber_util
-            file_splitter_ByNumber_util.run(file, outputDir, post_num_string_value_var)
-        elif split_csv_by_documentID_var:
-            if file[-4:]!='.csv':
-                mb.showwarning(title='Warning',message="The 'split by Document ID' function expects in input a csv file with at least one field labeled 'Document ID'.\n\nPlerase, select a csv file and try again.")
-                return
-            else:
-                import file_splitter_ByDocumentID_csv_util
-                file_splitter_ByDocumentID_csv_util.split_NLP_Suite_csv_output_by_document_id(file,outputDir)
-    # IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end", "Finished running '" + menu_option + "' at", True)
+            elif splitByString: # created for MLK comments
+                import file_splitter_ByString_util
+                target='pp.'
+                spot_one=-7
+                spot_two=-5
+                file_splitter_ByString_util.splitDocument_byStrings(file, outputDir, target, spot_one, spot_two, True)
+            elif blankLine_var:
+                import file_splitter_ByString_util
+                file_splitter_ByString_util.split_by_blanks(file, outputDir)
+            elif number_var:
+                import file_splitter_ByNumber_util
+                file_splitter_ByNumber_util.run(file, outputDir, post_num_string_value_var)
+            elif split_csv_by_documentID_var:
+                if file[-4:]!='.csv':
+                    mb.showwarning(title='Warning',message="The 'split by Document ID' function expects in input a csv file with at least one field labeled 'Document ID'.\n\nPlerase, select a csv file and try again.")
+                    return
+                else:
+                    import file_splitter_ByDocumentID_csv_util
+                    file_splitter_ByDocumentID_csv_util.split_NLP_Suite_csv_output_by_document_id(file,outputDir)
+        # IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end", "Finished running '" + menu_option + "' at", True)
+    if len(filesToOpen) > 0:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -415,7 +418,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                keyword_checkbox, True)
 
 keyword_value_var.set('')
-keyword_value = tk.Entry(window, width=GUI_IO_util.widget_width_short, textvariable=keyword_value_var)
+keyword_value = tk.Entry(window, width=GUI_IO_util.widget_width_medium, textvariable=keyword_value_var)
 keyword_value.configure(state="disabled")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu,

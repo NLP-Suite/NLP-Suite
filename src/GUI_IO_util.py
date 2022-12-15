@@ -460,27 +460,24 @@ if sys.platform == 'darwin':  # Mac OS
     wordclouds_show_button = wordclouds_color_by_POS_tags + 128 # 1038
 
 #Mac: knowledge_graphs_DBpedia_YAGO_main.py
-    confidence_level_entry_pos = 770
+    confidence_level_entry_pos = 870
     DBpedia_YAGO_ontology_width = 70
     knowledge_sub_class_entry_width = 70
     knowledge_bold_checkbox = open_reminders_x_coordinate
     knowledge_plus_button =  labels_x_indented_coordinate
-    knowledge_reset_button = knowledge_plus_button + 35
-    knowledge_show_button = knowledge_reset_button + 50
+    knowledge_reset_button = knowledge_plus_button + 45
+    knowledge_show_button = knowledge_reset_button + 65
 
 # Mac: file_splitter_main.py
     file_splitter_post_num_string_value_lb_pos = 600
-    file_splitter_first_occurrence_pos = 1000
     file_splitter_post_num_string_value_pos = 1020
-    file_splitter_ASCII_pos = 560
-    file_splitter_split_mergedFile_separator_entry_begin_pos = file_splitter_ASCII_pos
+    file_splitter_split_mergedFile_separator_entry_begin_pos = 560
 
     file_splitter_split_mergedFile_separator_entry_end_pos = 640
     file_splitter_current_docLength_pos = 580
     file_splitter_split_docLength_lb_pos = 735
-    file_splitter_split_docLength_pos = 925
-
-    file_splitter_lemmatize_pos = 880
+    file_splitter_lemmatize_pos = 1060
+    file_splitter_first_occurrence_pos = 1170
 
 # Mac: html_annotator_gender_main.py
 
@@ -874,16 +871,15 @@ else: #windows and anything else
 
 # Windows: file_splitter_main.py
     file_splitter_post_num_string_value_lb_pos = 500
-    file_splitter_first_occurrence_pos = 950
     file_splitter_post_num_string_value_pos = 900
-    file_splitter_ASCII_pos = 560
-    file_splitter_split_mergedFile_separator_entry_begin_pos = file_splitter_ASCII_pos
-    file_splitter_split_mergedFile_separator_entry_end_pos = 640
+    file_splitter_split_mergedFile_separator_entry_begin_pos = 580
+    file_splitter_split_mergedFile_separator_entry_end_pos = 690
     current_docLength_lb_pos = IO_configuration_menu
     file_splitter_current_docLength_pos = 520
     file_splitter_split_docLength_lb_pos = 650
     file_splitter_split_docLength_pos = 830
     file_splitter_lemmatize_pos = file_splitter_split_docLength_pos
+    file_splitter_first_occurrence_pos = 950
 
 # Windows: html_annotator_gender_main.py
     html_annotator_gender_annotator_dictionary_file_width = 100

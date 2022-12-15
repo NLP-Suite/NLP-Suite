@@ -8,7 +8,7 @@ def sample_doc_beginning_middle_end(window, config_filename, inputFilename,input
     result_first_last = []
     result_middle = []
     header = ["First/Last Sentence", "K Value", "Sentence ID", "Sentence", "Document ID", "Document"]
-    fileLabel_first_last = "first/last k"
+    fileLabel_first_last = "first_last k"
     fileLabel_middle = "middle"
     filesToOpen = []
     fin = open('../lib/wordLists/stopwords.txt', 'r')
@@ -16,15 +16,6 @@ def sample_doc_beginning_middle_end(window, config_filename, inputFilename,input
     inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
 
     Ndocs=str(len(inputDocs))
-
-    if Begin_K_sent==0:
-        import GUI_IO_util
-        k_str, useless = GUI_IO_util.enter_value_widget("Enter the number of sentences, K, to be analyzed", 'K',
-                                                       1, '', '', '')
-        k = int(k_str)
-    else:
-        k = Begin_K_sent
-
 
     documentID = 0
     for doc in inputDocs:
@@ -42,14 +33,14 @@ def sample_doc_beginning_middle_end(window, config_filename, inputFilename,input
         for s in sentences:
             sentenceID = sentenceID + 1
 
-            if sentenceID <= k or sentenceID > len(sentences) - k:
-                if sentenceID <= k:
-                    result_first_last.append(["First", k, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+            if sentenceID <= Begin_K_sent or sentenceID > len(sentences) - End_K_sent:
+                if sentenceID <= Begin_K_sent:
+                    result_first_last.append(["First", Begin_K_sent, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
                 else:
-                    result_first_last.append(["Last", k, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                    result_first_last.append(["Last", End_K_sent, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
             else:
-                result_middle.append([f"Between first and last {k}", k, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                result_middle.append([f"Between first {Begin_K_sent} and last {End_K_sent}", f"{Begin_K_sent}, {End_K_sent}", sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
 
     result_first_last.insert(0, header)
