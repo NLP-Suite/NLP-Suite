@@ -27,7 +27,6 @@ import itertools
 import stanza
 import argparse
 import tkinter.messagebox as mb
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 import torch
 import spacy
 import contextualSpellCheck
@@ -45,6 +44,7 @@ import statistics_txt_util
 import word2vec_tsne_plot_util
 import IO_user_interface_util
 import word2vec_distances_util
+import IO_internet_util
 
 # Provides NER tags per sentence for every doc and stores in a csv file
 def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts, chartPackage):
@@ -69,6 +69,7 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts
             fullText = f.read()
             fullText = fullText.replace('\n', ' ')
 
+        from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
         sentences = sent_tokenize_stanza(stanzaPipeLine(fullText))
         sentenceID = 0
 
@@ -201,8 +202,8 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
         sentences = split_into_sentences(fullText)
         for s in sentences:
-
              #add all the words from the docs into a list
+            from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza
             all_words.extend(word_tokenize_stanza(stanzaPipeLine(s)))
 
     #remove stop words from all_words list if that option has been selected in the GUI
@@ -449,11 +450,12 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
 
 # Performs sentiment analysis using roBERTa model
-def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Document_ID, Document):
-    model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
+def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Document_ID, Document, model_path):
+    # model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
     # model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
     # sentiment_task = pipeline("sentiment-analysis",
     #  model=model_path, tokenizer=model_path, max_length=512, truncation=True)
+
     sentiment_task = pipeline("sentiment-analysis", model=model_path, tokenizer=model_path, truncation=True)
 
     with open(inputFilename, 'r', encoding='utf-8', errors='ignore') as myfile:
@@ -465,6 +467,7 @@ def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Docu
         print('Empty file ', inputFilename)
         return
 
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
     sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
 
     i = 1
@@ -486,7 +489,10 @@ def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Docu
 
 
 # helper main method for sentiment analysis
-def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPackage='Excel'):
+def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPackage='Excel', model_path="cardiffnlp/twitter-xlm-roberta-base-sentiment"):
+    # model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
+    # model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
+
     """
     Runs analyzefile on the appropriate files, provided that the input paths are valid.
     :param inputFilename:
@@ -495,6 +501,9 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
     :return:
 
     """
+
+    if not IO_internet_util.check_internet_availability_warning("BERT_util.py (Function sentiment_analysis_BERT)"):
+        return
 
     filesToOpen = []
 
@@ -522,9 +531,9 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
         if len(inputFilename) > 0:  # handle single file
             if os.path.exists(inputFilename):
                 filesToOpen.append(sentiment_analysis_BERT(
-                    inputFilename, outputDir, outputFilename, mode, 1, inputFilename))
+                    inputFilename, outputDir, outputFilename, mode, 1, inputFilename, model_path))
                 output_file = sentiment_analysis_BERT(
-                    inputFilename, outputDir, outputFilename, mode, 1, inputFilename)
+                    inputFilename, outputDir, outputFilename, mode, 1, inputFilename, model_path)
             else:
                 print('Input file "' + inputFilename + '" is invalid.')
                 sys.exit(1)
@@ -535,11 +544,12 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                 for file in os.listdir(directory):
                     filename = os.path.join(inputDir, os.fsdecode(file))
                     if filename.endswith(".txt"):
-                        start_time = time.asctime( time.localtime(time.time()))()
+                        # start_time = time.asctime( time.localtime(time.time()))()
+                        start_time = time.time()
                         # print("Started SentiWordNet sentiment analysis of " + filename + "...")
                         documentID += 1
                         filesToOpen.append(sentiment_analysis_BERT(
-                            filename, outputDir, outputFilename, mode, documentID, filename))
+                            filename, outputDir, outputFilename, mode, documentID, filename,model_path))
                         # print("Finished SentiWordNet sentiment analysis of " + filename + " in " + str((time.asctime( time.localtime(time.time()))() - start_time)) + " seconds")
                         # print("Finished SentiWordNet sentiment analysis of " + filename + " in " + str((time.asctime( time.localtime(time.time()))() - start_time)) + " seconds")
             else:

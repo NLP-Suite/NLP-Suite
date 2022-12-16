@@ -9,7 +9,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "sentence_analysis_ut
 import tkinter as tk
 import collections
 import os
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import pandas as pd
 import IO_csv_util
 import IO_files_util
@@ -20,6 +20,8 @@ def Extract(lst):
 
 def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, createCharts, chartPackage, openOutputFiles=True,
 								  input_dictionary_file='', chartTitle=''):
+	from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+
 	filesToOpen = []
 	DictionaryList = []
 	file_list = IO_files_util.getFileList(inputFilename, inputDir, '.txt')

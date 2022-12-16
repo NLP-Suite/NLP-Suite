@@ -35,8 +35,6 @@ import IO_csv_util
 import IO_files_util
 import charts_util
 
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-
 # if SentiWordNet fails, run: "python -m nltk.downloader all"
 
 IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','wordnet')
@@ -90,6 +88,8 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
         mb.showerror(title='File empty', message='The file ' + inputFilename + ' is empty.\n\nPlease, use another file and try again.')
         print('Empty file ', inputFilename)
         return
+
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
     # sentences = tokenize.sent_tokenize(fulltext)  # split text into sentences
     sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))

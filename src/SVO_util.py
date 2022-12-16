@@ -1,5 +1,5 @@
 import pandas as pd
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 import os
 
 import IO_files_util
@@ -247,6 +247,8 @@ def filter_svo(window,svo_file_name, filter_s_fileName, filter_v_fileName, filte
     """
 
     filesToOpen = []
+
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
     startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
                                                    'Started running the filter algorithm for Subject-Verb-Object (SVO) at',

@@ -13,7 +13,7 @@ import math
 import gensim
 from gensim.models import Word2Vec
 # Stanza for tokenization and lemmatization
-from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
+# from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
 import stanza
 # for calculating the distance
 import itertools
@@ -37,6 +37,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                         compute_distances_var, top_words_var,
                         sg_menu_var, vector_size_var, window_var, min_count_var,
                         vis_menu_var, dim_menu_var):
+
     # initialize necessary variables
     word = []
     document = []
@@ -49,6 +50,11 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running Gensim Word2Vec at', True)
+
+    import IO_internet_util
+    if not IO_internet_util.check_internet_availability_warning("Word2Vec_Gensim_util.py"):
+        return
+
     # compute only distances if inputFile is csv
     if inputFilename.endswith('csv'):
         word_vectors=None
@@ -242,6 +248,7 @@ def sent_to_words(sent):
     return (gensim.utils.simple_preprocess(sent, deacc=True))
 
 def make_sentences(all_input_docs):
+    from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
     all_txt = []
     for doc in all_input_docs:
         # sentences = sent_tokenize(doc)

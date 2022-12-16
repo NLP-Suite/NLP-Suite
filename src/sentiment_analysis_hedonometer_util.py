@@ -36,7 +36,6 @@ import statistics
 import time
 import argparse
 import tkinter.messagebox as mb
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 import IO_csv_util
 import GUI_IO_util
@@ -73,6 +72,8 @@ def analyzefile(inputFilename, outputDir, outputFilename, mode, Document_ID, Doc
         mb.showerror(title='File empty', message='The file ' + inputFilename + ' is empty.\n\nPlease, use another file and try again.')
         print('Empty file ', inputFilename)
         return
+
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
     # otherwise, split into sentences
     # sentences = tokenize.sent_tokenize(fulltext)

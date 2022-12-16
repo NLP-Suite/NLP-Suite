@@ -8,7 +8,7 @@ if not IO_libraries_util.install_all_packages(GUI_util.window,"html_annotator_ge
 import os
 import pandas as pd
 from tkinter import messagebox as mb
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import csv
 
 import GUI_IO_util
@@ -20,6 +20,7 @@ import Stanford_CoreNLP_util
 
 
 def text_generate(inputFilename, inputDir):
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
     articles = []
     if inputFilename == '':
         for folder, subs, files in os.walk(inputDir):
@@ -50,7 +51,6 @@ def text_generate(inputFilename, inputDir):
 
 
 def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, dictionary_file, personal_pronouns_var):
-
     document_length_var = 90000
     limit_sentence_length_var = 100
     extract_date_from_text_var = False
@@ -58,6 +58,8 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
     date_format = ''
     date_separator_var = ''
     date_position_var = ''
+
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
     tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                         openOutputFiles, createCharts, chartPackage,

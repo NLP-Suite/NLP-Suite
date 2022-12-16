@@ -460,40 +460,24 @@ if sys.platform == 'darwin':  # Mac OS
     wordclouds_show_button = wordclouds_color_by_POS_tags + 128 # 1038
 
 #Mac: knowledge_graphs_DBpedia_YAGO_main.py
-    knowledge_graphs_YAGO_checkbox_pos = setup_IO_brief_coordinate
-
-    knowledge_databases_menu = 250
-    knowledge_ontology_class_lb = 330
-    knowledge_ontology_class_menu = 380
+    confidence_level_entry_pos = 870
     DBpedia_YAGO_ontology_width = 70
-    knowledge_sub_class_entry_lb = 620
-    knowledge_sub_class_entry = 700
-    knowledge_DBpedia_ontology_class_menu = setup_IO_brief_coordinate # 685
     knowledge_sub_class_entry_width = 70
-
-    confidence_level_entry_pos = 770
-
-    knowledge_color_label = 950
-    knowledge_color_menu = 1000
-    knowledge_bold_checkbox = 1060
-
-    knowledge_plus_button = labels_x_indented_coordinate
-    knowledge_reset_button = knowledge_plus_button + 35
-    knowledge_show_button = knowledge_reset_button + 50
+    knowledge_bold_checkbox = open_reminders_x_coordinate
+    knowledge_plus_button =  labels_x_indented_coordinate
+    knowledge_reset_button = knowledge_plus_button + 45
+    knowledge_show_button = knowledge_reset_button + 65
 
 # Mac: file_splitter_main.py
     file_splitter_post_num_string_value_lb_pos = 600
-    file_splitter_first_occurrence_pos = 1000
     file_splitter_post_num_string_value_pos = 1020
-    file_splitter_ASCII_pos = 560
-    file_splitter_split_mergedFile_separator_entry_begin_pos = file_splitter_ASCII_pos
+    file_splitter_split_mergedFile_separator_entry_begin_pos = 560
 
     file_splitter_split_mergedFile_separator_entry_end_pos = 640
     file_splitter_current_docLength_pos = 580
     file_splitter_split_docLength_lb_pos = 735
-    file_splitter_split_docLength_pos = 925
-
-    file_splitter_lemmatize_pos = 880
+    file_splitter_lemmatize_pos = 1060
+    file_splitter_first_occurrence_pos = 1170
 
 # Mac: html_annotator_gender_main.py
 
@@ -612,8 +596,8 @@ if sys.platform == 'darwin':  # Mac OS
 
     shape_of_stories_sentiment_analysis_lb_pos = IO_configuration_menu
     shape_of_stories_sentiment_analysis_menu_pos = setup_IO_brief_coordinate
-    shape_of_stories_memory_lb_pos = 800
-    shape_of_stories_memory_pos = 870
+    shape_of_stories_memory_lb_pos = 820
+    shape_of_stories_memory_pos = 890
 
 # Mac: parsers_annotators
 
@@ -718,6 +702,7 @@ else: #windows and anything else
     help_button_x_coordinate = 50
     labels_x_coordinate = 120  # start point of all labels in the second column (first column after ? HELP)
     labels_x_indented_coordinate = 140
+    labels_x_indented_indented_coordinate = 160
 
     widget_width_extra_short = 10
     widget_width_short = 50
@@ -877,37 +862,25 @@ else: #windows and anything else
     wordclouds_show_button = wordclouds_color_by_POS_tags + 85
 
 # Windows: knowledge_graphs_DBpedia_YAGO_main.py
-    knowledge_graphs_YAGO_checkbox_pos = setup_IO_brief_coordinate
     confidence_level_entry_pos = 770
-
-    knowledge_databases_menu = 250
     DBpedia_YAGO_ontology_width = 70
-    knowledge_ontology_class_lb = 330
-    knowledge_ontology_class_menu = 300
-    knowledge_sub_class_entry_lb = 620 #setup_IO_brief_coordinate
-    knowledge_sub_class_entry = 300
     knowledge_sub_class_entry_width = 70
-
-    knowledge_color_label = 950
-    knowledge_color_menu = knowledge_databases_menu
-    knowledge_bold_checkbox = open_reminders_x_coordinate
-
+    knowledge_bold_checkbox = open_TIPS_x_coordinate
     knowledge_plus_button =  labels_x_indented_coordinate
     knowledge_reset_button = knowledge_plus_button + 35
     knowledge_show_button = knowledge_reset_button + 50
 
 # Windows: file_splitter_main.py
     file_splitter_post_num_string_value_lb_pos = 500
-    file_splitter_first_occurrence_pos = 950
     file_splitter_post_num_string_value_pos = 900
-    file_splitter_ASCII_pos = 560
-    file_splitter_split_mergedFile_separator_entry_begin_pos = file_splitter_ASCII_pos
-    file_splitter_split_mergedFile_separator_entry_end_pos = 640
+    file_splitter_split_mergedFile_separator_entry_begin_pos = 580
+    file_splitter_split_mergedFile_separator_entry_end_pos = 690
     current_docLength_lb_pos = IO_configuration_menu
     file_splitter_current_docLength_pos = 520
     file_splitter_split_docLength_lb_pos = 650
     file_splitter_split_docLength_pos = 830
     file_splitter_lemmatize_pos = file_splitter_split_docLength_pos
+    file_splitter_first_occurrence_pos = 950
 
 # Windows: html_annotator_gender_main.py
     html_annotator_gender_annotator_dictionary_file_width = 100
@@ -1009,8 +982,8 @@ else: #windows and anything else
 
     shape_of_stories_sentiment_analysis_lb_pos = IO_configuration_menu
     shape_of_stories_sentiment_analysis_menu_pos = setup_IO_brief_coordinate
-    shape_of_stories_memory_lb_pos = 800
-    shape_of_stories_memory_pos = 870
+    shape_of_stories_memory_lb_pos = 820
+    shape_of_stories_memory_pos = 890
 
 # Windows: parsers_annotators
 

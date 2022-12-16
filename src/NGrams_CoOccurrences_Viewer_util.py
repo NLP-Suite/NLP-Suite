@@ -8,7 +8,7 @@ import pandas as pd
 import csv
 import numpy as np
 import pprint
-from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+# from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 import stanza
 
 import GUI_util
@@ -40,6 +40,8 @@ def run(inputDir="relative_path_here",
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
                                        'Started running Words/Characters N-Grams VIEWER at',
                                        True, '', True, '', False)
+
+    from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
     if search_wordsLists is None:
         search_wordsLists = []
