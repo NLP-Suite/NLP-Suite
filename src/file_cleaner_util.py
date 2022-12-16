@@ -11,7 +11,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"Newspaper titles",['o
 
 import glob
 import os
-from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
+# from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
 import string
 import tkinter as tk
 import tkinter.messagebox as mb
@@ -302,6 +302,7 @@ def isTitle(sentence,Title_length_limit):
         return True
 
 def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPackage):
+    from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
 
     if inputDir=='' and inputFilename!='':
         NUM_DOCUMENT=1

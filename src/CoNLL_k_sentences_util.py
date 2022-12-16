@@ -9,7 +9,7 @@ edited by Naman Sahni 9/23.2022
 from pydoc import Doc
 import pandas as pd
 import string
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
 import GUI_IO_util
 import IO_files_util
@@ -65,6 +65,7 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
 
         #txt.replace("  ", " ")
         #print(txt)
+        from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
         sent = sentences = sent_tokenize_stanza(stanzaPipeLine(txt))
         sentenceID = 0
 

@@ -22,7 +22,7 @@ import os
 import csv
 import tkinter.messagebox as mb
 import stanza
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import collections
 
 import IO_user_interface_util
@@ -39,6 +39,8 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dic
                                         True, '', True, '', False)
 
     filesToOpen=[]
+
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
     # loop through every txt file and annotate via request to YAGO
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt')
@@ -277,6 +279,8 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, inputSt
     Ndocs = len(inputDocs)
     if Ndocs == 0:
         return
+
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
     case_sensitive = False
     lemmatize = False

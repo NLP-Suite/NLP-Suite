@@ -44,6 +44,7 @@ import statistics_txt_util
 import word2vec_tsne_plot_util
 import IO_user_interface_util
 import word2vec_distances_util
+import IO_internet_util
 
 # Provides NER tags per sentence for every doc and stores in a csv file
 def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts, chartPackage):
@@ -450,10 +451,11 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
 # Performs sentiment analysis using roBERTa model
 def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Document_ID, Document, model_path):
-    model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
+    # model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
     # model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
     # sentiment_task = pipeline("sentiment-analysis",
     #  model=model_path, tokenizer=model_path, max_length=512, truncation=True)
+
     sentiment_task = pipeline("sentiment-analysis", model=model_path, tokenizer=model_path, truncation=True)
 
     with open(inputFilename, 'r', encoding='utf-8', errors='ignore') as myfile:
@@ -499,6 +501,9 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
     :return:
 
     """
+
+    if not IO_internet_util.check_internet_availability_warning("BERT_util.py (Function sentiment_analysis_BERT)"):
+        return
 
     filesToOpen = []
 

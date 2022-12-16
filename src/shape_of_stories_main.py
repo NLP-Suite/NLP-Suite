@@ -439,7 +439,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 sentiment_analysis_lb = tk.Label(window,text='Select the Sentiment Analysis algorithm')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.shape_of_stories_sentiment_analysis_lb_pos,y_multiplier_integer,sentiment_analysis_lb,True)
 
-sentiment_analysis_menu_var.set('BERT')
+sentiment_analysis_menu_var.set('BERT (English model)')
 sentiment_analysis_menu = tk.OptionMenu(window,sentiment_analysis_menu_var,'Neural network approaches:', '   BERT (English model)', '   BERT (Multilingual model)', '   spaCy','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   SentiWordNet','   VADER')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.shape_of_stories_sentiment_analysis_menu_pos,y_multiplier_integer,sentiment_analysis_menu,True)
 

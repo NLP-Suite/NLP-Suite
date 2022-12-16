@@ -596,8 +596,8 @@ if sys.platform == 'darwin':  # Mac OS
 
     shape_of_stories_sentiment_analysis_lb_pos = IO_configuration_menu
     shape_of_stories_sentiment_analysis_menu_pos = setup_IO_brief_coordinate
-    shape_of_stories_memory_lb_pos = 800
-    shape_of_stories_memory_pos = 870
+    shape_of_stories_memory_lb_pos = 820
+    shape_of_stories_memory_pos = 890
 
 # Mac: parsers_annotators
 
@@ -702,6 +702,7 @@ else: #windows and anything else
     help_button_x_coordinate = 50
     labels_x_coordinate = 120  # start point of all labels in the second column (first column after ? HELP)
     labels_x_indented_coordinate = 140
+    labels_x_indented_indented_coordinate = 160
 
     widget_width_extra_short = 10
     widget_width_short = 50
@@ -864,7 +865,7 @@ else: #windows and anything else
     confidence_level_entry_pos = 770
     DBpedia_YAGO_ontology_width = 70
     knowledge_sub_class_entry_width = 70
-    knowledge_bold_checkbox = open_reminders_x_coordinate
+    knowledge_bold_checkbox = open_TIPS_x_coordinate
     knowledge_plus_button =  labels_x_indented_coordinate
     knowledge_reset_button = knowledge_plus_button + 35
     knowledge_show_button = knowledge_reset_button + 50
@@ -981,8 +982,8 @@ else: #windows and anything else
 
     shape_of_stories_sentiment_analysis_lb_pos = IO_configuration_menu
     shape_of_stories_sentiment_analysis_menu_pos = setup_IO_brief_coordinate
-    shape_of_stories_memory_lb_pos = 800
-    shape_of_stories_memory_pos = 870
+    shape_of_stories_memory_lb_pos = 820
+    shape_of_stories_memory_pos = 890
 
 # Windows: parsers_annotators
 
