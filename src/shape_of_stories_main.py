@@ -134,7 +134,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if 'BERT' in sentimentAnalysisMethod:
             import BERT_util
-            tempOutputFiles = BERT_util.main(inputFilename, inputDir, outputDir, '', createCharts, chartPackage)
+            if 'Multilingual' in sentimentAnalysisMethod:
+                model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment"  # multilingual model
+            else:
+                model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"  # English language model
+            tempOutputFiles = BERT_util.main(inputFilename, inputDir, outputDir, '', createCharts, chartPackage, model_path)
             if tempOutputFiles == None:
                 return
             if len(tempOutputFiles) > 0:
@@ -436,7 +440,7 @@ sentiment_analysis_lb = tk.Label(window,text='Select the Sentiment Analysis algo
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.shape_of_stories_sentiment_analysis_lb_pos,y_multiplier_integer,sentiment_analysis_lb,True)
 
 sentiment_analysis_menu_var.set('BERT')
-sentiment_analysis_menu = tk.OptionMenu(window,sentiment_analysis_menu_var,'Neural network approaches:','   BERT','   spaCy','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   SentiWordNet','   VADER')
+sentiment_analysis_menu = tk.OptionMenu(window,sentiment_analysis_menu_var,'Neural network approaches:', '   BERT (English model)', '   BERT (Multilingual model)', '   spaCy','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   SentiWordNet','   VADER')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.shape_of_stories_sentiment_analysis_menu_pos,y_multiplier_integer,sentiment_analysis_menu,True)
 
 #memory options
@@ -451,7 +455,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.shape_of_stories
 
 def activate_warning(*args):
     if not 'CoreNLP' in sentiment_analysis_menu_var.get() and not \
-            'BERT' in sentiment_analysis_menu_var.get() and not \
+            'BERT (English model)' in sentiment_analysis_menu_var.get() and not \
+            'BERT (Multilingual model)' in sentiment_analysis_menu_var.get() and not \
             'spaCy' in sentiment_analysis_menu_var.get() and not \
             'Stanza' in sentiment_analysis_menu_var.get():
             mb.showwarning(title="Sentiment Analysis option deprecated",

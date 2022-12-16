@@ -60,7 +60,7 @@ from spacytextblob.spacytextblob import SpacyTextBlob
 
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 from itertools import groupby
 import textstat
 
@@ -126,6 +126,7 @@ def lemmatizing(word):#edited by Claude Hu 08/2020
         # that lemmatization is returned as result
         # lemmatizer = WordNetLemmatizer()
         # lemma = lemmatizer.lemmatize(word, p)
+        from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
         lemma = lemmatize_stanza(stanzaPipeLine(word))
         if lemma != word:
             result = lemma
@@ -238,6 +239,8 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
 
             # words = fullText.split()
             # words = nltk.word_tokenize(fullText)
+            from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                lemmatize_stanza
             words = word_tokenize_stanza(stanzaPipeLine(docText))
 
             if excludeStopWords:
@@ -249,6 +252,8 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                 for w in words:
                     if w.isalpha():
                         # text_vocab.append(lemmatizer.lemmatize(w.lower()))
+                        from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                            lemmatize_stanza
                         text_vocab.append(lemmatize_stanza(stanzaPipeLine(w.lower())))
 
                 words = text_vocab
@@ -371,6 +376,8 @@ def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir,
             print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
             with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
                 text = inputFile.read().replace("\n", " ")
+                from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                    lemmatize_stanza
                 # sentences = tokenize.sent_tokenize(text)
                 sentences = sent_tokenize_stanza(stanzaPipeLine(text))
                 if len(sentences)==0:
@@ -460,6 +467,8 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
                 while line:
                     lineID += 1
                     # words = nltk.word_tokenize(line)
+                    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                        lemmatize_stanza
                     words = word_tokenize_stanza(stanzaPipeLine(line))
                     # print("Line {}: Length (in characters) {} Length (in words) {}".format(lineID, len(line), len(words)))
                     currentLine = [
@@ -652,6 +661,8 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
 
             if wordgram==1: # word ngrams
                 document_tokens=[]
+                from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                    lemmatize_stanza
                 for tk in word_tokenize_stanza(stanzaPipeLine(text)):
                     document_tokens.append([tk, documentID, file])
                 corpus_tokens.append(document_tokens)
@@ -943,6 +954,7 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
 
         fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
         fullText = fullText.replace('\n', ' ')
+        from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
         sentences = sent_tokenize_stanza(stanzaPipeLine(fullText))
 
         rep_words_first = []
@@ -962,6 +974,8 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
             total_words = 0
             num_words_in_s = s.count(" ") + 1
 
+            from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                lemmatize_stanza
             words = word_tokenize_stanza(stanzaPipeLine(s))
             words_with_stop = [word for word in words if word.isalpha()]
             #print(words_with_stop)
@@ -1272,6 +1286,8 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
 
             # words = fullText.split()
             # words = nltk.word_tokenize(fullText)
+            from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                lemmatize_stanza
             words = word_tokenize_stanza(stanzaPipeLine(fullText))
 
             if excludeStopWords:
@@ -1281,6 +1297,8 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
                 # lemmatizer = WordNetLemmatizer()
                 # text_vocab = set(lemmatizer.lemmatize(w.lower()) for w in fullText.split(" ") if w.isalpha())
                 # words = set(lemmatizing(w.lower()) for w in words if w.isalpha()) # fullText.split(" ") if w.isalpha())
+                from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                    lemmatize_stanza
                 text_vocab = set(lemmatize_stanza(stanzaPipeLine(w.lower())) for w in fullText.split(" ") if w.isalpha())
                 words = set(lemmatizing(w.lower()) for w in words if w.isalpha()) # fullText.split(" ") if w.isalpha())
 
@@ -1432,6 +1450,8 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
 
             # split into sentences
             # sentences = nltk.sent_tokenize(text)
+            from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                lemmatize_stanza
             sentences = sentences = sent_tokenize_stanza(stanzaPipeLine(text))
             # analyze each sentence in text for readability
             sentenceID = 0  # to store sentence index

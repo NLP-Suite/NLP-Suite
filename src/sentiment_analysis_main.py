@@ -21,10 +21,6 @@ import sentiment_analysis_hedonometer_util
 import sentiment_analysis_SentiWordNet_util
 import sentiment_analysis_VADER_util
 import sentiment_analysis_ANEW_util
-import BERT_util
-import spaCy_util
-import Stanza_util
-import Stanford_CoreNLP_util
 import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -132,7 +128,12 @@ def run(inputFilename,inputDir,outputDir,
 # BERT ---------------------------------------------------------
 
     if BERT_var==1:
-        tempOutputFiles = BERT_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
+        import BERT_util
+        if 'Multilingual' in SA_algorithm_var:
+            model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
+        else:
+            model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
+        tempOutputFiles = BERT_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage, model_path)
         if tempOutputFiles == None:
             return
         if len(tempOutputFiles) > 0:
@@ -151,6 +152,7 @@ def run(inputFilename,inputDir,outputDir,
         annotator = ['sentiment']
         document_length_var = 1
         limit_sentence_length_var = 1000
+        import spaCy_util
         tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
                                                     openOutputFiles,
@@ -183,6 +185,7 @@ def run(inputFilename,inputDir,outputDir,
 
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
             return
+        import Stanford_CoreNLP_util
         outputFilename = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                           outputDir, openOutputFiles, createCharts, chartPackage,'sentiment', False,
                                                                           language_var, export_json_var,
@@ -202,6 +205,7 @@ def run(inputFilename,inputDir,outputDir,
         annotator = 'sentiment'
         document_length_var = 1
         limit_sentence_length_var = 1000
+        import Stanza_util
         tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputDir,
                                                       openOutputFiles,
@@ -402,7 +406,7 @@ def display_reminder(*args):
         return
 SA_algorithm_var.trace('w',display_reminder)
 
-SA_algorithms=['*','Neural network approaches:','   BERT','   spaCy','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   SentiWordNet','   VADER']
+SA_algorithms=['*','Neural network approaches:','   BERT (English model)','   BERT (Multilingual model)','   spaCy','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   SentiWordNet','   VADER']
 
 SA_algorithm_var.set('*')
 SA_algorithm_lb = tk.Label(window, text='Select sentiment analysis algorithm')

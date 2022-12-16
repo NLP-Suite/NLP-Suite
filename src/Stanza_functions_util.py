@@ -17,8 +17,11 @@ Examples of Usage:
 '''
 
 import stanza
+import IO_internet_util
 
-stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize, lemma')
+# check internet connection
+if IO_internet_util.check_internet_availability_warning("Stanza_functions_util.py"):
+    stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize, lemma')
 
 # returns list of word tokens
 # same as nltk.tokenize.word_tokenize()
