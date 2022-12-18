@@ -117,8 +117,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=440, # height at brief display
-                                                 GUI_height_full=520, # height at full display
+                                                 GUI_height_brief=480, # height at brief display
+                                                 GUI_height_full=560, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=2, # to be added for full display
                                                  increment=2) # to be added for full display
@@ -325,9 +325,6 @@ def add_DBpedia_YAGO_sub_class(*args):
         activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry)
 sub_class_entry_var.trace ('w',add_DBpedia_YAGO_sub_class)
 
-ontology_class_lb = tk.Label(window, text='Ontology class')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ontology_class_lb,True)
-ontology_class_var.set('')
 # to jump to an item in the list that starts with a specific letter (e.g., without) by pressing that letter (e.g., w)
 # https://stackoverflow.com/questions/32747592/can-you-have-a-tkinter-drop-down-menu-that-can-jump-to-an-entry-by-typing
 # autocomplete
@@ -335,10 +332,78 @@ ontology_class_var.set('')
 # for the code
 #   https://mail.python.org/pipermail/tkinter-discuss/2012-January/003041.html
 
-ontology_class = ttk.Combobox(window, width = GUI_IO_util.DBpedia_YAGO_ontology_width, textvariable = ontology_class_var)
-# ontology_class['values'] = DBpedia_ontology_class_menu
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,ontology_class)
-ontology_class.configure(state='disabled')
+# ontology_class = GUI_IO_util.combobox_with_search_widget(constants_util.DBpedia_ontology_class_menu)
+ontology_class_lb = tk.Label(window, text='Ontology class')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ontology_class_lb,True)
+
+ontology_class_var.set('')
+ontology_class = ttk.Combobox(window, state='disabled', width = GUI_IO_util.widget_width_long, textvariable = ontology_class_var)
+# ontology_class['values'] = constants_util.DBpedia_ontology_class_menu
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu,
+                                               y_multiplier_integer,
+                                               ontology_class, False, False, False, False, 90,
+                                               GUI_IO_util.IO_configuration_menu,
+                                               "Using the dropdown menu, single click to select an ontology class; double click to expand an ontology class to all its sub-classes for further selection.")
+def search_items(search_value):
+    if knowledge_graphs_var.get()=='DBpedia':
+        item_names=constants_util.DBpedia_ontology_class_menu
+    else:
+        item_names = constants_util.YAGO_ontology_class_menu
+    if search_value == "" or search_value == " ":
+        ontology_class['values'] = item_names
+    else:
+        value_to_display = []
+        for value in item_names:
+            if search_value in value.lower():
+                value_to_display.append(value)
+        ontology_class['values'] = value_to_display
+        if len(value_to_display)>0:
+            ontology_class.set(ontology_class['values'][0])
+
+# https://stackoverflow.com/questions/27262580/tkinter-binding-mouse-double-click
+def mouse_click(event):
+    '''  delay mouse action to allow for double click to occur
+    '''
+    ontology_class.after(300, mouse_action, event)
+
+def double_click(event):
+    '''  set the double click status flag
+    '''
+    global double_click_flag
+    double_click_flag = True
+
+def mouse_action(event):
+    global double_click_flag
+    if double_click_flag:
+        print('double mouse click event')
+        double_click_flag = False
+    else:
+        print('single mouse click event')
+
+# https://stackoverflow.com/questions/27262580/tkinter-binding-mouse-double-click
+double_click_flag = False
+ontology_class.bind('<Button-1>', mouse_click) # bind left mouse click
+ontology_class.bind('<Double-1>', double_click) # bind double left clicks
+
+search_variable = tk.StringVar()
+search_entry = tk.Entry(window, state='disabled', width=GUI_IO_util.widget_width_long, textvariable=search_variable)
+# place widget with hover-over info
+# " + knowledge_graphs_var.get() + "
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu+20,
+                                               y_multiplier_integer,
+                                               search_entry, True, False, False, False, 90,
+                                               GUI_IO_util.IO_configuration_menu+20,
+                                               "Enter a string to be used for searching the list of ontology class values for case-insensitive substring matches")
+
+search_button = tk.Button(window, text="Search", command=lambda: search_items(search_entry.get()))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
+                                               y_multiplier_integer,
+                                               search_button, True, False, False, False, 90,
+                                               GUI_IO_util.open_reminders_x_coordinate,
+                                               "Click the Search button to search the list of ontology class values for the string entered")
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate, y_multiplier_integer,search_button)
 
 sub_class_entry_lb = tk.Label(window, text='Ontology sub-class')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,sub_class_entry_lb,True)
@@ -497,7 +562,6 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
     else:
         ontology_class.configure(state='normal')
     if 'DBpedia' in knowledge_graphs_var.get():
-
         ontology_class['values'] = constants_util.DBpedia_ontology_class_menu
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,
                                                        y_multiplier_integerSV, confidence_level_lb,True)
@@ -522,10 +586,12 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
                                          True)
         firstTime=True
         ontology_class.configure(state='normal')
-        sub_class_entry.configure(state="normal")
+        search_entry.configure(state="normal")
+        # sub_class_entry.configure(state="normal")
     else:
         ontology_class.configure(state='disabled')
-        sub_class_entry.configure(state="disabled")
+        search_entry.configure(state="disabled")
+        # sub_class_entry.configure(state="disabled")
 knowledge_graphs_var.trace('w',callback = lambda x,y,z: activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,confidence_level_entry))
 
 videos_lookup = {'No videos available':''}
@@ -550,6 +616,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, using the dropdown menu, select the knowledge base/graph, DBpedia, YAGO, or Wikipedia, you wish to use to annotate the input corpus by terms found in either DBpedia or YAGO.\n\nDBpedia will allow you to set confidence levels for your annotation (.5 is the recommended default value in a range between 0 and 1). THE HIGHER THE CONFIDENCE LEVEL THE LESS LIKELY YOU ARE TO FIND DBpedia ENTRIES; THE LOWER THE LEVEL AND THE MORE LIKELY YOU ARE TO FIND EXTRANEOUS ENTRIES.\n\nDBpedia and YAGO are enormous databases (DB for database) designed to extract structured content from the information created in Wikipedia, Wikidata and other knowledge bases. DBpedia and YAGO allow users to semantically query relationships and properties of Wikipedia data (including links to other related datasets) via a large ontology of search values (for a complete listing, see the TIPS files TIPS_NLP_DBpedia Ontology Classes.pdf or TIPS_NLP_YAGO (schema.org) Ontology Classes.pdf).\n\nFor more information, see https://wiki.DBpedia.org/ and https://yago-knowledge.org/.\n\nIn INPUT the scripts expect one or more txt files.\n\nIn OUTPUT the scripts generate as many annotated html files as selected in input.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Once you select DBpedia or YAGO, the "Ontology class" options will become available.\n\nUsing the class dropdown menu, select the DPpedia or YAGO ontology class you wish to use.\n\nYou can add multiple ontology classes by pressing the + button.\n\nIF NO CLASS IS SELECTED, ALL CLASSES WILL BE PROCESSED, WITH \'THING\' AS THE DEFAULT CLASS.\n\nThe class dropdown menu only includes the main classes in the DBpedia or YAGO ontology. For specific sub-classes, please, get the values from the TIPS_NLP_DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org) Ontology Classes.pdf and enter them, comma-separated, in Ontology sub-class field. CLICK + AFTER ENTERING CLASS AND/OR SUB-CLASS VALUES.\n\nYAGO DOES NOT USE THE COMPLETE SCHEMA CLASSES AND SUB-CLASSES. PLEASE, REFER TO THE REDUCED LIST FOR ALL THE SCHEMA CLASSES USED.\n\nYou can test the resulting annotations directly on DBpedia Spotlight at https://www.dbpedia-spotlight.org/demo/\n\nYou can select a specific color for a specific ontology class; default color is blue (Press the \'Show\' widget to display the combination of selected values).\n\nPress RESET (or ESCape) to delete all values entered and start fresh.\nPress SHOW to display all selected values.\n\nThe +, RESET, and SHOW widgets become available only after selecting an ontology class or sub-class.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Enter a string to be used for searching the list of DBpedia or YAGO ontology classes, then click on the Search button.\n\nWhen the search item is found, the list in the Ontology class dropdown menu will be updated to a new list of found items.\n\nThe class list will be searched case insensitive.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Once you select DBpedia or YAGO, the "Ontology sub-class" widget will become available.\n\nSince the ontology class dropdown menu only includes the main classes in the DBpedia or YAGO ontology, enter in the "Ontology sub-class" widget more specific, comma-separated, sub-classes. You obtain these sub-classes from the TIPS_NLP_DBpedia ontology classes.pdf or TIPS_NLP_YAGO (schema.org).')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox to create separate annotated HTML files in output in addition to a csv file.\n\nKeep in mind that the process of annotating files is slow and that the algorithm will create in output as many HTML annotated files as there are txt files in input.\n\nWhen creating HTML files, you can select to tag in bold and in a selected color a specific ontology class (default color is blue).\n\nThe options in this line become available only after selecting a specific ontology class.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Press the + button to add another ontology class.\n\nPress RESET (or ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.')
