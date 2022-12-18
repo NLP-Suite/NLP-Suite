@@ -229,7 +229,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.memory_pos,
                                                y_multiplier_integer,
                                                memory_var, True, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
-                                               "The memory widget is only available for the Stanford CoreNLP package for parser & annotators")
+                                               "Use the slider widget to adjust the memory (NOT DISK SPACE!) you make available to Stanford CoreNLP (4 OK for most annotators)\nThe memory widget is only available for the Stanford CoreNLP package for parser & annotators")
 
 document_length_var_lb = tk.Label(window, text='Limit document length')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.document_length_lb, y_multiplier_integer,
