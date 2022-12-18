@@ -400,8 +400,8 @@ search_button = tk.Button(window, text="Search", command=lambda: search_items(se
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
                                                y_multiplier_integer,
-                                               search_button, True, False, False, False, 90,
-                                               GUI_IO_util.open_reminders_x_coordinate,
+                                               search_button, False, False, False, False, 90,
+                                               GUI_IO_util.open_setup_x_coordinate,
                                                "Click the Search button to search the list of ontology class values for the string entered")
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate, y_multiplier_integer,search_button)
 
