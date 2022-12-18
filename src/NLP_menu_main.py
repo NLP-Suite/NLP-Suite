@@ -301,7 +301,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                                              setup_IO_OK_checkbox,
                                              True, False, True, False,
                                              90, GUI_IO_util.labels_x_coordinate,
-                                             "The checkbox, always disabled, is ticked ON when the I/O options have been setup.\nIf the checkbox is OFF, click on the 'Setup default I/O options...' button to set up.")
+                                             "The checkbox, always disabled, is ticked ON when the I/O options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default I/O options...' button to set up.")
 
 def setup_IO():
     GUI_util.setup_IO_configuration_options(False,scriptName,True)
@@ -314,13 +314,17 @@ def setup_IO_checkbox():
     else:
         setup_IO_OK_checkbox_var.set(0)
 
-IO_setup_button = tk.Button(window, text='Setup default I/O options: INPUT corpus file(s) and OUTPUT files directory', width=95, font=("Courier", 10, "bold"), command=lambda: setup_IO())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+30, y_multiplier_integer,
-                                               IO_setup_button,True)
+IO_setup_button = tk.Button(window, text='SETUP default I/O options: INPUT corpus file(s) and OUTPUT files directory', width=95, font=("Courier", 10, "bold"), command=lambda: setup_IO())
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
+                                               y_multiplier_integer,
+                                               IO_setup_button, True, False, False, False, 90,
+                                               GUI_IO_util.labels_x_coordinate+30,
+                                               "You will probably use the same document(s) (i.e., corpus), written in the same language, for different analyses using different NLP tools, and exporting results to the same directory.\n Click on the SETUP button to setup Input/Output (I/O) options.\nYour selected options will be used as default in all GUIs; but you can change your preferences at any time; and every GUI also allows you to setup GUI-specific I/O options.")
 
 open_default_IO_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_default_IO_config.csv'))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_IO_config_button, y_multiplier_integer,
-                                               open_default_IO_config_button, False, False, True, False, 90, GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_IO_config_button-300, "Open the NLP_default_IO_config.csv file containing the default Input/Output options")
+                                               open_default_IO_config_button, False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate, "Open the NLP_default_IO_config.csv file containing the default Input/Output options")
 
 handle_setup_options_OK_checkbox = tk.Checkbutton(window, state='disabled',
                                       variable=handle_setup_options_OK_checkbox_var, onvalue=1, offvalue=0)
@@ -329,9 +333,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                                              handle_setup_options_OK_checkbox,
                                              True, False, True, False,
                                              90, GUI_IO_util.labels_x_coordinate,
-                                             "The checkbox, always disabled, is ticked ON when the parser/annotator and corpus language options have been setup.\nIf the checkbox is OFF, click on the 'Setup default NLP parser...' button to set up.")
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-#                                                handle_setup_options_OK_checkbox, True)
+                                             "The checkbox, always disabled, is ticked ON when the parser/annotator and corpus language options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default NLP parser...' button to set up.")
 
 NLP_package_language_config = GUI_IO_util.configPath+os.sep+'NLP_default_package_language_config.csv'
 def handle_setup_options_checkbox(NLP_package_language_config):
@@ -343,13 +345,17 @@ handle_setup_options_OK_checkbox_var.trace('w', lambda x, y, z: handle_setup_opt
 
 handle_setup_options_checkbox(NLP_package_language_config)
 
-NLP_package_language_setup_button = tk.Button(window, text='Setup default NLP parser & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+30, y_multiplier_integer,
-                                               NLP_package_language_setup_button,True)
+NLP_package_language_setup_button = tk.Button(window, text='SETUP default NLP parser & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
+                                               y_multiplier_integer,
+                                               NLP_package_language_setup_button, True, False, False, False, 90,
+                                               GUI_IO_util.labels_x_coordinate+30,
+                                               "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi).\nClick on the Setup button to select your preferred parser software (e.g., Stanford CoreNLP) and the laguage of your corpus (e.g., English)\nYour selected options will be used as default in all GUIs; but you can change your preferences at any time.")
 
 open_default_NLP_package_language_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, NLP_package_language_config))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_NLP_package_language_config_button, y_multiplier_integer,
-                                               open_default_NLP_package_language_config_button, False, False, True, False, 90, GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_IO_config_button-300, "Open the NLP_default_package_language_config.csv file containing the default NLP parser and annotators and corpus language options")
+                                               open_default_NLP_package_language_config_button, False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate, "Open the NLP_default_package_language_config.csv file containing the default NLP parser and annotators and corpus language options")
 
 setup_software_checkbox = tk.Checkbutton(window, state='disabled',
                                          variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0, command=lambda: setup_external_programs_checkbox('',False))
@@ -358,7 +364,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                                              setup_software_checkbox,
                                              True, False, True, False,
                                              90, GUI_IO_util.labels_x_coordinate,
-                                             "The checkbox, always disabled, is ticked ON when all external software have been installed.\nIf the checkbox is OFF, click on the 'Setup external software' button to set up.")
+                                             "The checkbox, always disabled, is ticked ON when all external software have been installed.\nIf the checkbox is OFF, click on the 'SETUP external software' button to set up.")
 
 software_dir = ''
 
@@ -391,13 +397,17 @@ def setup_software_warning():
         setup_external_programs_checkbox(software,True)
 
 # software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_software_warning())
-software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_external_software_main.py", shell=True))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+30, y_multiplier_integer,
-                                               software_setup_button,True)
+software_setup_button = tk.Button(window, text='SETUP external software', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_external_software_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
+                                               y_multiplier_integer,
+                                               software_setup_button, True, False, False, False, 90,
+                                               GUI_IO_util.labels_x_coordinate+30,
+                                               "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi)\nClick on the Setup button to download and install these freeware software packages\nYou only have to do this once")
 
 open_setup_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_setup_external_software_config.csv'))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_setup_software_button, y_multiplier_integer,
-                                               open_setup_button, False, False, True, False, 90, GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_IO_config_button-300, "Open the NLP_setup_external_software_config.csv file containing all external software installation paths")
+                                               open_setup_button, False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate, "Open the NLP_setup_external_software_config.csv file containing all external software installation paths")
 
 general_tools_lb = tk.Label(window, text='General Utility Tools', foreground="red",font=("Courier", 12, "bold"))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,

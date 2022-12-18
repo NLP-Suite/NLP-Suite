@@ -1265,6 +1265,51 @@ def message_box_widget(window, message_title, message_text, buttonType='OK', tim
 
     return yes_no_button
 
+
+# creating popup combobox with search
+# https://pythonguides.com/python-tkinter-search-box/
+# left unfinished
+def combobox_with_search_widget(item_names):
+    ws = tk.Tk()
+    ws.focus_force()
+    ws.title("NLP Suite")
+    ws.geometry("400x100")
+
+    def search_items(search_value):
+        # print (combo.get())
+        print('search_value', search_value)
+        # print('entry1', entry1.get())
+        # print('search_variable',search_variable.get())
+        # search_value =search_variable.get()
+        if search_value == "" or search_value == " ":
+            combo['values'] = item_names
+        else:
+            value_to_display = []
+            for value in item_names:
+                if search_value in value:
+                    value_to_display.append(value)
+            combo['values'] = value_to_display
+            combo.set(combo['values'][0])
+
+    # global combo
+    combo = ttk.Combobox(ws, width=300, state='readonly')
+    combo['values'] = item_names
+    combo.pack()
+
+    # global search_variable, entry1
+    search_variable = tk.StringVar()
+    entry1 = tk.Entry(ws, width=200, textvariable=search_variable)
+    entry1.pack()
+    # print('variable',search_variable.get())
+    # print('entry1',entry1.get())
+
+    button = tk.Button(ws, text="Search", command=lambda:search_items(entry1.get()))
+    button.pack()
+    # ws.destroy()
+
+    ws.mainloop()
+    return combo.get()
+
 # creating popup menu in tkinter
 def dropdown_menu_widget(window,textCaption, menu_values, default_value, callback):
 
