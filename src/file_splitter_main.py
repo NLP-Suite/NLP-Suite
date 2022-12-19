@@ -70,8 +70,14 @@ def run(inputFilename,inputDir, outputDir,
         return
     # split by Beginning Middle and End K sentences
     elif extract_BME_K_sentences:
+        if Begin_K_sent<1 or End_K_sent<1:
+            mb.showwarning(title='Input error',
+                           message='You must enter a number of sentences to be processed for beginning and end greater than zero.\n\nPlease, enter valid values and try again.')
+
+            return
         import file_splitter_ByBME_K_sentences_util
         filesToOpen = file_splitter_ByBME_K_sentences_util.sample_doc_beginning_middle_end(window, config_filename, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, Begin_K_sent, End_K_sent)
+
     else:
         for file in files:
             #print("file",file)
@@ -160,7 +166,15 @@ def run(inputFilename,inputDir, outputDir,
                     file_splitter_ByDocumentID_csv_util.split_NLP_Suite_csv_output_by_document_id(file,outputDir)
         # IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end", "Finished running '" + menu_option + "' at", True)
     if len(filesToOpen) > 0:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        filesToOpenSubset = []
+        for file in filesToOpen:
+            # open all charts, all Google Earth and Google Maps maps, Gephi gexf network graph, html files, and wordclouds png files
+            if file[-4:] == '.txt':
+                filesToOpenSubset.append(file)
+        filesToOpenSubset_string = ", \n   ".join(filesToOpenSubset)
+        print("Subset of the " + str(len(filesToOpenSubset)) + " txt files ")
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
+        # IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),

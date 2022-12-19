@@ -312,7 +312,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                     y_multiplier_integer, all_analyses_checkbox,True)
 
 all_analyses.set('*')
-all_analyses_menu = tk.OptionMenu(window, all_analyses, '*', 'Clause analysis', 'Clause analysis', 'Noun analysis', 'Verb analysis', 'Function (junk/stop) words analysis')
+all_analyses_menu = tk.OptionMenu(window, all_analyses, '*', 'Clause analysis', 'Noun analysis', 'Verb analysis', 'Function (junk/stop) words analysis')
 all_analyses_menu.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                all_analyses_menu)

@@ -12,7 +12,6 @@ import tkinter.messagebox as mb
 import reminders_util
 import GUI_IO_util
 import IO_files_util
-import word2vec_Gensim_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -65,6 +64,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
         if 'Clustering' in vis_menu_var and keywords_var=='':
             mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of case-sensitive keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
             return
+        import word2vec_Gensim_util
         filesToOpen = word2vec_Gensim_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir,openOutputFiles, createCharts, chartPackage,
                                  remove_stopwords_var, lemmatize_var,
                                  keywords_var,
@@ -207,7 +207,7 @@ vis_menu_var.trace('w',activate_plot_options)
 
 ## option for BERT
 BERT_var.set(0)
-BERT_checkbox = tk.Checkbutton(window, text='Word embeddings (via BERT)', variable=BERT_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
+BERT_checkbox = tk.Checkbutton(window, text='Word embeddings (via BERT (English language model))', variable=BERT_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,BERT_checkbox)
 
 ## option for Gensim
