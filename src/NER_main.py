@@ -216,9 +216,9 @@ NER_entry_lb = tk.Label(window, text='NER packages')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,NER_entry_lb,True)
 
 NER_packages_var = tk.StringVar()
-NER_packages_var.set('BERT')
+NER_packages_var.set('BERT (English language model)')
 # IBM https://ibm.github.io/zshot/ "pip install zshot"
-NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'BERT','IBM','spaCy','Stanford CoreNLP','Stanza')
+NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'BERT (English language model)','IBM','spaCy','Stanford CoreNLP','Stanza')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_packages_menu_pos, y_multiplier_integer,
                     NER_packages_menu, False, False, True, False,
