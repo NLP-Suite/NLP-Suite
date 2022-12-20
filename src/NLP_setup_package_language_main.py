@@ -213,8 +213,12 @@ export_json_var.set(0)
 export_json_label = tk.Checkbutton(window,
                                 variable=export_json_var, onvalue=1, offvalue=0, command=lambda: GUI_util.trace_checkbox(export_json_label, export_json_var, "Export Json file(s)", "Do NOT export Json file(s)"))
 export_json_label.configure(text="Do NOT export Json file(s)")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               export_json_label)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
+                                               y_multiplier_integer,
+                                               export_json_label, False, False, False, False, 90,
+                                               GUI_IO_util.labels_x_coordinate,
+                                               "Tick the checkbox to export json files for every input file processed\nDepending upon the number of input files processed, the option may considerably affect disk space and processing speed")
 
 # memory options
 memory_var_lb = tk.Label(window, text='Memory ')
@@ -229,7 +233,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.memory_pos,
                                                y_multiplier_integer,
                                                memory_var, True, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
-                                               "Use the slider widget to adjust the memory (NOT DISK SPACE!) you make available to Stanford CoreNLP (4 OK for most annotators)\nThe memory widget is only available for the Stanford CoreNLP package for parser & annotators")
+                                               "Use the slider widget to adjust the memory (NOT DISK SPACE!) you make available to Stanford CoreNLP\n4 OK for most CoreNLP annotators; coreference may need more memory\nThe memory widget is only available for the Stanford CoreNLP package for parser & annotators")
 
 document_length_var_lb = tk.Label(window, text='Limit document length')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.document_length_lb, y_multiplier_integer,
@@ -242,8 +246,8 @@ document_length_var.set(90000)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.document_length_pos,
                                                y_multiplier_integer,
                                                document_length_var, True, False, False, False, 90,
-                                               GUI_IO_util.document_length_lb,
-                                               "The document length widget is only available for the Stanford CoreNLP package for parser & annotators")
+                                               GUI_IO_util.labels_x_indented_coordinate,
+                                               "Stanford CoreNLP has a limit of 99999 characters for processing input files; the NLP Suite CoreNLP algorithms automatically split and merge larger input files (see TIPS file)\nLowering the document size does not seem to significantly improve the performance of CoreNLP annotators\nThe document length widget is only available for the Stanford CoreNLP package for parser & annotators")
 
 limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.sentence_length_lb, y_multiplier_integer,
@@ -256,9 +260,8 @@ limit_sentence_length_var.set(100)
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.sentence_length_pos,
                                                y_multiplier_integer,
                                                limit_sentence_length_var, False, False, False, False, 90,
-                                               GUI_IO_util.document_length_pos,
-                                               "The sentence length widget is only available for the Stanford CoreNLP package for parser & annotators")
-
+                                               GUI_IO_util.open_TIPS_x_coordinate,
+                                               "The performance of Stanford CoreNLP annotators is affected by the sentence length in number of words of input documents (see TIPS file)\nStanford CoreNLP recommends a maximum sentence length in the range of 70-100 words\nThe sentence length widget is only available for the Stanford CoreNLP package for parser & annotators")
 def save_NLP_config(parsers):
     if language_var.get()=='':
         mb.showwarning(title='Warning',message='You must select the language your corpus is written in before saving.')
@@ -356,8 +359,8 @@ def show_language_list():
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Setup INPUT-OUTPUT options':'TIPS_NLP_Setup INPUT-OUTPUT options.pdf','Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf'}
-TIPS_options='Setup INPUT-OUTPUT options','Text encoding (utf-8)'
+TIPS_lookup = {'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf','Stanford CoreNLP memory issues': 'TIPS_NLP_Stanford CoreNLP memory issues.pdf','Stanford CoreNLP performance & accuracy':'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf'}
+TIPS_options='Text encoding (utf-8)','Stanford CoreNLP memory issues','Stanford CoreNLP performance & accuracy'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

@@ -47,8 +47,6 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
 
     txt = ""
 
-
-
     for i in range(1, max(conll["Document ID"])+1):
         txt = ""
         doc_conll = conll.loc[conll["Document ID"] == i]
