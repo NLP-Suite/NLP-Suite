@@ -332,7 +332,7 @@ def selectDirectory_set_options(window, input_main_dir_path,output_dir_path,titl
         output_dir_path.set(directoryName)
 
 # configuration_type is the value displayed on the GUI: Default I/O configuration,GUI-specific I/O configuration
-def display_IO_setup(window,IO_setup_display_brief,config_filename, scriptName,silent,*args):
+def display_IO_setup(window,IO_setup_display_brief,config_filename, config_input_output_numeric_options, scriptName,silent,*args):
     error = False
     fileName = ''
     dirName = ''
@@ -347,9 +347,10 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename, scriptName,s
         date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missingIO = set_IO_brief_values(temp_config_filename,y_multiplier_integer)
 ###
     # the full options must always be displayed, even when the brief option is selected;
-    #   the reason is that the IO widgets filename, inputDir, and outputDir are used in all GUI
-
-    run_button_state, answer = activateRunButton(temp_config_filename,IO_setup_display_brief,scriptName, config_input_output_alphabetic_options, missingIO, silent)
+    #   the reason is that the IO widgets filename, inputDir, and outputDir are used in all GUIs
+    if scriptName=='NLP_menu_main.py':
+        missingIO='' # define the variable; the RUN button state is always 'normal' in menu_main
+    run_button_state, answer = activateRunButton(temp_config_filename,IO_setup_display_brief,scriptName, missingIO, silent)
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
     if not answer:
         return
@@ -357,7 +358,7 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename, scriptName,s
         setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent)
 
 # config_filename can be either the Default value or the GUI_specific value depending on setup_IO_menu_var.get()
-def activateRunButton(config_filename,IO_setup_display_brief,scriptName, config_input_output_alphabetic_options, missingIO, silent = False):
+def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missingIO, silent = False):
     global run_button_state, answer
     if config_input_output_numeric_options == [0,0,0,0]:
         run_button_state = 'disabled'

@@ -1,4 +1,5 @@
 #written by Roberto Franzosi November 2019
+# rewritten by Roberto December 2022
 
 import sys
 import GUI_util
@@ -16,6 +17,7 @@ import GUI_IO_util
 import IO_csv_util
 import Gephi_util
 import charts_Sunburster_util
+import charts_timeline_util
 import IO_files_util
 
 def runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var):
@@ -31,23 +33,25 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         Gephi_var,
         csv_file_field_list,
         dynamic_network_field_var,
-        interactive_Sunburster_var,
+        Sunburster_var,
         filename_label_var,
         csv_field2_var,
         K_sent_begin_var,
         K_sent_end_var,
         split_var,
         do_not_split_var,
-        interactive_time_mapper_var):
+        time_mapper_var,
+        time_var,
+        cumulative_var,
+        csv_field3_var):
 
     filesToOpen = []
     int_K_sent_begin_var=None
     int_K_sent_end_var=None
 
-    if Gephi_var==False and interactive_Sunburster_var == False and interactive_time_mapper_var==False:
+    if Gephi_var==False and Sunburster_var == False and time_mapper_var==False:
         mb.showwarning("Warning",
                        "No options have been selected.\n\nPlease, select an option to run and try again.")
-        # Gephi_var.set(0)
         return
     else:
         # check if input file is csv
@@ -64,7 +68,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             gexf_file = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
             filesToOpen.append(gexf_file)
 
-        if interactive_Sunburster_var:
+        if Sunburster_var:
             if K_sent_begin_var=='' and K_sent_end_var=='' and split_var==False and do_not_split_var==False:
                 mb.showwarning("Warning",
                                "The Sunburster function requires a selection of Begin/End K sentences or Split documents in equal halves or Do not split documents.\n\nPlease, make a selection and try again.")
@@ -97,7 +101,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 return
             if csv_field2_var=='':
                 mb.showwarning("Warning",
-                               "The Sunburster visualization function requires a value for 'Select csv file field.'\n\nPlease, select a value and try again.")
+                               "The Sunburster visualization function requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
                 return
             # interest pass a list [] of labels embedded in the filename, e.g. Book1, Book2, ... or Chinese, Arabian,...
             interest = []
@@ -115,6 +119,25 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             if chart_outputFilename != '':
                 filesToOpen.append(chart_outputFilename)
 
+        if time_mapper_var:
+            outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
+                                                                     '.html', 'timeMapper')
+
+            if csv_field3_var=='':
+                mb.showwarning("Warning",
+                               "The csv file field is blank. The Plotly timeline algorithm expects in input a valid csv file field.\n\nPlease, select a csv file field and try again.")
+                return
+            monthly = False
+            yearly = False
+            if time_var=='Monthly':
+                monthly=True
+            elif time_var=='Yearly':
+                yearly=True
+
+            chart_outputFilename = charts_timeline_util.timeline(inputFilename, outputFilename, csv_field3_var, cumulative_var, monthly, yearly)
+            if chart_outputFilename != '':
+                filesToOpen.append(chart_outputFilename)
+
         if openOutputFiles and len(filesToOpen) > 0:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
@@ -126,14 +149,17 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             Gephi_var.get(),
                             csv_file_field_list,
                             dynamic_network_field_var.get(),
-                            interactive_Sunburster_var.get(),
+                            Sunburster_var.get(),
                             filename_label_var.get(),
                             csv_field2_var.get(),
                             K_sent_begin_var.get(),
                             K_sent_end_var.get(),
                             split_var.get(),
                             do_not_split_var.get(),
-                            interactive_time_mapper_var.get())
+                            time_mapper_var.get(),
+                            time_var.get(),
+                            cumulative_var.get(),
+                            csv_field3_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -179,7 +205,13 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 def clear(e):
     reset()
     Gephi_var.set(0)
-    interactive_Sunburster_var.set(0)
+    Sunburster_var.set(0)
+    time_mapper_var.set(0)
+
+    Gephi_checkbox.configure(state='normal')
+    Sunburster_checkbox.configure(state='normal')
+    time_mapper_checkbox.configure(state='normal')
+
     case_sensitive_var.set(1)
     # for now always set to disabled
     case_sensitive_checkbox.configure(state='disabled',text="Case sensitive")
@@ -193,7 +225,7 @@ def clear(e):
     split_checkbox.configure(state='disabled')
     do_not_split_var.set(0)
     do_not_split_checkbox.configure(state='disabled')
-    interactive_time_mapper_var.set(0)
+    time_mapper_var.set(0)
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -203,7 +235,7 @@ selected_csv_file_fields_var = tk.StringVar()
 
 csv_field_var = tk.StringVar()
 dynamic_network_field_var = tk.StringVar()
-interactive_Sunburster_var = tk.IntVar()
+Sunburster_var = tk.IntVar()
 case_sensitive_var = tk.IntVar()
 filename_label_var = tk.StringVar()
 csv_field2_var = tk.StringVar()
@@ -211,7 +243,10 @@ K_sent_begin_var = tk.StringVar()
 K_sent_end_var = tk.StringVar()
 split_var = tk.IntVar()
 do_not_split_var = tk.IntVar()
-interactive_time_mapper_var = tk.IntVar()
+time_mapper_var = tk.IntVar()
+csv_field3_var = tk.StringVar()
+time_var = tk.StringVar()
+cumulative_var = tk.IntVar()
 
 csv_file_field_list = []
 menu_values = []
@@ -243,7 +278,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 Gephi_var.set(0)
 Gephi_checkbox = tk.Checkbutton(window, text='Visualize relations in a Gephi network graph', variable=Gephi_var,
-                                    onvalue=1)
+                                    onvalue=1,command=lambda:activate_visualization_options(()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                Gephi_checkbox)
 
@@ -260,72 +295,41 @@ else:
 if nColumns == -1:
     pass
 
-# def changed_filename(tracedInputFile):
-#     menu_values = []
-#     if tracedInputFile != '':
-#         nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tracedInputFile)
-#         if nColumns == 0 or nColumns == None:
-#             return False
-#         if IO_csv_util.csvFile_has_header(tracedInputFile) == False:
-#             menu_values = range(1, nColumns + 1)
-#         else:
-#             data, headers = IO_csv_util.get_csv_data(tracedInputFile, True)
-#             menu_values = headers
-#     else:
-#         menu_values.clear()
-#         return
-#     m1 = select_csv_field_menu["menu"]
-#     m2 = dynamic_network_field_menu["menu"]
-#     m1.delete(0, "end")
-#     m2.delete(0, "end")
-#
-#     for s in menu_values:
-#         m1.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
-#         m2.add_command(label=s, command=lambda value=s: dynamic_network_field_var.set(value))
-#
-#     m3 = select_csv_field2_menu["menu"]
-#     m3.delete(0, "end")
-#
-#     for s in menu_values:
-#         m3.add_command(label=s, command=lambda value=s: csv_field2_var.set(value))
-#
-#     clear("<Escape>")
-#
-select_csv_field_lb = tk.Label(window, text='Select csv file field')
+csv_field_lb = tk.Label(window, text='csv file field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               select_csv_field_lb, True)
+                                               csv_field_lb, True)
 
-select_csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
+csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
+csv_field_menu.configure(state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_select_csv_field_menu_pos, y_multiplier_integer,
-                                   select_csv_field_menu,
-                                   True, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_menu_pos,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field_menu_pos, y_multiplier_integer,
+                                   csv_field_menu,
+                                   True, False, True, False, 90, GUI_IO_util.visualization_csv_field_menu_pos,
                                    "Select the three fields to be used for the network graph in the order node1, edge, node2 (e.g., SVO)")
 
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
+# GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
-select_csv_field_dynamic_network_lb = tk.Label(window, text='Select csv file field for dynamic network graph')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos, y_multiplier_integer,
-                                               select_csv_field_dynamic_network_lb, True)
+csv_field_dynamic_network_lb = tk.Label(window, text='csv file field for dynamic graph')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field_dynamic_network_lb_pos, y_multiplier_integer,
+                                               csv_field_dynamic_network_lb, True)
 
 dynamic_network_field_menu = tk.OptionMenu(window, dynamic_network_field_var, *menu_values)
 dynamic_network_field_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_dynamic_network_field_pos, y_multiplier_integer,
                                    dynamic_network_field_menu,
-                                   True, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos,
+                                   True, False, True, False, 90, GUI_IO_util.visualization_csv_field_dynamic_network_lb_pos,
                                    "Select the field to be used for a dynamic network graph (e.g., Sentence ID) if you wish to compute a dynamic network graph")
 
 def display_selected_csv_fields():
     if csv_field_var.get() != '' and not csv_field_var.get() in csv_file_field_list:
         csv_file_field_list.append(csv_field_var.get())
-        # select_csv_field_menu.configure(state='disabled')
+        # csv_field_menu.configure(state='disabled')
     else:
         mb.showwarning(title='Warning',
                        message='The option "' + csv_field_var.get() + '" has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
-        select_csv_field_menu.configure(state='normal')
-    # if dynamic_network_field_var.get() != '' and not dynamic_network_field_var.get() in csv_file_field_list:
-    #     csv_file_field_list.append(dynamic_network_field_var.get())
+        csv_field_menu.configure(state='normal')
     selected_csv_file_fields_var.set(str(csv_file_field_list))
     activate_csv_fields_selection(True)
 
@@ -342,14 +346,14 @@ add_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, hei
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_add_button_pos, y_multiplier_integer,
                                    add_button,
-                                   True, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos,
+                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Click on the + button to add a selected csv field to the list of Gephy parameters (edge1, node, edge2)")
 
 reset_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_reset_button_pos, y_multiplier_integer,
                                    reset_button,
-                                   True, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos,
+                                   True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "Click on the Reset button to clear the list of selected fields and start again")
 def show_Gephi_options_list():
     if len(csv_file_field_list)==0:
@@ -361,24 +365,24 @@ show_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_show_button_pos, y_multiplier_integer,
                                    show_button,
-                                   False, False, True, False, 90, GUI_IO_util.visualization_select_csv_field_dynamic_network_lb_pos,
+                                   False, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "Click on the Show button to display the list of currently selected csv fields")
 
 def activate_csv_fields_selection(comingFromPlus=False):
     if csv_field_var.get() != '':
         if comingFromPlus:
-            select_csv_field_menu.config(state='normal')
+            csv_field_menu.config(state='normal')
         else:
-            select_csv_field_menu.config(state='disabled')
+            csv_field_menu.config(state='disabled')
         add_button.config(state='normal')
         reset_button.config(state='normal')
         show_button.config(state='normal')
         if len(csv_file_field_list) == 3:
-            select_csv_field_menu.configure(state='disabled')
+            csv_field_menu.configure(state='disabled')
             dynamic_network_field_menu.config(state='normal')
-            mb.showwarning(title='Warning', message='The "Select csv file field" has been disabled. You have selected the 3 fields required by Gephi for node1, edge, node2.\n\nPress the "Show" button to display your selection. Press the "Reset" button to clear your selection and start again.')
+            mb.showwarning(title='Warning', message='The "csv file field" has been disabled. You have selected the 3 fields required by Gephi for node1, edge, node2.\n\nPress the "Show" button to display your selection. Press the "Reset" button to clear your selection and start again.')
     else:
-        select_csv_field_menu.config(state='normal')
+        csv_field_menu.config(state='normal')
         dynamic_network_field_menu.config(state='normal')
         reset_button.config(state='disabled')
         show_button.config(state='disabled')
@@ -387,10 +391,10 @@ dynamic_network_field_var.trace('w', callback = lambda x,y,z: activate_csv_field
 
 # activate_csv_fields_selection()
 
-interactive_Sunburster_checkbox = tk.Checkbutton(window, text='Visualize data in interactive Sunburster graph', variable=interactive_Sunburster_var,
-                                    onvalue=1)
+Sunburster_checkbox = tk.Checkbutton(window, text='Visualize data in interactive Sunburster graph', variable=Sunburster_var,
+                                    onvalue=1, command=lambda:activate_visualization_options(()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               interactive_Sunburster_checkbox)
+                                               Sunburster_checkbox)
 
 case_sensitive_var.set(1)
 case_sensitive_checkbox = tk.Checkbutton(window, state='disabled',text='Case sensitive', variable=case_sensitive_var,
@@ -421,15 +425,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
                                    "Enter the comma-separated label/part of a filename to be used to sample the corpus for visualization (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...)")
 
 
-select_csv_field2_lb = tk.Label(window, text='Select csv file field')
+csv_field2_lb = tk.Label(window, text='csv file field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_lb_pos, y_multiplier_integer,
-                                               select_csv_field2_lb, True)
+                                               csv_field2_lb, True)
 
-select_csv_field2_menu = tk.OptionMenu(window, csv_field2_var, *menu_values)
-select_csv_field2_menu.configure(state='disabled')
+csv_field2_menu = tk.OptionMenu(window, csv_field2_var, *menu_values)
+csv_field2_menu.configure(state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_select_csv_field2_menu_pos, y_multiplier_integer,
-                                   select_csv_field2_menu,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_menu_pos, y_multiplier_integer,
+                                   csv_field2_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_K_sent_end_pos,
                                    "Select the csv file field to be used to visualize specific data (e.g., 'Sentiment score' in a sentiment analysis csv output file")
 
@@ -477,38 +481,99 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
 do_not_split_checkbox.configure(state='disabled')
 
 
-def activate_options(*args):
-    if interactive_Sunburster_var.get():
-        # case_sensitive_checkbox.configure(state='normal')
-        # for now always set to disabled
-        case_sensitive_checkbox.configure(state='disabled')
-        filename_label.configure(state='normal')
-        K_sent_begin.configure(state='normal')
-        K_sent_end.configure(state='normal')
-        select_csv_field2_menu.configure(state='normal')
-        split_checkbox.configure(state='normal')
-        do_not_split_checkbox.configure(state='normal')
-    else:
-        case_sensitive_checkbox.configure(state='disabled')
-        filename_label.configure(state='disabled')
-        K_sent_begin.configure(state='disabled')
-        K_sent_end.configure(state='disabled')
-        select_csv_field2_menu.configure(state='disabled')
-        split_checkbox.configure(state='disabled')
-        do_not_split_checkbox.configure(state='disabled')
-interactive_Sunburster_var.trace('w',activate_options)
+time_mapper_var.set(0)
+time_mapper_checkbox = tk.Checkbutton(window, text='Visualize time-dependent data in interactive graph', variable=time_mapper_var,
+                                    onvalue=1, command=lambda: activate_visualization_options())
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   time_mapper_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Tick the checkbox if you wish to visualize data in a dynamic time mapper")
+
+select_time_lb = tk.Label(window, text='Timeline')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_pos, y_multiplier_integer,
+                                               select_time_lb, True)
+
+time_var.set('Daily')
+select_time_menu = tk.OptionMenu(window, time_var, 'Daily','Monthly','Yearly')
+select_time_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                   select_time_menu,
+                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   "Select the time option")
+
+cumulative_var.set(0)
+cumulative_checkbox = tk.Checkbutton(window, text='Cumulative',
+                                    onvalue=1)
+cumulative_checkbox.configure(state='disabled')
+
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+                                   cumulative_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Tick the checkbox for a cumulative time chart showing the frequency of the chosen variable up until a current day rather than visualizing the frequency day by day")
+
+csv_field_lb = tk.Label(window, text='csv file field')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_lb_pos, y_multiplier_integer,
+                                               csv_field_lb, True)
+
+csv_field3_menu = tk.OptionMenu(window, csv_field3_var, *menu_values)
+csv_field3_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_menu_pos, y_multiplier_integer,
+                                   csv_field3_menu,
+                                   False, False, True, False, 90, GUI_IO_util.visualization_K_sent_end_pos,
+                                   "Select the csv file field to be used to visualize specific data\nThe field must be categorical rather than numeric (e.g., 'Sentiment label', rather than 'Sentiment score', in a sentiment analysis csv output file)")
 
 def activate_visualization_options(*args):
-    if (interactive_Sunburster_var.get()==False):
+    Gephi_checkbox.configure(state='normal')
+    Sunburster_checkbox.configure(state='normal')
+    time_mapper_checkbox.configure(state='normal')
+
+    # Gephi options
+    csv_field_menu.configure(state='disabled')
+    dynamic_network_field_menu.configure(state='disabled')
+
+    # Sunburster options
+    case_sensitive_checkbox.configure(state='disabled')
+    filename_label.configure(state='disabled')
+    K_sent_begin_var.set('')
+    K_sent_end_var.set('')
+    K_sent_begin.configure(state='disabled')
+    K_sent_end.configure(state='disabled')
+    split_checkbox.configure(state='disabled')
+    do_not_split_checkbox.configure(state='disabled')
+    if do_not_split_var.get():
         K_sent_begin_var.set('')
         K_sent_end_var.set('')
         K_sent_begin.configure(state='disabled')
         K_sent_end.configure(state='disabled')
         split_checkbox.configure(state='disabled')
+    if K_sent_begin_var.get() != '' or K_sent_end_var.get() != '':
+        split_checkbox.configure(state='disabled')
         do_not_split_checkbox.configure(state='disabled')
-    else:
+
+    # time-line options
+    select_time_menu.configure(state='disabled')
+    csv_field3_menu.configure(state='disabled')
+    cumulative_checkbox.configure(state='disabled')
+
+    if Gephi_var.get():
+        Sunburster_checkbox.configure(state='disabled')
+        time_mapper_checkbox.configure(state='disabled')
+        csv_field_menu.configure(state='normal')
+        dynamic_network_field_menu.configure(state='normal')
+    elif Sunburster_var.get():
+        # case_sensitive_checkbox.configure(state='normal')
+        # for now always set to disabled
+        Gephi_checkbox.configure(state='disabled')
+        time_mapper_checkbox.configure(state='disabled')
+        case_sensitive_checkbox.configure(state='disabled')
+        filename_label.configure(state='normal')
         K_sent_begin.configure(state='normal')
         K_sent_end.configure(state='normal')
+        csv_field2_menu.configure(state='normal')
         split_checkbox.configure(state='normal')
         do_not_split_checkbox.configure(state='normal')
         if split_var.get():
@@ -517,25 +582,12 @@ def activate_visualization_options(*args):
             K_sent_begin.configure(state='disabled')
             K_sent_end.configure(state='disabled')
             do_not_split_checkbox.configure(state='disabled')
-        if do_not_split_var.get():
-            K_sent_begin_var.set('')
-            K_sent_end_var.set('')
-            K_sent_begin.configure(state='disabled')
-            K_sent_end.configure(state='disabled')
-            split_checkbox.configure(state='disabled')
-        if K_sent_begin_var.get() != '' or K_sent_end_var.get()  != '':
-            split_checkbox.configure(state='disabled')
-            do_not_split_checkbox.configure(state='disabled')
-split_var.trace('w',activate_visualization_options)
-do_not_split_var.trace('w',activate_visualization_options)
-K_sent_begin_var.trace('w',activate_visualization_options)
-K_sent_end_var.trace('w',activate_visualization_options)
-
-interactive_time_mapper_var.set(0)
-interactive_time_mapper_checkbox = tk.Checkbutton(window, text='Visualize time-dependent data in interactive graph', variable=interactive_time_mapper_var,
-                                    onvalue=1)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               interactive_time_mapper_checkbox)
+    elif time_mapper_var.get():
+        Gephi_checkbox.configure(state='disabled')
+        Sunburster_checkbox.configure(state='disabled')
+        select_time_menu.configure(state='normal')
+        csv_field3_menu.configure(state='normal')
+        cumulative_checkbox.configure(state='normal')
 
 def changed_filename(tracedInputFile):
     menu_values = []
@@ -550,8 +602,9 @@ def changed_filename(tracedInputFile):
             menu_values = headers
     else:
         menu_values.clear()
-        return
-    m1 = select_csv_field_menu["menu"]
+        # mb.showwarning("Warning",
+        #                "The selected input option is not a csv file.\n\nThe visualization algorithms behind this GUI expect in input a csv file.\n\nPlease, select a csv file in input and try again.")
+    m1 = csv_field_menu["menu"]
     m2 = dynamic_network_field_menu["menu"]
     m1.delete(0, "end")
     m2.delete(0, "end")
@@ -560,15 +613,21 @@ def changed_filename(tracedInputFile):
         m1.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
         m2.add_command(label=s, command=lambda value=s: dynamic_network_field_var.set(value))
 
-    m3 = select_csv_field2_menu["menu"]
+    m3 = csv_field2_menu["menu"]
     m3.delete(0, "end")
 
     for s in menu_values:
         m3.add_command(label=s, command=lambda value=s: csv_field2_var.set(value))
 
+    m4 = csv_field3_menu["menu"]
+    m4.delete(0, "end")
+
+    for s in menu_values:
+        m4.add_command(label=s, command=lambda value=s: csv_field3_var.set(value))
+
     clear("<Escape>")
 
-changed_filename(GUI_util.inputFilename.get())
+# changed_filename(GUI_util.inputFilename.get())
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -621,4 +680,15 @@ readMe_message="The Python 3 script provides access to different GUIs to be used
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
+if (GUI_util.input_main_dir_path.get()!='') or (os.path.basename(GUI_util.inputFilename.get())[-4:] != ".csv"):
+    GUI_util.run_button.configure(state='disabled')
+    Gephi_checkbox.configure(state='disabled')
+    Sunburster_checkbox.configure(state='disabled')
+    time_mapper_checkbox.configure(state='disabled')
+    mb.showwarning(title='Input file',
+                   message="The Data visualization scripts require in input a csv file.\n\nAll options and RUN button are disabled until the expected csv file is seleted in input.\n\nPlease, select in input a csv file and try again.")
+    error = True
+else:
+    GUI_util.run_button.configure(state='normal')
+    activate_visualization_options()
 GUI_util.window.mainloop()
