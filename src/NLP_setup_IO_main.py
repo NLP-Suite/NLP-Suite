@@ -188,7 +188,7 @@ if config_input_output_numeric_options[3] != 0: # output dir
     GUI_util.output_dir_path.set(config_input_output_alphabetic_options[3][1])
     y_multiplier_integer = y_multiplier_integer +1
 
-extract_date_checkbox = tk.Checkbutton(window, text='Extract date from filename (for dynamic GIS)', variable=extract_date_from_filename_var, onvalue=1, offvalue=0)
+extract_date_checkbox = tk.Checkbutton(window, text='Extract date from filename', variable=extract_date_from_filename_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                GUI_IO_util.labels_x_coordinate,
@@ -196,8 +196,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                extract_date_checkbox,
                                                True, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
-                                               'Tick the checkbox if the filename(s) used as your corpus embed a date (e.g, The New York Times_12-19-1899). Then select the appropriate information (please, read the ?HELP for more information).\n' \
-                                                'The NLP Suite will use the information to build dynamic network graphs and dynamic GIS maps.')
+                                               'Tick the checkbox if the filename(s) used as your corpus embed a date (e.g, New York Time_01-15-1999_4_3). Then select the appropriate information (please, read the ?HELP for more information).\n' \
+                                               'The NLP Suite will use the information in various algorithms (e.g., Ngrams VIEWER, dynamic Gephi network graphs, dynamic GIS maps, interactive timeline charts).')
 
 
 date_format_lb = tk.Label(window,text='Format ')
@@ -205,24 +205,43 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_co
                                                y_multiplier_integer, date_format_lb, True)
 date_format_var.set('mm-dd-yyyy')
 date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_format_coordinate,
-                                               y_multiplier_integer, date_format_menu, True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                               GUI_IO_util.date_format_coordinate,
+                                               y_multiplier_integer,
+                                               date_format_menu,
+                                               True, False, False, False, 90,
+                                               GUI_IO_util.date_format_coordinate,
+                                               'Select the date type embedded in your filename')
+
 date_separator_var.set('_')
 date_separator_lb = tk.Label(window, text='Character separator ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_char_sep_lb_coordinate,
                                                y_multiplier_integer, date_separator_lb, True)
 
 date_separator = tk.Entry(window, textvariable=date_separator_var, width=3)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_char_sep_coordinate,
-                                               y_multiplier_integer, date_separator, True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                               GUI_IO_util.date_char_sep_coordinate,
+                                               y_multiplier_integer,
+                                               date_separator,
+                                               True, False, False, False, 90,
+                                               GUI_IO_util.open_TIPS_x_coordinate,
+                                               'Enter the character that separate items embedded in filename (default _)\nIn New York Time_01-15-1999_4_3, _ is the character separating the 3 items embedded in filename: newspaper name, date, page number, column number')
 
 date_position_menu_lb = tk.Label(window, text='Position ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_position_lb_coordinate,
                                                y_multiplier_integer, date_position_menu_lb, True)
 date_position_var.set(2)
 date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_position_coordinate,
-                                               y_multiplier_integer, date_position_menu)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                               GUI_IO_util.date_position_coordinate,
+                                               y_multiplier_integer,
+                                               date_position_menu,
+                                               False, False, False, False, 90,
+                                               GUI_IO_util.open_reminders_x_coordinate,
+                                               'Select the date position in the filename, starting with 1 if the date is the first item in the filename\nIn New York Time_01-15-1999_4_3, 2 is the date position as the second embedded item')
 
 def check_dateFields(*args):
     if extract_date_from_filename_var.get() == 1:
@@ -254,8 +273,8 @@ if config_filename == 'NLP_default_IO_config.csv':
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Setup INPUT-OUTPUT options':'TIPS_NLP_Setup INPUT-OUTPUT options.pdf'}
-TIPS_options='Setup INPUT-OUTPUT options'
+TIPS_lookup = {'Setup INPUT-OUTPUT options':'TIPS_NLP_Setup INPUT-OUTPUT options.pdf','Date embedded in filename':'TIPS_NLP_Date embedded in filename.pdf'}
+TIPS_options='Setup INPUT-OUTPUT options','Date embedded in filename'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

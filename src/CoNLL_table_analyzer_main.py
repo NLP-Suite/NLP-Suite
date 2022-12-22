@@ -31,7 +31,7 @@ import reminders_util
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
-        searchedCoNLLField, searchField_kw, postag, deprel, co_postag, co_deprel):
+        searchedCoNLLField, searchField_kw, postag, deprel, co_postag, co_deprel, Begin_K_sent_var, End_K_sent_var):
 
     global recordID_position, documentId_position, data, all_CoNLL_records
     recordID_position = 9 # NEW CoNLL_U
@@ -191,10 +191,20 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         filesToOpen.append(tempOutputFile)
 
     if k_sentences_var.get():
-        temp_outputDir, outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename, outputDir, createCharts, chartPackage)
+        if Begin_K_sent_var==0 or End_K_sent_var==0:
+            mb.showwarning(title='Warning',
+                           message="The Repetion finder algorithm needs beginning and end K sentences.\n\nPlease, enter valid K number(s) of sentences and try again.")
+            return
+        startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                       'Started running the CoNLL table K-sentences analyzer at',
+                                                       True, '', True, '', False)
+        temp_outputDir, outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_var, End_K_sent_var)
         if outputFiles != None:
             outputDir = temp_outputDir
             filesToOpen.extend(outputFiles)
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
+                                           'Finished running the CoNLL table K-sentences analyzer at',
+                                           True, '', True, startTime, False)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -210,7 +220,9 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  postag_var.get(),
                                  deprel_var.get(),
                                  co_postag_var.get(),
-                                 co_deprel_var.get())
+                                 co_deprel_var.get(),
+                                 Begin_K_sent_var.get(),
+                                 End_K_sent_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -262,6 +274,8 @@ co_postag_var = tk.StringVar()
 co_postag_var = tk.StringVar()
 co_deprel_var = tk.StringVar()
 k_sentences_var = tk.IntVar()
+Begin_K_sent_var = tk.IntVar()
+End_K_sent_var = tk.IntVar()
 csv_file_field_list = []
 
 clausal_analysis_var = tk.IntVar()
@@ -410,14 +424,42 @@ def changed_filename(tracedInputFile):
         error = True
     activate_all_options()
     clear("<Escape>")
-GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
+# GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
 k_sentences_var.set(0)
-k_sentences_checkbox = tk.Checkbutton(window, text="K sentences analyzer (repetition finder)",
+k_sentences_checkbox = tk.Checkbutton(window, text="Beginning-End K sentences analyzer (repetition finder)",
                               variable=k_sentences_var, onvalue=1, offvalue=0, command = lambda: activate_all_options())
 # k_sentences_checkbox.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               k_sentences_checkbox)
+                                               k_sentences_checkbox,True)
+
+Begin_K_sent_entry_lb = tk.Label(window,
+                                    text='Begin K-sentences')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                               Begin_K_sent_entry_lb, True)
+
+Begin_K_sent_entry = tk.Entry(window, textvariable=Begin_K_sent_var)
+Begin_K_sent_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+120,
+                                               y_multiplier_integer,
+                                               Begin_K_sent_entry, True, False, False, False, 90,
+                                               GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos,
+                                               "Enter the beginning number of sentences to be analyzed in the CoNLL table for repeated elements")
+
+End_K_sent_entry_lb = tk.Label(window,
+                                    text='End K-sentences')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+                                               End_K_sent_entry_lb, True)
+
+End_K_sent_entry = tk.Entry(window, textvariable=End_K_sent_var)
+End_K_sent_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate+110,
+                                               y_multiplier_integer,
+                                               End_K_sent_entry, False, False, False, False, 90,
+                                               GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos,
+                                               "Enter the end number of sentences to be analyzed in the CoNLL table for repeated elements")
 
 compute_sentence_var.set(0)
 sentence_table_checkbox = tk.Checkbutton(window, text='Compute sentence table', variable=compute_sentence_var,
@@ -442,6 +484,10 @@ k_sentences_checkbox.configure(state='normal')
 
 
 def activate_all_options():
+    # k sentences options
+    Begin_K_sent_entry.configure(state='disabled')
+    End_K_sent_entry.configure(state='disabled')
+
     if error:
         all_analyses_checkbox.configure(state='disabled')
         all_analyses_menu.configure(state='disabled')
@@ -491,6 +537,8 @@ def activate_all_options():
         co_postag_menu_lb.configure(state='disabled')
         co_deprel_menu_lb.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
+        Begin_K_sent_entry.configure(state='normal')
+        End_K_sent_entry.configure(state='normal')
     else:
         all_analyses_checkbox.configure(state='normal')
         all_analyses_menu.configure(state='disabled')
@@ -564,7 +612,7 @@ scriptName=os.path.basename(__file__)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName,True)
 
-if GUI_util.input_main_dir_path.get()!='':
+if GUI_util.input_main_dir_path.get()!='' or (os.path.basename(GUI_util.inputFilename.get())[-4:] != ".csv"):
     GUI_util.run_button.configure(state='disabled')
     mb.showwarning(title='Input file',
                    message="The CoNLL Table Analyzer scripts require in input a csv CoNLL table created by the Stanford CoreNLP parser (not the spaCy and Stanza parsers).\n\nAll options and RUN button are disabled until the expected CoNLL file is seleted in input.\n\nPlease, select in input a CoNLL file created by the Stanford CoreNLP parser.")
@@ -576,5 +624,6 @@ else:
         if not CoNLL_util.check_CoNLL(inputFilename.get()):
             error = True
             activate_all_options()
+GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
 GUI_util.window.mainloop()

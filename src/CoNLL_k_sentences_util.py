@@ -11,21 +11,16 @@ import pandas as pd
 import string
 # from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
-import GUI_IO_util
 import IO_files_util
 import charts_util
 import statistics_txt_util
 
-def k_sent(inputFilename, outputDir, createCharts, chartPackage):
+def k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_var, End_K_sent_var):
     filesToOpen=[]
-    k=0
 
-    k_str, useless = GUI_IO_util.enter_value_widget("Enter the number of sentences, K, to be analyzed", 'K',
-                                                    1, '', '', '')
-    if k_str!='':
-        k = int(k_str)
+    label='CoNLL_' + str(Begin_K_sent_var) + '-' + str(End_K_sent_var) + '-sent'
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_K-sent-' + k_str,
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label=label,
                                                        silent=True)
     if outputDir == '':
         return outputDir, filesToOpen
@@ -51,7 +46,7 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
         txt = ""
         doc_conll = conll.loc[conll["Document ID"] == i]
         outputFilename_rep_words = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
-                                                                 'CoNLL_K_sent_rep_words'+k_str,
+                                                                 'CoNLL_K_sent_rep_words'+str(Begin_K_sent_var),
                                                                  '', '', '', '',
                                                                  False,
                                                                  True)
@@ -82,12 +77,12 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
             filtered_words = [word for word in words if word.isalpha()]
 
             for wrdID, wrd in enumerate(filtered_words):
-                if sentenceID <= k:
-                    result_rep_words_temp.append(["First", k, wrd, wrdID+1, sentenceID, s, i, DOC])
+                if sentenceID <= Begin_K_sent_var:
+                    result_rep_words_temp.append(["First", Begin_K_sent_var, wrd, wrdID+1, sentenceID, s, i, DOC])
                     rep_words_first.append(wrd)
 
-                elif sentenceID > len(sentences) - k:
-                    result_rep_words_temp.append(["Last", k, wrd, wrdID+1, sentenceID, s, i, DOC])
+                elif sentenceID > len(sentences) - End_K_sent_var:
+                    result_rep_words_temp.append(["Last", End_K_sent_var, wrd, wrdID+1, sentenceID, s, i, DOC])
                     rep_words_last.append(wrd)
 
         result_rep_words.extend([sublist for sublist in result_rep_words_temp if sublist[2] in rep_words_first and sublist[2] in rep_words_last])
@@ -105,8 +100,8 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
             chart_outputFilename_rep_words = charts_util.visualize_chart(createCharts, chartPackage,
                                                             outputFilename_rep_words, outputDir,
                                                             columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
-                                                            chartTitle=f"Frequency Distribution of Repeated Words in first and last {k} sentences",
-                                                            outputFileNameType='k_sent_rep_words',
+                                                            chartTitle="Frequency Distribution of Repeated Words in first and last K (" + str(Begin_K_sent_var)+'-'+str(End_K_sent_var) +") sentences",
+                                                            outputFileNameType=str(Begin_K_sent_var)+'-'+str(End_K_sent_var)+'-sent_rep_words',
                                                             column_xAxis_label='Words',
                                                             count_var=count_var,
                                                             hover_label=[],
@@ -130,12 +125,12 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
     for i in range(1, max(conll["Document ID"])+1):
         doc_conll = conll.loc[conll["Document ID"] == i]
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
-                                                                 'CoNLL_K_sent_'+k_str,
+                                                                 label,
                                                                  '', '', '', '',
                                                                  False,
                                                                  True)
-        if max(doc_conll['Sentence ID']) <= 2 * k:
-            if(doc_conll["Sentence ID"]<=k):
+        if max(doc_conll['Sentence ID']) <= 2 * Begin_K_sent_var:
+            if(doc_conll["Sentence ID"]<=Begin_K_sent_var):
                 ksentences_first = doc_conll.loc[doc_conll["Sentence ID"]]
 
 
@@ -144,8 +139,8 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
                 ksentences_last = doc_conll.loc[doc_conll["Sentence ID"]]
 
         else:
-            ksentences_first = doc_conll.loc[(doc_conll["Sentence ID"] <= k)]
-            ksentences_last = doc_conll.loc[(doc_conll["Sentence ID"] > max(doc_conll['Sentence ID']) - k)]
+            ksentences_first = doc_conll.loc[(doc_conll["Sentence ID"] <= Begin_K_sent_var)]
+            ksentences_last = doc_conll.loc[(doc_conll["Sentence ID"] > max(doc_conll['Sentence ID']) - End_K_sent_var)]
 
         #ksentences = ksentences_first + ksentences_last
         word_count_first = len(ksentences_first['POStag']) - ksentences_first['DepRel'].value_counts()["punct"]
@@ -189,10 +184,10 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
             DOC = doc # as doc is in CoNLL table, doc already as the hyperlink
             break
 
-        temp_first =["First", k, word_count_first, noun_count_first, noun_count_first / word_count_first,
+        temp_first =["First", Begin_K_sent_var, word_count_first, noun_count_first, noun_count_first / word_count_first,
                       verb_count_first, verb_count_first / word_count_first, adj_count_first, adj_count_first / word_count_first,pp_count_first, pp_count_first / word_count_first, i, DOC]
 
-        temp_last = ["Last", k, word_count_last, noun_count_last, noun_count_last / word_count_last,
+        temp_last = ["Last", End_K_sent_var, word_count_last, noun_count_last, noun_count_last / word_count_last,
                       verb_count_last, verb_count_last / word_count_last, adj_count_last, adj_count_last / word_count_last,pp_count_last, pp_count_last / word_count_last, i, DOC]
         result.append(temp_first)
         result.append(temp_last)
@@ -209,7 +204,7 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage):
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
                                                             outputFilename, outputDir,
                                                             columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
-                                                            chartTitle="Frequency Distribution of Different Proportions in First and Last K (" + str(k) + ") Sentences",
+                                                            chartTitle="Frequency Distribution of Different Proportions in First and Last K (" + str(Begin_K_sent_var)+'-'+str(End_K_sent_var) + ") Sentences",
                                                             outputFileNameType='k_sent',
                                                             column_xAxis_label='Tags',
                                                             count_var=count_var,

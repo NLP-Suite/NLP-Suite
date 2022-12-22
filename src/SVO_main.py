@@ -203,6 +203,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
 
     # create an SVO-filtered subdirectory of the main output directory
+    outputSVOFilterDir=''
     if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
         outputSVOFilterDir = outputSVODir + os.sep + 'SVO-filtered'
 
@@ -380,18 +381,19 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     # Filtering SVO for all packages
     if len(svo_result_list)>0:
-        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or \
-                lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
+        # if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or \
+        #         lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
+        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
             output = SVO_util.filter_svo(window,SVO_filename,
-                                subject_filePath, verb_filePath, object_filePath,
-                                lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                                outputSVOSVODir, createCharts, chartPackage)
+                            subject_filePath, verb_filePath, object_filePath,
+                            lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
+                            outputSVOSVODir, createCharts, chartPackage)
             if output != None:
                 SVO_filtered_filename=output[0]
                 filesToOpen.extend(output)
                 svo_result_list.append(SVO_filtered_filename)
 
-        if lemmatize_verbs:
+        if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             # tempOutputFiles[0] is the filename with lemmatized SVO values
             # we want to aggregate with WordNet the verbs in column 'V'
             # check that SVO output file contains records
@@ -402,24 +404,26 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 outputWNDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
                                                                      label='WordNet',
                                                                      silent=True)
-                outputFilename = IO_csv_util.extract_from_csv(SVO_filename, outputWNDir, '', ['Verb (V)'])
-                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
-                                                                         config_filename, 'VERB',
-                                                                         openOutputFiles, createCharts,
-                                                                         chartPackage, language_var)
-                os.remove(outputFilename)
-                if output != None:
-                    filesToOpen.extend(output)
-
-                outputFilename = IO_csv_util.extract_from_csv(SVO_filename, outputWNDir, '',
+                if lemmatize_subjects or lemmatize_objects:
+                    outputFilename = IO_csv_util.extract_from_csv(SVO_filename, outputWNDir, '',
                                                               ['Subject (S)', 'Object (O)'])
-                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
-                                                                         config_filename, 'NOUN',
-                                                                         openOutputFiles, createCharts,
-                                                                         chartPackage, language_var)
-                os.remove(outputFilename)
-                if output != None:
-                    filesToOpen.extend(output)
+                    output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
+                                                                             config_filename, 'NOUN',
+                                                                             openOutputFiles, createCharts,
+                                                                             chartPackage, language_var)
+                    os.remove(outputFilename)
+                    if output != None:
+                        filesToOpen.extend(output)
+                if lemmatize_verbs:
+                    outputFilename = IO_csv_util.extract_from_csv(SVO_filename, outputWNDir, '', ['Verb (V)'])
+                    output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
+                                                                             config_filename, 'VERB',
+                                                                             openOutputFiles, createCharts,
+                                                                             chartPackage, language_var)
+                    os.remove(outputFilename)
+                    if output != None:
+                        filesToOpen.extend(output)
+
             else:
                 reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
                                              reminders_util.message_no_SVO_records, True)
@@ -694,8 +698,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 coref_var.set(0)
 CoRef_checkbox = tk.Checkbutton(window, text='Coreference Resolution, PRONOMINAL (via Stanford CoreNLP - Neural Network)',
                                 variable=coref_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               CoRef_checkbox)
+                                   CoRef_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Tick the checkbox to run the pronominal coreference resolution and run the SVO extractor on coreferenced files")
 
 # CoRef_menu_var.set("Neural Network")
 # CoRef_menu = tk.OptionMenu(window, CoRef_menu_var, 'Deterministic', 'Statistical', 'Neural Network')
@@ -705,7 +712,9 @@ manual_coref_var.set(0)
 manual_coref_checkbox = tk.Checkbutton(window, text='Manually edit coreferenced document ', variable=manual_coref_var,
                                        onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               manual_coref_checkbox)
+                                   manual_coref_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Tick the checkbox to manually edit a coreferenced file fixing missed (or wrongly) coreferenced pronouns\nManual coreference is available only when coreferencing a single input document")
 
 def activateCoRefOptions(*args):
     if coref_var.get() == 1:
@@ -799,7 +808,7 @@ subjects_checkbox = tk.Checkbutton(window, text='Filter Subject', variable=filte
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    subjects_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "The option for filtering subjects via WordNet for social actors is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
+                                   "Filter subjects list excluding subjects that are not social actors.\nThe option for filtering subjects via WordNet for social actors is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the subjects file
 openInputFile_subjects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
@@ -808,9 +817,14 @@ openInputFile_subjects_button = tk.Button(window, width=GUI_IO_util.open_file_di
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_S_dictionary, y_multiplier_integer,
                                                openInputFile_subjects_button, True, False, True, False, 90, GUI_IO_util.labels_x_coordinate + 140, "Open csv file containing SUBJECT filters")
 
+lemmatize_subjects_var.set(1)
 lemmatize_subjects_checkbox = tk.Checkbutton(window, text='Lemmatize Subject', variable=lemmatize_subjects_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.lemmatize_S, y_multiplier_integer,
-                                               lemmatize_subjects_checkbox, True)
+                                               lemmatize_subjects_checkbox,
+                                               True, False, True, False, 90,
+                                               GUI_IO_util.lemmatize_S,
+                                               "When lemmatizing subjects, WordNet will be used to aggregate subjects into top synsets noun categories")
 
 filter_verbs_var.set(1)
 verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=filter_verbs_var, onvalue=1, offvalue=0,
@@ -819,7 +833,7 @@ verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=filter_verb
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
                                    verbs_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
-                                   "The option for filtering verbs for social actions via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
+                                   "Filter verbs list excluding verbs that are not social actions.\nThe option for filtering verbs for social actions via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the verbs file
 openInputFile_verbs_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
@@ -829,8 +843,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_V_diction
 
 lemmatize_verbs_var.set(1)
 lemmatize_verbs_checkbox = tk.Checkbutton(window, text='Lemmatize Verb', variable=lemmatize_verbs_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.lemmatize_V, y_multiplier_integer,
-                                               lemmatize_verbs_checkbox, True)
+                                               lemmatize_verbs_checkbox,
+                                               True, False, True, False, 90,
+                                               GUI_IO_util.lemmatize_V,
+                                               "When lemmatizing verbs, WordNet will be used to aggregate verbs into top synsets verb categories")
 
 filter_objects_var.set(0)
 objects_checkbox = tk.Checkbutton(window, text='Filter Object', variable=filter_objects_var, onvalue=1, offvalue=0,
@@ -840,7 +858,7 @@ objects_checkbox = tk.Checkbutton(window, text='Filter Object', variable=filter_
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
                                    objects_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
-                                   "The option for filtering objects for social actors via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
+                                   "Filter objects list excluding objects that are not social actors.\nThe option for filtering objects for social actors via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the objects file
 openInputFile_objects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
@@ -848,9 +866,14 @@ openInputFile_objects_button = tk.Button(window, width=GUI_IO_util.open_file_dir
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_O_dictionary, y_multiplier_integer,
                                                openInputFile_objects_button,True, False, True, False, 90, GUI_IO_util.open_O_dictionary, "Open csv file containing OBJECT filters")
 
+lemmatize_objects_var.set(1)
 lemmatize_objects_checkbox = tk.Checkbutton(window, text='Lemmatize Object', variable=lemmatize_objects_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.lemmatize_O, y_multiplier_integer,
-                                               lemmatize_objects_checkbox)
+                                               lemmatize_objects_checkbox,
+                                               False, False, True, False, 90,
+                                               GUI_IO_util.lemmatize_V,
+                                               "When lemmatizing objects, WordNet will be used to aggregate objects into top synsets noun categories")
 
 # subjects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
 subjects_dict_var.set('social-actor-list.csv')
@@ -993,6 +1016,7 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'Stanford CoreNLP coreference resolution': "TIPS_NLP_Stanford CoreNLP coreference resolution.pdf",
                'CoNLL table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                # 'SENNA': 'TIPS_NLP_SVO SENNA.pdf',
+               'WordNet': 'TIPS_NLP_WordNet.pdf',
                "Google Earth Pro": "TIPS_NLP_Google Earth Pro.pdf",
                "Geocoding": "TIPS_NLP_Geocoding.pdf",
                "Geocoding: How to Improve Nominatim":"TIPS_NLP_Geocoding Nominatim.pdf",
@@ -1000,7 +1024,7 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
 
 # removed SENNA from the TIPS_options
-TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'SVO extraction and visualization', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Stanford CoreNLP coreference resolution', 'CoNLL table',  'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
+TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'SVO extraction and visualization', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Stanford CoreNLP coreference resolution', 'CoNLL table',  'WordNet', 'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

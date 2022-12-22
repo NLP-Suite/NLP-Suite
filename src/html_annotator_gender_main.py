@@ -246,8 +246,13 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_g
 
 firstName_entry = tk.Entry(window,width=GUI_IO_util.widget_width_short,textvariable=firstName_entry_var)
 firstName_entry.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_gender_firstName_entry_pos,y_multiplier_integer,firstName_entry)
-
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.html_annotator_gender_firstName_entry_pos,
+    y_multiplier_integer,
+    firstName_entry, False, False, True, False, 90,
+    GUI_IO_util.html_annotator_gender_firstName_entry_pos, "Enter the comma-separated first names whose use by year you wish to plot")
+#
 # https://www.ssa.gov/oact/babynames/limits.html
 new_SS_folders_var.set(0)
 new_SS_folders_checkbox = tk.Checkbutton(window, text='Generate new US Social Security files (by US State, Year, Year of birth, US State & Year, US State & Year of birth)', variable=new_SS_folders_var, onvalue=1, offvalue=0)
