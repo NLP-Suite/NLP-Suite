@@ -1,13 +1,17 @@
-import tkinter as tk
-import os
-import webbrowser
-import time
-import tkinter.messagebox as mb
-
-import GUI_IO_util
+import sys
 import GUI_util
 import IO_libraries_util
-import config_util
+
+if IO_libraries_util.install_all_packages(GUI_util.window,"NLP_setup_external_software_main",['os','tkinter','webbrowser','time'])==False:
+    sys.exit(0)
+
+import os
+import tkinter as tk
+import tkinter.messagebox as mb
+import webbrowser
+import time
+
+import GUI_IO_util
 import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -79,11 +83,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 software_download_var.set('')
 # 'SENNA' was removed from SVO options; way too slow
 # temporarily excluded '*'
-software_download_menu = tk.OptionMenu(window, software_download_var, 'Stanford CoreNLP', 'Gephi','Google Earth Pro','MALLET','WordNet')
+software_download_menu = tk.OptionMenu(window, software_download_var, 'Stanford CoreNLP', 'Gephi','Google Earth Pro','Java (JDK)','MALLET','WordNet')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.dowload_install, y_multiplier_integer,
                                                software_download_menu, True, False, True, False, 90,
-                                               GUI_IO_util.watch_videos_x_coordinate, "Select the external software to be downloaded; the software website url will be displayed after selection.\nThe software installation directory will be automatically displayed after selection so that it can be saved in the config file NLP_setup_external_software_config.csv.")
+                                               GUI_IO_util.watch_videos_x_coordinate, "Select the FREEWARE external software to be downloaded; the software website url will be displayed after selection.\nYOU MUST BE CONNECTED TO THE INTERNET FOR DOWNLOADING SOFTWARE.\nThe software installation directory will be automatically displayed after selection so that it can be saved in the config file NLP_setup_external_software_config.csv.")
 
 software_website = tk.Label(height=1, anchor='w', text='Website url')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.website_url_placement,
@@ -123,7 +127,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                y_multiplier_integer, software_install_lb, True)
 software_install_var.set('')
 # temporarily excluded '*'
-software_install_menu = tk.OptionMenu(window, software_install_var, 'Stanford CoreNLP', 'Gephi','Google Earth Pro','MALLET','WordNet')
+software_install_menu = tk.OptionMenu(window, software_install_var, 'Stanford CoreNLP', 'Gephi','Google Earth Pro','Java (JDK)','MALLET','WordNet')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.dowload_install, y_multiplier_integer,
                                                software_install_menu, True, False, True, False, 90,
@@ -144,6 +148,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,x_coordinate_hover_over, y
 
 def activate_software_website(*args):
     global software_dir
+    existing_software_config = IO_libraries_util.get_existing_software_config()
     software_website_url = ''
     # software_download_var contains the external software download options
     if software_download_var.get() != '':
@@ -205,19 +210,26 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'Setup INPUT-OUTPUT options':'TIPS_NLP_Setup INPUT-OUTPUT options.pdf'}
-TIPS_options='Setup INPUT-OUTPUT options'
+TIPS_lookup = {'Stanford CoreNLP download install run':'TIPS_NLP_Stanford CoreNLP download install run.pdf',
+               'Topic modeling MALLET installation':'TIPS_NLP_Topic modeling Mallet installation.pdf',
+               'Java download install':'TIPS_NLP_Java download install run.pdf',
+               'Google API Key':'TIPS_NLP_GIS_Google API Key.pdf',
+               'Gephi':'TIPS_NLP_Gephi network graphs.pdf',
+               'MALLET':'TIPS_NLP_Topic modeling Mallet.pdf',
+               'WordNet':'TIPS_NLP_WordNet.pdf'}
+TIPS_options='Stanford CoreNLP download install run','Topic modeling MALLET installation',\
+             'Java download install','Google API Key','Gephi', 'MALLET', 'WordNet'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "The text widget displays the external software that has not been installed yet in the NLP Suite. All missing software will need to be downloaded/installed or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without spaCy, Stanford CoreNLP, or Stanza or produce any geographic maps without Google Earth Pro).\n\nClick on the button to the far right to open the config file for inspection."+GUI_IO_util.msg_Esc)
+                                  "The text widget, always disabled, displays the FREEWARE external software that has not been installed yet in the NLP Suite. All missing software will need to be downloaded/installed or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis based on Stanford CoreNLP without Stanford CoreNLP or produce any geographic maps without Google Earth Pro).\n\nClick on the button to the far right to open the config file for inspection."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select the external software that you wish to download."+GUI_IO_util.msg_Esc)
+                                  "Please, using the dropdown menu, select the FREEWARE external software that you wish to download.\n\nYou do not need to download/install all external software at once. Different algorithms in the NLP Suite require different packages (e.g., you cannot do any textual analysis based on Stanford CoreNLP without Stanford CoreNLP or produce any geographic maps without Google Earth Pro).\n\nStanford CoreNLP, Gephi, and MALLET (and some other NLP Suite scripts) require a copy of the FREEWARE Java downloaded and installed on your machine."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select the external software that you wish to install on your machine after dowloading it."+GUI_IO_util.msg_Esc)
+                                  "Please, using the dropdown menu, select the FREEWARE external software that you wish to install on your machine after dowloading it.\n\nGephi and Google Earth Pro on a Mac are installed in Applications."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, hit the SAVE button to save any changes made.")
     y_multiplier_integer = 4.5 #5.5 # 4.5
@@ -226,7 +238,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
-readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up all the external packages used in the NLP Suite: Stanford CoreNLP, Gephi, Google Earth Pro, MALLET, WordNet.\n\nTHESE ARE ALL FREEWARE PACKAGES.\n\nFailure to install a specific package will only affect the functions that rely on the package. Thus, for instance, you cannot visualize network graphs unless you download and install Gephi or visualize GIS maps without downloading and installing Google Earth Pro. More crucially, you cannot perform many of the key NLP tasks (e.g., parser, NER annotator, gender annotator, coreference resolution, SVO-Subject-Verb-Object-extractor without downloading and installing Stanford CoreNLP."
+readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up all the external packages used in the NLP Suite: Stanford CoreNLP, Gephi, Google Earth Pro, Java (JDK), MALLET, WordNet.\n\nTHESE ARE ALL FREEWARE PACKAGES.\n\nFailure to install a specific package will only affect the functions that rely on the package. Thus, for instance, you cannot visualize network graphs unless you download and install Gephi or visualize GIS maps without downloading and installing Google Earth Pro. More crucially, you cannot perform many of the key NLP tasks (e.g., parser, NER annotator, gender annotator, coreference resolution, SVO-Subject-Verb-Object-extractor without downloading and installing Stanford CoreNLP."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, scriptName, False)
 

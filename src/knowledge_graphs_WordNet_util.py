@@ -51,7 +51,7 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
     filesToOpen=[]
     if IO_libraries_util.check_inputPythonJavaProgramFile('WordNet_Search_DOWN.jar') == False:
         return
-    errorFound, error_code, system_output = IO_libraries_util.check_java_installation('WordNet downward search')
+    errorFound, error_code, system_output, java_version = IO_libraries_util.check_java_installation('WordNet downward search')
     if errorFound:
         return
     process_keyword(wordNet_keyword_list, noun_verb)
@@ -102,7 +102,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
 
     if IO_libraries_util.check_inputPythonJavaProgramFile('WordNet_Search_UP.jar') == False:
         return filesToOpen
-    errorFound, error_code, system_output = IO_libraries_util.check_java_installation('WordNet upward search')
+    errorFound, error_code, system_output, java_version = IO_libraries_util.check_java_installation('WordNet upward search')
     if errorFound:
         return filesToOpen
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started running WordNet (Zoom OUT/UP) with the ' + noun_verb + ' option at', True, '',True,'',True)

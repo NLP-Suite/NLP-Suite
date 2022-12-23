@@ -7,10 +7,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"data_manipulation_mai
 
 import tkinter as tk
 from subprocess import call
-import pandas as pd
 import tkinter.messagebox as mb
-from pandas import DataFrame
-import os.path
 
 import IO_files_util
 import GUI_util
