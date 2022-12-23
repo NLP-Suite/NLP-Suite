@@ -1,11 +1,11 @@
-#written by Roberto Franzosi November 2019
+# written by Roberto Franzosi November 2019
 # rewritten by Roberto December 2022
 
 import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Wordclouds",['os','tkinter','webbrowser'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"data_visualization.py",['os','tkinter'])==False:
     sys.exit(0)
 
 import os
@@ -15,12 +15,11 @@ from subprocess import call
 
 import GUI_IO_util
 import IO_csv_util
-import Gephi_util
-import charts_Sunburster_util
-import charts_timeline_util
 import IO_files_util
 
+
 def runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var):
+    import Gephi_util
 
     fileBase = os.path.basename(inputFilename)[0:-4]
     # csv_file_field_list contains the column header of node1, edge, node2 (e.g., SVO), and, possibly, the field for dynamic network
@@ -41,6 +40,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         split_var,
         do_not_split_var,
         time_mapper_var,
+        date_format_var,
         time_var,
         cumulative_var,
         csv_field3_var):
@@ -114,6 +114,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
                                                                      '.html', 'Sunburster')
 
+            import charts_Sunburster_util
             chart_outputFilename = charts_Sunburster_util.Sunburster(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
                                             do_not_split_var, int_K_sent_begin_var, int_K_sent_end_var, split_var)
             if chart_outputFilename != '':
@@ -134,7 +135,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             elif time_var=='Yearly':
                 yearly=True
 
-            chart_outputFilename = charts_timeline_util.timeline(inputFilename, outputFilename, csv_field3_var, cumulative_var, monthly, yearly)
+            import charts_timeline_util
+            chart_outputFilename = charts_timeline_util.timeline(inputFilename, outputFilename, csv_field3_var, date_format_var, cumulative_var, monthly, yearly)
             if chart_outputFilename != '':
                 filesToOpen.append(chart_outputFilename)
 
@@ -157,6 +159,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             split_var.get(),
                             do_not_split_var.get(),
                             time_mapper_var.get(),
+                            date_format_var.get(),
                             time_var.get(),
                             cumulative_var.get(),
                             csv_field3_var.get())
@@ -170,8 +173,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=680, # height at brief display
-                             GUI_height_full=760, # height at full display
+                             GUI_height_brief=600, # height at brief display
+                             GUI_height_full=680, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -226,10 +229,12 @@ def clear(e):
     do_not_split_var.set(0)
     do_not_split_checkbox.configure(state='disabled')
     time_mapper_var.set(0)
+    date_format_menu.configure(state='disabled')
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
 
+open_GUI_var = tk.StringVar()
 Gephi_var = tk.IntVar()
 selected_csv_file_fields_var = tk.StringVar()
 
@@ -244,6 +249,7 @@ K_sent_end_var = tk.StringVar()
 split_var = tk.IntVar()
 do_not_split_var = tk.IntVar()
 time_mapper_var = tk.IntVar()
+date_format_var = tk.StringVar()
 csv_field3_var = tk.StringVar()
 time_var = tk.StringVar()
 cumulative_var = tk.IntVar()
@@ -251,25 +257,28 @@ cumulative_var = tk.IntVar()
 csv_file_field_list = []
 menu_values = []
 
-Excel_button = tk.Button(window, text='Open Excel GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
-                               command=lambda: call("python charts_Excel_main.py", shell=True))
+open_GUI_lb = tk.Label(window, text='Open GUI for special visualization options')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               Excel_button)
+                                               open_GUI_lb, True)
 
-GIS_button = tk.Button(window, text='Open GIS GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
-                               command=lambda: call("python GIS_main.py", shell=True))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               GIS_button)
+open_GUI_menu = tk.OptionMenu(window, open_GUI_var, 'Excel charts (Open GUI)','Geographic maps (Open GUI)','HTML annotator (Open GUI)','Wordclouds (Open GUI)')
+# open_GUI_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                   open_GUI_menu,
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Open a GUI for special visualization options: Excel charts, geographic maps, HTML, wordclouds")
 
-HTML_button = tk.Button(window, text='Open HTML annotator GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
-                               command=lambda: call("python html_annotator_main.py", shell=True))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               HTML_button)
-
-wordcloud_button = tk.Button(window, text='Open wordcloud GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
-                               command=lambda: call("python wordclouds_main.py", shell=True))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               wordcloud_button)
+def open_GUI(*args):
+    if 'Excel' in open_GUI_var.get():
+        call("python charts_Excel_main.py", shell=True)
+    elif 'Geographic' in open_GUI_var.get():
+        call("python GIS_main.py", shell=True)
+    elif 'HTML' in open_GUI_var.get():
+        call("python html_annotator_main.py", shell = True)
+    elif 'Wodclouds' in open_GUI_var.get():
+        call("python wordclouds_main.py", shell=True)
+open_GUI_var.trace('w',open_GUI)
 
 data_manipulation_button = tk.Button(window, text='Open csv data manipulation GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
                                command=lambda: call("python data_manager_main.py", shell=True))
@@ -487,8 +496,24 @@ time_mapper_checkbox = tk.Checkbutton(window, text='Visualize time-dependent dat
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    time_mapper_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Tick the checkbox if you wish to visualize data in a dynamic time mapper")
+
+
+date_format_lb = tk.Label(window,text='Date format ')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,
+                                               y_multiplier_integer, date_format_lb, True)
+date_format_var.set('mm-dd-yyyy')
+date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
+date_format_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                               GUI_IO_util.visualization_K_sent_begin_pos,
+                                               y_multiplier_integer,
+                                               date_format_menu,
+                                               True, False, False, False, 90,
+                                               GUI_IO_util.visualization_K_sent_begin_pos,
+                                               'Select the date type embedded in your filename')
 
 select_time_lb = tk.Label(window, text='Timeline')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_pos, y_multiplier_integer,
@@ -555,6 +580,7 @@ def activate_visualization_options(*args):
         do_not_split_checkbox.configure(state='disabled')
 
     # time-line options
+    date_format_menu.configure(state='disabled')
     select_time_menu.configure(state='disabled')
     csv_field3_menu.configure(state='disabled')
     cumulative_checkbox.configure(state='disabled')
@@ -585,6 +611,7 @@ def activate_visualization_options(*args):
     elif time_mapper_var.get():
         Gephi_checkbox.configure(state='disabled')
         Sunburster_checkbox.configure(state='disabled')
+        date_format_menu.configure(state='normal')
         select_time_menu.configure(state='normal')
         csv_field3_menu.configure(state='normal')
         cumulative_checkbox.configure(state='normal')
@@ -660,10 +687,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the Excel GUI.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GIS GUI.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the HTML annotator GUI.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the wordcloud GUI.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the GUI you wish to open for specialized data visualization options: Excel charts, geographic maps in Google Earth Pro, HTML file, wordclouds.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the csv data manipulation GUI where you can append, concatenate, merge, and purge rows and columns in csv file(s).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize a network graph in Gephi.\n\nOptions become available in succession.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Options become available in succession after the Gephi option is selected.\n\nThe first field selected is the first node; the second field selected is the edge; the third field selected is the second node.\n\nOnce all three fields have been selected, the widget 'Field to be used for dynamic network graphs' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID) or ignore the option if the network should not be dynamic." + resetAll)
@@ -671,6 +695,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the comma-separated labels/parts of a filename to be used to separate fields in the filename (e.g., in the filename, Harry Potter_Book1_1, Harry Potter_Book2_3, ..., Harry Potter_Book4_1... you could enter Book1, Book3 to sample the files to be used for visualization.\n\nThe number of distinct labels/parts of filename should be small (e.g., the 7 Harry Potter books).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the checkbox 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.\n\nTick the checkbox 'Do NOT split documents' if you wish to visualize an entire document.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to analyze time-dependent data in an interactive bar chart.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select the options to be applied to the timeline chart:\n\n1. date format embedded in the filename\n2. Timeline (daily, monthly, yearly)\n3. Cumulative, for a time chart showing the frequency of the chosen variable up until a current day rather than visualizing the frequency day by day\n4. csv file variable to be used for plotting.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)

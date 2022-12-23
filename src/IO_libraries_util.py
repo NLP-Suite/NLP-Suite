@@ -215,8 +215,8 @@ def check_avaialable_memory(software):
 def get_java_version(system_output):
     java_version = system_output.split('\r\n')[0]
     java_version = java_version.split(' ')[2]
-    java_version = java_version.split('.')[0]
-    java_version = java_version.replace("\"","")
+    # java_version = java_version.split('.')[0]
+    # java_version = java_version.replace("\"","")
     return java_version
 
 def check_windows_64_bits():
@@ -249,9 +249,8 @@ def check_java_installation(script):
         #   YOU MUST CLOSE PyCharm to run correctly the next command
         java_output = subprocess.run(['java', '-version'], capture_output=True)
         error_code = java_output.returncode  # Should be 0 if java installed
-        system_output = java_output.stderr.decode(
-            'utf-8')  # This is what you see when you run "java -version" in your command line
-        # get_java_version(system_output)
+        system_output = java_output.stderr.decode('utf-8')  # This is what you see when you run "java -version" in your command line
+        java_version = get_java_version(system_output)
     except:
         error_code = 1
 
@@ -293,7 +292,7 @@ def check_java_installation(script):
                         if answer:
                             TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
                         errorFound = True
-    return errorFound, error_code, system_output
+    return errorFound, error_code, system_output, java_version
 
 
 # the function checks that a called Java or Python file is available in the src subdirectory
@@ -309,6 +308,7 @@ CoreNLP_download = "https://stanfordnlp.github.io/CoreNLP/download.html"
 # 'https://nlp.stanford.edu/software/stanford-corenlp-latest.archive'
 Gephi_download = "https://gephi.org/users/download/"
 Google_Earth_download = "https://www.google.com/earth/download/gep/agree.html?hl=en-GB"
+Java_download = "https://www.oracle.com/java/technologies/downloads/archive/"
 MALLET_download = "http://mallet.cs.umass.edu/download.php"
 # SENNA removed from SVO way too slow
 # SENNA_download = "https://ronan.collobert.com/senna/download.html"
@@ -357,10 +357,13 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName, re
     message=''
 
     fileList = []
-    for file in os.listdir(software_dir):
-        # if file.endswith(".txt"):
-        # print(os.path.join(software_dir, file))
-        fileList.append(file)
+    if programName!='Java (JDK)':
+        for file in os.listdir(software_dir):
+            # create a list of files inside the program directory so that they can be checked for validity
+            if os.listdir(software_dir):
+                # if file.endswith(".txt"):
+                # print(os.path.join(software_dir, file))
+                fileList.append(file)
 
 # Check Stanford CoreNLP
     if programName == 'Stanford CoreNLP':
@@ -396,6 +399,14 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName, re
                 return True
             directory_content = '\n\nThe ' + programName.upper() + ' was not found among Mac applications.'
             message = directory_content + Mac_msg
+
+# Check Java (JDK)
+    if programName == 'Java (JDK)':
+        if platform == 'win32':
+            if 'java' in fileList and 'platform' in fileList:
+                return True
+            directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, the subdirectories \'gephi\' and \'platform\''
+            message = directory_content + unarchive_msg + select_directory_msg
 
 # Check MALLET
     if programName == 'MALLET':
@@ -459,6 +470,7 @@ def initialize_software_config_fields(existing_software_config: list) -> list:
                   ['Stanford CoreNLP', '', CoreNLP_download],
                   ['Gephi', '', Gephi_download],
                   ['Google Earth Pro', '', Google_Earth_download],
+                  ['Java (JDK)', '', Java_download],
                   ['MALLET', '', MALLET_download],
                   ['WordNet', '', WordNet_download]]
     fields = [x[0].lower() for x in existing_software_config]
@@ -542,7 +554,7 @@ def update_software_config(softwareDir, package, existing_software_config):
             existing_software_config[i][1] = existing_software_config[i][1] # copy current value
     return existing_software_config
 
-def save_software_config(existing_software_config, missing_software_string):
+def save_software_config(existing_software_config, missing_software_string, silent=False):
     software_config = GUI_IO_util.configPath + os.sep + 'NLP_setup_external_software_config.csv'
     # overwrite the csv file with updated csv_fields
     with open(software_config, 'w+', newline='') as csv_file:
@@ -554,8 +566,9 @@ def save_software_config(existing_software_config, missing_software_string):
         if len(missing_software_list)>0:
             missing_software_string=", ".join(missing_software_list)
             message = message + "\n\nDon\'t forget that you have " + str(len(missing_software_list)) + " other remaining missing software to download/install: " + missing_software_string
-        mb.showwarning(title='Config installation file saved',
-                   message=message)
+        if not silent:
+            mb.showwarning(title='Config installation file saved',
+                       message=message)
 
 # package is != '' when ...
 #   1. the function is called from a specific script that uses the package (e.g., parsers_annotators_main)
@@ -597,10 +610,14 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
             message = download_install_package_msg
 
     # loop through all software in NLP_setup_external_software_config.csv file
+    java_found = False
     for row in existing_software_config[1:]:  # skip header line
         answer = False
         index = index + 1
         software_name = row[0]
+        # in releases prior to 3.8.5 Java (JDK) was not part of the config NLP_setup_external_software_config.csv
+        if 'Java' in software_name:
+            java_found=True
         software_dir = row[1]
         software_url = row[2]
         # if checking a specific external software (i.e., package) you do not want a list of missing external software
@@ -610,26 +627,29 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
         if software_dir == '':
             if missing_software=='':
                 missing_software = str(software_name).upper() + '\n\n'
+                errorFound = True
             else:
-                missing_software = missing_software + str(software_name).upper() + '\n\n'
-            errorFound=True
+                if not 'Java version' in software_dir:
+                    missing_software = missing_software + str(software_name).upper() + '\n\n'
+                    errorFound=True
         else:
             errorFound=False
             # the software directory is stored in config file but...
             #   check that the software directory still exists and the package has not been moved
             ExternalProgramFile_result = check_inputExternalProgramFile(calling_script, software_dir, software_name, True, True )
-            if os.path.isdir(software_dir) == False or ExternalProgramFile_result == False:
-                if missing_software == '':
-                    missing_software = str(software_name).upper() + '\n\n'
+            if not 'Java version' in software_dir:
+                if os.path.isdir(software_dir) == False or ExternalProgramFile_result == False:
+                    if missing_software == '':
+                        missing_software = str(software_name).upper() + '\n\n'
+                    else:
+                        missing_software = missing_software + str(software_name).upper() + '\n\n'
+                        # missing_software = missing_software + ',  ' + str(software_name).upper() + '\n\n'
+                    errorFound=True
                 else:
-                    missing_software = missing_software + str(software_name).upper() + '\n\n'
-                    # missing_software = missing_software + ',  ' + str(software_name).upper() + '\n\n'
-                errorFound=True
-            else:
-                # if you are checking for a specific package and that is found return the appropriate directory
-                # unless called from NLP_menu_main
-                if (package.lower()!='') and (package.lower() in software_name.lower()) and (calling_script!='NLP_menu'):
-                    return software_dir, software_url, missing_software
+                    # if you are checking for a specific package and that is found return the appropriate directory
+                    # unless called from NLP_menu_main
+                    if (package.lower()!='') and (package.lower() in software_name.lower()) and (calling_script!='NLP_menu'):
+                        return software_dir, software_url, missing_software
 
         if errorFound:
             software_dir = ''
@@ -658,8 +678,21 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
                 if (package!=''):
                     return software_dir, software_url, missing_software
 
+
     # check for missing external software
-    # if len(missing_software) > 0:
+    # check that Java is installed otherwise add to missing
+    errorFound, error_code, system_output, java_version = check_java_installation('Java (JDK)')
+    # in releases prior to 3.8.5 Java (JDK) was not part of the config NLP_setup_external_software_config.csv
+    if not java_found:
+        existing_software_config.insert(4,['Java (JDK)', "Java version "+java_version+" installed", Java_download])
+        save_software_config(existing_software_config, missing_software, silent=True)
+    # errorFound = True # for testing
+    if errorFound:
+        if missing_software=='':
+            missing_software = str('Java (JDK)').upper() + '\n\n'
+        else:
+            missing_software = missing_software + str('Java (JDK)').upper() + '\n\n'
+
     if missing_software!='':
         if only_check_missing==True:
             return None, software_url, missing_software
@@ -669,7 +702,6 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
 
         if software_dir == '':
             software_dir = None # specific calling scripts (e.g. Stanford CoreNL) check for None
-
         # after installation, check again for missing software
         # missing_software = get_missing_external_software_list(calling_script, existing_software_config, package)
 
@@ -681,6 +713,8 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
 #     software_website_url="https://stanfordnlp.github.io/CoreNLP/download.html"
 # if 'Gephi' in software_download_var.get():
 #     software_website_url="https://gephi.org/users/download/"
+# if 'Java' in software_download_var.get():
+#     software_website_url="https://www.oracle.com/java/technologies/downloads/archive/"
 # if 'MALLET' in software_download_var.get():
 #     software_website_url="http://mallet.cs.umass.edu/download.php"
 # # 'SENNA' was removed from SVO options; way too slow
@@ -689,20 +723,26 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
 # if 'WordNet' in software_download_var.get():
 #     software_website_url="https://wordnet.princeton.edu/download/current-version"
 def external_software_download(calling_script, software_name, existing_software_config):
-    software_dir, software_url, missing_software = get_external_software_dir(calling_script, software_name, silent=False, only_check_missing=False)
-    if software_dir == None:
-        software_dir = ''
+    software_dir, software_url, missing_software = get_external_software_dir(calling_script, software_name,
+                                                                             silent=False, only_check_missing=False)
+    if 'Java' in software_name:
+        # since Stanford CoreNLP, Gephi, and MALLET need Java, check for Java installation
+        errorFound, error_code, system_output, java_version = check_java_installation(software_name)
+        software_dir="Java version "+java_version+" installed"
+    else:
+        if software_dir == None:
+            software_dir = ''
 
     archive_location_warning = '\n\nDO NOT MOVE THE EXTERNAL SOFTWARE FOLDER INSIDE THE NLP SUITE FOLDER OR IT MAY BE OVERWRITTEN IN CASE YOU NEED TO RE-INSTALL THE SUITE.'
     # Setup user messages for the various types of external software and platforms
         # in Mac, Gephi and Google Earth Pro are installed in Applications
-    if platform == 'darwin' and (software_name != 'Google Earth Pro' and software_name != 'Gephi'):
+    if platform == 'darwin' and (software_name != 'Google Earth Pro' and software_name != 'Gephi' and software_name != 'Java (JDK)'):
         message2 = "You will be asked next to select the directory (NOT Mac Applications!) where the software\n\n" + software_name.upper() + "\n\nwas installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
     if platform == 'darwin' and (software_name == 'Google Earth Pro' or software_name == 'Gephi'):
         message2 = "You will be asked next to select the Mac Applications directory where the software\n\n" + software_name.upper() + "\n\nwas installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
-    if platform == 'win32':
+    if platform == 'win32' and software_name != 'Java (JDK)':
         message2 = "You will be asked next to select the directory where the software\n\n" + software_name.upper() + "\n\nwas installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
-    if platform != 'darwin' and (software_name != 'Google Earth Pro' and software_name != 'Gephi'):
+    if platform != 'darwin' and (software_name != 'Google Earth Pro' and software_name != 'Gephi' and software_name != 'Java (JDK)'):
         message1 = "\n\nYou will then be asked to select the directory where the software\n\n" + software_name.upper() + "\n\nwas installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
         message3 = ". Please, select the directory where the software was installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
     else:
@@ -750,6 +790,10 @@ def external_software_download(calling_script, software_name, existing_software_
         archive_warning = ''
         message='After downloading ' + software_name.upper() + archive_message + 'to a directory of your choice (e.g., desktop), and select that directory when prompted for installation so that the NLP Suite algorithms will know where to find ' + software_name.upper() + ' on your hard drive.' + archive_location_warning + archive_warning + MALLET_msg
 
+# JAVA DOWNLOAD Messages for Java
+    if 'Java' in software_name:
+        message='To download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a FREE Oracle account if you do not have one).\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable.'
+
 # WORDNET DOWNLOAD Messages for WordNet (executable in Windows, archive tar.gz in Mac)
     if software_name == 'WordNet':
         mb.showwarning(title=software_name.upper() + ' with Chrome',
@@ -772,12 +816,13 @@ def external_software_download(calling_script, software_name, existing_software_
 
     if software_name == 'Stanford CoreNLP' or software_name == 'Gephi' or software_name == 'MALLET':
         # since Stanford CoreNLP, Gephi, and MALLET need Java, check for Java installation
-        errorFound, error_code, system_output = check_java_installation(software_name)
-        url = 'https://www.oracle.com/java/technologies/downloads/archive/'
+        errorFound, error_code, system_output, java_version = check_java_installation(software_name)
+        # url = 'https://www.oracle.com/java/technologies/downloads/archive/'
         # errorFound=True # for testing
         if errorFound:
-            Java_required = software_name + ' requires the freeware Java (by Oracle) installed on our machine.\n\nTo download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a FREE Oracle account if you do not have one).\n\nThe NLP Suite will open the Java download website.\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable.'
-            open_url('Java', url, ask_to_open = True, message_title = 'Java', message = Java_required)
+            Java_required = software_name + ' requires the freeware Java (by Oracle) installed on our machine.\n\nDon\'t forget to download and install Java JDK.'
+            mb.showwarning(title='Warning',message=Java_required)
+            # open_url('Java', url, ask_to_open = True, message_title = 'Java', message = Java_required)
     software_dir, existing_software_config = external_software_install(calling_script, software_name, existing_software_config)
     return software_dir, software_url
 
@@ -785,10 +830,15 @@ def external_software_download(calling_script, software_name, existing_software_
 # updates the array existing_software_config with the value of software_dir
 # returns the software_dir and the double list existing_software_config = [[]]
 def external_software_install(calling_script, software_name, existing_software_config):
-
-    software_dir, software_url, missing_software = get_external_software_dir(calling_script, software_name, silent=False, only_check_missing=False)
-    if software_dir == None:
-        software_dir = ''
+    software_dir, software_url, missing_software = get_external_software_dir(calling_script, software_name,
+                                                                             silent=False, only_check_missing=False)
+    if 'Java' in software_name:
+        # since Stanford CoreNLP, Gephi, and MALLET need Java, check for Java installation
+        errorFound, error_code, system_output, java_version = check_java_installation(software_name)
+        software_dir="Java version "+java_version+" installed"
+    else:
+        if software_dir == None:
+            software_dir = ''
 
     if software_dir == '': #  and package.lower() in software_name.lower():
         if platform == 'darwin' and (software_name != 'Google Earth Pro' and software_name != 'Gephi'):
@@ -849,6 +899,8 @@ def external_software_install(calling_script, software_name, existing_software_c
                     software_name = 'Gephi'
                 elif 'google earth pro' in software_name.lower():
                     software_name = 'Google Earth Pro'
+                elif 'java' in software_name.lower():
+                    software_name = 'Java (JDK)'
                 elif 'mallet' in software_name.lower():
                     software_name = 'MALLET'
                 elif 'wordnet' in software_name.lower():
@@ -857,7 +909,7 @@ def external_software_install(calling_script, software_name, existing_software_c
                 if not check_inputExternalProgramFile(calling_script, software_dir, software_name, False):
                     software_dir = None
 
-            # update the array existing_software_config with the value of software_dir
-            if software_dir != '' and software_dir != None:
-                existing_software_config = update_software_config(software_dir, software_name, existing_software_config)
+    # update the array existing_software_config with the value of software_dir
+    if software_dir != '' and software_dir != None:
+        existing_software_config = update_software_config(software_dir, software_name, existing_software_config)
     return software_dir, existing_software_config

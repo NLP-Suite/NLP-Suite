@@ -201,7 +201,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     IO_libraries_util.check_CoreNLPVersion(CoreNLPdir)
 
     # check for Java
-    errorFound, error_code, system_output=IO_libraries_util.check_java_installation('Stanford CoreNLP')
+    errorFound, error_code, system_output, java_version=IO_libraries_util.check_java_installation('Stanford CoreNLP')
     if errorFound:
         return filesToOpen
 

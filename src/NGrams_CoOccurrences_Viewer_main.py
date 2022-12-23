@@ -559,7 +559,6 @@ TIPS_lookup = {'N-Grams (word & character)':"TIPS_NLP_Ngram (word & character).p
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures':'TIPS_NLP_Statistical measures.pdf'}
-    #,'Java download install run':'TIPS_NLP_Java download install run.pdf'}
 TIPS_options='N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Style analysis','English Language Benchmarks', 'Things to do with words: Overall view','Excel smoothing data series','csv files - Problems & solutions','Statistical measures'
 
 # add all the lines to the end to every special GUI
@@ -574,7 +573,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer Java script.\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer Java script.\n\nYou can run both Viewers at the same time.\n\nThe NGrams part of the algorithm requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872).\n\nFor both viewers, results will be visualized in Excel line plots.\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
+                                                         'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer script.\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer script.\n\nYou can run both Viewers at the same time.\n\nThe NGrams part of the algorithm requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872).\n\nFor both viewers, results will be visualized in Excel line plots.\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, enter the comma-separated list of single words or collocations (i.e., sets of words such as coming out, beautiful sunny day) for which you want to know N-Grams/Co-occurrences statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",

@@ -345,7 +345,7 @@ handle_setup_options_OK_checkbox_var.trace('w', lambda x, y, z: handle_setup_opt
 
 handle_setup_options_checkbox(NLP_package_language_config)
 
-NLP_package_language_setup_button = tk.Button(window, text='SETUP default NLP parser & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
+NLP_package_language_setup_button = tk.Button(window, text='SETUP default NLP parsers & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
                                                y_multiplier_integer,

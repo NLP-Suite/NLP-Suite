@@ -159,7 +159,7 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
     if len(lib_stopwords) != 0:
         startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running PLAGIARIST at',
                                            True)
-        errorFound, error_code, system_output = IO_libraries_util.check_java_installation('Lucene')
+        errorFound, error_code, system_output, java_version = IO_libraries_util.check_java_installation('Lucene')
         if errorFound:
             return
         subprocess.call(['java', '-jar', 'Lucene.jar', '-inputDir', inputDir + os.sep, '-outputDir',
