@@ -74,7 +74,7 @@ GUI_label = 'Graphical User Interface (GUI) for Setting Up Input/Output, I/O, Op
 y_multiplier_integer = 0
 # GUI_size is reset many times in the script
 GUI_width=str(GUI_IO_util.get_GUI_width(2))
-GUI_size = GUI_width + 'x290'
+GUI_size = GUI_width + 'x210'
 
 extract_date_from_filename_var = tk.IntVar()
 date_format_var = tk.StringVar()
@@ -85,21 +85,21 @@ date_position_var = tk.IntVar()
 if ((config_input_output_numeric_options[0] == 0 and config_input_output_numeric_options[1] != 0)
     or (config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] == 0)) \
         and config_input_output_numeric_options[2] == 0:
-    GUI_size = GUI_width + 'x340'
+    GUI_size = GUI_width + 'x280'
 
 # either input file or dir (for corpus) and secondary dir
 if ((config_input_output_numeric_options[0] == 0 and config_input_output_numeric_options[1] != 0)
     or (config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] == 0)) \
         and config_input_output_numeric_options[2] != 0:
-    GUI_size = GUI_width + 'x380'
+    GUI_size = GUI_width + 'x320'
 
 # both input file and dir (for corpus) and no secondary dir
 if config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] != 0 and config_input_output_numeric_options[2] == 0:
-    GUI_size = GUI_width + 'x380'
+    GUI_size = GUI_width + 'x320'
 
 # both input file and dir (for corpus) and secondary dir
 if config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] != 0 and config_input_output_numeric_options[2] != 0:
-    GUI_size = GUI_width + 'x420'
+    GUI_size = GUI_width + 'x340'
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -184,6 +184,7 @@ if config_input_output_numeric_options[2]!=0: # input secondary dir
     GUI_util.input_secondary_dir_path.set(config_input_output_alphabetic_options[2][1])
     y_multiplier_integer = y_multiplier_integer + 1
 
+# output dir
 if config_input_output_numeric_options[3] != 0: # output dir
     GUI_util.output_dir_path.set(config_input_output_alphabetic_options[3][1])
     y_multiplier_integer = y_multiplier_integer +1
@@ -222,7 +223,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_char_sep_
 date_separator = tk.Entry(window, textvariable=date_separator_var, width=3)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                               GUI_IO_util.date_char_sep_coordinate,
+                                               GUI_IO_util.open_setup_x_coordinate,
                                                y_multiplier_integer,
                                                date_separator,
                                                True, False, False, False, 90,
@@ -325,25 +326,37 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                                          'Some of the algorithms in the NLP Suite (e.g., GIS models and network models) can build dynamic models (i.e., models that vary with tiime) when time/date is known. If the filenames in youur corpus embed a date (e.g., The New York Times_12-19-1899), the NLP Suite can use that metadata information to build dynamic models. If that is the case, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2).')
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, hit the SAVE button to save any changes made.")
+                                  "Please, hit the CLOSE button to save any changes made.")
 
     return y_multiplier_integer -1
 
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
-def save_config(config_input_output_alphabetic_options):
+
+
+# the string is built when enetring the GUI and when hitting CLOSE to check whether any changes have been made
+#   warning the user
+def get_IO_options_str():
+    if extract_date_from_filename_var.get():
+        IO_options_str = date_format_var.get() + ', ' + date_separator_var.get() + ', ' + str(date_position_var.get())
+    else:
+        IO_options_str = "''" + ', ' + "''" + ', ' + "0"
+    IO_options_str = IO_options_str + ', ' + GUI_util.inputFilename.get() + ', ' + GUI_util.input_main_dir_path.get() + ', ' + GUI_util.input_secondary_dir_path.get() + ', ' + GUI_util.output_dir_path.get()
+    return IO_options_str
+def get_IO_options_list():
+
     # config_input_output_alphabetic_options is a double list, each sublist of 4 items
     #   (path + 3 date items [[],[],...])
     # e.g., [['', '', '', ''], ['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/newspaperArticles', 'mm/dd/yyyy', '_', '4'], ['', '', '', ''], ['C:/Program Files (x86)/NLP_backup/Output', '', '', '']]
 
     # build current options config_input_output_alphabetic_options, a list of 4 items: path + 3 date items
 
-
     # config_util.get_template_config_csv_file(config_input_output_numeric_options, config_input_output_alphabetic_options)
 
-    fileType=config_util.getFiletype(config_input_output_numeric_options) # different types of input files
+    # different types of input files
+    fileType = config_util.getFiletype(config_input_output_numeric_options)
 
-    input_item_date=[]
+    input_item_date = []
 
     # extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var
     #   are all local to this GUI rather than on GUI_util
@@ -352,17 +365,18 @@ def save_config(config_input_output_alphabetic_options):
         input_item_date.append(date_separator_var.get())
         input_item_date.append(date_position_var.get())
         date_label = ' (Date: ' + str(date_format_var.get()) + ' ' + \
-                          str(date_separator_var.get()) + ' ' + \
-                          str(int(date_position_var.get())) + ')'
+                     str(date_separator_var.get()) + ' ' + \
+                     str(int(date_position_var.get())) + ')'
     else:
         date_label = ''
-        input_item_date=['','',0]
+        input_item_date = ['', '', 0]
 
     inputFilename_list = []
     inputFilename_list.append(fileType)
 
     if not extract_date_from_filename_var.get():
-        fileName_no_date=IO_files_util.open_file_removing_date_from_filename(window,GUI_util.inputFilename.get(),False)
+        fileName_no_date = IO_files_util.open_file_removing_date_from_filename(window, GUI_util.inputFilename.get(),
+                                                                               False)
         GUI_util.inputFilename.set(fileName_no_date)
     else:
         if GUI_util.inputFilename.get() != '':
@@ -378,12 +392,14 @@ def save_config(config_input_output_alphabetic_options):
     else:
         inputFilename_list.extend(['', '', 0])
 
-# main_dir_path
-    inputDir_list=[]
+    # main_dir_path
+    inputDir_list = []
     # if GUI_util.input_main_dir_path.get()!='':
     inputDir_list.append('Input files directory')
     if not extract_date_from_filename_var.get():
-        directory_no_date=IO_files_util.open_directory_removing_date_from_directory(window,GUI_util.input_main_dir_path.get(),False)
+        directory_no_date = IO_files_util.open_directory_removing_date_from_directory(window,
+                                                                                      GUI_util.input_main_dir_path.get(),
+                                                                                      False)
         GUI_util.input_main_dir_path.set(directory_no_date)
     else:
         if GUI_util.input_main_dir_path.get() != '':
@@ -392,12 +408,12 @@ def save_config(config_input_output_alphabetic_options):
             else:
                 GUI_util.input_main_dir_path.set(GUI_util.input_main_dir_path.get() + date_label)
     inputDir_list.append(GUI_util.input_main_dir_path.get())
-    if GUI_util.input_main_dir_path.get()!='':
+    if GUI_util.input_main_dir_path.get() != '':
         inputDir_list.extend(input_item_date)
     else:
         inputDir_list.extend(['', '', 0])
 
-    input_item_date = ['', '', 0] # secondary dir and output dir do not have dates
+    input_item_date = ['', '', 0]  # secondary dir and output dir do not have dates
 
     inputDir2_list = []
     # inputDir2_list.extend([GUI_util.input_secondary_dir_path.get(), '','',''])
@@ -414,20 +430,39 @@ def save_config(config_input_output_alphabetic_options):
     outputDir_list.extend(input_item_date)
 
     # combine all four Input/output options in a list
-    current_config_input_output_alphabetic_options=[]
+    current_config_input_output_alphabetic_options = []
     current_config_input_output_alphabetic_options.append(inputFilename_list)
     current_config_input_output_alphabetic_options.append(inputDir_list)
     current_config_input_output_alphabetic_options.append(inputDir2_list)
     current_config_input_output_alphabetic_options.append(outputDir_list)
 
+    return current_config_input_output_alphabetic_options
+
+
+
+def save_config(config_input_output_alphabetic_options):
+    current_config_input_output_alphabetic_options=get_IO_options_list()
     config_util.write_IO_config_file(window, config_filename, config_input_output_numeric_options,
                                      current_config_input_output_alphabetic_options, silent=False)
 
-save_button = tk.Button(window, text='SAVE', width=10, height=2, command=lambda: save_config(config_input_output_alphabetic_options))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate,
-                                               y_multiplier_integer, save_button)
+def close_GUI():
+    IO_configuration_current=get_IO_options_str()
+    import NLP_setup_update_util
+    if IO_configuration_upon_entry!=IO_configuration_current:
+        answer = tk.messagebox.askyesno("Warning", 'You have made changes to the default IO setup.\n\nYou will lose your changes if you CLOSE without saving.\n\nWould you like to save the changes made?')
+        if answer:
+            save_config(config_input_output_alphabetic_options)
+    NLP_setup_update_util.exit_window(window, GUI_util.local_release_version, GUI_util.GitHub_newest_release)
+    window.destroy()
+    sys.exit(0)
 
-y_multiplier_integer = y_multiplier_integer +.5
+close_button = tk.Button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI())
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
+                                               y_multiplier_integer,
+                                               close_button, True, False, False, False, 90,
+                                               GUI_IO_util.read_button_x_coordinate,
+                                               "When clicking the CLOSE button, the script will give the option to save the currently selected configuration IF different from the previously saved configuration.")
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the Input/Output information necessary to run the NLP-Suite scripts, namely the INPUT files to be used - a single file or a set of files in a directory - and the OUTPUT directory where the files produced by the NLP Suite scripts will be saved - txt, csv, html, kml, jpg.\n\nThe selected I/O configuration will be saved in config files in the config subdirectory. The NLP_default_IO_config.csv file will be used for all NLP Suite scripts unless a different configuraton is selected for a specific script by selecting the 'Alternative I/O configuation'. When opening the GUI with the option 'Alternative I/O configuation' a configuration file will be saved under the config subdirectory with the specif name of the calling script (e.g., Stanford-CoreNLP_config.csv).\n\nWhen clicking the CLOSE button, the script will give the option to save the currently selected configuration IF different from the previously saved configuration."
@@ -446,5 +481,7 @@ if result!=None:
 result = reminders_util.checkReminder(config_filename,
                               reminders_util.title_options_IO_setup_date_options,
                               reminders_util.message_IO_setup_date_options)
+
+IO_configuration_upon_entry = get_IO_options_str()
 
 GUI_util.window.mainloop()

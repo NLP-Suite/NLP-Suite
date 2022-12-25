@@ -242,6 +242,9 @@ def check_GitHub_release(local_release_version: str, silent = False):
             IO_libraries_util.open_url('NLP Suite GitHub', url)
             # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
 
+# get the release version available on GitHub
+GitHub_newest_release = get_GitHub_release()
+
 def display_release():
     # first digit for major upgrades
     # second digit for new features
@@ -263,7 +266,7 @@ def display_release():
         y_multiplier_integer = -.9
 
     # get the release version available on GitHub
-    GitHub_newest_release = get_GitHub_release()
+    # GitHub_newest_release = get_GitHub_release()
 
     release_display = 'Release ' + str(release_version_var.get().replace('\n','')) + "/" + str(GitHub_newest_release)
     release_lb = tk.Label(window, text=release_display, foreground="red")
@@ -1067,24 +1070,27 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # TODO CLOSE button
     def _close_window():
 
-        global local_release_version
-        local_release_version = local_release_version.strip('\n')
-        GitHub_release_version = GitHub_release_version_var.get()
-        GitHub_release_version = GitHub_release_version.strip('\n')
-        GitHub_release_version = GitHub_release_version.strip('\r')
+        global local_release_version, GitHub_newest_release
+
+        # local_release_version = local_release_version.strip('\n')
+        # GitHub_release_version = GitHub_release_version_var.get()
+        # GitHub_release_version = GitHub_release_version.strip('\n')
+        # GitHub_release_version = GitHub_release_version.strip('\r')
 
         # hitting the CLOSE button will automatically pull from GitHub the latest release available on GitHub
         import NLP_setup_update_util
-        NLP_setup_update_util.exit_window(window, local_release_version, GitHub_release_version)
+        NLP_setup_update_util.exit_window(window, local_release_version, GitHub_newest_release)
 
-    close_button = tk.Button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
-    # place widget with hover-over info
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
-                                                   y_multiplier_integer,
-                                                   close_button, True, False, False, False, 90,
-                                                   GUI_IO_util.read_button_x_coordinate,
-                                                   "Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
-                                                   "\nYou must be connected to the internet for the auto update to work.")
+    # do not display CLOSE button for the NLP_setup GUIs; the CLOSE is handled in those GUIs
+    if not "NLP_setup_" in scriptName:
+        close_button = tk.Button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       close_button, True, False, False, False, 90,
+                                                       GUI_IO_util.read_button_x_coordinate,
+                                                       "Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
+                                                       "\nYou must be connected to the internet for the auto update to work.")
 
     # Any message should be displayed after the whole GUI has been displayed
 

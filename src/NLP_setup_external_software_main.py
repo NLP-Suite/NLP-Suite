@@ -23,8 +23,8 @@ import IO_files_util
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(1),
-                                                 GUI_height_brief=340, # height at brief display
-                                                 GUI_height_full=360, # height at full display
+                                                 GUI_height_brief=300, # height at brief display
+                                                 GUI_height_full=320, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -187,7 +187,7 @@ def activate_software_install(*args):
         missing_software_var.set(new_missing_software_string.lstrip())
         if missing_software_var.get()=='':
             missing_software_var.set('All external software has been installed')
-            mb.showwarning(title='Warning',message='All external software has been installed.\n\nDon\'t forget to press SAVE before pressing CLOSE or you will lose your selections.')
+            mb.showwarning(title='Warning',message='All external software has been installed.')
         missing_software_display_area=new_missing_software_string.lstrip()
     else:
         # software_download_var contains the external software download options
@@ -200,12 +200,25 @@ software_install_var.trace('w',activate_software_install)
 def save_external_software_config():
     IO_libraries_util.save_software_config(existing_software_config, missing_software_var.get())
 
-# after every installation the confiig is automatically updated; no need for SAVE
-save_button = tk.Button(window, text='SAVE', width=10, height=2, command=lambda: save_external_software_config())
+def close_GUI():
+    import NLP_setup_update_util
+    if missing_external_software_upon_entry!=missing_software_var.get():
+        answer = tk.messagebox.askyesno("Warning", 'You have made changes to the installed software.\n\nYou will lose your changes if you CLOSE without saving.\n\nWould you like to save the changes made?')
+        if answer:
+            save_external_software_config()
+    NLP_setup_update_util.exit_window(window, GUI_util.local_release_version, GUI_util.GitHub_newest_release)
+    window.destroy()
+    sys.exit(0)
+
+close_button = tk.Button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI())
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate, y_multiplier_integer,
-                                               save_button, False, False, True,False, 90,
-                                               GUI_IO_util.open_reminders_x_coordinate, "Save any changes made to the installation of external software before closing the GUI or changes will be lost")
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
+                                               y_multiplier_integer,
+                                               close_button, True, False, False, False, 90,
+                                               GUI_IO_util.read_button_x_coordinate,
+                                               "When clicking the CLOSE button, the script will give you the option to save the currently selected configuration IF different from the previously saved configuration."
+                                               "\nThe CLOSE button will also trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
+                                               "\nYou must be connected to the internet for the auto update to work.")
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -230,15 +243,12 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, using the dropdown menu, select the FREEWARE external software that you wish to download.\n\nYou do not need to download/install all external software at once. Different algorithms in the NLP Suite require different packages (e.g., you cannot do any textual analysis based on Stanford CoreNLP without Stanford CoreNLP or produce any geographic maps without Google Earth Pro).\n\nStanford CoreNLP, Gephi, and MALLET (and some other NLP Suite scripts) require a copy of the FREEWARE Java downloaded and installed on your machine."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the FREEWARE external software that you wish to install on your machine after dowloading it.\n\nGephi and Google Earth Pro on a Mac are installed in Applications."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, hit the SAVE button to save any changes made.")
-    y_multiplier_integer = 4.5 #5.5 # 4.5
     return y_multiplier_integer
 
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
-readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up all the external packages used in the NLP Suite: Stanford CoreNLP, Gephi, Google Earth Pro, Java (JDK), MALLET, WordNet.\n\nTHESE ARE ALL FREEWARE PACKAGES.\n\nFailure to install a specific package will only affect the functions that rely on the package. Thus, for instance, you cannot visualize network graphs unless you download and install Gephi or visualize GIS maps without downloading and installing Google Earth Pro. More crucially, you cannot perform many of the key NLP tasks (e.g., parser, NER annotator, gender annotator, coreference resolution, SVO-Subject-Verb-Object-extractor without downloading and installing Stanford CoreNLP."
+readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up all the external packages used in the NLP Suite: Stanford CoreNLP, Gephi, Google Earth Pro, Java (JDK), MALLET, WordNet.\n\nTHESE ARE ALL FREEWARE PACKAGES.\n\nFailure to install a specific package will only affect the functions that rely on the package. Thus, for instance, you cannot visualize network graphs unless you download and install Gephi or visualize GIS maps without downloading and installing Google Earth Pro. More crucially, you cannot perform many of the key NLP tasks (e.g., parser, NER annotator, gender annotator, coreference resolution, SVO-Subject-Verb-Object-extractor without downloading and installing Stanford CoreNLP.\n\nWhen clicking the CLOSE button, the script will give the option to save the currently selected configuration IF different from the previously saved configuration."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, scriptName, False)
 
@@ -258,5 +268,8 @@ else:
         mb.showwarning(title='External software installation error',
                    message='The following external software have not been found or have been found with errors (e.g., you may have moved or renamed the Stanford CoreNLP directory) in the config file NLP_setup_external_software_config.csv:\n\n' + str(missing_external_software) + '\n\nSome of the algorithms that require the software listed above will not run.\n\nPlease, using the dropdown menu Software download & install, select the software to download/install.')
 
-    existing_software_config = IO_libraries_util.get_existing_software_config()
+missing_external_software_upon_entry=missing_software_var.get()
+
+existing_software_config = IO_libraries_util.get_existing_software_config()
+
 GUI_util.window.mainloop()

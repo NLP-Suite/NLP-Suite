@@ -17,7 +17,7 @@ if not IO_libraries_util.install_all_packages(GUI_util.window,"spell_checker_uti
 
 import os
 from tkinter import filedialog
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 import nltk
 import pandas
 import pandas as pd
@@ -38,10 +38,8 @@ from langid.langid import LanguageIdentifier, model
 import csv
 import subprocess
 import time
-import fuzzywuzzy
 from fuzzywuzzy import fuzz
 import stanza
-from stanza.pipeline.multilingual import MultilingualPipeline
 
 import file_cleaner_util
 import charts_util
@@ -61,6 +59,7 @@ def lemmatizing(word):#edited by Claude Hu 08/2020
         # that lemmatization is returned as result
         #lemmatizer = WordNetLemmatizer()
         #lemma = lemmatizer.lemmatize(word, p)
+        from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza
         lemma = lemmatize_stanza(stanzaPipeLine(word))
         if lemma != word:
             result = lemma
@@ -299,6 +298,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                 text = text.replace("%","percent")
                 NLP = StanfordCoreNLP('http://localhost', port=9000)
             # sentences = tokenize.sent_tokenize(text)
+            from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
             sentences = sent_tokenize_stanza(stanzaPipeLine(text))
             documents.append([sentences,filename, dir_path])
     # IO_util.timed_alert(GUI_util.window, 5000, 'Word similarity', 'Finished preparing data...\n\nProcessed '+str(folderID)+' subfolders and '+str(fileID)+' files.\n\nNow running Stanford CoreNLP to get NER values on every file processed... PLEASE, be patient. This may take a while...')
@@ -544,6 +544,7 @@ def spellchecking_autocorrect(text: str, inputFilename) -> (str, DataFrame):
     new_str_list = []
     speller = Speller()
     # for word in nltk.word_tokenize(text):
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza
     for word in word_tokenize_stanza(stanzaPipeLine(text)):
         if word.isalnum():
             original_str_list.append(word)
@@ -809,6 +810,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                                                  True, '', True, '', True)
 
     # Stanza's multilingual pipeline needs to load only once, therefore called outside the for-loop
+    from stanza.pipeline.multilingual import MultilingualPipeline
     try:
         nlp_stanza = MultilingualPipeline()
     except:

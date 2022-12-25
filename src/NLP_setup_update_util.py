@@ -60,10 +60,6 @@ def exit_window(window, local_release_version, GitHub_release_version):
     # when closing NLP Suite via terminal
     atexit.register(exit_handler)
 
-    # if (not 'NLP_menu_main' in scriptName) and (not 'NLP_welcome_main' in scriptName):
-    #     # check and save IO config on CLOSE
-    #     config_util.save_IO_config(window, config_filename, config_input_output_numeric_options,
-    #                        current_config_input_output_alphabetic_options)
     window.destroy()
     sys.exit(0)
 

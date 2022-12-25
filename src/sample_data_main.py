@@ -143,7 +143,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+500, y_multiplier_integer,
 #                                                search_words_entry)
 
-sample_sentences_by_documentID_button = tk.Button(window, text='Sample sentences by Document ID and other fields values in csv file (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python data_manager_main.py", shell=True))
+sample_sentences_by_documentID_button = tk.Button(window, text='Sample sentences by Document ID and other fields values in csv file (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python data_manipulation_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    sample_sentences_by_documentID_button,
@@ -153,7 +153,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 sample_by_date_button = tk.Button(window, text='Sample files by date in filename',width=GUI_IO_util.widget_width_medium,command=lambda: option_not_available())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,sample_by_date_button)
 
-export_csv_field_GUI_button = tk.Button(window, text='Export csv field content in csv file to csv/txt file (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python data_manager_main.py", shell=True))
+export_csv_field_GUI_button = tk.Button(window, text='Export csv field content in csv file to csv/txt file (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python data_manipulation_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    export_csv_field_GUI_button,

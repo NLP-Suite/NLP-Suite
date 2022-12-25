@@ -314,7 +314,7 @@ def setup_IO_checkbox():
     else:
         setup_IO_OK_checkbox_var.set(0)
 
-IO_setup_button = tk.Button(window, text='SETUP default I/O options: INPUT corpus file(s) and OUTPUT files directory', width=95, font=("Courier", 10, "bold"), command=lambda: setup_IO())
+IO_setup_button = tk.Button(window, text='SETUP default I/O options: INPUT file/directory (corpus) and OUTPUT files directory', width=95, font=("Courier", 10, "bold"), command=lambda: setup_IO())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
                                                y_multiplier_integer,

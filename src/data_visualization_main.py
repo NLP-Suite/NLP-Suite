@@ -281,7 +281,7 @@ def open_GUI(*args):
 open_GUI_var.trace('w',open_GUI)
 
 data_manipulation_button = tk.Button(window, text='Open csv data manipulation GUI', width=GUI_IO_util.select_file_directory_button_width, height=1,
-                               command=lambda: call("python data_manager_main.py", shell=True))
+                               command=lambda: call("python data_manipulation_main.py", shell=True))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                data_manipulation_button)
 
