@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
 import os
+import sys
 
 import GUI_IO_util
 import GUI_util
@@ -19,8 +20,8 @@ import config_util
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(1),
-                                                 GUI_height_brief=540, # height at brief display
-                                                 GUI_height_full=580, # height at full display
+                                                 GUI_height_brief=480, # height at brief display
+                                                 GUI_height_full=520, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -62,7 +63,7 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 def display_available_options():
-    global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers, memory_var, document_length_var, limit_sentence_length_var
+    global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers, memory_var, document_length_var, limit_sentence_length_var, package_display_area_value
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory, document_length, limit_sentence_length = config_util.read_NLP_package_language_config()
     package_basics_var.set(package_basics)
     if language_var.get()!=language:
@@ -78,6 +79,18 @@ def display_available_options():
                                                    package_display_area, True, False, False, False, 90,
                                                    GUI_IO_util.open_TIPS_x_coordinate,
                                                    "The text area displays the currently selected options. To change this selection, use the NLP package and/or language dropdown menu,")
+
+def get_str_package_display_area_value():
+    display_area_value= \
+        str(package_var.get()) + \
+        str(package_basics_var.get()) + \
+        str(language_var.get()) + \
+        str(encoding_var.get()) + \
+        str(export_json_var.get()) + \
+        str(memory_var.get()) + \
+        str(document_length_var.get()) + \
+        str(limit_sentence_length_var.get())
+    return display_area_value
 
 def openConfigFile():
     import IO_files_util
@@ -280,13 +293,9 @@ def save_NLP_config(parsers):
     # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
     #   several times in config_util.py
     currently_selected_package_language= {'MAIN NLP PACKAGE': package_var.get(), 'LEMMATIZER PACKAGE': package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
-    config_util.save_NLP_package_language_config(window, currently_selected_package_language, parsers_display_area['text'],
+    config_util.save_NLP_package_language_config(window, currently_selected_package_language, package_var.get(), package_basics_var.get(), language_var.get(), parsers_display_area['text'],
                             encoding, export_json, memory, document_length, limit_sentence_length)
     display_available_options()
-
-save_button = tk.Button(window, text='SAVE', width=10, height=2, command=lambda: save_NLP_config(parsers))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate,
-                                               y_multiplier_integer, save_button)
 
 def activate_language_var():
     # Disable the + after clicking on it and enable the class menu
@@ -356,6 +365,29 @@ def show_language_list():
     else:
         mb.showwarning(title='Warning', message='The currently selected language options are:\n\n  ' + '\n  '.join(language_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
+# y_multiplier_integer = y_multiplier_integer +.5
+
+def close_GUI():
+    import NLP_setup_update_util
+    currently_selected_package_language = get_str_package_display_area_value()
+    if package_display_area_value_upon_entry != currently_selected_package_language:
+        answer = tk.messagebox.askyesno("Warning", 'You have made changes to the default NLP packages and language.\n\nYou will lose your changes if you CLOSE without saving.\n\nWould you like to save the changes made?')
+        if answer:
+            save_NLP_config(parsers)
+    NLP_setup_update_util.exit_window(window, GUI_util.local_release_version, GUI_util.GitHub_newest_release)
+    window.destroy()
+    sys.exit(0)
+
+close_button = tk.Button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI())
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
+                                               y_multiplier_integer,
+                                               close_button, True, False, False, False, 90,
+                                               GUI_IO_util.read_button_x_coordinate,
+                                               "When clicking the CLOSE button, the script will give you the option to save the currently selected configuration IF different from the previously saved configuration."
+                                               "\nThe CLOSE button will also trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
+                                               "\nYou must be connected to the internet for the auto update to work.")
+
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
@@ -382,25 +414,22 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                                          "Tick the checkbox to export or not export the Json file(s) in txt format produced by the selected NLP package." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                                          "The performance of different NLP tools (e.g., Stanford CoreNLP) is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, hit the SAVE button to save any changes made.")
-    y_multiplier_integer = 7.5
-    # TODO any line added to the GUI (e.g., Do NOT export json file(s)) will have to change +2 to +3, ... in the next command
-    return y_multiplier_integer+2
+    return y_multiplier_integer
 
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the default NLP package (e.g., spaCy, Stanford CoreNLP, Stanza), language (e.g., English, Chinese), and language encoding (e.g., utf-8) to be used for parsing and annotating your corpus in a specific language. Different packages support different sets of languages.\n\n" + \
-                "When Stanford CoreNLP is selected as NLP package, various options become available that apply only to CoreNLP: Memory, Document length (CoreNLP has a maximum processing size of 100,000 characters), Limit sentence length (CoreNLP performance deteriorates rapidly with sentence lengths above 100 words)."
+                "When Stanford CoreNLP is selected as NLP package, various options become available that apply only to CoreNLP: Memory, Document length (CoreNLP has a maximum processing size of 100,000 characters), Limit sentence length (CoreNLP performance deteriorates rapidly with sentence lengths above 100 words)\n\nWhen clicking the CLOSE button, the script will give the option to save the currently selected configuration IF different from the previously saved configuration."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, scriptName, False)
 
 if error:
     mb.showwarning(title='Warning',
-               message="The config file " + config_filename + " could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options then click on the SAVE button to save your options.")
+               message="The config file " + config_filename + " could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options then click on the CLOSE button to save your options.")
 
 display_available_options()
 
+package_display_area_value_upon_entry = get_str_package_display_area_value()
 
 GUI_util.window.mainloop()

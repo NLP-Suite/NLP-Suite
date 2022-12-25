@@ -180,7 +180,7 @@ def geocode(window,locations, inputFilename, outputDir,
 	index=0
 
 	if "Google" in geocoder:
-		Google_API = GIS_pipeline_util.getGoogleAPIkey('Google-geocode-API_config.csv')
+		Google_API = GIS_pipeline_util.getGoogleAPIkey(window,'Google-geocode-API_config.csv')
 	else:
 		Google_API=''
 

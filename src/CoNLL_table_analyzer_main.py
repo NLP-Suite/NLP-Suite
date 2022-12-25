@@ -233,8 +233,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=630, # height at brief display
-                                                 GUI_height_full=670, # height at full display
+                                                 GUI_height_brief=640, # height at brief display
+                                                 GUI_height_full=680, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -467,18 +467,16 @@ sentence_table_checkbox = tk.Checkbutton(window, text='Compute sentence table', 
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                sentence_table_checkbox)
 
-extract_fromCoNLL = tk.Button(window, text='Extract other fields/data from CoNLL table (Open GUI)', command = lambda: call("python data_manager_main.py", shell=True))
+extract_fromCoNLL = tk.Button(window, text='Extract other fields/data from CoNLL table (Open GUI)', command = lambda: call("python data_manipulation_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
     y_multiplier_integer,
     extract_fromCoNLL,
     False, False, False, False, 90, GUI_IO_util.read_button_x_coordinate,
-    "Click on the button to open the Data manager GUI where you can use the function 'Extract field(s) from csv file' with several options for complex data queries of csv files (in this case, a CoNLL table).")
+    "Click on the button to open the Data manipulation GUI where you can use the function 'Extract field(s) from csv file' with several options for complex data queries of csv files (in this case, a CoNLL table).")
 
 all_analyses_checkbox.configure(state='normal')
-
 searchToken_checkbox.configure(state='normal')
-
 sentence_table_checkbox.configure(state='normal')
 k_sentences_checkbox.configure(state='normal')
 

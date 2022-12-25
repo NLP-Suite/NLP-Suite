@@ -28,7 +28,7 @@ import charts_util
 import IO_user_interface_util
 
 # Google_config: 'Google-geocode-API_config.csv' or 'Google-Maps-API_config.csv'
-def getGoogleAPIkey(Google_config, display_key=False):
+def getGoogleAPIkey(window,Google_config, display_key=False):
     configFilePath = os.path.join(GUI_IO_util.configPath, Google_config)
     configAPIKey = []
     if os.path.isfile(configFilePath):
@@ -66,7 +66,7 @@ def getGoogleAPIkey(Google_config, display_key=False):
         key, string_out = GUI_IO_util.enter_value_widget(message, 'Enter', 1, key, 'API key', key)
         # save the API key
         if key!='':
-            config_util.Google_API_Config_Save(Google_config, key)
+            config_util.Google_API_Config_Save(window,Google_config, key)
     else:
         key = configAPIKey[0]
     return key
