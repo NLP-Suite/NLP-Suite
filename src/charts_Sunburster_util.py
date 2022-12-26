@@ -20,7 +20,7 @@ plotly.offline.init_notebook_mode(connected=True)
 #warnings.filterwarnings("ignore")
 
 # Function creates a new column that identifies the documents based on a specific interest variable
-#two inputs taken: data is the dataset in question, interest is a vector that the user will have to define, as it changes depending on the corpus
+# two inputs taken: data is the dataset in question, interest is a vector that the user will have to define, as it changes depending on the corpus
 def separator(data,interest):
 
     interestvector=[]#empty interest vector

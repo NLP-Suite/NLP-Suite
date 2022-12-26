@@ -194,7 +194,7 @@ config_filename = scriptName.replace('main.py', 'config.csv')
 #   input dir
 #   input secondary dir
 #   output dir
-config_input_output_numeric_options=[3,1,0,1]
+config_input_output_numeric_options=[3,0,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 window=GUI_util.window
@@ -552,9 +552,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
                                    "Select the csv file field to be used to visualize specific data\nThe field must be categorical rather than numeric (e.g., 'Sentiment label', rather than 'Sentiment score', in a sentiment analysis csv output file)")
 
 def activate_visualization_options(*args):
-    Gephi_checkbox.configure(state='normal')
-    Sunburster_checkbox.configure(state='normal')
-    time_mapper_checkbox.configure(state='normal')
+    if not error:
+        Gephi_checkbox.configure(state='normal')
+        Sunburster_checkbox.configure(state='normal')
+        time_mapper_checkbox.configure(state='normal')
+    else:
+        Gephi_checkbox.configure(state='disabled')
+        Sunburster_checkbox.configure(state='disabled')
+        time_mapper_checkbox.configure(state='disabled')
 
     # Gephi options
     csv_field_menu.configure(state='disabled')
@@ -701,19 +706,14 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
-readMe_message="The Python 3 script provides access to different GUIs to be used to visualize data (e.g., wordclouds) and network graphs via Gephi and different interactive charts via Sunburster and time mapper."
+readMe_message="The Python 3 script provides access to different GUIs to be used to visualize data (e.g., wordclouds) and network graphs via Gephi and different interactive charts via Sunburster and time mapper.\n\nIn INPUT the algorithms expect a csv file with a 'Document' field header.\n\nIn OUTPUT the algorithms produce different types of charts."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
-if (GUI_util.input_main_dir_path.get()!='') or (os.path.basename(GUI_util.inputFilename.get())[-4:] != ".csv"):
-    GUI_util.run_button.configure(state='disabled')
-    Gephi_checkbox.configure(state='disabled')
-    Sunburster_checkbox.configure(state='disabled')
-    time_mapper_checkbox.configure(state='disabled')
-    mb.showwarning(title='Input file',
-                   message="The Data visualization scripts require in input a csv file.\n\nAll options and RUN button are disabled until the expected csv file is seleted in input.\n\nPlease, select in input a csv file and try again.")
+state = str(GUI_util.run_button['state'])
+if state == 'disabled':
     error = True
-else:
-    GUI_util.run_button.configure(state='normal')
-    activate_visualization_options()
+
+activate_visualization_options()
+
 GUI_util.window.mainloop()

@@ -4,7 +4,7 @@ import sys
 import IO_libraries_util
 import GUI_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "NLP",
+if IO_libraries_util.install_all_packages(GUI_util.window, "NLP_welcome_main",
                                           ['os', 'tkinter', 'itertools', 'PIL', 'subprocess']) == False:
     sys.exit(0)
 
@@ -187,7 +187,7 @@ def display_bottom_line_buttons():
 
     label_enter = enter_button.cget('text')
 
-    text_info_enter = "Pressing the Enter button will give you access to all the text analysis options available in the NLP Suite."
+    text_info_enter = "Click to access all the tools in the NLP Suite.\n\nLasciate ogni speranza, voi ch'entrate/Abandon hope all ye who enter here (Dante Inferno/Hell III, 9)."
 
     # widget label, i.e., words displayed in the widget
     # e.widget_name.cget('text'),
@@ -226,7 +226,7 @@ def display_bottom_line_buttons():
     label_close = close_button.cget('text')
     current_color_close = close_button.cget('foreground') # not used since CLOSE is in black
 
-    text_info_close="Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."\
+    text_info_close="Pressing the CLOSE button in any of the GUIs triggers the automatic update of the NLP Suite, pulling the latest release from GitHub.\nThe new release is displayed the next time you open your local NLP Suite."\
                                                    "\nYou must be connected to the internet for the auto update to work."
     # widget label, i.e., words displayed in the widget
     # e.widget_name.cget('text'),

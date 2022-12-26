@@ -320,8 +320,6 @@ def get_missing_IO_values(config_input_output_numeric_options, config_input_outp
 # check_missingIO is called from GUI_util
 # the function checks for missing IO values, displays messages and sets the RUN button to normal or disabled
 def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_display_brief, silent=False):
-    # if 'NLP_menu_main' in scriptName:
-    #     silent = True
     if config_filename=='NLP_config.csv' or 'NLP_menu_main' in scriptName:
         config_filename = 'NLP_default_IO_config.csv'
     # the IO_button_name error message changes depending upon the call

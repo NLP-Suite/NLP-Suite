@@ -66,8 +66,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     # Word is the header from Stanford CoreNLP NER annotator
     if not 'Location' in headers and not 'Word' in headers and not 'NER' in headers:
+        GUI_util.run_button.configure(state='disabled')
         mb.showwarning(title='Warning',
-                       message="The selected input csv file does not contain the word 'Location' or 'NER' in its headers.\n\nThe GIS algorithms expect in input either\n   1. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location') already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nPlease, select the appropriate input csv file and try again.")
+                       message="The selected input csv file does not contain the word 'Location' or 'NER' in its headers.\n\nThe GIS algorithms expect in input either\n   1. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location') already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nThe RUN button is disabled until the expected csv file is seleted in input.\n\nPlease, select the appropriate input csv file and try again.")
+
         return
 
     # if restrictions_checker(inputFilename,inputIsCoNLL,numColumns,withHeader,headers,locationColumnName)==False:
@@ -208,9 +210,6 @@ http://maps.google.com/mapfiles
 # inputFilename = GUI_util.inputFilename
 # input_main_dir_path = GUI_util.input_main_dir_path
 
-internetAvailable = False
-errorDisplayed = False
-
 encoding_var = tk.StringVar()
 
 location_var = tk.StringVar()
@@ -277,8 +276,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 encoding_lb = tk.Label(window, text='Select encoding type (utf-8 default)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer, encoding_lb)
 
-menu_values = IO_csv_util.get_csvfile_headers(inputFilename.get())
-
+##
+menu_values=[]
+menu_values=" "
 location_field_lb = tk.Label(window, text='Column containing location names')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                location_field_lb, True)
@@ -504,13 +504,10 @@ y_multiplier_integer_save = y_multiplier_integer - 1
 
 
 def display_icon_image(pic_url, y_multiplier_integer_save):
-    if internetAvailable == False:
+    import IO_internet_util
+    if not IO_internet_util.check_internet_availability_warning("Google Earth Pro"):
         return
-    try:
-        my_page = urlopen(pic_url)
-    except:
-        mb.showwarning(title='No internet connection', message='You are not connected to the internet. The display of icon images requires internet connection.\n\nPlease, connect to the internet and try again.')
-        return
+    my_page = urlopen(pic_url)
     my_picture = io.BytesIO(my_page.read())
     pil_img = Image.open(my_picture)
     # The (25, 25) is (height, width)
@@ -585,7 +582,6 @@ def update_specific_icon_menu(icon_var, specific_icon_menu, y_multiplier_integer
     pic_url = GIS_Google_pin_util.pin_icon_select(icon_var.get(), specific_icon_var.get())
     display_icon_image(pic_url, y_multiplier_integer_save)
 
-
 specific_icon_var.trace('w', callback=lambda x, y, z: update_specific_icon_menu(icon_var, specific_icon_menu,
                                                                                 y_multiplier_integer_save))
 
@@ -602,7 +598,8 @@ icon_var.trace('w',
 
 pic_url = GIS_Google_pin_util.pin_icon_select(icon_var.get(), specific_icon_var.get())
 
-display_icon_image(pic_url, y_multiplier_integer_save)
+##
+# display_icon_image(pic_url, y_multiplier_integer_save)
 
 name_var.set(0)
 name_var_list.append(0)
@@ -696,9 +693,9 @@ def changed_GIS_filename(*args):
     errorDisplayed=True
     # check that input file is a CoNLL table;
     #	many options are NOT available when working with a CoNLL table
-    if inputFilename.get().endswith('.txt'):
+    if (GUI_util.input_main_dir_path.get()!='') or (not GUI_util.inputFilename.get().endswith('.csv')):
         inputError=True
-        # return
+        return
 
     inputIsCoNLL = CoNLL_util.check_CoNLL(inputFilename.get(), True)
     if inputIsCoNLL == True:
@@ -716,7 +713,9 @@ def changed_GIS_filename(*args):
     else:
         # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
         if IO_csv_util.rename_header(inputFilename.get(), "Word", "Location") == False:
+            inputError = True
             return
+        GUI_util.run_button.configure(state='normal')
         location_var.set('Location')
         location_field.config(state='normal')
         icon_csv_field_var.set('')
@@ -771,6 +770,7 @@ def changed_GIS_filename(*args):
     if inputIsCoNLL == True:
         location_var.set('NER')
 inputFilename.trace('w', changed_GIS_filename)
+GUI_util.input_main_dir_path.trace('w', changed_GIS_filename)
 
 # changed_GIS_filename() added at the end after all widgets have been displayed
 
@@ -1044,26 +1044,21 @@ readMe_message = "This Python 3 script relies on the Python Geopy library to geo
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
-if errorDisplayed==False:
-    changed_GIS_filename()
-
-if inputError==True:
-    mb.showwarning(title='Input file error',
-                   message='The GIS Google Earth Pro algorithm expects in input a csv type file of locations or of geocoded locations.\n\nPlease, select a csv input file and try again.')
-    inputError=False
-
-import IO_internet_util
-
-if IO_internet_util.check_internet_availability_warning("Goole Earth Pro") == False:
-    internetAvailable = False
-else:
-    internetAvailable = True
+# if (GUI_util.input_main_dir_path.get()!='') or (os.path.basename(GUI_util.inputFilename.get())[-4:] != ".csv"):
+#     GUI_util.run_button.configure(state='disabled')
+#     if not errorDisplayed:
+#         mb.showwarning(title='Input file error',
+#                        message='The GIS Google Earth Pro algorithm expects in input a csv type file of locations or of geocoded locations.\n\nThe RUN button is disabled until the expected csv file is seleted in input.\n\nPlease, select a csv input file and try again.')
+#     inputError = True
+# else:
+#     if IO_csv_util.rename_header(inputFilename.get(), "Word", "Location") == False:
+#         GUI_util.run_button.configure(state='disabled')
+#         inputError = True
+#     else:
+#         GUI_util.run_button.configure(state='normal')
+#         menu_values = IO_csv_util.get_csvfile_headers(inputFilename.get())
+#         inputError=False
 
 display_icon_image(pic_url, y_multiplier_integer_save)
 
-if inputFilename.get()=='':
-    print("error1")
-else:
-    if not inputFilename.get().endswith('csv'):
-        print("error 2")
 GUI_util.window.mainloop()

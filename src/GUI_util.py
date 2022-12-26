@@ -187,11 +187,12 @@ def display_logo():
 
 # define the variable local_release_version
 local_release_version = '0.0.0' #stored in lib\release_version.txt
-
+GitHub_newest_release = '0.0.0'
 def get_GitHub_release(silent = False):
     # check internet connection
     if not IO_internet_util.check_internet_availability_warning("GUI_util.py (Function Automatic check for NLP Suite newest release version on GitHub)"):
-        return '0.0.0'
+        GitHub_newest_release = '0.0.0'
+        return GitHub_newest_release
     release_url = 'https://raw.githubusercontent.com/NLP-Suite/NLP-Suite/current-stable/lib/release_version.txt'
     try:
         GitHub_newest_release = requests.get(release_url).text
@@ -243,7 +244,7 @@ def check_GitHub_release(local_release_version: str, silent = False):
             # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
 
 # get the release version available on GitHub
-GitHub_newest_release = get_GitHub_release()
+## GitHub_newest_release = get_GitHub_release()
 
 def display_release():
     # first digit for major upgrades
@@ -265,8 +266,8 @@ def display_release():
     else:
         y_multiplier_integer = -.9
 
-    # get the release version available on GitHub
-    # GitHub_newest_release = get_GitHub_release()
+    ## get the release version available on GitHub
+    GitHub_newest_release = get_GitHub_release()
 
     release_display = 'Release ' + str(release_version_var.get().replace('\n','')) + "/" + str(GitHub_newest_release)
     release_lb = tk.Label(window, text=release_display, foreground="red")
@@ -357,21 +358,100 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename, config_input
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
     if not answer:
         return
-    if run_button_state=='disabled':
-        setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent)
+    ##
+    # if run_button_state=='disabled':
+    #     setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent)
+
+def get_file_type(config_input_output_numeric_options):
+    file_type=''
+    if config_input_output_numeric_options[0] != 0:
+        # 1 for CoNLL file
+        # 2 for TXT file
+        # 3 for csv file
+        # 4 for any type of file
+        # 5 for txt or html
+        # 6 for txt or csv
+        if config_input_output_numeric_options[0] == 1:
+            file_type = 'CoNLL'
+        elif config_input_output_numeric_options[0] == 2:
+            file_type = 'txt'
+        elif config_input_output_numeric_options[0] == 3:
+            file_type = 'csv'
+        elif config_input_output_numeric_options[0] == 4:
+            file_type = 'any type'
+        elif config_input_output_numeric_options[0] == 5:
+            file_type = 'txt or HTML'
+        elif config_input_output_numeric_options[0] == 6:
+            file_type = 'txt or csv'
+    return file_type
+
+def check_fileName(scriptName, file_type, config_input_output_numeric_options):
+    err_msg=''
+    if inputFilename.get() == '':
+        err_msg = "The script '" + scriptName + "' requires a " + file_type + " FILE in INPUT.\n\n"
+    elif inputFilename.get().endswith('csv'):
+        if config_input_output_numeric_options[0] == 1:
+            if not 'CoNLL' in inputFilename.get():
+                err_msg = "The script '" + scriptName + "' requires a " + file_type + " FILE in INPUT.\n\n" \
+                'Although the input file is a csv file, it is not a CoNLL file.\n\n'
+        elif config_input_output_numeric_options[0] == 2:
+            err_msg = "The script '" + scriptName + "' requires a " + file_type + " FILE in INPUT.\n\n" \
+            'But the input file is a csv file.\n\n'
+    elif inputFilename.get().endswith('txt'):
+         if config_input_output_numeric_options[0] == 1 or \
+            config_input_output_numeric_options[0] == 3:
+            err_msg = "The script '" + scriptName + "' requires a " + file_type + " FILE in INPUT.\n\n" \
+                    'But the input file is a txt file.\n\n'
+    elif inputFilename.get().endswith('html'):
+        if (config_input_output_numeric_options[0] != 4 and config_input_output_numeric_options[0] != 5):
+            err_msg = "The script '" + scriptName + "' requires a " + file_type + " FILE in INPUT.\n\n" \
+            'But the input file is a HTML file.\n\n'
+    return err_msg
 
 # config_filename can be either the Default value or the GUI_specific value depending on setup_IO_menu_var.get()
 def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missingIO, silent = False):
     global run_button_state, answer
-    if config_input_output_numeric_options == [0,0,0,0]:
-        run_button_state = 'disabled'
-        run_button.configure(state=run_button_state)
-        return
-    # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
-    # there is no RUN button when setting up IO information so the call to check_missingIO should be silent
+    err_msg =''
+
+# both input filename and dir are valid options but both are missing
     run_button_state, answer = config_util.check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_display_brief, silent)
     if missingIO!='':
+        # the message is displayed in check_missingIO
+        # mb.showwarning(title='Warning',message='The RUN button is disabled until expected I/O options are entered.')
         run_button_state='disabled'
+    else:
+
+# filename option only
+        if config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] == 0:
+            file_type = get_file_type(config_input_output_numeric_options)
+            err_msg = check_fileName(scriptName, file_type, config_input_output_numeric_options)
+
+# directory option only
+        elif config_input_output_numeric_options[0] == 0 and config_input_output_numeric_options[1] != 0:
+            if inputFilename.get() != '':
+                err_msg = "The script '" + scriptName + "' requires a DIRECTORY in INPUT.\n\n"
+
+# both filename and directory are valid options
+        elif config_input_output_numeric_options[0] != 0 and config_input_output_numeric_options[1] != 0:
+            if inputFilename.get()!='':
+                file_type = get_file_type(config_input_output_numeric_options)
+                err_msg = check_fileName(scriptName, file_type, config_input_output_numeric_options)
+
+        if (config_input_output_numeric_options == [0,0,0,0]) or \
+                (config_input_output_numeric_options[0]==0 and inputFilename.get()!='') or \
+                (config_input_output_numeric_options[1]==0 and input_main_dir_path.get()!='') or \
+                err_msg!='':
+            mb.showwarning(title='Warning',message=err_msg+'The RUN button is disabled until the expected I/O options are entered.')
+            run_button_state = 'disabled'
+            # run_button.configure(state=run_button_state)
+            # return run_button_state, answer
+        # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
+        # there is no RUN button when setting up IO information so the call to check_missingIO should be silent
+        # run_button_state, answer = config_util.check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_display_brief, silent)
+        # if missingIO!='':
+        #     # the message is displayed in check_missingIO
+        #     # mb.showwarning(title='Warning',message='The RUN button is disabled until expected I/O options are entered.')
+        #     run_button_state='disabled'
     run_button.configure(state=run_button_state)
     return run_button_state, answer
 
@@ -577,13 +657,13 @@ def IO_config_setup_full (window, y_multiplier_integer):
             select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT csv file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT csv file',[('csv file','.csv')],".csv"))
         if config_input_output_numeric_options[0]==4: #any type file (used in NLP.py)
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (any file type: pdf, docx, html, txt, csv, conll); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv"),("pdf file","*.pdf"),("docx file","*.docx"),("html file","*.html"),("CoNLL table","*.conll")], "*.*"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (any type)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (any file type: pdf, docx, html, txt, csv, conll); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv"),("pdf file","*.pdf"),("docx file","*.docx"),("html file","*.html"),("CoNLL table","*.conll")], "*.*"))
         if config_input_output_numeric_options[0]==5: #txt/html
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, html); switch extension type below near File name:',[("txt file","*.txt"),("html file","*.html")], "*.*"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (txt, html)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, html); switch extension type below near File name:',[("txt file","*.txt"),("html file","*.html")], "*.*"))
         if config_input_output_numeric_options[0]==6: #txt/csv
             # buttons are set to normal or disabled in selectFile_set_options
-            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
+            select_inputFilename_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT file (txt, csv)', command=lambda: selectFile_set_options(window,True,False,inputFilename,input_main_dir_path,'Select INPUT file (txt, csv); switch extension type below near File name:',[("txt file","*.txt"),("csv file","*.csv")], "*.*"))
 
         # place the Select INPUT file widget
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_inputFilename_button,True)
@@ -1081,7 +1161,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         import NLP_setup_update_util
         NLP_setup_update_util.exit_window(window, local_release_version, GitHub_newest_release)
 
-    # do not display CLOSE button for the NLP_setup GUIs; the CLOSE is handled in those GUIs
+    # do not display CLOSE button for the 3 NLP_setup GUIs; the CLOSE is handled in those GUIs
     if not "NLP_setup_" in scriptName:
         close_button = tk.Button(window, text='CLOSE', width=10,height=2, command=lambda: _close_window())
         # place widget with hover-over info

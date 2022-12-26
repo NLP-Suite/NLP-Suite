@@ -304,15 +304,17 @@ def remove_hyperlinks(inputFilename):
 
 # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location' in GIS files
 # header1 is old header, header2 is new header
+# returns True if header is changed successfully; otherwise false
 def rename_header(inputFilename, header1, header2):
     headerFound=False
     if not inputFilename.endswith('.csv'):
-        return True
+        mb.showwarning(title="File type error", message='The file\n\n' + inputFilename + "\n\is not an expected csv file with headers.\n\nPlease, check the file and try again.")
+        return headerFound
     headers = get_csvfile_headers(inputFilename)
-    # temp=None
     for header in headers:
         if header2 == header:  # the file already contains the header2
-            return True
+            headerFound = True
+            return headerFound
         if header1 == header:
             ID=get_columnNumber_from_headerValue(headers, header1, inputFilename)
             # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
@@ -323,8 +325,8 @@ def rename_header(inputFilename, header1, header2):
                 headerFound = True
                 break
     if headerFound==False:
-        mb.showwarning(title="File type error", message='The file\n\n' + inputFilename + "\n\ndoes not contain a header '" + header1 + "' to be converted to '" + header2 + "'.\n\nPlease, check the file and try again.")
-    return temp
+        mb.showwarning(title="File type error", message='The file\n\n' + inputFilename + "\n\ndoes not contain a header '" + header1 + "' to be renamed to '" + header2 + "'.\n\nPlease, check the file and try again.")
+    return headerFound
 
 
 def export_csv_to_text(inputFilename, outputDir, column=None, column_list=[]):
