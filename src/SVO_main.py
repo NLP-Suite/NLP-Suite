@@ -27,7 +27,7 @@ import GUI_IO_util
 import IO_files_util
 import Gephi_util
 import GIS_pipeline_util
-import wordclouds_util
+# import wordclouds_util
 import IO_csv_util
 import SVO_util
 import Stanza_util
@@ -476,6 +476,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 # wordcloud  _________________________________________________
 
         if wordcloud_var:
+            import wordclouds_util
             i = 0
             if inputFilename[-4:] == ".csv":
                 nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
@@ -1114,6 +1115,5 @@ if error:
     call("python NLP_setup_package_language_main.py", shell=True)
     # this will display the correct hover-over info after the python call, in case options were changed
     error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
-
 
 GUI_util.window.mainloop()

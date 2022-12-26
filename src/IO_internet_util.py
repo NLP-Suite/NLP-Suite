@@ -7,6 +7,7 @@ import GUI_util
 # 	sys.exit(0)
 
 from urllib.request import urlopen #to check internet connection
+from tkinter import *
 import tkinter.messagebox as mb
 
 #check internet connection
@@ -29,7 +30,7 @@ def check_internet_availability_warning(script):
     if not internet_on():
         print("Internet is not available... The script '" + script + "' requires internet connection to run. Please, check internet connection and try again.")
         # mb.showwarning(title='Internet Connection', message='Internet is not available... The script "' + script + '" requires internet connection to run.\n\nPlease, check internet connection and try again.')
-        answer = mb.askyesno("Internet connection", "Internet is not available... The script '" + script + "' requires internet connection to run.\n\nPlease, check internet connection and try again.\n\n\nIf you are running '" + script + "' from a country (e.g., China) with internet access barriers but you are connected to internet by other means (e.g., VPN) you can bypass the NLP Suite internet check.\n\nWould you like to bypass the check and run '" + script + "' anyway?")
+        answer = mb.askyesno("Warning", "Internet is not available... The script '" + script + "' requires internet connection to run.\n\nPlease, check internet connection and try again.\n\n\nIf you are running '" + script + "' from a country (e.g., China) with internet access barriers but you are connected to internet by other means (e.g., VPN) you can bypass the NLP Suite internet check.\n\nWould you like to bypass the check and run '" + script + "' anyway?")
         if answer == True:
             return True
         else:

@@ -245,8 +245,8 @@ def warnUser(*args):
                                      reminders_util.message_python_wordclouds_horizontal, True)
 prefer_horizontal_var.trace('w',warnUser)
 
-import wordclouds_util
-font_list = wordclouds_util.get_font_list()
+## import wordclouds_util
+# font_list = wordclouds_util.get_font_list()
 
 font_var.set('Default')
 font_lb = tk.Label(window, text='Font')
@@ -257,7 +257,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_fon
                                    "Select the font you want to use in the wordclouds visualization; default font is the Adobe Droid Sans Mono font.")
 
 font = ttk.Combobox(window, width = 15, textvariable = font_var)
-font['values'] = font_list
+# font['values'] = font_list
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_font_menu, y_multiplier_integer,font)
 # font.config(state='disabled')
 
@@ -667,5 +667,9 @@ message = "Some of the algorithms behind this GUI rely on a specific NLP package
           + str(language) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " \
           + str(package_basics) + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
 reminders_util.checkReminder(config_filename, title, message)
+
+import wordclouds_util
+font_list = wordclouds_util.get_font_list()
+font['values'] = font_list
 
 GUI_util.window.mainloop()

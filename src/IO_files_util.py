@@ -31,7 +31,7 @@ import IO_csv_util
 
 # There are 3 methods and a 2 constants present:
 # abspath returns absolute path of a path
-# join join to path strings
+# join join path strings
 # dirname returns the directory of a file
 # __file__ refers to the script's file name
 # pardir returns the representation of a parent directory in the OS (usually ..)

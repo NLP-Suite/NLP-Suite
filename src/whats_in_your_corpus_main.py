@@ -19,7 +19,7 @@ import config_util
 import statistics_txt_util
 import knowledge_graphs_WordNet_util
 import Stanford_CoreNLP_util
-import wordclouds_util
+# import wordclouds_util
 import GIS_pipeline_util
 import topic_modeling_gensim_util
 import topic_modeling_mallet_util
@@ -284,7 +284,7 @@ def run(inputFilename,inputDir, outputDir,
             csvField_color_list = []
             doNotListIndividualFiles = True
             collocation = True
-
+            import wordclouds_util
             output=wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, selectedImage="", use_contour_only=use_contour_only, prefer_horizontal=prefer_horizontal, font=font, max_words=max_words, lemmatize=lemmatize, exclude_stopwords=exclude_stopwords, exclude_punctuation=exclude_punctuation, lowercase=lowercase, differentPOS_differentColors=differentPOS_differentColors, differentColumns_differentColors=differentColumns_differentColors, csvField_color_list=csvField_color_list, doNotListIndividualFiles=doNotListIndividualFiles,openOutputFiles=False, collocation=collocation)
             if output != None:
                 filesToOpen.append(output)

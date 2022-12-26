@@ -264,8 +264,26 @@ if config_filename == 'NLP_default_IO_config.csv':
                 "But the current script expects a DIRECTORY in INPUT.\n\n"
         # check the input directory
         if (config_input_output_alphabetic_options[1][0]!='') and config_input_output_numeric_options[1]==0:
+            # 1 for CoNLL file
+            # 2 for TXT file
+            # 3 for csv file
+            # 4 for any type of file
+            # 5 for txt or html
+            # 6 for txt or csv
+            if config_input_output_numeric_options[0]== 1:
+                file_type = 'CoNLL'
+            elif config_input_output_numeric_options[0] == 2:
+                file_type = 'txt'
+            elif config_input_output_numeric_options[0] == 3:
+                file_type = 'csv'
+            elif config_input_output_numeric_options[0] == 4:
+                file_type = 'any type'
+            elif config_input_output_numeric_options[0] == 5:
+                file_type = 'txt or HTML'
+            elif config_input_output_numeric_options[0] == 6:
+                file_type = 'txt or csv'
             msg = "The Default I/O configuration used by all scripts in the NLP Suite is currently set up with a DIRECTORY in INPUT.\n\n" \
-                "But the current script expects a FILE in INPUT.\n\n"
+                "But the current script expects a " + file_type + " FILE in INPUT.\n\n"
         if msg!="":
             msg=msg + \
                 "If you change the Default I/O configuration, the new I/O configuration will be used by all scripts in the NLP Suite.\n\n" \

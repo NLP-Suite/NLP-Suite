@@ -620,7 +620,8 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
             java_found=True
         software_dir = row[1]
         software_url = row[2]
-        # if checking a specific external software (i.e., package) you do not want a list of missing external software
+        # if checking a specific external software (i.e., package)
+        #   you do not want a list of missing external software
         if package!='' and package != software_name:
             continue
         # platform = 'darwin' # forcing darwin for testing in a Windows machine
@@ -630,8 +631,13 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
                 errorFound = True
             else:
                 if not 'Java version' in software_dir:
-                    missing_software = missing_software + str(software_name).upper() + '\n\n'
-                    errorFound=True
+                    if 'Java' in software_name:
+                        errorFound, error_code, system_output, java_version = check_java_installation('Java (JDK)')
+                        if not errorFound:
+                            software_dir="Java version "+java_version+" installed"
+                    if (not 'Java' in software_name) or errorFound:
+                        missing_software = missing_software + str(software_name).upper() + '\n\n'
+                        errorFound=True
         else:
             errorFound=False
             # the software directory is stored in config file but...
