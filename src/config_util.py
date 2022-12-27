@@ -142,13 +142,24 @@ def read_NLP_package_language_config():
         # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
         #   several times in this scripts (search for instance for MAIN NLP PACKAGE and change
         #   they also need to be changed in one line in NLP_setup_package_language_main.py
-        package_display_area_value = f"MAIN NLP PACKAGE: {package}, LEMMATIZER PACKAGE: {basics_package}, LANGUAGE(S): {language}"
+        # package_display_area_value = f"MAIN NLP PACKAGE: {package}, LEMMATIZER PACKAGE: {basics_package}, LANGUAGE(S): {language}"
     except:
+        # setup default values if config is not available for first tme users
+        package = 'Stanford CoreNLP'
+        parsers = ['Neural Network', 'Probabilistic Context Free Grammar (PCFG)']
+        basics_package = 'Stanza'
+        language = ''
+        encoding_var = 'utf-8'
+        export_json_var = 0
+        memory_var = 4
+        limit_document_length_var = 90000
+        limit_sentence_length_var = 100
         error = True
         # error must be set to true to display the next message after the entire GUI has been displayed
         # mb.showwarning(title='Warning',
         #                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup button.")
-        package_display_area_value = ''
+        # package_display_area_value = ''
+    package_display_area_value = f"MAIN NLP PACKAGE: {package}, LEMMATIZER PACKAGE: {basics_package}, LANGUAGE(S): {language}"
     return error, package, parsers, basics_package, language, package_display_area_value, encoding_var, export_json_var, memory_var, limit_document_length_var, limit_sentence_length_var
 
 def write_NLP_package_language_config_file(window, config_filename,
@@ -189,25 +200,20 @@ def write_NLP_package_language_config_file(window, config_filename,
                        message="The command failed to save the config file\n\n" + config_filename + "\n\nIf you look at your command line and you see a \'Permission error\', it means that the folder where you installed your NLP Suite is Read only.\n\nYou can check whether that's the case by right clicking on the folder name, clicking on \'Properties\'. Make sure that the \'Attributes\' setting, the last one on the display window, is NOT set to \'Read only\'. If so, click on the checkbox until the Read only is cleared, click on \'Apply\' and then \'OK\', exit the NLP Suite and try again.")
 
 
-
-def save_NLP_package_language_config(window, currently_selected_options, currently_selected_parsers,
+def save_NLP_package_language_config(window, currently_selected_options,
                                      package, basics_package, language,
+                                     parsers,
                                      encoding, export_json,
                                      memory, limit_document_length, limit_sentence_length):
     config_filename = GUI_IO_util.configPath + os.sep + 'NLP_default_package_language_config.csv'
-    if os.path.isfile(config_filename):
-        save_config = True
-    else:
-        # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
-        #   several times in this scripts (search for instance for MAIN NLP PACKAGE and change
-        #   they also need to be changed in one line in NLP_setup_package_language_main.py
-        save_config=False
-    if save_config:
-        package_display_area_value = f"MAIN NLP PACKAGE: {package}, LEMMATIZER PACKAGE: {basics_package}, LANGUAGE(S): {language}"
-        write_NLP_package_language_config_file(window, config_filename,
-                                               currently_selected_options, currently_selected_parsers,
-                                               encoding, export_json,
-                                               memory, limit_document_length, limit_sentence_length)
+    # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
+    #   several times in this scripts (search for instance for MAIN NLP PACKAGE and change
+    #   they also need to be changed in one line in NLP_setup_package_language_main.py
+    package_display_area_value = f"MAIN NLP PACKAGE: {package}, LEMMATIZER PACKAGE: {basics_package}, LANGUAGE(S): {language}"
+    write_NLP_package_language_config_file(window, config_filename,
+                                           currently_selected_options, parsers,
+                                           encoding, export_json,
+                                           memory, limit_document_length, limit_sentence_length)
 
 # config_input_output_alphabetic_options is a double list with no headers,
 #   with one sublist for each of the four types of IO confiigurations: filename, input main dir, input secondary dir, output dir

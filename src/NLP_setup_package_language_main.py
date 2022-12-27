@@ -276,9 +276,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.sentence_leng
                                                GUI_IO_util.open_TIPS_x_coordinate,
                                                "The performance of Stanford CoreNLP annotators is affected by the sentence length in number of words of input documents (see TIPS file)\nStanford CoreNLP recommends a maximum sentence length in the range of 70-100 words\nThe sentence length widget is only available for the Stanford CoreNLP package for parser & annotators")
 def save_NLP_config(parsers):
-    if language_var.get()=='':
-        mb.showwarning(title='Warning',message='You must select the language your corpus is written in before saving.')
-        return
     encoding = encoding_var.get()
     export_json = export_json_var.get()
 
@@ -293,7 +290,8 @@ def save_NLP_config(parsers):
     # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
     #   several times in config_util.py
     currently_selected_package_language= {'MAIN NLP PACKAGE': package_var.get(), 'LEMMATIZER PACKAGE': package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
-    config_util.save_NLP_package_language_config(window, currently_selected_package_language, package_var.get(), package_basics_var.get(), language_var.get(), parsers_display_area['text'],
+    config_util.save_NLP_package_language_config(window, currently_selected_package_language, package_var.get(), package_basics_var.get(),
+                            language_var.get(), parsers_display_area['text'],
                             encoding, export_json, memory, document_length, limit_sentence_length)
     display_available_options()
 
@@ -368,15 +366,19 @@ def show_language_list():
 # y_multiplier_integer = y_multiplier_integer +.5
 
 def close_GUI():
+    if language_var.get()=='':
+        mb.showwarning(title='Warning',message='You must select the language your corpus is written in before closing.')
+        return
+    if package_basics_var.get()=='':
+        mb.showwarning(title='Warning',message='You must select the package for the basic functions of tokenizing, lemmatizing, sentence splitting before closing.')
+        return
     import NLP_setup_update_util
     currently_selected_package_language = get_str_package_display_area_value()
     if package_display_area_value_upon_entry != currently_selected_package_language:
-        answer = tk.messagebox.askyesno("Warning", 'You have made changes to the default NLP packages and language.\n\nYou will lose your changes if you CLOSE without saving.\n\nWould you like to save the changes made?')
+        answer = tk.messagebox.askyesno("Warning", 'You have made changes to the default NLP packages and language.\n\nYou will lose your changes if you CLOSE without saving.\n\nWOULD YOU LIKE TO SAVE THE CHANGES MADE?')
         if answer:
             save_NLP_config(parsers)
     NLP_setup_update_util.exit_window(window, GUI_util.local_release_version, GUI_util.GitHub_newest_release)
-    window.destroy()
-    sys.exit(0)
 
 close_button = tk.Button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI())
 # place widget with hover-over info
