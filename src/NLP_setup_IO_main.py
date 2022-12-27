@@ -467,12 +467,10 @@ def close_GUI():
     IO_configuration_current=get_IO_options_str()
     import NLP_setup_update_util
     if IO_configuration_upon_entry!=IO_configuration_current:
-        answer = tk.messagebox.askyesno("Warning", 'You have made changes to the default IO setup.\n\nYou will lose your changes if you CLOSE without saving.\n\nWould you like to save the changes made?')
+        answer = tk.messagebox.askyesno("Warning", 'You have made changes to the default IO setup.\n\nYou will lose your changes if you CLOSE without saving.\n\nWOULD YOU LIKE TO SAVE THE CHANGES MADE?')
         if answer:
             save_config(config_input_output_alphabetic_options)
     NLP_setup_update_util.exit_window(window, GUI_util.local_release_version, GUI_util.GitHub_newest_release)
-    window.destroy()
-    sys.exit(0)
 
 close_button = tk.Button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI())
 # place widget with hover-over info
