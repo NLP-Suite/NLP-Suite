@@ -638,7 +638,7 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
                     if (not 'Java' in software_name) or errorFound:
                         missing_software = missing_software + str(software_name).upper() + '\n\n'
                         errorFound=True
-        else:
+        else: # software dir exists
             errorFound=False
             # the software directory is stored in config file but...
             #   check that the software directory still exists and the package has not been moved
@@ -798,7 +798,7 @@ def external_software_download(calling_script, software_name, existing_software_
 
 # JAVA DOWNLOAD Messages for Java
     if 'Java' in software_name:
-        message='To download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a FREE Oracle account if you do not have one).\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable.'
+        message='To download Java from the Oracle website, you will need to sign in your Oracle account (you must create a FREE Oracle account if you do not have one).\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable.'
 
 # WORDNET DOWNLOAD Messages for WordNet (executable in Windows, archive tar.gz in Mac)
     if software_name == 'WordNet':

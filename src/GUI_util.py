@@ -1023,17 +1023,20 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        GUI_IO_util.open_setup_x_coordinate,
                                                        "The selection of specific chart types is still under development.\nCharts are currently automatically visualized as bar or line charts.")
 
-        # TODO manipulate csv data widget (same as RUN)
-        manipulate_scv_data_button = tk.Button(window, text='Manipulate & visualize csv data (Open GUI)', command=lambda: call("python data_manipulation_main.py", shell=True))
-        # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate,
-                                                       y_multiplier_integer,
-                                                       manipulate_scv_data_button,
-                                                       False,False,False,False,90,
-                                                       GUI_IO_util.open_TIPS_x_coordinate,
-                                                       "Click on the button to open the csv data manipulation GUI where you can append, concatenate, merge, and purge rows and columns in csv file(s).")
+        if not 'data_manipulation_main.py' in scriptName:
+            # TODO manipulate csv data widget (same as RUN)
+            manipulate_scv_data_button = tk.Button(window, text='Manipulate & visualize csv data (Open GUI)', command=lambda: call("python data_manipulation_main.py", shell=True))
+            # place widget with hover-over info
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate,
+                                                           y_multiplier_integer,
+                                                           manipulate_scv_data_button,
+                                                           False,False,False,False,90,
+                                                           GUI_IO_util.open_TIPS_x_coordinate,
+                                                           "Click on the button to open the csv data manipulation GUI where you can append, concatenate, merge, and purge rows and columns in csv file(s).")
+        else:
+            y_multiplier_integer += 1
 
-    # def warning_message(*args):
+        # def warning_message(*args):
     #     if charts_package_options_widget.get()!='Excel':
     #         mb.showwarning(title='Warning',
     #                        message="The 'Python Plotly' option to draw charts is still under development. By and large working well, but... little improvements are under way.")
@@ -1064,9 +1067,15 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     else:
         videos_menu_lb = tk.OptionMenu(window,videos_dropdown_field,*videos_options)
         videos_menu_lb.configure(foreground="red")
-    videos_menu_lb.place(x=GUI_IO_util.watch_videos_x_coordinate,y=GUI_IO_util.basic_y_coordinate+GUI_IO_util.y_step*y_multiplier_integer)
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.watch_videos_x_coordinate,
+                                                   y_multiplier_integer,
+                                                   videos_menu_lb, True, False, False, False, 90,
+                                                   GUI_IO_util.watch_videos_x_coordinate,
+                                                   "Use the dropdown menu to select the video to watch.\nWhen videos are available the 'Watch videos' widget is red, otherwise black.")
+    # videos_menu_lb.place(x=GUI_IO_util.watch_videos_x_coordinate,y=GUI_IO_util.basic_y_coordinate+GUI_IO_util.y_step*y_multiplier_integer)
 
-    videos_util.trace_open_videos(videos_dropdown_field, videos_menu_lb, videos_lookup)
+    videos_util.trace_open_videos(videos_dropdown_field, videos_lookup)
 
     tips_dropdown_field.set('Open TIPS files')
     if len(TIPS_lookup)==1:
@@ -1078,7 +1087,13 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     else:
         tips_menu_lb = tk.OptionMenu(window,tips_dropdown_field,*TIPS_options)
         tips_menu_lb.configure(foreground="red")
-    tips_menu_lb.place(x=GUI_IO_util.open_TIPS_x_coordinate,y=GUI_IO_util.basic_y_coordinate+GUI_IO_util.y_step*y_multiplier_integer)
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate,
+                                                   y_multiplier_integer,
+                                                   tips_menu_lb, True, False, False, False, 90,
+                                                   GUI_IO_util.open_TIPS_x_coordinate,
+                                                   "Use the dropdown menu to select the TIPS file to display.\nWhen TIPS are available the 'Open TIPS files' widget is red, otherwise black.")
+    # tips_menu_lb.place(x=GUI_IO_util.open_TIPS_x_coordinate,y=GUI_IO_util.basic_y_coordinate+GUI_IO_util.y_step*y_multiplier_integer)
 
     TIPS_util.trace_open_tips(tips_dropdown_field,tips_menu_lb,TIPS_lookup)
 
@@ -1116,7 +1131,12 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     else:
         reminders_menu_lb = tk.OptionMenu(window,reminders_dropdown_field,*reminder_options)
         reminders_menu_lb.configure(foreground="red")
-    reminders_menu_lb.place(x=GUI_IO_util.open_reminders_x_coordinate,y=GUI_IO_util.basic_y_coordinate+GUI_IO_util.y_step*y_multiplier_integer)
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate,
+                                                   y_multiplier_integer,
+                                                   reminders_menu_lb, True, False, False, False, 90,
+                                                   GUI_IO_util.open_reminders_x_coordinate,
+                                                   "Use the dropdown menu to select the reminder to display and turn ON/OFF.\nWhen reminders are available the 'Open reminders' widget is red, otherwise black.")
 
     def trace_reminders_dropdown(*args):
         if len(reminder_options)>0:

@@ -175,7 +175,7 @@ def csv_converter(window,fileName,inputDir,outputDir,openOutputFiles,createChart
         tk.messagebox.showinfo("csv converter","The function is still under construction.\n\nSorry!")
         return
         # TODO add a REMINDER that if they need to use some of the csv fields as filters,
-        #   they need to use first the Data manager to extract specific fields by specific values
+        #   they need to use first the Data manipulation to extract specific fields by specific values
         #   for instance, in the csv output of the gender annotator, you may want to extract all the sentences
         #       WHERE the gender is Male and/or Female for separate analysis
         # TODO Check headers if Sentence is present and export sentences

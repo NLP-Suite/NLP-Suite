@@ -289,8 +289,8 @@ if config_filename == 'NLP_default_IO_config.csv':
                 "If you change the Default I/O configuration, the new I/O configuration will be used by all scripts in the NLP Suite.\n\n" \
                 "If this is not what you wish to do, you should CLOSE the I/O Setup GUI w/o saving any changes and use the GUI-specific I/O configuration for this specific script."
 
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
+videos_lookup = {'Setup Input/Output (I/O) options':'https://www.youtube.com/watch?v=9hXTz4zaTRc&t=2s'}
+videos_options='Setup Input/Output (I/O) options'
 
 TIPS_lookup = {'Setup INPUT-OUTPUT options':'TIPS_NLP_Setup INPUT-OUTPUT options.pdf','Date embedded in filename':'TIPS_NLP_Date embedded in filename.pdf'}
 TIPS_options='Setup INPUT-OUTPUT options','Date embedded in filename'

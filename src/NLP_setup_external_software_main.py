@@ -5,6 +5,10 @@ import IO_libraries_util
 if IO_libraries_util.install_all_packages(GUI_util.window,"NLP_setup_external_software_main",['os','tkinter','webbrowser','time'])==False:
     sys.exit(0)
 
+# software is downloaded and installed in IO_libraries_util
+#   def external_software_download(calling_script, software_name, existing_software_config)
+#   def external_software_install(calling_script, software_name, existing_software_config):
+
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
@@ -23,8 +27,8 @@ import IO_files_util
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(1),
-                                                 GUI_height_brief=300, # height at brief display
-                                                 GUI_height_full=320, # height at full display
+                                                 GUI_height_brief=280, # height at brief display
+                                                 GUI_height_full=300, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -218,8 +222,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_
                                                "\nThe CLOSE button will also trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
                                                "\nYou must be connected to the internet for the auto update to work.")
 
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
+videos_lookup = {'Setup external software':'https://www.youtube.com/watch?v=K8jUe_pKPPQ'}
+videos_options='Setup external software'
 
 TIPS_lookup = {'Stanford CoreNLP download install run':'TIPS_NLP_Stanford CoreNLP download install run.pdf',
                'Topic modeling MALLET installation':'TIPS_NLP_Topic modeling Mallet installation.pdf',

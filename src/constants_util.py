@@ -556,7 +556,7 @@ NLP_Suite_data_file_handling_tools_menu = \
 '', \
 '-----------------------------------------------------------------------------------------', \
 '', \
-'Data manager (csv files via Pandas)', \
+'Data manipulation (csv files via Pandas)', \
 'File checker (file name)', \
 'File classifier (dumb classifier via embedded date) (file name)', \
 'File-type converter (csv, docx, pdf, rtf --> txt)', \
