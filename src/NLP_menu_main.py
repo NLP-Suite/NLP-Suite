@@ -18,6 +18,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
 from subprocess import call
+import webbrowser
 
 import GUI_IO_util
 import IO_files_util
@@ -202,7 +203,7 @@ pydict["Statistics (csv files)"] = ["statistics_csv_main.py", 1]
 pydict["Statistics (txt files)"] = ["style_analysis_main.py", 1]
 pydict["Co-Reference PRONOMINAL resolution (via Stanford CoreNLP)"] = ["parsers_annotators_main.py", 1]
 pydict["Co-Occurrences viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
-pydict["Data manager (csv files via Pandas)"] = ["data_manipulation_main.py", 1]
+pydict["Data manipulation (csv files via Pandas)"] = ["data_manipulation_main.py", 1]
 pydict["File checker (file content)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File checker (file content utf-8 encoding)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File checker (file name)"] = ["file_manager_main.py", 1]
@@ -507,8 +508,15 @@ corpus_tools_var.trace('w', lambda x, y, z: getScript(corpus_tools_var.get()))
 corpus_document_tools_var.trace('w', lambda x, y, z: getScript(corpus_document_tools_var.get()))
 sentence_tools_var.trace('w', lambda x, y, z: getScript(sentence_tools_var.get()))
 
-videos_lookup = {'Help':'Help.mp4','IO Setup':'IO_Setup.mp4'}
-videos_options = 'Help','IO Setup'
+def openYouTube(video_url):
+    if video_url!='':
+        webbrowser.open_new_tab(video_url)
+    else:
+        mb.showwarning(title='Warning',
+                   message='The YouTube video ' + video_url + ' could not be found in the NLP Suite YouTube channel.\n\nPlease, warn the NLP Suite developers.')
+
+videos_lookup = {'Setup the NLP Suite':'https://www.youtube.com/watch?v=W56SU9oAbpc'}
+videos_options = 'Setup the NLP Suite'
 
 TIPS_lookup = {'NLP Suite: Package description': 'TIPS_NLP_NLP Suite Package description.pdf',
                'pip install & Anaconda environments': 'TIPS_NLP_Anaconda NLP environment pip.pdf',
@@ -576,7 +584,7 @@ def help_buttons(window, help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
-readMe_message = "This Python 3 script is the front end for a wide collection of Java and Python Natural Language Processing (NLP) tools.\n\nThe set of tools are divided into GENERAL TOOLS (data and file handling, pre-processing, statistical, visualization) and LINGUISTIC ANALYSIS TOOLS.\n\nLINGUISTIC ANALYSIS TOOLS are divided into tools that expect in input CORPUS DATA (i.e., multiple documents stored in a directory), CORPUS and/or SINGLE DOCUMENT, and SENTENCE.\n\nWhile some linguistic tools are specific for one of these three categories (e.g., topic modeling cannot be performed on a single document), MANY TOOLS OVERLAP. Tools that can work on a single file or a corpus are all classified under CORPUS/DOCUMENT tools. SENTENCE TOOLS still require either a corpus or a single document in input; but they also provide in output sentence-level information for more ingrained linguistic analyses.\n\nAll tools are open source freeware software released under the GNU LGPLv2.1 license (http://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html).\n\nYou can cite the NLP Suite as:\n\nFranzosi, Roberto. 2020. NLP Suite: A collection of natural language processing and visualization tools GitHub: https://github.com/NLP-Suite/NLP-Suite/wiki."
+readMe_message = "This Python 3 script is the front end for a wide collection of Java and Python Natural Language Processing (NLP) tools.\n\nThe set of tools are divided into GENERAL UTILITY TOOLS (data and file handling, pre-processing, statistical, visualization) and LINGUISTIC ANALYSIS TOOLS.\n\nLINGUISTIC ANALYSIS TOOLS are divided into tools that expect in input CORPUS DATA (i.e., multiple documents stored in a directory), CORPUS and/or SINGLE DOCUMENT, and SENTENCE.\n\nWhile some linguistic tools are specific for one of these three categories (e.g., topic modeling cannot be performed on a single document), MANY TOOLS OVERLAP. Tools that can work on a single file or a corpus are all classified under CORPUS/DOCUMENT tools. SENTENCE TOOLS still require either a corpus or a single document in input; but they also provide in output sentence-level information for more ingrained linguistic analyses.\n\nAll tools are open source freeware software released under the GNU LGPLv2.1 license (http://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html).\n\nYou can cite the NLP Suite as:\n\nFranzosi, Roberto. 2020. NLP Suite: A collection of natural language processing and visualization tools GitHub: https://github.com/NLP-Suite/NLP-Suite/wiki."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 

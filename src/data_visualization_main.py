@@ -68,6 +68,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             gexf_file = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
             filesToOpen.append(gexf_file)
 
+        if Sankey_var:
+            import charts_Sankey_util
+            Sankey_chart = charts_Sankey_util.Sankey(inputFilename, outputFilename, inflow, outflow)
+            # Function takes a csv file as data input,
+            # inflow is the variable of choice into which the outflow variable flows.
+            # For example, in coreference, inflow would be Pronoun and outflow would be Reference
+
         if Sunburster_var:
             if K_sent_begin_var=='' and K_sent_end_var=='' and split_var==False and do_not_split_var==False:
                 mb.showwarning("Warning",
@@ -207,11 +214,11 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 
 def clear(e):
     reset()
-    Gephi_var.set(0)
+    triplets_var.set(0)
     Sunburster_var.set(0)
     time_mapper_var.set(0)
 
-    Gephi_checkbox.configure(state='normal')
+    triplets_checkbox.configure(state='normal')
     Sunburster_checkbox.configure(state='normal')
     time_mapper_checkbox.configure(state='normal')
 
@@ -235,7 +242,10 @@ window.bind("<Escape>", clear)
 
 
 open_GUI_var = tk.StringVar()
+triplets_var = tk.IntVar()
+triplets_menu_var = tk.StringVar()
 Gephi_var = tk.IntVar()
+Sankey_var = tk.IntVar()
 selected_csv_file_fields_var = tk.StringVar()
 
 csv_field_var = tk.StringVar()
@@ -285,11 +295,33 @@ data_manipulation_button = tk.Button(window, text='Open csv data manipulation GU
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                data_manipulation_button)
 
-Gephi_var.set(0)
-Gephi_checkbox = tk.Checkbutton(window, text='Visualize relations in a Gephi network graph', variable=Gephi_var,
-                                    onvalue=1,command=lambda:activate_visualization_options(()))
+triplets_checkbox = tk.Checkbutton(window, text='Visualize sets of 3 elements', variable=triplets_var,
+                                    onvalue=1, command=lambda:activate_visualization_options(()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               Gephi_checkbox)
+                                               triplets_checkbox,True)
+
+triplets_menu_var.set('Gephi')
+triplets_menu = tk.OptionMenu(window, triplets_menu_var, 'Gephi','Sankey')
+# select_time_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_lb_pos, y_multiplier_integer,
+                                   triplets_menu,
+                                   False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
+                                   "Visualize combinations of 3 elements in network graphs via Gephi or Sankey graphs via Plotly")
+def activate_triplet_options(*args):
+    if triplets_menu_var.get()=='Gephi':
+        Gephi_var.set(True)
+        Sankey_var.set(False)
+    elif triplets_menu_var.get()=='Sankey':
+        Gephi_var.set(False)
+        Sankey_var.set(True)
+triplets_menu_var.trace('w',activate_triplet_options())
+
+# Gephi_var.set(0)
+# Gephi_checkbox = tk.Checkbutton(window, text='Visualize relations in a Gephi network graph', variable=Gephi_var,
+#                                     onvalue=1,command=lambda:activate_visualization_options(()))
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+#                                                Gephi_checkbox)
 
 if GUI_util.inputFilename.get() != '' and GUI_util.inputFilename.get()[-4:] == ".csv":
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(GUI_util.inputFilename.get())
@@ -311,9 +343,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
 csv_field_menu.configure(state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field_menu_pos, y_multiplier_integer,
+# visualization_csv_field_menu_pos
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_lb_pos, y_multiplier_integer,
                                    csv_field_menu,
-                                   True, False, True, False, 90, GUI_IO_util.visualization_csv_field_menu_pos,
+                                   True, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
                                    "Select the three fields to be used for the network graph in the order node1, edge, node2 (e.g., SVO)")
 
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
@@ -551,75 +584,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
                                    False, False, True, False, 90, GUI_IO_util.visualization_K_sent_end_pos,
                                    "Select the csv file field to be used to visualize specific data\nThe field must be categorical rather than numeric (e.g., 'Sentiment label', rather than 'Sentiment score', in a sentiment analysis csv output file)")
 
-def activate_visualization_options(*args):
-    if not error:
-        Gephi_checkbox.configure(state='normal')
-        Sunburster_checkbox.configure(state='normal')
-        time_mapper_checkbox.configure(state='normal')
-    else:
-        Gephi_checkbox.configure(state='disabled')
-        Sunburster_checkbox.configure(state='disabled')
-        time_mapper_checkbox.configure(state='disabled')
-
-    # Gephi options
-    csv_field_menu.configure(state='disabled')
-    dynamic_network_field_menu.configure(state='disabled')
-
-    # Sunburster options
-    case_sensitive_checkbox.configure(state='disabled')
-    filename_label.configure(state='disabled')
-    K_sent_begin_var.set('')
-    K_sent_end_var.set('')
-    K_sent_begin.configure(state='disabled')
-    K_sent_end.configure(state='disabled')
-    split_checkbox.configure(state='disabled')
-    do_not_split_checkbox.configure(state='disabled')
-    if do_not_split_var.get():
-        K_sent_begin_var.set('')
-        K_sent_end_var.set('')
-        K_sent_begin.configure(state='disabled')
-        K_sent_end.configure(state='disabled')
-        split_checkbox.configure(state='disabled')
-    if K_sent_begin_var.get() != '' or K_sent_end_var.get() != '':
-        split_checkbox.configure(state='disabled')
-        do_not_split_checkbox.configure(state='disabled')
-
-    # time-line options
-    date_format_menu.configure(state='disabled')
-    select_time_menu.configure(state='disabled')
-    csv_field3_menu.configure(state='disabled')
-    cumulative_checkbox.configure(state='disabled')
-
-    if Gephi_var.get():
-        Sunburster_checkbox.configure(state='disabled')
-        time_mapper_checkbox.configure(state='disabled')
-        csv_field_menu.configure(state='normal')
-        dynamic_network_field_menu.configure(state='normal')
-    elif Sunburster_var.get():
-        # case_sensitive_checkbox.configure(state='normal')
-        # for now always set to disabled
-        Gephi_checkbox.configure(state='disabled')
-        time_mapper_checkbox.configure(state='disabled')
-        case_sensitive_checkbox.configure(state='disabled')
-        filename_label.configure(state='normal')
-        K_sent_begin.configure(state='normal')
-        K_sent_end.configure(state='normal')
-        csv_field2_menu.configure(state='normal')
-        split_checkbox.configure(state='normal')
-        do_not_split_checkbox.configure(state='normal')
-        if split_var.get():
-            K_sent_begin_var.set('')
-            K_sent_end_var.set('')
-            K_sent_begin.configure(state='disabled')
-            K_sent_end.configure(state='disabled')
-            do_not_split_checkbox.configure(state='disabled')
-    elif time_mapper_var.get():
-        Gephi_checkbox.configure(state='disabled')
-        Sunburster_checkbox.configure(state='disabled')
-        date_format_menu.configure(state='normal')
-        select_time_menu.configure(state='normal')
-        csv_field3_menu.configure(state='normal')
-        cumulative_checkbox.configure(state='normal')
 
 def changed_filename(tracedInputFile):
     menu_values = []
@@ -661,6 +625,77 @@ def changed_filename(tracedInputFile):
 
 # changed_filename(GUI_util.inputFilename.get())
 
+def activate_visualization_options(*args):
+    if not error:
+        triplets_checkbox.configure(state='normal')
+        Sunburster_checkbox.configure(state='normal')
+        time_mapper_checkbox.configure(state='normal')
+    else:
+        triplets_checkbox.configure(state='disabled')
+        Sunburster_checkbox.configure(state='disabled')
+        time_mapper_checkbox.configure(state='disabled')
+
+    # Triplets options
+    csv_field_menu.configure(state='disabled')
+    dynamic_network_field_menu.configure(state='disabled')
+
+    # Sunburster options
+    case_sensitive_checkbox.configure(state='disabled')
+    filename_label.configure(state='disabled')
+    K_sent_begin_var.set('')
+    K_sent_end_var.set('')
+    K_sent_begin.configure(state='disabled')
+    K_sent_end.configure(state='disabled')
+    split_checkbox.configure(state='disabled')
+    do_not_split_checkbox.configure(state='disabled')
+    if do_not_split_var.get():
+        K_sent_begin_var.set('')
+        K_sent_end_var.set('')
+        K_sent_begin.configure(state='disabled')
+        K_sent_end.configure(state='disabled')
+        split_checkbox.configure(state='disabled')
+    if K_sent_begin_var.get() != '' or K_sent_end_var.get() != '':
+        split_checkbox.configure(state='disabled')
+        do_not_split_checkbox.configure(state='disabled')
+
+    # time-line options
+    date_format_menu.configure(state='disabled')
+    select_time_menu.configure(state='disabled')
+    csv_field3_menu.configure(state='disabled')
+    cumulative_checkbox.configure(state='disabled')
+
+    if triplets_var.get():
+        Sunburster_checkbox.configure(state='disabled')
+        time_mapper_checkbox.configure(state='disabled')
+        csv_field_menu.configure(state='normal')
+        dynamic_network_field_menu.configure(state='normal')
+    elif Sunburster_var.get():
+        # case_sensitive_checkbox.configure(state='normal')
+        # for now always set to disabled
+        triplets_checkbox.configure(state='disabled')
+        time_mapper_checkbox.configure(state='disabled')
+        case_sensitive_checkbox.configure(state='disabled')
+        filename_label.configure(state='normal')
+        K_sent_begin.configure(state='normal')
+        K_sent_end.configure(state='normal')
+        csv_field2_menu.configure(state='normal')
+        split_checkbox.configure(state='normal')
+        do_not_split_checkbox.configure(state='normal')
+        if split_var.get():
+            K_sent_begin_var.set('')
+            K_sent_end_var.set('')
+            K_sent_begin.configure(state='disabled')
+            K_sent_end.configure(state='disabled')
+            do_not_split_checkbox.configure(state='disabled')
+    elif time_mapper_var.get():
+        triplets_checkbox.configure(state='disabled')
+        Sunburster_checkbox.configure(state='disabled')
+        date_format_menu.configure(state='normal')
+        select_time_menu.configure(state='normal')
+        csv_field3_menu.configure(state='normal')
+        cumulative_checkbox.configure(state='normal')
+
+
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
@@ -694,7 +729,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the GUI you wish to open for specialized data visualization options: Excel charts, geographic maps in Google Earth Pro, HTML file, wordclouds.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the csv data manipulation GUI where you can append, concatenate, merge, and purge rows and columns in csv file(s).")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize a network graph in Gephi.\n\nOptions become available in succession.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize a set of 3 elements (e.g., SVO) in a network graph in Gephi or in Plotly Sankey graph.\n\nOptions become available in succession.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Options become available in succession after the Gephi option is selected.\n\nThe first field selected is the first node; the second field selected is the edge; the third field selected is the second node.\n\nOnce all three fields have been selected, the widget 'Field to be used for dynamic network graphs' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID) or ignore the option if the network should not be dynamic." + resetAll)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in an interactive Sunburster visual display.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the comma-separated labels/parts of a filename to be used to separate fields in the filename (e.g., in the filename, Harry Potter_Book1_1, Harry Potter_Book2_3, ..., Harry Potter_Book4_1... you could enter Book1, Book3 to sample the files to be used for visualization.\n\nThe number of distinct labels/parts of filename should be small (e.g., the 7 Harry Potter books).")

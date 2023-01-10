@@ -390,8 +390,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_
                                                "\nThe CLOSE button will also trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
                                                "\nYou must be connected to the internet for the auto update to work.")
 
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
+videos_lookup = {'Setup NLP package & language options':'https://www.youtube.com/watch?v=-F8C22F_T_E'}
+videos_options='Setup NLP package & language options'
 
 TIPS_lookup = {'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf','Stanford CoreNLP memory issues': 'TIPS_NLP_Stanford CoreNLP memory issues.pdf','Stanford CoreNLP performance & accuracy':'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf'}
 TIPS_options='Text encoding (utf-8)','Stanford CoreNLP memory issues','Stanford CoreNLP performance & accuracy'

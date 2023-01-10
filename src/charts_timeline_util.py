@@ -21,28 +21,83 @@ import tkinter.messagebox as mb
 #   if both are passed as false, return daily graph
 #   both cannot be simultaneously true
 
-def timeline(data, outputFilename, var, cumulative, monthly=None, yearly=None):
+def timeline(data, outputFilename, var,date_format_var, cumulative, monthly=None, yearly=None):
 #convert csv to pandas
     if type(data)==str:
         data=pd.read_csv(data)
 #Extract day from document
-    day=[]
-    for i in range(0,len(data)):
-        try:
-            day.append(re.search('\d.*\d',data['Document'][i])[0])
-        except:
-            mb.showwarning("Warning",
-                           "The Plotly timeline algorithm expects in input a csv file with a header 'Document' and filenames with dates embedded in the filename (e.g., The New York Times_12-23-1992).\n\nPlease, select a different csv file and try again.")
-            return ''
-    data['day']=day
-#Extract month and year
-    month=[]
+    date=[]
     year=[]
-    for i in range(0,len(data)):
-        month.append(data['day'][i][0:7])
-        year.append(data['day'][i][0:4])
-    data['month']=month
-    data['year']=year
+    month=[]
+    day=[]
+    if date_format_var=='yyyy':#creates year variable based on yyyy format
+        for i in range(0,len(data['Document'])):
+            year.append(re.search('\d{4}',data['Document'][i])[0])
+            data['year']=year
+    elif date_format_var=='mm-yyyy': #creates year and month variable in yyyy-mm format
+        for i in range(0,len(data['Document'])):
+            date.append(re.search('\d.*\d',data['Document'][i])[0])
+        for i in range(0,len(data['Document'])):
+            year.append(re.search('\d{4}',date[i])[0])
+        for i in range(0,len(data['Document'])):
+            month.append(year[i]+'-'+date[i][0:2])
+        data['year']=year
+        data['month']=month
+    elif date_format_var=='yyyy-mm': #creates year and month variable in yyyy-mm format
+        for i in range(0,len(data['Document'])):
+            date.append(re.search('\d.*\d',data['Document'][i])[0])
+        for i in range(0,len(data['Document'])):
+            year.append(re.search('\d{4}',date[i])[0])
+        for i in range(0,len(data['Document'])):
+            month.append(year[i]+'-'+date[i][-2:])
+        data['year']=year
+        data['month']=month
+    elif date_format_var=='dd-mm-yyyy':#creates year,month and day variable in yyyy-mm-dd format
+        for i in range(0,len(data['Document'])):
+            date.append(re.search('\d.*\d',data['Document'][i])[0])
+        for i in range(0,len(data['Document'])):
+            year.append(re.search('\d{4}',date[i])[0])
+        for i in range(0,len(data['Document'])):
+            month.append(year[i]+'-'+date[i][3:5])
+        for i in range(0,len(data['Document'])):
+            day.append(month[i]+'-'+date[i][0:2])
+        data['day']=day
+        data['year']=year
+        data['month']=month
+    elif date_format_var=='mm-dd-yyyy':#creates year,month and day variable in yyyy-mm-dd format
+        for i in range(0,len(data['Document'])):
+            date.append(re.search('\d.*\d',data['Document'][i])[0])
+        for i in range(0,len(data['Document'])):
+            year.append(re.search('\d{4}',date[i])[0])
+        for i in range(0,len(data['Document'])):
+            month.append(year[i]+'-'+date[i][0:2])
+        for i in range(0,len(data['Document'])):
+            day.append(month[i]+'-'+date[i][3:5])
+        data['year']=year
+        data['month']=month
+        data['day']=day
+    elif date_format_var=='yyyy-mm-dd':#creates year,month and day variable in yyyy-mm-dd format
+        for i in range(0,len(data['Document'])):
+            date.append(re.search('\d.*\d',data['Document'][i])[0])
+        for i in range(0,len(data['Document'])):
+            year.append(re.search('\d{4}',date[i])[0])
+        for i in range(0,len(data['Document'])):
+            month.append(year[i]+'-'+date[i][5:7])
+        data['year']=year
+        data['month']=month
+        data['day']=date
+    elif date_format_var=='yyyy-dd-mm':#creates year,month and day variable in yyyy-mm-dd format
+        for i in range(0,len(data['Document'])):
+            date.append(re.search('\d.*\d',data['Document'][i])[0])
+        for i in range(0,len(data['Document'])):
+            year.append(re.search('\d{4}',date[i])[0])
+        for i in range(0,len(data['Document'])):
+            month.append(year[i]+'-'+date[i][-2:])
+        for i in range(0,len(data['Document'])):
+            day.append(month[i]+'-'+date[i][5:7])
+        data['year']=year
+        data['month']=month
+        data['day']=day
 #Plot corresponding graph depending on the options
     if cumulative==False:
         #monthly and yearly can't simultaneously be True

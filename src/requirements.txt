@@ -20,6 +20,13 @@ numpy
 #used to parse arguments that are passed to a script via command line
 argparse~=1.4.0
 
+# used to run YouTube videos: vlc and pafy
+# if pafy gives and error when running a YouTube video
+#   pip uninstall pafy
+#   pip install git+https://github.com/Cupcakus/pafy
+vlc
+pafy
+
 # sqlite comes bundled with Python
 
 #used by wordclouds.py (also uses stanza; see below)
