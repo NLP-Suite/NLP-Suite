@@ -222,10 +222,6 @@ sg_menu_var.set('Skip-Gram')
 sg_menu = tk.OptionMenu(window,sg_menu_var, 'Skip-Gram','CBOW')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,sg_menu)
 
-## option for Gensim window size
-window_lb = tk.Label(window,text='Window size')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,window_lb,True)
-
 ## option for Gensim vector size
 vector_size_lb = tk.Label(window,text='Vector size')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,vector_size_lb,True)
