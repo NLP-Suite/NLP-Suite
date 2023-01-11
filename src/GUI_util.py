@@ -24,7 +24,7 @@ import time
 
 import config_util
 import reminders_util
-import videos_util
+# import videos_util
 import TIPS_util
 import GUI_IO_util
 import IO_files_util

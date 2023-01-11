@@ -1,14 +1,14 @@
 # Written by Roberto Franzosi January 2023
 
-# import sys
-# import GUI_util
-# import IO_libraries_util
+import sys
+import GUI_util
+import IO_libraries_util
 
 # if pafy gives an error
 #   pip uninstall pafy
 #   pip install git+https://github.com/Cupcakus/pafy
-# if IO_libraries_util.install_all_packages(GUI_util.window,"videos_util",['tkinter','vlc','pafy'])==False:
-#     sys.exit(0)
+if IO_libraries_util.install_all_packages(GUI_util.window,"videos_util",['tkinter','vlc','pafy'])==False:
+    sys.exit(0)
 
 import tkinter.messagebox as mb
 # importing vlc module
