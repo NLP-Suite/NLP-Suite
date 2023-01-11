@@ -77,6 +77,8 @@ def install_all_packages(window, calling_script, modules_to_try):
                 module = 'pdfminer.six'  # we need this specific version of pdfminer
             if 'docx' in module:
                 module = 'python-docx'  # python-docx would always break the code; must pass docx
+            if 'vlc' in module:
+                module = 'python-vlc'
             missingModules.append(module)
             if 'spellchecker' in missingModules:
                 # rename the module to the package to be installed
@@ -86,7 +88,6 @@ def install_all_packages(window, calling_script, modules_to_try):
                 missingModules = ['pillow' if x == 'PIL' else x for x in missingModules]
     if missingModules:
         errorFound = True
-        error_msg = "\n\nPlease, read the TIPS_NLP_Anaconda NLP environment pip.pdf"
         if platform == 'darwin':
             shell = which_shell()
             if shell != 'zsh':
@@ -94,7 +95,9 @@ def install_all_packages(window, calling_script, modules_to_try):
         # root = tk.Tk()
         # root.withdraw()
         window.withdraw()
-        if len(missingModules) == 1:
+        if len(missingModules) == 0:
+            msg=''
+        elif len(missingModules) == 1:
             msg = missingModules[0]
         elif len(missingModules) > 1:
             msg = 'each of the listed modules'
@@ -102,13 +105,14 @@ def install_all_packages(window, calling_script, modules_to_try):
         message = "FATAL ERROR. Please, read carefully. The NLP Suite will exit.\n\nThe script '" + \
                   calling_script + "' needs to import the following modules:\n\n" + ', '.join(missingModules) + \
                   "\n\nPlease, in command prompt/terminal, type\n\nNLP\n\nif you have run STEP3-NLP environment. Otherwise type" + \
-                  "\n\nconda activate NLP\n\nEither command will activate the right NLP environment (NLP case sensitive) where to install the package. In the right NLP environment, type" + \
-                  "\n\npip install " + str(msg) + "\n\nto install the module and try again."
+                  "\n\nconda activate NLP\n\nEither command will activate the right NLP environment (NLP case sensitive) where to install the module. In the right NLP environment, type" + \
+                  "\n\npip install " + str(msg) + "\n\nto install the module, close the NLP Suite, and try again."
 
         if 'pygit2' in str(missingModules):
             message = message + "\n\nWithout pygit2 the NLP Suite will not be automatically updated.\n\nThis, however, may be a sign that either you have not run STEP2 or you have not run it to completion (STEP2 installs all packages used by the NLP Suite and takes quite some time). To install all packages, run STEP2 again or, in command line/prompt, type\n\npip install -r requirements.txt"
+
         answer = tk.messagebox.askyesno("Module import error",
-                                        message + "\n\nDo you want to open the TIPS file now?")
+                                        message + "\n\nDo you want to open the TIPS file 'TIPS_NLP_Anaconda NLP environment pip.pdf' to learn about Anaconda environments and the installation of python modules via pip?")
         if answer:
             TIPS_util.open_TIPS('TIPS_NLP_Anaconda NLP environment pip.pdf')
 

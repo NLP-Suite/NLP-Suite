@@ -24,7 +24,7 @@ argparse~=1.4.0
 # if pafy gives and error when running a YouTube video
 #   pip uninstall pafy
 #   pip install git+https://github.com/Cupcakus/pafy
-vlc
+python-vlc
 pafy
 
 # sqlite comes bundled with Python

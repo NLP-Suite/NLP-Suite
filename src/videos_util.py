@@ -1,17 +1,26 @@
 # Written by Roberto Franzosi January 2023
 
-# import sys
-# import GUI_util
-# import IO_libraries_util
+import sys
+import GUI_util
+import IO_libraries_util
 
 # if pafy gives an error
 #   pip uninstall pafy
 #   pip install git+https://github.com/Cupcakus/pafy
-# if IO_libraries_util.install_all_packages(GUI_util.window,"videos_util",['tkinter','vlc','pafy'])==False:
-#     sys.exit(0)
+if IO_libraries_util.install_all_packages(GUI_util.window,"videos_util",['tkinter','vlc','pafy'])==False:
+    sys.exit(0)
 
 import tkinter.messagebox as mb
 # importing vlc module
+# try:
+#     import vlc
+# except:
+#     message = "FATAL ERROR. The imort of the vieo module vlc failed. Please, read carefully. The NLP Suite will exit the video script.\n\nThe script '" + \
+#               "\n\nPlease, in command prompt/terminal, type" + \
+#               "\n\nconda activate NLP\n\nThe command will activate the right NLP environment (NLP case sensitive) where to install the package. In the right NLP environment, type" + \
+#               "\n\npip install python-vlc to install the vlc module, close the NLP Suite and try again."
+#     mb.showinfo(title='python-vlc module', message=message)
+#     sys.exit(0)
 import vlc
 # importing pafy module
 import pafy
@@ -37,22 +46,6 @@ def get_video(selected_video, lookup):
 # #Trace and open videos files based on user selection
 # field = None
 # lookup = None
-def videos_Tracer(*args):
-    if lookup=={''}:
-        mb.showinfo(title='videos Warning', message="There are no videos available for this GUI.")
-        return
-    if len(field.get())=='No videos available':
-        mb.showinfo(title='videos Warning', message="There are no videos available for this GUI.")
-        return
-    if field.get()!='Watch videos':
-        get_video(field.get(), lookup)
-#
-def trace_open_videos(field_local,lookup_local):
-    # print("field_local,menu_local,lookup_local ",field_local,menu_local,lookup_local)
-    global field, lookup
-    field=field_local
-    lookup=lookup_local
-    field.trace("w",videos_Tracer)
 
 def play_video(video_url):
     if not IO_internet_util.check_internet_availability_warning("videos_util.py"):

@@ -1075,7 +1075,15 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                    "Use the dropdown menu to select the video to watch.\nWhen videos are available the 'Watch videos' widget is red, otherwise black.")
     # videos_menu_lb.place(x=GUI_IO_util.watch_videos_x_coordinate,y=GUI_IO_util.basic_y_coordinate+GUI_IO_util.y_step*y_multiplier_integer)
 
-    videos_util.trace_open_videos(videos_dropdown_field, videos_lookup)
+    # videos_util.trace_open_videos(videos_dropdown_field, videos_lookup)
+    def watch_video(*args):
+        if videos_lookup == {''} or len(videos_dropdown_field.get()) == 'No videos available':
+            mb.showinfo(title='videos Warning', message="There are no videos available for this GUI.")
+            return
+        if videos_dropdown_field.get() != 'Watch videos':
+            videos_util.get_video(videos_dropdown_field.get(), videos_lookup)
+
+    videos_dropdown_field.trace('w',watch_video)
 
     tips_dropdown_field.set('Open TIPS files')
     if len(TIPS_lookup)==1:

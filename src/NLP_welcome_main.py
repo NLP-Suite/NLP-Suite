@@ -68,7 +68,9 @@ def close_NLP():
     NLP_setup_update_util.exit_window(window, local_release_version, GitHub_release_version)
 
 def watch_video(video_button):
-    videos_util.get_videos('File manager', {'File manager': 'NLP_File manager.mp4'}, video_button, '')
+    videos_lookup = {'Setup external software': 'https://www.youtube.com/watch?v=K8jUe_pKPPQ'}
+    videos_options = 'Setup external software'
+    videos_util.get_video(videos_options, videos_lookup)
 
 images = []
 
