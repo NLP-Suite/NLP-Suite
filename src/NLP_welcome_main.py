@@ -19,7 +19,8 @@ from PIL import Image, ImageTk
 from subprocess import call
 
 import GUI_IO_util
-import videos_util
+# TODO RF
+# import videos_util
 import NLP_setup_update_util
 
 GUI_size = str(GUI_IO_util.get_GUI_width(2)) + 'x600'
@@ -70,7 +71,8 @@ def close_NLP():
 def watch_video(video_button):
     videos_lookup = {'Setup external software': 'https://www.youtube.com/watch?v=K8jUe_pKPPQ'}
     videos_options = 'Setup external software'
-    videos_util.get_video(videos_options, videos_lookup)
+    ## TODO
+    # videos_util.get_video(videos_options, videos_lookup)
 
 images = []
 

@@ -7,8 +7,8 @@ import IO_libraries_util
 # if pafy gives an error
 #   pip uninstall pafy
 #   pip install git+https://github.com/Cupcakus/pafy
-if IO_libraries_util.install_all_packages(GUI_util.window,"videos_util",['tkinter','vlc','pafy'])==False:
-    sys.exit(0)
+# if IO_libraries_util.install_all_packages('',"videos_util",['tkinter','vlc','pafy'])==False:
+#     sys.exit(0)
 
 import tkinter.messagebox as mb
 # importing vlc module
@@ -39,7 +39,7 @@ def get_video(selected_video, lookup):
         if len(lookup[selected_video])==0:
             pass
     except:
-        mb.showinfo(title='videos keyError', message="There was an error in the videos dictionary lookup for \n\n" + selected_videos +"\n\nPlease, report the issue to the NLP Suite developers.")
+        mb.showinfo(title='videos keyError', message="There was an error in the videos dictionary lookup for \n\n" + selected_video +"\n\nPlease, report the issue to the NLP Suite developers.")
         return False
     play_video(lookup[selected_video])
 

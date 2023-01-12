@@ -120,7 +120,7 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
 
 def SSA_annotate(year_state_var,firstName_entry_var,outputDir):
     if year_state_var!= 'Year of birth':
-        return
+        # return
         df1 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_state_year.csv')
         target1 = df1[df1['Name'] == firstName_entry_var]
     df2 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_yearOfBirth.csv')
