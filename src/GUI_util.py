@@ -953,6 +953,26 @@ def handle_setup_options(y_multiplier_integer, scriptName):
     setup_menu.set("Setup")
     return error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var
 
+# Watching video inside the NLP Suite but vlc and pafy gives loads of problems
+# def watch_video(*args):
+#     if videos_lookup == {''} or len(videos_dropdown_field.get()) == 'No videos available':
+#         mb.showinfo(title='videos Warning', message="There are no videos available for this GUI.")
+#         return
+#     if videos_dropdown_field.get() != 'Watch videos':
+#         if not IO_internet_util.check_internet_availability_warning(scriptName):
+#             return
+#         # videos_util.get_video(videos_dropdown_field.get(), videos_lookup)
+
+def watch_video(videos_lookup,scriptName):
+    if videos_lookup == {''} or videos_dropdown_field.get() == 'No videos available':
+        mb.showinfo(title='videos Warning', message="There are no videos available for this GUI.")
+        return
+    if videos_dropdown_field.get() != 'Watch videos':
+        if not IO_internet_util.check_internet_availability_warning(scriptName):
+            return
+        import webbrowser
+        webbrowser.open(videos_lookup[videos_dropdown_field.get()])
+
 def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
                videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName='', silent=False, package_display_area_value=''):
     global config_input_output_alphabetic_options
@@ -1073,17 +1093,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                    videos_menu_lb, True, False, False, False, 90,
                                                    GUI_IO_util.watch_videos_x_coordinate,
                                                    "Use the dropdown menu to select the video to watch.\nWhen videos are available the 'Watch videos' widget is red, otherwise black.")
-    # videos_menu_lb.place(x=GUI_IO_util.watch_videos_x_coordinate,y=GUI_IO_util.basic_y_coordinate+GUI_IO_util.y_step*y_multiplier_integer)
-
-    # videos_util.trace_open_videos(videos_dropdown_field, videos_lookup)
-    def watch_video(*args):
-        if videos_lookup == {''} or len(videos_dropdown_field.get()) == 'No videos available':
-            mb.showinfo(title='videos Warning', message="There are no videos available for this GUI.")
-            return
-        if videos_dropdown_field.get() != 'Watch videos':
-            videos_util.get_video(videos_dropdown_field.get(), videos_lookup)
-    ## TODO RF
-    # videos_dropdown_field.trace('w',watch_video)
+    videos_dropdown_field.trace('w', lambda x, y, z: watch_video(videos_lookup, scriptName))
 
     tips_dropdown_field.set('Open TIPS files')
     if len(TIPS_lookup)==1:

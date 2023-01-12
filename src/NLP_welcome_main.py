@@ -69,9 +69,15 @@ def close_NLP():
     NLP_setup_update_util.exit_window(window, local_release_version, GitHub_release_version)
 
 def watch_video(video_button):
-    videos_lookup = {'Setup external software': 'https://www.youtube.com/watch?v=K8jUe_pKPPQ'}
-    videos_options = 'Setup external software'
-    ## TODO
+    # videos_lookup = {'Setup external software': 'https://www.youtube.com/watch?v=K8jUe_pKPPQ'}
+    # videos_options = 'Setup external software'
+    import IO_internet_util
+    if not IO_internet_util.check_internet_availability_warning(scriptName):
+        return
+    import webbrowser
+    # TODO must change the url link to the welcome video when ready
+    webbrowser.open('https://www.youtube.com/watch?v=K8jUe_pKPPQ')
+    # GUI_util.watch_video(videos_lookup,scriptName)
     # videos_util.get_video(videos_options, videos_lookup)
 
 images = []
