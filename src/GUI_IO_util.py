@@ -601,10 +601,10 @@ if sys.platform == 'darwin':  # Mac OS
 
 # Mac: parsers_annotators
 
-    parsers_annotators_parser_lb_pos = 150
-    parsers_annotators_parser_menu_pos = IO_configuration_menu
-    parsers_annotators_parser_open_CoNLL_pos = 290
-    parsers_annotators_parser_annotator_pos = 230
+    parsers_annotators_parser_lb_pos = labels_x_indented_coordinate + 10
+    parsers_annotators_parser_menu_pos = open_TIPS_x_coordinate # IO_configuration_menu
+    parsers_annotators_parser_open_CoNLL_pos = open_TIPS_x_coordinate
+    parsers_annotators_parser_annotator_pos = open_TIPS_x_coordinate
     parsers_annotators_parser_manual_coref_edit_pos = 800
     parsers_annotators_parser_openGUI_pos = 920
 
@@ -987,10 +987,10 @@ else: #windows and anything else
 
 # Windows: parsers_annotators
 
-    parsers_annotators_parser_lb_pos = 150
-    parsers_annotators_parser_menu_pos = IO_configuration_menu
-    parsers_annotators_parser_open_CoNLL_pos = 290
-    parsers_annotators_parser_annotator_pos = 230
+    parsers_annotators_parser_lb_pos = labels_x_indented_coordinate + 10 # 150
+    parsers_annotators_parser_menu_pos = open_TIPS_x_coordinate # IO_configuration_menu
+    parsers_annotators_parser_open_CoNLL_pos = open_TIPS_x_coordinate
+    parsers_annotators_parser_annotator_pos = open_TIPS_x_coordinate
     parsers_annotators_parser_manual_coref_edit_pos = 800
     parsers_annotators_parser_openGUI_pos = 920
 
