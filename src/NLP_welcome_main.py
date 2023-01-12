@@ -167,18 +167,23 @@ def display_bottom_line_buttons():
                              foreground="black", font=("Arial", 12,"italic"))
     emory.grid(row=9, column=0, columnspan=3, sticky=(tk.N,tk.W),padx=30)
 
+    TIPS_button = tk.Button(window, text='Open TIPS file', width=15, height=1, foreground="red",
+                             font=("Arial", 12, "italic"),
+                             command=lambda: watch_video(TIPS_button))
+    TIPS_button.configure(state='disabled')
+    TIPS_button.grid(row=9, column=1, columnspan=3, sticky=(tk.N,tk.W),padx=30)
+
     video_button = tk.Button(window, text='Watch video', width=15, height=1, foreground="red",
                              font=("Arial", 12, "italic"),
                              command=lambda: watch_video(video_button))
     video_button.configure(state='disabled')
-    video_button.grid(row=9, column=1, columnspan=3, sticky=(tk.N,tk.W),padx=30)
+    video_button.grid(row=9, column=2, columnspan=3, sticky=(tk.N,tk.W),padx=30)
 
     # display Enter NLP button
     enter_button = tk.Button(window, text='Enter NLP Suite', width=20, height=2, foreground="red",
                              font=("Arial", 14, "bold"),
                              command=lambda: run_NLP())
-    # enter_button.grid(row=8, column=4, columnspan=3, rowspan=2, pady=50)
-    enter_button.grid(row=8, column=2, columnspan=2, rowspan=2, pady=50)
+    enter_button.grid(row=8, column=3, columnspan=2, rowspan=2, pady=50)
 
     window.update()
 
@@ -218,7 +223,7 @@ def display_bottom_line_buttons():
     close_button = tk.Button(window, text='CLOSE', width=15, height=1,
                              font=("Arial", 14),
                              command=lambda: close_NLP())
-    close_button.grid(row=9, column=4, columnspan=3, rowspan=2, sticky=(tk.N,tk.W),padx=30)
+    close_button.grid(row=9, column=5, columnspan=3, rowspan=2, sticky=(tk.N,tk.W),padx=30)
 
     window.update()
 
