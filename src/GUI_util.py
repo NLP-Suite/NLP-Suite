@@ -24,7 +24,7 @@ import time
 
 import config_util
 import reminders_util
-import videos_util
+# import videos_util
 import TIPS_util
 import GUI_IO_util
 import IO_files_util
@@ -1082,8 +1082,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             return
         if videos_dropdown_field.get() != 'Watch videos':
             videos_util.get_video(videos_dropdown_field.get(), videos_lookup)
-
-    videos_dropdown_field.trace('w',watch_video)
+    ## TODO RF
+    # videos_dropdown_field.trace('w',watch_video)
 
     tips_dropdown_field.set('Open TIPS files')
     if len(TIPS_lookup)==1:

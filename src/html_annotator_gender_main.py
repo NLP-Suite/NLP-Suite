@@ -49,10 +49,10 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
         mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options and try again.')
         return
 
-    if plot_var and year_state_var!= 'Year of birth':
-        mb.showwarning('Warning',
-                       message='The selected option "' + year_state_var + '" is not available yet.\n\nThe only currently available option is "Year of birth".\n\nSorry!')
-        return
+    # if plot_var and year_state_var!= 'Year of birth':
+    #     mb.showwarning('Warning',
+    #                    message='The selected option "' + year_state_var + '" is not available yet.\n\nThe only currently available option is "Year of birth".\n\nSorry!')
+    #     return
 
     #CoreNLP annotate
     if CoreNLP_gender_annotator_var==True:
