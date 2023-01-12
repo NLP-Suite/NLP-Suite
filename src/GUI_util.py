@@ -963,6 +963,12 @@ def handle_setup_options(y_multiplier_integer, scriptName):
 #             return
 #         # videos_util.get_video(videos_dropdown_field.get(), videos_lookup)
 
+# the video names are set in each GUI with these commands
+#   videos_lookup = {'Setup NLP package & language options': 'https://www.youtube.com/watch?v=-F8C22F_T_E_###'}
+#   videos_options = 'Setup NLP package & language options'
+# or, when no videos are avilable
+#   videos_lookup = {'No videos available': ''}
+#   videos_options = 'No videos available'
 def watch_video(videos_lookup,scriptName):
     if videos_lookup == {''} or videos_dropdown_field.get() == 'No videos available':
         mb.showinfo(title='videos Warning', message="There are no videos available for this GUI.")
@@ -970,8 +976,15 @@ def watch_video(videos_lookup,scriptName):
     if videos_dropdown_field.get() != 'Watch videos':
         if not IO_internet_util.check_internet_availability_warning(scriptName):
             return
-        import webbrowser
-        webbrowser.open(videos_lookup[videos_dropdown_field.get()])
+        import requests
+        url = videos_lookup[videos_dropdown_field.get()]
+        request = requests.get(url, allow_redirects=False)
+        # status_code 200 means that the YouTube video website was found
+        if request.status_code != 200: # or request.status_code == 301 or request.status_code == 302:
+            mb.showinfo(title='video error', message="There was an error in opening the video '" + videos_dropdown_field.get() + "' on YouTube for the GUI '" + scriptName + "'.\n\nThis is an error in the NLP Suite, so, please, report the issue on GitHub with GUI and video names so that the NLP Suite developers can fix the error.")
+        else:
+            import webbrowser
+            webbrowser.open(url)
 
 def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
                videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName='', silent=False, package_display_area_value=''):
@@ -1093,6 +1106,13 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                    videos_menu_lb, True, False, False, False, 90,
                                                    GUI_IO_util.watch_videos_x_coordinate,
                                                    "Use the dropdown menu to select the video to watch.\nWhen videos are available the 'Watch videos' widget is red, otherwise black.")
+    # the video names are set in each GUI with these commands
+    #   videos_lookup = {'Setup NLP package & language options': 'https://www.youtube.com/watch?v=-F8C22F_T_E_###'}
+    #   videos_options = 'Setup NLP package & language options'
+    # or, when no videos are avilable
+    #   videos_lookup = {'No videos available': ''}
+    #   videos_options = 'No videos available'
+
     videos_dropdown_field.trace('w', lambda x, y, z: watch_video(videos_lookup, scriptName))
 
     tips_dropdown_field.set('Open TIPS files')
