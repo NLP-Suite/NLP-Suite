@@ -32,6 +32,6 @@ conda create -y -n NLP python=3.8
 conda activate NLP
 
 conda install pytorch torchvision cudatoolkit -c pytorch
-pip install -r ../src/requirements.txt
+pip install -r src/requirements.txt
 
 echo "\033[0;31m Errors may have occurred in the installation of specific Python packages. Please, scroll up to see if errors occurred or use CTRL+F to search for words such as error or fail"
