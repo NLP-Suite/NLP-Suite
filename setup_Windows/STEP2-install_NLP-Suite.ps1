@@ -13,7 +13,7 @@ conda create -n NLP python=3.8 -y
 conda activate NLP
 
 conda install pytorch torchvision cudatoolkit -c pytorch
-pip install -r ../src/requirements.txt
+pip install -r src/requirements.txt
 
 $WshShell = New-Object -comObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\NLP_Suite.lnk")

@@ -589,8 +589,8 @@ if sys.platform == 'darwin':  # Mac OS
     visualization_K_sent_begin_pos = visualization_csv_field_menu_pos
     visualization_K_sent_end_lb_pos = visualization_filename_label_lb_pos
     visualization_K_sent_end_pos = visualization_filename_label_pos
-    visualization_split_pos = open_reminders_x_coordinate
-    visualization_do_not_split_pos = run_button_x_coordinate # open_reminders_x_coordinate + 200
+    visualization_split_pos = open_setup_x_coordinate
+    visualization_do_not_split_pos = visualization_csv_field2_menu_pos # open_reminders_x_coordinate + 200
 
 # Mac: shape_of_stories
 
@@ -972,11 +972,12 @@ else: #windows and anything else
     visualization_csv_field2_lb_pos = run_button_x_coordinate # 920
     visualization_csv_field2_menu_pos = visualization_csv_field2_lb_pos + 90#1020
 
+    visualization_K_sent_begin_lb = visualization_csv_field_menu_pos
     visualization_K_sent_begin_pos = visualization_csv_field_menu_pos
     visualization_K_sent_end_lb_pos = visualization_filename_label_lb_pos
     visualization_K_sent_end_pos = visualization_filename_label_pos
-    visualization_split_pos = open_reminders_x_coordinate
-    visualization_do_not_split_pos = run_button_x_coordinate # open_reminders_x_coordinate + 400
+    visualization_split_pos = open_setup_x_coordinate
+    visualization_do_not_split_pos = visualization_csv_field2_menu_pos # open_reminders_x_coordinate + 400
 
 # Windows: shape_of_stories
 
