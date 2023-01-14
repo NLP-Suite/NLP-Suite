@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"statistics_txt_util",['nltk','csv','tkinter','os','string','collections','re','textstat','itertools','stanza'])==False:
+if IO_libraries_util.install_all_packages(GUI_util.window,"statistics_txt_util",['nltk','csv','tkinter','os','string','collections','re','textstat','itertools','stanza','spacy'])==False:
     sys.exit(0)
 
 import os
@@ -19,15 +19,15 @@ import stanza
 
 # from nltk import tokenize
 # from nltk import word_tokenize
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
-
-import ast
-import textstat
-import subprocess
-import spacy
-from nltk.tree import Tree
-from nltk.draw import TreeView
-from PIL import Image
+# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+#
+# import ast
+# import textstat
+# import subprocess
+# import spacy
+# from nltk.tree import Tree
+# from nltk.draw import TreeView
+# from PIL import Image
 
 # Sentence Complexity
 import tree
@@ -36,9 +36,9 @@ import node_sentence_complexity as Node
 # from gensim.utils import lemmatize
 from itertools import groupby
 import pandas as pd
-import ast
-import textstat
-import subprocess
+# import ast
+# import textstat
+# import subprocess
 import spacy
 import csv
 import nltk
@@ -46,6 +46,8 @@ from nltk.tree import Tree
 from nltk.draw import TreeView
 from PIL import Image
 
+#For objectivity/subjectivity
+from spacytextblob.spacytextblob import SpacyTextBlob
 
 #whether stopwordst were already downloaded can be tested, see stackoverflow
 #   https://stackoverflow.com/questions/23704510/how-do-i-test-whether-an-nltk-resource-is-already-installed-on-the-machine-runni
@@ -57,11 +59,8 @@ from PIL import Image
 # IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
 
 from nltk.corpus import stopwords
-# from nltk.tokenize import sent_tokenize, word_tokenize
-# from nltk.stem import WordNetLemmatizer
-# from nltk.util import ngrams
 from nltk.corpus import wordnet
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 from itertools import groupby
 import textstat
 
@@ -127,6 +126,7 @@ def lemmatizing(word):#edited by Claude Hu 08/2020
         # that lemmatization is returned as result
         # lemmatizer = WordNetLemmatizer()
         # lemma = lemmatizer.lemmatize(word, p)
+        from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
         lemma = lemmatize_stanza(stanzaPipeLine(word))
         if lemma != word:
             result = lemma
@@ -164,8 +164,14 @@ def excludeStopWords_list(words):
 def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                               excludeStopWords=True, lemmatizeWords=True):
     filesToOpen = []
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus_stats',
-                                                             '')
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='corpus_stats',
+                                                       silent=True)
+    if outputDir == '':
+        return
+
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus_stats', '')
     filesToOpen.append(outputFilename)
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
 
@@ -218,20 +224,24 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
             # currentLine.append([documentID])
             print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
             # currentLine.append([doc])
-            fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
-
-            Nsentences = str(textstat.sentence_count(fullText))
+            # fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
+            f = open(doc, "r", encoding="utf-8", errors="ignore")
+            docText = f.read()
+            f.close()
+            Nsentences = str(textstat.sentence_count(docText))
             # print('TOTAL number of sentences: ',Nsentences)
 
-            Nwords = str(textstat.lexicon_count(fullText, removepunct=True))
+            Nwords = str(textstat.lexicon_count(docText, removepunct=True))
             # print('TOTAL number of words: ',Nwords)
 
-            Nsyllables = textstat.syllable_count(fullText, lang='en_US')
+            Nsyllables = textstat.syllable_count(docText, lang='en_US')
             # print('TOTAL number of Syllables: ',Nsyllables)
 
             # words = fullText.split()
             # words = nltk.word_tokenize(fullText)
-            words = word_tokenize_stanza(stanzaPipeLine(fullText))
+            from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                lemmatize_stanza
+            words = word_tokenize_stanza(stanzaPipeLine(docText))
 
             if excludeStopWords:
                 words = excludeStopWords_list(words)
@@ -242,6 +252,8 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                 for w in words:
                     if w.isalpha():
                         # text_vocab.append(lemmatizer.lemmatize(w.lower()))
+                        from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                            lemmatize_stanza
                         text_vocab.append(lemmatize_stanza(stanzaPipeLine(w.lower())))
 
                 words = text_vocab
@@ -260,7 +272,12 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
                 currentLine[0].append(item[1])  # frequency
             writer = csv.writer(csvfile)
             writer.writerows(currentLine)
+
         csvfile.close()
+
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                           'Finished running document(s) statistics at', True, '', True, startTime,
+                                           False)
 
         # number of sentences in input
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
@@ -359,6 +376,8 @@ def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir,
             print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
             with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
                 text = inputFile.read().replace("\n", " ")
+                from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                    lemmatize_stanza
                 # sentences = tokenize.sent_tokenize(text)
                 sentences = sent_tokenize_stanza(stanzaPipeLine(text))
                 if len(sentences)==0:
@@ -448,6 +467,8 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
                 while line:
                     lineID += 1
                     # words = nltk.word_tokenize(line)
+                    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                        lemmatize_stanza
                     words = word_tokenize_stanza(stanzaPipeLine(line))
                     # print("Line {}: Length (in characters) {} Length (in words) {}".format(lineID, len(line), len(words)))
                     currentLine = [
@@ -510,7 +531,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='Ngrams'+hapax_label,
-                                                       silent=False)
+                                                       silent=True)
     if outputDir == '':
         return
 
@@ -648,6 +669,8 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
 
             if wordgram==1: # word ngrams
                 document_tokens=[]
+                from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                    lemmatize_stanza
                 for tk in word_tokenize_stanza(stanzaPipeLine(text)):
                     document_tokens.append([tk, documentID, file])
                 corpus_tokens.append(document_tokens)
@@ -850,7 +873,7 @@ def print_results(window, words, class_word_list, header, inputFilename, outputD
 
 
 # called by sentence_analysis_main and style_analysis_main
-def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, processType='', excludeStopWords=True,word_length=3):
+def process_words(window, config_filename, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, processType='', excludeStopWords=True,word_length=3):
     filesToOpen=[]
     documentID = 0
     multiple_punctuation=0
@@ -865,6 +888,10 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     column_xAxis_label=''
     hover_label=''
     word_list=[]
+
+    word_list_temp = []
+    word_list_temp3 = []
+
 
     fin = open('../lib/wordLists/stopwords.txt', 'r')
     stops = set(fin.read().splitlines())
@@ -910,6 +937,24 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
         # Excel charts are generated in compute_character_word_ngrams; return to exit here
         return tempOutputFiles
 
+    #For the user input of K sentences or words to be analyzed
+    if 'Repetition: Words' in processType or 'Repetition: Last' in processType:
+        reminder_status = reminders_util.checkReminder(config_filename,
+                                                       reminders_util.title_options_only_CoreNLP_CoNLL_repetition_finder,
+                                                       reminders_util.message_only_CoreNLP_CoNLL_repetition_finder,
+                                                       True)
+
+        if 'Repetition: Last' in processType:
+
+            k_str, useless = GUI_IO_util.enter_value_widget("Enter the number of words, K, to be analyzed", 'K',
+                                                           1, '', '', '')
+        else:
+            k_str, useless = GUI_IO_util.enter_value_widget("Enter the number of sentences, K, to be analyzed", 'K',
+                                                           1, '', '', '')
+        if k_str=='':
+            return
+        k = int(k_str)
+
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         documentID = documentID + 1
@@ -917,20 +962,31 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
 
         fullText = (open(doc, "r", encoding="utf-8", errors="ignore").read())
         fullText = fullText.replace('\n', ' ')
+        from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
         sentences = sent_tokenize_stanza(stanzaPipeLine(fullText))
+
+        rep_words_first = []
+        rep_words_last = []
+        word_list_temp = []
 
         sentenceID = 0  # to store sentence index
         # check each word in sentence for concreteness and write to outputFilename
 
         # analyze each sentence
+        sentence_list = []
         for s in sentences:
             sentenceID = sentenceID + 1
             # print("S" + str(i) +": " + s)
             all_words = []
             found_words = []
             total_words = 0
+            num_words_in_s = s.count(" ") + 1
 
+            from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                lemmatize_stanza
             words = word_tokenize_stanza(stanzaPipeLine(s))
+            words_with_stop = [word for word in words if word.isalpha()]
+            #print(words_with_stop)
             # don't process stopwords
             filtered_words = words
             if processType != '' and not "punctuation" in processType.lower():
@@ -938,10 +994,98 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
                     words = excludeStopWords_list(words)
                     filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
             # words = fullText.translate(string.punctuation).split()
-            for wordID, word in enumerate(filtered_words):
+            #for wordID, word in enumerate(filtered_words):
+            #print(filtered_words)
+
+# SUBJECTIVITY/OBJECTIVITY PER SENTENCE---------------------------------------------------------------------------------------------
+            if "Objectivity/subjectivity" in processType:
+                nlp = spacy.load('en_core_web_sm')
+                nlp.add_pipe('spacytextblob')
+
+                header = ["Subjectivity Score", "Sentence ID", "Sentence", "Document ID", "Document"]
+                select_col = ['Subjectivity Scores']
+                fileLabel = 'Objectivity_subjectivity per sentence'
+                fileLabel_byDocID = 'Objecitivity_subjectivity_per_sentence_byDoc'
+                columns_to_be_plotted_yAxis = ['Subjectivity Score']
+                chart_title_label = 'Frequency of subjectivity scores'
+                chart_title_byDocID = 'Frequency of subjectivity scores by Document'
+                chart_title_bySentID = 'Frequency of subjectivity scores by Sentence ID'
+                column_xAxis_label = 'Subjectivity Scores'
+
+                d = nlp(s)
+                subjectivity_score = d._.blob.subjectivity
+
+                word_list.append([subjectivity_score, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+
+
+            from collections import Counter
+# REPEATED WORDS FIRST K SENTENCES/LAST K SENTENCES  -------------------------------------------------------------------------------
+            if 'Repetition: Words' in processType:
+                for wrdID, wrd in enumerate(filtered_words):
+
+                    header = ["First/Last Sentence", "K Value", "Word", "Word ID", "Sentence ID", "Sentence", "Document ID", "Document"]
+                    select_col = ['Word']
+                    fileLabel = 'K_Sentences'
+                    fileLabel_byDocID ='Rep_Words_First_Last_K_Sentences_byDoc'
+                    columns_to_be_plotted_yAxis = ['Word']
+                    chart_title_label = f'Frequency of repeated words in first and last K ({k}) sentences'
+                    chart_title_byDocID = f'Frequency of repeated words in first and last K ({k}) sentences by Document'
+                    chart_title_bySentID = f'Frequency of repeated words in first and last K ({k}) sentences by Sentence ID'
+                    column_xAxis_label = 'Words'
+
+                    if sentenceID <= k:
+                        word_list_temp.append(["First", k, wrd, wrdID+1, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        rep_words_first.append(wrd)
+
+                    elif sentenceID > len(sentences) - k:
+                        word_list_temp.append(["Last", k, wrd, wrdID+1, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        rep_words_last.append(wrd)
+        #print(rep_words_first)
+        #print(rep_words_last)
+        if "Repetition: Words" in processType:
+            word_list.extend([sublist for sublist in word_list_temp if sublist[2] in rep_words_first and sublist[2] in rep_words_last])
+
+
+
+
+
+
+
+
+
+
+
+
+
+# REPEATED WORDS END OF SENTENCE/BEGINNING NEXT SENTENCE  --------------------------------------------------------------------------
+            if 'Repetition: Last' in processType:
+                for wrdID, wrd in enumerate(words_with_stop):
+                    #print(wordID)
+                    #print(word)
+                    #mb.showwarning("Naman","Naman, this for you!")
+
+                    header = ["First/Last Sentence", "K Value", "Word", "Word ID", "Sentence ID", "Sentence", "Document ID", "Document"]
+                    select_col = ['Word']
+                    # fileLabel = 'Last K words of a sentence and first K words of next sentence'
+                    fileLabel = 'K words'
+                    fileLabel_byDocID = 'Last/First_k_words_byDoc'
+                    columns_to_be_plotted_yAxis=['Word']
+                    chart_title_label = 'Frequency of Last K words of a sentence and first K words of next sentence'
+                    chart_title_byDocID = 'Frequency of Last K words of a sentence and first K words of next sentence by Document'
+                    chart_title_bySentID = 'Frequency of Last K words of a sentence and first K words of next sentence by Sentence Index'
+                    column_xAxis_label = 'Words'
+                    if sentenceID == 1:
+                        if wrdID + 1 > len(words_with_stop) - k:
+                            word_list.append(["Last", k, wrd, wrdID + 1, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+
+                    else:
+                        if wrdID + 1 <= k:
+                            word_list.append(["First", k, wrd, wrdID + 1, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        elif wrdID + 1 > len(words_with_stop) - k:
+                            word_list.append(["Last", k, wrd, wrdID + 1, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
 # SHORT WORDS --------------------------------------------------------------------------
-
+            for wordID, word in enumerate(filtered_words):
                 if processType=='' or "short" in processType.lower():
                     header = ['Short words (<4 characters)', 'Word ID (in sentence)', 'Number of words in sentence', 'Sentence ID','Sentence','Document ID','Document']
                     select_col = ['Short words (<4 characters)']
@@ -1016,6 +1160,44 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
         # hapax and ngrams are processed above outside the for doc loop
         #    a for doc loop is already carried out in the function compute_character_word_ngrams
 
+    # To remove the words that are never repeated
+
+
+
+
+
+
+       # for sublist in word_list_temp:
+        #    if sublist[2] in rep_words_first:
+         #       if sublist[2] not in rep_words_last:
+         #           print(sublist[2])
+         #           word_list.remove(sublist)
+         #   elif sublist[2] in rep_words_last:
+         #       if sublist[2] not in rep_words_first:
+         #           print(sublist[2])
+          #          word_list.remove(sublist)
+
+
+
+
+            #if count_wrd == 1:
+            #    for sublist in word_list:
+            #
+            #        if el == sublist[2]:
+            #            word_list.remove(sublist)
+            #            break
+
+
+
+
+
+
+
+
+        #word_list.sort(key = lambda x: x[4])
+
+    #print(word_list[0])
+
     word_list.insert(0, header)
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', fileLabel)
@@ -1023,15 +1205,32 @@ def process_words(window,inputFilename,inputDir,outputDir, openOutputFiles, crea
     if not IO_error:
         filesToOpen.append(outputFilename)
 
+
+    #if 'Repetition: Words' in processType:
+     #   columns_to_be_plotted_xAxis=[]
+      #  columns_to_be_plotted_yAxis=['Word Count']
+      #  count_var=0
+      #  chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
+      #                                                      outputFilename, outputDir,
+       #                                                     columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
+       #                                                     chartTitle="Word Count for First and Last K (" + str(k) + ") Sentences (in order from left to right)",
+        #                                                    outputFileNameType='k_sent',
+         #                                                   column_xAxis_label='Word Count',
+          #                                                  count_var=count_var,
+           #                                                 hover_label=[],
+            #                                                groupByList=[], # ['Document ID', 'Document'],
+             #                                               plotList=[], #['Concreteness (Mean score)'],
+              #                                              chart_title_label='') #'Concreteness Statistics')
+
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                               chartTitle=chart_title_label,
-                                               count_var=1, hover_label=[],
-                                               outputFileNameType='',  # 'line_bar',
-                                               column_xAxis_label=column_xAxis_label,
-                                               groupByList=['Document ID', 'Document'],
-                                               plotList=['Frequency'],
-                                               chart_title_label='Statistical Measures for ' + column_xAxis_label)
+                                                columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
+                                                chartTitle=chart_title_label,
+                                                count_var=1, hover_label=[],
+                                                outputFileNameType='',  # 'line_bar',
+                                                column_xAxis_label=column_xAxis_label,
+                                                groupByList=['Document ID', 'Document'],
+                                                plotList=['Frequency'],
+                                                chart_title_label='Statistical Measures for ' + column_xAxis_label)
 
     if chart_outputFilename != None:
         filesToOpen.extend(chart_outputFilename)
@@ -1095,6 +1294,8 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
 
             # words = fullText.split()
             # words = nltk.word_tokenize(fullText)
+            from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                lemmatize_stanza
             words = word_tokenize_stanza(stanzaPipeLine(fullText))
 
             if excludeStopWords:
@@ -1104,6 +1305,8 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
                 # lemmatizer = WordNetLemmatizer()
                 # text_vocab = set(lemmatizer.lemmatize(w.lower()) for w in fullText.split(" ") if w.isalpha())
                 # words = set(lemmatizing(w.lower()) for w in words if w.isalpha()) # fullText.split(" ") if w.isalpha())
+                from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                    lemmatize_stanza
                 text_vocab = set(lemmatize_stanza(stanzaPipeLine(w.lower())) for w in fullText.split(" ") if w.isalpha())
                 words = set(lemmatizing(w.lower()) for w in words if w.isalpha()) # fullText.split(" ") if w.isalpha())
 
@@ -1115,7 +1318,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='readability',
-                                                              silent=False)
+                                                              silent=True)
     if outputDir == '':
         return
 
@@ -1255,6 +1458,8 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
 
             # split into sentences
             # sentences = nltk.sent_tokenize(text)
+            from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+                lemmatize_stanza
             sentences = sentences = sent_tokenize_stanza(stanzaPipeLine(text))
             # analyze each sentence in text for readability
             sentenceID = 0  # to store sentence index
@@ -1491,7 +1696,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='complexity',
-                                                              silent=False)
+                                                              silent=True)
     if outputDir == '':
         return
 
@@ -1543,7 +1748,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
         import sys
         # subprocess.check_call([sys.executable, "-m", "pip", "install", "git+https://github.com/stanfordnlp/stanza.git@dev"])
         subprocess.check_call([sys.executable, "-m", "pip", "install", "stanza==1.4.0"])
-        import stanza
+        # import stanza
         nlp = stanza.Pipeline(lang='en', processors='tokenize,pos,constituency',use_gpu=False)
     op = pd.DataFrame(columns=columns)
     for idx, txt in enumerate(all_input_docs.items()):
@@ -1598,8 +1803,9 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
     IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, 'utf-8')
     filesToOpen.append(outputFilename)
     # TODO we need an X-axis to plot these scores against
+    # , 'Frazier score'
     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Yngve score', 'Frazier score'],
+                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Yngve score'],
                                                        chartTitle='Frequency Distribution of Complexity Scores\n(Yngve & Frazier)',
                                                        count_var=0, # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                        hover_label=[],

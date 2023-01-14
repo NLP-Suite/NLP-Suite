@@ -56,6 +56,11 @@ def run(inputFilename, inputDir, outputDir,
             autocorrect_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'spell_autocorrect')
             autocorrect_df.to_csv(autocorrect_file_name,encoding='utf-8', index=False)
             filesToOpen.append(autocorrect_file_name)
+        if checker_value_var == '*' or 'BERT' in checker_value_var:
+            pyspellchecker_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'spell_pyspellchecker')
+            import BERT_util
+            BERT_output = BERT_util.spell_checker_bert(window, inputFilename, inputDir, outputDir, '', createCharts, chartPackage)
+            filesToOpen.append(BERT_output)
         if checker_value_var == '*' or 'pyspellchecker' in checker_value_var:
             pyspellchecker_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'spell_pyspellchecker')
             pyspellchecker_df.to_csv(pyspellchecker_file_name,encoding='utf-8', index=False)
@@ -114,7 +119,7 @@ run_similarity_command = lambda: run(
                                      GUI_util.output_dir_path.get(),
                                      GUI_util.open_csv_output_checkbox.get(),
                                      GUI_util.create_chart_output_checkbox.get(),
-                                     GUI_util.charts_dropdown_field.get(),
+                                     GUI_util.charts_package_options_widget.get(),
                                      by_all_tokens_var.get(),
                                      byNER_value_var.get(),
                                      NER_list,
@@ -171,7 +176,7 @@ window = GUI_util.window
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_numeric_options, config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 NER_list = []
 
@@ -214,33 +219,33 @@ def build_NER_list():
 
 Levenshtein_distance_checkbox = tk.Checkbutton(window, text='Run Levensthein\' distance algorithm', state='normal',
                                                variable=Levenshtein_distance_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                Levenshtein_distance_checkbox)
 
 by_all_tokens_var.set(0)
 by_all_tokens_checkbox = tk.Checkbutton(window, text='Check all tokens (words)', state='normal',
                                         variable=by_all_tokens_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                by_all_tokens_checkbox)
 
 byNER_value_var.set(0)
 byNER_value_checkbox = tk.Checkbutton(window, state='normal', text='Check by NER tag', variable=byNER_value_var,
                                       onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                byNER_value_checkbox)
 
 NER_value_lb = tk.Label(window, text='Select NER tag for computing word similarity')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate() + 20,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate + 20,
                                                y_multiplier_integer, NER_value_lb, True)
 NER_value = tk.OptionMenu(window, NER_value_var, '*', 'CITY', 'COUNTRY', 'STATE_OR_PROVINCE', 'LOCATION',
                           'ORGANIZATION', 'PERSON')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 50, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 50, y_multiplier_integer,
                                                NER_value, True)
 
 selected_NER_list_var.set('')
 selected_NER_list = tk.Entry(window, width=40, textvariable=selected_NER_list_var)
 selected_NER_list.config(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 600, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 600, y_multiplier_integer,
                                                selected_NER_list)
 
 
@@ -260,38 +265,39 @@ activate_NER_list_entry()
 
 similarity_value_var.set(80)
 similarity_value_lb = tk.Label(window, text='Enter word length for computing similarity')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                similarity_value_lb, True)
 similarity_value = tk.Entry(window, width=5, textvariable=similarity_value_var)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                similarity_value, True)
 
 check_withinSubDir_var.set(1)
 check_withinSubDir_checkbox = tk.Checkbutton(window, text='Check WITHIN each subdirectory only',
                                              variable=check_withinSubDir_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 600, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 600, y_multiplier_integer,
                                                check_withinSubDir_checkbox)
 
 spelling_checker_checkbox = tk.Checkbutton(window, text='Run spelling checker',state='normal',variable=spelling_checker_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,spelling_checker_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,spelling_checker_checkbox,True)
 
 checker_value_var.set('*')
 spelling_checker_value_lb = tk.Label(window, text='Select script')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+150,y_multiplier_integer,spelling_checker_value_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+150,y_multiplier_integer,spelling_checker_value_lb,True)
 spelling_checker_value = tk.OptionMenu(window, checker_value_var, '*',
                                        'Language detector',
                                        'Spell checker (via autocorrect)',
-                                       'Spell checker (via pyspellchecker)',
+                                       'Spell checker (via BERT)',
                                        'Spell checker (via NLTK unusual words)',
+                                       'Spell checker (via pyspellchecker)',
                                        'Spell checker (via textblob)',
                                        'Find & Replace string (via csv file)')
 
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,spelling_checker_value,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,spelling_checker_value,True)
 
 check_withinDir_spell_checker_var.set(1)
 check_withinDir_spell_checker_checkbox = tk.Checkbutton(window, text='Check WITHIN main directory only',
                                              variable=check_withinDir_spell_checker_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 600, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 600, y_multiplier_integer,
                                                check_withinDir_spell_checker_checkbox)
 
 def activate_all_options(*args):
@@ -347,7 +353,7 @@ TIPS_lookup = {'Word similarity (Levenshtein edit distance)': 'TIPS_NLP_Word sim
 TIPS_options = 'Word similarity (Levenshtein edit distance)', 'NER (Named Entity Recognition)', 'CoNLL Table', 'POSTAG (Part of Speech Tags)'
 
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
@@ -378,7 +384,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 
-y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
+y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a way of checking for word similarieties (or dissimilarities) using the Levenshtein's distance (also popularly called the edit distance). The algorithm can also be used to check word spelling.\n\nIn INPUT the scripts expect a directory where the software Stanford CoreNLP has been downloaded and a main drectory where txt files to be analyzed are stored.\n\nIn OUTPUT, the scripts will save the csv files and Excel charts written by the various scripts. The csv output list contains words with a frequency greater than 1."

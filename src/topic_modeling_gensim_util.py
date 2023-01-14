@@ -510,7 +510,7 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
 
     if run_Mallet==True:
         # check that the MalletDir as been setup
-        MalletDir, missing_external_software = IO_libraries_util.get_external_software_dir('topic_modeling_gensim', 'Mallet')
+        MalletDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('topic_modeling_gensim', 'MALLET', silent=True, only_check_missing=False)
         if MalletDir==None:
             return
 
@@ -521,7 +521,7 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
                                                    lda_model, data)
 
     if openOutputFiles==True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-            filesToOpen=[] # to avoid opening files twice, here and in calling function
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        filesToOpen=[] # to avoid opening files twice, here and in calling function
 
     return filesToOpen

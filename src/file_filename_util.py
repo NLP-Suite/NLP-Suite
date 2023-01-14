@@ -326,7 +326,7 @@ def processFile(inputPath, outputPath, filename, output_filename,
                 author = ""
 
         if fileName_embeds_date == 1:
-            date, dateStr = IO_files_util.getDateFromFileName(filename, date_separator, date_position, date_format, False)
+            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(filename, date_format, date_separator, date_position, False)
 
         if by_embedded_items_var == 1:
             itemCount = 0

@@ -1,90 +1,68 @@
-#Written by Jack Hester and Roberto Franzosi
+# Written by Roberto Franzosi January 2023
 
 import sys
-import os
-from subprocess import call
-import subprocess
+import GUI_util
+import IO_libraries_util
+
+# if pafy gives an error
+#   pip uninstall pafy
+#   pip install git+https://github.com/Cupcakus/pafy
+# if IO_libraries_util.install_all_packages('',"videos_util",['tkinter','vlc','pafy'])==False:
+#     sys.exit(0)
+
 import tkinter.messagebox as mb
+# importing vlc module
+# try:
+#     import vlc
+# except:
+#     message = "FATAL ERROR. The imort of the vieo module vlc failed. Please, read carefully. The NLP Suite will exit the video script.\n\nThe script '" + \
+#               "\n\nPlease, in command prompt/terminal, type" + \
+#               "\n\nconda activate NLP\n\nThe command will activate the right NLP environment (NLP case sensitive) where to install the package. In the right NLP environment, type" + \
+#               "\n\npip install python-vlc to install the vlc module, close the NLP Suite and try again."
+#     mb.showinfo(title='python-vlc module', message=message)
+#     sys.exit(0)
+import vlc
+# importing pafy module
+import pafy
 
-import GUI_IO_util
+import IO_internet_util
 
-def get_videos(selected_videos,lookup,menu_lb, dropdown_field):
-    # lookup[selected_videos] would throw a keyError 
-    #   if there is a different spelling, even in letter case
-    #   between videos_lookup and videos_options, for instance
-    #   videos_lookup = {'NLP Searches': 'videos_NLP_NLP searches.pdf'}
-    #   videos_options='NLP searches'
+# def get_videos(selected_videos,lookup,menu_lb, dropdown_field):
+def get_video(selected_video, lookup):
+    # lookup[selected_video] contains the YouTube video url
+    if selected_video=='Watch videos':
+        return
+    if lookup=={''} or selected_video=='No videos available':
+        mb.showinfo(title='videos Warning', message="There are no videos available for this GUI.")
+        return
     try:
-        if len(lookup[selected_videos])==0:
+        if len(lookup[selected_video])==0:
             pass
     except:
-        mb.showinfo(title='videos keyError', message="There was an error in the videos dictionary lookup for \n\n" + selected_videos +"\n\nPlease, report the issue to the NLP Suite developers.")
+        mb.showinfo(title='videos keyError', message="There was an error in the videos dictionary lookup for \n\n" + selected_video +"\n\nPlease, report the issue to the NLP Suite developers.")
         return False
-    if selected_videos=='No videos available':
-        mb.showinfo(title='videos Warning', message="There are no videos available for this script.")
-        return False
-    if menu_lb['state']!='disabled':
-        if os.path.isfile(os.path.join(GUI_IO_util.videosPath, lookup[selected_videos]))==False:
-            videosFile_Exists=False
-            mb.showinfo(title='videos Warning', message="The videos file\n\n"+lookup[selected_videos]+"\n\ncould not be found in your videos directory.")
-            return False
-        else:
-            videosFile_Exists=True
-            if sys.platform in ['win32','cygwin','win64']:
-                subprocess.Popen([GUI_IO_util.videosPath + os.sep + lookup[selected_videos]], shell=True)
-            else:
-                call(['open', GUI_IO_util.videosPath + os.sep + lookup[selected_videos]])
-        return videosFile_Exists
+    play_video(lookup[selected_video])
 
-def checkvideosDir(menu_lb):
-    videos_dir_exists = True
-    # win_videosSubdir = os.path.join(NLPPath,'videos') #videosPath+os.sep+'videos'+os.sep
-    # unix_videosSubdir = os.path.join(NLPPath,'videos') #'videos'+os.sep
-    if not os.path.isdir(GUI_IO_util.videosPath):
-        mb.showinfo(title='videos Warning', message='The script could not find a videos subdirectory. videos should be stored in a subdirectory called videos where your python script is stored.')
-        menu_lb.configure(state='disabled')
-        videos_dir_exists = False
-    return videos_dir_exists
+# #Trace and open videos files based on user selection
+# field = None
+# lookup = None
 
-#Trace and open videos files based on user selection
-field = None
-lookup = None
-menu = None
-def videos_Tracer(*args):
-    if len(field.get())=='No videos available':
-        mb.showinfo(title='videos Warning', message="There are no videos available for this script.")
+def play_video(video_url):
+    if not IO_internet_util.check_internet_availability_warning("videos_util.py"):
         return
-    foundvideos = checkvideosDir(menu)
-    if foundvideos and field.get()!='Watch videos':
-        get_videos(field.get(),lookup, menu, field)
-
-"""
-Use the following convention in GUI_util for those scripts that have no videos
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
-"""
-def trace_open_videos(field_local,menu_local,lookup_local):
-    # print("field_local,menu_local,lookup_local ",field_local,menu_local,lookup_local)
-    if lookup_local=={''}:
-        mb.showinfo(title='videos Warning', message="There are no videos available for this script.")
+    try:
+        # creating pafy object of the video
+        video = pafy.new(video_url)
+    except:
+        # if pafy gives an error
+        #   pip uninstall pafy
+        #   pip install git+https://github.com/Cupcakus/pafy
+        mb.showinfo(title='Warning', message="The YouTube video module pafy has raised an error.\n\nPlease, in command line/prompt and in the NLP environment type\n\npip uninstall pafy\n\nWhen uninstalling pafy is complete, type\n\npip install git+https://github.com/Cupcakus/pafy\n\nClose the NLP Suite and try again.")
         return
-    global field, lookup, menu
-    field=field_local
-    lookup=lookup_local
-    menu=menu_local
-    field.trace("w",videos_Tracer)
-
-def open_videos(selected_videos):
-    if os.path.isfile(os.path.join(GUI_IO_util.videosPath, selected_videos)) == False:
-        videosFile_Exists = False
-        mb.showinfo(title='videos Warning', message="The video file\n\n" + lookup[
-            selected_videos] + "\n\ncould not be found in your videos directory.")
-        return False
-    else:
-        videosFile_Exists = True
-        if sys.platform in ['win32', 'cygwin', 'win64']:
-            subprocess.Popen([GUI_IO_util.videosPath + os.sep + selected_videos], shell=True)
-        else:
-            call(['open', GUI_IO_util.videosPath + os.sep + selected_videos])
-    return videosFile_Exists
-
+    # getting best stream
+    best = video.getbest()
+    # creating vlc media player object
+    media = vlc.MediaPlayer(best.url)
+    # media.set_hwnd(GUI_util.window.handle)
+    # start playing video
+    media.play()

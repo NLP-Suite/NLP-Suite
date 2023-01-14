@@ -69,7 +69,7 @@ run_script_command=lambda: run(
                 GUI_util.output_dir_path.get(),
                 GUI_util.open_csv_output_checkbox.get(),
                 GUI_util.create_chart_output_checkbox.get(),
-                GUI_util.charts_dropdown_field.get(),
+                GUI_util.charts_package_options_widget.get(),
                 all_csv_stats_var.get(),
                 csv_field_stats_var.get(),
                 csv_list,
@@ -117,7 +117,7 @@ window = GUI_util.window
 inputFilename = GUI_util.inputFilename
 inputDir = GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_numeric_options, config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 n_grams_list=[]
 csv_list = []
@@ -162,11 +162,11 @@ window.bind("<Escape>", clear)
 
 # corpus_statistics_var.set(1)
 # corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute document(s) statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,corpus_statistics_checkbox,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,corpus_statistics_checkbox,True)
 #
 # corpus_statistics_options_menu_var.set('*')
 # corpus_statistics_options_menu_lb = tk.Label(window, text='Statistics options')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,corpus_statistics_options_menu_lb,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
 #
 # corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_menu_var,
 #                                                 '*',
@@ -174,13 +174,13 @@ window.bind("<Escape>", clear)
 #                                                'Compute sentence length',
 #                                                'Compute line length',
 #                                                )
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+370,y_multiplier_integer,corpus_statistics_options_menu, True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+370,y_multiplier_integer,corpus_statistics_options_menu, True)
 #
 # corpus_text_options_menu_var.set('')
 # corpus_options_menu_lb = tk.Label(window, text='Text options')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 600,y_multiplier_integer,corpus_options_menu_lb,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 600,y_multiplier_integer,corpus_options_menu_lb,True)
 # corpus_text_options_menu = tk.OptionMenu(window, corpus_text_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 700,y_multiplier_integer,corpus_text_options_menu)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 700,y_multiplier_integer,corpus_text_options_menu)
 #
 # def activate_corpus_options(*args):
 #     if corpus_statistics_var.get()==True:
@@ -193,27 +193,27 @@ window.bind("<Escape>", clear)
 #
 # n_grams_var.set(0)
 # n_grams_checkbox = tk.Checkbutton(window, text='Compute N-grams', variable=n_grams_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,n_grams_checkbox,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,n_grams_checkbox,True)
 #
 # n_grams_menu_lb = tk.Label(window, text='N-grams type')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,n_grams_menu_lb,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+140,y_multiplier_integer,n_grams_menu_lb,True)
 # n_grams_menu_var.set('Word')
 # n_grams_menu = tk.OptionMenu(window, n_grams_menu_var, 'Character', 'Word','DEPREL','POSTAG')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,n_grams_menu)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,n_grams_menu)
 #
 # n_grams_options_menu_lb = tk.Label(window, text='N-grams options')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,n_grams_options_menu_lb,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,n_grams_options_menu_lb,True)
 # n_grams_options_menu = tk.OptionMenu(window, n_grams_options_menu_var, 'Hapax legomena (unigrams)','Normalize n-grams', 'Exclude punctuation (word n-grams only)','By sentence index','End sentence/Begin sentence (word n-grams only)')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,n_grams_options_menu,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+140,y_multiplier_integer,n_grams_options_menu,True)
 #
 # add_n_grams_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_n_grams_var())
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer,add_n_grams_button, True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+500,y_multiplier_integer,add_n_grams_button, True)
 #
 # reset_n_grams_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_n_grams_list())
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+540,y_multiplier_integer,reset_n_grams_button,True)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+540,y_multiplier_integer,reset_n_grams_button,True)
 #
 # show_n_grams_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_n_grams_list())
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+600,y_multiplier_integer,show_n_grams_button)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+600,y_multiplier_integer,show_n_grams_button)
 #
 # def reset_n_grams_list():
 #     n_grams_list.clear()
@@ -250,29 +250,30 @@ all_csv_field_checkbox = tk.Checkbutton(window, text='Compute statistics on all 
                                         variable=all_csv_stats_var, onvalue=1, offvalue=0,
                                         command=lambda: get_script_to_run(
                                             'Compute statistics on all csv-file fields (numeric fields only)'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                all_csv_field_checkbox)
 
 csv_field_stats_var.set(0)
 csv_field_checkbox = tk.Checkbutton(window, text='Compute frequencies of specific csv-file field',
                                     variable=csv_field_stats_var, onvalue=1, offvalue=0,
                                     command=lambda: get_script_to_run('Compute frequencies of specific csv-file field'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                csv_field_checkbox, True)
 
 menu_values = ['']
 
 reset_csv_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_csv_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300,y_multiplier_integer,reset_csv_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_reset_csv_button_pos,y_multiplier_integer,reset_csv_button,True)
 
 show_csv_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_csv_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+360,y_multiplier_integer,show_csv_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_show_csv_button_pos,y_multiplier_integer,show_csv_button,True)
 
 csv_field_lb = tk.Label(window, text='csv field')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 430, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_field_lb_pos, y_multiplier_integer,
                                                csv_field_lb, True)
+
 csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 500, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_field_menu_pos, y_multiplier_integer,
                                                csv_field_menu)
 
 def reset_csv_list():
@@ -318,27 +319,29 @@ def activate_hover_over_field_menu():
 # add extra group_by field
 add_field3_button = tk.Button(window, text='+', width=2, height=1, state='disabled',
                               command=lambda: activate_groupBy_field_menu())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                add_field3_button, True)
 
 csv_groupBy_field_lb = tk.Label(window, text='Group-by field')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 60, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_groupBy_field_lb_pos, y_multiplier_integer,
                                                csv_groupBy_field_lb, True)
+
 csv_groupBy_field_menu = tk.OptionMenu(window, csv_groupBy_field_var, *menu_values)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 160, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_groupBy_field_menu_pos, y_multiplier_integer,
                                                csv_groupBy_field_menu, True)
 
 # add extra hover_over field
 add_field2_button = tk.Button(window, text='+', width=2, height=1, state='disabled',
                               command=lambda: activate_hover_over_field_menu())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 500, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_add_field2_button_pos, y_multiplier_integer,
                                                add_field2_button, True)
 
 csv_hover_over_field_lb = tk.Label(window, text='Hover-over field')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 540, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_hover_over_field_lb_pos, y_multiplier_integer,
                                                csv_hover_over_field_lb, True)
+
 csv_hover_over_field_menu = tk.OptionMenu(window, csv_hover_over_field_var, *menu_values)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 640, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_hover_over_field_menu_pos, y_multiplier_integer,
                                                csv_hover_over_field_menu)
 
 
@@ -495,7 +498,7 @@ TIPS_lookup = {'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems
 TIPS_options = 'Statistical tools in the NLP Suite', 'Statistical descriptive measures', 'csv files - Problems & solutions', 'Lemmas & stopwords', 'Excel smoothing data series'
 
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
@@ -518,7 +521,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
+y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "The Python 3 scripts provide ways of analyzing csv files and obtain basic descriptive statistics."

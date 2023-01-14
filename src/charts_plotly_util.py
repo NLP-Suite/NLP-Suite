@@ -7,6 +7,8 @@ import IO_libraries_util
 
 if IO_libraries_util.install_all_packages(GUI_util.window,"charts_plotly_util",['os','pandas','plotly','kaleido'])==False:
     sys.exit(0)
+# if plotly fails, install version 0.1.0 of kaleido
+# pip install kaleido==0.1.0post1
 
 import pandas as pd
 import plotly.express as px
@@ -34,12 +36,10 @@ import IO_csv_util
 #                        second_y_var=0,
 #                        second_yAxis_label=''):
 # match the excel chart format
-# TODO Tony when plotting bar charts with documents in the X-axis we need to remove the path and just keep the tail
-#   or the display is too messy
 def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_to_plot,
                         column_xAxis_label='',
                         column_yAxis_label='',
-                        remove_hyperlinks=False,
+                        remove_hyperlinks=True,
                         static_flag=False):
     # if we need to remove the hyperlinks, we need to make a temporary data for plotting
     if remove_hyperlinks:

@@ -18,6 +18,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
 from subprocess import call
+import webbrowser
 
 import GUI_IO_util
 import IO_files_util
@@ -44,7 +45,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_chart_output_checkbox.get(),
-                            GUI_util.charts_dropdown_field.get(),
+                            GUI_util.charts_package_options_widget.get(),
                             script_to_run,
                             IO_values)
 
@@ -54,7 +55,7 @@ GUI_util.run_button.configure(command=run_script_command)
 
 IO_setup_display_brief=False
 
-GUI_width=GUI_IO_util.get_GUI_width(1)
+GUI_width=GUI_IO_util.get_GUI_width(2)
 GUI_height=670 # height of GUI with full I/O display
 
 GUI_size = str(GUI_width) + 'x' + str(GUI_height)
@@ -186,11 +187,11 @@ def checkIO_Filename_InputDir(script, IO_values_local=0, fileExtension=''):
 pydict = {}
 pydict[""] = ["", 0]  # not available
 # https://stanfordnlp.github.io/CoreNLP/quote.html
-pydict["NLP parsers & annotators (CoreNLP, spaCy, Stanza)"] = ["NLP_parsers_annotators_main.py", 1]
-pydict["CoreNLP annotator - date (NER normalized date)"] = ["NLP_parsers_annotators_main.py", 1]
+pydict["Parsers & annotators (BERT, CoreNLP, spaCy, Stanza)"] = ["parsers_annotators_main.py", 1]
+pydict["CoreNLP annotator - date (normalized NER date)"] = ["parsers_annotators_main.py", 1]
 pydict["CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)"] = ["html_annotator_gender_main.py", 1]
-pydict["CoreNLP annotator - quote"] = ["NLP_parsers_annotators_main.py", 1]
-pydict["CoreNLP annotator - coreference (pronominal)"] = ["Stanford_CoreNLP_coreference_main.py", 1]
+pydict["CoreNLP annotator - quote"] = ["parsers_annotators_main.py", 1]
+pydict["CoreNLP annotator - coreference (pronominal)"] = ["coreference_main.py", 1]
 pydict["SVO (Subject-Verb-Object) extractor & visualization"] = ["SVO_main.py", 1]
 pydict["Knowledge graphs: DBpedia & YAGO"] = ["knowledge_graphs_DBpedia_YAGO_main.py", 1]
 pydict["HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)"] = ["html_annotator_main.py", 1]
@@ -200,9 +201,9 @@ pydict["CoNLL table analyzer - Search the CoNLL table"] = ["CoNLL_table_analyzer
 pydict["CoNLL table analyzer - Clause, noun, verb, function words frequencies"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Statistics (csv files)"] = ["statistics_csv_main.py", 1]
 pydict["Statistics (txt files)"] = ["style_analysis_main.py", 1]
-pydict["Co-Reference PRONOMINAL resolution (via Stanford CoreNLP)"] = ["NLP_parsers_annotators_main.py", 1]
+pydict["Co-Reference PRONOMINAL resolution (via Stanford CoreNLP)"] = ["parsers_annotators_main.py", 1]
 pydict["Co-Occurrences viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
-pydict["Data manager (csv files via Pandas)"] = ["data_manager_main.py", 1]
+pydict["Data manipulation (csv files via Pandas)"] = ["data_manipulation_main.py", 1]
 pydict["File checker (file content)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File checker (file content utf-8 encoding)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File checker (file name)"] = ["file_manager_main.py", 1]
@@ -210,7 +211,7 @@ pydict["File cleaner (Change to ASCII non-ASCII apostrophes & quotes and % to pe
 pydict["File cleaner (Find & Replace string)"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File cleaner (Remove blank lines from txt file(s))"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["File cleaner (Add full stop . at the end of paragraphs without end-of-paragraph punctuation)"] = ["file_checker_converter_cleaner_main.py", 1]
-pydict["File cleaner (Pronominal resolution via CoreNLP)"] = ["Stanford_CoreNLP_coreference_main.py", 1]
+pydict["File cleaner (Pronominal resolution via CoreNLP)"] = ["coreference_main.py", 1]
 pydict["File classifier (dumb classifier via embedded date) (file name)"] = ["file_classifier_main.py", 1]
 pydict["File finder (file name)"] = ["file_manager_main.py", 1]
 pydict["File search (file content for words/collocations)"] = ["file_search_byWord_main.py", 1]
@@ -223,15 +224,14 @@ pydict["File splitter (file name)"] = ["file_splitter_main.py", 1]
 pydict["File manager (List, Rename, Copy, Move, Delete, Count, Split)"] = ["file_manager_main.py", 1]
 pydict["Find non-related documents"] = ["social_science_research_main.py", 1]
 pydict["Excel charts"] = ["charts_Excel_main.py", 1]
-pydict["Network graphs (Gephi)"] = ["visualization_main.py", 1]  # ["", 0] not available
+pydict["Network graphs (Gephi)"] = ["data_visualization_main.py", 1]
 pydict["Geographic maps: Geocoding & maps"] = ["GIS_main.py", 1]
 pydict["Geographic maps: Google Earth Pro"] = ["GIS_Google_Earth_main.py", 1]
 pydict["Geographic maps: From texts to maps"] = ["GIS_main.py", 1]
 pydict["Geographic distances between locations"] = ["GIS_distance_main.py", 1]  # GIS_distance_main.py
 pydict["Gender guesser"] = ["Gender guesser", 0, 0, '']
 pydict["Language detection"] = ["style_analysis_main.py", 1]
-pydict["NER (Named Entity Recognition) extractor"] = ["Stanford_CoreNLP_NER_main.py", 1]  # ',0 not available
-pydict["NER (Named Entity Recognition) extractor by sentence index"] = ["Stanford_CoreNLP_NER_main.py", 1]
+pydict["NER (Named Entity Recognition) annotator"] = ["NER_main.py", 1]
 pydict["Newspaper article/Document titles"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["N-grams (word & character)"] = ["style_analysis_main.py", 1]
 pydict["N-grams viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
@@ -248,6 +248,8 @@ pydict["Sentence/text readability (via textstat)"] = ["sentence_analysis_main.py
 pydict["Sentence visualization: Dependency tree viewer (png graphs)"] = ["sentence_analysis_main.py", 1]
 pydict["Sentence visualization: Dynamic sentence network viewer (Gephi graphs)"] = ["", 0]  # not available
 pydict["Sentiment analysis"] = ["sentiment_analysis_main.py", 1]
+pydict['Sentiment analysis (dictionary options: ANEW, hedonometer, SentiWordNet, VADER)'] = ["sentiment_analysis_main.py", 1]
+pydict['Sentiment analysis (neural network/tensor options: BERT, spaCy, Stanford CoreNLP, Stanza)'] = ["sentiment_analysis_main.py", 1]
 pydict["Sentiments/emotions (ALL options GUI)"] = ["sentiments_emotions_ALL_main.py", 1]
 pydict["Shape of stories"] = ["shape_of_stories_main.py", 1]
 pydict["Similarities between documents (via Java Lucene)"] = ["social_science_research_main.py", 1]
@@ -260,20 +262,26 @@ pydict["Spelling checker cleaner (Find & Replace string)"] = ["file_checker_conv
 # pydict["Spelling checker (via pyspellchecker)"] = ["file_spell_checker_main.py", 1]
 # pydict["Spelling checker (via textblob)"] = ["file_spell_checker_main.py", 1]
 pydict["SQL database (via SQLite)"] = ["DB_SQL_main.py", 1]
-pydict["Stanford CoreNLP"] = ["NLP_parsers_annotators_main.py", 1]
+pydict["Stanford CoreNLP"] = ["parsers_annotators_main.py", 1]
 pydict["Semantic analysis (via TensorFlow)"] = ["", 0]
 pydict["SRL Semantic Role Labeling"] = ["", 0]
 pydict["Dictionary items by sentence index"] = ["sentence_analysis_util.dictionary_items_bySentenceID", 0, 3, 'txt']
-pydict["Topic modeling (via Gensim)"] = ["topic_modeling_gensim_main.py", 1]
-pydict["Topic modeling (via MALLET)"] = ["topic_modeling_mallet_main.py", 1]
+pydict["Topic modeling (via MALLET & Gensim)"] = ["topic_modeling_main.py", 1]
 pydict["utf-8 compliance"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["Style analysis (ALL options GUI)"] = ["style_analysis_main.py", 1]
-pydict["Narrative analysis (ALL options GUI)"] = ["narrative_analysis_main.py", 1]
+pydict["Narrative analysis (ALL options GUI)"] = ["narrative_analysis_ALL_main.py", 1]
 pydict["WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW"] = ["whats_in_your_corpus_main.py", 1]
 pydict["Corpus/document(s) statistics (Sentences, words, lines)"] = ["style_analysis_main.py", 1]
 pydict["Wordclouds (ALL options GUI)"] = ["wordclouds_main.py", 1]
 pydict["WordNet"] = ["knowledge_graphs_WordNet_main.py", 1]
-pydict["Word2Vec (via Gensim)"] = ["word2vec_main.py", 1]
+pydict["Word embeddings (Word2Vec) (via BERT & Gensim)"] = ["word2vec_main.py", 1]
+# pydict["Word embeddings (Word2Vec) (via spaCy)"] = ["", 0]
+pydict["------------------"] = ["", 2]
+# the following labels are found in constants_util
+#   'Fundamental NLP tools ---------------------------------------------------------------------------'
+#   'Specialized tools --------------------------------------------------------------------------------'
+#   'Style analysis tools -----------------------------------------------------------------------------------'
+# all pydict values are grouped together in constants_util.py
 
 # NLP Suite team & How to cite are in GUI_util
 
@@ -289,8 +297,12 @@ sentence_tools_var = tk.StringVar()
 
 setup_IO_OK_checkbox = tk.Checkbutton(window, state='disabled',
                                       variable=setup_IO_OK_checkbox_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               setup_IO_OK_checkbox, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                             setup_IO_OK_checkbox,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "The checkbox, always disabled, is ticked ON when the I/O options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default I/O options...' button to set up.")
 
 def setup_IO():
     GUI_util.setup_IO_configuration_options(False,scriptName,True)
@@ -303,18 +315,26 @@ def setup_IO_checkbox():
     else:
         setup_IO_OK_checkbox_var.set(0)
 
-IO_setup_button = tk.Button(window, text='Setup default I/O options: INPUT corpus file(s) and OUTPUT files directory', width=95, font=("Courier", 10, "bold"), command=lambda: setup_IO())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+30, y_multiplier_integer,
-                                               IO_setup_button,True)
+IO_setup_button = tk.Button(window, text='SETUP default I/O options: INPUT file/directory (corpus) and OUTPUT files directory', width=95, font=("Courier", 10, "bold"), command=lambda: setup_IO())
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
+                                               y_multiplier_integer,
+                                               IO_setup_button, True, False, False, False, 90,
+                                               GUI_IO_util.labels_x_coordinate+30,
+                                               "You will probably use the same document(s) (i.e., corpus), written in the same language, for different analyses using different NLP tools, and exporting results to the same directory.\n Click on the SETUP button to setup Input/Output (I/O) options.\nYour selected options will be used as default in all GUIs; but you can change your preferences at any time; and every GUI also allows you to setup GUI-specific I/O options.")
 
 open_default_IO_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_default_IO_config.csv'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button, y_multiplier_integer,
-                                               open_default_IO_config_button, False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button-300, "Open the NLP_default_IO_config.csv file containing the default Input/Output options")
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_IO_config_button, y_multiplier_integer,
+                                               open_default_IO_config_button, False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate, "Open the NLP_default_IO_config.csv file containing the default Input/Output options")
 
 handle_setup_options_OK_checkbox = tk.Checkbutton(window, state='disabled',
                                       variable=handle_setup_options_OK_checkbox_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               handle_setup_options_OK_checkbox, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                             handle_setup_options_OK_checkbox,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "The checkbox, always disabled, is ticked ON when the parser/annotator and corpus language options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default NLP parser...' button to set up.")
 
 NLP_package_language_config = GUI_IO_util.configPath+os.sep+'NLP_default_package_language_config.csv'
 def handle_setup_options_checkbox(NLP_package_language_config):
@@ -326,94 +346,113 @@ handle_setup_options_OK_checkbox_var.trace('w', lambda x, y, z: handle_setup_opt
 
 handle_setup_options_checkbox(NLP_package_language_config)
 
-NLP_package_language_setup_button = tk.Button(window, text='Setup default NLP parser & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+30, y_multiplier_integer,
-                                               NLP_package_language_setup_button,True)
+NLP_package_language_setup_button = tk.Button(window, text='SETUP default NLP parsers & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
+                                               y_multiplier_integer,
+                                               NLP_package_language_setup_button, True, False, False, False, 90,
+                                               GUI_IO_util.labels_x_coordinate+30,
+                                               "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi).\nClick on the Setup button to select your preferred parser software (e.g., Stanford CoreNLP) and the laguage of your corpus (e.g., English)\nYour selected options will be used as default in all GUIs; but you can change your preferences at any time.")
 
 open_default_NLP_package_language_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, NLP_package_language_config))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_NLP_package_language_config_button, y_multiplier_integer,
-                                               open_default_NLP_package_language_config_button, False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button-300, "Open the NLP_default_package_language_config.csv file containing the default NLP parser and annotators and corpus language options")
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_NLP_package_language_config_button, y_multiplier_integer,
+                                               open_default_NLP_package_language_config_button, False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate, "Open the NLP_default_package_language_config.csv file containing the default NLP parser and annotators and corpus language options")
 
 setup_software_checkbox = tk.Checkbutton(window, state='disabled',
-                                         variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
-                                               setup_software_checkbox,True)
+                                         variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0, command=lambda: setup_external_programs_checkbox('',False))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                             setup_software_checkbox,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "The checkbox, always disabled, is ticked ON when all external software have been installed.\nIf the checkbox is OFF, click on the 'SETUP external software' button to set up.")
+
 software_dir = ''
 
-def setup_external_programs_checkbox(software):
+def setup_external_programs_checkbox(software, only_check_missing=False):
     global software_dir
     silent = False
-    only_check_missing = False
     if setup_software_OK_checkbox_var.get()==0 or software != '':
         if software_dir == None and software == '':
             return
-        software_dir, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu', software, silent, only_check_missing)
-        if len(missing_external_software) > 0:
+        # missing_external_software = IO_libraries_util.get_missing_external_software_list('NLP_menu', '', '',True)
+        software_dir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu', software, silent, only_check_missing)
+        if missing_external_software!='':
+
             setup_software_OK_checkbox_var.set(0)
         else:
             setup_software_OK_checkbox_var.set(1)
-setup_software_OK_checkbox_var.trace('w', lambda x, y, z: setup_external_programs_checkbox(''))
+    return missing_external_software
+# setup_software_OK_checkbox_var.trace('w', lambda x, y, z: setup_external_programs_checkbox(''))
 
 def callback(software: str):
+    print('IN CALLBACK')
     software_setup_var.set(software)
-    setup_external_programs_checkbox(software)
+    setup_external_programs_checkbox(software,False)
 
 def setup_software_warning():
     global software
     mb.showwarning('External software option', 'Please, select next the external software that you would like to download/install using the dropdown menu.')
-    software = GUI_IO_util.dropdown_menu_widget(window, "Please, select the external software to setup using the dropdown menu on the left, then click OK to accept your selection", ['Stanford CoreNLP', 'Gephi', 'Google Earth Pro', 'MALLET', 'SENNA', 'WordNet'],'Stanford CoreNLP',callback)
+    software = GUI_IO_util.dropdown_menu_widget(window, "Please, select the external software to setup using the dropdown menu on the left, then click OK to accept your selection", ['Stanford CoreNLP', 'Gephi', 'Google Earth Pro', 'MALLET', 'WordNet'],'Stanford CoreNLP',callback)
     if software != None:
-        setup_external_programs_checkbox(software)
+        setup_external_programs_checkbox(software,True)
 
 # software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_software_warning())
-software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_external_software_main.py", shell=True))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+30, y_multiplier_integer,
-                                               software_setup_button,True)
+software_setup_button = tk.Button(window, text='SETUP external software', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_external_software_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
+                                               y_multiplier_integer,
+                                               software_setup_button, True, False, False, False, 90,
+                                               GUI_IO_util.labels_x_coordinate+30,
+                                               "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi)\nClick on the Setup button to download and install these freeware software packages\nYou only have to do this once")
 
 open_setup_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_setup_external_software_config.csv'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_setup_software_button, y_multiplier_integer,
-                                               open_setup_button, False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+GUI_IO_util.open_IO_config_button-300, "Open the NLP_setup_external_software_config.csv file containing all external software installation paths")
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_setup_software_button, y_multiplier_integer,
+                                               open_setup_button, False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate, "Open the NLP_setup_external_software_config.csv file containing all external software installation paths")
 
 general_tools_lb = tk.Label(window, text='General Utility Tools', foreground="red",font=("Courier", 12, "bold"))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                general_tools_lb)
 
 # setup GUI widgets
 data_file_handling_tools_var.set('')
 file_handling_lb = tk.Label(window, text='Data & Files Handling Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                file_handling_lb, True)
 data_file_handling_tools_menu = ttk.Combobox(window, width = 90, textvariable = data_file_handling_tools_var)
 data_file_handling_tools_menu['values'] = constants_util.NLP_Suite_data_file_handling_tools_menu
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, data_file_handling_tools_menu, False, False, True, False, 90, GUI_IO_util.get_entry_box_x_coordinate(), "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, data_file_handling_tools_menu,
+                                             False, False, True, False,
+                                             90, GUI_IO_util.entry_box_x_coordinate,
+                                             "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
 
 pre_processing_tools_var.set('')
 pre_processing_lb = tk.Label(window, text='Pre-Processing Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                pre_processing_lb, True)
 
 pre_processing_tools_menu = ttk.Combobox(window, width = 90, textvariable = pre_processing_tools_var)
 pre_processing_tools_menu['values'] = constants_util.NLP_Suite_pre_processing_tools_menu
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, pre_processing_tools_menu, False, False, True, False, 90, GUI_IO_util.get_entry_box_x_coordinate(), "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, pre_processing_tools_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
 
 statistical_tools_var.set('')
 statistical_tools_lb = tk.Label(window, text='Statistical Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                statistical_tools_lb, True)
 statistical_tools_menu = ttk.Combobox(window, width = 90, textvariable = statistical_tools_var)
 statistical_tools_menu['values'] = ['Statistics (csv files)','Statistics (txt files)']
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, statistical_tools_menu, False, False, True, False, 90, GUI_IO_util.get_entry_box_x_coordinate(), "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, statistical_tools_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
 
 visualization_lb = tk.Label(window, text='Visualization Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                visualization_lb, True)
 visualization_menu = ttk.Combobox(window, width = 90, textvariable = visualization_tools_var)
 visualization_menu['values'] = constants_util.NLP_Suite_visualization_tools_menu
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, visualization_menu, False, False, True, False, 90, GUI_IO_util.get_entry_box_x_coordinate(), "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, visualization_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
 
 # (startX, startY, endX, endY) where endX is the width of window
 # https://stackoverflow.com/questions/40390746/how-to-correctly-use-tkinter-create-line-coordinates
@@ -423,38 +462,38 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_
 
 linguistic_tools_lb = tk.Label(window, text='Linguistic Analysis Tools', foreground="red",font=("Courier", 12, "bold"))
 # text.configure(font=("Times New Roman", 12, "bold"))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                linguistic_tools_lb)
 
 corpus_tools_lb = tk.Label(window, text='CORPUS Analysis Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                corpus_tools_lb, True)
 # tools that apply exclusively to a corpus
 corpus_menu = ttk.Combobox(window, width = 90, textvariable = corpus_tools_var)
 corpus_menu['values'] = constants_util.NLP_Suite_corpus_tools_menu
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, corpus_menu, False, False, True, False, 90, GUI_IO_util.get_entry_box_x_coordinate(), "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, corpus_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
 
 # 'KWIC (Key Word In Context)')
 
 # corpus_document_tools_var.set('')
 corpus_document_tools_lb = tk.Label(window, text='CORPUS/DOCUMENT Analysis Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                corpus_document_tools_lb, True)
 #tools that can be applied to either corpus or single document
 corpus_documents_menu = ttk.Combobox(window, width = 90, textvariable = corpus_document_tools_var)
 corpus_documents_menu['values'] = constants_util.NLP_Suite_corpus_document_tools_menu
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, corpus_documents_menu, False, False, True, False, 90, GUI_IO_util.get_entry_box_x_coordinate(), "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, corpus_documents_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
 
 sentence_tools_var.set('')
 sentence_tools_lb = tk.Label(window, text='SENTENCE Analysis Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                sentence_tools_lb, True)
 sentence_tools_menu = ttk.Combobox(window, width = 90, textvariable = sentence_tools_var)
 sentence_tools_menu['values'] = ['Sentence analysis (ALL options GUI)']
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer, sentence_tools_menu, False, False, True, False, 90, GUI_IO_util.get_entry_box_x_coordinate(), "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, sentence_tools_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
 
 
 def getScript(script):
@@ -469,8 +508,15 @@ corpus_tools_var.trace('w', lambda x, y, z: getScript(corpus_tools_var.get()))
 corpus_document_tools_var.trace('w', lambda x, y, z: getScript(corpus_document_tools_var.get()))
 sentence_tools_var.trace('w', lambda x, y, z: getScript(sentence_tools_var.get()))
 
-videos_lookup = {'Help':'Help.mp4','IO Setup':'IO_Setup.mp4'}
-videos_options = 'Help','IO Setup'
+def openYouTube(video_url):
+    if video_url!='':
+        webbrowser.open_new_tab(video_url)
+    else:
+        mb.showwarning(title='Warning',
+                   message='The YouTube video ' + video_url + ' could not be found in the NLP Suite YouTube channel.\n\nPlease, warn the NLP Suite developers.')
+
+videos_lookup = {'Setup the NLP Suite':'https://www.youtube.com/watch?v=W56SU9oAbpc'}
+videos_options = 'Setup the NLP Suite'
 
 TIPS_lookup = {'NLP Suite: Package description': 'TIPS_NLP_NLP Suite Package description.pdf',
                'pip install & Anaconda environments': 'TIPS_NLP_Anaconda NLP environment pip.pdf',
@@ -499,7 +545,7 @@ TIPS_options = 'NLP Suite: Package description', 'pip install & Anaconda environ
 # 'KWIC',
 # 'KWIC':'TIPS_NLP_KWIC (Key Words In Context).pdf'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate,y_multiplier_integer):
@@ -535,33 +581,43 @@ def help_buttons(window, help_button_x_coordinate,y_multiplier_integer):
                                   "Please, using the dropdown menu, select one of the many options available for analyzing your corpus/document by sentence index.\n\nTHE TOOLS IN THIS CATEGORY, APPLY TO EITHER MULTIPLE DOCUMENTS (THE 'CORPUS') OR TO A SINGLE DOCUMENT; BUT THEY ALSO PROVIDE SENTENCE-BASED INFORMATION FOR MORE IN-GRAINED ANALYSES.\n\nIn INPUT the tools expect either multiple documents stored in a directory (the 'corpus') or a single document." + GUI_IO_util.msg_Esc)
 
     return y_multiplier_integer
-y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
+y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
-readMe_message = "This Python 3 script is the front end for a wide collection of Java and Python Natural Language Processing (NLP) tools.\n\nThe set of tools are divided into GENERAL TOOLS (data and file handling, pre-processing, statistical, visualization) and LINGUISTIC ANALYSIS TOOLS.\n\nLINGUISTIC ANALYSIS TOOLS are divided into tools that expect in input CORPUS DATA (i.e., multiple documents stored in a directory), CORPUS and/or SINGLE DOCUMENT, and SENTENCE.\n\nWhile some linguistic tools are specific for one of these three categories (e.g., topic modeling cannot be performed on a single document), MANY TOOLS OVERLAP. Tools that can work on a single file or a corpus are all classified under CORPUS/DOCUMENT tools. SENTENCE TOOLS still require either a corpus or a single document in input; but they also provide in output sentence-level information for more ingrained linguistic analyses.\n\nAll tools are open source freeware software released under the GNU LGPLv2.1 license (http://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html).\n\nYou can cite the NLP Suite as:\n\nFranzosi, Roberto. 2020. NLP Suite: A collection of natural language processing and visualization tools GitHub: https://github.com/NLP-Suite/NLP-Suite/wiki."
+readMe_message = "This Python 3 script is the front end for a wide collection of Java and Python Natural Language Processing (NLP) tools.\n\nThe set of tools are divided into GENERAL UTILITY TOOLS (data and file handling, pre-processing, statistical, visualization) and LINGUISTIC ANALYSIS TOOLS.\n\nLINGUISTIC ANALYSIS TOOLS are divided into tools that expect in input CORPUS DATA (i.e., multiple documents stored in a directory), CORPUS and/or SINGLE DOCUMENT, and SENTENCE.\n\nWhile some linguistic tools are specific for one of these three categories (e.g., topic modeling cannot be performed on a single document), MANY TOOLS OVERLAP. Tools that can work on a single file or a corpus are all classified under CORPUS/DOCUMENT tools. SENTENCE TOOLS still require either a corpus or a single document in input; but they also provide in output sentence-level information for more ingrained linguistic analyses.\n\nAll tools are open source freeware software released under the GNU LGPLv2.1 license (http://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html).\n\nYou can cite the NLP Suite as:\n\nFranzosi, Roberto. 2020. NLP Suite: A collection of natural language processing and visualization tools GitHub: https://github.com/NLP-Suite/NLP-Suite/wiki."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 if platform == 'darwin':
     window.update()
 
-routine_options = reminders_util.getReminders_list('NLP_config.csv')
+temp_config_filename = config_filename # 'NLP_menu_config.csv'
+routine_options = reminders_util.getReminders_list(temp_config_filename)
 
-reminders_util.checkReminder('NLP_config.csv',
-                             reminders_util.title_options_NLP_Suite_welcome,
-                             reminders_util.message_NLP_Suite_welcome,
-                             True)
-
-reminders_util.checkReminder('NLP_config.csv',
+reminders_util.checkReminder(temp_config_filename,
                              reminders_util.title_options_NLP_Suite_architecture,
                              reminders_util.message_NLP_Suite_architecture,
                              True)
-routine_options = reminders_util.getReminders_list('NLP_config.csv')
+routine_options = reminders_util.getReminders_list(temp_config_filename)
+
+if sys.platform == 'darwin':
+    reminders_util.checkReminder(temp_config_filename,
+                                 reminders_util.title_options_TensorFlow,
+                                 reminders_util.message_TensorFlow,
+                                 True)
+    routine_options = reminders_util.getReminders_list(temp_config_filename)
 
 # check for missing I/O configuration options
 setup_IO_checkbox()
 
 # check for missing external software
-setup_external_programs_checkbox('')
+missing_external_software = setup_external_programs_checkbox('', True)
+
+if missing_external_software!='':
+    reminders_util.checkReminder(temp_config_filename,
+                                 reminders_util.title_options_missing_external_software_NLP_main_GUI,
+                                 reminders_util.message_missing_external_software_NLP_main_GUI,
+                                 True)
+    routine_options = reminders_util.getReminders_list(temp_config_filename)
 
 GUI_util.window.mainloop()

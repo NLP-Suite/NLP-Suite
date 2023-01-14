@@ -92,7 +92,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
-                                GUI_util.charts_dropdown_field.get(),
+                                GUI_util.charts_package_options_widget.get(),
                                 compute_sentence_length_var.get(),
                                 visualize_bySentenceIndex_var.get(),
                                 visualize_bySentenceIndex_options_var.get(),
@@ -151,7 +151,7 @@ config_input_output_numeric_options=GUI_util.config_input_output_numeric_options
 config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 # GUI CHANGES cut/paste special GUI widgets from GUI_util
 
@@ -228,15 +228,15 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 compute_sentence_length_checkbox = tk.Checkbutton(window, text='Compute sentence length', variable=compute_sentence_length_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,compute_sentence_length_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,compute_sentence_length_checkbox)
 
 sentence_complexity_var.set(0)
 sentence_complexity_checkbox = tk.Checkbutton(window, text='Sentence complexity', variable=sentence_complexity_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sentence_complexity_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,sentence_complexity_checkbox)
 
 text_readability_var.set(0)
 text_readability_checkbox = tk.Checkbutton(window, text='Sentence/text readability (via textstat)', variable=text_readability_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,text_readability_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,text_readability_checkbox)
 
 def getScript(script):
 	global script_to_run, IO_values
@@ -248,18 +248,18 @@ visualize_bySentenceIndex_options_var.trace('w', lambda x,y,z: getScript(visuali
 
 visualize_sentence_structure_var.set(0)
 visualize_sentence_structure_checkbox = tk.Checkbutton(window, text='Visualize sentence structure (via dependency tree)', variable=visualize_sentence_structure_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,visualize_sentence_structure_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,visualize_sentence_structure_checkbox)
 
 extract_sentences_var.set(0)
 extract_sentences_checkbox = tk.Checkbutton(window, text='Extract sentences from corpus', variable=extract_sentences_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,extract_sentences_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extract_sentences_checkbox,True)
 
 search_words_var.set('')
 search_words_lb = tk.Label(window, text='Word(s) in sentence')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200,y_multiplier_integer,search_words_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200,y_multiplier_integer,search_words_lb,True)
 search_words_entry = tk.Entry(window, textvariable=search_words_var)
 search_words_entry.configure(width=100)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+340,y_multiplier_integer,search_words_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+340,y_multiplier_integer,search_words_entry)
 
 def activate_extract_sentences(*args):
     if extract_sentences_var.get()==False:
@@ -288,7 +288,7 @@ TIPS_lookup = {'Clause analysis':'TIPS_NLP_Clause Analysis.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf'}
 TIPS_options='Clause analysis', 'Sentence complexity', 'Text readability','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
@@ -307,7 +307,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words).\n\nThe widget 'Words in sentence' will become available once you select the option. You will need to enter there the words/set of words that a sentence must contain in order to be extracted from input and saved in output. Words/set of words must be entered in DOUBLE QUOTES (e.g., \"The New York Times\") and comma separated (e.g., \"The New York Times\" , \"The Boston Globe\"). When running the script, the script will ask you if you want to process the search word(s) as case sensitive (thus, if you opt for case sensitive searches, a sentence containing the word 'King' will not be selected in output if in the widget 'Word(s) in sentence' you have entered 'king').\n\nIn INPUT, the script expects a single txt file or a directory.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract.txt and containing, for each input file, all the sentences that have the search word(s);\n2. files ending with _extract_wo-searchword.txt and containing, for each input file, the sentences that do NOT have the search word(s) in them.\n\nOutput files are saved in two subdirectories 'sentences\extract_with-searchword' and 'sentences\extract_wo-searchword' of the output directory."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide a variety of tools for fine-grained analyses of texts, visualizing the ebb and flow of writing, the tempo of writing."

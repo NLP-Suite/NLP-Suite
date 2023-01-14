@@ -4,7 +4,7 @@ import sys
 import IO_libraries_util
 import GUI_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "NLP",
+if IO_libraries_util.install_all_packages(GUI_util.window, "NLP_welcome_main",
                                           ['os', 'tkinter', 'itertools', 'PIL', 'subprocess']) == False:
     sys.exit(0)
 
@@ -19,10 +19,11 @@ from PIL import Image, ImageTk
 from subprocess import call
 
 import GUI_IO_util
-import videos_util
+# TODO RF
+# import videos_util
 import NLP_setup_update_util
 
-GUI_size = str(GUI_IO_util.get_GUI_width(1)) + 'x600'
+GUI_size = str(GUI_IO_util.get_GUI_width(2)) + 'x600'
 
 GUI_util.set_window(GUI_size, '', '', '')
 
@@ -64,10 +65,20 @@ def run_NLP():
 
 def close_NLP():
     global local_release_version, GitHub_release_version
-    NLP_setup_update_util.exit_window(window, '', 'NLP_welcome_main', [0,0,0,0], [], local_release_version, GitHub_release_version)
+    # NLP_setup_update_util.exit_window(window, '', 'NLP_welcome_main', [0,0,0,0], [], local_release_version, GitHub_release_version)
+    NLP_setup_update_util.exit_window(window, local_release_version, GitHub_release_version)
 
 def watch_video(video_button):
-    videos_util.get_videos('File manager', {'File manager': 'NLP_File manager.mp4'}, video_button, '')
+    # videos_lookup = {'Setup external software': 'https://www.youtube.com/watch?v=K8jUe_pKPPQ'}
+    # videos_options = 'Setup external software'
+    import IO_internet_util
+    if not IO_internet_util.check_internet_availability_warning(scriptName):
+        return
+    import webbrowser
+    # TODO must change the url link to the welcome video when ready
+    webbrowser.open('https://www.youtube.com/watch?v=K8jUe_pKPPQ')
+    # GUI_util.watch_video(videos_lookup,scriptName)
+    # videos_util.get_video(videos_options, videos_lookup)
 
 images = []
 
@@ -156,18 +167,23 @@ def display_bottom_line_buttons():
                              foreground="black", font=("Arial", 12,"italic"))
     emory.grid(row=9, column=0, columnspan=3, sticky=(tk.N,tk.W),padx=30)
 
+    TIPS_button = tk.Button(window, text='Open TIPS file', width=15, height=1, foreground="red",
+                             font=("Arial", 12, "italic"),
+                             command=lambda: watch_video(TIPS_button))
+    TIPS_button.configure(state='disabled')
+    TIPS_button.grid(row=9, column=1, columnspan=3, sticky=(tk.N,tk.W),padx=30)
+
     video_button = tk.Button(window, text='Watch video', width=15, height=1, foreground="red",
                              font=("Arial", 12, "italic"),
                              command=lambda: watch_video(video_button))
     video_button.configure(state='disabled')
-    video_button.grid(row=9, column=1, columnspan=3, sticky=(tk.N,tk.W),padx=30)
+    video_button.grid(row=9, column=2, columnspan=3, sticky=(tk.N,tk.W),padx=30)
 
     # display Enter NLP button
     enter_button = tk.Button(window, text='Enter NLP Suite', width=20, height=2, foreground="red",
                              font=("Arial", 14, "bold"),
                              command=lambda: run_NLP())
-    # enter_button.grid(row=8, column=4, columnspan=3, rowspan=2, pady=50)
-    enter_button.grid(row=8, column=2, columnspan=2, rowspan=2, pady=50)
+    enter_button.grid(row=8, column=3, columnspan=2, rowspan=2, pady=50)
 
     window.update()
 
@@ -186,7 +202,7 @@ def display_bottom_line_buttons():
 
     label_enter = enter_button.cget('text')
 
-    text_info_enter = "Pressing the Enter button will give you access to all the text analysis options available in the NLP Suite."
+    text_info_enter = "Click to access all the tools in the NLP Suite.\n\nLasciate ogni speranza, voi ch'entrate/Abandon hope all ye who enter here (Dante Inferno/Hell III, 9)."
 
     # widget label, i.e., words displayed in the widget
     # e.widget_name.cget('text'),
@@ -207,7 +223,7 @@ def display_bottom_line_buttons():
     close_button = tk.Button(window, text='CLOSE', width=15, height=1,
                              font=("Arial", 14),
                              command=lambda: close_NLP())
-    close_button.grid(row=9, column=4, columnspan=3, rowspan=2, sticky=(tk.N,tk.W),padx=30)
+    close_button.grid(row=9, column=5, columnspan=3, rowspan=2, sticky=(tk.N,tk.W),padx=30)
 
     window.update()
 
@@ -225,7 +241,7 @@ def display_bottom_line_buttons():
     label_close = close_button.cget('text')
     current_color_close = close_button.cget('foreground') # not used since CLOSE is in black
 
-    text_info_close="Pressing the CLOSE button will trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."\
+    text_info_close="Pressing the CLOSE button in any of the GUIs triggers the automatic update of the NLP Suite, pulling the latest release from GitHub.\nThe new release is displayed the next time you open your local NLP Suite."\
                                                    "\nYou must be connected to the internet for the auto update to work."
     # widget label, i.e., words displayed in the widget
     # e.widget_name.cget('text'),

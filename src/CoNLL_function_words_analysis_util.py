@@ -135,7 +135,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
             count_var=0
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted, function_words_stats_file_name, outputDir,
+            chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_prep',
                                                             chartPackage=chartPackage,
                                                             chart_type_list=['bar'],

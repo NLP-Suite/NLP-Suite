@@ -11,7 +11,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window,"Newspaper titles",['o
 
 import glob
 import os
-from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
+# from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
 import string
 import tkinter as tk
 import tkinter.messagebox as mb
@@ -302,6 +302,7 @@ def isTitle(sentence,Title_length_limit):
         return True
 
 def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPackage):
+    from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
 
     if inputDir=='' and inputFilename!='':
         NUM_DOCUMENT=1
@@ -564,6 +565,7 @@ def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFil
 
     if string_IN == []:#if string_IN empty, string_IN and string_OUT will be typed in
         string_in, string_out = GUI_IO_util.enter_value_widget("Enter the FIND & REPLACE strings (CASE SENSITIVE)", 'Find',2,'','Replace','')
+
         #put input strings into list so that they can be processed
         string_IN = [string_in]
         string_OUT = [string_out]

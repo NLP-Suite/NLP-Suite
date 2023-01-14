@@ -1,7 +1,6 @@
 # Created on Thu Nov 21 09:45:47 2019
 # @author: jack hester
 # rewritten by Roberto Franzosi October 2021
-# rewritten by Chen Gong 2022 Spring
 
 import sys
 from tracemalloc import start
@@ -84,7 +83,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
             else:
                 annotationOpts = annotationOpts + annotationTypes[i] + ','
     # stores color options
-    
+
     # loop through every file and annotate via request to DBpedia
     files = IO_files_util.getFileList(inputFile, inputDir, '.txt')
     nFile = len(files)
@@ -100,7 +99,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
 
 
     url_certificate = ssl.SSLContext()  # Only for url
- 
+
 
     adjust = '\n\nIf DBpedia fails and returns in command line "The command line is too long", lower the value of the file size using the slider widget and try again.'
     if sys.platform == 'win32':
@@ -254,7 +253,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
             HyperLinkedDoc.append(hyperLinkedDoc)
 
         df = pd.DataFrame(list(zip(Phrase,HyperLinkedURL,Ontology_class,HyperLinkedDoc)),columns=['Token','URL','Ontology class','Document'])
-       
+
         # generate CSV file
         #
         # from datetime import datetime
@@ -355,7 +354,7 @@ def extract_html(content, annotationTypes, doc, url_num):
             request = form_request(url, type)
             res = get_request(request)
             # print(res)
-            if res: 
+            if res:
                 ta = update_color(ta, type)
                 find_ont = True
                 prev = prev + ta
@@ -455,7 +454,7 @@ def get_query_res(query):
         return None
 
     print(results)
-    
+
 def check_ontology(annotationTypes):
     res = []
     for type in annotationTypes:
@@ -481,7 +480,7 @@ def preprocessing(contents):
     contents = contents.replace("/", ' or ')
     return contents
 
-    
+
 
 
 if __name__ == '__main__':

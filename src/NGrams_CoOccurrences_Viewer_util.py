@@ -2,16 +2,20 @@
 # re-written by Roberto Franzosi October 2021
 # completed by Austin Cai October 2021
 
-import GUI_util
+import os
+import tkinter.messagebox as mb
 import pandas as pd
 import csv
 import numpy as np
 import pprint
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+# from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+import stanza
 
+import GUI_util
 import IO_files_util
 import IO_csv_util
 import IO_user_interface_util
+import constants_util
 
 """
 NGramsCoOccurrences implements the ability to generate NGram and CoOccurrences data
@@ -23,23 +27,42 @@ def run(inputDir="relative_path_here",
         n_grams_viewer=False,
         CoOcc_Viewer=True,
         search_wordsLists=None,
+        language_list=['English'],
+        useLemma=False,
         dateOption=False,
         temporal_aggregation='year',
         number_of_years=0,
-        datePos=2,
         dateFormat="mm-dd-yyyy",
         itemsDelimiter="_",
-        temporalAggregation="",
+        datePos=2,
         viewer_options_list=[]):
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
-                                       'Started running Word/Characters N-Grams at',
+                                       'Started running Words/Characters N-Grams VIEWER at',
                                        True, '', True, '', False)
+
+    from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
     if search_wordsLists is None:
         search_wordsLists = []
     checkCoOccList = False
 
+    lang_dict = dict(constants_util.languages)
+    lang = ''
+    lang_list = []
+    for k,v in lang_dict.items():
+        if v == language_list[0]:
+            lang = k
+            lang_list.append(lang)
+            break
+    try:
+        if useLemma:
+            stanzaPipeLine = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
+        else:
+            stanzaPipeLine = stanza.Pipeline(lang=lang, processors='tokenize')
+    except:
+        mb.showwarning(title='Warning', message='You must enter an integer value. The value ' + str(result[0]) + ' is not an integer.')
+        return
     case_sensitive = False
     normalize = False
     scaleData = False
@@ -55,7 +78,6 @@ def run(inputDir="relative_path_here",
     if 'Scale' in str(viewer_options_list):
         scaleData = True
     if 'Lemmatize' in str(viewer_options_list):
-        useLemma = True
         useLemma = True
 
 
@@ -89,9 +111,13 @@ def run(inputDir="relative_path_here",
 
     if n_grams_viewer and byYear and dateOption:
         yearList = []
+        docIndex = 1
         for file in files:  # iterate over each file
-            date, dateStr = IO_files_util.getDateFromFileName(file, itemsDelimiter, datePos, dateFormat)
-            yearList.append(int(dateStr[-4:]))
+            head, tail = os.path.split(file)
+            print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
+            docIndex += 1
+            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
+            yearList.append(year)
         yearList = sorted(np.unique(yearList))
         for word in search_word_list:
             ngram_results[word] = {}
@@ -100,14 +126,17 @@ def run(inputDir="relative_path_here",
                                           "Frequency": 0}
 
         pprint.pprint(ngram_results)
+        print()
         docIndex = 1
         for file in files:  # iterate over each file
+            head, tail = os.path.split(file)
+            print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
             docIndex += 1
             # extract the date from the file name
-            date, dateStr = IO_files_util.getDateFromFileName(file, itemsDelimiter, datePos, dateFormat)
+            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
             if date == '':
-                continue  # TODO: Warn user this file has a bad date; done in getDate
-            year = int(dateStr[-4:])
+                continue  # TODO: getDate warns user is this file has a bad date
+            year = int(year)
             f = open(file, "r", encoding='utf-8', errors='ignore')
             docText = f.read()
             f.close()
@@ -126,12 +155,10 @@ def run(inputDir="relative_path_here",
                         for i in range(length_of_search_list):
                             if i == 0:
                                 if split_search_word[i] == token:
-                                    # print("yes")
                                     checker = True
                             else:
                                 if checker and (collocationIndex + i) < len(tokens_):
                                     if split_search_word[i] == tokens_[collocationIndex + i]:
-                                        # print("yes")
                                         checker = True
                                     else:
                                         checker = False
@@ -139,7 +166,6 @@ def run(inputDir="relative_path_here",
                             ngram_results[search_word][year]["Frequency"] += 1
                     else:
                         if search_word == token:
-                            # print(search_word, 'FOUND!!!!!', file)
                             ngram_results[search_word][year]["Frequency"] += 1
 
         if byNumberOfYears > 1:
@@ -171,9 +197,13 @@ def run(inputDir="relative_path_here",
     if n_grams_viewer and dateOption and (byMonth or byQuarter):
         monthList = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
         yearList = []
+        docIndex = 1
         for file in files:  # iterate over each file
-            date, dateStr = IO_files_util.getDateFromFileName(file, itemsDelimiter, datePos, dateFormat)
-            yearList.append(int(dateStr[-4:]))
+            head, tail = os.path.split(file)
+            print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
+            docIndex += 1
+            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
+            yearList.append(year)
         yearList = sorted(np.unique(yearList))
 
         for word in search_word_list:
@@ -183,15 +213,17 @@ def run(inputDir="relative_path_here",
                 for m in monthList:
                     ngram_results[word][str(y)][m] = {"Search Word(s)": word,
                                                       "Frequency": 0}
+        pprint.pprint(ngram_results)
+        print()
         docIndex = 1
         for file in files:  # iterate over each file
+            head, tail = os.path.split(file)
+            print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
             docIndex += 1
             # extract the date from the file name
-            date, dateStr = IO_files_util.getDateFromFileName(file, itemsDelimiter, datePos, dateFormat)
+            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
             if date == '':
-                continue  # TODO: Warn user this file has a bad date; done in getDate
-            year = dateStr[-4:]
-            month = dateStr[0:2]
+                continue  # TODO: getDate warns user is this file has a bad date
             f = open(file, "r", encoding='utf-8', errors='ignore')
             docText = f.read()
             f.close()
@@ -209,23 +241,30 @@ def run(inputDir="relative_path_here",
                     if iterations > 0:
                         for i in range(length_of_search_list):
                             if i == 0:
-                                if split_search_word[i] == token:
-                                    # print("yes")
-                                    checker = True
+                                if "Chinese" in language_list:
+                                    if split_search_word[i] in token:
+                                        checker = True
+                                else:
+                                    if split_search_word[i] == token:
+                                        checker = True
                             else:
                                 if checker and (collocationIndex + i) < len(tokens_):
                                     if split_search_word[i] == tokens_[collocationIndex + i]:
-                                        # print("yes")
                                         checker = True
                                     else:
                                         checker = False
                         if checker:
-                            ngram_results[search_word][year][month]["Frequency"] += 1
+                            ngram_results[search_word][str(year)][str(month).zfill(2)]["Frequency"] += 1
                     else:
-                        if search_word == token:
-                            # print(search_word, 'FOUND!!!!!', file)
-                            ngram_results[search_word][year][month]["Frequency"] += 1
+                        if "Chinese" in language_list:
+                            if search_word in token:
+                                ngram_results[search_word][str(year)][str(month).zfill(2)]["Frequency"] += 1
+                        else:
+                            if search_word == token:
+                                ngram_results[search_word][str(year)][str(month).zfill(2)]["Frequency"] += 1
 
+
+# aggregate by quarter
         if byQuarter:
             quarter_ngram_results = {}
             for word, yearDict in ngram_results.items():
@@ -268,9 +307,9 @@ def run(inputDir="relative_path_here",
             index = 0
             # extract the date from the file name
             if dateOption:
-                date, dateStr = IO_files_util.getDateFromFileName(file, itemsDelimiter, datePos, dateFormat)
+                date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
                 if date == '':
-                    continue  # TODO: Warn user this file has a bad date; done in getDate
+                    continue  # TODO: getDate warns user is this file has a bad date
             else:
                 date = ''
                 f = open(file, "r", encoding='utf-8', errors='ignore')
@@ -295,21 +334,27 @@ def run(inputDir="relative_path_here",
                             if iterations > 0:
                                 for i in range(length_of_search_list):
                                     if i == 0:
-                                        if split_search_word[i] == token:
-                                            # print("yes")
-                                            checker = True
+                                        if "Chinese" in language_list:
+                                            if split_search_word[i] in token:
+                                                checker = True
+                                        else:
+                                            if split_search_word[i] == token:
+                                                checker = True
                                     else:
                                         if checker and (collocationIndex + i) < len(tokens_):
                                             if split_search_word[i] == tokens_[collocationIndex + i]:
-                                                # print("yes")
                                                 checker = True
                                             else:
                                                 checker = False
                                 if checker:
                                     coOcc_results[search_word] = 2
                             else:
-                                if search_word == token:
-                                    coOcc_results[search_word] = 1
+                                if "Chinese" in language_list:
+                                    if search_word in token:
+                                        coOcc_results[search_word] = 1
+                                else:
+                                    if search_word == token:
+                                        coOcc_results[search_word] = 1
                         co_occurrence_checker = True
                         for word in search_word_list:
                             if word not in list(coOcc_results.keys()):
@@ -336,7 +381,7 @@ def run(inputDir="relative_path_here",
     NgramsFileName, coOccFileName = save(NgramsFileName, coOccFileName, ngram_results, coOcc_results_binary, aggregateBy, temporal_aggregation)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
-                                       'Finished running Word/Characters N-Grams at', True, '', True, startTime, False)
+                                       'Finished running Words/Characters N-Grams VIEWER at', True, '', True, startTime, False)
 
     return NgramsFileName, coOccFileName
 
@@ -400,7 +445,6 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
             newdf.rename(columns={'year_temp': 'year'}, inplace=True)
             newdf.rename(columns={'yearMonth_temp': 'year-' + temporal_aggregation}, inplace=True)
 
-        print(newdf)
         newdf.to_csv(NgramsFileName, encoding='utf-8', index=False)
     if len(coOcc_results)>0:
         # with open(os.path.join(WCOFileName, outputDir), 'w', encoding='utf-8') as f:

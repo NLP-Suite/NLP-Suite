@@ -21,7 +21,7 @@ import nltk
 # check WordNet
 IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
 
-from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
+# from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
 # MUST use this version or code will break no longer true; pywsd~=1.2.4 pip install pywsd~=1.2.4; even try pip install pywsd=1.2.2
 #   or this version pip install pywsd==1.0.2
 # https://github.com/alvations/pywsd/issues/65
@@ -53,6 +53,7 @@ import GUI_IO_util
 #count1 #excludes word='NO NOMINALIZATION'
 def nominalized_verb_detection(docID,doc,sent):
     # sentences = tokenize.sent_tokenize(sent)
+    from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
     sentences = sent_tokenize_stanza(stanzaPipeLine(sent))
 
     result = []
@@ -393,7 +394,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
-                                GUI_util.charts_dropdown_field.get(),
+                                GUI_util.charts_package_options_widget.get(),
                                 doNotCreateIntermediateFiles_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -436,14 +437,14 @@ config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 input_main_dir_path=GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 doNotCreateIntermediateFiles_var = tk.IntVar() #when an entire directory is processed; could lead to an enourmus number of output files
 doNotCreateIntermediateFiles_var.set(1)
 
 doNotCreateIntermediateFiles_checkbox = tk.Checkbutton(window, variable=doNotCreateIntermediateFiles_var, onvalue=1, offvalue=0)
 doNotCreateIntermediateFiles_checkbox.config(text="Do NOT produce intermediate csv files when processing all txt files in a directory")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,doNotCreateIntermediateFiles_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,doNotCreateIntermediateFiles_checkbox)
 
 def changeLabel_nomin(*args):
     if doNotCreateIntermediateFiles_var.get()==1:
@@ -465,7 +466,7 @@ videos_options='No videos available'
 TIPS_lookup = {'Nominalization':'TIPS_NLP_Nominalization.pdf'}
 TIPS_options='Nominalization'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
@@ -482,7 +483,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 
     return y_multiplier_integer -1
 
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts analyzes a text file for instances of nominaliztion (i.e., the use of nouns instead of verbs, such as 'the lynching' occurred).\n\nNominalization, together with passive verb voices, can be used to deny agency. In fact, in an expression such as 'the lynching occurred' there is no mention of an agent, of who did it."

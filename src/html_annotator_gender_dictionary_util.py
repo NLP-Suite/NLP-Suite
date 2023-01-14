@@ -2,13 +2,13 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if not IO_libraries_util.install_all_packages(GUI_util.window,"Stanford_CoreNLP_clause_util",['tkinter','pandas','stanza']):
+if not IO_libraries_util.install_all_packages(GUI_util.window,"html_annotator_gender_dictionary_util",['tkinter','pandas','stanza']):
     sys.exit(0)
 
 import os
 import pandas as pd
 from tkinter import messagebox as mb
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import csv
 
 import GUI_IO_util
@@ -20,6 +20,7 @@ import Stanford_CoreNLP_util
 
 
 def text_generate(inputFilename, inputDir):
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
     articles = []
     if inputFilename == '':
         for folder, subs, files in os.walk(inputDir):
@@ -50,7 +51,6 @@ def text_generate(inputFilename, inputDir):
 
 
 def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, dictionary_file, personal_pronouns_var):
-
     document_length_var = 90000
     limit_sentence_length_var = 100
     extract_date_from_text_var = False
@@ -58,6 +58,8 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
     date_format = ''
     date_separator_var = ''
     date_position_var = ''
+
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
     tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                         openOutputFiles, createCharts, chartPackage,
@@ -117,9 +119,11 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
 
 
 def SSA_annotate(year_state_var,firstName_entry_var,outputDir):
-    df1 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_state_year.csv')
+    if year_state_var!= 'Year of birth':
+        # return
+        df1 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_state_year.csv')
+        target1 = df1[df1['Name'] == firstName_entry_var]
     df2 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_yearOfBirth.csv')
-    target1 = df1[df1['Name'] == firstName_entry_var]
     target2 = df2[df2['Name'] == firstName_entry_var]
     if year_state_var == 'State':
         output_path = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,

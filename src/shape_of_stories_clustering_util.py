@@ -100,9 +100,9 @@ class NMFClustering:
 
         # here the groups are made out of the indices of the docs, not their vectors
         clusters_indices = self.group_elements(W)
-        cluster_ids = set(clusters_indices)
+        cluster_ids = list(set(clusters_indices))
         # groups the vectors in their respective clusters
-        vector_clusters = [[] for _ in range(len(cluster_ids))]
+        vector_clusters = [[] for _ in range(cluster_ids[0], cluster_ids[len(cluster_ids)-1]+1)]
         for i in range(len(vectors)):
             cluster_idx = clusters_indices[i]
             vector_clusters[cluster_idx].append(vectors[i])
@@ -200,10 +200,10 @@ class Clustering:
 
 
 def get_v_clusters_from_cluster_indices(vectors, clusters_indices):
-    cluster_ids = set(clusters_indices)
-    vector_clusters = [[] for _ in range(len(cluster_ids))]
+    cluster_ids = list(set(clusters_indices))
+    vector_clusters = [[] for _ in range(cluster_ids[0], cluster_ids[len(cluster_ids)-1]+1)]
     for i in range(len(vectors)):
-        cluster_idx = clusters_indices[i] - 1
+        cluster_idx = clusters_indices[i]
         vector_clusters[cluster_idx].append(vectors[i])
     return vector_clusters
 
@@ -221,8 +221,12 @@ def processCluster(cluster_indices,scoresFile_list, file_list, sentiment_vectors
         fieldnames = ["Cluster ID", "Sentiment Score File Name", "Original File Name"]
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
-        for i in range(rec_n_clusters):
-            documents = cluster_file[i]
+        for i in cluster_file.keys():
+            # cluster_file may not include all sequential indices
+            try:
+                documents = cluster_file[i]
+            except:
+                continue
             for each in documents: #each: (narratiefile, sentiment_vector)
                 #===============ANGEL==============
                 match=re.search("^=hyperlink", each[0])

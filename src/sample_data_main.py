@@ -12,7 +12,7 @@ import GUI_IO_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(window, inputFilename, inputDir, outputDir, extract_sentences_search_words_var):
+def run(window, inputFilename, inputDir, outputDir, selectedFile, extract_sentences_search_words_var):
 
     # if extract_sentences_var:
         # it is better to open the GUI that will allow search options (e.g., case sensitive)
@@ -22,6 +22,10 @@ def run(window, inputFilename, inputDir, outputDir, extract_sentences_search_wor
         # search_words_entry.configure(state='disabled')
         # return
 
+    if selectedFile=='':
+        mb.showwarning(title='Warning',
+                       message='The RUN command needs a csv file to be used to sample files by Document ID. Alternatively... click on any of the buttons to open a GUI.')
+        return
     import sample_corpus_util
     sample_corpus_util.sample_corpus_by_document_id(selectedFile, inputDir, outputDir)
 
@@ -30,6 +34,7 @@ def run(window, inputFilename, inputDir, outputDir, extract_sentences_search_wor
 run_script_command=lambda: run(window, GUI_util.inputFilename.get(),
                                GUI_util.input_main_dir_path.get(),
                                GUI_util.output_dir_path.get(),
+                               selectedFile.get(),
                                extract_sentences_search_words_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -70,7 +75,7 @@ window=GUI_util.window
 config_input_output_numeric_options=GUI_util.config_input_output_numeric_options
 config_filename=GUI_util.config_filename
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 extract_sentences_var = tk.IntVar()
 extract_sentences_search_words_var = tk.StringVar()
@@ -96,63 +101,63 @@ def get_file(window,title,fileType):
 
 y_multiplier_integer= y_multiplier_integer +.5
 
-sample_by_documentID_button = tk.Button(window, text='Sample files by Document ID in csv file',width=70,command=lambda: get_file(window,'Select INPUT csv file', [("csv files", "*.csv")]))
+sample_by_documentID_button = tk.Button(window, text='Sample files by Document ID in csv file',width=GUI_IO_util.widget_width_medium,command=lambda: get_file(window,'Select INPUT csv file', [("csv files", "*.csv")]))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                sample_by_documentID_button, True, False, True, False, 90,
-                                               GUI_IO_util.get_labels_x_coordinate(), "Click on the button to select the input csv file")
+                                               GUI_IO_util.labels_x_coordinate, "Click on the button to select the input csv file")
 
 # setup a button to open Windows Explorer on open the csv file
 openFile_button = tk.Button(window, width=3, text='',
                                  command=lambda: IO_files_util.openFile(window,
                                                                         selectedFile_var.get()))
 
-x_coordinate_hover_over = GUI_IO_util.get_labels_x_indented_coordinate()+500
+x_coordinate_hover_over = GUI_IO_util.labels_x_indented_coordinate+500
 
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+500, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+500, y_multiplier_integer,
                                                openFile_button, True, False, True, False, 90, x_coordinate_hover_over, "Open selected csv file")
 
 selectedFile_var.set('')
 selectedFile=tk.Entry(window, width=90,textvariable=selectedFile_var)
 selectedFile.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+560, y_multiplier_integer,selectedFile)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+560, y_multiplier_integer,selectedFile)
 
 def activate_options():
     search_words_entry.configure(state='normal')
 
 extract_sentences_var.set(0)
-sample_sentences_button = tk.Button(window, text='Sample files by search word(s) (extract sentences) (Open GUI)',width=70,command=lambda: call("python file_search_byWord_main.py", shell=True))
+sample_sentences_button = tk.Button(window, text=' Sample files by search word(s) (extract sentences) (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python file_search_byWord_main.py", shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    sample_sentences_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
 #                                                sample_sentences_button, True)
 #
 # extract_sentences_search_words_var.set('')
 # search_words_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
 # search_words_entry.configure(width=100, state='disabled')
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate()+500, y_multiplier_integer,
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+500, y_multiplier_integer,
 #                                                search_words_entry)
 
-sample_sentences_by_documentID_button = tk.Button(window, text='Sample sentences by Document ID and other fields values in csv file (Open GUI)',width=70,command=lambda: call("python data_manager_main.py", shell=True))
+sample_sentences_by_documentID_button = tk.Button(window, text='Sample sentences by Document ID and other fields values in csv file (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python data_manipulation_main.py", shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    sample_sentences_by_documentID_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-sample_by_date_button = tk.Button(window, text='Sample files by date in filename',width=70,command=lambda: option_not_available())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sample_by_date_button)
+sample_by_date_button = tk.Button(window, text='Sample files by date in filename',width=GUI_IO_util.widget_width_medium,command=lambda: option_not_available())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,sample_by_date_button)
 
-export_csv_field_GUI_button = tk.Button(window, text='Export csv field content in csv file to csv/txt file (Open GUI)',width=70,command=lambda: call("python data_manager_main.py", shell=True))
+export_csv_field_GUI_button = tk.Button(window, text='Export csv field content in csv file to csv/txt file (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python data_manipulation_main.py", shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    export_csv_field_GUI_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
 videos_lookup = {'No videos available':''}
@@ -161,7 +166,7 @@ videos_options='No videos available'
 TIPS_lookup = {'No TIPS available':''}
 TIPS_options='No TIPS available'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
@@ -176,11 +181,11 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = y_multiplier_integer +.5
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, click on the button to sample your corpus by copying the files listed under 'Document' in a csv file.\nAfter clicking the button you will be prompted to select the input scv file. After selecting the csv file, you can clisk on the little button to open the file for inspection.\n\nIn INPUT the function expects:\n   1. a directory containing the files to be sampled; the directory is selected above in the INPUT/OUTPUT configuration;\n   2. a csv file containing a list of documents under the header 'Document' that will be used to sample; this csv file can be generated in a number of ways, e.g., using the 'Data Manager' GUI with the option to 'Extract field(s) from csv file' in a file generated by any of the NLP Suite scripts.\n\nIn OUTPUT the function will copy the sampled files to a sub-folder of the input folder.")
+                                  "Please, click on the button to sample your corpus by copying the files listed under 'Document' in a csv file.\nAfter clicking the button you will be prompted to select the input scv file. After selecting the csv file, you can clisk on the little button to open the file for inspection.\n\nIn INPUT the function expects:\n   1. a directory containing the files to be sampled; the directory is selected above in the INPUT/OUTPUT configuration;\n   2. a csv file containing a list of documents under the header 'Document' that will be used to sample; this csv file can be generated in a number of ways, e.g., using the 'Data manipulation' GUI with the option to 'Extract field(s) from csv file' in a file generated by any of the NLP Suite scripts.\n\nIn OUTPUT the function will copy the sampled files to a sub-folder of the input folder.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                   "Please, click on the button to extract sentences from file(s) by the value specific words/collocations in the sentences.\nAfter clicking the button the data entry widget will be become available. You can enter there, the comma separated list of strings to be used to search the input text file(s) and export all the sentences where the search strings were found.\n\nIn INPUT the function takes the txt file(s) listed in the Setup I/O configuration widget.\n\nIn OUTPUT the function will create a 'sentences_' subdirectory of the output directory with two further subdirectories: extract and extract_wo-searchword. The two subdirectories contain, respectively, the same input file(s) with only the sentences that match the search string(s) (extract) and the the sentences that do NOT match the search string(s) (extract_wo-searchword).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, click on the button to open the Data Manager GUI for extracting data from inut file(s) in a variety of ways.")
+                                  "Please, click on the button to open the Data manipulation GUI for extracting data from inut file(s) in a variety of ways.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                   "Please, click on the button to sample your corpus by dates embedded in the filename.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -188,7 +193,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="The GUI allows you to access various functions for sampling your data (your corpus in particular)."

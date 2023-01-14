@@ -141,7 +141,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_chart_output_checkbox.get(),
-                            GUI_util.charts_dropdown_field.get(),
+                            GUI_util.charts_package_options_widget.get(),
                             encoding_var.get(),
                             geocoder_var.get(),
                             # geocode_var.get(),
@@ -192,7 +192,7 @@ config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 input_main_dir_path=GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 encoding_var=tk.StringVar()
 geocoder_var=tk.StringVar()
@@ -211,57 +211,57 @@ window.bind("<Escape>", clear)
 
 encoding_var.set('utf-8')
 encodingValue = tk.OptionMenu(window,encoding_var,'utf-8','utf-16-le','utf-32-le','latin-1','ISO-8859-1')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350, y_multiplier_integer,encodingValue,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350, y_multiplier_integer,encodingValue,True)
 encoding_lb = tk.Label(window, text='Select the encoding type (utf-8 default)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,encoding_lb)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,encoding_lb)
 
 geocoder_lb = tk.Label(window, text='Geocoder')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,geocoder_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,geocoder_lb,True)
 geocoder_var.set('Nominatim')
 geocoder = tk.OptionMenu(window,geocoder_var,'Nominatim','Google')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350, y_multiplier_integer,geocoder)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350, y_multiplier_integer,geocoder)
 
 # geocode_var.set(0)
 # geocode_checkbox = tk.Checkbutton(window, variable=geocode_var, onvalue=1, offvalue=0)
 # geocode_checkbox.config(text="Geocode locations")
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
 #                                                y_multiplier_integer, geocode_checkbox)
 
 compute_pairwise_distances_var.set(0)
 compute_pairwise_distances_checkbox = tk.Checkbutton(window, variable=compute_pairwise_distances_var, onvalue=1, offvalue=0)
 compute_pairwise_distances_checkbox.config(text="Compute pairwise distances")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, compute_pairwise_distances_checkbox)
 
 compute_baseline_distances_var.set(0)
 compute_baseline_distances_checkbox = tk.Checkbutton(window, variable=compute_baseline_distances_var, onvalue=1, offvalue=0)
 compute_baseline_distances_checkbox.config(text="Compute distances from baseline location")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, compute_baseline_distances_checkbox,True)
 
 baselineLocation_value_lb = tk.Label(window, text='Enter location ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,baselineLocation_value_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350,y_multiplier_integer,baselineLocation_value_lb,True)
 baselineLocation_entry = tk.Entry(window, textvariable=baselineLocation_entry_var)
 baselineLocation_entry.configure(width=50, state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+450,y_multiplier_integer,baselineLocation_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+450,y_multiplier_integer,baselineLocation_entry)
 
 menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 
 location_field_lb = tk.Label(window, text='Select the column containing the FIRST location names')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,location_field_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,location_field_lb,True)
 if menu_values!='':
     location_field = tk.OptionMenu(window,location_var,*menu_values)
 else:
     location_field = tk.OptionMenu(window,location_var,menu_values)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350, y_multiplier_integer,location_field)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350, y_multiplier_integer,location_field)
 
 location_field_lb2 = tk.Label(window, text='Select the column containing the SECOND location names')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,location_field_lb2,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,location_field_lb2,True)
 if menu_values!='':
     location_field2 = tk.OptionMenu(window,location_var2,*menu_values)
 else:
     location_field2 = tk.OptionMenu(window,location_var2,menu_values)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350, y_multiplier_integer,location_field2)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350, y_multiplier_integer,location_field2)
 
 def activate_options(*args):
     if compute_pairwise_distances_var.get():
@@ -320,12 +320,12 @@ videos_options='No videos available'
 TIPS_lookup = {"Geocoding":"TIPS_NLP_Geocoding.pdf","Geographic distances":"TIPS_NLP_GIS distances.pdf",'Statistical measures':'TIPS_NLP_Statistical measures.pdf'}
 TIPS_options='Geocoding', 'Geographic distances', 'Statistical measures'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if IO_setup_display_brief==False:
-        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,'Please, select an input file for the GIS script. Two two types of files are acceptable: txt or csv.\n\nTXT FILE. When a txt file is selected, the script will use the NER values from Stanford CoreNLP to obtain a list of locations saved as a csv file. The script will then process this file the same way as it would process a csv file in input containing location names.\n\nCSV FILE. When a csv file is selected it can be:\n  1. a file containing a column of location names that need to be geocoded (e.g., New York);\n  2. a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script NLP_parsers_annotators_main.py (the script parses text documents using the Stanford CoreNLP parser).'+GUI_IO_util.msg_Esc)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,'Please, select an input file for the GIS script. Two two types of files are acceptable: txt or csv.\n\nTXT FILE. When a txt file is selected, the script will use the NER values from Stanford CoreNLP to obtain a list of locations saved as a csv file. The script will then process this file the same way as it would process a csv file in input containing location names.\n\nCSV FILE. When a csv file is selected it can be:\n  1. a file containing a column of location names that need to be geocoded (e.g., New York);\n  2. a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script parsers_annotators_main.py (the script parses text documents using the Stanford CoreNLP parser).'+GUI_IO_util.msg_Esc)
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,GUI_IO_util.msg_corpusData+GUI_IO_util.msg_Esc)
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_outputDirectory+GUI_IO_util.msg_Esc)
     else:
@@ -341,7 +341,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script computes geographic distances between locations, in both kilometers and miles, by either geodesic distance or by great circle distance. Distances will be visualized in Excel charts.\n\nBoth GEODESIC and GREAT CIRCLE distances, in miles and kilometers, will be computed.\n\nIn INPUT the script expects geocoded data with Latitude and Longitude values for one or two sets of locations, depending upon whether distances are computed from a specific baseline location or between two sets of locations listed in a csv input file. The input file must have a column with the FIRST selected location name, followed by its latitude and longitude; when computing pairwise distances, these first three columns must be followed by the SECOND selected location name, followed by its latitude and longitude.\n\nThe input csv file may contain other fields but the location and geocoded fields MUST be in this order.\n\nEnter a location name (e.g., New York) in the 'Enter baseline location' field, if you wish to compute distances of all locations listed in your input file from a specific location (again, e.g., New York)."

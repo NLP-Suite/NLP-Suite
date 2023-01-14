@@ -14,12 +14,14 @@ import subprocess
 from nltk.corpus import wordnet as wn
 import pandas as pd
 import csv
+import tkinter.messagebox as mb
+
 
 import reminders_util
 import charts_util
 import IO_files_util
 import IO_user_interface_util
-import data_manager_util
+import data_manipulation_util
 import IO_csv_util
 import statistics_csv_util
 
@@ -49,7 +51,7 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
     filesToOpen=[]
     if IO_libraries_util.check_inputPythonJavaProgramFile('WordNet_Search_DOWN.jar') == False:
         return
-    errorFound, error_code, system_output = IO_libraries_util.check_java_installation('WordNet downward search')
+    errorFound, error_code, system_output, java_version = IO_libraries_util.check_java_installation('WordNet downward search')
     if errorFound:
         return
     process_keyword(wordNet_keyword_list, noun_verb)
@@ -100,7 +102,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
 
     if IO_libraries_util.check_inputPythonJavaProgramFile('WordNet_Search_UP.jar') == False:
         return filesToOpen
-    errorFound, error_code, system_output = IO_libraries_util.check_java_installation('WordNet upward search')
+    errorFound, error_code, system_output, java_version = IO_libraries_util.check_java_installation('WordNet upward search')
     if errorFound:
         return filesToOpen
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started running WordNet (Zoom OUT/UP) with the ' + noun_verb + ' option at', True, '',True,'',True)
@@ -181,8 +183,8 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         # Word is the header from the _output file created by the Java WordNet script
         operation_results_text_list.append(str(outputFilenameCSV1_new) + ',Word,<>,be,and')
         operation_results_text_list.append(str(outputFilenameCSV1_new) + ',Word,<>,have,and')
-        # outputFilenameCSV3_new = data_manager_util.export_csv_to_csv_txt(outputFilenameCSV3_new, operation_results_text_list,'.csv',[0,1])
-        outputFilenameCSV3_new = data_manager_util.export_csv_to_csv_txt(outputDir,operation_results_text_list,'.csv',[0,1])
+        # outputFilenameCSV3_new = data_manipulation_util.export_csv_to_csv_txt(outputFilenameCSV3_new, operation_results_text_list,'.csv',[0,1])
+        outputFilenameCSV3_new = data_manipulation_util.export_csv_to_csv_txt(outputDir,operation_results_text_list,'.csv',[0,1])
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilenameCSV3_new,
                                                            outputDir,

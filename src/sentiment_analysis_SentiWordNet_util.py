@@ -35,23 +35,16 @@ import IO_csv_util
 import IO_files_util
 import charts_util
 
-from nltk.corpus import wordnet as wn
-from nltk.corpus import sentiwordnet as swn
-# from nltk import tokenize
-from nltk import word_tokenize, pos_tag
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-
 # if SentiWordNet fails, run: "python -m nltk.downloader all"
 
-# IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
-# check WordNet
-# IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
-# from nltk.stem.wordnet import WordNetLemmatizer
-# lemmatizer = WordNetLemmatizer()
-# check stopwords
-# IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/stopwords','stopwords')
-# from nltk.corpus import stopwords
-# stops = set(stopwords.words("english"))
+IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','wordnet')
+IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','omw-1.4')
+IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','sentiwordnet')
+
+from nltk.corpus import wordnet as wn
+from nltk.corpus import sentiwordnet as swn
+from nltk import word_tokenize, pos_tag
+
 fin = open('../lib/wordLists/stopwords.txt', 'r')
 stops = set(fin.read().splitlines())
 
@@ -96,6 +89,8 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
         print('Empty file ', inputFilename)
         return
 
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+
     # sentences = tokenize.sent_tokenize(fulltext)  # split text into sentences
     sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
 
@@ -108,8 +103,9 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
     # analyze each sentence s for sentiment
     sentenceID = 1
     for s in sentences:
-        # tagged_sentence = pos_tag(word_tokenize(s))
-        tagged_sentence = pos_tag(word_tokenize_stanza(stanzaPipeLine(s)))
+        tagged_sentence = pos_tag(word_tokenize(s))
+        # TODO Mino I cannot simply substitute the NLTK pos_tag; what is the Stanza equivalent?
+        # tagged_sentence = pos_tag(word_tokenize_stanza(stanzaPipeLine(s)))
         sentiment = 0
         tokens_count = 0
         label = ""
@@ -164,6 +160,12 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
     """
 
     filesToOpen = []
+
+    # create output subdirectory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_sentiWN',
+                                                       silent=True)
+    if outputDir == '':
+        return
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'SentiWordNet',
                                                                  '', '', '', '', False, True)

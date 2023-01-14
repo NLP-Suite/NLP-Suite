@@ -113,7 +113,7 @@ run_script_command=lambda: run(
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
-                                GUI_util.charts_dropdown_field.get(),
+                                GUI_util.charts_package_options_widget.get(),
                                 SQL_query_entry.get("1.0", "end-1c"),
                                 construct_SQLite_DB_var.get())
 
@@ -126,8 +126,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=580, # height at brief display
-                                                 GUI_height_full=620, # height at full display
+                                                 GUI_height_brief=660, # height at brief display
+                                                 GUI_height_full=700, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -158,7 +158,7 @@ inputFilename=GUI_util.inputFilename
 inputDir=GUI_util.input_main_dir_path
 outputDir=GUI_util.output_dir_path
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename, IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 construct_SQLite_DB_var=tk.IntVar()
 select_SQLite_DB_var=tk.StringVar()
@@ -176,6 +176,7 @@ def clear(e):
     GUI_util.tips_dropdown_field.set('Open TIPS files')
 window.bind("<Escape>", clear)
 
+# TODO Anna please add comments about what this function does
 def get_SQLite_file(window,title,fileType):
     #annotator_dictionary_var.set('')
     filePath = tk.filedialog.askopenfilename(title = title, initialdir =inputDir, filetypes = fileType)
@@ -185,27 +186,29 @@ def get_SQLite_file(window,title,fileType):
 
 construct_SQLite_DB_button=tk.Button(window, width=23, text='Construct SQLite database',command=lambda: dbFromCSV(inputDir,outputDir))
 #construct_SQLite_DB_checkbox = tk.Checkbutton(window, text='Construct SQLite database', variable=construct_SQLite_DB_var, onvalue=1, offvalue=0)
-#y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,construct_SQLite_DB_checkbox)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,construct_SQLite_DB_button)
+#y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,construct_SQLite_DB_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,construct_SQLite_DB_button)
 
 select_SQLite_DB_button=tk.Button(window, width=23, text='Select SQLite database',command=lambda: get_SQLite_file(window,'Select INPUT SQLite file', [("SQLite files", "*.sqlite")]))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,select_SQLite_DB_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,select_SQLite_DB_button,True)
 
 openInputFile_button = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, select_SQLite_DB_var.get()))
 # place widget with hover-over info
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+190, y_multiplier_integer,openInputFile_button,True, False, True,False, 90, GUI_IO_util.get_labels_x_coordinate()+190, "Open INPUT SQLite database")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,openInputFile_button,True, False, True,False, 90, GUI_IO_util.labels_x_coordinate+190, "Open INPUT SQLite database")
 
-SQLite_DB_file=tk.Entry(window, width=100,textvariable=select_SQLite_DB_var)
+SQLite_DB_file=tk.Entry(window, width=GUI_IO_util.SQLite_DB_file_width,textvariable=select_SQLite_DB_var)
 SQLite_DB_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,SQLite_DB_file)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+250, y_multiplier_integer,SQLite_DB_file)
 
 table_menu_values = []
+# TODO Anna please add comments about what this function does
 def get_table_list(*args):
     select_DB_table_fields_menu.configure(state='disabled')
     if select_SQLite_DB_var.get()=='':
         select_DB_tables_menu.configure(state='disabled')
         return
+    # get_complex_simplex_list('setup_Complex')
     select_DB_tables_menu.configure(state='normal')
     conn = sqlite3.connect(select_SQLite_DB_var.get())
     cur = conn.cursor()
@@ -219,21 +222,64 @@ def get_table_list(*args):
     m.delete(0, "end")
     for s in table_menu_values:
         m.add_command(label=s, command=lambda value=s: select_DB_tables_var.set(value))
-
 select_SQLite_DB_var.trace('w',get_table_list)
 
+# TODO Anna, I tried to get a list of row values in setup_Complex or setup_Simplex but... could not get it to work
+# TODO  please finish the function
+def get_complex_simplex_list(tableName):
+    if select_SQLite_DB_var.get() == '':
+        return
+    conn = sqlite3.connect(select_SQLite_DB_var.get())
+    conn.row_factory = sqlite3.Row
+    cur = conn.cursor()
+    cur.execute("SELECT Name FROM '%s'" % tableName)
+    # construct menu values
+    # fields is a list of the column names from input tableName
+    r = cur.fetchone()
+    fields = r.keys()
+    table_fields_menu_values = fields
+    cur.close()
+    m = select_DB_table_fields_menu["menu"]
+    m.delete(0, "end")
+    for s in table_fields_menu_values:
+        m.add_command(label=s, command=lambda value=s: select_DB_table_fields_var.set(value))
+    conn.close()
+    menu=''
+    return menu
+
+# complex_objects_lb = tk.Label(window, text='Select complex object ')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complex_objects_lb,True)
+
+complex_objects_var = tk.StringVar()
+menu = get_complex_simplex_list('setup_Complex')
+complex_objects = tk.OptionMenu(window,complex_objects_var, menu)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,
+                                   complex_objects,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Use the dropdown menu to select a specific complex object for which to compute frequencies.\nWhen a hierarchical complex objcet is selectd (e.g., macro-event or event) and the checkbox Semantic triplets is ticked, semantic triplets will be listed in chronological order within a specific higher-level hierarchical complex object selected (e.g., macro-events, events).")
+
+# simplex_objects_lb = tk.Label(window, text='Select simplex object ')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,simplex_objects_lb,True)
+
+simplex_objects_var = tk.StringVar()
+menu = get_complex_simplex_list('setup_Simplex')
+simplex_objects = tk.OptionMenu(window,simplex_objects_var, menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200, y_multiplier_integer,simplex_objects)
+
 select_DB_tables_lb = tk.Label(window, text='Select DB table ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,select_DB_tables_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_DB_tables_lb,True)
 if len(table_menu_values)==0:
     select_DB_tables_menu = tk.OptionMenu(window, select_DB_tables_var, table_menu_values)
 else:
     select_DB_tables_menu = tk.OptionMenu(window,select_DB_tables_var, *table_menu_values)
 select_DB_tables_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+100,y_multiplier_integer,select_DB_tables_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+100,y_multiplier_integer,select_DB_tables_menu,True)
 
 table_fields_menu_values = []
 
-def get_table_fields_list(*args):
+# TODO Anna please add comments about what this function does
+def get_table_fields_list():
     tableName=select_DB_tables_var.get()
     if tableName=='':
         select_DB_table_fields_menu.configure(state='disabled')
@@ -262,14 +308,15 @@ def get_table_fields_name(*args):
 
 select_DB_table_fields_var.trace('w',get_table_fields_name)
 
+
 select_DB_table_fields_lb = tk.Label(window, text='Select DB table field')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+350,y_multiplier_integer,select_DB_table_fields_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+350,y_multiplier_integer,select_DB_table_fields_lb,True)
 if len(table_fields_menu_values)==0:
     select_DB_table_fields_menu = tk.OptionMenu(window, select_DB_table_fields_var, table_fields_menu_values)
 else:
     select_DB_table_fields_menu = tk.OptionMenu(window,select_DB_table_fields_var, *table_fields_menu_values)
 select_DB_table_fields_menu.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+480,y_multiplier_integer,select_DB_table_fields_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+480,y_multiplier_integer,select_DB_table_fields_menu,True)
 
 def import_query(window, title, fileType):
     filePath = tk.filedialog.askopenfilename(title=title, initialdir=GUI_util.input_main_dir_path,
@@ -307,28 +354,28 @@ def view_relations():
         call(view_rels_command)
 
 import_query_button=tk.Button(window, width=15, text='Import SQL query',command=lambda: import_query(window,'Select INPUT SQL query file', [("SQL files", "*.sql")]))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700, y_multiplier_integer,import_query_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+700, y_multiplier_integer,import_query_button,True)
 
 save_query_button=tk.Button(window, width=15, text='Save SQL query',command=lambda: save_query())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+850, y_multiplier_integer,save_query_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+850, y_multiplier_integer,save_query_button)
 
 SQL_query_entry = tk.Text(window,width=120,height=10)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SQL_query_entry)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SQL_query_entry)
 
 y_multiplier_integer=y_multiplier_integer+3.5
 
 auto_SQL_var=tk.StringVar()
 auto_SQL_lb = tk.Label(window, text='Select SQL query type (template)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,auto_SQL_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,auto_SQL_lb,True)
 auto_SQL_value = tk.OptionMenu(window,auto_SQL_var,'SQL standard','SQL count', 'SQL duplicates', 'SQL unmatched', 'SQL union', 'SQL join')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+250, y_multiplier_integer,auto_SQL_value,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+250, y_multiplier_integer,auto_SQL_value,True)
 
 distinct_checkbox = tk.Checkbutton(window, text='Distinct', variable=distinct_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,distinct_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+400,y_multiplier_integer,distinct_checkbox,True)
 
 # view_relations_button = tk.Button(window, text='View table relations', width=5,height=1,state='disabled',command=lambda: clear_DBpedia_YAGO_class_list())
 view_relations_button = tk.Button(window, text='View table relations', width=20,height=1,state='normal', command=lambda: view_relations())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer,view_relations_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+500,y_multiplier_integer,view_relations_button)
 
 def display_SQL(*args):
     SQL_query_entry.delete(0.1, tk.END)
@@ -368,7 +415,7 @@ videos_options='No videos available'
 TIPS_lookup = {'No TIPS available':''}
 TIPS_options='No TIPS available'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
@@ -381,6 +428,15 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the Construct SQLlite button to construct an SQLite database from a set of INPUT csv files." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the Select SQLite database button to select the database you want to work with.\n\nAn SQLite database has extension sqlite." + GUI_IO_util.msg_Esc)
+
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                                         "NLP Suite Help",
+                                                         "Please, using the dropdown menu, select the COMPLEX object for which you would like to obtain query results." + GUI_IO_util.msg_Esc)
+
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                                         "NLP Suite Help",
+                                                         "Please, using the dropdown menu, select the SIMPLEX object for which you would like to obtain query results." + GUI_IO_util.msg_Esc)
+
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, using the 'Select DB table' dropdown menu, select the table available in the SQLite database.\n\nOnce an SQLite table has been selected, use the 'Select DB table field' dropdown menu to select a specific field available in the selected table.\n\nClick on the Import SQL query button to import a previously saved query.\n\nClick on the Save SQL query button to save the query currently available in the query text box.\n\nSaved and imported queries will be of file type .txt." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, enter an SQL query in the form SELECT ...\n\nYou can visualize a preset template query, using the dropdown menu 'Select the type of SQL query'."+ GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer+3.5,"NLP Suite Help", "Please, using the dropdown menu, select the type of SQL query for which to display a standard template. You will need to change table names and field names to the appropriate names in your database.\n\nTick the Distinct checkbox to display the SQL query as distinct.\n\nClick on the View table relations button to visualize the table relations via their overlapping IDs. "+ GUI_IO_util.msg_Esc)
@@ -391,7 +447,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 "DUPLICATES The query builds a temporary table of duplicate records, then, depending on user's choice, extracts only one occurrence of all duplicate records or all duplicate occurrences except one (all DISTINCT records will not be displayed). Query results can be used to move occurrences of objects for which multiples should not be allowed."
 "UNMATCHED Automatically build a simple query that will give a list of all unmatched records between any two given tables/queries on the basis of a specific field (MEMO type fields cannot be matched!)\n\nThe query will give you a list of the fields in the first selected table/query that do not find a match in the second selected table/query."
 
-y_multiplier_integer = y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),increment)
+y_multiplier_integer = y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,increment)
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script can construct an SQLite relational database from a set of input csv files characterized by the presence of overlapping relational fields.\n\nThe script allows to perform SQL queries on any sqlite databases thus constructed."

@@ -159,7 +159,7 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
     if len(lib_stopwords) != 0:
         startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running PLAGIARIST at',
                                            True)
-        errorFound, error_code, system_output = IO_libraries_util.check_java_installation('Lucene')
+        errorFound, error_code, system_output, java_version = IO_libraries_util.check_java_installation('Lucene')
         if errorFound:
             return
         subprocess.call(['java', '-jar', 'Lucene.jar', '-inputDir', inputDir + os.sep, '-outputDir',
@@ -260,7 +260,7 @@ def run(inputDir, input_secondary_dir_path, outputDir, openOutputFiles, createCh
     global filesToOpen
     filesToOpen = []
     # check that the CoreNLPdir as been setup
-    CoreNLPdir, missing_external_software = IO_libraries_util.get_external_software_dir('social_science_research', 'Stanford CoreNLP')
+    CoreNLPdir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('social_science_research', 'Stanford CoreNLP', silent=True, only_check_missing=False)
     if CoreNLPdir==None:
         return filesToOpen
 
@@ -297,7 +297,7 @@ run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_chart_output_checkbox.get(),
-                                 GUI_util.charts_dropdown_field.get(),
+                                 GUI_util.charts_package_options_widget.get(),
                                  fileName_embeds_date.get(),
                                  date_format.get(),
                                  date_position_var.get(),
@@ -354,7 +354,7 @@ window = GUI_util.window
 # config_filename = GUI_util.config_filename
 inputFilename = GUI_util.inputFilename
 
-GUI_util.GUI_top(config_input_output_numeric_options, config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 check_filename_var = tk.IntVar()
 character_var = tk.IntVar()
@@ -381,98 +381,98 @@ selectedFile_var = tk.StringVar()  # the noun/verb file to be used for ancestor
 
 fileName_embeds_date_checkbox = tk.Checkbutton(window, text='Filename embeds date', state="disabled",
                                                variable=fileName_embeds_date, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                fileName_embeds_date_checkbox, True)
 
 date_format_lb = tk.Label(window, text='Date format ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                date_format_lb, True)
 date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm', 'yyyy-mm',
                                  'yyyy')
 date_format_menu.configure(width=10, state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 90, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 90, y_multiplier_integer,
                                                date_format_menu, True)
 
 date_separator_var_lb = tk.Label(window, text='Date character separator ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 210, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 210, y_multiplier_integer,
                                                date_separator_var_lb, True)
 date_separator_var_menu = tk.Entry(window, textvariable=date_separator_var)
 date_separator_var_menu.configure(width=2, state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 360, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 360, y_multiplier_integer,
                                                date_separator_var_menu, True)
 
 date_position_var_menu_lb = tk.Label(window, text='Date position ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 390, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 390, y_multiplier_integer,
                                                date_position_var_menu_lb, True)
 date_position_var_menu = tk.OptionMenu(window, date_position_var, 1, 2, 3, 4, 5)
 date_position_var_menu.configure(width=4, state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 490, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 490, y_multiplier_integer,
                                                date_position_var_menu)
 
 check_filename_var.set(0)
 check_filename_checkbox = tk.Checkbutton(window, text='Check the filenames well-formedness',
                                          variable=check_filename_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                check_filename_checkbox)
 
 character_var.set(0)
 character_checkbox = tk.Checkbutton(window, text='Find the character & the ancestor (via WordNet)',
                                     variable=character_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                character_checkbox)
 
 missing_character_var.set(0)
 missing_character_checkbox = tk.Checkbutton(window, text='Find the missing character', variable=missing_character_var,
                                             onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                missing_character_checkbox, True)
 
 NER_var.set(0)
 NER_checkbox = tk.Checkbutton(window, text='NER (Named Entity Recognition) ', state="disabled", variable=NER_var,
                               onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                NER_checkbox)
 
 Levenshtein_var.set(0)
 Levenshtein_checkbox = tk.Checkbutton(window, text="Check the character's name tag", variable=Levenshtein_var,
                                       onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                Levenshtein_checkbox)
 
 character_home_var.set(0)
 character_home_checkbox = tk.Checkbutton(window, text="Find the character's home", variable=character_home_var,
                                          onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                character_home_checkbox)
 
 intruder_var.set(0)
 intruder_checkbox = tk.Checkbutton(window, text='Find the intruder', variable=intruder_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                intruder_checkbox, True)
 
 similarityIndex_Intruder_var.set(0.2)
 similarityIndex_Intruder_menu_lb = tk.Label(window, text='Relativity index threshold')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                similarityIndex_Intruder_menu_lb, True)
 similarityIndex_Intruder_menu = tk.OptionMenu(window, similarityIndex_Intruder_var, .1, .15, .2, .25, .3, .35, .4, .45,
                                               .5, .45, .5, .55, .6, .65, .7, .75, .8, .85, .9)
 similarityIndex_Intruder_menu.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 170, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 170, y_multiplier_integer,
                                                similarityIndex_Intruder_menu)
 
 plagiarist_var.set(0)
 plagiarist_checkbox = tk.Checkbutton(window, text='Find the plagiarist', variable=plagiarist_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                plagiarist_checkbox, True)
 
 similarityIndex_Plagiarist_var.set(.8)
 similarityIndex_Plagiarist_menu_lb = tk.Label(window, text='Similarity index ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                similarityIndex_Plagiarist_menu_lb, True)
 similarityIndex_Plagiarist_menu = tk.OptionMenu(window, similarityIndex_Plagiarist_var, .4, .45, .5, .45, .5, .55, .6,
                                                 .65, .7, .75, .8, .85, .9)
 similarityIndex_Plagiarist_menu.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 170, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 170, y_multiplier_integer,
                                                similarityIndex_Plagiarist_menu)
 
 
@@ -722,7 +722,7 @@ TIPS_lookup = {'Check the character\'s name tag': 'TIPS_NLP_Word similarity (Lev
 TIPS_options = 'Filename well-formedness', 'WordNet', 'Find the character\'s home (By date)', 'Find the character\'s home (By NER)', 'NER (Named Entity Recognition)', 'Find the missing character', 'Check the character\'s name tag', 'Find the intruder', 'Find the plagiarist', 'CoNLL Table', 'POSTAG (Part of Speech Tags)' #, 'Java download install run'
 
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
@@ -756,7 +756,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
+y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for a set of NLP tools, written in Java and Python 3, that can be of use in a variety of social science research projects based on documents.\n\nIn INPUT the scripts expect a main drectory where txt files to be analyzed are stored and, depending upon the type of tools run, a secondary directory where further txt files are stored.\n\nIn OUTPUT, the scripts will save the csv files and Excel charts written by the various scripts."

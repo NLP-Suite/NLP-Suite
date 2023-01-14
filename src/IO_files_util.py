@@ -31,7 +31,7 @@ import IO_csv_util
 
 # There are 3 methods and a 2 constants present:
 # abspath returns absolute path of a path
-# join join to path strings
+# join join path strings
 # dirname returns the directory of a file
 # __file__ refers to the script's file name
 # pardir returns the representation of a parent directory in the OS (usually ..)
@@ -72,10 +72,14 @@ def make_output_subdirectory(inputFilename, inputDir, outputDir, label, silent=T
         # process file
         inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
         outputSubDir = os.path.join(outputDir, label + "_" + inputFileBase)  # + "_CoRefed_files")
-    if inputDir!='':
+    elif inputDir!='':
         # processing a directory
         inputDirBase = os.path.basename(inputDir)
         outputSubDir = os.path.join(outputDir, label + "_" + inputDirBase)
+    elif label != '':
+        outputSubDir = os.path.join(outputDir, label)
+    else:
+        outputSubDir = outputDir
     if os.path.exists(outputSubDir):
         if not silent:
             result = mb.askyesno('Directory already exists',
@@ -84,11 +88,19 @@ def make_output_subdirectory(inputFilename, inputDir, outputDir, label, silent=T
                 # createDir = False
                 # return createDir
                 return ''
-        shutil.rmtree(outputSubDir)
+        try:
+            shutil.rmtree(outputSubDir)
+        except Exception as e:
+            mb.showwarning(title='Directory error',
+                           message="Could not create the directory " + outputSubDir + "\n\n" + str(e))
+            outputSubDir = ''
     try:
+        # chmod() changes the mode of path to the passed numeric mode
         os.chmod(Path(outputSubDir).parent.absolute(), 0o755)
         os.mkdir(outputSubDir, 0o755)
     except Exception as e:
+        mb.showwarning(title='Directory error',
+                       message="Could not create the directory " + outputSubDir + "\n\n" + str(e))
         print("error: ", e.__doc__)
         # createDir = False
         outputSubDir=''
@@ -210,6 +222,8 @@ def selectDirectory(title, initialFolder=''):
 
 
 def openExplorer(window, directory):
+    if not os.path.isdir(directory):
+        mb.showwarning(title='Input dir error',message='The directory ' + directory + ' does not exist. It must have been removed.\n\nPlease, select a different directory and try again.')
     if sys.platform == 'win32':  # Windows
         os.startfile(directory)
     elif sys.platform == 'darwin':  # Mac
@@ -220,9 +234,30 @@ def openExplorer(window, directory):
         except OSError:
             print("OS error in accessing directory")
 
+# when called from GUI_util command=lambda we open the file
+# when called from NLP_setup_IO_main we just want to remove the date portion from the filename without opening the file
+def open_file_removing_date_from_filename(window,inputFile, open):
+    if ' (Date: ' in inputFile:
+        char_pos = inputFile.find(' (Date: ')
+        inputFile = inputFile[:char_pos] # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from the filename
+        inputFile.rstrip()
+    if open:
+        openFile(window, inputFile)
+    return inputFile
+
+# when called from GUI_util command=lambda we open the directory
+# when called from NLP_setup_IO_main we just want to remove the date portion from the directory without opening the directory
+def open_directory_removing_date_from_directory(window,inputDir, open):
+    if ' (Date: ' in inputDir:
+        char_pos = inputDir.find(' (Date: ')
+        inputDir = inputDir[:char_pos] # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from the dir name
+        inputDir.rstrip()
+    if open:
+        openExplorer(window, inputDir)
+    return inputDir
 
 # returns date, dateStr
-def getDateFromFileName(file_name, sep='_', date_field_position=2, date_format='mm-dd-yyyy', errMsg=True):
+def getDateFromFileName(file_name, date_format='mm-dd-yyyy', sep='_', date_field_position=2, errMsg=True):
     # configFile_basename is the filename w/o the full path
     file_name = ntpath.basename(file_name)
     x = file_name
@@ -254,21 +289,39 @@ def getDateFromFileName(file_name, sep='_', date_field_position=2, date_format='
             if date_format == 'mm-dd-yyyy':
                 date = datetime.datetime.strptime(raw_date, '%m-%d-%Y').date()
                 dateStr = date.strftime('%m-%d-%Y')
+                month=dateStr[0:2]
+                day=dateStr[3:5]
+                year=dateStr[-4:]
             elif date_format == 'dd-mm-yyyy':
                 date = datetime.datetime.strptime(raw_date, '%d-%m-%Y').date()
                 dateStr = date.strftime('%d-%m-%Y')
+                month=dateStr[3:5]
+                day=dateStr[0:2]
+                year=dateStr[-4:]
             elif date_format == 'yyyy-mm-dd':
                 date = datetime.datetime.strptime(raw_date, '%Y-%m-%d').date()
                 dateStr = date.strftime('%Y-%m-%d')
+                month=dateStr[5:7]
+                day=dateStr[8:10]
+                year=dateStr[:4]
             elif date_format == 'yyyy-dd-mm':
                 date = datetime.datetime.strptime(raw_date, '%Y-%d-%m').date()
                 dateStr = date.strftime('%Y-%d-%m')
+                month=dateStr[8:10]
+                day=dateStr[5:7]
+                year=dateStr[:4]
             elif date_format == 'yyyy-mm':
                 date = datetime.datetime.strptime(raw_date, '%Y-%m').date()
                 dateStr = date.strftime('%Y-%m')
+                month=dateStr[5:7]
+                day=0
+                year=dateStr[:4]
             elif date_format == 'yyyy':
                 date = datetime.datetime.strptime(raw_date, '%Y').date()
                 dateStr = date.strftime('%Y')
+                month = 0
+                day = 0
+                year = dateStr[:4]
             dateStr = dateStr.replace('/', '-')
         except ValueError:
             if errMsg == True:
@@ -280,8 +333,7 @@ def getDateFromFileName(file_name, sep='_', date_field_position=2, date_format='
                 date = ''  # must assign or you get an error in return
                 dateStr = ''
     # TODO: see the modification, so we can get a date object and a string from the same method, DO keep this change for the file_classifier to work.
-    return date, dateStr
-
+    return date, dateStr, int(month), int(day), int(year)
 
 def checkDirectory(path, message=True):
     if os.path.isdir(path):
@@ -289,7 +341,7 @@ def checkDirectory(path, message=True):
     else:
         if message:
             mb.showwarning(title='Directory error',
-                           message='The directory ' + path + ' does not exist. It may have been renamed, deleted, moved. Please, check the DIRECTORY and try again')
+                           message='The directory ' + path + ' does not exist. It may have been renamed, deleted, moved.\n\nPlease, check the DIRECTORY and try again')
         return False
 
 
@@ -339,27 +391,39 @@ def openFile(window, inputFilename):
     if os.path.isfile(inputFilename):
         # windows
         if platform in ['win32', 'cygwin']:
-            try:
-                os.system('start "" "' + inputFilename + '"')
-            except IOError:
-                mb.showwarning(title='Input file error',
-                               message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
-                return True
+            while True: # repeat until you close
+                try:
+                    os.system('start "" "' + inputFilename + '"')
+                    break # exit loop
+                except IOError as e:
+                    mb.showwarning(title='Input file error',
+                                   message="Could not open the file " + inputFilename + "\n\n"+str(e))
+                    if "Errno 22" in str(e):
+                        break  # exit loop; the error is not due to file being open
+                    # mb.showwarning(title='Input file error',
+                    #                message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
+                    # restart loop
         # macOS and other unix
         else:
-            try:
-                call(['open', inputFilename])
-            except IOError:
-                mb.showwarning(title='Input file error',
-                               message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
-                return True
+            while True: # repeat until you close
+                try:
+                    call(['open', inputFilename])
+                    break # exit loop
+                except IOError as e:
+                    mb.showwarning(title='Input file error',
+                                   message="Could not open the file " + inputFilename + "\n\n"+str(e))
+                    if "Errno 22" in str(e):
+                        break  # exit loop; the error is not due to file being open
+                    # mb.showwarning(title='Input file error',
+                    #                message="Could not open the file " + inputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
+                    # restart loop
     else:
         tk.messagebox.showinfo("Error", "The file " + inputFilename + " could not be found.")
         print("The file " + inputFilename + " could not be found.")
 
 
 # open a set of output files (csv, txt,...) stored as a list in filesToOpen []
-def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir):
+def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName='', filesToOpenSubset=[]):
     if filesToOpen == None:
         return
     if len(filesToOpen) == 0:
@@ -370,11 +434,48 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir):
             filesToOpen = list(set(filesToOpen))
         else:
             filesToOpen = list(filesToOpen)
-    if len(filesToOpen)>10:
-        mb.showwarning(title='Too many files to open',message='There are ' + str(len(filesToOpen)) + ' files to be opened. This is way too many files.\n\nFor your convenience, you will be placed next in the output directory\n\n'+outputDir+'\n\nYou can select there the files you want/need to open.')
-        # open outputDir
-        openExplorer(window, outputDir)
-        return
+
+    if len(filesToOpenSubset)> 0:
+        filesToOpen=filesToOpenSubset
+
+    if outputDir != GUI_util.output_dir_path.get():
+        subDirs=next(os.walk(outputDir))[1]
+        listOfFiles = list()
+        split_files = False
+        for (dirpath, dirnames, filenames) in os.walk(outputDir):
+            if "split_" in dirpath:
+                split_files=True
+                subDirs.remove(os.path.basename(dirpath))
+                continue
+            if len(os.listdir(dirpath))==0:
+                # remove empty directories
+                shutil.rmtree(dirpath)
+                # remove from list of subDirs
+                if os.path.basename(dirpath) in str(subDirs):
+                    subDirs.remove(os.path.basename(dirpath))
+                continue
+            listOfFiles += [os.path.join(dirpath, file) for file in filenames]
+    else:
+        listOfFiles = filesToOpen
+        subDirs = []
+    nFiles=len(listOfFiles)
+    nSubDirs = len(subDirs)
+    subDirs=", \n   ".join(subDirs)
+    label=''
+    subsetLabel = ''
+    if nSubDirs>0:
+        label = " organized in " + str(nSubDirs) + " different subfolders:\n\n   " + subDirs
+        if split_files:
+            label = label + "\n\nA folder containing split files was generated by Stanford CoreNLP to deal with CoreNLP file-size limitation of 99000 characters. " \
+                            "You do not need to be concerned about that; large files will have been split for processing and put back together automatically by the SVO algorithm."
+        if len(filesToOpenSubset)>0:
+            subsetLabel = "\n\nThe NLP Suite will open next a subset of " + str(len(filesToOpenSubset)) + " most relevant output files from the different subfolders: all charts and main csv files.\n"
+        mb.showwarning(title="Output files subset",message="The " + scriptName + " has generated " +
+                    str(nFiles) + " files in output" + label + subsetLabel +
+                    "\n\nFor your convenience, the NLP Suite will also place you in the main output subdirectory where you can select  any other files you want/need to open:\n\n"+outputDir)
+    # mb.showwarning(title='Too many files to open',message='There are ' + str(len(filesToOpen)) + ' files to be opened. This is way too many files.\n\nFor your convenience, you will be placed next in the output directory\n\n'+outputDir+'\n\nYou can select there the files you want/need to open.')
+    # always open outputDir
+    openExplorer(window, outputDir)
     if len(filesToOpen) == 1:
         singularPlural = 'file'
     else:
@@ -497,10 +598,14 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
     # rename a filename coreferenced by CoreNLP to obtain better filename; NLP_CoreNLP_coref should only be once n the filename
     if 'NLP_CoreNLP_coref' in outFilename:
         if outFilename.count('NLP_CoreNLP_coref')>1:
-            outFilename = outFilename.replace('NLP_CoreNLP_coref','_coref')
-            outFilename = 'NLP_CoreNLP_coref'+outFilename
+            outFilename = outFilename.replace('NLP_CoreNLP_coref','coref')
+            # outFilename = 'NLP_CoreNLP_coref'+outFilename
     if 'CoreNLP_SENNA_SVO_coref' in outFilename:
         outFilename = outFilename.replace('CoreNLP_SENNA_SVO_coref','_coref')
+
+    if sys.platform == 'win32':  # Windows
+        if len(outFilename)>255:
+            mb.showwarning(title='Warning',message='The length (' + str(len(outFilename)) + ' characters) of the filename ' + outFilename + ' exceeds the maximum length of 255 characters allowed by Windows Operating System.\n\nPlease, reduce the filename length.')
 
     return outFilename
 
@@ -558,6 +663,11 @@ def getScript(pydict,script):
     try:
         val = pydict[script]
     except:
+        if '---------------------' in script or len(script)==0:
+            mb.showwarning(title='Warning',
+                           message="The selected option '" + script + "' is not a valid option.\n\nIt is only an explanatory label. \n\nPlease, select a different option.")
+            return script_to_run, IO_values
+
         # entry not in dic; programming error; must be added!
         mb.showwarning(title='Warning',
                        message="The selected option '" + script + "' was not found in the Python dictionary in NLP_GUI.py.\n\nPlease, inform the NLP Suite developers of the problem.\n\nSorry!")
@@ -712,3 +822,27 @@ def gatherCLAs():
         else:
             openOut = False
         return args.inputFile, args.outputDir, openOut
+
+
+ # move the gender & quote files under the gender & quote dir where a user is more likely to look for it
+# the location_filename is moved above
+
+    # if gender_var:
+    #     # move the gender file under gender dir where a user is more likely to look for it
+    #     gender_outputDir = outputDir + os.sep + os.path.basename(outputDir.replace('_SVO_', '_gender_'))
+    #     if os.path.isfile(gender_filename) and os.path.isdir(gender_outputDir):
+    #         target_filePath = gender_outputDir + os.sep + os.path.basename(gender_filename)
+    #         # move the csv gender file
+    #         if not os.path.isfile(target_filePath):
+    #             os.replace(gender_filename, target_filePath)
+    #         # move the html gender file
+    #         target_filePath = gender_outputDir + os.sep + os.path.basename(gender_filename_html)
+    #         if os.path.isfile(gender_filename_html) and not os.path.isfile(target_filePath):
+    #             os.replace(gender_filename_html, target_filePath)
+    #
+    # if quote_var:
+    #     quote_outputDir = outputDir + os.sep + os.path.basename(outputDir.replace('_SVO_', '_quote_'))
+    #     if os.path.isfile(quote_filename) and os.path.isdir(quote_outputDir):
+    #         target_filePath = quote_outputDir + os.sep + os.path.basename(quote_filename)
+    #         # move the quote file under quote dir where a user is more likely to look for it
+    #         os.replace(quote_filename, target_filePath)

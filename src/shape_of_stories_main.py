@@ -21,12 +21,15 @@ import shape_of_stories_clustering_util as cl
 import shape_of_stories_vectorizer_util as vec
 import shape_of_stories_visualization_util as viz
 
+import config_util
 import GUI_IO_util
 import IO_files_util
 import IO_csv_util
 import reminders_util
 
 import Stanford_CoreNLP_util
+import spaCy_util
+import Stanza_util
 
 import sentiment_analysis_ANEW_util as ANEW
 import sentiment_analysis_VADER_util as VADER
@@ -57,12 +60,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if not os.path.exists(sosDir):
         os.mkdir(sosDir)
 
+    # get the NLP package and language options
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
 
     tail = ''
     if inputFilename!='':
         sentiment_scores_input = inputFilename  # INPUT
         head, tail = os.path.split(sentiment_scores_input)
-        outputDir = os.path.join(sosDir, os.path.basename(head))
+        outputDir = os.path.join(sosDir, os.path.basename(tail[:-4]))
     elif inputDir!='':
         sentiment_scores_input = inputDir  # INPUT
         head, tail = os.path.split(sentiment_scores_input)
@@ -71,15 +78,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # check that the specific default directory exists under "Shape of Stories"
     if not os.path.exists(outputDir):
         os.mkdir(outputDir)
-    if GUI_util.output_dir_path.get()!=outputDir:
-        # outputDir = head
-        GUI_util.output_dir_path.set(outputDir)
-        title_options_shape_of_stories = ['Output directory']
-        message_shape_of_stories = 'The output directory was changed to:\n\n'+str(outputDir)
-        reminders_util.checkReminder(config_filename,
-                                     title_options_shape_of_stories,
-                                     message_shape_of_stories,
-                                     True)
+    # if GUI_util.output_dir_path.get()!=outputDir:
+    #     # outputDir = head
+    #     GUI_util.output_dir_path.set(outputDir)
+    #     title_options_shape_of_stories = ['Output directory']
+    #     message_shape_of_stories = 'The output directory was changed to:\n\n'+str(outputDir)
+    #     reminders_util.checkReminder(config_filename,
+    #                                  title_options_shape_of_stories,
+    #                                  message_shape_of_stories,
+    #                                  True)
 
 # RUN SCRIPTS ---------------------------------------------------------------------------
 
@@ -93,29 +100,140 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if corpus_analysis:
         statistics_txt_util.compute_corpus_statistics(GUI_util.window, inputDir, inputDir, outputDir, openOutputFiles,
                                                       createCharts, chartPackage)
+
+# ----------------------------------------------------------------------------------------------------
     # step 1: run sentiment analysis
     if sentimentAnalysis == 1:
+
+        # get the NLP package and language options
+        error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+        language_var = language
+        language_list = [language]
+
         # run appropriate sentiment analysis method as indicated by sentimentAnalysisMethod
-        if sentimentAnalysisMethod == "Stanford CoreNLP Neural Network":
-            reminders_util.checkReminder(config_filename,
-                                         reminders_util.title_options_shape_of_stories_CoreNLP,
-                                         reminders_util.message_shape_of_stories_CoreNLP,
-                                         True)
+        # if 'CoreNLP' in sentimentAnalysisMethod:
+        #     reminders_util.checkReminder(config_filename,
+        #                                  reminders_util.title_options_shape_of_stories_CoreNLP,
+        #                                  reminders_util.message_shape_of_stories_CoreNLP,
+        #                                  True)
+        #
+        #     # TODO any changes in the way the CoreNLP_annotator generates output filenames will need to be edited here
+        #     outputFilename = 'NLP_CoreNLP_sentiment_Dir_'+tail + '.csv'
+        #
+        #     if os.path.isfile(os.path.join(outputDir,outputFilename)):
+        #         computeSAScores=mb.askyesno("Sentiment Analysis","You have selected to run sentiment analysis on your corpus. But there already exists a csv file of sentiment scores for this corpus saved in the default output directory:\n\n"+outputFilename+"\n\nAre you sure you want to recompute the scores?")
+        #         if not computeSAScores:
+        #             return
+        #     tempOutputfile=Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, '', inputDir, outputDir, openOutputFiles,
+        #                         createCharts, chartPackage,'sentiment',False, language_var, export_json_var, memory_var)
+        #     if tempOutputfile==None:
+        #         return
+        #     sentiment_scores_input=tempOutputfile[0]
 
-            # TODO any changes in the way the CoreNLP_annotator generates output filenames will need to be edited here
-            outputFilename = 'NLP_CoreNLP_sentiment_Dir_'+tail + '.csv'
+        # BERT ---------------------------------------------------------
 
-            if os.path.isfile(os.path.join(outputDir,outputFilename)):
-                computeSAScores=mb.askyesno("Sentiment Analysis","You have selected to run sentiment analysis on your corpus. But there already exists a csv file of sentiment scores for this corpus saved in the default output directory:\n\n"+outputFilename+"\n\nAre you sure you want to recompute the scores?")
-                if not computeSAScores:
-                    return
-            tempOutputfile=Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, '', inputDir, outputDir, openOutputFiles, createCharts, chartPackage,'sentiment',False, memory_var)
-            if tempOutputfile==None:
+        if 'BERT' in sentimentAnalysisMethod:
+            import BERT_util
+            if 'Multilingual' in sentimentAnalysisMethod:
+                model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment"  # multilingual model
+            else:
+                model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"  # English language model
+            tempOutputFiles = BERT_util.main(inputFilename, inputDir, outputDir, '', createCharts, chartPackage, model_path)
+            if tempOutputFiles == None:
                 return
-            sentiment_scores_input=tempOutputfile[0]
-        else:
-            mb.showwarning(title="Sentiment Analysis Method not available", message=sentimentAnalysisMethod + " is not currently available. The only available option is the \'Stanford CoreNLP neural network\' method. Sorry!")
-            return
+            if len(tempOutputFiles) > 0:
+                sentiment_scores_input = tempOutputFiles[0]
+                filesToOpen.extend(tempOutputFiles)
+
+        # spaCy  _______________________________________________________
+
+        elif 'spaCy' in sentimentAnalysisMethod:
+            # check internet connection
+            import IO_internet_util
+            if not IO_internet_util.check_internet_availability_warning('spaCy Sentiment Analysis'):
+                return
+            #     flag="true" do NOT produce individual output files when processing a directory; only merged file produced
+            #     flag="false" or flag="" ONLY produce individual output files when processing a directory; NO  merged file produced
+
+            annotator = ['sentiment']
+            document_length_var = 1
+            limit_sentence_length_var = 1000
+            tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
+                                                        outputDir,
+                                                        openOutputFiles,
+                                                        createCharts, chartPackage,
+                                                        annotator, False,
+                                                        language_var,
+                                                        memory_var, document_length_var, limit_sentence_length_var,
+                                                        extract_date_from_filename_var=0,
+                                                        date_format='',
+                                                        date_separator_var='',
+                                                        date_position_var=0)
+
+            if tempOutputFiles == None:
+                return
+
+            if len(tempOutputFiles) > 0:
+                sentiment_scores_input = tempOutputFiles[0]
+                filesToOpen.extend(tempOutputFiles)
+
+        # Stanford CORENLP  _______________________________________________________
+
+        elif 'CoreNLP' in sentimentAnalysisMethod:
+            # check internet connection
+            import IO_internet_util
+            if not IO_internet_util.check_internet_availability_warning('Stanford CoreNLP Sentiment Analysis'):
+                return
+            #     flag="true" do NOT produce individual output files when processing a directory; only merged file produced
+            #     flag="false" or flag="" ONLY produce individual output files when processing a directory; NO  merged file produced
+
+            flag = "false"  # the true option does not seem to work
+
+            if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
+                return
+            tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+                                                                    outputDir, openOutputFiles, createCharts,
+                                                                    chartPackage, 'sentiment', False,
+                                                                    language_var, export_json_var,
+                                                                    memory_var)
+            # outputFilename=outputFilename[0] # annotators return a list and not a string
+            if len(tempOutputFiles) > 0:
+                sentiment_scores_input = tempOutputFiles[0]
+                filesToOpen.extend(tempOutputFiles)
+
+        # Stanza  _______________________________________________________
+
+        elif 'Stanza' in sentimentAnalysisMethod:
+            # check internet connection
+            import IO_internet_util
+            if not IO_internet_util.check_internet_availability_warning('Stanza Sentiment Analysis'):
+                return
+
+            annotator = 'sentiment'
+            document_length_var = 1
+            limit_sentence_length_var = 1000
+            tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+                                                          outputDir,
+                                                          openOutputFiles,
+                                                          createCharts, chartPackage,
+                                                          annotator, False,
+                                                          [language_var],
+                                                          # Stanza_util takes language_var as a list
+                                                          memory_var, document_length_var,
+                                                          limit_sentence_length_var,
+                                                          extract_date_from_filename_var=0,
+                                                          date_format='',
+                                                          date_separator_var='',
+                                                          date_position_var=0)
+
+            if tempOutputFiles == None:
+                return
+
+            if len(tempOutputFiles) > 0:
+                sentiment_scores_input = tempOutputFiles[0]
+                filesToOpen.extend(tempOutputFiles)
+
+# step 2 ----------------------------------------------------------------------------------------------------
 
     if hierarchical_clustering or SVD or NMF or best_topic_estimation:
         nSAscoreFiles = IO_csv_util.GetMaxValueInCSVField(sentiment_scores_input, 'Shape of Stories', 'Document ID')
@@ -158,54 +276,70 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     # hierarchical clustering
     if hierarchical_clustering:
+        # create HC subdir
+        outputHCDir = IO_files_util.make_output_subdirectory('', '', outputDir, label='HC_cluster',
+                                                              silent=True)
+        if outputHCDir == '':
+            return
         hier = cl.Clustering(rec_n_clusters)
 
-        DendogramFilename, grouped_vectors, clusters_indices, vectors = hier.cluster(sentiment_vectors, outputDir)
+        DendogramFilename, grouped_vectors, clusters_indices, vectors = hier.cluster(sentiment_vectors, outputHCDir)
         filesToOpen.append(DendogramFilename)
         sentiment_vectors = vectors
-        clusters_file = cl.processCluster(clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters, os.path.join(outputDir, "Hierarchical Clustering Documents.csv"), inputDir)
-        vis = viz.Visualizer(outputDir)
+        clusters_file = cl.processCluster(clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters, os.path.join(outputHCDir, "Hierarchical Clustering Documents.csv"), inputDir)
+        vis = viz.Visualizer(outputHCDir)
         vis.visualize_clusters(nSAscoreFiles, grouped_vectors, "Hierarchical Clustering (HC)", "HC", clusters_file)
         for i in range(rec_n_clusters):
-            filesToOpen.append(os.path.join(outputDir, "HC_Cluster_" + str(i + 1) + ".png"))
-            filesToOpen.append(os.path.join(outputDir, "HC_Cluster_" + str(i + 1) + "_subplot.png"))
-        filesToOpen.append(os.path.join(outputDir, "Hierarchical Clustering Documents.csv"))
+            filesToOpen.append(os.path.join(outputHCDir, "HC_Cluster_" + str(i + 1) + ".png"))
+            filesToOpen.append(os.path.join(outputHCDir, "HC_Cluster_" + str(i + 1) + "_subplot.png"))
+        filesToOpen.append(os.path.join(outputHCDir, "Hierarchical_Clustering_Documents.csv"))
 
     # svd
     if SVD:
+        # create SVD subdir
+        outputSVDDir = IO_files_util.make_output_subdirectory('', '', outputDir, label='SVD_cluster',
+                                                              silent=True)
+        if outputSVDDir == '':
+            return
         svd = cl.SVDClustering(rec_n_clusters)
         pos_vector_clusters, pos_clusters_indices, pos_modes, neg_vector_clusters, neg_clusters_indices, neg_modes = \
             svd.cluster(sentiment_vectors)
         clusters_file = cl.processCluster(pos_clusters_indices,scoresFile_list, file_list, sentiment_vectors, rec_n_clusters,
-                       os.path.join(outputDir, "SVD Positive Documents.csv"), inputDir)
-        vis = viz.Visualizer(outputDir)
-        vis.visualize_clusters(nSAscoreFiles, pos_vector_clusters, "Singular Value Decomposition Positive (SVD Positive)", "SVDPositive",
+                       os.path.join(outputSVDDir, "SVD_Positive_Documents.csv"), inputDir)
+        vis = viz.Visualizer(outputSVDDir)
+        vis.visualize_clusters(nSAscoreFiles, pos_vector_clusters, "Singular Value Decomposition Positive (SVD Positive)", "SVD_Positive",
                                clusters_file, modes=pos_modes)
         clusters_file = cl.processCluster(neg_clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters,
-                       os.path.join(outputDir, "SVD Negative Documents.csv"), inputDir)
-        vis = viz.Visualizer(outputDir)
-        vis.visualize_clusters(nSAscoreFiles, neg_vector_clusters, "Singular Value Decomposition Negative (SVD Negative)", "SVDNegative",
+                       os.path.join(outputSVDDir, "SVD_Negative_Documents.csv"), inputDir)
+        vis = viz.Visualizer(outputSVDDir)
+        vis.visualize_clusters(nSAscoreFiles, neg_vector_clusters, "Singular Value Decomposition Negative (SVD Negative)", "SVD_Negative",
                                clusters_file, modes=neg_modes)
         for i in range(rec_n_clusters):
-            filesToOpen.append(os.path.join(outputDir, "SVD_Positive_Cluster_" + str(i + 1) + ".png"))
+            filesToOpen.append(os.path.join(outputSVDDir, "SVD_Positive_Cluster_" + str(i + 1) + ".png"))
         for i in range(rec_n_clusters):
-            filesToOpen.append(os.path.join(outputDir, "SVD_Negative_Cluster_" + str(i + 1) + ".png"))
-        filesToOpen.append(os.path.join(outputDir, "SVD Positive Documents.csv"))
-        filesToOpen.append(os.path.join(outputDir, "SVD Negative Documents.csv"))
+            filesToOpen.append(os.path.join(outputSVDDir, "SVD_Negative_Cluster_" + str(i + 1) + ".png"))
+        filesToOpen.append(os.path.join(outputSVDDir, "SVD_Positive_Documents.csv"))
+        filesToOpen.append(os.path.join(outputSVDDir, "SVD_Negative_Documents.csv"))
 
     # NMF
     if NMF:
+        # create NMF subdir
+        outputNMFDir = IO_files_util.make_output_subdirectory('', '', outputDir, label='NMF_cluster',
+                                                              silent=True)
+        if outputNMFDir == '':
+            return
+
         nmf = cl.NMFClustering(rec_n_clusters)
         grouped_vectors, clusters_indices, vectors = nmf.cluster(sentiment_vectors)
         sentiment_vectors = vectors
         clusters_file = cl.processCluster(clusters_indices, scoresFile_list,file_list, sentiment_vectors, rec_n_clusters,
-                       os.path.join(outputDir, "NMF Documents.csv"), inputDir)
-        vis = viz.Visualizer(outputDir)
+                       os.path.join(outputNMFDir, "NMF_Documents.csv"), inputDir)
+        vis = viz.Visualizer(outputNMFDir)
         vis.visualize_clusters(nSAscoreFiles, grouped_vectors, "Non-negative Matrix Factorization (NMF)", "NMF", clusters_file)
         for i in range(rec_n_clusters):
-            filesToOpen.append(os.path.join(outputDir, "NMF_Cluster_" + str(i + 1) + ".png"))
-            filesToOpen.append(os.path.join(outputDir, "NMF_Cluster_" + str(i + 1) + "_subplot.png"))
-        filesToOpen.append(os.path.join(outputDir, "NMF Documents.csv"))
+            filesToOpen.append(os.path.join(outputNMFDir, "NMF_Cluster_" + str(i + 1) + ".png"))
+            filesToOpen.append(os.path.join(outputNMFDir, "NMF_Cluster_" + str(i + 1) + "_subplot.png"))
+        filesToOpen.append(os.path.join(outputNMFDir, "NMF_Documents.csv"))
 
     # best topic estimate
     if best_topic_estimation:
@@ -228,7 +362,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_chart_output_checkbox.get(),
-                                 GUI_util.charts_dropdown_field.get(),
+                                 GUI_util.charts_package_options_widget.get(),
                                  sentiment_analysis_var.get(),
                                  sentiment_analysis_menu_var.get(),
                                  memory_var.get(),
@@ -281,7 +415,7 @@ window=GUI_util.window
 config_input_output_numeric_options=GUI_util.config_input_output_numeric_options
 config_filename=GUI_util.config_filename
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 sentiment_analysis_var=tk.IntVar()
 sentiment_analysis_menu_var=tk.StringVar()
@@ -300,87 +434,58 @@ best_topic_estimation_var=tk.IntVar()
 
 sentiment_analysis_var.set(0)
 sentiment_analysis_checkbox = tk.Checkbutton(window, text='Sentiment Analysis', variable=sentiment_analysis_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sentiment_analysis_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,sentiment_analysis_checkbox,True)
 
 sentiment_analysis_lb = tk.Label(window,text='Select the Sentiment Analysis algorithm')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+150,y_multiplier_integer,sentiment_analysis_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.shape_of_stories_sentiment_analysis_lb_pos,y_multiplier_integer,sentiment_analysis_lb,True)
 
-sentiment_analysis_menu_var.set('Stanford CoreNLP Neural Network')
-sentiment_analysis_menu = tk.OptionMenu(window,sentiment_analysis_menu_var,'Stanford CoreNLP Neural Network','ANEW','VADER','hedonometer', 'SentiWordNet')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+100,y_multiplier_integer,sentiment_analysis_menu,True)
+sentiment_analysis_menu_var.set('BERT (English model)')
+sentiment_analysis_menu = tk.OptionMenu(window,sentiment_analysis_menu_var,'Neural network approaches:', '   BERT (English model)', '   BERT (Multilingual model)', '   spaCy','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   SentiWordNet','   VADER')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.shape_of_stories_sentiment_analysis_menu_pos,y_multiplier_integer,sentiment_analysis_menu,True)
 
 #memory options
 
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 400,y_multiplier_integer,memory_var_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.shape_of_stories_memory_lb_pos,y_multiplier_integer,memory_var_lb,True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(6)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 480,y_multiplier_integer,memory_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.shape_of_stories_memory_pos,y_multiplier_integer,memory_var)
 
 def activate_warning(*args):
-    if sentiment_analysis_menu_var.get()!='Stanford CoreNLP Neural Network':
-        mb.showwarning(title="Sentiment Analysis Method not available",
-                       message=sentiment_analysis_menu_var.get() + " is not currently available. The only available option is the \'Stanford CoreNLP neural network\' method. Sorry!")
+    if not 'CoreNLP' in sentiment_analysis_menu_var.get() and not \
+            'BERT (English model)' in sentiment_analysis_menu_var.get() and not \
+            'BERT (Multilingual model)' in sentiment_analysis_menu_var.get() and not \
+            'spaCy' in sentiment_analysis_menu_var.get() and not \
+            'Stanza' in sentiment_analysis_menu_var.get():
+            mb.showwarning(title="Sentiment Analysis option deprecated",
+                            message="The selected sentiment analysis dictionary-based option '" + (sentiment_analysis_menu_var.get()).lstrip() + "' is deprecated.\n\nPlease, use one of the neural network approaches, slower perhaps, but far more accurate.")
 sentiment_analysis_menu_var.trace("w",activate_warning)
 
 corpus_analysis_var.set(0)
 corpus_analysis_checkbox = tk.Checkbutton(window, text='Compute & visualize corpus statistics', variable=corpus_analysis_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,corpus_analysis_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,corpus_analysis_checkbox)
 
-# sentence_window_lb = tk.Label(window,text='Size of sentence window')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sentence_window_lb,True)
-
-# sentence_window_max=100
-# sentence_window_entry = tk.Scale(window, from_=0, to=sentence_window_max, orient=tk.HORIZONTAL)
-# sentence_window_entry.pack()
-# sentence_window_entry.set(sentence_window_max/2)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer,sentence_window_entry)
-
-# sliding_window_lb = tk.Label(window,text='Size of sliding window (stride)')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,sliding_window_lb,True)
-
-# sliding_window_max=200
-# sliding_window_entry = tk.Scale(window, from_=0, to=sliding_window_max, orient=tk.HORIZONTAL)
-# sliding_window_entry.pack()
-# sliding_window_entry.set(sliding_window_max/2)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer,sliding_window_entry)
 
 hierarchical_clustering_var.set(1)
 hierarchical_clustering_checkbox = tk.Checkbutton(window, text='Hierarchical Clustering (HC)', variable=hierarchical_clustering_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,hierarchical_clustering_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,hierarchical_clustering_checkbox)
 
-# hierarchical_default_lb = tk.Label(window,text='Number of modes')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300,y_multiplier_integer,hierarchical_default_lb,True)
-
-# hierarchical_window_max=200
-# hierarchical_default_entry = tk.Scale(window, from_=0, to=hierarchical_window_max, orient=tk.HORIZONTAL)
-# hierarchical_default_entry.pack()
-# hierarchical_default_entry.set(150)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer,hierarchical_default_entry)
 
 SVD_var.set(1)
 SVD_checkbox = tk.Checkbutton(window, text='Singular Value Decomposition (SVD)', variable=SVD_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SVD_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SVD_checkbox)
 
-# SVD_default_lb = tk.Label(window,text='Number of clusters')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300,y_multiplier_integer,SVD_default_lb,True)
-
-# SVD_window_max=100
-# SVD_default_entry = tk.Scale(window, from_=0, to=SVD_window_max, orient=tk.HORIZONTAL)
-# SVD_default_entry.pack()
-# SVD_default_entry.set(SVD_window_max)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500,y_multiplier_integer,SVD_default_entry)
 
 NMF_var.set(1)
 NMF_checkbox = tk.Checkbutton(window, text='Non-Negative Matrix Factorization (NMF)', variable=NMF_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,NMF_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,NMF_checkbox)
 
 # RF
 best_topic_estimation_var.set(0)
 best_topic_estimation_checkbox = tk.Checkbutton(window, text='Best topic estimation', variable=best_topic_estimation_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,best_topic_estimation_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,best_topic_estimation_checkbox)
 
 def check_IO_requirements(inputFilename, inputDir):
     sentimentAnalysis=sentiment_analysis_var.get()
@@ -487,12 +592,17 @@ def check_IO_requirements(inputFilename, inputDir):
         if nSAscoreFiles == 0:
             Error = True
             return Error
-        if nSAscoreFiles < 50:
-            # too few csv files
-            mb.showwarning(title="Data warning: Data reduction algorithms",
-                                 message=csv_fileWarning)
-            Error = True
-            return Error
+        # if nSAscoreFiles < 50:
+        #     # too few csv files
+        #     answer = mb.askyesno("Data reduction algorithms",
+        #                          message=csv_fileWarning)
+        #     if answer == False:
+        #         Error = True
+        #         return Error
+            # mb.showwarning(title="Data warning: Data reduction algorithms",
+            #                      message=csv_fileWarning)
+            # Error = True
+            # return Error
 
     # check that there is inputDir value if sentiment analysis and/or corpus are checked
     if inputDir=='' and (sentimentAnalysis == True or corpus_analysis_var.get() == True):
@@ -523,12 +633,12 @@ def check_IO_requirements(inputFilename, inputDir):
             Error = True
             return Error
 
-        if nSAscoreFiles < 50:
-            # too few csv files
-            mb.showwarning(title="Data warning: Data reduction algorithms",
-                                 message=csv_dirWarning)
-            Error = True
-            return Error
+        # if nSAscoreFiles < 50:
+        #     # too few csv files
+        #     mb.showwarning(title="Data warning: Data reduction algorithms",
+        #                          message=csv_dirWarning)
+        #     Error = True
+        #     return Error
 
     return Error
 
@@ -566,7 +676,7 @@ def display_reminder(*args):
                                      True)
 best_topic_estimation_var.trace('w',display_reminder)
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
@@ -593,7 +703,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", 'Please, tick the checkbox if you wish to estimate the best number of topics providing graphical visualization.\n\nWARNING! This function is very slow and make take an hour or longer. You can follow its progress in command line.' + inputDirCSVMsg + outputDirMsg)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts provide ways of analyzing the emotional arc of a set of stories and of visualizing common patterns of behavior among the stories.\n\nThe shape of stories algorithms are fundamentally based on sentiment analysis of the input stories and on data reduction of the calculated sentiment scores.\n\nThe data reduction algorithms rely heavily on Andrew Reagan et al. work on the emotional arc of stories. Andrew J. Reagan et al. 2016. The emotional arcs of stories are dominated by six basic shapes. https://epjdatascience.springeropen.com/articles/10.1140/epjds/s13688-016-0093-1   For code, see Reagan's GitHub repository at https://github.com/andyreagan \n\n" \

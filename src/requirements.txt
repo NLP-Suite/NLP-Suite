@@ -11,8 +11,21 @@
 #used in NLP_setup_update_util for the automatic update to the latest release available on GitHub using git
 pygit2
 
+spacy
+stanza
+
+pandas
+numpy
+
 #used to parse arguments that are passed to a script via command line
 argparse~=1.4.0
+
+# used to run YouTube videos: vlc and pafy
+# if pafy gives and error when running a YouTube video
+#   pip uninstall pafy
+#   pip install git+https://github.com/Cupcakus/pafy
+# python-vlc
+# pafy
 
 # sqlite comes bundled with Python
 
@@ -42,13 +55,14 @@ python-docx
 
 # used by YAGO
 SPARQLWrapper
-stanza
 fuzzywuzzy
 
 #used by spell checkers
 textblob
 autocorrect~=2.3.0
 pyspellchecker
+python-Levenshtein # used by spell checker
+
 #language detection packages
 #spacy installed below
 langdetect
@@ -65,7 +79,7 @@ conllu
 nltk~=3.5
 # stanza used by wordcloud script (the new StanfordCoreNLP Python approach) and YAGO
 # stanza
-# stanfordnlp is used by SVO 
+# stanfordnlp is used by SVO
 # stanfordnlp now called stanza
 # stanza requires torch and torchvision; they are installed by STEP2 of setup
 # pip install torch===1.7.1 torchvision===0.8.2 -f https://download.pytorch.org/whl/torch_stable.html
@@ -74,6 +88,16 @@ nltk~=3.5
 
 # VADER (sentimentt analysis)
 twython
+
+# BERT
+transformers
+sentence_transformers
+contextualSpellCheck
+tensorflow
+protobuf==3.20
+sentencepiece
+summarizer
+bert-extractive-summarizer
 
 #used by charts_Excel_util.py for visualzing Excel charts
 openpyxl~=3.0.6
@@ -89,7 +113,6 @@ tkcolorpicker~=2.1.3
 gensim
 pyLDAvis~=2.1.2
 IPython # THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA; but... not!
-spacy
 spacytextblob
 # pprint #THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA
 # matplotlib #THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA
@@ -97,12 +120,10 @@ spacytextblob
 # used by Word2Vec
 plotly
 
-# used by Plot plotLy (static)
+# used by Plot Plotly (static)
 kaleido
 
-pandas~=1.2.1
 future~=0.18.2
-numpy
 lxml~=4.6.2
 python-dateutil~=2.8.1
 matplotlib~=3.3.3

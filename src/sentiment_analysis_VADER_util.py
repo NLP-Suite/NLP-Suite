@@ -49,7 +49,7 @@ import tkinter.messagebox as mb
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 # from nltk import tokenize
 # from nltk import word_tokenize
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 import GUI_IO_util
 import IO_csv_util
@@ -114,6 +114,8 @@ def analyzefile(inputFilename, outputDir, outputFilename, mode, Document_ID, Doc
         mb.showerror(title='File empty', message='The file ' + inputFilename + ' is empty.\n\nPlease, use another file and try again.')
         print('Empty file ', inputFilename)
         return
+
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
     # sentences = tokenize.sent_tokenize(fulltext)  # split text into sentences
     sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
@@ -224,6 +226,12 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
     """
 
     filesToOpen = []
+
+    # create output subdirectory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_VADER',
+                                                       silent=True)
+    if outputDir == '':
+        return
 
     if len(outputDir) < 0 or not os.path.exists(outputDir):
         print('No output directory specified, or path does not exist.')

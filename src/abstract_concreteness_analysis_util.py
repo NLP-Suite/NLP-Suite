@@ -44,7 +44,7 @@ import tkinter.messagebox as mb
 import IO_user_interface_util
 import lib_util
 
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 import GUI_IO_util
 import IO_csv_util
@@ -88,6 +88,7 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 
 	# otherwise, split into sentences
 	# sentences = tokenize.sent_tokenize(fulltext)
+	from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 	sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
 
 	# check each word in sentence for concreteness and write to outputFilename
@@ -164,6 +165,13 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 	elif len(inputFilename) == 0 and len(inputDir) == 0:  # empty input
 		print('No input specified. Please give either a single file or a directory of files to analyze.')
 		sys.exit(1)
+
+	# create a subdirectory of the output directory
+	outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='abstr-concret',
+													   silent=True)
+	if outputDir == '':
+		return
+
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
 	                                               'Started running CONCRETENESS Analysis at', True,silent=True)
 	outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,

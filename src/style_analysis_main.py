@@ -37,6 +37,24 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     gender_guesser_var):
 
     filesToOpen = []  # Store all files that are to be opened once finished
+
+    # get the NLP package and language options
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
+
+    # get the date options from filename
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
+        config_filename, config_input_output_numeric_options)
+    extract_date_from_text_var = 0
+
+    if package_display_area_value == '':
+        mb.showwarning(title='No setup for NLP package and language',
+                       message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
+        return
+
     openOutputFilesSV=openOutputFiles
     outputDir_style=outputDir
 
@@ -77,7 +95,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             else:
                 bySentenceIndex_character_var = True
 
-        if '*' in str(ngrams_list) or 'Repetition' in str(ngrams_list) or 'POSTAG' in ngrams_menu_var or 'DEPREL' in str(ngrams_list) or 'NER' in str(ngrams_list):
+        if '*' in str(ngrams_list) or 'POSTAG' in ngrams_menu_var or 'DEPREL' in str(ngrams_list) or 'NER' in str(ngrams_list):
             mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!')
             if 'Repetition' in ngrams_menu_var:
                 mb.showwarning('Warning',
@@ -158,9 +176,10 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         if vocabulary_analysis_menu_var=='':
             mb.showwarning('Warning', 'No option has been selected for Vocabulary analysis.\n\nPlease, select an option and try again.')
             return
-        if 'Repetition' in vocabulary_analysis_menu_var:
-            mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!\n\nDo check out the repetition finder algorithm in the CoNLL Table Analyzer GUI.')
+        if 'Repetition across' in vocabulary_analysis_menu_var:
+            mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!')
             return
+
         if '*' == vocabulary_analysis_menu_var:
             outputDir_style = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
                                                                    label='style',
@@ -171,14 +190,37 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             outputDir_style=outputDir
 
         if '*' in vocabulary_analysis_menu_var or 'Vocabulary (via unigrams)' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'unigrams')
             if output != None:
                 filesToOpen.append(output)
 
         if '*' in vocabulary_analysis_menu_var or 'Hapax legomena' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'Hapax legomena')
+            if output != None:
+                filesToOpen.append(output)
+
+        #Added this option to be able to test the subjectivity/objectivity output (Naman Sahni 10/01/2022)
+        if '*' in vocabulary_analysis_menu_var or 'Objectivity/subjectivity (via spaCy)' in vocabulary_analysis_menu_var:
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+                                                        openOutputFiles, createCharts,
+                                                        chartPackage,'Objectivity/subjectivity (via spaCy')
+            if output != None:
+                filesToOpen.append(output)
+
+        if '*' in vocabulary_analysis_menu_var or 'Repetition: Words' in vocabulary_analysis_menu_var:
+            # a reminder about CoNLL table analyzer option is posted in process_words
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+                                                       openOutputFiles, createCharts,
+                                                       chartPackage,'Repetition: Words in first K and last K sentences')
+            if output != None:
+                filesToOpen.append(output)
+
+        if '*' in vocabulary_analysis_menu_var or 'Repetition: Last' in vocabulary_analysis_menu_var:
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+                                                       openOutputFiles, createCharts,
+                                                       chartPackage,'Repetition: Last K words of a sentence/First K words of next sentence')
             if output != None:
                 filesToOpen.append(output)
 
@@ -199,20 +241,20 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                 filesToOpen.extend(output)
 
         if '*' in vocabulary_analysis_menu_var or 'capital' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'capital')
             if output != None:
                 filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Short' in vocabulary_analysis_menu_var:
-            output =statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Short')
+            output =statistics_txt_util.process_words(window, config_filename, inputFilename,inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Short')
             if output != None:
                 filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Vowel' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Vowel')
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Vowel')
             if output != None:
                 filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Punctuation' in vocabulary_analysis_menu_var:
-            output =statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Punctuation')
+            output =statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Punctuation')
             if output != None:
                 filesToOpen.extend(output)
 
@@ -253,7 +295,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
-                                GUI_util.charts_dropdown_field.get(),
+                                GUI_util.charts_package_options_widget.get(),
                                 ngrams_analysis_var.get(),
                                 ngrams_menu_var.get(),
                                 ngrams_options_menu_var.get(),
@@ -275,8 +317,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=600, # height at brief display
-                             GUI_height_full=640, # height at full display
+                             GUI_height_brief=640, # height at brief display
+                             GUI_height_full=680, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
@@ -305,7 +347,7 @@ config_input_output_numeric_options=GUI_util.config_input_output_numeric_options
 config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 def clear(e):
     ngrams_checkbox.configure(state='normal')
@@ -349,50 +391,65 @@ corpus_statistics_var = tk.IntVar()
 corpus_statistics_options_menu_var = tk.StringVar()
 corpus_text_options_menu_var = tk.StringVar()
 
-CoNLL_table_analysis_button = tk.Button(window, width=50, text='CoNLL table analysis (Open GUI)',command=lambda: call('python CoNLL_table_analyzer_main.py'))
+CoNLL_table_analysis_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='CoNLL table analysis (Open GUI)',command=lambda: call('python CoNLL_table_analyzer_main.py', shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    CoNLL_table_analysis_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-ngrams_button = tk.Button(window, width=50, text='N-Grams/Co-occurrences VIEWER (Open GUI)',command=lambda: call('python NGrams_CoOccurrences_Viewer_main.py'))
+ngrams_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='N-Grams/Co-occurrences VIEWER (Open GUI)',command=lambda: call('python NGrams_CoOccurrences_Viewer_main.py', shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    ngrams_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-nominalization_button = tk.Button(window, width=50, text='Nominalization (Open GUI)',command=lambda: call('python nominalization_main.py'))
+nominalization_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Nominalization (Open GUI)',command=lambda: call('python nominalization_main.py', shell=True))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    nominalization_button,
-                                   False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate(),
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Click on the button to open the GUI")
+
+spell_checker_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Spelling/grammar checker (Open GUI)',command=lambda: call('python file_spell_checker_main.py', shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   spell_checker_button,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
 ngrams_analysis_var.set(0)
 ngrams_checkbox = tk.Checkbutton(window, text='Compute n-grams', variable=ngrams_analysis_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,ngrams_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,ngrams_checkbox,True)
 
 ngrams_menu_var.set('Word')
-ngrams_menu_lb = tk.Label(window, text='N-grams type')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,ngrams_menu_lb,True)
+# ngrams_menu_lb = tk.Label(window, text='N-grams type')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_ngrams_menu_pos,y_multiplier_integer,ngrams_menu_lb,True)
 ngrams_menu = tk.OptionMenu(window, ngrams_menu_var, 'Character', 'Word') #,'DEPREL','POSTAG')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,ngrams_menu)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   ngrams_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select the N-grams type")
 
 ngrams_options_menu_lb = tk.Label(window, text='N-grams options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,ngrams_options_menu_lb,True)
-ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax legomena (once-occurring words/unigrams)','Normalize n-grams', 'Exclude punctuation (word n-grams only)','By sentence index','Repetition of words (last N words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+140,y_multiplier_integer,ngrams_options_menu,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ngrams_options_menu_lb,True)
+ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax legomena (once-occurring words/unigrams)','Normalize n-grams', 'Exclude punctuation (word n-grams only)','By sentence index','Repetition of words (last K words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   ngrams_options_menu,
+                                   True, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select the N-grams option; hit + button to add multiple options; Reset to start fresh; Show to display current selection.")
 
 add_ngrams_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_ngrams_analysis_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+500,y_multiplier_integer,add_ngrams_button, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_add_ngrams_button_pos,y_multiplier_integer,add_ngrams_button, True)
 
 reset_ngrams_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_ngrams_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+540,y_multiplier_integer,reset_ngrams_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_reset_ngrams_button_pos,y_multiplier_integer,reset_ngrams_button,True)
 
 show_ngrams_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_ngrams_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+600,y_multiplier_integer,show_ngrams_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_show_ngrams_button_pos,y_multiplier_integer,show_ngrams_button)
 
 def reset_ngrams_list():
     ngrams_list.clear()
@@ -429,11 +486,11 @@ ngrams_options_menu_var.trace('w',activate_ngrams_options)
 
 corpus_statistics_var.set(0)
 corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute document(s) statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,corpus_statistics_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,corpus_statistics_checkbox,True)
 
 corpus_statistics_options_menu_var.set('*')
-corpus_statistics_options_menu_lb = tk.Label(window, text='Statistics options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,corpus_statistics_options_menu_lb,True)
+# corpus_statistics_options_menu_lb = tk.Label(window, text='Statistics options')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
 
 corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_menu_var,
                                                 '*',
@@ -441,13 +498,19 @@ corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_
                                                'Compute sentence length',
                                                'Compute line length',
                                                )
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+370,y_multiplier_integer,corpus_statistics_options_menu, True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   corpus_statistics_options_menu,
+                                   True, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select the statistics option for your document(s) (* for all); widget disabled until checkbox ticked.")
+
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_corpus_statistics_options_menu_pos,y_multiplier_integer,corpus_statistics_options_menu, True)
 
 corpus_text_options_menu_var.set('')
 corpus_options_menu_lb = tk.Label(window, text='Text options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 600,y_multiplier_integer,corpus_options_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_corpus_text_options_menu_lb_pos,y_multiplier_integer,corpus_options_menu_lb,True)
 corpus_text_options_menu = tk.OptionMenu(window, corpus_text_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 700,y_multiplier_integer,corpus_text_options_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_corpus_options_menu_men_pos,y_multiplier_integer,corpus_text_options_menu)
 
 def activate_corpus_options(*args):
     if corpus_statistics_var.get()==True:
@@ -460,26 +523,32 @@ corpus_statistics_var.trace('w',activate_corpus_options)
 
 complexity_readability_analysis_var.set(0)
 complexity_readability_analysis_checkbox = tk.Checkbutton(window, text='Complexity/readability analysis', variable=complexity_readability_analysis_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,complexity_readability_analysis_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complexity_readability_analysis_checkbox,True)
 
 complexity_readability_analysis_menu_var.set('*')
-complexity_readability_analysis_lb = tk.Label(window, text='Select the complexity/readability analysis you wish to perform')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,complexity_readability_analysis_lb,True)
+# complexity_readability_analysis_lb = tk.Label(window, text='Select the complexity/readability analysis you wish to perform')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,complexity_readability_analysis_lb,True)
 complexity_readability_analysis_menu = tk.OptionMenu(window,complexity_readability_analysis_menu_var,'*','Sentence complexity','Text readability')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400, y_multiplier_integer,complexity_readability_analysis_menu)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   complexity_readability_analysis_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select the complexity/readability analysis you wish to perform (* for all); widget disabled until checkbox ticked.")
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_complexity_readability_analysis_menu_pos, y_multiplier_integer,complexity_readability_analysis_menu)
 
 vocabulary_analysis_var.set(0)
 vocabulary_analysis_checkbox = tk.Checkbutton(window, text='Vocabulary analysis', variable=vocabulary_analysis_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,vocabulary_analysis_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,vocabulary_analysis_checkbox,True)
 
-vocabulary_analysis_menu_var.set('*')
-vocabulary_analysis_lb = tk.Label(window, text='Select the vocabulary analysis you wish to perform')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(),y_multiplier_integer,vocabulary_analysis_lb,True)
+# # vocabulary_analysis_menu_var.set('*')
+# # vocabulary_analysis_lb = tk.Label(window, text='Select the vocabulary analysis you wish to perform')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,vocabulary_analysis_lb,True)
 vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*',
                                          'Vocabulary (via unigrams) - List of all words/tokens in input document(s)',
                                          'Vocabulary (via Stanza multilanguage lemmatizer) - List of all words/tokens in input document(s)',
                                          'Vocabulary richness (word type/token ratio or Yule’s K)',
                                          'Abstract/concrete vocabulary',
+                                         'Objectivity/subjectivity (via spaCy)',
                                          'Punctuation as figures of pathos (? !)',
                                          'Short words (<4 characters)',
                                          'Vowel words',
@@ -487,13 +556,19 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Unusual words (via NLTK)',
                                          'Hapax legomena (once-occurring words/unigrams)',
                                          'Language detection',
-                                         'Repetition: Last N words of a sentence/First N words of next sentence',
+                                         'Repetition: Words in first K and last K sentences',
+                                         'Repetition: Last K words of a sentence/First K words of next sentence',
                                          'Repetition across sentences (special ngrams)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+400, y_multiplier_integer,vocabulary_analysis_menu)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   vocabulary_analysis_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select the vocabulary analysis you wish to perform (* for all); widget disabled until checkbox ticked,")
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_vocabulary_analysis_menu_pos, y_multiplier_integer,vocabulary_analysis_menu)
 
 gender_guesser_var.set(0)
 gender_guesser_checkbox = tk.Checkbutton(window, text='Who wrote the text - Gender guesser', variable=gender_guesser_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,gender_guesser_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,gender_guesser_checkbox)
 gender_guesser_checkbox.configure(state='normal')
 
 def activate_options(*args):
@@ -564,6 +639,7 @@ TIPS_lookup = {'Style analysis':'TIPS_NLP_Style analysis.pdf',
                'Clause analysis':'TIPS_NLP_Clause analysis.pdf',
                'Sentence complexity':'TIPS_NLP_Sentence complexity.pdf',
                'Text readability':'TIPS_NLP_Text readability.pdf',
+               'Objective/subjective writing':'TIPS_NLP_Objectivity_subjectivity (via spaCy and TextBlob).pdf',
                'Nominalization':'TIPS_NLP_Nominalization.pdf',
                'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
@@ -579,9 +655,10 @@ TIPS_lookup = {'Style analysis':'TIPS_NLP_Style analysis.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
 
-TIPS_options='Style analysis', 'English Language Benchmarks','Things to do with words: Overall view', 'Clause analysis', 'Sentence complexity', 'Text readability','Nominalization','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Language concreteness','Yule measures of vocabulary richness','The world of emotions and sentiments','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
+TIPS_options='Style analysis', 'English Language Benchmarks','Things to do with words: Overall view', 'Clause analysis', 'Sentence complexity', 'Text readability', \
+             'Objective/subjective writing','Nominalization','CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)','NLP Searches','N-Grams (word & character)','NLP Ngram and Word Co-Occurrence VIEWER','Google Ngram Viewer','Language concreteness','Yule measures of vocabulary richness','The world of emotions and sentiments','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
@@ -599,6 +676,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          'Please, click the button \'N-Grams\' if you wish to open the N-Grams GUI to analyze n-grams (1, 2, 3) present in your corpus.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, click the button \'Nominalization\' if you wish to open the Nominalization GUI to analyze instances of nominalization (i.e., turning verbs into nouns - Latin nomen=noun).')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, click the button \'Spelling/grammar checker\' if you wish to open the Spelling/grammar checker GUI to check your corpus for spelling and/or grammar errors with several different NLP tools.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, tick the checkbox if you wish to compute basic statistics on your corpus. Users have the option to lemmatize words and exclude stopwords from word counts.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates the following three files:\n  1. csv file of frequencies of the twenty most frequent words;\n  2. csv file of the following statistics for each column in the previous csv file and for each document in the corpus: Count, Mean, Mode, Median, Standard deviation, Minimum, Maximum, Skewness, Kurtosis, 25% quantile, 50% quantile; 75% quantile;\n  3. Excel line chart of the number of sentences and words for each document.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -613,18 +692,17 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the \'Who wrote the text\' checkbox if you wish to run the Gender Guesser algorithm to determine an author\'s gender based on the words used.\n\nYou will need to copy and paste a document content to the website http://www.hackerfactor.com/GenderGuesser.php#About\n\nYou need to be connected to the internet.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
-
-'English Language Benchmarks', 'Things to do with words: Overall view',
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 scripts analyze different aspects of style, from the analysis of CoNLL table tags (POSTAG, DEPREL, NER), to sentence complexity and readability, vocabulary analysis (short and vowel words, abstract/concrete words, unusual words, vocabulary richness (Yule\'s K)), N-grams."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
+                    videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 def activate_NLP_options(*args):
-    global error, package_basics, package, language_list
-    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    global error, package_basics, package, language, language_var, language_list
+    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 GUI_util.setup_menu.trace('w', activate_NLP_options)
@@ -632,10 +710,15 @@ activate_NLP_options()
 
 if error:
     mb.showwarning(title='Warning',
-               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup widget at the bottom of this GUI.")
+               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
+    call("python NLP_setup_package_language_main.py", shell=True)
+    # this will display the correct hover-over info after the python call, in case options were changed
+    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
-title=["NLP setup options"]
-message="Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " + ', '.join(language_list) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " + package_basics + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
+title = ["NLP setup options"]
+message = "Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " \
+          + str(language) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " \
+          + str(package_basics) + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
 reminders_util.checkReminder(config_filename, title, message)
 
 GUI_util.window.mainloop()

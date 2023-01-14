@@ -377,7 +377,8 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 						  language_encoding='utf-8')
 
 	if createCharts == True:
-		columns_to_be_plotted=[[0,1]]
+		columns_to_be_plotted_xAxis=[]
+		columns_to_be_plotted_yAxis=[[0,1]]
 		count_var=0
 		chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
 														 outputFileLabel='verb_tense',

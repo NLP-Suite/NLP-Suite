@@ -15,6 +15,7 @@ import os
 import tkinter as tk
 import tkinter.messagebox as mb
 import importlib
+from subprocess import call
 
 import GUI_IO_util
 import IO_files_util
@@ -99,7 +100,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_chart_output_checkbox.get(),
-                            GUI_util.charts_dropdown_field.get(),
+                            GUI_util.charts_package_options_widget.get(),
                             check_tools_var.get(),
                             convert_tools_var.get(),
                             clean_tools_var.get(),
@@ -150,7 +151,7 @@ config_filename=GUI_util.config_filename
 inputDir =GUI_util.input_main_dir_path
 outputDir =GUI_util.output_dir_path
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 script_to_run=''
 function_to_run=''
@@ -198,11 +199,11 @@ window.bind("<Escape>", clear)
 # CHECK ________________________________________________________
 
 # check_files_lb = tk.Label(window, text='Check files',font=("Courier", 12, "bold"))
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,check_files_lb)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,check_files_lb)
 
 check_tools_var.set('')
 check_lb = tk.Label(window, text='Check Files')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,check_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,check_lb,True)
 check_menu = tk.OptionMenu(window,check_tools_var,
                     'Check utf-8 encoding compliance',
                     'Check end-of-line typesetting hyphenation',
@@ -216,18 +217,18 @@ check_menu = tk.OptionMenu(window,check_tools_var,
                     # 'Short words',
                     # 'Vowel words')
 
-check_menu.configure(width=70)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,check_menu)
+check_menu.configure(width=GUI_IO_util.widget_width_long)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,check_menu)
 
 #setup GUI widgets
 # CONVERT ________________________________________________________
 
 # convert_files_lb = tk.Label(window, text='Convert files',font=("Courier", 12, "bold"))
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,convert_files_lb)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,convert_files_lb)
 
 convert_tools_var.set('')
 convert_lb = tk.Label(window, text='Convert Files')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,convert_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,convert_lb,True)
 convert_menu = tk.OptionMenu(window,convert_tools_var,
                     'Document converter (csv --> txt)',
                     'Document converter (docx --> txt)',
@@ -235,12 +236,12 @@ convert_menu = tk.OptionMenu(window,convert_tools_var,
                     'Document converter (pdf --> txt) (via pytesseract)',
                     'Document converter (rtf --> txt)')
 
-convert_menu.configure(width=70)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,convert_menu)
+convert_menu.configure(width=GUI_IO_util.widget_width_long)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,convert_menu)
 
 clean_tools_var.set('')
 clean_lb = tk.Label(window, text='Clean Files')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,clean_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,clean_lb,True)
 clean_menu = tk.OptionMenu(window,clean_tools_var,
                     'Change to ASCII non-ASCII apostrophes & quotes and % to percent',
                     'Find & Replace string',
@@ -251,8 +252,8 @@ clean_menu = tk.OptionMenu(window,clean_tools_var,
                     'Add full stop (.) at the end of paragraphs without end-of-paragraph punctuation',
                     'Separate titles from documents (newspaper articles)')
 
-clean_menu.configure(width=70)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,clean_menu)
+clean_menu.configure(width=GUI_IO_util.widget_width_long)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,clean_menu)
 
 
 def activate_allOptions(*args):
@@ -300,7 +301,7 @@ videos_options='No videos available'
 TIPS_lookup = {'File manager':'TIPS_NLP_File manager.pdf','File handling in NLP Suite': "TIPS_NLP_File handling in NLP Suite.pdf",'Filename checker':'TIPS_NLP_Filename checker.pdf','Filename matcher':'TIPS_NLP_Filename matcher.pdf','File classifier (By date)':'TIPS_NLP_File classifier (By date).pdf','File classifier (By NER)':'TIPS_NLP_File classifier (By NER).pdf','File content checker & converter & cleaner':'TIPS_NLP_File checker & converter & cleaner.pdf','Text encoding (utf-8)':'TIPS_NLP_Text encoding (utf-8).pdf','Spelling checker':'TIPS_NLP_Spelling checker.pdf','File merger':'TIPS_NLP_File merger.pdf','File splitter':'TIPS_NLP_File splitter.pdf'}
 TIPS_options= 'File content checker & converter & cleaner','File handling in NLP Suite', 'File manager', 'Filename checker', 'Filename matcher', 'File classifier (By date)','File classifier (By NER)','Text encoding (utf-8)','Spelling checker','File merger','File splitter'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
@@ -318,7 +319,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),increment)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,increment)
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script can check the CONTENT of txt files for\n  utf-8 compliace;\n  spelling.\n\nThe script can also convert a file type from\n  pdf to txt;\n  docx to txt;\n  rtf to txt.\nThe txt type is the only file type NLP tools can process.\n\nIn INPUT the script can take either a single txt file or a directory, processing all txt fles in the directory."
@@ -326,8 +327,8 @@ readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 def activate_NLP_options(*args):
-    global error, package_basics, package, language_list
-    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    global error, package_basics, package, language, language_var, language_list
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 GUI_util.setup_menu.trace('w', activate_NLP_options)
@@ -335,10 +336,15 @@ activate_NLP_options()
 
 if error:
     mb.showwarning(title='Warning',
-               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup widget at the bottom of this GUI.")
+               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
+    call("python NLP_setup_package_language_main.py", shell=True)
+    # this will display the correct hover-over info after the python call, in case options were changed
+    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
-title=["NLP setup options"]
-message="Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " + ', '.join(language_list) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " + package_basics + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
+title = ["NLP setup options"]
+message = "Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " \
+          + str(language) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " \
+          + str(package_basics) + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
 reminders_util.checkReminder(config_filename, title, message)
 
 GUI_util.window.mainloop()

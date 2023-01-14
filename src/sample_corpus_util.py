@@ -21,7 +21,7 @@ def sample_corpus_by_document_id(table, inputDir, outputDir):
         return
     # create a subdirectory of the output directory
     inputFilename = ''
-    target_dir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sampleDir', silent=False)
+    target_dir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sampleDir', silent=True)
     if target_dir == '':
         return
     doc_loc = set(data['Document'])
@@ -42,7 +42,7 @@ def sample_corpus_by_document_id(table, inputDir, outputDir):
 
 #===============================================DEBUG USE=====================================================
 # def main():
-#     split_corpus_by_document_id("C:/Users/Tony Chen/Desktop/NLP_working/Test Input/conll_chn1.csv",'1,3', 
+#     split_corpus_by_document_id("C:/Users/Tony Chen/Desktop/NLP_working/Test Input/conll_chn1.csv",'1,3',
 #     "C:/Users/Tony Chen/Desktop/NLP_working/Test Input/Chinese_Martens_stories_sections", "sub_corpus")
 
 # if __name__ == "__main__":

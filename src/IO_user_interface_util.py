@@ -6,6 +6,7 @@ import json
 import logging
 
 import IO_csv_util
+import GUI_IO_util
 
 logger = logging.getLogger()
 
@@ -87,24 +88,8 @@ def timed_alert(window, timeout, message_title, message_text, time_needed=False,
         if not 'Finished' in message_text and not 'Opening' in message_text:
             message_text = message_text + '\n\nYou can follow the algorithm in command line.'
 
-        # top_message = tk.Toplevel(window)
-        top_message = tk.Toplevel()
-        top_message.title(message_title)
-        # windowHeight=len(message_text)
-        # print("windowHeight",windowHeight)
-        windowHeight = 200
-        windowSize = '400x200'  # +str(windowHeight)
-        top_message.geometry(windowSize)
+        GUI_IO_util.message_box_widget(window, message_title, message_text, 'OK', timeout)
 
-        mbox = tk.Message(top_message, text=message_text, padx=20, pady=20, width=260)
-        top_message.attributes('-topmost', 'true')
-        mbox.after(timeout, top_message.destroy)
-        mbox.pack()
-        button = tk.Button(top_message, text="OK", command=top_message.destroy)
-        button.pack()
-        top_message.wait_window()
-        if window != '': # set to '' in NLP_setup_update_util since the GUI.window has already been closed
-            window.focus_force()
     return time.time()
 
 def input_output_save(script):
@@ -138,7 +123,7 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
         logger.warning("[Warning] Stanford CoreNLP is not JSON. Trying to convert output to JSON... ")
 
         if text and not CoreNLP_output:
-            error = 'Bad Response from Stanford Core NLP Server. This might be due to various reasons. The server might' \
+            error = 'Bad Response from Stanford CoreNLP Server. This might be due to various reasons. The server might' \
                     'be busy, and please try later. If you are running it with a proxy, please try turning it off ' \
                     'before running it again.'
             logger.error('[Error] ' + error)

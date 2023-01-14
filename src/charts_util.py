@@ -38,8 +38,8 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
                                count_var=0, column_yAxis_field_list = []):
     # TODO change to pandas half of this function relies on csv half on pandas, reading in data twice!
     # TODO temporary to measure process time
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Excel prepare_data_to_be_plotted_inExcel at',
-                                                 True, '', True, '', True)
+    # startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Excel prepare_data_to_be_plotted_inExcel at',
+    #                                              True, '', True, '', True)
     withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
     data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
     if len(data)==0:
@@ -68,8 +68,8 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
                 return
         data_to_be_plotted = get_data_to_be_plotted_NO_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,data)
     # TODO temporary to measure process time
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Excel prepare_data_to_be_plotted_inExcel at',
-                                       True, '', True, startTime, True)
+    # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Excel prepare_data_to_be_plotted_inExcel at',
+    #                                    True, '', True, startTime, True)
     return data_to_be_plotted
 
 
@@ -165,10 +165,17 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         # if count_var == 0: # numeric variable
         #     import pandas as pd
         #     df = pd.read_csv(inputFilename)
-        #     column_data =df[columns_to_be_plotted[i]]
-        #     # create classes of values, for instance 5
-        #     x_axis_labels = ['bin-1', 'bin-2', 'bin-3', 'bin-4', 'bin-5']
-        #     print(pd.cut(df[columns_to_be_plotted[i]], column_data, labels=x_axis_labels))
+        #     # column_data =df[columns_to_be_plotted_yAxis[0].tolist()]
+        #     column_data =df[columns_to_be_plotted_yAxis[0]].tolist()
+        #     print("len(column_data)", len(column_data), "column_data",column_data)
+        #     bins = list(set(column_data))
+        #     bins.sort()
+        #     x_axis_labels = []
+        #     # create classes of values
+        #     for j in range(1,len(bins)):
+        #         # x_axis_labels.append(f"Bin(j)")
+        #         x_axis_labels.append("Bin-" + str(j))
+        #     print("Bins",pd.cut(column_data, bins, labels=x_axis_labels))
 
     # TODO depends on how many documents we have
     if byDoc:
@@ -217,7 +224,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 # by DOCUMENT
         if byDoc:
             remove_hyperlinks=True
-            if n_documents > 1:
+            if n_documents > 0:
 # by DOCUMENT counting the qualitative values ---------------------------------------------------------------------------
                 if count_var==1: # for alphabetic fields that need to be counted for display in a chart
                     # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted to be used
@@ -230,11 +237,12 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
                                                                     inputFilename, None, outputDir,
                                                                     False, createCharts, chartPackage,
-                                                                    selected_col=columns_to_be_plotted_numeric,
+                                                                    # selected_col=columns_to_be_plotted_numeric,
+                                                                    selected_col=columns_to_be_plotted_yAxis,
                                                                     hover_col=[],
-                                                                    # group_col=[[columns_to_be_plotted_byDoc[0][1]]],
-                                                                    group_col=columns_to_be_plotted_byDoc,
-                                                                    fileNameType='CSV', chartType='',pivot = pivot)
+                                                                    group_col=['Document ID','Document'],
+                                                                    complete_sid=False,
+                                                                    fileNameType=columns_to_be_plotted_yAxis[0], chartType='',pivot = pivot)
                     new_inputFilename=temp_outputFilename[0]
                     # temp_outputFilename[0] is the frequency filename (with no hyperlinks)
                     count_var=0
@@ -252,13 +260,16 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                         for i in range(columns_to_be_plotted_byDoc_len,len(headers)):
                             columns_to_be_plotted_byDoc.append([columns_to_be_plotted_byDoc_len-1,i])
                     else:
-                        # 0 is the Document with no-hyperlinks,
-                        # 2 is Frequency,
-                        # 1 is the column plotted (e.g., Gender) in temp_outputFilename
+                        # 1 is the Document with no-hyperlinks,
+                        # 2 is the column plotted (e.g., Gender) in temp_outputFilename
+                        # 3 is Frequency,
                         # TODO TONY we should ask the same type of question for columns that are already in quantitative form if we want to compute a single MEAN value
                         sel_column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,2)
                         # columns_to_be_plotted_byDoc = [[0, 2]] # will give one bar
-                        columns_to_be_plotted_byDoc = [[0, 2, 1]] # will give different bars for each value
+                        if n_documents == 1:
+                            columns_to_be_plotted_byDoc = [[2, 3]]  # will give different bars for each value
+                        else:
+                            columns_to_be_plotted_byDoc = [[1, 3, 2]] # will give different bars for each value
                         # columns_to_be_plotted_byDoc = [[0, 1, 2]] # No!!!!!!!!!!!
                         if chartPackage=="Excel":
                             column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,1)
@@ -274,7 +285,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                             #         # Document, Field to be plotted (e.g., POStag), Sentence ID
                             #         columns_to_be_plotted_byDoc = [[1, 3, 2]]
                     # reset the original value to be used in charts by sentence index
-# by DOCUMENT NOT counting quantitative values ---------------------------------------------------------------------------
+# by DOCUMENT NOT counting; quantitative values ---------------------------------------------------------------------------
                 else:
                     new_inputFilename=inputFilename
                 if outputFileNameType != '':
@@ -282,7 +293,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 else:
                     outputFileLabel = 'byDoc'
 
-                # TODO Tony when plotting bar charts in plotLy with documents in the X-axis we need to remove the path and just keep the tail
+                # TODO Tony when plotting bar charts in Plotly with documents in the X-axis we need to remove the path and just keep the tail
                 #   or the display is too messy; it works like that in Excel
 
                 chart_outputFilename = run_all(columns_to_be_plotted_byDoc, new_inputFilename, outputDir,
@@ -307,6 +318,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         #   plot values are the second item in the list [[7,2]] i.e. 2
         count_var = count_var_SV
         # not all csv output contain the Sentence ID (e.g., line length function)
+        # TODO Samir; to test the add_missing_IDs you must change bySent=False to bySent=True
         bySent=False
         if bySent:
             # TODO temporary to measure process time
@@ -324,7 +336,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                           chartPackage,
                                                           selected_col=columns_to_be_plotted_numeric,
                                                           hover_col=[],
-                                                          group_col=[[docCol, docCol+1, sentCol]],
+                                                          group_col=[['Document ID', 'Document', 'Sentence ID']],
+                                                          complete_sid=True,
                                                           fileNameType='CSV',
                                                           chartType='',
                                                           pivot=pivot)
@@ -388,17 +401,17 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                'Finished running Excel bySent at',
                                                True, '', True, startTime, True)
 
-        # compute field STATISTICS ---------------------------------------------------------------------------
+# compute field STATISTICS (mean, median, skeweness, kurtosis...)--------------------------------------------------------------
         # TODO THE FIELD MUST CONTAIN NUMERIC VALUES
         # plotList (a list []) contains the columns headers to be used to compute their stats
         if len(groupByList)>0: # compute only if list is not empty
-            # if count_var==1:
-            #     outputFilename = temp_outputFilename[0]
-            # else:
-            #     outputFilename = inputFilename
+            if count_var==1:
+                temp_inputFilename = temp_outputFilename[0]
+            else:
+                temp_inputFilename = inputFilename
             if plotList == []:
                 plotList = ['Frequency']
-            tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, inputFilename, outputDir,
+            tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, temp_inputFilename, outputDir,
                                                                                outputFileNameType, groupByList, plotList, chart_title_label,
                                                                                createCharts,
                                                                                chartPackage)
@@ -434,6 +447,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
     # the file should have a column named Sentence ID
     # the extra parameter "complete_sid" is set to True by default to avoid extra code mortification elsewhere
     if complete_sid:
+        # TODO Samir
         inputFilename = add_missing_IDs(inputFilename, inputFilename)
         # complete_sentence_index(inputFilename)
     if use_plotly:
@@ -653,10 +667,14 @@ def header_check(inputFile):
         pass
     return sentenceID_pos, docCol_pos, docName_pos, frequency_pos, header
 
+# TODO Samir very slow
 def process_sentenceID_record(Row_list, Row_list_new, index,
                               start_sentence, end_sentence,
                               header, sentenceID_pos, docCol_pos, docName_pos, frequency_pos,
                               save_current):
+    # TODO temporary to measure process time
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Excel process_sentenceID_record at',
+                                                 True, '', True, '', True)
     # range(start, stop, step)
     # end_sentence is always skipped; the range of integers end at end_sentence – 1
     for i in range(start_sentence, end_sentence, 1):
@@ -668,8 +686,8 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
                 temp[j] = i
                 # when adding a new Sentence ID, insert a frequency value of 0,
                 #   in every occurrence of a frequency column, whatever the name may be (Frequency, Frequencies, Number of, Score)
-                for i in range (0,len(frequency_pos)):
-                    if frequency_pos[i]!='':
+                for k in range (0,len(frequency_pos)):
+                    if frequency_pos[k]!='':
                         temp[frequency_pos[i]] = 0
             elif j == docCol_pos:
                 # insert Document ID
@@ -681,6 +699,10 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
 
     if save_current:
         Row_list_new.append(Row_list[index])
+    # TODO temporary to measure process time
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Excel process_sentenceID_record at',
+                                       True, '', True, startTime, True)
+
     return Row_list_new
 
 # written by Yi Wang
@@ -688,6 +710,7 @@ def process_sentenceID_record(Row_list, Row_list_new, index,
 
 # input can be a csv filename or a dataFrame
 # output is a csv file
+# TODO Samir very slow
 def add_missing_IDs(input, outputFilename):
     from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
     # TODO temporary to measure process time

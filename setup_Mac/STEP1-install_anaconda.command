@@ -1,4 +1,4 @@
-echo "STEP1 will install Anaconda3 and Python on your machine. If these applications are already installed on your machine, the script will exit."
+echo "STEP1 will install Anaconda3 on your machine. If these applications are already installed on your machine, the script will exit."
 echo
 echo "Please, be patient and wait for the message Installation completed!"
 echo

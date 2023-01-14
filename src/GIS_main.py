@@ -38,14 +38,6 @@ def run(inputFilename,
         createCharts,
         chartPackage,
         csv_file,
-        encoding_var,
-        extract_date_from_text_var,
-        extract_date_from_filename_var,
-        date_format,
-        date_separator_var,
-        date_position_var,
-        language_var,
-        memory_var,
         NER_extractor,
         location_menu,
         geocode_locations,
@@ -58,6 +50,22 @@ def run(inputFilename,
 
     filesToOpen = []
     locationColumnName=''
+
+    # get the NLP package and language options
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
+    if package_display_area_value == '':
+        mb.showwarning(title='No setup for NLP package and language',
+                       message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
+        return
+
+    # get the date options from filename
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
+        config_filename, config_input_output_numeric_options)
+    extract_date_from_text_var = 0
 
     # get last two characters for ISO country code
     country_bias = country_bias_var[-2:]
@@ -114,10 +122,6 @@ def run(inputFilename,
 
     # START PROCESSING ---------------------------------------------------------------------------------------------------
 
-    datePresent = False
-    if extract_date_from_text_var or extract_date_from_filename_var:
-        datePresent = True
-
     # ----------------------------------------------------------------------------------------------------------------------------------------------
     # NER extraction via CoreNLP
 
@@ -125,7 +129,7 @@ def run(inputFilename,
     if NER_extractor and csv_file=='':
         # create a subdirectory of the output directory
         outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
-                                                           silent=False)
+                                                           silent=True)
         if outputDir == '':
             return
 
@@ -134,11 +138,12 @@ def run(inputFilename,
         locationFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                 outputDir, openOutputFiles, createCharts, chartPackage, 'NER', False,
                                                                 language_var,
+                                                                export_json_var,
                                                                 memory_var,
                                                                 NERs=NERs,
-                                                                extract_date_from_text_var=extract_date_from_text_var,
+                                                                extract_date_from_text_var=0,
                                                                 extract_date_from_filename_var=extract_date_from_filename_var,
-                                                                date_format=date_format,
+                                                                date_format=date_format_var,
                                                                 date_separator_var=date_separator_var,
                                                                 date_position_var=date_position_var)
 
@@ -149,29 +154,12 @@ def run(inputFilename,
             filesToOpen.extend(locationFiles)
             NER_outputFilename = locationFiles[0]
 
-        if extract_date_from_text_var or extract_date_from_filename_var:
-            datePresent = True
-            # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
-            df = pd.read_csv(locationFiles[0], encoding='utf-8', error_bad_lines=False).rename(columns={"Word": "Location"})
-            # if IO_csv_util.rename_header(inputFilename, "Word", "Location") == False:
-            #     return
-            location_menu_var.set('Location')
-            # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
-            # Fill in empty dates with most recent valid date and save to the locations file
-            saved_date = ""
-            for index, row in df.iterrows():
-                if df['Date'][index] != "":
-                    # We found a valid date, save it
-                    saved_date = df['Date'][index]
-                else:
-                    df['Date'][index] = saved_date
-        else:
-            # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
-            # if IO_csv_util.rename_header(inputFilename, "Word", "Location") == False:
-            #     return
-            df = pd.read_csv(locationFiles[0], encoding='utf-8', error_bad_lines=False).rename(columns={"Word": "Location"})
-            location_menu_var.set('Location')
-            # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
+        # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
+        # if IO_csv_util.rename_header(inputFilename, "Word", "Location") == False:
+        #     return
+        df = pd.read_csv(locationFiles[0], encoding='utf-8', error_bad_lines=False).rename(columns={"Word": "Location"})
+        location_menu_var.set('Location')
+        # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
 
         # Clean dataframe, remove any 'DATE' or non-location rows
         del_list = []
@@ -201,7 +189,7 @@ def run(inputFilename,
         out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
                         NER_outputFilename, inputDir, outputDir,
                         'Nominatim', GIS_package_var, createCharts, chartPackage,
-                        datePresent,
+                        extract_date_from_text_var,
                         country_bias,
                         box_tuple,
                         restrict_var,
@@ -229,16 +217,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_chart_output_checkbox.get(),
-                            GUI_util.charts_dropdown_field.get(),
+                            GUI_util.charts_package_options_widget.get(),
                             csv_file_var.get(),
-                            encoding_var.get(),
-                            extract_date_from_text_var.get(),
-                            extract_date_from_filename_var.get(),
-                            date_format.get(),
-                            date_separator_var.get(),
-                            date_position_var.get(),
-                            language_var.get(),
-                            memory_var.get(),
                             NER_extractor_var.get(),
                             location_menu_var.get(),
                             geocode_locations_var.get(),
@@ -258,8 +238,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=560, # height at brief display
-                                                 GUI_height_full=640, # height at full display
+                                                 GUI_height_brief=520, # height at brief display
+                                                 GUI_height_full=600, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=2, # to be added for full display
                                                  increment=2)  # to be added for full display
@@ -289,19 +269,9 @@ config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 input_main_dir_path=GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 csv_file_var= tk.StringVar()
-
-encoding_var=tk.StringVar()
-language_var= tk.StringVar()
-memory_var = tk.IntVar()
-
-extract_date_from_text_var= tk.IntVar()
-extract_date_from_filename_var= tk.IntVar()
-date_format = tk.StringVar()
-date_separator_var = tk.StringVar()
-date_position_var = tk.IntVar()
 
 location_menu_var=tk.StringVar()
 NER_extractor_var=tk.IntVar()
@@ -317,7 +287,6 @@ open_API_config_var=tk.StringVar()
 
 def clear(e):
     csv_file_var.set('')
-    encoding_var.set('utf-8')
     NER_extractor_var.set(1)
     NER_extractor_checkbox.config(state='disabled')
     location_menu_var.set('')
@@ -331,33 +300,6 @@ def clear(e):
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
-def display_txt_file_options(*args):
-    cannotRun = False
-    if csv_file_var.get() == '':
-        if inputFilename.get()!='' or input_main_dir_path.get()!='':
-            if geocode_locations_var.get()==False and map_locations_var.get()==True:
-                mb.showwarning(title='Warning',
-                               message="The 'GEOCODE locations' checkbox is ticked off but you have the 'MAP locations' checkbox ticked.\n\nYou cannot map without geocoding.")
-                cannotRun = True
-            else:
-                location_menu_var.set('')
-                location_field.config(state='disabled')
-                extract_date_from_text_checkbox.config(state='normal')
-                extract_date_from_filename_checkbox.config(state='normal')
-                NER_extractor_var.set(1)
-                NER_extractor = True
-                NER_extractor_checkbox.configure(state='disabled')
-                country_bias.configure(state='normal')
-                geocode_locations_var.set(1)
-                geocode_locations = True
-                map_locations_var.set(1)
-                map_locations = True
-        else:
-            location_menu_var.set('')
-            location_field.config(state='disabled')
-    return cannotRun
-inputFilename.trace('w',display_txt_file_options)
-input_main_dir_path.trace('w',display_txt_file_options)
 
 def check_csv_file_headers(csv_file):
     cannotRun=False
@@ -471,143 +413,50 @@ def get_csv_file(window,title,fileType,annotate):
     return filePath
 
 csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: get_csv_file(window,'Select INPUT csv file', [("dictionary files", "*.csv")],True))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                csv_file_button, True)
 
 #setup a button to open Windows Explorer on the selected input directory
 openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 # place widget with hover-over info
-# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
-# the two x-coordinate and x-coordinate_hover_over must have the same values
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate(), y_multiplier_integer,openInputFile_button,
-                    True, False, True,False, 90, GUI_IO_util.get_open_file_directory_coordinate(), "Open INPUT csv dictionary file")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,openInputFile_button,
+                    True, False, True,False, 90, GUI_IO_util.IO_configuration_menu, "Open INPUT csv dictionary file")
 
-csv_file=tk.Entry(window, width=130,textvariable=csv_file_var)
+csv_file=tk.Entry(window, width=GUI_IO_util.csv_file_width,textvariable=csv_file_var)
 csv_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,csv_file)
-
-encoding_lb = tk.Label(window, text='Select encoding type (utf-8 default)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,encoding_lb,True)
-encoding_var.set('utf-8')
-encodingValue = tk.OptionMenu(window,encoding_var,'utf-8','utf-16-le','utf-32-le','latin-1','ISO-8859-1')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,encodingValue,True)
-
-# language options
-language_var_lb = tk.Label(window, text='Language ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+450, y_multiplier_integer,
-                                               language_var_lb, True)
-
-language_var.set('English')
-language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese', 'English', 'German','Hungarian','Italian','Spanish')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+550,
-                                               y_multiplier_integer, language_menu, True)
-
-#memory options
-
-memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 700,y_multiplier_integer,memory_var_lb,True)
-
-memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
-memory_var.pack()
-memory_var.set(4)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 800,y_multiplier_integer,memory_var)
-
-extract_date_lb = tk.Label(window, text='Extract date (for dynamic GIS)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,extract_date_lb,True)
-
-extract_date_from_text_var.set(0)
-extract_date_from_text_checkbox = tk.Checkbutton(window, variable=extract_date_from_text_var, onvalue=1, offvalue=0)
-extract_date_from_text_checkbox.config(text="From document content")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),
-                                               y_multiplier_integer, extract_date_from_text_checkbox, True)
-
-extract_date_from_filename_var.set(0)
-extract_date_from_filename_checkbox = tk.Checkbutton(window, variable=extract_date_from_filename_var, onvalue=1, offvalue=0)
-extract_date_from_filename_checkbox.config(text="From filename")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 190,
-                                               y_multiplier_integer, extract_date_from_filename_checkbox, True)
-
-date_format_lb = tk.Label(window,text='Format ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 320,
-                                               y_multiplier_integer, date_format_lb, True)
-date_format.set('mm-dd-yyyy')
-date_format_menu = tk.OptionMenu(window, date_format, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
-date_format_menu.configure(width=10,state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 380,
-                                               y_multiplier_integer, date_format_menu, True)
-date_separator_var.set('_')
-date_separator_lb = tk.Label(window, text='Character separator ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 510,
-                                               y_multiplier_integer, date_separator_lb, True)
-date_separator = tk.Entry(window, textvariable=date_separator_var)
-date_separator.configure(width=2,state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 640,
-                                               y_multiplier_integer, date_separator, True)
-date_position_var.set(2)
-date_position_menu_lb = tk.Label(window, text='Position ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 670,
-                                               y_multiplier_integer, date_position_menu_lb, True)
-date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
-date_position_menu.configure(width=1,state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 740,
-                                               y_multiplier_integer, date_position_menu)
-
-def check_dateFields(*args):
-    if extract_date_from_text_var.get() == 1:
-        extract_date_from_filename_checkbox.config(state="disabled")
-    else:
-        extract_date_from_text_checkbox.config(state="normal")
-        extract_date_from_filename_checkbox.config(state="normal")
-    if extract_date_from_filename_var.get() == 1:
-        extract_date_from_text_checkbox.config(state="disabled")
-        date_format_menu.config(state="normal")
-        date_separator.config(state='normal')
-        date_position_menu.config(state='normal')
-    else:
-        date_format_menu.config(state="disabled")
-        date_separator.config(state='disabled')
-        date_position_menu.config(state="disabled")
-extract_date_from_text_var.trace('w',check_dateFields)
-extract_date_from_filename_var.trace('w',check_dateFields)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
 
 NER_extractor_var.set(0)
 NER_extractor_checkbox = tk.Checkbutton(window, variable=NER_extractor_var, onvalue=1, offvalue=0)
 NER_extractor_checkbox.config(text="EXTRACT locations (via Stanford CoreNLP NER) - Default parameters")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,NER_extractor_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,NER_extractor_checkbox)
 
-menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
+if os.path.isfile(inputFilename.get()):
+    menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
+else:
+    menu_values = ''
 
 location_field_lb = tk.Label(window, text='Select the column containing location names')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,location_field_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,location_field_lb,True)
 if menu_values!='':
-    location_field = tk.OptionMenu(window,location_menu_var,*menu_values)
+    location_field = tk.OptionMenu(window, location_menu_var,*menu_values)
 else:
-    location_field = tk.OptionMenu(window,location_menu_var,menu_values)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,location_field)
+    location_field = tk.OptionMenu(window, location_menu_var,menu_values)
+
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,location_field)
 
 geocode_locations_var.set(0)
 geocode_locations_checkbox = tk.Checkbutton(window, variable=geocode_locations_var, onvalue=1, offvalue=0)
 geocode_locations_checkbox.config(text="GEOCODE locations")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,geocode_locations_checkbox, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,geocode_locations_checkbox, True)
 
-def activate_geocoder(*args):
-    if geocode_locations_var.get()==True:
-        geocoder.configure(state='normal')
-    else:
-        geocoder.configure(state='disabled')
-
-    if geocode_locations_var.get()==0:
-        if display_csv_file_options()==True:
-            return
-        if display_txt_file_options()==True:
-            return
-geocode_locations_var.trace('w',activate_geocoder)
 
 geocoder_lb = tk.Label(window, text='Geocoder')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200,y_multiplier_integer,geocoder_lb,True)
+
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.geocoder_label_loc,y_multiplier_integer,geocoder_lb,True)
 geocoder_var.set('Nominatim')
 geocoder = tk.OptionMenu(window,geocoder_var,'Nominatim','Google')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,geocoder,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,geocoder)
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
 # Google_API_geocode_lb = tk.Label(window, text='API key')
@@ -628,32 +477,86 @@ def activate_Google_API_geocode(*args):
         restrict_checkbox.configure(state='normal')
 geocoder_var.trace('w',activate_Google_API_geocode)
 
+# split lines
+
 country_bias_lb = tk.Label(window, text='Country bias')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+400,y_multiplier_integer,country_bias_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.country_bias_pos,y_multiplier_integer,country_bias_lb,True)
 
 country_menu = constants_util.ISO_GIS_country_menu
 
 country_bias_var.set('')
-country_bias = ttk.Combobox(window, width = 25, textvariable = country_bias_var)
+country_bias = ttk.Combobox(window, width = GUI_IO_util.country_bias_width, textvariable = country_bias_var)
 country_bias['values'] = country_menu
 country_bias.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+500, y_multiplier_integer,country_bias, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+                    country_bias, True, False, True, False,
+                    90, GUI_IO_util.labels_x_coordinate, "Select a country to privilege geocoding locations in that country when similar locations are found in other countries (e.g., Rome, Georgia, US, and Rome, Italy)")
 
 area_lb = tk.Label(window, text='Area')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,area_lb,True)
+
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.area_lb,y_multiplier_integer,area_lb,True)
 
 area_var.set('e.g., (34.98527, -85.59790), (30.770444, -81.521974)')
-area=tk.Entry(window, width=45,textvariable=area_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+750, y_multiplier_integer,area, True)
+area=tk.Entry(window, width=GUI_IO_util.area_width,textvariable=area_var)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.area_pos, y_multiplier_integer,
+                    area, True, False, True,False, 90,
+                    GUI_IO_util.labels_x_coordinate,
+                    "For Nominatim, you can enter the latitude and longiture of upper left-hand corner and lower right-hand corner of a rectangular area to privilege locations in that area (e.g., Rome, Georgia, vs. Rome, New York)")
 
 restrict_var.set(0)
 restrict_checkbox = tk.Checkbutton(window, text="Restrict", variable=restrict_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+1050, y_multiplier_integer,restrict_checkbox)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.restrict_pos, y_multiplier_integer,
+                    restrict_checkbox, False, False, True,False, 90,
+                    GUI_IO_util.open_TIPS_x_coordinate,
+                    "For Nominatim, after entering area latitude and longitude, you can restrict locations to that specific area or leave it open for Nominatim to decide")
 
 map_locations_var.set(0)
 map_locations_checkbox = tk.Checkbutton(window, variable=map_locations_var, onvalue=1, offvalue=0)
 map_locations_checkbox.config(text="MAP locations")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,map_locations_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,map_locations_checkbox,True)
+
+def display_txt_file_options(*args):
+    cannotRun = False
+    if csv_file_var.get() == '':
+        if inputFilename.get()!='' or input_main_dir_path.get()!='':
+            if geocode_locations_var.get()==False and map_locations_var.get()==True:
+                mb.showwarning(title='Warning',
+                               message="The 'GEOCODE locations' checkbox is ticked off but you have the 'MAP locations' checkbox ticked.\n\nYou cannot map without geocoding.")
+                cannotRun = True
+            else:
+                location_menu_var.set('')
+                location_field.config(state='disabled')
+                NER_extractor_var.set(1)
+                NER_extractor = True
+                NER_extractor_checkbox.configure(state='disabled')
+                country_bias.configure(state='normal')
+                geocode_locations_var.set(1)
+                geocode_locations = True
+                map_locations_var.set(1)
+                map_locations = True
+        else:
+            location_menu_var.set('')
+            location_field.config(state='disabled')
+    return cannotRun
+inputFilename.trace('w',display_txt_file_options)
+input_main_dir_path.trace('w',display_txt_file_options)
+display_txt_file_options()
+
+def activate_geocoder(*args):
+    if geocode_locations_var.get()==True:
+        geocoder.configure(state='normal')
+    else:
+        geocoder.configure(state='disabled')
+
+    if geocode_locations_var.get()==0:
+        if display_csv_file_options()==True:
+            return
+        if display_txt_file_options()==True:
+            return
+geocode_locations_var.trace('w',activate_geocoder)
 
 def call_reminders(*args):
     if map_locations_var.get()==True:
@@ -668,20 +571,20 @@ map_locations_var.trace('w',call_reminders)
 
 GIS_package_var.set('Google Earth Pro & Google Maps')
 GIS_package_lb = tk.Label(window, text='Software')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(),y_multiplier_integer,GIS_package_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,y_multiplier_integer,GIS_package_lb,True)
 GIS_package = tk.OptionMenu(window,GIS_package_var,'Google Earth Pro & Google Maps','Google Earth Pro','Google Maps','QGIS','Tableau','TimeMapper')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+80, y_multiplier_integer,GIS_package,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.GIS_package_pos, y_multiplier_integer,GIS_package,True)
 
 GIS_package2_var.set(0)
 GIS_package2_checkbox = tk.Checkbutton(window, variable=GIS_package2_var, onvalue=1, offvalue=0)
 GIS_package2_checkbox.config(text="GIS package - Open GUI")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700, y_multiplier_integer,GIS_package2_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.GIS_open_GUI, y_multiplier_integer,GIS_package2_checkbox)
 
 open_API_config_lb = tk.Label(window, text='View Google API key')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,open_API_config_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,open_API_config_lb,True)
 open_API_config_var.set('Google Maps')
 API = tk.OptionMenu(window,open_API_config_var,'Google Maps','Google geocoding')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+130, y_multiplier_integer,API, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.GIS_open_API, y_multiplier_integer,API, True)
 
 open_API_config_button=tk.Button()
 if 'Maps' in open_API_config_var.get():
@@ -691,9 +594,10 @@ else:
 open_API_config_button = tk.Button(window, width=3,
                                      text='',
                                      command=lambda:GIS_pipeline_util.getGoogleAPIkey(config_file,True))
-# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
-# the two x-coordinate and x-coordinate_hover_over must have the same values
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+300, y_multiplier_integer, open_API_config_button, False, False, True, False, 90, GUI_IO_util.get_labels_x_coordinate()+300, "Open csv file for Google API key")
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.GIS_openAPI_file, y_multiplier_integer,
+                    open_API_config_button, False, False, True, False,
+                    90, GUI_IO_util.GIS_openAPI_file, "Open csv file for Google API key")
 
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
@@ -727,16 +631,28 @@ GIS_package2_var.trace('w', display_reminder)
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf','csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','GIS (Geographic Information System): Mapping Locations':'TIPS_NLP_GIS (Geographic Information System).pdf','Extracting locations: NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf','Geocoding: How to Improve Nominatim':'TIPS_NLP_GIS_Geocoding Nominatim.pdf', "Geocoding":"TIPS_NLP_GIS_Geocoding.pdf","Google Earth Pro":"TIPS_NLP_GIS_Google Earth Pro.pdf","Google API Key":"TIPS_NLP_GIS_Google API Key.pdf", "Google Earth Pro KML Options":"TIPS_NLP_GIS_Google Earth Pro KML options.pdf","HTML":"TIPS_NLP_GIS_Google Earth Pro HTML.pdf","Google Earth Pro Icon":"TIPS_NLP_GIS_Google Earth Pro Icon.pdf", "Google Earth Pro Description":"TIPS_NLP_GIS_Google Earth Pro Description.pdf"}
+TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
+               'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
+               'Statistical measures':'TIPS_NLP_Statistical measures.pdf',
+               'GIS (Geographic Information System): Mapping Locations':'TIPS_NLP_GIS (Geographic Information System).pdf',
+               'Extracting locations: NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf',
+               'Geocoding: How to Improve Nominatim':'TIPS_NLP_GIS_Geocoding Nominatim.pdf',
+               "Geocoding":"TIPS_NLP_GIS_Geocoding.pdf",
+               "Google Earth Pro":"TIPS_NLP_GIS_Google Earth Pro.pdf",
+               "Google API Key":"TIPS_NLP_GIS_Google API Key.pdf",
+               "Google Earth Pro KML Options":"TIPS_NLP_GIS_Google Earth Pro KML options.pdf",
+               "HTML":"TIPS_NLP_GIS_Google Earth Pro HTML.pdf",
+               "Google Earth Pro Icon":"TIPS_NLP_GIS_Google Earth Pro Icon.pdf",
+               "Google Earth Pro Description":"TIPS_NLP_GIS_Google Earth Pro Description.pdf"}
 TIPS_options='utf-8 encoding','csv files - Problems & solutions','Statistical measures','GIS (Geographic Information System): Mapping Locations','Extracting locations: NER (Named Entity Recognition)','Geocoding','Geocoding: How to Improve Nominatim', 'Google Earth Pro', 'Google API Key', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
 
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if IO_setup_display_brief==False:
-        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, select an input file for the GIS script. Two two types of files are acceptable: txt or csv.\n\nTXT FILE. When a txt file is selected, the script will use the NER values from Stanford CoreNLP to obtain a list of locations saved as a csv file. The script will then process this file the same way as it would process a csv file in input containing location names.\n\nCSV FILE. When a csv file is selected it can be:\n  1. a file containing a column of location names that need to be geocoded (e.g., New York);\n  2. a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script NLP_parsers_annotators_main.py (the script parses text documents using the Stanford CoreNLP parser).'+GUI_IO_util.msg_Esc)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, select an input file for the GIS script. Two two types of files are acceptable: txt or csv.\n\nTXT FILE. When a txt file is selected, the script will use the NER values from Stanford CoreNLP to obtain a list of locations saved as a csv file. The script will then process this file the same way as it would process a csv file in input containing location names.\n\nCSV FILE. When a csv file is selected it can be:\n  1. a file containing a column of location names that need to be geocoded (e.g., New York);\n  2. a file of previously geocoded locations with at least three columns: location names, latitude, longitude (all other columns would be ignored);\n  3. a CoNLL table that may contain NER Location values.\n\nA CoNLL table is a file generated by the Python script parsers_annotators_main.py (the script parses text documents using the Stanford CoreNLP parser).'+GUI_IO_util.msg_Esc)
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_corpusData+GUI_IO_util.msg_Esc)
         y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_outputDirectory+GUI_IO_util.msg_Esc)
     else:
@@ -744,18 +660,17 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "The INPUT csv file widget displays the csv LOCATION file as soon as produced by the Stanford CoreNLP NER annotator.\n\nEdit the file and rerun the algorithm to geocode from scratch.\n\nYou can also use the 'Select INPUT CSV file' button to select\n   1. a csv file, however created (e.g., CoreNLP NER annotator), containing a list of locations;\n   2. a csv file of geocoded locations (with fields Latitude and Longitude) previosuly created by this algorithm ;\n   3. a csv CoNLL table file.\n\nDifferent options will be available depending upon what the csv file widget displays.\n\nTO RERUN THE PIPELINE, FROM SCRATCH, FROM TEXT TO MAPS, PRESS ESC TO CLEAR THE CSV FILE WIDGET.\n\nYou can also select a geocoded csv file and run the 'MAP locations' option." + GUI_IO_util.msg_openFile)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the type of encoding you wish to use.\n\nLocations in different languages may require encodings (e.g., latin-1 for French or Italian) different from the standard (and default) utf-8 encoding.\n\nYou can adjust the memory required to run the CoreNLP NER annotator by sliding the memory bar; the default value of 4 should be sufficient."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The GIS algorithms allow you to extract a date to be used to build dynamic GIS maps. You can extract dates from the document content or from the filename if this embeds a date.\n\nPlease, the tick the checkbox 'From document content' if you wish to extract normalized NER dates from the text itself.\n\nPlease, tick the checkbox 'From filename' if filenames embed a date (e.g., The New York Times_12-05-1885).\n\nDATE WIDGETS ARE NOT VISIBLE WHEN SELECTING A CSV INPUT FILE.\n\nOnce you have ticked the 'Filename embeds date' option, you will need to provide the follwing information:\n   1. the date format of the date embedded in the filename (default mm-dd-yyyy); please, select.\n   2. the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _); please, enter.\n   3. the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers); please, select.\n\nIF THE FILENAME EMBEDS A DATE AND THE DATE IS THE ONLY FIELD AVAILABLE IN THE FILENAME (e.g., 2000.txt), enter . in the 'Date character separator' field and enter 1 in the 'Date position' field."+GUI_IO_util.msg_Esc)
+                                  "The INPUT csv file widget displays the csv LOCATION file as soon as produced by the Stanford CoreNLP NER annotator.\n\nEdit the file and rerun the algorithm to geocode from scratch.\n\nYou can also use the 'Select INPUT CSV file' button to select\n   1. a csv file, however created (e.g., CoreNLP NER annotator), containing a list of locations, i.e., a column header 'Location' and different locations in each row (e.g., Atlanta, New York City, Paris, South Korea);\n   2. a csv file of geocoded locations (with fields Latitude and Longitude) previosuly created by this algorithm ;\n   3. a csv CoNLL table file with NER location tags; this last option, however, is highly discoreged since the CoNLL table currently available n the NLP Suite has one record per word/token and such country location like 'United States of America' would then not be taken as a single entity for geocoding, but as separate entities.\n\nDifferent options will be available depending upon what the csv file widget displays.\n\nTO RERUN THE PIPELINE, FROM SCRATCH, FROM TEXT TO MAPS, PRESS ESC TO CLEAR THE CSV FILE WIDGET.\n\nYou can also select a geocoded csv file and run the 'MAP locations' option." + GUI_IO_util.msg_openFile)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to EXTRACT locations from a text file using Stanford CoreNLP NER extractor.\n\nThe option is available ONLY when an input txt file is selected."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the column containing the location names (e.g., New York) to be geocoded and mapped.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. NER IS THE COLUMN AUTOMATICALLY USED WHEN WORKING WITH A CONLL FILE IN INPUT."+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to GEOCODE a list of locations.\n\nThe option is available ONLY when a csv file of locations NOT yet geocoded is selected.\n\nTo obtain more accurate geocoded results, select a country where most locations are expected to be. Locations falling in the selected country of bias will be given PREFERENCE by the geocoder over locations with the same name in other countries. Thus, if you select United States as your country bias, the geocoder will geocode locations such as Florence, Rome, or Venice in the United States rather than in Italy.\n\nIf you want to geocode locations mostly located in a specific area, enter the latitude and longitude for the upper left-hand and lower right-hand corners of a rectangle that will be used for findinding the locations.\n\nTick the Restrict checkbox if you wish to restrict the search area to the selected area ONLY (otherwise, it is just a preference).\n\nAREA AND RESTRICT WIDGETS ARE AVAILABLE ONLY FOR NOMINATIM."+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to GEOCODE a list of locations.\n\nThe option is available ONLY when a csv file of locations NOT yet geocoded is selected."+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","To obtain more accurate geocoded results, select a country where most locations are expected to be. Locations falling in the selected country of bias will be given PREFERENCE by the geocoder over locations with the same name in other countries. Thus, if you select United States as your country bias, the geocoder will geocode locations such as Florence, Rome, or Venice in the United States rather than in Italy.\n\nIf you want to geocode locations mostly located in a specific area, enter the latitude and longitude for the upper left-hand and lower right-hand corners of a rectangle that will be used for finding the locations.\n\nTick the Restrict checkbox if you wish to restrict the search area to the selected area ONLY (otherwise, it is just a preference).\n\nAREA AND RESTRICT WIDGETS ARE AVAILABLE ONLY FOR NOMINATIM."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to MAP a list of geocoded locations.\n\nUsing the dropdown menu, select the GIS (Geographic Information System) package you wish to use to produce maps.\n\nGoogle Maps requires an API key that you obtain from registering.\n\nWhen selecting Google Maps, the API key field will become available.\n\nYou will need to get the API key from the Google console and entering it there. REMEMBER! When applying for an API key you will need to enter billing information; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale.\n https://developers.google.com/maps/documentation/embed/get-api-key.\n\nAfter entering the Google API key, click OK to save it and the key will be read in automatically next time around.\n\nTick the Open GUI checkbox ONLY if you wish to open the Google Earth Pro GUI for more options. Do not tick the checkbox if you wish to run the pipeline automatically from text to maps."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the Google Api key you wish to visualize, then click on the button to open the config file to view/change the key."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="This Python 3 script allows users to go from text to map in three steps:\n\n1. EXTRACT locations from a text file using Stanford CoreNLP NER extractor (NER values: CITY, STATE_OR_PROVINCE, COUNTRY);\n2. GEOCODE locations, previously extracted, using Nominatim or Google (an API is needed for Google);\n3. MAP locations, previously geocoded, using a selected GIS package (e.g., Google Earth Pro; Google Maps to produce heat maps; Google Maps requires an API key).\n\nOptions are preset and\or disabled depending upon the input type (directory or file; txt or csv file; csv CoNLL file or list of locations to be geocoded or already geocoded).\n\nAll three steps can be selected and carried out in sequence in a pipeline, going automatically from text to map.\n\nIn INPUT, the script can either take:\n   1. A CoNLL table produced by Stanford_CoreNLP.py and use the NER (Named Entity Recognition) values of LOCATION (STATE, PROVINCE, CITY, COUNTRY), values for geocoding;\n   2. a csv file that contains location names to be geocoded (e.g., Chicago);\n   2. a csv file that contains geocoded location names with latitude and longitude.\n\ncsv files, except for the CoNLL table, must have a column header 'Location' (the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location')."

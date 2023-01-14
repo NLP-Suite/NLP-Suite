@@ -10,7 +10,7 @@ import IO_libraries_util
 if IO_libraries_util.install_all_packages(GUI_util.window,"Find Non-related Documents",['stanza','tkinter','stanfordcorenlp','os','tkinter','glob'])==False:
     sys.exit(0)
 
-from stanfordcorenlp import StanfordCoreNLP
+from stanfordcorenlp import StanfordCoreNLP # python wrapper for Stanford CoreNLP
 import os
 from glob import glob
 import tkinter.messagebox as mb
@@ -21,7 +21,7 @@ import IO_csv_util
 import IO_user_interface_util
 import charts_util
 
-from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza
+# from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza
 
 #This fuction reads the social actor list from the same directory
 #and save that into a set called "my_soc_actors"
@@ -41,6 +41,7 @@ def load_soc_actors():
 #CM soc_acts is the input. I filtered out all social actors in dir_path
 # Version 2: when we need to filter out NERs.
 def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, printing):
+    from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza
     my_files = glob(dir_path+'*.txt')
     num_doc = 0
     for file in my_files:
@@ -168,8 +169,8 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
 
     filesToOpen = []
     # check that the CoreNLPdir has been setup
-    CoreNLPdir, missing_external_software=IO_libraries_util.get_external_software_dir('file_classifier_NER_util', 'Stanford CoreNLP')
-    if CoreNLPdir==None:
+    CoreNLPDir, software_url, missing_external_software=IO_libraries_util.get_external_software_dir('file_classifier_NER_util', 'Stanford CoreNLP', silent=True, only_check_missing=False)
+    if CoreNLPDir==None:
         return filesToOpen
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',

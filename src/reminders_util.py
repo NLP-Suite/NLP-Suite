@@ -11,8 +11,6 @@ import os
 import tkinter.messagebox as mb
 import pandas as pd
 import csv
-import GUI_util
-from csv import writer
 
 # reminders content for specific GUIs are set in the csv file reminders
 # check if the user wants tadded the release_version.txt fio see the message again
@@ -35,8 +33,17 @@ message_English_language_Gensim = 'Gensim topic modeling is only available for t
 title_options_English_language_MALLET = ['English language & MALLET topic modeling']
 message_English_language_MALLET = 'MALLET topic modeling is only available for texts in the English language.'
 
-title_options_NLP_Suite_welcome = ['NLP Suite welcome & system requirements']
-message_NLP_Suite_welcome = 'Welcome to the NLP Suite a package of Python 3 and Java tools designed for text processing and visualization. The Suite requires several FREWARE software components in order to run. You will need to download and install them or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro).\n\n   1. JAVA. Several scripts are based on the FREEWARE Java. You can download and install Java at https://www.java.com/en/download\n\n   2. STANFORD CORENLP. The core text analyses of the NLP Suite are based on the FREEWARE Stanford CoreNLP. You can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n   3. GEPHI. The visualization of network graphs requires the installation of the FREEWARE software Gephi. You can download and install Gephi at https://gephi.org/users/download/\n\n   4. GOOGLE EARTH PRO. The visualization of geographic maps requires the installation of the FREEWARE software Google Earth Pro. You can download and install Google Earth Pro at https://www.google.com/earth/versions/#download-pro.\n\n   5. MALLET. MALLET topic modelling requires the installation of the FREEWARE MALLET. You can download and install MALLET at http://mallet.cs.umass.edu/download.php.\n\n   7. SENNA. The FREEWARE SENNA will allow you to extract Subject-Verb-Object from a text. You can download SENNA at https://ronan.collobert.com/senna/download.html.'
+#The core text analyses of the NLP Suite are based on the FREEWARE Stanford CoreNLP. You can download Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n   3. GEPHI. The visualization of network graphs requires the installation of the FREEWARE software Gephi. You can download and install Gephi at https://gephi.org/users/download/\n\n   4. GOOGLE EARTH PRO. The visualization of geographic maps requires the installation of the FREEWARE software Google Earth Pro. You can download and install Google Earth Pro at https://www.google.com/earth/versions/#download-pro.\n\n   5. MALLET. MALLET topic modelling requires the installation of the FREEWARE MALLET. You can download and install MALLET at http://mallet.cs.umass.edu/download.php.
+# message_NLP_Suite_welcome = 'Welcome to the NLP Suite a package of Python 3 and Java tools designed for text processing and visualization. The Suite requires several FREWARE software components in order to run. You will need to download and install them or some functionality will be lost for some of the scripts (e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro).'
+
+title_options_missing_external_software_NLP_main_GUI = ['Missing external software NLP_menu_main GUI']
+message_missing_external_software_NLP_main_GUI = 'At least some external software has not been installed. \n\nSome of the algorithms that require the software will not run.\n\nPlease, click on the button "Setup external software" in the NLP_menu_main GUI to download/install all software.'
+
+title_options_missing_external_software_any_main_GUI = ['Missing external software any GUI']
+message_missing_external_software_any_main_GUI = 'At least some external software has not been installed. \n\nSome of the algorithms that require the software will not run.\n\nPlease, using the dropdown menu "Setup" at the bottom of this GUI, select "Software download & install," to download/install external software.'
+
+title_options_TensorFlow = ['TensorFlow and Mac M1 and M2 chips']
+message_TensorFlow = 'The NLP package BERT used in the NLP Suite rely on the Google Machine Learning platform TensorFlow.\nOn a Mac with the new M1 or M2 chip TensorFlow may lead to various errors displayed in terminal (e.g., semaphore, zsh: illegal hardware instruction) and an inability to run any of the scripts in the NLP Suite.\n\nIf you do experience this problem, while waiting for a more permanent solution to the problem, follow the instructions provided here by Apple\n\nhttps://developer.apple.com/metal/tensorflow-plugin/'
 
 title_options_NLP_Suite_architecture = ['NLP Suite architecture & filenames']
 message_NLP_Suite_architecture = 'The Python scripts in the NLP Suite have filenames that clearly identify the Suite architecture.\n\nThe filename suffix designates two different types of files: _main and _util.\n\n_main files are the only ones that you can run in command line independently of others; they may call _util files.\n\nThe _main files, with their GUI options, lay out on the screen the widgets of a script for easy Graphical User Interface (GUI).\n\nALL SCRIPTS SUFFIXED BY _main CAN BE RUN INDIPENDENTLY OF THE NLP SUITE. Thus on command line you can type\nPython knowledge_graphs_main.py\nand it will fire up the annotator GUI independently of NLP_main.py.\n\nThe filename prefix cluster together scripts used for the same purpose. Thus annotator identifies all files dealing with html annotation.'
@@ -51,10 +58,10 @@ title_options_SVO_input = ['SVO input']
 message_SVO_input = "The SVO pipeline allows you to start from a TXT file in input and extract from it via OpenIE the SVOs and visualize them.\n\nBut you can also select a CSV file in input, the output file previosuly created by OpenIE characerized by the suffix '-svo.csv', and use that file to visualize the results without having to rerun OpenIE."
 
 title_options_SVO_corpus = ['SVO with corpus data']
-message_SVO_corpus = 'You have selected to work with a set of txt files in a directory (your corpus).\n\nBeware that SVO extraction is computationally demanding. Furthermore, depending upon the options you choose (manual coreference editing, GIS maps), it may require manual input on each input file processed.\n\nDepending upon corpus size, manual coreference editing may also not be possible, due to memory requirements.'
+message_SVO_corpus = 'You have selected to work with a set of txt files in a directory (your corpus).\n\nBeware that SVO extraction with Stanford CoreNLP is computationally demanding. Furthermore, depending upon the options you choose (manual coreference editing, GIS maps), it may require manual input on each input file processed.\n\nDepending upon corpus size, manual coreference is also not possible, due to memory requirements.'
 
 title_options_SVO_output = ['SVO output']
-message_SVO_output = 'Depending upon the options you select, the SVO pipeline will produce in output different types of files: cvf files, wordcloud image, Google Earth Pro map, and Gephi network graph.\n\nWhile cvf and png files are easy to read, less so are Google Earth Pro kml files and, particularly, Gephi gexf files.\n\nPLEASE, read the Gephi TIPS file before you run the SVO pipeline.'
+message_SVO_output = 'The SVO pipeline will create in output an SVO subdirectory inside the main output directory.\n\nDepending upon the options you select it will also create different subdirectories (e.g., GIS, WordNet) inside the SVO subdirectory. Contrary to this, the creference resolution option will create a subdirectory inside the main output directory rather than the SVO subdirectory, since coreferenced files can then be used as input to any NLP algorithms.\n\nDepending upon the options you select, the SVO pipeline will produce different types of files: cvf files, wordcloud image, Google Earth Pro map, and Gephi network graph.\n\nWhile cvf and png files are easy to read, less so are Google Earth Pro kml files and, particularly, Gephi gexf files.\n\nPLEASE, read the Gephi TIPS file before you run the SVO pipeline.'
 
 title_options_SVO_default = ['SVO default visualization options']
 message_SVO_default = 'The SVO algorithms use default settings for visualizing results in Python Wordclouds and Google Earth Pro. If you want to customize the visualization options, please, use the Wordclouds GUI and the GIS Google Earth GUI with the csv files produced by SVO in input.'
@@ -95,6 +102,9 @@ message_WordNet_inputFilename_button = 'The Select INPUT file button is disabled
 title_options_WordNet_verb_aggregation = ['WordNet VERB aggregation']
 message_WordNet_verb_aggregation = "CAVEAT!\n\nFor VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.\n\nThe WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts."
 
+title_options_spaCy_parameters = ['spaCy annotators']
+message_spaCy_parameters = 'Contrary to Stanford CoreNLP and Stanza, spaCy does not process specific annotators (e.g., POS, NER). Regardless of selected annotator, spaCy will also process the corpus with its full parser.'
+
 title_options_topic_modeling = ['What is in your corpus - Topic modeling']
 message_topic_modeling = 'The topic modeling option requires in input a set of txt documents, rather than a single txt file. The topic modeling option is disabled for single documents.'
 
@@ -116,6 +126,9 @@ message_topic_modelling_number_of_topics = 'You are running the topic modelling 
 title_options_Word2Vec = ['Word2Vec HTML visual']
 message_Word2Vec = 'The Word2Vec HTML visual may be very messy.\n\nDepending upon the number of words displayed, it will be impossible to see anything but a black blotch.\n\nIf that happens, with your mouse, draw an area you want to focus on in the Cartesian plane where the image is displayed. It will re-displayed with a much clearer focus. You can repeat that operation in the new display to further zoom in.\n\nYOU CAN GO BACK TO THE ORIGINAL DISPLAY BY CLICKING THE REFRESH BUTTON IN YOUR BROWSER.'
 
+title_options_Word2Vec_eucledian_distance = ['Word2Vec Eucledian distance']
+message_Word2Vec_eucledian_distance = 'The Word2Vec algorithms compute the Eucledian distance of every word with every other word for the 10 most frequent words. You can use this csv file to locate the most significant words in the Cartesian space.'
+
 title_options_CoreNLP_Sentiment_Analysis_system_requirements = ['Stanford CoreNLP Sentiment Analysis system requirements']
 message_CoreNLP_Sentiment_Analysis_system_requirements = 'The Stanford CoreNLP Sentiment Analysis tool requires two components.\n\n1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/'
 
@@ -127,7 +140,7 @@ title_options_CoreNLP_Java = ['Stanford CoreNLP Java 64-Bits']
 message_CoreNLP_Java = 'The Java call to Stanford CoreNLP script uses the property -d64 for the 64 bits JAVA. Java is normally set to 32 bits Virtual Machine as default on a Windows machine. If you see an error the property -d64 is not recognized, you will need to change the Java default to 64 bits VM.\n\nTo test your VM settings, open  command prompt/terminal and type Java - version. You should see "64-Bit Server VM" in the last line of output.'
 
 title_options_CoreNLP_coref = ['Stanford CoreNLP coref merged files']
-message_CoreNLP_coref = "The Stanford CoreNLP coref annotator with a corpus of files in a directory in input will create a merged corefed file (with filenames embedded in <@# #@>) in output.\n\nManual coreference resolution will also not be available; depending upon the number of files merged, bringing the files into memory for manual editing may exceed memory capacity. You can always\n   1. manually edit the merged file anyway using the 'Stanford_CoreNLP_coreference_main' GUI;\n   2. split the merged file and then edit the individual coreferenced files, again, using the 'Stanford_CoreNLP_coreference_main' GUI."
+message_CoreNLP_coref = "The Stanford CoreNLP coref annotator with a corpus of files in a directory in input will create a merged corefed file (with filenames embedded in <@# #@>) in output.\n\nManual coreference resolution will not be available; depending upon the number of files merged, bringing the files into memory for manual editing may exceed memory capacity. You can always\n   1. manually edit the merged file anyway using the 'coreference_main' GUI;\n   2. split the merged file and then edit the individual coreferenced files, again, using the 'coreference_main' GUI."
 
 title_options_only_CoreNLP_coref = ['Stanford CoreNLP coreference']
 message_only_CoreNLP_coref = "The coreference algorithms in this GUI are based exclusively on Stanford CoreNLP coref annotator.\n\nWatch this space for an extension to spaCy of coreference resolution (Stanza relies on Stanford CoreNLP coreference annotator)."
@@ -135,14 +148,20 @@ message_only_CoreNLP_coref = "The coreference algorithms in this GUI are based e
 title_options_only_CoreNLP_NER = ['Stanford CoreNLP NER']
 message_only_CoreNLP_NER = "The NER algorithms in this GUI are based exclusively on Stanford CoreNLP NER annotator.\n\nWatch this space for an extension to spaCy and Stanza of the NER algorithms behind this GUI (the spaCy and Stanza parsers and NER annotators, however, do prooduce NER tags)."
 
+title_options_only_CoreNLP_CoNLL_analyzer = ['CoNLL table analyzer']
+message_only_CoreNLP_CoNLL_analyzer = "The CoNLL table analyzer algorithms in this GUI are based exclusively on Stanford CoreNLP parser.\n\nWatch this space for an extension to spaCy and Stanza of the NER algorithms behind this GUI."
+
+title_options_only_CoreNLP_CoNLL_repetition_finder = ['K sentences repetition finder in CoNLL table']
+message_only_CoreNLP_CoNLL_repetition_finder = "In the CoNLL table analyzer GUI there is another K-sentences repetition finder algorithm. It provides data based based on the CoNLL table POS tags on counts and proportions of nouns, verbs, adjectives, and proper nouns in the first and last K sentences of a document."
+
 lemma_frequencies = ['Lemma frequency']
 message_lemma_frequencies = "A blank is likely to be a frequent lemma in your corpus. It is likely to 'mask' all other values. If that is the case, when the chart is displayed you may want to delete rows containing a blank lemma to have a better view of all other values."
 
 NER_frequencies = ['NER tags frequency']
-message_NER_frequencies = "O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag to have a better view of all other tags."
+message_NER_frequencies = "O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags."
 
 DepRel_frequencies = ['DepRel tags frequency']
-message_DepRel_frequencies = "punct (punctuation) and det (determiner/article) are likely to be the most frequent DepRel tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the rows containing the 'punct' and 'det' tags to have a better view of all other tags."
+message_DepRel_frequencies = "punct (punctuation) and det (determiner/article) are likely to be the most frequent DepRel tags in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete in the Data worksheet of the Excel chart file the rows containing the 'punct' and 'det' tags to have a better view of all other tags."
 
 title_options_CoreNLP_shutting_down = ['CoreNLP Server is shutting down']
 message_CoreNLP_shutting_down = "The Stanford CoreNLP, after firing up, will display on command line/prompt the message: CoreNLP Server is shutting down.\n\nIt is NOT a problem. The process will continue..."
@@ -152,9 +171,6 @@ message_CoreNLP_NER_tags = "The CoNLL table produced by the CoreNLP parser has a
 
 title_options_CoreNLP_website = ['CoreNLP language/annotator options website']
 message_CoreNLP_website = "You will be asked next if you want to open the Stanford CoreNLP language website to get a list of available annotators for each supported language.\n\nIf you do not want to be asked again to open the website, just hit 'No' below."
-
-title_options_CoreNLP_Json = ['CoreNLP exporting Json files']
-message_CoreNLP_Json = "Stanford CoreNLP can export in output Json files for the selected annotator(s)). Json files may give expert users checks against the NLP Suite performance about some CoreNLP annotators.\n\nIf you do not wish to produce these files, simply turn OFF this reminder by replying No to wanting to see this reminder again. And like for any reminder, you can always turn it back ON, and export Json files, at any time by using the 'Open reminders' dropdown menu at at the bottom of this GUI."
 
 title_options_TIPS_file = ['Open TIPS file']
 message_TIPS_file = "You will be asked next if you want to open a TIPS file for help.\n\nIf you do not want to be asked again to open the TIPS file, just hit 'No' below."
@@ -166,7 +182,7 @@ title_options_CoreNLP_nn_parser = ['Clause tags with CoreNLP neural network pars
 message_CoreNLP_nn_parser = "The CoreNLP neural network parser does not produce clause tags in output. The column 'Clause Tag' in the output csv CoNLL table would contain all blank values."
 
 title_options_CoreNLP_quote_annotator = ['CoreNLP quote annotator']
-message_CoreNLP_quote_annotator = "The CoreNLP quote annotator works with double quotes as default \" rather than with single quotes \'. If your document(s) use single quotes for dialogue, make sure to tick the checkbob \'Include single quotes\'. The Stanford CoreNLP annotator will then process BOTH single AND double quotes, otherwise single quotes for dialogues would be missed (e.g., The user said: 'This NLP Suite sucks.')."
+message_CoreNLP_quote_annotator = "The CoreNLP quote annotator works with double quotes as default \" rather than with single quotes \'. If your document(s) use single quotes for dialogue, make sure to tick the checkbox \'Include single quotes\'. The Stanford CoreNLP annotator will then process BOTH single AND double quotes, otherwise single quotes for dialogues would be missed (e.g., The user said: 'This NLP Suite sucks.')."
 
 title_options_memory = ['Available memory']
 message_memory = 'Your computer may not have enough memory to run some of the more resource-intensive algorithms of Stanford CoreNLP (e.g., coreference or some neural network models)\n\nStill, there are several options you may take (e.g., splitting up long documents into shorter parts and feeding tem to CoreNLP; checking your sentence length statistics - anything above 70 will most likely give you troubles, cnsidering that the average sentence length in modern English is 20 words). On Stanford Core NLP and memory issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.'
@@ -206,6 +222,10 @@ message_IO_configuration = 'Most GUIs in the NLP Suite provide two types of Inpu
 
 title_options_IO_setup = ['Input/Output options']
 message_IO_setup = 'The two widgets for INPUT FILE and INPUT DIRECTORY are mutually exclusive. You can select one OR the other but not both. Click on either button to make your selection.\n\nTo change an already selected option from FILE to DIRECTORY or from DIRECTORY to FILE, simply click on the button you want to select, make your selection, and the I/O configuration will automatically update.'
+
+title_options_IO_setup_date_options = ['Date options']
+message_IO_setup_date_options = 'Some of the algorithms in the NLP Suite (e.g., GIS models and network models) can build dynamic models (i.e., models that vary with tiime) when time/date is known.\n\n' \
+                                'Tick the checkbox, if the filenames in the selected INPUT option embed a date (e.g., The New York Times_12-19-1899), the NLP Suite can use that metadata information to build dynamic models. If that is the case, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2)'
 
 title_options_shape_of_stories_CoreNLP = ['Stanford CoreNLP Neural Network']
 message_shape_of_stories_CoreNLP = 'The Stanford CoreNLP Neural Network approach to Sentiment analysis, like all neural network algorithms, is VERY slow. On a few hundred stories it may take hours to run.\n\nAlso, neural network algorithms are memory hogs. MAKE SURE TO ALLOCATE AS MUCH MEMORY AS YOU CAN AFFORD ON YOUR MACHINE.'
@@ -274,8 +294,53 @@ message_Excel_Charts = 'The Excel chart to be displayed has hover-over effects (
 title_options_input_csv_file = ["Input csv file"]
 message_input_csv_file = "You have a csv file in the 'Select INPUT CSV file' widget. The RUN command would process this file in input rather than the file stored in the I/O configuration.\n\nPress ESC if you want to clear the 'Select INPUT CSV file' widget."
 
-title_options_wordclouds = ['Web-based word clouds services']
-message_wordclouds = "After the selected web-based word-clouds service opens up on your browser, you will need to either copy/paste the text you want to visualize or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file."
+title_options_python_wordclouds_horizontal = ['Python wordclouds']
+message_python_wordclouds_horizontal = "You have selected to visualize words only horizontally in the wordclouds image. Some of the lower-frequency words may need to be dropped from the wordclouds image since there may not be enough room for their display.\n\nCombining horizontal and vertical displays maximizes the number of words visualized in the wordclouds image."
+
+title_options_wordclouds = ['Web-based wordclouds services']
+message_wordclouds = "After the selected web-based wordclouds service opens up on your browser, you will need to either copy/paste the text you want to visualize or upload a text file, depending upon the word clouds service. If you wish to visualize the words in all the files in a directory, you would need to merge the files first via the file_merger_main, then use your merged file."
+
+title_options_Gensim_Word2Vec_timing = ['Gensim Word2Vec timing']
+message_Gensim_Word2Vec_timing = "Beware that Gensim Word2Vec on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, with the tokenizing, lemmatzing, and Eucledian distance options, takes approximately 2 hours on a standard laptop. Eucledian distance is the item taking the longest."
+
+title_options_BERT_Word2Vec_timing = ['BERT Word2Vec timing']
+message_BERT_Word2Vec_timing = "Beware that BERT Word2Vec on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, with the tokenizing, lemmatzing, and Eucledian distance options, takes approximately 2 hours on a standard laptop. Eucledian distance is the item taking the longest."
+
+title_options_CoreNLP_coref_timing = ['CoreNLP coreference timing']
+message_CoreNLP_coref_timing = "Beware that CoreNLP coreference resolution on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop."
+
+title_options_CoreNLP_SVO_timing = ['CoreNLP SVO timing']
+message_CoreNLP_SVO_timing = "Beware that the CoreNLP SVO algorithms on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 20 minutes on a standard laptop."
+
+title_options_CoreNLP_SVO_gender_quote_timing = ['CoreNLP SVO + gender + quote timing']
+message_CoreNLP_SVO_gender_quote_timing = "Beware that the CoreNLP SVO + gender + quote algorithms on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 4 hours on a standard laptop."
+
+title_options_CoreNLP_gender_timing = ['CoreNLP gender timing']
+message_CoreNLP_gender_timing = "Beware that the CoreNLP gender algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop."
+
+title_options_CoreNLP_quote_timing = ['CoreNLP quote timing']
+message_CoreNLP_quote_timing = "Beware that the CoreNLP quote annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop."
+
+title_options_CoreNLP_normalized_date_timing = ['CoreNLP normalized date timing']
+message_CoreNLP_normalized_date_timing = "Beware that the CoreNLP normalized date algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 50 minutes on a standard laptop."
+
+title_options_CoreNLP_sentiment_timing = ['CoreNLP sentiment timing']
+message_CoreNLP_sentiment_timing = "Beware that the CoreNLP sentiment algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 7 hours and 30 minutes on a standard laptop."
+
+title_options_CoreNLP_nn_parser_timing = ['CoreNLP neural network parser timing']
+message_CoreNLP_nn_parser_timing = "Beware that the CoreNLP neural network parser algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 40 minutes on a standard laptop."
+
+title_options_CoreNLP_PCFG_parser_timing = ['CoreNLP PCFG parser timing']
+message_CoreNLP_PCFG_parser_timing = "Beware that the CoreNLP PCFG parser on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 40 minutes on a standard laptop."
+
+title_options_CoreNLP_NER_timing = ['CoreNLP NER annotator timing']
+message_CoreNLP_NER_timing = "Beware that the CoreNLP NER annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 50 minutes on a standard laptop."
+
+title_options_CoreNLP_POS_timing = ['CoreNLP POS annotator timing']
+message_CoreNLP_POS_timing = "Beware that the CoreNLP POS annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 2 minutes on a standard laptop."
+
+title_options_GIS_timing = ['GIS timing']
+message_GIS_timing = "Beware that geocoding some 30,000 locations via Nominatim and preparing the KML file for map visualization in Goodgle Earth Pro takes approximately 15 minutes on a standard laptop."
 
 title_options_data_manager_merge = ['Merge option']
 message_data_manager_merge1 = "Please, select next the field to be used as KEY for merging files."
@@ -358,87 +423,17 @@ def getReminders_list(config_filename,silent=False):
 # when displaying messages the message field is '' since the actual message is not known until the csv file is read
 def displayReminder(df,row_num,title, message, event, currentStatus, question, seeMsgAgain=False) -> object:
 
-    # https://stackoverflow.com/questions/30235587/closing-tkmessagebox-after-some-time-in-python?rq=1    def enter_value_widget(masterTitle, textCaption):
-    #     import tkinter as tk
-    #     from tkinter import Toplevel
-    #     window=GUI_util.window
-    #     class App():
-    #         def __init__(self, master):
-    #             top = self.top = Toplevel()
-    #             top.wm_title(textCaption)
-    #             top.focus_force()
-    #             self.label = tk.Label(top, width=len(textCaption))
-    #             self.label.pack()
-    #
-    #             self.label.grid(row=0, column=1)  # , sticky=W)
-    #             # self.callback = callback
-    #
-    #             YES_button = tk.Button(self.top, text='YES', command=self.get_value)
-    #             YES_button.grid(row=0, column=1)
-    #             NO_button = tk.Button(self.top, text='NO', command=self.get_value, sticky=tk.CENTER)
-    #             NO_button.grid(row=0, column=1)
-    #
-    #             # top.after(10000, top.destroy)
-    #
-    #         def get_value(self):
-    #             val = self.label.get()
-    #             self.top.destroy()
-    #             # callback(val)
-    #
-    #     App(window)
-
-        # master = tk.Tk()
-        # master.focus_force()
-        #
-        #
-        # # tk.Label(master, width=len(message), text=message).grid(row=0)
-        #
-        # master(text = title, padx = 20, pady = 20).pack()
-        # master.after(10000, master.destroy)
-        #
-        # master.title(title)
-        # # the width in tk.Entry determines the overall width of the widget;
-        # #   MUST be entered
-        # #   + 30 to add room for - [] and X in a widget window
-        # master.focus_force()
-        #
-        # tk.Button(master,
-        #           text='YES',
-        #           command=master.quit).grid(row=3,
-        #                                     column=0,
-        #                                     sticky=tk.W,
-        #                                     pady=4)
-        # tk.Button(master,
-        #           text='NO',
-        #           command=master.quit).grid(row=3,
-        #                                     column=1,
-        #                                     sticky=tk.W,
-        #                                     pady=4)
-        # master.mainloop()
-        # master.destroy()
-        # # convert to list; value1 is checked for length in calling function
-        # #   so do not convert if empty or its length will be the length of ['']
-        # # if value1!='':
-        # #     value1=list(value1.split(" "))
-        # # TODO temp get answer
-        # answer=0
-        # return answer
-
-    # enter_value_widget("Enter the single start character",message)
-
     try:
         message = df.at[row_num, "Message"].replace("\\n", os.linesep)
     except:
         pass
-    if message == '':
-        import GUI_IO_util
-        GUI_IO_util.enter_value_widget_TEMP("Enter the number of sentences, K, to be analyzed", 'K',
-                                                           1, '', '', '')
-        answer = mb.askquestion(title="Reminder: " + df.at[row_num, "Title"],
-                                message=message+question)
+    if message == '': # there is no message to be displayed
+        return
     else:
-        answer = mb.askquestion(title="Reminder: " + title,
-                                message=message+question)
+        # message = message + question # the question "Do you want to see this message again?" is asked
+        #   in GUI_IO_util.message_box_widget so that it can be placed n red
+        answer = GUI_IO_util.message_box_widget(1, title, message, buttonType='Yes-No', timeout=30000)
+
     answer=answer.capitalize() # Yes/No
     if seeMsgAgain==True:
         if answer == 'No':
@@ -562,13 +557,14 @@ def resetReminder(config_filename,title):
                            message="The reminders.csv file saved in the reminders subdirectory does not contain the reminder '" + title + "'.\n\nPlease, let the NLP Suite development team know the problem so it can be fixed.")
             return
 
+        message = df.at[row_num, "Message"]
         event = df.at[row_num, "Event"]
         status = df.at[row_num, "Status"]
         if status == "No" or status == "OFF":  # 'No' the old way of saving reminders
             question = '\n\nNow this reminder is turned OFF. Do you want to turn it ON?'
         else:
             question = '\n\nNow this reminder is turned ON. Do you want to turn it OFF?'
-        displayReminder(df, row_num, title, '', event, status, question, False)
+        displayReminder(df, row_num, title, message, event, status, question, False)
 
 
 # update do_not_show_message.csv so that we don't show the message box again

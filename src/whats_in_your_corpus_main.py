@@ -15,10 +15,11 @@ from subprocess import call
 import GUI_IO_util
 import IO_user_interface_util
 import IO_files_util
+import config_util
 import statistics_txt_util
 import knowledge_graphs_WordNet_util
 import Stanford_CoreNLP_util
-import wordclouds_util
+# import wordclouds_util
 import GIS_pipeline_util
 import topic_modeling_gensim_util
 import topic_modeling_mallet_util
@@ -35,7 +36,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_chart_output_checkbox.get(),
-                            GUI_util.charts_dropdown_field.get(),
+                            GUI_util.charts_package_options_widget.get(),
                             utf8_var.get(),
                             ASCII_var.get(),
                             corpus_statistics_var.get(),
@@ -47,10 +48,6 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             topics_Mallet_var.get(),
                             topics_Gensim_var.get(),
                             open_tm_GUI_var.get(),
-                            language_var.get(),
-                            memory_var.get(),
-                            document_length_var.get(),
-                            limit_sentence_length_var.get(),
                             what_else_var.get(),
                             what_else_menu_var.get(),
                             quote_var.get(),
@@ -75,10 +72,6 @@ def run(inputFilename,inputDir, outputDir,
         topics_Mallet_var,
         topics_Gensim_var,
         open_tm_GUI_var,
-        language_var,
-        memory_var,
-        document_length_var,
-        limit_sentence_length_var,
         what_else_var,
         what_else_menu_var,
         single_quote,
@@ -90,6 +83,27 @@ def run(inputFilename,inputDir, outputDir,
     filesToOpen=[]
     openOutputFilesSV=openOutputFiles
     openOutputFiles=False # to make sure files are only opened at the end of this multi-tool script
+
+
+    # get the NLP package and language options
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
+
+    # get the date options from filename
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
+        config_filename, config_input_output_numeric_options)
+    extract_date_from_text_var = 0
+
+    if package_display_area_value == '':
+        mb.showwarning(title='No setup for NLP package and language',
+                       message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
+        return
+
 
     if (utf8_var==False and \
         ASCII_var == False and \
@@ -108,7 +122,8 @@ def run(inputFilename,inputDir, outputDir,
             reminders_util.message_GIS_redundancy,
             True)
 
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='corpus', silent=True)
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                       label='corpus', silent=True)
     if outputDir == '':
         return
 
@@ -177,7 +192,7 @@ def run(inputFilename,inputDir, outputDir,
             if output != None:
                 filesToOpen.append(output)
         if '*' == corpus_statistics_options_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir,
+            output = statistics_txt_util.process_words(window, config_filename,inputFilename, inputDir, outputDir,
                                                                    openOutputFiles, createCharts, chartPackage)
             if output != None:
                 filesToOpen.append(output)
@@ -187,22 +202,22 @@ def run(inputFilename,inputDir, outputDir,
             if output != None:
                 filesToOpen.append(output)
         if 'capital' in corpus_statistics_options_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir,
                                                                    openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
                 filesToOpen.append(output)
         if 'Short' in corpus_statistics_options_menu_var:
-            output=statistics_txt_util.process_words(window,inputFilename,inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
+            output=statistics_txt_util.process_words(window,config_filename,inputFilename,inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
                 filesToOpen.append(output)
 
         if 'Vowel' in corpus_statistics_options_menu_var:
-            output = statistics_txt_util.process_words(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
                 filesToOpen.append(output)
 
         if 'Punctuation' in corpus_statistics_options_menu_var:
-            output=statistics_txt_util.process_words(window,inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
+            output=statistics_txt_util.process_words(window,config_filename,inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
                 filesToOpen.append(output)
 
@@ -269,7 +284,7 @@ def run(inputFilename,inputDir, outputDir,
             csvField_color_list = []
             doNotListIndividualFiles = True
             collocation = True
-
+            import wordclouds_util
             output=wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, selectedImage="", use_contour_only=use_contour_only, prefer_horizontal=prefer_horizontal, font=font, max_words=max_words, lemmatize=lemmatize, exclude_stopwords=exclude_stopwords, exclude_punctuation=exclude_punctuation, lowercase=lowercase, differentPOS_differentColors=differentPOS_differentColors, differentColumns_differentColors=differentColumns_differentColors, csvField_color_list=csvField_color_list, doNotListIndividualFiles=doNotListIndividualFiles,openOutputFiles=False, collocation=collocation)
             if output != None:
                 filesToOpen.append(output)
@@ -318,7 +333,7 @@ def run(inputFilename,inputDir, outputDir,
                         True)
                 else:
                     # running with default values
-                    output = topic_modeling_mallet_util.run(inputDir, outputDir_TM, openOutputFiles=openOutputFiles, createCharts=createCharts, chartPackage=chartPackage, OptimizeInterval=True, numTopics=20)
+                    output = topic_modeling_mallet_util.run_MALLET(inputDir, outputDir_TM, openOutputFiles=openOutputFiles, createCharts=createCharts, chartPackage=chartPackage, OptimizeInterval=True, numTopics=20)
                     if output != None:
                         filesToOpen.append(output)
 
@@ -367,7 +382,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                   silent=True)
         if nouns_var or verbs_var:
             if nouns_var or verbs_var or what_else_menu_var == '*':
-                WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('whats_in_your_corpus', 'WordNet')
+                WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('whats_in_your_corpus', 'WordNet', silent=True, only_check_missing=False)
                 if WordNetDir == None:
                     return
                 if language_var != 'English':
@@ -380,7 +395,7 @@ def run(inputFilename,inputDir, outputDir,
                     annotator = ['POS']
                     files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                 outputDir_what_else, openOutputFiles, createCharts, chartPackage,
-                                                annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
+                                                annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
                     if len(files) > 0:
                             noun_verb=''
                             if verbs_var == True:
@@ -418,7 +433,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator_list, False,
-                                                                      language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                      language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
                 filesToOpen.append(output)
@@ -431,7 +446,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False,
-                                                                      language_var, memory_var, document_length_var,
+                                                                      language_var, export_json_var, memory_var, document_length_var,
                                                                       limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
@@ -442,7 +457,7 @@ def run(inputFilename,inputDir, outputDir,
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
-                                                                      annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
+                                                                      annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
 
             if output != None:
                 filesToOpen.append(output)
@@ -452,7 +467,7 @@ def run(inputFilename,inputDir, outputDir,
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
-                                                                      annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                      annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       single_quote_var = single_quote)
             if output != None:
                 filesToOpen.append(output)
@@ -461,7 +476,7 @@ def run(inputFilename,inputDir, outputDir,
             annotator='normalized-date'
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir_what_else,
                         openOutputFiles, createCharts, chartPackage,
-                        annotator, False, language_var, memory_var, document_length_var, limit_sentence_length_var)
+                        annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
             if output != None:
                 filesToOpen.append(output)
 
@@ -473,7 +488,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False,
-                                                                      language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                      language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
                 filesToOpen.append(output)
@@ -484,7 +499,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False,
-                                                                      memory_var, document_length_var,
+                                                                      memory_var, export_json_var, document_length_var,
                                                                       limit_sentence_length_var)
             if output != None:
                 filesToOpen.append(output)
@@ -496,20 +511,15 @@ def run(inputFilename,inputDir, outputDir,
             # run with all default values;
             # checking for txt: NER=='LOCATION', provide a csv output with column: [Locations]
             NERs = ['COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION']
-            extract_date_from_text_var = False
-            extract_date_from_filename_var = False
-            date_format = ''
-            date_separator_var = ''
-            date_position_var = 0
             locations = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                          outputDir_what_else, openOutputFiles,
                                                                          createCharts, chartPackage, 'NER',
                                                                          False,
-                                                                         language_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                         language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                          NERs=NERs,
-                                                                         extract_date_from_text_var=extract_date_from_text_var,
+                                                                         extract_date_from_text_var=0,
                                                                          extract_date_from_filename_var=extract_date_from_filename_var,
-                                                                         date_format=date_format,
+                                                                         date_format=date_format_var,
                                                                          date_separator_var=date_separator_var,
                                                                          date_position_var=date_position_var)
 
@@ -577,10 +587,6 @@ def run(inputFilename,inputDir, outputDir,
                                                                      'CoreNLP_SVO_quote')
             outputLocations.append(location_filename)
             extract_date_from_text_var = False
-            extract_date_from_filename_var = False
-            date_format_var = ''
-            date_separator_var = ''
-            date_position_var = 0
             google_earth_var = True
             location_filename = location_filename
             gender_var = True
@@ -592,6 +598,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                                createCharts, chartPackage,
                                                                                'SVO', False,
                                                                                language_var,
+                                                                               export_json_var,
                                                                                memory_var=memory_var,
                                                                                document_length_var=document_length_var,
                                                                                limit_sentence_length_var=limit_sentence_length_var,
@@ -622,8 +629,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=590, # height at brief display
-                             GUI_height_full=630, # height at full display
+                             GUI_height_brief=550, # height at brief display
+                             GUI_height_full=590, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
@@ -653,7 +660,7 @@ config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 input_main_dir_path=GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 utf8_var= tk.IntVar()
 ASCII_var= tk.IntVar()
@@ -708,19 +715,20 @@ window.bind("<Escape>", clear)
 
 utf8_var.set(1)
 utf8_checkbox = tk.Checkbutton(window, text='Check input document(s) for utf-8 encoding', variable=utf8_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,utf8_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,utf8_checkbox)
 
 ASCII_var.set(1)
 ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent', variable=ASCII_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,ASCII_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,ASCII_checkbox)
 
 corpus_statistics_var.set(1)
 corpus_statistics_checkbox = tk.Checkbutton(window,text="Document(s) linguistic features", variable=corpus_statistics_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,corpus_statistics_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,corpus_statistics_checkbox,True)
 
 corpus_statistics_options_menu_var.set('*')
 corpus_statistics_options_menu_lb = tk.Label(window, text='NLP tools options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_corpus_statistics_options_menu_lb_pos,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
+
 corpus_statistics_options_menu = tk.OptionMenu(window, corpus_statistics_options_menu_var,
                                                '*',
                                                'Compute statistics (sentences, words, syllables)',
@@ -738,21 +746,22 @@ corpus_statistics_options_menu = tk.OptionMenu(window, corpus_statistics_options
                                                'Words with capital initial (proper nouns)',
                                                'Unusual words (via NLTK)'
                                                )
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,corpus_statistics_options_menu, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_corpus_statistics_options_menu_pos,y_multiplier_integer,corpus_statistics_options_menu, True)
 
 corpus_text_options_menu_var.set('*')
 corpus_options_menu_lb = tk.Label(window, text='Text options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 680,y_multiplier_integer,corpus_options_menu_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_corpus_options_menu_lb_pos,y_multiplier_integer,corpus_options_menu_lb,True)
+
 corpus_options_menu = tk.OptionMenu(window, corpus_text_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 780,y_multiplier_integer,corpus_options_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_corpus_options_menu_pos,y_multiplier_integer,corpus_options_menu)
 
 wordclouds_var.set(1)
 wordclouds_checkbox = tk.Checkbutton(window,text="Wordclouds", variable=wordclouds_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,wordclouds_checkbox, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,wordclouds_checkbox, True)
 
 open_wordclouds_GUI_var.set(0) # wordclouds GUI
 open_wordclouds_GUI_checkbox = tk.Checkbutton(window,text="Open wordclouds GUI", state='disabled', variable=open_wordclouds_GUI_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,open_wordclouds_GUI_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_open_wordclouds_GUI_pos,y_multiplier_integer,open_wordclouds_GUI_checkbox)
 
 def activate_wordclouds_GUI(*args):
     if wordclouds_var.get():
@@ -764,7 +773,7 @@ wordclouds_var.trace('w', activate_wordclouds_GUI)
 activate_wordclouds_GUI()
 
 topics_checkbox = tk.Checkbutton(window,text="What are the topics? (Topic modeling)", variable=topics_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,topics_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,topics_checkbox,True)
 
 def changed_filename(*args):
     if inputFilename.get()!='':
@@ -782,15 +791,15 @@ inputFilename.trace('w',changed_filename)
 
 topics_Mallet_var.set(0)
 topics_Mallet_checkbox = tk.Checkbutton(window,text="via MALLET", variable=topics_Mallet_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,topics_Mallet_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_topics_Mallet_pos,y_multiplier_integer,topics_Mallet_checkbox,True)
 
 topics_Gensim_var.set(1)
 topics_Gensim_checkbox = tk.Checkbutton(window,text="via Gensim", variable=topics_Gensim_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+570,y_multiplier_integer,topics_Gensim_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_topics_Gensim_pos,y_multiplier_integer,topics_Gensim_checkbox,True)
 
 open_tm_GUI_var.set(0) # topic modeling GUI
 open_GUI_checkbox = tk.Checkbutton(window,text="Open Gensim/MALLET GUI", variable=open_tm_GUI_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+700,y_multiplier_integer,open_GUI_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_open_tm_GUI_pos,y_multiplier_integer,open_GUI_checkbox)
 
 def activate_topics(*args):
     if topics_var.get()==True:
@@ -847,47 +856,12 @@ open_tm_GUI_var.trace('w',activate_allOptions)
 
 # language options
 language_var_lb = tk.Label(window, text='Language')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                language_var_lb, True)
-
-language_var.set('English')
-language_menu = tk.OptionMenu(window, language_var, 'Arabic','Chinese', 'English', 'German','Hungarian','Italian','Spanish')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+70,
-                                               y_multiplier_integer, language_menu, True)
-# memory options
-memory_var_lb = tk.Label(window, text='Memory')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+210, y_multiplier_integer,
-                                               memory_var_lb, True)
-
-memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
-memory_var.pack()
-memory_var.set(6)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 280, y_multiplier_integer,
-                                               memory_var, True)
-
-document_length_var_lb = tk.Label(window, text='Document length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+210, y_multiplier_integer,
-                                               document_length_var_lb, True)
-
-document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
-document_length_var.pack()
-document_length_var.set(90000)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate()+330, y_multiplier_integer,
-                                               document_length_var,True)
-
-limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 530, y_multiplier_integer,
-                                               limit_sentence_length_var_lb,True)
-
-limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
-limit_sentence_length_var.pack()
-limit_sentence_length_var.set(100)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 680, y_multiplier_integer,
-                                               limit_sentence_length_var)
 
 what_else_var.set(1)
 what_else_checkbox = tk.Checkbutton(window,text="What else is in your document(s)? (via Stanford CoreNLP and WordNet)", variable=what_else_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,what_else_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,what_else_checkbox,True)
 
 what_else_menu_var.set('*')
 what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues (CoreNLP Neural Network)','Noun and verb classes (CoreNLP NER & WordNet)', 'People & organizations (CoreNLP NER)', 'Females & males (CoreNLP Neural Network)',
@@ -896,7 +870,7 @@ what_else_menu = tk.OptionMenu(window,  what_else_menu_var, '*', 'Dialogues (Cor
                                'References to nature (CoreNLP & WordNet)',
                                'Sentiments expressed (CoreNLP)')
 what_else_menu.config(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 440, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_what_else_menu_pos, y_multiplier_integer,
                                                what_else_menu, True)
 
 # set value of current GUI line to display correctly the single quotes widget
@@ -913,7 +887,7 @@ def activate_what_else_menu(*args):
             if y_multiplier_integer_SV!=0:
                 y_multiplier_integer = y_multiplier_integer_SV
             quote_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_open_file_directory_coordinate() + 500,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_quote_checkbox_pos,
                                                            y_multiplier_integer,
                                                            quote_checkbox)
             quote_checkbox.configure(state='normal')
@@ -930,11 +904,11 @@ activate_what_else_menu()
 
 GIS_var.set(1)
 GIS_checkbox = tk.Checkbutton(window,text="GIS (Geographic Information System) pipeline", variable=GIS_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,GIS_checkbox, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,GIS_checkbox, True)
 
 open_GIS_GUI_var.set(0) # GIS GUI
 open_GIS_GUI_checkbox = tk.Checkbutton(window,text="Open GIS GUI", state='disabled', variable=open_GIS_GUI_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,open_GIS_GUI_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_open_GIS_GUI_pos,y_multiplier_integer,open_GIS_GUI_checkbox)
 
 def activate_GIS_GUI(*args):
     if GIS_var.get():
@@ -948,11 +922,11 @@ activate_GIS_GUI()
 
 SVO_var.set(1)
 SVO_checkbox = tk.Checkbutton(window,text="SVO (Subject-Verb-Object) pipeline", variable=SVO_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SVO_checkbox, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SVO_checkbox, True)
 
 open_SVO_GUI_var.set(0) # SVO GUI
 open_SVO_GUI_checkbox = tk.Checkbutton(window,text="Open SVO GUI", state='disabled', variable=open_SVO_GUI_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+440,y_multiplier_integer,open_SVO_GUI_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_corpus_open_SVO_GUI_pos,y_multiplier_integer,open_SVO_GUI_checkbox)
 
 def activate_SVO_GUI(*args):
     if SVO_var.get():
@@ -970,7 +944,7 @@ videos_options='No videos available'
 TIPS_lookup = {'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf', 'Lemmas & stopwords':'TIPS_NLP_NLP Basic Language.pdf', 'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf', 'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf', 'English Language Benchmarks': 'TIPS_NLP_English Language Benchmarks.pdf', 'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf','N-Grams (word & character)':'TIPS_NLP_Ngram (word & character).pdf','Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf','NLP Suite Ngram and Word Co-Occurrence Viewer':'TIPS_NLP_Ngram and Word Co-Occurrence Viewer.pdf','Style analysis':'TIPS_NLP_Style analysis.pdf','Statistical measures':'TIPS_NLP_Statistical measures.pdf','Style analysis':'TIPS_NLP_Style analysis.pdf','Wordclouds':'TIPS_NLP_Wordclouds Visualizing word clouds.pdf','Topic modeling':'TIPS_NLP_Topic modeling.pdf','Topic modeling and corpus size':'TIPS_NLP_Topic modeling and corpus size.pdf','Topic modeling (Gensim)':'TIPS_NLP_Topic modeling Gensim.pdf','Topic modeling (Mallet)':'TIPS_NLP_Topic modeling Mallet.pdf','Mallet installation':'TIPS_NLP_Topic modeling Mallet installation.pdf','NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf','The world of emotions and sentiments':'TIPS_NLP_The world of emotions and sentiments.pdf','Sentiment analysis':'TIPS_NLP_Sentiment analysis.pdf','Stanford CoreNLP date extractor (NER normalized date)':'TIPS_NLP_Stanford CoreNLP date extractor.pdf',"Stanford CoreNLP Gender annotator":"TIPS_NLP_Gender annotator.pdf",'GIS (Geographic Information System): Mapping Locations':'TIPS_NLP_GIS (Geographic Information System).pdf','SVO extraction and visualization':'TIPS_NLP_SVO extraction and visualization.pdf','Stanford CoreNLP enhanced dependencies parser (SVO)':'TIPS_NLP_Stanford CoreNLP enhanced dependencies parser (SVO).pdf','WordNet':'TIPS_NLP_WordNet.pdf'}
 TIPS_options='Text encoding (utf-8)','Excel - Enabling Macros', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'Lemmas & stopwords', 'N-Grams (word & character)','Google Ngram Viewer','NLP Suite Ngram and Word Co-Occurrence Viewer','Style analysis','Wordclouds','Topic modeling','Topic modeling and corpus size','Topic modeling (Gensim)','Topic modeling (Mallet)','Mallet installation','NER (Named Entity Recognition)','The world of emotions and sentiments','Sentiment analysis','Stanford CoreNLP date extractor (NER normalized date)','Stanford CoreNLP Gender annotator','GIS (Geographic Information System): Mapping Locations','SVO extraction and visualization','Stanford CoreNLP enhanced dependencies parser (SVO)','WordNet'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
@@ -1001,8 +975,6 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
             \n  do not list individual files when processing a directory \
             \n\nTo set different options, use the wordclouds GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick the Mallet or Gensim checkboxes to run run LDA Topic Modeling to find out the main topics of your corpus.\n\nTick the \'open GUI\' checkbox to open the specialized Gensim topic modeling GUI that offers more options. Mallet can only be run via its GUI")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, using the dropdown menu, select the language to be used: English, Arabic, Chinese, German, Hungarian, Italian, or Spanish.\n\nNot all annotators are available for all languages, in fact, most are not. Please, read the TIPS file TIPS_NLP_Stanford CoreNLP supported languages.pdf.\n\nThe Stanford CoreNLP performance is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick the checkbox to analyze your corpus for a variety of tools. Select the default \'*\' to run all options. Allternatively, select the specific option to run.\n\nThe NLP tools will allow you to answer questions such as:\n  1. Are there dialogues in your corpus? The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker. The default CoreNLP parameter is DOUBLE quotes. If you want to process both DOUBLE and SINGLE quotes, plase tick the checkbox 'Include single quotes.'\n  .2 Do nouns and verbs cluster in specific aggregates (e.g., communication, movement)?\n  3. Does the corpus contain references to people (by gender) and organizations?\n  4.  References to dates and times?\n  5. References to geographical locations that could be placed on a map?\n  6. References to nature (e.g., weather, seasons, animals, plants)?")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to run the GIS pipeline to extract locations from your input document(s) and map them in Google Earth Pro and Google Maps.\n\nThe GIS function in this GUI is based on the following default options:" \
             "\n  use Nominatim for geocoding "\
@@ -1025,12 +997,17 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="The GUI brings together various Python 3 scripts to buil a pipeline for the analysis of a corpus, automatically extracting all relevant data from texts and visualizing the results.\n\nEach tool performs all required computations then saves results as csv files and visualizes them in various ways (word clouds, Excel charts, and HTML files)."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(config_filename, config_input_output_numeric_options)
+extract_date_from_text_var=0
 
 GUI_util.window.mainloop()

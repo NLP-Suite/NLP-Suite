@@ -15,6 +15,7 @@ import tkinter.messagebox as mb
 import pandas as pd
 
 import GUI_IO_util
+import config_util
 import IO_files_util
 import CoNLL_util
 import knowledge_graphs_WordNet_util
@@ -46,9 +47,13 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         dict_WordNet_filename_var):
 
     filesToOpen = []  # Store all files that are to be opened once finished
+
+    # get the NLP package and language options
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+
     language_var='English' # WordNet works only for English language
 
-    WordNetDir, missing_external_software = IO_libraries_util.get_external_software_dir('knowledge_graphs_WordNet_main', 'WordNet')
+    WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('knowledge_graphs_WordNet_main', 'WordNet', silent=True, only_check_missing=False)
     if WordNetDir == None:
         return
 
@@ -135,14 +140,13 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
 
     if aggregate_POS_var == True:
         annotator = ['POS']
-        memory_var = 4
         nouns_var = True
         verbs_var = True
         # uses a txt fie in input
         language_var='English'
         files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                  outputDir, openOutputFiles, createCharts, chartPackage,
-                                                                 annotator, False, language_var, memory_var)
+                                                                 annotator, False, language_var, export_json_var, memory_var)
         if len(files) > 0:
             noun_verb = ''
             if verbs_var == True:
@@ -186,7 +190,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_chart_output_checkbox.get(),
-                            GUI_util.charts_dropdown_field.get(),
+                            GUI_util.charts_package_options_widget.get(),
                             csv_file_var.get(),
                             aggregate_POS_var.get(),
                             noun_verb_menu_var.get(),
@@ -209,8 +213,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=600, # height at brief display
-                             GUI_height_full=680, # height at full display
+                             GUI_height_brief=640, # height at brief display
+                             GUI_height_full=720, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -244,7 +248,7 @@ outputDir = GUI_util.output_dir_path
 openOutputFiles = GUI_util.open_csv_output_checkbox.get()
 createCharts = GUI_util.create_chart_output_checkbox.get()
 
-GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 wordNet_keyword_list = []
 hidden_noun_lemma_csv = tk.StringVar()
@@ -276,48 +280,48 @@ def get_csv_file(window,title,fileType,annotate):
 
 csv_file_button=tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Select INPUT CSV file',command=lambda: get_csv_file(window,'Select INPUT csv file', [("dictionary files", "*.csv")],True))
 # csv_file_button.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,csv_file_button,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,csv_file_button,True)
 
 #setup a button to open Windows Explorer on the selected input directory
 openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
 # the two x-coordinate and x-coordinate_hover_over must have the same values
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
-    GUI_IO_util.get_open_file_directory_coordinate(),
+    GUI_IO_util.IO_configuration_menu,
     y_multiplier_integer,
-    openInputFile_button, True, False, True, False, 90, GUI_IO_util.get_open_file_directory_coordinate(), "Open INPUT csv file")
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.IO_configuration_menu, "Open INPUT csv file")
 
-csv_file=tk.Entry(window, width=130,textvariable=csv_file_var)
+csv_file=tk.Entry(window, width=GUI_IO_util.WordNet_csv_file_width,textvariable=csv_file_var)
 csv_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,csv_file)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,csv_file)
 
 WordNet_category_lb = tk.Label(window, text='WordNet category (synset)')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                WordNet_category_lb,True)
 
 noun_verb_menu = tk.OptionMenu(window, noun_verb_menu_var, 'NOUN', 'VERB')
 noun_verb_menu.configure(width=9, state="normal")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 170, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                noun_verb_menu)
 
 disaggregate_var.set(0)
 disaggregate_checkbox = tk.Checkbutton(window, text='Zoom IN/DOWN to find related words', variable=disaggregate_var,
                                     onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                disaggregate_checkbox, True)
 
 def activate_keyword_menu():
     if keyWord_var.get() != '':
         keyWord_menu.configure(state="normal")
 
-add_keyword_button = tk.Button(window, text='+', width=2, height=1, state='disabled',
+add_keyword_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                                command=lambda: activate_keyword_menu())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
                                                add_keyword_button, True)
 
-reset_keywords_button = tk.Button(window, text='Reset', width=5, height=1, state='disabled',
+reset_keywords_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, state='disabled',
                                   command=lambda: clear_keyword_list())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 50, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_reset_pos, y_multiplier_integer,
                                                reset_keywords_button, True)
 
 def showKeywordList():
@@ -325,33 +329,33 @@ def showKeywordList():
         wordNet_keyword_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
 
-show_keywords_button = tk.Button(window, text='Show', width=5, height=1, state='disabled',
+show_keywords_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width, height=1, state='disabled',
                                  command=lambda: showKeywordList())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_show_pos, y_multiplier_integer,
                                                show_keywords_button, True)
 
 noun_verb_menu_options = []
 keyWord_var.set('')
 keyWord_menu_lb = tk.Label(window, text='Keyword (synset)')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 170, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_noun_verb_menu_pos, y_multiplier_integer,
                                                keyWord_menu_lb, True)
 
 keyWord_menu = tk.OptionMenu(window, keyWord_var, noun_verb_menu_options)
 # keyWord_menu.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 290, y_multiplier_integer,
-                                               keyWord_menu, True)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos, y_multiplier_integer,
+                                               keyWord_menu)
 
 keyWord_entry_lb = tk.Label(window, text='YOUR keyword(s) ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 430, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_noun_verb_menu_pos, y_multiplier_integer,
                                                keyWord_entry_lb, True)
 
-keyWord_entry = tk.Entry(window, width=40, textvariable=keyWord_entry_var)
+keyWord_entry = tk.Entry(window, width=GUI_IO_util.WordNet_keyWord_entry_width, textvariable=keyWord_entry_var)
 keyWord_entry.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 550, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos, y_multiplier_integer,
                                                keyWord_entry, True)
 
-OK_button = tk.Button(window, text='OK', width=3, height=1, state='disabled', command=lambda: accept_WordNet_list())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 830, y_multiplier_integer,
+OK_button = tk.Button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled', command=lambda: accept_WordNet_list())
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_OK_button_pos, y_multiplier_integer,
                                                OK_button)
 def clear(e):
     if aggregate_lemmatized_var.get():
@@ -401,56 +405,59 @@ keyWord_entry_var.trace('w', add_wordNet_keyword)
 
 annotate_file_var.set(0)
 annotate_file_checkbox = tk.Checkbutton(window, text='Annotate corpus (using WordNet csv output file from Zoom IN/DOWN)', variable=annotate_file_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+20,y_multiplier_integer,annotate_file_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,annotate_file_checkbox)
 
 extract_proper_nouns_var.set(0)
 extract_proper_nouns_checkbox = tk.Checkbutton(window, text='Extract WordNet PROPER nouns  (using WordNet csv output file from Zoom IN/DOWN)',
                                                variable=extract_proper_nouns_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                extract_proper_nouns_checkbox, True)
 extract_proper_nouns_checkbox.config(text="Extract PROPER nouns  (using WordNet csv output file from Zoom IN/DOWN)")
 
 extract_improper_nouns_var.set(0)
 extract_improper_nouns_checkbox = tk.Checkbutton(window, text='Extract WordNet IMPROPER nouns  (using WordNet csv output file from Zoom IN/DOWN)',
                                                  variable=extract_improper_nouns_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate()+250, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_extract_improper_nouns_pos, y_multiplier_integer,
                                                extract_improper_nouns_checkbox)
 extract_improper_nouns_checkbox.config(text="Extract IMPROPER nouns  (using WordNet csv output file from Zoom IN/DOWN)")
 
 aggregate_lemmatized_var.set(0)
 aggregate_lemmatized_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP (classify/aggregate lemmatized words in csv file)', variable=aggregate_lemmatized_var,
                                    onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                aggregate_lemmatized_checkbox)
 
 extract_nouns_verbs_from_CoNLL_var.set(0)
 extract_nouns_verbs_from_CoNLL_checkbox = tk.Checkbutton(window, text='Extract nouns & verbs from CoNLL table (for Zoom OUT/UP)',
                                               variable=extract_nouns_verbs_from_CoNLL_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate() + 20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                extract_nouns_verbs_from_CoNLL_checkbox)
 
 aggregate_POS_var.set(0)
 aggregate_POS_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP (classify/aggregate input text document(s) by CoreNLP NOUN & VERB POS tags and WordNet NOUN & VERB synsets)', variable=aggregate_POS_var,
                                     onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                aggregate_POS_checkbox)
 
 aggregate_bySentenceID_var.set(0)
 # aggregate_bySentenceID_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP by Sentence Index',
 #                                                 variable=aggregate_bySentenceID_var, onvalue=1, offvalue=0,
 #                                                 command=lambda: getDictFile())
-aggregate_bySentenceID_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP by Sentence Index',
+aggregate_bySentenceID_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP by Sentence ID',
                                                 variable=aggregate_bySentenceID_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(), y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                aggregate_bySentenceID_checkbox, True)
 
-dict_WordNet_filename_lb = tk.Label(window, text='csv file of WordNet classified/aggregated words (from ZOOM OUT/UP)')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,
-                                               dict_WordNet_filename_lb, True)
+dict_WordNet_filename_lb = tk.Label(window, text='csv file of WordNet classified/aggregated words')
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_dict_WordNet_filename_lb_pos, y_multiplier_integer,
+                    dict_WordNet_filename_lb, True, False, True, False,
+                    90, GUI_IO_util.WordNet_dict_WordNet_filename_lb_pos,
+                    "The csv file is obtained by running the ZOOM OUT/UP checkbox widget, above")
 
-dict_WordNet_filename = tk.Entry(window, width=80, textvariable=dict_WordNet_filename_var)
+dict_WordNet_filename = tk.Entry(window, width=GUI_IO_util.WordNet_dict_WordNet_filename_width, textvariable=dict_WordNet_filename_var)
 dict_WordNet_filename.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate() + 400, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_dict_WordNet_filename_pos, y_multiplier_integer,
                                                dict_WordNet_filename)
 
 asked = False
@@ -472,8 +479,8 @@ def activate_allOptions(noun_verb, fromaggregate=False):
 
     keyWord_menu.configure(state="disabled")
     keyWord_entry.configure(state="disabled")
-    add_keyword_button.configure(width=5, height=1, state="disabled")
-    reset_keywords_button.configure(width=5, height=1, state="disabled")
+    add_keyword_button.configure(width=GUI_IO_util.add_button_width, height=1, state="disabled")
+    reset_keywords_button.configure(width=GUI_IO_util.reset_button_width, height=1, state="disabled")
 
     if len(wordNet_keyword_list) > 0:
         show_keywords_button.configure(state="normal")
@@ -490,11 +497,11 @@ def activate_allOptions(noun_verb, fromaggregate=False):
         aggregate_bySentenceID_checkbox.configure(state='disabled')
         if keyWord_var.get() != '':
             # + button
-            add_keyword_button.configure(width=5, height=1, state="normal")
+            add_keyword_button.configure(width=GUI_IO_util.add_button_width, height=1, state="normal")
             keyWord_entry.configure(state="disabled")
             OK_button.configure(state="disabled")
         else:
-            add_keyword_button.configure(width=5, height=1, state="disabled")
+            add_keyword_button.configure(width=GUI_IO_util.add_button_width, height=1, state="disabled")
             keyWord_entry.configure(state="normal")
             if keyWord_entry_var.get() != '':
                 keyWord_menu.configure(state="disabled")
@@ -505,9 +512,9 @@ def activate_allOptions(noun_verb, fromaggregate=False):
 
         # RESET button
         if keyWord_var.get() == '' and keyWord_entry_var.get() == '':
-            reset_keywords_button.configure(width=5, height=1, state="disabled")
+            reset_keywords_button.configure(width=GUI_IO_util.reset_button_width, height=1, state="disabled")
         else:
-            reset_keywords_button.configure(width=5, height=1, state="normal")
+            reset_keywords_button.configure(width=GUI_IO_util.reset_button_width, height=1, state="normal")
     else:
         keyWord_var.set('')
         wordNet_keyword_list.clear()
@@ -677,7 +684,7 @@ TIPS_lookup = {'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems
 #'Java download install run': 'TIPS_NLP_Java download install run.pdf'
 TIPS_options = 'csv files - Problems & solutions','Statistical measures','WordNet','The world of emotions and sentiments' #, 'Java download install run'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 webSearch = "\n\nYou can search terms directly on the WordNet website at http://wordnetweb.princeton.edu/perl/webwn?s=&sub=Search+WordNet."
@@ -700,7 +707,9 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the synset type (NOUN or VERB) that you want to use for your WordNet searches.\n\nLists of NOUNS and VERBS can be exported from a CoNLL table computed via the Stanford_CoreNLP.py script. Nouns would have POSTAG values NN* (* for any NN value) and verbs VB*. Tick the checkbox 'Extract nouns & verbs from CoNLL' to extract the lists." + webSearch)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to run the Python 3 script 'Zoom IN/DOWN'. The script uses the WordNet lexicon database to provide a list of terms associated to a starting keyword (synset) in a lexical hierarchy.\n\nThe IN/DOWN Java algorithm uses the MIT JWI (Java Wordnet Interface) (https://projects.csail.mit.edu/jwi/) to interface with WordNet.\n\nIt uses both hyponymy and meronymy to go DOWN the hierarchy.\n\nHyponym is the specific term used to designate a member of a class. X is a hyponym of Y if X is a (kind of) Y.\n\nMeronymy is the name of a constituent part of, the substance of, or a member of something. X is a meronym of Y if X is a part of Y.\n\nThus, you can construct a list of social actors (i.e., human disaggregates, groups, or organizations) by selecting 'person' as starting point.\n\nPlease, using the dropdown menu, select the starting keyword(s) (synsets) that the script will use to traverse the database in order to provide the list.\n\nNOUNS have 25 top-level synsets and VERB have 15.\n\nMultiple starting words are allowed. If your research deals with fairy tales, animals may also be disaggregates (e.g., a talking fox), so the starting keyword can be 'animal', with both 'person' and 'animal' as your combined keywords.\n\nPress the + button for multiple selections.\n\nPress RESET (or ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.\n\nYou can also enter one or more, comma separated, terms into the 'YOUR keyword(s)'field, ignoring the pre-selected keywords. This option is particularly helpful if you want to restrict your search at a lower level, e.g. 'ethnic group' instead of 'person' to obtain a much shorter list of terms.\n\nPress OK when finished entering YOUR own values.\n\nIn INPUT all is required is the starting keywords that you will have selected or entered.\n\nIn OUTPUT the script will create 2 csv files, a one-column file with a list of all the terms found in the synset, and a five-columns file marked as verbose: a list of terms found (column 1), the selected WordNet category (column 2), definitions of the category (column 3), frequency of senses of lemma that are ranked according to their frequency of occurrence in semantic concordance texts (column 4), examples of use (column 5)." + webSearch)
+                                  "Please, tick the checkbox if you wish to run the Python 3 script 'Zoom IN/DOWN'. The script uses the WordNet lexicon database to provide a list of terms associated to a starting keyword (synset) in a lexical hierarchy.\n\nThe IN/DOWN Java algorithm uses the MIT JWI (Java Wordnet Interface) (https://projects.csail.mit.edu/jwi/) to interface with WordNet.\n\nIt uses both hyponymy and meronymy to go DOWN the hierarchy.\n\nHyponym is the specific term used to designate a member of a class. X is a hyponym of Y if X is a (kind of) Y.\n\nMeronymy is the name of a constituent part of, the substance of, or a member of something. X is a meronym of Y if X is a part of Y.\n\nThus, you can construct a list of social actors (i.e., human disaggregates, groups, or organizations) by selecting 'person' as starting point.\n\nPlease, using the dropdown menu, select the starting keyword(s) (synsets) that the script will use to traverse the database in order to provide the list.\n\nNOUNS have 25 top-level synsets and VERB have 15.\n\nMultiple starting words are allowed. If your research deals with fairy tales, animals may also be disaggregates (e.g., a talking fox), so the starting keyword can be 'animal', with both 'person' and 'animal' as your combined keywords.\n\nPress the + button for multiple selections.\n\nPress RESET (or ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.\n\nIn INPUT all is required is the starting keywords that you will have selected or entered.\n\nIn OUTPUT the script will create 2 csv files, a one-column file with a list of all the terms found in the synset, and a five-columns file marked as verbose: a list of terms found (column 1), the selected WordNet category (column 2), definitions of the category (column 3), frequency of senses of lemma that are ranked according to their frequency of occurrence in semantic concordance texts (column 4), examples of use (column 5)." + webSearch)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "You can enter one or more, comma separated, terms into the 'YOUR keyword(s)'field, ignoring the pre-selected keywords. This option is particularly helpful if you want to restrict your search at a lower level, e.g. 'ethnic group' instead of 'person' to obtain a much shorter list of terms.\n\nPress OK when finished entering YOUR own values." + webSearch)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to annotate your input document(s) using a dictionary csv file generated by the \'Zoom IN\DOWN\' algorithm. Thus, you can extract all \'PERSON\' items from WordNet and annotate your corpus by those values.\n\nIn INPUT the function expects\n   1. either a single txt file or a directory of txt files to be annotated (txt file(s) are selected in the Setup INPUT/OUTPUT configuration widget);\n   2. a csv dictionary file generated by the ZOOM IN/DOWN widget and containing with the WordNet tags that will be used to annotate the text. You will be prompted to select the csv file when you tick the checkbox.\n\nIn OUTPUT the fnction produces an html file annotated according to the values found in the input csv dictionary file." + webSearch)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -716,7 +725,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window, GUI_IO_util.get_help_button_x_coordinate(), 0)
+y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
 

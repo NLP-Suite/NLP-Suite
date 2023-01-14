@@ -21,10 +21,6 @@ import sentiment_analysis_hedonometer_util
 import sentiment_analysis_SentiWordNet_util
 import sentiment_analysis_VADER_util
 import sentiment_analysis_ANEW_util
-import sentiment_analysis_roBERTa_util
-import spaCy_util
-import Stanza_util
-import Stanford_CoreNLP_util
 import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -36,7 +32,6 @@ def run(inputFilename,inputDir,outputDir,
         mean_var,
         median_var,
         SA_algorithm_var,
-        memory_var,
         sentence_index_var,
         shape_of_stories_var):
 
@@ -44,6 +39,15 @@ def run(inputFilename,inputDir,outputDir,
     usedir = False
     flag="" #used by CoreNLP
     filesToOpen = []  # Store all files that are to be opened once finished
+
+    # get the NLP package and language options
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
+    if package_display_area_value == '':
+        mb.showwarning(title='No setup for NLP package and language',
+                       message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
+        return
 
     if SA_algorithm_var=='':
         mb.showwarning('Warning',"No option has been selected.\n\nPlease, select a Sentiment analysis option and try again.")
@@ -77,11 +81,6 @@ def run(inputFilename,inputDir,outputDir,
     anew_var=0
 
     if SA_algorithm_var=='*':
-        # create a subdirectory of the output directory
-        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment',
-                                                           silent=False)
-        if outputDir == '':
-            return
         BERT_var=1
         CoreNLP_var=1
         spaCy_var=1
@@ -129,7 +128,12 @@ def run(inputFilename,inputDir,outputDir,
 # BERT ---------------------------------------------------------
 
     if BERT_var==1:
-        tempOutputFiles = sentiment_analysis_roBERTa_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
+        import BERT_util
+        if 'Multilingual' in SA_algorithm_var:
+            model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
+        else:
+            model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
+        tempOutputFiles = BERT_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage, model_path)
         if tempOutputFiles == None:
             return
         if len(tempOutputFiles) > 0:
@@ -148,6 +152,7 @@ def run(inputFilename,inputDir,outputDir,
         annotator = ['sentiment']
         document_length_var = 1
         limit_sentence_length_var = 1000
+        import spaCy_util
         tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
                                                     openOutputFiles,
@@ -180,17 +185,10 @@ def run(inputFilename,inputDir,outputDir,
 
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
             return
-        # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Stanford CoreNLP Sentiment Analysis',
-        #                                    'Started running Stanford CoreNLP Sentiment Analysis at', True,
-        #                                    'You can follow CoreNLP in command line.')
-
-        #@ need an additional variable CoreNLP dir and memory_var @
-        # set memory_var if not there
-        if memory_var==0:
-            memory_var=4
+        import Stanford_CoreNLP_util
         outputFilename = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                           outputDir, openOutputFiles, createCharts, chartPackage,'sentiment', False,
-                                                                          language_var,
+                                                                          language_var, export_json_var,
                                                                           memory_var)
         # outputFilename=outputFilename[0] # annotators return a list and not a string
         if SA_algorithm_var!='*' and len(outputFilename)>0:
@@ -207,6 +205,7 @@ def run(inputFilename,inputDir,outputDir,
         annotator = 'sentiment'
         document_length_var = 1
         limit_sentence_length_var = 1000
+        import Stanza_util
         tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputDir,
                                                       openOutputFiles,
@@ -235,7 +234,7 @@ def run(inputFilename,inputDir,outputDir,
         config_filename_temp = 'shape_of_stories_config.csv'
         config_input_output_numeric_options = [3, 1, 0, 1]
         config_input_output_alphabetic_options = [outputFilename, '','',outputDir]
-        config_util.write_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
+        config_util.write_IO_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
 
         reminders_util.checkReminder(config_filename,
                                      reminders_util.title_options_shape_of_stories,
@@ -301,11 +300,10 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                GUI_util.output_dir_path.get(),
                                GUI_util.open_csv_output_checkbox.get(),
                                GUI_util.create_chart_output_checkbox.get(),
-                               GUI_util.charts_dropdown_field.get(),
+                               GUI_util.charts_package_options_widget.get(),
                                mean_var.get(),
                                median_var.get(),
                                SA_algorithm_var.get(),
-                               memory_var.get(),
                                sentence_index_var.get(),
                                shape_of_stories_var.get())
 
@@ -350,13 +348,11 @@ config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
 input_main_dir_path=GUI_util.input_main_dir_path
 
-GUI_util.GUI_top(config_input_output_numeric_options,config_filename,IO_setup_display_brief)
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 mean_var = tk.IntVar()
 median_var = tk.IntVar()
 SA_algorithm_var = tk.StringVar()
-memory_var = tk.IntVar()
-memory_var_lb = tk.Label(window, text='Memory ')
 
 sentence_index_var = tk.IntVar()
 shape_of_stories_var = tk.IntVar()
@@ -373,10 +369,10 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 mean_checkbox = tk.Checkbutton(window, text='Calculate sentence mean', variable=mean_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,mean_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,mean_checkbox,True)
 
 median_checkbox = tk.Checkbutton(window, text='Calculate sentence median', variable=median_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+200,y_multiplier_integer,median_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.sentiment_analysis_median_checkbox_pos,y_multiplier_integer,median_checkbox)
 
 def display_reminder(*args):
     if 'Neural network' in SA_algorithm_var.get() or 'Dictionar' in SA_algorithm_var.get():
@@ -410,48 +406,27 @@ def display_reminder(*args):
         return
 SA_algorithm_var.trace('w',display_reminder)
 
-SA_algorithms=['*','Neural networks:','   BERT','   spaCy','   Stanford CoreNLP','   Stanza','','Dictionaries:','   ANEW','   hedonometer','   SentiWordNet','   VADER']
+SA_algorithms=['*','Neural network approaches:','   BERT (English model)','   BERT (Multilingual model)','   spaCy','   Stanford CoreNLP','   Stanza','','Dictionary approaches:','   ANEW','   hedonometer','   SentiWordNet','   VADER']
 
 SA_algorithm_var.set('*')
 SA_algorithm_lb = tk.Label(window, text='Select sentiment analysis algorithm')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,SA_algorithm_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SA_algorithm_lb,True)
+
 SA_algorithm_menu = tk.OptionMenu(window,SA_algorithm_var,*SA_algorithms)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_entry_box_x_coordinate(), y_multiplier_integer,SA_algorithm_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.sentiment_analysis_SA_algorithm_menu_pos, y_multiplier_integer,SA_algorithm_menu)
 
 y_multiplier_integerSV=y_multiplier_integer-1
 
-def activate_memory_var(*args):
-
-    global memory_var, y_multiplier_integer, language_menu
-    if 'spaCy' in SA_algorithm_var.get() or 'Stanford CoreNLP' in SA_algorithm_var.get() or 'Stanza' in SA_algorithm_var.get() or SA_algorithm_var.get()=='*':
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+850, y_multiplier_integerSV,
-                                                       memory_var_lb, True)
-
-        memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
-        memory_var.pack()
-        memory_var.set(6)
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate()+920,
-                                                       y_multiplier_integerSV, memory_var)
-    else:
-        memory_var_lb.place_forget() #invisible
-        try:
-            memory_var.place_forget() #invisible
-        except:
-            return
-SA_algorithm_var.trace('w',activate_memory_var)
-
-activate_memory_var()
-
 sentence_index_var.set(0)
 sentence_index_checkbox = tk.Checkbutton(window, state='disabled', text='Do sentiments fluctuate across a document (Sentiment scores by sentence index)', variable=sentence_index_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer,sentence_index_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,sentence_index_checkbox)
 
 shape_of_stories_var.set(0)
 shape_of_stories_checkbox = tk.Checkbutton(window, text='Do sentiments fluctuate across documents (Open \'Shape of stories\' GUI)', variable=shape_of_stories_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_indented_coordinate(),y_multiplier_integer,shape_of_stories_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,shape_of_stories_checkbox)
 
 ALL_options_button = tk.Button(window, text='Sentiments/emotions (ALL options GUI)', command=lambda: call("python sentiments_emotions_ALL_main.py", shell=True))
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,ALL_options_button)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,ALL_options_button)
 
 def activate_SOS(*args):
     # the Shape of Stories is only available when processing a directory and using oreNLP
@@ -469,7 +444,7 @@ activate_SOS()
 # doNotCreateIntermediateFiles_var.set(1)
 # doNotCreateIntermediateFiles_checkbox = tk.Checkbutton(window, variable=doNotCreateIntermediateFiles_var, onvalue=1, offvalue=0)
 # doNotCreateIntermediateFiles_checkbox.config(text="Do NOT produce intermediate csv files when processing all txt files in a directory")
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.get_labels_x_coordinate(),y_multiplier_integer,doNotCreateIntermediateFiles_checkbox)
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,doNotCreateIntermediateFiles_checkbox)
 
 # def changeLabel(*args):
 # 	if doNotCreateIntermediateFiles_var.get()==1:
@@ -492,11 +467,13 @@ TIPS_lookup = {'The world of emotions and sentiments':'TIPS_NLP_The world of emo
                'Sentiment Analysis':"TIPS_NLP_Sentiment Analysis.pdf",
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
-                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
+               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf',
+               'BERT: A brief introduction':'TIPS_NLP_BERT Brief introduction.pdf',
+               'BERT: Sentiment analysis':'TIPS_NLP_BERT Sentiment Analysis.pdf'}
 # 'Java download install run':'TIPS_NLP_Java download install run.pdf'
-TIPS_options='The world of emotions and sentiments','Sentiment Analysis','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures'
+TIPS_options='The world of emotions and sentiments','Sentiment Analysis','Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures','BERT: A brief introduction','BERT: Sentiment analysis'
 
-# add all the lines lines to the end to every special GUI
+# add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
@@ -516,7 +493,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                               "Please, click on the button to open the GUI for ALL options to analyze emotions/sentiments available in the NLP Suite.")
     return y_multiplier_integer -1
-y_multiplier_integer = help_buttons(window,GUI_IO_util.get_help_button_x_coordinate(),0)
+y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
 readMe_message="The Python 3 Dictionary-based Analyses scripts calculate the mean/median values for various aspects of the language used in a text: sentiment, arousal, dominance.\n\nIn INPUT the scripts expect either a single text file or a set of text files stored in a directory. THE hedonometer, ANEW, AND VADER SCRIPTS ALSO EXPECT TO FIND DICTIONARY FILES IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE PYTHON SCRIPTS ARE STORED.\n\nIn OUTPUT, the scripts create csv files containing the calculated mean/median values for each sentence."
@@ -524,8 +501,8 @@ readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 def activate_NLP_options(*args):
-    global error, package_basics, package, language_var, language_list
-    error, package, parsers, package_basics, language, package_display_area_value = config_util.read_NLP_package_language_config()
+    global error, package_basics, package, language, language_var, language_list
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 GUI_util.setup_menu.trace('w', activate_NLP_options)
@@ -533,11 +510,15 @@ activate_NLP_options()
 
 if error:
     mb.showwarning(title='Warning',
-               message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup widget at the bottom of this GUI.")
+                   message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
+    call("python NLP_setup_package_language_main.py", shell=True)
+    # this will display the correct hover-over info after the python call, in case options were changed
+    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
-title=["NLP setup options"]
-message="Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " + ', '.join(language_list) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " + package_basics + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
+title = ["NLP setup options"]
+message = "Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " \
+          + str(language) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " \
+          + str(package_basics) + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
 reminders_util.checkReminder(config_filename, title, message)
 
 GUI_util.window.mainloop()
-reminders_util.checkReminder

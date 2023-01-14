@@ -173,7 +173,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     # https://stackoverflow.com/questions/33775423/how-to-set-a-data-type-for-a-column-with-closedxml
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
     if nRecords > 1048575:
-        IO_user_interface_util.timed_alert(window, 3000, 'Warning',
+        IO_user_interface_util.timed_alert(window, 2000, 'Warning',
                                            "Excel chart error: The number of rows in the input csv file\n\n" + tail + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.",
                                            False, '', True, '', True)
         # mb.showwarning(title='Excel chart error',message="Excel chart error: The number of rows in the input csv file\n\n" + tail + "\n\nexceeds the maximum number of rows Excel can handle (1048576, i.e., 2 to the 20th power, the largest that can be represented in twenty bits), leading to the error 'ValueError: Row numbers must be between 1 and 1048576.'")
@@ -181,7 +181,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
         return
     if 'bar' in chart_type_list or 'line' in chart_type_list:
         if nRecords > 70:
-            IO_user_interface_util.timed_alert(window, 3000, 'Warning',
+            IO_user_interface_util.timed_alert(window, 2000, 'Warning',
                                                'The input file\n\n' + inputFilename + '\n\ncontains ' + str(nRecords) + ' records, way too many to be displayed clearly in an Excel line chart.\n\nYOU SHOULD USE PLOTLY WHICH GIVES YOU THE OPTION TO DYNAMICALLY FILTER THE DATA ZOOMING IN ON SPECIFIC DATA SEGMENTS.',
                                                False, '', True, '', True)
 
@@ -202,8 +202,9 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
         for i in range(n-1):
             chart_type_list.append(chart_type_list[0])
 
-    startTime = IO_user_interface_util.timed_alert(window, 2000, 'Excel charts', 'Started preparing Excel chart ' + str(chart_type_list) + ' at',
-                                       True,'Input file: ' + tail,True,'',True)
+    # TODO unnecessary; creating charts only takes a few seconds
+    # startTime = IO_user_interface_util.timed_alert(window, 2000, 'Excel charts', 'Started preparing Excel chart ' + str(chart_type_list) + ' at',
+    #                                    True,'Input file: ' + tail,True,'',True)
 
     # lengths is the list of the number of values for each series (e.g. 5 for series 1, 18 for series 2......)
     # lengths = [5, 18, ......]
@@ -500,7 +501,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 mb.showwarning(title='Series Label Warning', message="The system indicates that there are more series labels specified than the number of series (2). The system will automatically choose the first 2 of the series label list.\n\nPlease click 'OK' and continue.")
 
             if len(series_label_list) > 0 and len(series_label_list[0]) > 0:
-                chartName.series.append(Series(data, title=series_label_list[0]))
+                chartName1.series.append(Series(data, title=series_label_list[0]))
                 chartName1.y_axis.title = series_label_list[0]
             else:
                 if reverse_column_position_for_series_label == False:
@@ -518,7 +519,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             hover_over_values = Reference(ws,min_col=3, min_row=2,max_row=1+num_label)
 
             if len(series_label_list) > 0 and len(series_label_list[1]) > 0:
-                chartName.series.append(Series(data, title=series_label_list[1]))
+                chartName2.series.append(Series(data, title=series_label_list[1]))
                 chartName2.y_axis.title = series_label_list[1]
             else:
                 if reverse_column_position_for_series_label == False:
@@ -533,14 +534,14 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             chartName1.y_axis.crosses = "max"
             if chart_type_list[0]=="line" or chart_type_list[0]=="bar" or chart_type_list[0]=="bubble" or chart_type_list[0]=="scatter":
                 # https://stackoverflow.com/questions/35010050/setting-x-axis-label-to-bottom-in-openpyxl
-                chartName.x_axis.tickLblPos = "low"
-                chartName.x_axis.tickLblSkip = 1  # changing to 2 would skip every other label; 3 every 3; etc.
+                chartName1.x_axis.tickLblPos = "low"
+                chartName1.x_axis.tickLblSkip = 1  # changing to 2 would skip every other label; 3 every 3; etc.
 
             chartName1 += chartName2
 
             ws_chart.add_chart(chartName1, "A1")
 
-    # move chart sheet to first in Excel, so as to open Excel directly on the Chart worksheet rather on the Data worksheet
+    # move chart sheet to first in Excel, so as to open Excel directly on the Chart worksheet rather on the Data worksheet of the Excel chart file
     # https://stackoverflow.com/questions/51082458/move-a-worksheet-in-a-workbook-using-openpyxl-or-xl-or-xlsxwriter
     sheets = wb._sheets
     from_loc = len(sheets) - 1
@@ -557,8 +558,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
     # if errorFound==True:
     #     chart_outputFilename=''
 
-    IO_user_interface_util.timed_alert(window, 2000, 'Excel charts', 'Finished preparing Excel chart at',
-                                       True, '', True, startTime, silent=True)
+    # IO_user_interface_util.timed_alert(window, 2000, 'Excel charts', 'Finished preparing Excel chart at',
+    #                                    True, '', True, startTime, silent=True)
     return chart_outputFilename
 
 def df_to_list_w_header(df):

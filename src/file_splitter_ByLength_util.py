@@ -19,7 +19,7 @@ import ntpath
 import shutil
 
 import GUI_util
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
 import IO_user_interface_util
 import reminders_util
@@ -27,7 +27,7 @@ import reminders_util
 #Jack Hester
 #the function is used to split a document longer than 100K characters since Stanford CoreNLP can only deal with text files of 100K characters max.
 def splitAt(text,index):
-    #consider ." !" ?" for speech 
+    #consider ." !" ?" for speech
     #   otherwise you end up with an unaccounted " in the next chunk of text
     limit = sys.getrecursionlimit()
     first_limit = limit
@@ -48,7 +48,7 @@ def splitAt(text,index):
 
 #Jack Hester
 #edited by Cynthia Dong and Roberto Franzosi
-#the function is used to check the lenght of a document 
+#the function is used to check the lenght of a document
 #   and split the document
 #   since Stanford CoreNLP can only deal with text files of 100K characters max.
 #   90000 in number of characters
@@ -66,7 +66,7 @@ def splitDocument_byLength(window, config_filename, filename_path,output_path=''
     #   as a subfolder of the input folder and/or file
     #   the subfolder will be named split_files_9000_filename (no extension)
     filesToReturn=[]
-    
+
     head, filename = os.path.split(filename_path)
     # Stanford_CoreNLP_parser_util does not pass the output dir
     if output_path=='':
@@ -80,7 +80,7 @@ def splitDocument_byLength(window, config_filename, filename_path,output_path=''
             # print("length",length)
     F.close()
     if length > maxLength:
-        # IO_user_interface_util.timed_alert(window, 3000, 'File split warning', 'The file ' + filename_path + ' was too long for ' + software + ' to process, and was split into sub-files and stored in the split_files sub-folder:\n\n' + new_splitFiles_folder)
+        # IO_user_interface_util.timed_alert(window, 2000, 'File split warning', 'The file ' + filename_path + ' was too long for ' + software + ' to process, and was split into sub-files and stored in the split_files sub-folder:\n\n' + new_splitFiles_folder)
         if os.path.exists(new_splitFiles_folder):
             shutil.rmtree(new_splitFiles_folder)
         try:
@@ -129,6 +129,7 @@ def splitDocument_byLength(window, config_filename, filename_path,output_path=''
 #   making the split_files subdirectory, for this function
 #   the creation of the directory is carried out in the calling script
 def split_byLength(window,input_path,filename,output_path, maxLength, inSentence=False):
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
     #inSentence: no incomplete sentence in subfiles
     docname = os.path.split(filename)[1]
     title = docname.partition('.')[0]#get the title of the file(without path and .txt)
@@ -137,7 +138,7 @@ def split_byLength(window,input_path,filename,output_path, maxLength, inSentence
         sentences = sent_tokenize_stanza(stanzaPipeLine(text)) #sentnece list of the input txt
     F.close()
     if maxLength > len(word_tokenize_stanza(stanzaPipeLine(text))):
-        IO_user_interface_util.timed_alert(window, 3000, 'File split warning', 'The length of file ' + filename + ' is less than ' + str(maxLength))
+        IO_user_interface_util.timed_alert(window, 2000, 'File split warning', 'The length of file ' + filename + ' is less than ' + str(maxLength))
         subfile = open(output_path+"/"+title+"_1"+".txt", 'w',encoding='utf-8',errors='ignore')
         subfile.write(text)
         return
@@ -150,7 +151,7 @@ def split_byLength(window,input_path,filename,output_path, maxLength, inSentence
             splitText += sent + " "
             l += len(words)
         elif l + len(words) == maxLength:
-            splitText += sent 
+            splitText += sent
             subfile = open(output_path+"/"+title+"_"+str(subfileIndex)+".txt", 'w',encoding='utf-8',errors='ignore')
             subfile.write(splitText)
             subfileIndex +=1
@@ -170,7 +171,7 @@ def split_byLength(window,input_path,filename,output_path, maxLength, inSentence
                     subfile = open(output_path+"/"+title+"_"+str(subfileIndex)+".txt", 'w',encoding='utf-8',errors='ignore')
                     subfile.write(splitText)
                     subfileIndex +=1
-                    splitText = sent.partition(words[diff-1])[2]   + " "     
+                    splitText = sent.partition(words[diff-1])[2]   + " "
                     l = len(words) - diff
                 else:
                     subsent = ''
@@ -183,7 +184,7 @@ def split_byLength(window,input_path,filename,output_path, maxLength, inSentence
                     subfileIndex += 1
                     splitText = restsent + " "
                     l = len(word_tokenize_stanza(stanzaPipeLine(restsent)))
-                    
+
     if len(splitText) > 0:
         subfile = open(output_path+"/"+title+"_"+str(subfileIndex)+".txt", 'w',encoding='utf-8',errors='ignore')
         subfile.write(splitText)
