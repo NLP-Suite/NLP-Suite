@@ -356,11 +356,11 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                            'The input csv file\n\n' + geocodedLocationsOutputFilename + '\n\ndoes not contain geocoded data with Latitude or Longitude columns required for Google Maps to produce heat maps.\n\nPlease, select a geocoded csv file in input and try again.')
             return
 
-        Google_Maps_API = getGoogleAPIkey('Google-Maps-API_config.csv')
+        Google_Maps_API = getGoogleAPIkey(window,'Google-Maps-API_config.csv')
         if Google_Maps_API == '':
             return
 
-        GIS_Google_Maps_util.create_js(heatMapoutputFilename, coordList, geocoder, True)
+        GIS_Google_Maps_util.create_js(window, heatMapoutputFilename, coordList, geocoder, True)
         filesToOpen.append(heatMapoutputFilename)
 
     IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running GIS pipeline at', True, '', True, startTime)

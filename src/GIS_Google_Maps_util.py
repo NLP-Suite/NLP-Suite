@@ -8,7 +8,6 @@ Saves that template file with the addition to user-specified file name/location\
 Template file should be located in the lib folder
 """
 import GUI_IO_util
-import IO_files_util
 import GIS_geocode_util
 import os
 import reminders_util
@@ -19,8 +18,8 @@ import GIS_pipeline_util
 # inserts correct javascript containing all of the points to plot on heatmap_template
 # gmaps_list is a list of lat/long values to be written in the java script html output file
 # then saves a new file that contains the html/js to display the heatmap
-def create_google_heatmap(output_filename, gmaps_list):
-    api_key = GIS_pipeline_util.getGoogleAPIkey('Google-Maps-API_config.csv')
+def create_google_heatmap(window, output_filename, gmaps_list):
+    api_key = GIS_pipeline_util.getGoogleAPIkey(window, 'Google-Maps-API_config.csv')
     if api_key == '' or api_key == None :
         return
 
@@ -51,7 +50,7 @@ def create_google_heatmap(output_filename, gmaps_list):
 # must provide geocoder if points are locations rather than lat longs
 # if lat longs are provided, it should be via a nested list, i.e. [[lat1, long1], [lat2, long2], ...]
 # otherwise it assumes the item provided is a list of locations (as strings)
-def create_js(output_filename, locations, geocoder, latLongList):
+def create_js(window, output_filename, locations, geocoder, latLongList):
     gmaps_list = []
     if not latLongList:
         latLongList = []
@@ -64,7 +63,7 @@ def create_js(output_filename, locations, geocoder, latLongList):
         gmaps_str = ''.join(["new google.maps.LatLng(",str(item[0]),", ",str(item[1]),"),"])
         gmaps_list.append(gmaps_str)
         # gmaps_list geocoded values
-    create_google_heatmap(output_filename, gmaps_list)
+    create_google_heatmap(window, output_filename, gmaps_list)
     config_filename = 'GIS_config.csv'
     reminders_util.checkReminder(config_filename,
                             reminders_util.title_options_Google_API,
