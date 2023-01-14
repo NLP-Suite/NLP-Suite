@@ -170,6 +170,10 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 
 def clear(e):
     GUI_util.clear("Escape")
+    CoreNLP_gender_annotator_var.set(0)
+    annotator_dictionary_var.set(0)
+    annotator_dictionary_file_var.set('')
+    plot_var.set(0)
     year_state_var.set('')
     firstName_entry_var.set('')
 window.bind("<Escape>", clear)
@@ -205,7 +209,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 annotator_dictionary_button=tk.Button(window, width=20, text='Select dictionary file',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
 annotator_dictionary_button.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,annotator_dictionary_button,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                   annotator_dictionary_button,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "The lib/nameGender subdirectory contains several US names files (Carnegie Mellon list, US Social Security list, US census, NLTK)\nBut... you can also selected a file of names of your own chosing")
 
 #setup a button to open Windows Explorer on the selected input directory
 openInputFile_button  = tk.Button(window, width=3, state='disabled', text='', command=lambda: IO_files_util.openFile(window, annotator_dictionary_file_var.get()))
@@ -223,7 +231,7 @@ def get_dictionary_file(window,title,fileType):
     #annotator_dictionary_var.set('')
     filePath = tk.filedialog.askopenfilename(title = title, initialdir =GUI_IO_util.namesGender_libPath, filetypes = fileType)
     if len(filePath)>0:
-        annotator_dictionary_file.config(state='normal')
+        # annotator_dictionary_file.config(state='normal')
         annotator_dictionary_file_var.set(filePath)
 
 # personal_pronouns_var.set(1)
@@ -342,7 +350,7 @@ def activate_all_options(*args):
         plot_checkbox.configure(state="disabled")
         annotator_dictionary_button.config(state='normal')
         openInputFile_button.config(state='normal')
-        annotator_dictionary_file.config(state='normal')
+        # annotator_dictionary_file.config(state='normal')
         # personal_pronouns_checkbox.configure(state='normal')
     if plot_var.get()==True:
         checkUSSSUpdate()

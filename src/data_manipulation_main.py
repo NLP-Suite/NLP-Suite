@@ -130,9 +130,9 @@ if __name__ == '__main__':
     IO_setup_display_brief=True
     GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                      GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                     GUI_height_brief=600,
+                                                     GUI_height_brief=640,
                                                      # height at brief display
-                                                     GUI_height_full=640,  # height at full display
+                                                     GUI_height_full=680,  # height at full display
                                                      y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                      y_multiplier_integer_add=1,
                                                      # to be added for full display
@@ -212,6 +212,7 @@ if __name__ == '__main__':
                                                    current_pair_file_field_var)
 
     avoidLoop = False
+    error = False
 
     def clear(e):
         csv_file_operations_var.set('')
@@ -414,12 +415,13 @@ if __name__ == '__main__':
     # _____________________________________________________________________________
 
     # after clicking on the merge checkbox
-    # def merge_reminder1():
-    #     reminders_util.checkReminder(config_filename,
-    #                                  reminders_util.title_options_data_manager_merge,
-    #                                  reminders_util.message_data_manager_merge1,
-    #                                  True)
-        # build_merge_string(False, False)
+    def merge_reminder1():
+        reminders_util.checkReminder(config_filename,
+                                     reminders_util.title_options_data_manager_merge,
+                                     reminders_util.message_data_manager_merge1,
+                                     True)
+        activate_options()
+        build_merge_string(False, False)
         # mergeSelection(False, False)
 
 # --------------------------------------------------------------------------------------------
@@ -855,6 +857,7 @@ if __name__ == '__main__':
 
     ##
     def extractSelection(comingfrom_Plus, comingfrom_OK=False):
+        activate_options()
         if extract_var.get():
             activate_extract_fields(comingfrom_Plus, comingfrom_OK)
 
@@ -941,9 +944,16 @@ if __name__ == '__main__':
     # TODO must uncomment
     #
     def changed_filename(tracedInputFile):
+        global error
         if tracedInputFile[-4:] != '.csv':
             mb.showerror(title='Input file error',
                          message="The Data manipulation functions expect in input a csv file.\n\nPlease, select a csv file for your Default orGUI-specific I/O configuration and try again.\n\nThe RUN button is disabled until the required Input/Output option is entered.")
+            error = True
+        else:
+            error = False
+
+        activate_options()
+
         menu_values = []
         if tracedInputFile != '':
             nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(tracedInputFile)
@@ -987,6 +997,30 @@ if __name__ == '__main__':
             clear("<Escape>")
 
     selectedCsvFile_var.trace('w', lambda x, y, z: changed_filename(selectedCsvFile_var.get()))
+
+    GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
+
+    def activate_options(*args):
+        if error:
+            merge_checkbox.configure(state='disabled')
+            extract_checkbox.configure(state='disabled')
+            csv_file_operations_menu.configure(state='disabled')
+            return
+        merge_checkbox.configure(state='normal')
+        extract_checkbox.configure(state='normal')
+        csv_file_operations_menu.configure(state='normal')
+        if csv_file_operations_var.get()!='':
+            csv_file_operations_menu.configure(state='normal')
+            extract_checkbox.configure(state='disabled')
+            csv_file_operations_menu.configure(state='disabled')
+        elif merge_var.get():
+            merge_checkbox.configure(state='normal')
+            extract_checkbox.configure(state='disabled')
+            csv_file_operations_menu.configure(state='disabled')
+        elif extract_var.get():
+            extract_checkbox.configure(state='normal')
+            merge_checkbox.configure(state='disabled')
+            csv_file_operations_menu.configure(state='disabled')
 
     ##
     def activate_csv_fields_selection(operation, checkButton, comingFrom_Plus, comingFrom_OK):
@@ -1148,16 +1182,11 @@ if __name__ == '__main__':
     #     activate_csv_fields_selection('merge', merge_var.get(), False, False)
 
 
-    # merge_var.trace('w', mergeSelection)
     # select_csv_field_merge_var.trace('w', mergeSelection)
 
 
     # def concatenateSelection(*args):
     #     activate_csv_fields_selection('concatenate', concatenate_var.get(), False, False)
-
-    # concatenate_var.trace('w', concatenateSelection)
-    # select_csv_field_concatenate_var.trace('w', concatenateSelection)
-    # character_separator_entry_var.trace('w', concatenateSelection)
 
 
     # def appendSelection(*args):
@@ -1242,6 +1271,8 @@ if __name__ == '__main__':
                                       # "The EXTRACT option allows you to select specific fields, even by specific values, from one or more csv files and save the output as a new file.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value in the \'WHERE\' widget (case sensitive!), and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_openOutputFiles)
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                      GUI_IO_util.msg_openOutputFiles)
         return y_multiplier_integer -1
 
     y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
@@ -1260,15 +1291,13 @@ if __name__ == '__main__':
 
     if (GUI_util.input_main_dir_path.get() != '') or (os.path.basename(GUI_util.inputFilename.get())[-4:] != ".csv"):
         GUI_util.run_button.configure(state='disabled')
-        # Gephi_checkbox.configure(state='disabled')
-        # Sunburster_checkbox.configure(state='disabled')
-        # time_mapper_checkbox.configure(state='disabled')
         mb.showwarning(title='Input file',
                        message="The Data manipulation scripts require in input a csv file.\n\nAll options and RUN button are disabled until the expected csv file is seleted in input.\n\nPlease, select in input a csv file and try again.")
         error = True
     else:
+        error = False
         GUI_util.run_button.configure(state='normal')
-        # activate_visualization_options()
+    activate_options()
 
     GUI_util.window.mainloop()
 

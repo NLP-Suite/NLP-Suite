@@ -320,21 +320,7 @@ relations_menu = tk.OptionMenu(window, relations_menu_var, 'Gephi','Sankey')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    relations_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
-                                   "Visualize relationships (network graphs via Gephi or Sankey graphs via Plotly)")
-# def activate_relations_options(*args):
-#     if relations_menu_var.get()=='Gephi':
-#         Gephi_var.set(True)
-#         Sankey_var.set(False)
-#     elif relations_menu_var.get()=='Sankey':
-#         Gephi_var.set(False)
-#         Sankey_var.set(True)
-# relations_menu_var.trace('w',activate_relations_options())
-
-# Gephi_var.set(0)
-# Gephi_checkbox = tk.Checkbutton(window, text='Visualize relations in a Gephi network graph', variable=Gephi_var,
-#                                     onvalue=1,command=lambda:activate_visualization_options(()))
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-#                                                Gephi_checkbox)
+                                   "Visualize relations (network graphs via Gephi or Sankey graphs via Plotly)")
 
 if GUI_util.inputFilename.get() != '' and GUI_util.inputFilename.get()[-4:] == ".csv":
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(GUI_util.inputFilename.get())
