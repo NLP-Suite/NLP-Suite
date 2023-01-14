@@ -12,6 +12,8 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
+import plotly.io as pio
+pio.kaleido.scope.mathjax = None
 import os
 
 import IO_csv_util

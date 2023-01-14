@@ -51,7 +51,7 @@ Please, run the tool to check documents for utf-8 compliance and, if necessary, 
 To learm more on utf-8 compliance, read the TIPS on utf-8 compliance.",Yes,No
 whats_in_your_corpus,CoreNLP POS/NER max sentence length,"The CoreNLP POS/NER annotators set a maximum sentence length for processing.
 
-Sentences longer that your selected max length will be cut and some POS/NER tags in those long sentences may be be lost.",Yes,No
+Sentences longer than your selected max length will be cut and some POS/NER tags in those long sentences may be lost.",Yes,No
 whats_in_your_corpus,CoreNLP sentence length,"The length of the current sentence exceeds 100 words. The average sentence length in modern English is 20 words.
 
 More to the point, Stanford CoreNLP's performance deteriorates with sentences with more that 70/100 words.
@@ -79,3 +79,11 @@ If the VIEWER you are running exits with an error code about a file not found, m
 
 You may need to move your input and output folders so as to have a shorter path (e.g., desktop).",Yes,No
 GIS,GIS default visualization options,"The Google Earth Pro visualization options in the GIS GUI are set by default. If you want to customize Google Earth Pro, please, use the GIS Google Earth GUI with the list of locations or of geocoded locations produced by the GIS pipeline as csv files.",Yes,No
+NLP_default_IO,Input/Output options,"The two widgets for INPUT FILE and INPUT DIRECTORY are mutually exclusive. You can select one OR the other but not both. Click on either button to make your selection.
+
+To change an already selected option from FILE to DIRECTORY or from DIRECTORY to FILE, simply click on the button you want to select, make your selection, and the I/O configuration will automatically update.",No,OFF
+whats_in_your_corpus,What is in your corpus - Topic modeling,"The topic modeling option requires in input a set of txt documents, rather than a single txt file. The topic modeling option is disabled for single documents.",Yes,OFF
+whats_in_your_corpus,CoreNLP exporting Json files,"Stanford CoreNLP can export in output Json files for the selected annotator(s)). Json files may give expert users checks against the NLP Suite performance about some CoreNLP annotators.
+
+If you do not wish to produce these files, simply turn OFF this reminder by replying No to wanting to see this reminder again. And like for any reminder, you can always turn it back ON, and export Json files, at any time by using the 'Open reminders' dropdown menu at at the bottom of this GUI.",Yes,OFF
+whats_in_your_corpus,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag to have a better view of all other tags.",Yes,OFF
