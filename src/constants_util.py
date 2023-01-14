@@ -561,7 +561,7 @@ NLP_Suite_data_file_handling_tools_menu = \
 'File classifier (dumb classifier via embedded date) (file name)', \
 'File-type converter (csv, docx, pdf, rtf --> txt)', \
 'File matcher (file name)',\
-'File manager (List, Rename, Copy, Move, Delete, Count, Split)', 'SQL database (via SQLite)'
+'File manager (List, Rename, Copy, Move, Delete, Count, Split)', 'PC-ACE database (via Pandas)', 'SQL database (via SQLite)'
 
 NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample data (ALL options GUI)', 'Search (ALL options GUI)',\
 '', \

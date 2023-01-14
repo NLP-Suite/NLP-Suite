@@ -466,7 +466,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coor
 
 def activate_Google_API_geocode(*args):
     if geocoder_var.get()=='Google':
-        key = GIS_pipeline_util.getGoogleAPIkey('Google-geocode-API_config.csv')
+        key = GIS_pipeline_util.getGoogleAPIkey(window, 'Google-geocode-API_config.csv')
         if key=='' or key==None:
             geocoder_var.set('Nominatim')
             geocoder='Nominatim'
@@ -593,7 +593,7 @@ else:
     config_file = 'Google-geocode-API_config.csv'
 open_API_config_button = tk.Button(window, width=3,
                                      text='',
-                                     command=lambda:GIS_pipeline_util.getGoogleAPIkey(config_file,True))
+                                     command=lambda:GIS_pipeline_util.getGoogleAPIkey(window,  config_file,True))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.GIS_openAPI_file, y_multiplier_integer,
                     open_API_config_button, False, False, True, False,
@@ -612,7 +612,7 @@ def activate_Google_API_Google_Maps(*args):
                        message="The selected software option is not available yet. Sorry!\n\nSelect any of the Google options and try again.")
         return
     if 'Maps' in GIS_package_var.get():
-        key = GIS_pipeline_util.getGoogleAPIkey('Google-Maps-API_config.csv')
+        key = GIS_pipeline_util.getGoogleAPIkey(window,'Google-Maps-API_config.csv')
         if key == '' or key == None:
             GIS_package_var.set('Google Earth Pro')
 GIS_package_var.trace('w',activate_Google_API_Google_Maps)

@@ -33,6 +33,7 @@ import GIS_file_check_util
 import GIS_distance_util
 import IO_csv_util
 import GIS_geocode_util
+import GIS_pipeline_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -111,7 +112,7 @@ def run(inputFilename,outputDir, openOutputFiles, createCharts, chartPackage,
     geocoder = 'Nominatim'
 
     if "Google" in geocoder:
-        Google_API = GIS_pipeline_util.getGoogleAPIkey('Google-geocode-API_config.csv')
+        Google_API = GIS_pipeline_util.getGoogleAPIkey(window, 'Google-geocode-API_config.csv')
     else:
         Google_API=''
 

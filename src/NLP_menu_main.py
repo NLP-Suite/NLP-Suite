@@ -261,6 +261,7 @@ pydict["Spelling checker cleaner (Find & Replace string)"] = ["file_checker_conv
 # pydict["Spelling checker (via autocorrect)"] = ["file_spell_checker_main.py", 1]
 # pydict["Spelling checker (via pyspellchecker)"] = ["file_spell_checker_main.py", 1]
 # pydict["Spelling checker (via textblob)"] = ["file_spell_checker_main.py", 1]
+pydict["PC-ACE database (via Pandas)"] = ["DB_PCACE_data_analyzer_main.py", 1]
 pydict["SQL database (via SQLite)"] = ["DB_SQL_main.py", 1]
 pydict["Stanford CoreNLP"] = ["parsers_annotators_main.py", 1]
 pydict["Semantic analysis (via TensorFlow)"] = ["", 0]

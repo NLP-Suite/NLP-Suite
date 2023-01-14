@@ -960,11 +960,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column
                                                True)
 
 google_earth_var.set(1)
-google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Maps & Google Earth Pro)',
+google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Earth Pro & Google Maps)',
                                        variable=google_earth_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
-                                               google_earth_checkbox)
-
+                                   google_earth_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   "To draw pin and heat maps with Google Earth Pro and Google Maps you will need a free Google API key.\nRead the TIPS file 'Google API Key' on how to get the API key.")
 def activateFilters(*args):
 
     if package_var.get()!='':
@@ -1018,14 +1020,15 @@ TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'CoNLL table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                # 'SENNA': 'TIPS_NLP_SVO SENNA.pdf',
                'WordNet': 'TIPS_NLP_WordNet.pdf',
-               "Google Earth Pro": "TIPS_NLP_Google Earth Pro.pdf",
-               "Geocoding": "TIPS_NLP_Geocoding.pdf",
-               "Geocoding: How to Improve Nominatim":"TIPS_NLP_Geocoding Nominatim.pdf",
+               "Google Earth Pro": "TIPS_NLP_GIS_Google Earth Pro.pdf",
+               "Google API Key":"TIPS_NLP_GIS_Google API Key.pdf",
+               "Geocoding": "TIPS_NLP_GIS_Geocoding.pdf",
+               "Geocoding: How to Improve Nominatim":"TIPS_NLP_GIS_Geocoding Nominatim.pdf",
                "Gephi network graphs": "TIPS_NLP_Gephi network graphs.pdf"}
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf'}
 
 # removed SENNA from the TIPS_options
-TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'SVO extraction and visualization', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Stanford CoreNLP coreference resolution', 'CoNLL table',  'WordNet', 'Google Earth Pro', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
+TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'SVO extraction and visualization', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor', 'Stanford CoreNLP OpenIE', 'Stanford CoreNLP parser', 'Stanford CoreNLP enhanced dependencies parser (SVO)', 'Stanford CoreNLP coreference resolution', 'CoNLL table',  'WordNet', 'Google Earth Pro', 'Google API Key', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Gephi network graphs' #, 'Java download install run'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
