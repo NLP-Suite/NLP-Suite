@@ -916,7 +916,7 @@ def find_time_simplex(setup_Simplex, data_Simplex, data_SimplexText, setup_Compl
     return data
 
 # give the semantic triplet (SVO) with time
- def semantic_triplet_time(inputDir, outputDir):
+def semantic_triplet_time(inputDir, outputDir):
     setup_Complex=os.path.join(inputDir,'setup_Complex.csv')
     if os.path.isfile(setup_Complex):
         setup_Complex_df=pd.read_csv(setup_Complex)

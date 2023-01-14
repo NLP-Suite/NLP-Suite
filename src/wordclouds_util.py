@@ -187,11 +187,11 @@ def SVOWordCloud(svoFile, inputFilename, outputDir, transformed_image_mask, pref
             words_list.append(" ".join(["".join(filter(str.isalnum, s)) for s in row["Subject (S)"].lower().split(" ")]))
             color_list[red_code].append(" ".join(["".join(filter(str.isalnum, s)) for s in row["Subject (S)"].lower().split(" ")]))
         if row["Verb (V)"] != "":
-            words_list.append(" ".join(["".join(filter(str.isalnum, s)) for s in row["Verb (V)"].lower().split(" ")]))
-            color_list[blue_code].append(" ".join(["".join(filter(str.isalnum, s)) for s in row["Verb (V)"].lower().split(" ")]))
+            words_list.append(" " + (" ".join(["".join(filter(str.isalnum, s)) for s in row["Verb (V)"].lower().split(" ")])))
+            color_list[blue_code].append(" " + (" ".join(["".join(filter(str.isalnum, s)) for s in row["Verb (V)"].lower().split(" ")])))
         if row["Object (O)"] != "":
-            words_list.append(" ".join(["".join(filter(str.isalnum, s)) for s in row["Object (O)"].lower().split(" ")]))
-            color_list[green_code].append(" ".join(["".join(filter(str.isalnum, s)) for s in row["Object (O)"].lower().split(" ")]))
+            words_list.append((" ".join(["".join(filter(str.isalnum, s)) for s in row["Object (O)"].lower().split(" ")])) + " ")
+            color_list[green_code].append((" ".join(["".join(filter(str.isalnum, s)) for s in row["Object (O)"].lower().split(" ")])) + " ")
     words_count_dict = Counter(words_list)
     # print (words_count_dict)
     max_words = 1000 # TODO MINO: make max_words bigger to include generally lower frequency "Object (O)" words
