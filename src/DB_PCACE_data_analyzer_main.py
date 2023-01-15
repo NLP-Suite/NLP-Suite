@@ -26,11 +26,19 @@ import charts_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage, setup_simplex,
-        ALL_simplex_objects_frequencies_var, SELECTED_simplex_objects_frequencies_var, semantic_triplet_var,
+def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
+        simplex_data_text, simplex_data_date, simplex_data_number,
+        setup_complex,setup_simplex,
+        ALL_complex_objects_frequencies_var, SELECTED_complex_objects_frequencies_var,
+        ALL_simplex_objects_frequencies_var, SELECTED_simplex_objects_frequencies_var,
+        select_parents_var, select_children_var,
+        semantic_triplet_var,
+        actors_var, time_var, space_var,
         gephi_var, wordcloud_var, google_earth_var):
     filesToOpen = []
     outputFile = ''
+
+    print("select_parents_var",select_parents_var,'select_children_var',select_children_var)
 
     # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
     outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
@@ -87,7 +95,22 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage, setup_s
                     myfile.close()
                     filesToOpen.append(out_file)
 
-     # GIS maps _____________________________________________________
+    if actors_var:
+        outputFile = DB_PCACE_data_analyzer_util.individual_characteristics(inputDir, outputDir)
+        if outputFile!='':
+            filesToOpen.append(outputFile)
+
+    if time_var and semantic_triplet_var:
+        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time(inputDir, outputDir)
+        if outputFile != '':
+            filesToOpen.append(outputFile)
+
+    if space_var and semantic_triplet_var:
+        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_space(inputDir, outputDir)
+        if outputFile!='':
+            filesToOpen.append(outputFile)
+
+    # GIS maps _____________________________________________________
 
     if google_earth_var and (setup_simplex=='City name' or setup_simplex=='County') and SELECTED_simplex_objects_frequencies_var:
         extract_date_from_text_var = 0
@@ -141,10 +164,21 @@ run_script_command=lambda: run(
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
+                                simplex_data_text.get(),
+                                simplex_data_date.get(),
+                                simplex_data_number.get(),
+                                setup_complex.get(),
                                 setup_simplex.get(),
+                                ALL_complex_objects_frequencies_var.get(),
+                                SELECTED_complex_objects_frequencies_var.get(),
                                 ALL_simplex_objects_frequencies_var.get(),
                                 SELECTED_simplex_objects_frequencies_var.get(),
+                                select_parents_var.get(),
+                                select_children_var.get(),
                                 semantic_triplet_var.get(),
+                                actors_var.get(),
+                                time_var.get(),
+                                space_var.get(),
                                 gephi_var.get(),wordcloud_var.get(),google_earth_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -218,9 +252,8 @@ wordcloud_var = tk.IntVar()
 google_earth_var = tk.IntVar()
 
 def clear(e):
-    # select_DB_tables.set('')
-    # setup_complex.set('')
-    # setup_simplex.set('')
+    setup_complex=''
+    setup_simplex=''
     GUI_util.tips_dropdown_field.set('Open TIPS files')
 window.bind("<Escape>", clear)
 
@@ -244,9 +277,6 @@ select_DB_tables['values'] = table_menu_values
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120,y_multiplier_integer,select_DB_tables)
 
 
-
-# simplex_data_text_lb = tk.Label(window, text='Text ')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,simplex_data_text_lb,True)
 
 simplex_data_text_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_complex.csv'))
 
@@ -292,7 +322,9 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 setup_complex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_complex.csv'))
 
-setup_complex = ttk.Combobox(window, width=GUI_IO_util.widget_width_short)
+setup_complex_var=tk.StringVar()
+
+setup_complex = ttk.Combobox(window, textvariable = setup_complex_var, width=GUI_IO_util.widget_width_short)
 # setup_complex.configure(state='disabled')
 setup_complex['values'] = setup_complex_menu
 # place widget with hover-over info
@@ -300,12 +332,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    setup_complex,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Use the dropdown menu to select a specific complex object for which to compute frequencies.\nWhen a hierarchical complex object is selected (e.g., macro-event or event) and the checkbox Semantic triplets below is ticked...\n...semantic triplets will be listed in chronological order within the specific higher-level hierarchical complex object selected (e.g., macro-events, events).")
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120, y_multiplier_integer,setup_complex)
 
-ALL_complex_objects_checkbox = tk.Checkbutton(window, state='disabled', text='Get value frequencies for ALL objects', variable=ALL_complex_objects_frequencies_var, onvalue=1, offvalue=0)
+ALL_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for ALL objects', variable=ALL_complex_objects_frequencies_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ALL_complex_objects_checkbox, True)
 
-SELECTED_complex_objects_checkbox = tk.Checkbutton(window, state='disabled', text='Get value frequencies for SELECTED object', variable=SELECTED_complex_objects_frequencies_var, onvalue=1, offvalue=0)
+SELECTED_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for SELECTED object', variable=SELECTED_complex_objects_frequencies_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+300,y_multiplier_integer,SELECTED_complex_objects_checkbox)
 
 simplex_objects_lb = tk.Label(window, text='Simplex objects ')
@@ -313,12 +344,27 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 setup_simplex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_simplex.csv'))
 
-setup_simplex = ttk.Combobox(window, width=GUI_IO_util.widget_width_short)
+setup_simplex_var = tk.StringVar()
+
+setup_simplex = ttk.Combobox(window, textvariable = setup_simplex_var, width=GUI_IO_util.widget_width_short)
 # setup_complex.configure(state='disabled')
 setup_simplex['values'] = setup_simplex_menu
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120, y_multiplier_integer,setup_simplex)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120, y_multiplier_integer,
+                                   setup_simplex,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Use the dropdown menu to select a specific simplex object for which to compute frequencies")
+def activate_parents(*args):
+    parents_menu = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get(),inputDir.get())
+    select_parents_var.set(parents_menu)
+setup_complex_var.trace('w',activate_parents)
 
-ALL_simplex_objects_checkbox = tk.Checkbutton(window, state='disabled', text='Get value frequencies for ALL objects', variable=ALL_simplex_objects_frequencies_var, onvalue=1, offvalue=0)
+def activate_children(*args):
+    children_menu = DB_PCACE_data_analyzer_util.find_child_complex(setup_complex_var.get(),inputDir.get())
+    select_children_var.set(children_menu)
+setup_simplex_var.trace('w',activate_children)
+
+ALL_simplex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for ALL objects', variable=ALL_simplex_objects_frequencies_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ALL_simplex_objects_checkbox,True)
 
 SELECTED_simplex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for SELECTED object', variable=SELECTED_simplex_objects_frequencies_var, onvalue=1, offvalue=0)
@@ -328,15 +374,23 @@ select_parents_lb = tk.Label(window, text='Parent objects ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_parents_lb,True)
 
 select_parents = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=select_parents_var)
-select_parents.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120, y_multiplier_integer,select_parents,True)
+# select_parents.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120, y_multiplier_integer,
+                                   select_parents,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "The menu displays a list of complex objects parent of the 'Complex objects' or 'Simplex objects' selected in the widgets above")
 
 select_children_lb = tk.Label(window, text='Children objects ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+500,y_multiplier_integer,select_children_lb,True)
 
 select_children = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=select_children_var)
-select_children.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,select_children)
+# select_children.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+                                   select_children,
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "The menu displays a list of complex and simplex objects children of the 'Complex objects' selected in the widget above.\nThe option is only available for the 'Complex objects' widget above.")
 
 semantic_triplet_checkbox = tk.Checkbutton(window, text='Semantic triplet (SVO)', variable=semantic_triplet_var, onvalue=1, offvalue=0)
 # place widget with hover-over info

@@ -916,7 +916,7 @@ def find_time_simplex(setup_Simplex, data_Simplex, data_SimplexText, setup_Compl
     return data
 
 # give the semantic triplet (SVO) with time
- def semantic_triplet_time(inputDir, outputDir):
+def semantic_triplet_time(inputDir, outputDir):
     setup_Complex=os.path.join(inputDir,'setup_Complex.csv')
     if os.path.isfile(setup_Complex):
         setup_Complex_df=pd.read_csv(setup_Complex)
@@ -1283,7 +1283,7 @@ def individual_characteristics(inputDir, outputDir):
     # Age
     data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID')
     data_Simplex_temp1 = data_Simplex_temp1.dropna(subset = ['Value'])
-    data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID_data_date_number_text')
+    data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID')
     data_Simplex_temp2 = data_Simplex_temp2.dropna(subset = ['Value'])
     data_Simplex_temp = pd.concat([data_Simplex_temp1, data_Simplex_temp2])
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'Value']]
@@ -1576,7 +1576,7 @@ def institution_features(inputDir, outputDir):
     complex_name = 'Institution'
     simplex_names = corresponding_name_simplex_complex([complex_name], setup_Complex_df, setup_xref_Simplex_Complex_df)
 
-    for i in range(3):
+    for i in range(2):
       simplex_name = simplex_names[0][i]
       simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
       simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
