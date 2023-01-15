@@ -164,6 +164,7 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False):
             return files
         for path in Path(inputDir).glob('*' + fileType):
             files.append(str(path))
+        files.sort()
         if len(files) == 0:
             mb.showwarning(title='Input files error',
                            message='No files of type ' + fileType + ' found in the directory ' + inputDir)

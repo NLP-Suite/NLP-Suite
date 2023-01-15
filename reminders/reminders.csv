@@ -87,3 +87,47 @@ whats_in_your_corpus,CoreNLP exporting Json files,"Stanford CoreNLP can export i
 
 If you do not wish to produce these files, simply turn OFF this reminder by replying No to wanting to see this reminder again. And like for any reminder, you can always turn it back ON, and export Json files, at any time by using the 'Open reminders' dropdown menu at at the bottom of this GUI.",Yes,OFF
 whats_in_your_corpus,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag to have a better view of all other tags.",Yes,OFF
+NLP_default_IO,Date options,"Some of the algorithms in the NLP Suite (e.g., GIS models and network models) can build dynamic models (i.e., models that vary with tiime) when time/date is known.
+
+Tick the checkbox, if the filenames in the selected INPUT option embed a date (e.g., The New York Times_12-19-1899), the NLP Suite can use that metadata information to build dynamic models. If that is the case, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).
+
+Please, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).
+
+Please, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2)",No,OFF
+SVO,SVO output,"The SVO pipeline will create in output an SVO subdirectory inside the main output directory.
+
+Depending upon the options you select it will also create different subdirectories (e.g., GIS, WordNet) inside the SVO subdirectory. Contrary to this, the creference resolution option will create a subdirectory inside the main output directory rather than the SVO subdirectory, since coreferenced files can then be used as input to any NLP algorithms.
+
+Depending upon the options you select, the SVO pipeline will produce different types of files: cvf files, wordcloud image, Google Earth Pro map, and Gephi network graph.
+
+While cvf and png files are easy to read, less so are Google Earth Pro kml files and, particularly, Gephi gexf files.
+
+PLEASE, read the Gephi TIPS file before you run the SVO pipeline.",Yes,OFF
+SVO,SVO default visualization options,"The SVO algorithms use default settings for visualizing results in Python Wordclouds and Google Earth Pro. If you want to customize the visualization options, please, use the Wordclouds GUI and the GIS Google Earth GUI with the csv files produced by SVO in input.",Yes,OFF
+SVO,SVO with corpus data,"You have selected to work with a set of txt files in a directory (your corpus).
+
+Beware that SVO extraction with Stanford CoreNLP is computationally demanding. Furthermore, depending upon the options you choose (manual coreference editing, GIS maps), it may require manual input on each input file processed.
+
+Depending upon corpus size, manual coreference is also not possible, due to memory requirements.",Yes,OFF
+NLP_default_IO,CoreNLP SVO timing,"Beware that the CoreNLP SVO algorithms on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 20 minutes on a standard laptop.",Yes,OFF
+wordclouds,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
+
+Your selected corpus language is English.
+Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
+
+You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",No,ON
+NLP_default_IO,spaCy annotators,"Contrary to Stanford CoreNLP and Stanza, spaCy does not process specific annotators (e.g., POS, NER). Regardless of selected annotator, spaCy will also process the corpus with its full parser.",Yes,OFF
+NLP_default_IO,WordNet VERB aggregation,"CAVEAT!
+
+For VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.
+
+The WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts.",Yes,OFF
+NLP_default_IO,SVO Someone?,"The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., ""A beautiful car was bought""), a subject is automatically added as Someone?.",Yes,OFF
+NLP_default_IO,Output directory of split files,"This is a reminder that all file splitter scripts save the split files inside a subdirectory by the name of split_files of the directory where the input txt files are located, regardless of the choice of output directory.",Yes,OFF
+NLP_default_IO,% sign in file,"The file contains % sign. This will break Stanford CoreNLP annotators. The % sign was temporarily replaced with ""percent"" for processing. But... you should run the script ""Convert non-ASCII apostrophes & quotes and % to percent"" to change the sign permanently.",Yes,OFF
+file_search_byWord,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
+
+Your selected corpus language is English.
+Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
+
+You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",No,OFF
