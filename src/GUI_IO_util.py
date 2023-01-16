@@ -724,7 +724,8 @@ else: #windows and anything else
     setup_IO_brief_coordinate = 610 # Position of text entry for Input and Output display
     entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
 
-    # 4 small widgets to the right of top line
+    # 4 small widgets to the right of top line Windows
+    # reference to IO_configuration_menu+
     open_file_button_brief = 760 # the left-most button of the four buttons displayed on the far right of top line of every GUI
     open_inputDir_button_brief = 800
     open_outputDir_button_brief = 840

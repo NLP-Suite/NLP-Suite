@@ -505,7 +505,7 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 menu_values = " "
-def get_additional_csvFile(window,title,fileType):
+def add_csvFile(window,title,fileType):
     global headers, noHeaders
     noHeaders = False
     menu_values=[]
@@ -538,8 +538,8 @@ def get_additional_csvFile(window,title,fileType):
 # 			selectedCsvFile_colNum= select_csv_field_var.get()-1
 # select_csv_field_var.trace('w',activate_csvfile_column)
 
-# add_file_button = tk.Button(window, text='csv file', width=2,height=1,state='disabled',command=lambda: get_additional_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
-add_file_button = tk.Button(window, text='csv file', command=lambda: get_additional_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
+# add_file_button = tk.Button(window, text='csv file', width=2,height=1,state='disabled',command=lambda: add_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
+add_file_button = tk.Button(window, text='csv file', command=lambda: add_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,add_file_button,True)
 
 #setup a button to open Windows Explorer on the selected input directory
