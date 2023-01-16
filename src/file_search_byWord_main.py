@@ -261,9 +261,18 @@ keyword_value = tk.Entry(window,width=GUI_IO_util.widget_width_long,textvariable
 keyword_value.configure(state="disabled")
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
-                    keyword_value, False, False, True, False,
+                    keyword_value, True, False, True, False,
                     90, GUI_IO_util.watch_videos_x_coordinate,
                     "Enter the comma-separated, case-sensitive words/set of words that a sentence must contain in your document(s) (e.g, coming out, standing in line, boyfriend).")
+
+create_subcorpus_var = tk.IntVar()
+create_subcorpus_var.set(0)
+create_subcorpus_checkbox = tk.Checkbutton(window, state='disabled', text='Create subcorpus of files', variable=search_by_keyword_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,1050, y_multiplier_integer,
+                    create_subcorpus_checkbox, False, False, True, False,
+                    90, GUI_IO_util.open_reminders_x_coordinate,
+                    "Tick the checkbox to create a directory for the subcorpus of files containing the search word(s).\nOption currently not available.")
 
 def activate_options():
     extract_sentences_search_words_entry.configure(state='normal')

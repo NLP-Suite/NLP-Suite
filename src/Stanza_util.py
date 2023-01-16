@@ -7,7 +7,7 @@ import re
 import warnings
 import tkinter as tk
 
-from tenacity import retry_unless_exception_type
+# from tenacity import retry_unless_exception_type
 
 import IO_files_util
 import IO_csv_util

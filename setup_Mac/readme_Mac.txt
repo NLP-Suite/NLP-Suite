@@ -72,7 +72,7 @@ The NLP Suite updates the scripts automatically to the lastest release available
 
 	if you are a Mac user, you run a pip command (e.g., pip command spacy) and the NLP Suite after installation still warns you that stacy is not installed, most likely you are running macOS bash instead of zsh.
 
-	Since the release of macOS 10.15 (Catalina) on October 7, 2019, the default macOS shell has been switched from bash to zsh. The NLP Suite has been optimized for zsh not bash. If you encounter errors with the installation of some Python packages (e.g., Stacy), most likely you are running bash. To ensure that you are running zhs open a command line/terminal and type 
+	Since the release of macOS 10.15 (Catalina) on October 7, 2019, the default macOS shell has been switched from bash to zsh. The NLP Suite has been optimized for zsh not bash. If you encounter errors with the installation of some Python packages (e.g., Stacy), most likely you are running bash. To ensure that you are running zhs open terminal and type 
 
 	chsh -s /bin/zsh
 

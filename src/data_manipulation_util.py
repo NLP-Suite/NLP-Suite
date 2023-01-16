@@ -63,76 +63,12 @@ def get_cols(dfs: list, headers: list):
         for i in range(len(dfs)):
             yield (dfs[i])[headers[i]]
 
+# operation_results_text_list -----------------------------------------------------------------------
 
-# merge ------------------------------------------------------------------------------------------
-
-def put_csv(lst):
-    new_lst = []
-    for item in lst:
-        if (item.endswith('.csv')):
-            it = item
-            it = it.strip()
-            it = it.strip("[]''")
-            new_lst.append(it)
-    return new_lst
-
-
-def put_param(lst):
-    new_lst = []
-    for item in lst:
-        if (item.endswith('.csv') == False):
-            it = item
-            it = it.strip()
-            it = it.strip("[]''")
-            new_lst.append(it)
-    return new_lst
-
-
-def drop_suffixCol(df):
-    for c in df.columns:
-        if c.endswith('_'):
-            df = df.drop(columns=[c])
-    return df
-
-
-def merge(outputDir, operation_results_text_list):
-    df = pd.DataFrame()
-    operation_results_text_list = str(operation_results_text_list)
-    ip = operation_results_text_list.split("][")
-    tp = []
-    for item in ip:
-        tmp = item.split(',')
-        for t in tmp:
-            tp.append(t)
-    temp = put_csv(tp)
-    temp2 = put_param(tp)
-    csv_lst = list(dict.fromkeys(temp))
-    param_lst = list(dict.fromkeys(temp2))
-
-    size = len(csv_lst)
-    try:
-        df1 = pd.read_csv(csv_lst[0], encoding='utf-8', error_bad_lines=False)
-        df2 = pd.read_csv(csv_lst[1], encoding='utf-8', error_bad_lines=False)
-        df = pd.merge(df1, df2, on=param_lst, how='inner', suffixes=('', '_'))
-        df = drop_suffixCol(df)
-        if (size > 2):
-            for i in range(2, size):
-                tdf = pd.read_csv(csv_lst[i], encoding='utf-8', error_bad_lines=False)
-                df = pd.merge(df, tdf, on=param_lst, how='inner', suffixes=('', '_'))
-                df = drop_suffixCol(df)
-    except (ValueError, TypeError) as err:
-        mb.showwarning(title='Error',
-                        message="An unexpected error occurred while merging the files.\n\nPlease, check the input files and try again.")
-        print("Unexpected err", err)
-        raise
-    outputFilename = IO_files_util.generate_output_file_name(csv_lst[0], os.path.dirname(csv_lst[0]),
-                                                             outputDir,
-                                                             '.csv', 'merge',
-                                                             '', '', '', '', False, True)
-
-    df.to_csv(outputFilename, encoding='utf-8', index=False)
-
-    return outputFilename
+# filePath = [s.split(',')[0] for s in operation_results_text_list]  # file filePath
+# data_files = [file for file in data_manipulation_util.select_csv(filePath)]  # dataframes
+# headers = [s.split(',')[1] for s in operation_results_text_list]  # headers
+# data_cols = [file for file in data_manipulation_util.get_cols(data_files, headers)]  # selected cols
 
 
 # APPEND ----------------------------------------------------------------------------------------------
@@ -164,11 +100,6 @@ def append(outputDir, operation_results_text_list):
     df_append = pd.concat(data_cols, axis=0)
     df_append.to_csv(outputFilename, encoding='utf-8', header=[listToString(headers, sep)],index=False)
     return outputFilename
-
-# filePath = [s.split(',')[0] for s in operation_results_text_list]  # file filePath
-# data_files = [file for file in data_manipulation_util.select_csv(filePath)]  # dataframes
-# headers = [s.split(',')[1] for s in operation_results_text_list]  # headers
-# data_cols = [file for file in data_manipulation_util.get_cols(data_files, headers)]  # selected cols
 
 # CONCATENATE ------------------------------------------------------------------------------------------
 
@@ -216,7 +147,7 @@ def concatenate(outputDir,operation_results_text_list):
     df_concat.to_csv(outputFilename, header=[listToString(headers, sep)],encoding='utf-8', index=False)
     return outputFilename
 
-# extract/export csv/txt ---------------------------------------------------------------------------------------------
+# EXTRACT/EXPORT csv/txt ---------------------------------------------------------------------------------------------
 
 # the function can export field contents of a csv file for selected fields (and field values) to either a csv file or text file
 def export_csv_to_csv_txt(outputDir,operation_results_text_list,export_type='.csv', cols=None):
@@ -313,3 +244,76 @@ def export_csv_to_csv_txt(outputDir,operation_results_text_list,export_type='.cs
             text_file.write(text)
     return outputFilename
 
+
+# MERGE ------------------------------------------------------------------------------------------
+
+def put_csv(lst):
+    new_lst = []
+    for item in lst:
+        if (item.endswith('.csv')):
+            it = item
+            it = it.strip()
+            it = it.strip("[]''")
+            new_lst.append(it)
+    return new_lst
+
+
+def put_param(lst):
+    new_lst = []
+    for item in lst:
+        if (item.endswith('.csv') == False):
+            it = item
+            it = it.strip()
+            it = it.strip("[]''")
+            new_lst.append(it)
+    return new_lst
+
+
+def drop_suffixCol(df):
+    for c in df.columns:
+        if c.endswith('_'):
+            df = df.drop(columns=[c])
+    return df
+
+
+def MERGE(outputDir, operation_results_text_list):
+    df = pd.DataFrame()
+    operation_results_text_list = str(operation_results_text_list)
+    ip = operation_results_text_list.split("][")
+    tp = []
+    for item in ip:
+        tmp = item.split(',')
+        for t in tmp:
+            tp.append(t)
+    temp = put_csv(tp)
+    temp2 = put_param(tp)
+    csv_lst = list(dict.fromkeys(temp))
+    param_lst = list(dict.fromkeys(temp2))
+
+    size = len(csv_lst)
+    try:
+        df1 = pd.read_csv(csv_lst[0], encoding='utf-8', error_bad_lines=False)
+        df2 = pd.read_csv(csv_lst[1], encoding='utf-8', error_bad_lines=False)
+        df = pd.merge(df1, df2, on=param_lst, how='inner', suffixes=('', '_'))
+        df = drop_suffixCol(df)
+        if (size > 2):
+            for i in range(2, size):
+                tdf = pd.read_csv(csv_lst[i], encoding='utf-8', error_bad_lines=False)
+                df = pd.merge(df, tdf, on=param_lst, how='inner', suffixes=('', '_'))
+                df = drop_suffixCol(df)
+    except (ValueError, TypeError) as err:
+        mb.showwarning(title='Error',
+                        message="An unexpected error occurred while merging the files.\n\nPlease, check the input files and try again.")
+        print("Unexpected err", err)
+        raise
+    outputFilename = IO_files_util.generate_output_file_name(csv_lst[0], os.path.dirname(csv_lst[0]),
+                                                             outputDir,
+                                                             '.csv', 'merge',
+                                                             '', '', '', '', False, True)
+
+    df.to_csv(outputFilename, encoding='utf-8', index=False)
+
+    return outputFilename
+
+# PURGE ------------------------------------------------------------------------------------------
+# https://www.geeksforgeeks.org/drop-rows-from-the-dataframe-based-on-certain-condition-applied-on-a-column/
