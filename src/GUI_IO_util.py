@@ -298,10 +298,10 @@ if sys.platform == 'darwin':  # Mac OS
     entry_box_x_coordinate = 470 #start point of all labels in the third column (second column after ? HELP); where IO filename, dir, etc. are displayed
 
     widget_width_extra_short = 10
-    widget_width_short = 35
-    widget_width_medium = 70
-    widget_width_long = 90
-    widget_width_extra_long = 100
+    widget_width_short = 30
+    widget_width_medium = 45
+    widget_width_long = 70
+    widget_width_extra_long = 90
 
     add_button_width = 1
     reset_button_width = 3
@@ -612,9 +612,9 @@ if sys.platform == 'darwin':  # Mac OS
 
     file_search_byWord_selectedCsvFile_pos = 510
     file_search_byWord_add_search_button_pos = setup_IO_brief_coordinate
-    file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate + 35
+    file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate + 40
     file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate + 100
-    file_search_byWord_openInputFile_button_pos = 300
+    file_search_byWord_openInputFile_button_pos = IO_configuration_menu
     file_search_byWord_keyword_value_pos = 510
     file_search_byWord_extract_sentences_search_words_entry_pos = 510
 
@@ -1002,7 +1002,7 @@ else: #windows and anything else
     file_search_byWord_add_search_button_pos = setup_IO_brief_coordinate
     file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate+35
     file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate+85
-    file_search_byWord_openInputFile_button_pos = 300
+    file_search_byWord_openInputFile_button_pos = IO_configuration_menu
     file_search_byWord_keyword_value_pos = 430
     file_search_byWord_extract_sentences_search_words_entry_pos = 430
 

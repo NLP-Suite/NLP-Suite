@@ -103,7 +103,7 @@ Useful Anaconda & pip commands
 			conda deactive
 			conda env remove --name NLP
 
-			  will delete an environment (i.e., NLP Suite) wrongly created or no longer necessary. 
+			  will delete an environment (i.e., NLP) wrongly created or no longer necessary. 
 
 		4. List all environments
 
@@ -202,3 +202,8 @@ Useful Anaconda & pip commands
 			java -version
 			
 			will tell you which Java version you are running
+
+		4. delete/remove anaconda
+		
+			rm -rf ~/anaconda
+			
