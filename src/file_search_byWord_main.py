@@ -32,6 +32,7 @@ def run(inputFilename,inputDir, outputDir,
     selectedCsvFile,
     search_by_keyword,
     search_keyword_values,
+    create_subcorpus_var,
     extract_sentences_var,
     extract_sentences_search_words_var_str,
     minus_K_var,
@@ -53,8 +54,9 @@ def run(inputFilename,inputDir, outputDir,
             search_options_list.append('Search within sentence (default)')
 
     if search_by_keyword:
+        # check create_subcorpus_var
         filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dictionary,
-                                                  search_by_keyword, search_keyword_values, search_options_list, language,
+                                                  search_by_keyword, search_keyword_values, create_subcorpus_var, search_options_list, language,
                                                   createCharts, chartPackage)
 
     if extract_sentences_var:
@@ -81,6 +83,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             selectedCsvFile_var.get(),
                             search_by_keyword_var.get(),
                             keyword_value_var.get(),
+                            create_subcorpus_var.get(),
                             extract_sentences_var.get(),
                             extract_sentences_search_words_var.get(),
                             minus_K_var.get(),
@@ -258,7 +261,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 keyword_value_var.set('')
 keyword_value = tk.Entry(window,width=GUI_IO_util.widget_width_long,textvariable=keyword_value_var)
-keyword_value.configure(state="disabled")
+# keyword_value.configure(state="disabled")
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
                     keyword_value, True, False, True, False,
@@ -267,7 +270,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWo
 
 create_subcorpus_var = tk.IntVar()
 create_subcorpus_var.set(0)
-create_subcorpus_checkbox = tk.Checkbutton(window, state='disabled', text='Create subcorpus of files', variable=search_by_keyword_var, onvalue=1, offvalue=0)
+create_subcorpus_checkbox = tk.Checkbutton(window, text='Create subcorpus of files', variable=create_subcorpus_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,1050, y_multiplier_integer,
                     create_subcorpus_checkbox, False, False, True, False,

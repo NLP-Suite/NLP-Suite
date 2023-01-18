@@ -1,6 +1,6 @@
 echo "STEP2 will take a while to install. STEP2 intalls Python and all Python and Java packages used by the NLP Suite. Please, be patient and wait for the message Installation Completed!"
 echo
-echo "STEP2 relies on Git. If you have not done so already, please download Git at this link https://git-scm.com/downloads (select the macOS link and then download and install Xcode (if space allows; if you have limited disk space, use the binary installer)."
+echo "STEP2 relies on Git. If you have not done so already, please download Git at this link https://git-scm.com/downloads Select the macOS link and then download and install Xcode (if space allows; if you have limited disk space, use the binary installer)."
 echo
 while true; do
     read -p "Do you wish to continue (Yes if you have already installed Git and wish to continue; No to exit)? [y/n]" yn

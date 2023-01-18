@@ -19,6 +19,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "file_search_byWord_u
     sys.exit(0)
 
 import os
+import shutil # for copy of files
 import csv
 import tkinter.messagebox as mb
 import stanza
@@ -32,14 +33,15 @@ import charts_util
 import constants_util
 
 def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dictionary, search_by_search_keywords, search_keywords_list,
-        search_options_list, lang, createCharts, chartPackage):
+        create_subcorpus_var, search_options_list, lang, createCharts, chartPackage):
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        "Started running the Word search function at",
                                         True, '', True, '', False)
 
     filesToOpen=[]
-
+    # each occurrence of a search keyword, it's file path will be stored in a set
+    corpus_to_copy = set()
     from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
     # loop through every txt file and annotate via request to YAGO
@@ -130,6 +132,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dic
                                         continue
                             else:
                                 search_keywords_found = True
+                                corpus_to_copy.add(file)
                                 document_percent_position = round((sentence_index / len(sentences_)), 2)
                                 if lemmatize:
                                     form = search_keywords_list
@@ -185,6 +188,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dic
                             if checker:
                                 search_keywords_found = True
                                 # count the number of documents, not of searched word occurrences
+                                corpus_to_copy.add(file)
                                 frequency += 1
                         if frequency > 0:
                             if lemmatize:
@@ -216,6 +220,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dic
                                      IO_csv_util.dressFilenameForCSVHyperlink(file)])
                     elif keyword in list(wordCounter.keys()):
                         search_keywords_found = True
+                        corpus_to_copy.add(file)
                         if lemmatize:
                             form = search_keywords_list
                             writer.writerow(
@@ -264,6 +269,28 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dic
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
+
+    # copy all the files in the set to the output directory
+    if create_subcorpus_var:
+        if inputFilename!='':
+            head, tail = os.path.split(inputFilename)
+            # remove the extension
+            tail=tail[:-4]
+        elif inputDir!='':
+            head, tail = os.path.split(inputDir)
+        search_list=''
+        for search_option in search_keywords_list:
+            search_list = search_list + ' ' + search_option
+        path = os.path.join(outputDir, 'subcorpus_search_' + tail)
+        if not os.path.exists(path):
+            try:
+                os.mkdir(path)
+            except Exception:
+                print(Exception)
+        if len(corpus_to_copy) > 0:
+            for file in corpus_to_copy:
+                shutil.copy(file, path)
+            mb.showwarning(title='Warning',message='The search function has created a subcorpus of the files containing the search word(s) "' + search_list + '" in the subdirectory of the output directory:\n\n'+path)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the Search word function at',
                                        True, '', True, startTime,  False)

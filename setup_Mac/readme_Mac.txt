@@ -14,7 +14,7 @@ Useful conda & pip commands (prompt)
 	pip commands
 	prompt commands
 
-You can find detailed installation instructions at the NLP Suitte GitHub pages https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite.
+You can find detailed installation instructions at the NLP Suite GitHub pages https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite.
 
 Getting started
 
@@ -104,9 +104,9 @@ Useful Anaconda & pip commands
 
 		3. Delete an environment
 
-			conda env remove --name NLP Suite
+			conda env remove --name NLP
 
-			  will delete an environment (i.e., NLP Suite) wrongly created or no longer necessary. 
+			  will delete an environment (i.e., NLP) wrongly created or no longer necessary. 
 
 		4. List all environments
 
@@ -191,6 +191,16 @@ Useful Anaconda & pip commands
 
 			where Python
 			
-		will give the list of all the locations where Python is installed
+			will give the list of all the locations where Python is installed
+
+		2. Show the version of Java JDK installed on your machine
+			
+			java -version
+			or
+			java --version
+
+		3. Show the version of Python installed on your machine
+
+			python --version
 
 
