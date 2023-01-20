@@ -148,12 +148,12 @@ data_sampling_lb = tk.Label(window, text='Sampling data in csv file')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                data_sampling_lb)
 
-sample_sentences_by_documentID_button = tk.Button(window, text='Sample sentences by Document ID and other fields values in csv file (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python data_manipulation_main.py", shell=True))
+sample_sentences_by_documentID_button = tk.Button(window, text='Sample sentences by csv fields values in csv file (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python data_manipulation_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    sample_sentences_by_documentID_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click on the button to open the GUI")
+                                   "Click on the button to open the GUI that will allow you to sample sentences by values of csv file fields (e.g., Document ID)")
 
 export_csv_field_GUI_button = tk.Button(window, text='Export csv field content in csv file to csv/txt file (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python data_manipulation_main.py", shell=True))
 # place widget with hover-over info

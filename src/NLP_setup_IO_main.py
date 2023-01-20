@@ -10,6 +10,7 @@ if IO_libraries_util.install_all_packages(GUI_util.window, "IO_setup_main",
 
 # IO config are saved in config_util.save_IO_config after checking values in NLP_setup_update.exit_window
 
+import os
 import argparse
 import tkinter.messagebox as mb
 import tkinter as tk
@@ -52,6 +53,8 @@ if 'default' in config_file_label:
     config_file_label='Default I/O configuration, to be saved to: ' + config_file_label
 else:
     config_file_label='GUI-specific I/O configuration, to be saved to: ' + config_file_label
+
+head, scriptName = os.path.split(os.path.basename(__file__))
 
 GUI_label = 'Graphical User Interface (GUI) for Setting Up Input/Output, I/O, Options (' + config_file_label + ")"
 # The 4 values of config_option refer to:
@@ -255,12 +258,15 @@ def check_dateFields(*args):
         date_position_menu.config(state="disabled")
 extract_date_from_filename_var.trace('w',check_dateFields)
 
-msg = ""
+err_msg = ""
 if config_filename == 'NLP_default_IO_config.csv':
+    if (config_input_output_alphabetic_options[0][0]=='' and config_input_output_alphabetic_options[1][0]=='') or \
+        config_input_output_alphabetic_options[3][0]=='':
+        err_msg = "Please, enter the missing Input/Output information.\n\n"
     if (config_input_output_alphabetic_options[0][0]!='') or config_input_output_alphabetic_options[1][0]!='':
         # check the input filename
         if (config_input_output_alphabetic_options[0][0]!='') and config_input_output_numeric_options[0]==0:
-            msg = "The Default I/O configuration used by all scripts in the NLP Suite is currently set up with a FILE in INPUT.\n\n" \
+            err_msg = "The Default I/O configuration used by all scripts in the NLP Suite is currently set up with a FILE in INPUT.\n\n" \
                 "But the current script expects a DIRECTORY in INPUT.\n\n"
         # check the input directory
         if (config_input_output_alphabetic_options[1][0]!='') and config_input_output_numeric_options[1]==0:
@@ -282,10 +288,9 @@ if config_filename == 'NLP_default_IO_config.csv':
                 file_type = 'txt or HTML'
             elif config_input_output_numeric_options[0] == 6:
                 file_type = 'txt or csv'
-            msg = "The Default I/O configuration used by all scripts in the NLP Suite is currently set up with a DIRECTORY in INPUT.\n\n" \
+            err_msg = "The Default I/O configuration used by all scripts in the NLP Suite is currently set up with a DIRECTORY in INPUT.\n\n" \
                 "But the current script expects a " + file_type + " FILE in INPUT.\n\n"
-        if msg!="":
-            msg=msg + \
+            err_msg=err_msg + \
                 "If you change the Default I/O configuration, the new I/O configuration will be used by all scripts in the NLP Suite.\n\n" \
                 "If this is not what you wish to do, you should CLOSE the I/O Setup GUI w/o saving any changes and use the GUI-specific I/O configuration for this specific script."
 
@@ -485,8 +490,16 @@ readMe_message = "This Python 3 script provides a front-end GUI (Graphical User 
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, False, 'NLP_setup_IO_main')
 
-if msg!="":
-    mb.showwarning(title='Warning', message=msg)
+if err_msg!="":
+    mb.showwarning(title='Warning', message=err_msg)
+    mb.showwarning(title='Warning',
+               message="The config file " + config_filename + " could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options then click on the CLOSE button to save your options.")
+
+if missingIO or err_msg!='':
+    answer = tk.messagebox.askyesno("Warning", 'Do you want to watch the video on how to setup Input/Output options?')
+    if answer:
+        GUI_util.videos_dropdown_field.set('Setup Input/Output (I/O) options')
+        GUI_util.watch_video(videos_lookup, scriptName)
 
 result = reminders_util.checkReminder(config_filename,
                               reminders_util.title_options_IO_setup,

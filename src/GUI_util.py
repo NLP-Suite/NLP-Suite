@@ -65,7 +65,7 @@ def clear(e):
     videos_dropdown_field.set('Watch videos')
     tips_dropdown_field.set('Open TIPS files')
     reminders_dropdown_field.set('Open reminders')
-    setup_menu.set('Setup')
+    setup_menu.set('Setup      ')
 window.bind("<Escape>", clear)
 
 
@@ -354,13 +354,16 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename, config_input
     #   the reason is that the IO widgets filename, inputDir, and outputDir are used in all GUIs
     if scriptName=='NLP_menu_main.py':
         missingIO='' # define the variable; the RUN button state is always 'normal' in menu_main
-    run_button_state, answer = activateRunButton(temp_config_filename,IO_setup_display_brief,scriptName, missingIO, silent)
-    # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
-    if not answer:
-        return
-    ##
-    # if run_button_state=='disabled':
-    #     setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent)
+    run_button_state, err_msg = activateRunButton(temp_config_filename,IO_setup_display_brief,scriptName, missingIO, silent)
+    if run_button_state=="disabled":
+        # instead of showwarning should perhaps have a question to open the NLP_setup_IO_main GUI
+        if setup_IO_menu_var.get():
+            err_msg=err_msg + "The RUN button is disabled until the expected I/O information is entered.\n\nClick on the 'Setup INPUT/OUTPUT configuration' button on top of this GUI to enter the required information. This, however, will affect all GUIs in the NLP Suite. You may wish to select the 'GUI-specific I/O configuration' instead of the current 'Default I/O configuration'."
+        else:
+            err_msg=err_msg + "The RUN button is disabled until the expected I/O information is entered.\n\nClick on the 'Setup INPUT/OUTPUT configuration' button on top of this GUI to enter the required information."
+        mb.showwarning(title='Warning',
+            message=err_msg)
+        # setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent)
 
 def get_file_type(config_input_output_numeric_options):
     file_type=''
@@ -412,7 +415,7 @@ def check_fileName(scriptName, file_type, config_input_output_numeric_options):
 def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missingIO, silent = False):
     global run_button_state, answer
     err_msg =''
-
+    silent=True
 # both input filename and dir are valid options but both are missing
     run_button_state, answer = config_util.check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_display_brief, silent)
     if missingIO!='':
@@ -441,7 +444,7 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missing
                 (config_input_output_numeric_options[0]==0 and inputFilename.get()!='') or \
                 (config_input_output_numeric_options[1]==0 and input_main_dir_path.get()!='') or \
                 err_msg!='':
-            mb.showwarning(title='Warning',message=err_msg+'The RUN button is disabled until the expected I/O options are entered.')
+            # mb.showwarning(title='Warning',message=err_msg+'The RUN button is disabled until the expected I/O options are entered.')
             run_button_state = 'disabled'
             # run_button.configure(state=run_button_state)
             # return run_button_state, answer
@@ -453,7 +456,7 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missing
         #     # mb.showwarning(title='Warning',message='The RUN button is disabled until expected I/O options are entered.')
         #     run_button_state='disabled'
     run_button.configure(state=run_button_state)
-    return run_button_state, answer
+    return run_button_state, err_msg
 
 #GUI top widgets ALL IO widgets
 #    input filename, input dir, secondary input dir, output dir
@@ -939,7 +942,7 @@ def handle_setup_options(y_multiplier_integer, scriptName):
         call("python NLP_setup_package_language_main.py", shell=True)
         # this will display the correct hover-over info after the python call, in case options were changed
         y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json, memory_var, document_length_var, limit_sentence_length_var = display_setup_hover_over(y_multiplier_integer)
-        setup_menu.set('Setup')
+        setup_menu.set('Setup      ')
         # unfortunately the next lines do not Enter/Leave the previous Setup
         # hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
         # GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer_SV, setup_menu_lb, False,
@@ -1258,7 +1261,6 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                              config_input_output_numeric_options, scriptName, silent)
 
     setup_IO_menu_var.trace("w", changed_setup_IO_config)
-    changed_setup_IO_config()
 
     # avoid tracing again since tracing is already done at the bottom of those scripts
     if scriptName!='SVO_main.py' and scriptName!='parsers_annotators_main.py':
@@ -1289,6 +1291,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # check_GitHub_release(local_release_version)
 
     window.protocol("WM_DELETE_WINDOW", _close_window)
+
+    changed_setup_IO_config()
 
     return package_display_area_value
 

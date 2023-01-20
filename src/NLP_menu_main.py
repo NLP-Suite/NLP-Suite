@@ -621,4 +621,9 @@ if missing_external_software!='':
                                  True)
     routine_options = reminders_util.getReminders_list(temp_config_filename)
 
+if not setup_IO_OK_checkbox_var.get() or not handle_setup_options_OK_checkbox_var.get() or not setup_software_OK_checkbox_var.get():
+    answer = tk.messagebox.askyesno("Warning", 'Some (or all) of the required three NLP Suite setup options (I/O configuration, NLP package and language, external software displayed in the three buttons at the top of this GUI) are not completed.\n\nDo you want to watch the video on how to setup the NLP Suite options?')
+    if answer:
+        GUI_util.videos_dropdown_field.set('Setup the NLP Suite')
+        GUI_util.watch_video(videos_lookup, scriptName)
 GUI_util.window.mainloop()

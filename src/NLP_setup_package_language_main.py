@@ -426,11 +426,15 @@ readMe_message = "This Python 3 script provides a front-end GUI (Graphical User 
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, scriptName, False)
 
+display_available_options()
+
 if error:
     mb.showwarning(title='Warning',
                message="The config file " + config_filename + " could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options then click on the CLOSE button to save your options.")
-
-display_available_options()
+    answer = tk.messagebox.askyesno("Warning", 'Do you want to watch the video on how to setup NLP package and language options?')
+    if answer:
+        GUI_util.videos_dropdown_field.set('Setup NLP package & language options')
+        GUI_util.watch_video(videos_lookup, scriptName)
 
 package_display_area_value_upon_entry = get_str_package_display_area_value()
 

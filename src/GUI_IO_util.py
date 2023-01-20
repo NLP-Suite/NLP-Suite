@@ -300,7 +300,7 @@ if sys.platform == 'darwin':  # Mac OS
     widget_width_extra_short = 10
     widget_width_short = 30
     widget_width_medium = 45
-    widget_width_long = 70
+    widget_width_long = 60
     widget_width_extra_long = 90
 
     add_button_width = 1
@@ -610,6 +610,7 @@ if sys.platform == 'darwin':  # Mac OS
 
 # Mac: file_search_byWord
 
+    file_search_byWord_widget_width = 57
     file_search_byWord_selectedCsvFile_pos = 510
     file_search_byWord_add_search_button_pos = setup_IO_brief_coordinate
     file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate + 40
@@ -998,6 +999,7 @@ else: #windows and anything else
 
 # Windows: file_search_byWord
 
+    file_search_byWord_widget_width = 100
     file_search_byWord_selectedCsvFile_pos = 430
     file_search_byWord_add_search_button_pos = setup_IO_brief_coordinate
     file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate+35
