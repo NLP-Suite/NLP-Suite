@@ -248,7 +248,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.file_search_byWord_openInputFile_button_pos, y_multiplier_integer,
     openInputFile_button, True, False, True, False, 90, GUI_IO_util.file_search_byWord_openInputFile_button_pos, "Open selected csv dictionary file")
 
-selectedCsvFile = tk.Entry(window,width=GUI_IO_util.widget_width_long,state='disabled',textvariable=selectedCsvFile_var)
+selectedCsvFile = tk.Entry(window,width=GUI_IO_util.file_search_byWord_widget_width,state='disabled',textvariable=selectedCsvFile_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_selectedCsvFile_pos,y_multiplier_integer,selectedCsvFile)
 
 search_by_keyword_var.set(0)
@@ -260,7 +260,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                     "Tick the checkbox to search for word(s) in your document(s) (e.g, coming out, standing in line, boyfriend)")
 
 keyword_value_var.set('')
-keyword_value = tk.Entry(window,width=GUI_IO_util.widget_width_long,textvariable=keyword_value_var)
+keyword_value = tk.Entry(window,width=GUI_IO_util.file_search_byWord_widget_width,textvariable=keyword_value_var)
 # keyword_value.configure(state="disabled")
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
@@ -291,7 +291,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 extract_sentences_search_words_var.set('')
 extract_sentences_search_words_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
-extract_sentences_search_words_entry.configure(width=GUI_IO_util.widget_width_long, state='disabled')
+extract_sentences_search_words_entry.configure(width=GUI_IO_util.file_search_byWord_widget_width, state='disabled')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
                     extract_sentences_search_words_entry, True, False, True, False,
