@@ -224,7 +224,11 @@ pydict["File splitter (file name)"] = ["file_splitter_main.py", 1]
 pydict["File manager (List, Rename, Copy, Move, Delete, Count, Split)"] = ["file_manager_main.py", 1]
 pydict["Find non-related documents"] = ["social_science_research_main.py", 1]
 pydict["Excel charts"] = ["charts_Excel_main.py", 1]
-pydict["Network graphs (Gephi)"] = ["data_visualization_main.py", 1]
+pydict["Animated time-dependent bar plot (Plotly) (Open GUI)"] = ["data_visualization_main.py", 1]
+pydict["Network graphs (Gephi) (Open GUI)"] = ["data_visualization_main.py", 1]
+pydict["Sankey flowchart (Plotly) (Open GUI)"] = ["data_visualization_main.py", 1]
+pydict["Sunburst pie chart (Plotly) (Open GUI)"] = ["data_visualization_main.py", 1]
+pydict["Treemap (Plotly) (Open GUI)"] = ["data_visualization_main.py", 1]
 pydict["Geographic maps: Geocoding & maps"] = ["GIS_main.py", 1]
 pydict["Geographic maps: Google Earth Pro"] = ["GIS_Google_Earth_main.py", 1]
 pydict["Geographic maps: From texts to maps"] = ["GIS_main.py", 1]
@@ -625,5 +629,5 @@ if not setup_IO_OK_checkbox_var.get() or not handle_setup_options_OK_checkbox_va
     answer = tk.messagebox.askyesno("Warning", 'Some (or all) of the required three NLP Suite setup options (I/O configuration, NLP package and language, external software displayed in the three buttons at the top of this GUI) are not completed.\n\nDo you want to watch the video on how to setup the NLP Suite options?')
     if answer:
         GUI_util.videos_dropdown_field.set('Setup the NLP Suite')
-        GUI_util.watch_video(videos_lookup, scriptName)
+        # GUI_util.watch_video(videos_lookup, scriptName)
 GUI_util.window.mainloop()

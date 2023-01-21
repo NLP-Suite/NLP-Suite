@@ -272,7 +272,7 @@ else:
     answer = tk.messagebox.askyesno("Warning", 'Do you want to watch the video on how to setup external software?')
     if answer:
         GUI_util.videos_dropdown_field.set('Setup external software')
-        GUI_util.watch_video(videos_lookup, scriptName)
+        # GUI_util.watch_video(videos_lookup, scriptName)
 
 missing_external_software_upon_entry=missing_software_var.get()
 
