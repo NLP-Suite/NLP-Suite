@@ -234,7 +234,7 @@ def check_windows_64_bits():
 
 # return errorFound, error_code, system_output
 def check_java_installation(script):
-    errorFound = False
+    Java_errorFound = False
     config_filename = ''
     reminder_title = ''
     reminder_message = ''
@@ -244,9 +244,9 @@ def check_java_installation(script):
 
     # unnecessary
     # if platform == 'win32':
-    #     errorFound = check_windows_64_bits()
-    #     if errorFound:
-    #         return errorFound, error_code, system_output
+    #     Java_errorFound = check_windows_64_bits()
+    #     if Java_errorFound:
+    #         return Java_errorFound, error_code, system_output
 
     try:
         # if you are testing new Java install/uninstall ...
@@ -278,9 +278,9 @@ def check_java_installation(script):
                 '\n\nTo download Java from the Oracle website, you will need to sign in in your Oracle account (you must create a FREE Oracle account if you do not have one).'\
                 '\n\nSelect the most current Java SE version then download the JDK suited for your machine (Mac/Windows) and finally run the downloaded executable.' \
                 '\n\nDO YOU WANT TO OPEN THE JAVA DOWNLOAD WEBSITE AND INSTALL JAVA NOW? (You must be connected to the internet)'
-        errorFound = True
+        Java_errorFound = True
 
-    if errorFound:
+    if Java_errorFound:
         # open website
         open_url(title, url, ask_to_open=True, message_title=title, message=message, reminder_title=reminder_title, reminder_message=reminder_message)
 
@@ -295,8 +295,8 @@ def check_java_installation(script):
                                                         "You are not using JAVA 64-Bit version.\n\nThis will cause an error running Stanford CoreNLP: Could not create the Java Virtual Machine.\n\nPlease, configure your machine to use JAVA 64-Bit.\n\nPlease, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.\n\nDo you want to open the TIPS file now?")
                         if answer:
                             TIPS_util.open_TIPS('TIPS_NLP_Stanford CoreNLP memory issues.pdf')
-                        errorFound = True
-    return errorFound, error_code, system_output, java_version
+                        Java_errorFound = True
+    return Java_errorFound, error_code, system_output, java_version
 
 
 # the function checks that a called Java or Python file is available in the src subdirectory
@@ -466,7 +466,6 @@ def open_url(website_name, url, ask_to_open = False, message_title='', message='
 
 def initialize_software_config_fields(existing_software_config: list) -> list:
     """
-
     @param existing_software_config: current csv file in list format, similar to sample_csv below
     @return: the new csv files, with software fields up to date.
     """
@@ -588,6 +587,7 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
     errorFound = False
     Cancel = False
     missing_software=''
+    java_found = False
 
     if package == '':
         title = 'NLP Suite external software download/install'
@@ -614,7 +614,6 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
             message = download_install_package_msg
 
     # loop through all software in NLP_setup_external_software_config.csv file
-    java_found = False
     for row in existing_software_config[1:]:  # skip header line
         answer = False
         index = index + 1
@@ -636,12 +635,12 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
             else:
                 if not 'Java version' in software_dir:
                     if 'Java' in software_name:
-                        errorFound, error_code, system_output, java_version = check_java_installation('Java (JDK)')
-                        if not errorFound:
+                        Java_errorFound, error_code, system_output, java_version = check_java_installation('Java (JDK)')
+                        if not Java_errorFound:
                             software_dir="Java version "+java_version+" installed"
-                    if (not 'Java' in software_name) or errorFound:
+                    if (not 'Java' in software_name) or Java_errorFound:
                         missing_software = missing_software + str(software_name).upper() + '\n\n'
-                        errorFound=True
+                        Java_errorFound=True
         else: # software dir exists
             errorFound=False
             # the software directory is stored in config file but...
@@ -691,13 +690,13 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
 
     # check for missing external software
     # check that Java is installed otherwise add to missing
-    errorFound, error_code, system_output, java_version = check_java_installation('Java (JDK)')
+    Java_errorFound, error_code, system_output, java_version = check_java_installation('Java (JDK)')
     # in releases prior to 3.8.5 Java (JDK) was not part of the config NLP_setup_external_software_config.csv
     if not java_found:
         existing_software_config.insert(4,['Java (JDK)', "Java version "+java_version+" installed", Java_download])
         save_software_config(existing_software_config, missing_software, silent=True)
-    # errorFound = True # for testing
-    if errorFound:
+    # Java_errorFound = True # for testing
+    if Java_errorFound:
         if missing_software=='':
             missing_software = str('Java (JDK)').upper() + '\n\n'
         else:
@@ -737,7 +736,7 @@ def external_software_download(calling_script, software_name, existing_software_
                                                                              silent=False, only_check_missing=False)
     if 'Java' in software_name:
         # since Stanford CoreNLP, Gephi, and MALLET need Java, check for Java installation
-        errorFound, error_code, system_output, java_version = check_java_installation(software_name)
+        Java_errorFound, error_code, system_output, java_version = check_java_installation(software_name)
         software_dir="Java version "+java_version+" installed"
     else:
         if software_dir == None:
@@ -826,10 +825,10 @@ def external_software_download(calling_script, software_name, existing_software_
 
     if software_name == 'Stanford CoreNLP' or software_name == 'Gephi' or software_name == 'MALLET':
         # since Stanford CoreNLP, Gephi, and MALLET need Java, check for Java installation
-        errorFound, error_code, system_output, java_version = check_java_installation(software_name)
+        Java_errorFound, error_code, system_output, java_version = check_java_installation(software_name)
         # url = 'https://www.oracle.com/java/technologies/downloads/archive/'
-        # errorFound=True # for testing
-        if errorFound:
+        # Java_errorFound=True # for testing
+        if Java_errorFound:
             Java_required = software_name + ' requires the freeware Java (by Oracle) installed on our machine.\n\nDon\'t forget to download and install Java JDK.'
             mb.showwarning(title='Warning',message=Java_required)
             # open_url('Java', url, ask_to_open = True, message_title = 'Java', message = Java_required)
@@ -844,7 +843,7 @@ def external_software_install(calling_script, software_name, existing_software_c
                                                                              silent=False, only_check_missing=False)
     if 'Java' in software_name:
         # since Stanford CoreNLP, Gephi, and MALLET need Java, check for Java installation
-        errorFound, error_code, system_output, java_version = check_java_installation(software_name)
+        Java_errorFound, error_code, system_output, java_version = check_java_installation(software_name)
         software_dir="Java version "+java_version+" installed"
     else:
         if software_dir == None:

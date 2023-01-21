@@ -65,7 +65,7 @@ def clear(e):
     videos_dropdown_field.set('Watch videos')
     tips_dropdown_field.set('Open TIPS files')
     reminders_dropdown_field.set('Open reminders')
-    setup_menu.set('Setup      ')
+    setup_menu.set('Setup')
 window.bind("<Escape>", clear)
 
 
@@ -356,14 +356,11 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename, config_input
         missingIO='' # define the variable; the RUN button state is always 'normal' in menu_main
     run_button_state, err_msg = activateRunButton(temp_config_filename,IO_setup_display_brief,scriptName, missingIO, silent)
     if run_button_state=="disabled":
-        # instead of showwarning should perhaps have a question to open the NLP_setup_IO_main GUI
         if setup_IO_menu_var.get():
             err_msg=err_msg + "The RUN button is disabled until the expected I/O information is entered.\n\nClick on the 'Setup INPUT/OUTPUT configuration' button on top of this GUI to enter the required information. This, however, will affect all GUIs in the NLP Suite. You may wish to select the 'GUI-specific I/O configuration' instead of the current 'Default I/O configuration'."
         else:
             err_msg=err_msg + "The RUN button is disabled until the expected I/O information is entered.\n\nClick on the 'Setup INPUT/OUTPUT configuration' button on top of this GUI to enter the required information."
-        mb.showwarning(title='Warning',
-            message=err_msg)
-        # setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent)
+    return err_msg
 
 def get_file_type(config_input_output_numeric_options):
     file_type=''
@@ -552,9 +549,6 @@ def openConfigFile(setup_IO_menu_var, scriptName, config_filename):
     IO_files_util.openFile(window, GUI_IO_util.configPath + os.sep + temp_config_filename)
     # IO_files_util.openFile(window, GUI_IO_util.configPath + os.sep + config_filename)
     time.sleep(10) # wait 10 seconds to give enough time to save any changes to the csv config file
-    # IO_setup_display_brief = True
-    # display_IO_setup(window, IO_setup_display_brief, temp_config_filename,
-    #                  config_input_output_numeric_options, scriptName, silent)
 
 def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptName, silent):
     IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,scriptName, silent))
@@ -773,7 +767,7 @@ def setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent):
     if not 'NLP_setup_IO_main' in scriptName:
         call("python NLP_setup_IO_main.py --config_option " + str(config_input_output_numeric_options).replace('[', '"').replace(']', '"') + " --config_filename " + temp_config_filename, shell=True)
         # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
-        display_IO_setup(window, IO_setup_display_brief, temp_config_filename, config_input_output_numeric_options, scriptName,silent)
+        err_msg=display_IO_setup(window, IO_setup_display_brief, temp_config_filename, config_input_output_numeric_options, scriptName,silent)
 
 def display_about_release_team_cite_buttons(scriptName):
     if 'NLP_welcome_main' in scriptName or 'NLP_menu_main' in scriptName:
@@ -942,7 +936,7 @@ def handle_setup_options(y_multiplier_integer, scriptName):
         call("python NLP_setup_package_language_main.py", shell=True)
         # this will display the correct hover-over info after the python call, in case options were changed
         y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json, memory_var, document_length_var, limit_sentence_length_var = display_setup_hover_over(y_multiplier_integer)
-        setup_menu.set('Setup      ')
+        setup_menu.set('Setup')
         # unfortunately the next lines do not Enter/Leave the previous Setup
         # hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
         # GUI_IO_util.hover_over_widget(window, hover_over_x_coordinate, y_multiplier_integer_SV, setup_menu_lb, False,
@@ -1257,10 +1251,12 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         if setup_IO_menu_var.get() != IO_setup_config_SV:
             IO_setup_config_SV = setup_IO_menu_var.get()
             # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
-            display_IO_setup(window, IO_setup_display_brief, config_filename,
+            err_msg=display_IO_setup(window, IO_setup_display_brief, config_filename,
                              config_input_output_numeric_options, scriptName, silent)
-
-    setup_IO_menu_var.trace("w", changed_setup_IO_config)
+            if err_msg != '':
+                mb.showwarning(title='Warning', message=err_msg)
+        #
+        # return err_msg
 
     # avoid tracing again since tracing is already done at the bottom of those scripts
     if scriptName!='SVO_main.py' and scriptName!='parsers_annotators_main.py':
@@ -1288,11 +1284,11 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     if result != None:
         routine_options = reminders_util.getReminders_list(temp_config_filename)
 
+    setup_IO_menu_var.trace("w", changed_setup_IO_config)
+    err_msg=changed_setup_IO_config()
+
     # check_GitHub_release(local_release_version)
-
     window.protocol("WM_DELETE_WINDOW", _close_window)
-
-    changed_setup_IO_config()
 
     return package_display_area_value
 

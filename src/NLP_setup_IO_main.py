@@ -499,7 +499,7 @@ if missingIO or err_msg!='':
     answer = tk.messagebox.askyesno("Warning", 'Do you want to watch the video on how to setup Input/Output options?')
     if answer:
         GUI_util.videos_dropdown_field.set('Setup Input/Output (I/O) options')
-        GUI_util.watch_video(videos_lookup, scriptName)
+        # GUI_util.watch_video(videos_lookup, scriptName)
 
 result = reminders_util.checkReminder(config_filename,
                               reminders_util.title_options_IO_setup,

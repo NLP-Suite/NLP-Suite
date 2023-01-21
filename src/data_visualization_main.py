@@ -49,7 +49,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
     int_K_sent_begin_var=None
     int_K_sent_end_var=None
 
-    if Gephi_var==False and categorical_var == False and time_mapper_var==False:
+    if relations_var==False and categorical_var == False and time_mapper_var==False:
         mb.showwarning("Warning",
                        "No options have been selected.\n\nPlease, select an option to run and try again.")
         return
@@ -59,23 +59,62 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             mb.showwarning("Warning",
                            "The visualization options requires in input a csv file.\n\nPlease, select a csv file and try again.")
             return
-        else:
-            if Gephi_var and len(csv_file_field_list)<3:
-                mb.showwarning("Warning",
-                               "You must select at least three csv fields to be used in the computation of the network graph, in the order of node, edge, node (e.g., Subject, Verb, Object).\n\nIf you wish to create a dynamic network graph you can select a fourth field to be used as the dynamic index (e.g., Sentence ID).")
-                return
+
+    if relations_menu_var.get()!='':
+        output_label=relations_menu_var.get()
+    elif categorical_menu_var.get()!='':
+        output_label = categorical_menu_var.get()
+    else:
+        output_label = ''
+
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
+                                                             '.html', output_label)
+
+# Visualize relations: Gephi, Sankey  --------------------------------------------------------------------------------
+
+    if relations_var.get():
+        if relations_menu_var.get() == '':
+            mb.showwarning("Warning",
+                           "Please, use the dropdown menu to select one of the options for for visualizing relations: Gephi, Sankey and try again.")
+            return
+
+# Gephi  --------------------------------------------------------------------------------
+
         if Gephi_var:
-            gexf_file = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
-            filesToOpen.append(gexf_file)
+            if len(csv_file_field_list)!=3:
+                mb.showwarning("Warning",
+                               "You must select three csv fields to be used in the computation of the network graph, in the order of node, edge, node (e.g., Subject, Verb, Object).\n\nIf you wish to create a dynamic network graph you can select a fourth field to be used as the dynamic index (e.g., Sentence ID).")
+                return
+            chart_outputFilename = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
+
+# Sankey  --------------------------------------------------------------------------------
 
         if Sankey_var:
+            if len(csv_file_field_list)!=2 and len(csv_file_field_list)!=3:
+                mb.showwarning("Warning",
+                               "You must select 2 or 3 csv fields to be used in the computation of a Sankey plot (e.g., Subject, Verb, Object or Subject, Object).")
+                return
             import charts_Sankey_util
-            Sankey_chart = charts_Sankey_util.Sankey(inputFilename, outputFilename, inflow, outflow)
+            chart_outputFilename = charts_Sankey_util.Sankey(inputFilename, outputFilename, inflow, outflow)
             # Function takes a csv file as data input,
             # inflow is the variable of choice into which the outflow variable flows.
             # For example, in coreference, inflow would be Pronoun and outflow would be Reference
 
-        if categorical_var:
+# Categorical data (sunburst or treemap) --------------------------------------------------------------------------------
+
+    if categorical_var.get():
+        if categorical_menu_var.get() == '':
+            mb.showwarning("Warning",
+                           "Please, use the dropdown menu to select one of the options for categorical data: Sunburst, treemap and try again.")
+            return
+        if categorical_var.get() and filename_label_var == '':
+            mb.showwarning("Warning",
+                           "The categorical data visualization functions require a set of comma-separated entries in the 'Label/part in the filename to be used for visualization' widget.\n\nPlease, enter value(s) and try again.")
+            return
+
+# Sunburst  --------------------------------------------------------------------------------
+
+        if 'Sunburst' in categorical_menu_var.get():
             if K_sent_begin_var=='' and K_sent_end_var=='' and split_var==False and do_not_split_var==False:
                 mb.showwarning("Warning",
                                "The sunburst function requires a selection of Begin/End K sentences or Split documents in equal halves or Do not split documents.\n\nPlease, make a selection and try again.")
@@ -102,10 +141,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 int_K_sent_begin_var=None
                 int_K_sent_end_var=None
 
-            if filename_label_var=='':
-                mb.showwarning("Warning",
-                               "The sunburst visualization function requires a set of comma-separated entries in the 'Label/part in the filename to be used for visualization' widget.\n\nPlease, enter value(s) and try again.")
-                return
             if csv_field2_var=='':
                 mb.showwarning("Warning",
                                "The sunburst visualization function requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
@@ -118,15 +153,25 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 temp_interest.append(interest[i].lstrip())
             # label is a string that has the header field in the csv file to be used for display
             label=csv_field2_var
-            outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
-                                                                     '.html', 'sunburst')
-
             import charts_sunburst_util
             chart_outputFilename = charts_sunburst_util.sunburst(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
                                             do_not_split_var, int_K_sent_begin_var, int_K_sent_end_var, split_var)
-            if chart_outputFilename != '':
-                filesToOpen.append(chart_outputFilename)
 
+# treemap --------------------------------------------------------------------------------
+
+        if 'Treemap' in categorical_menu_var.get():
+            if use_numerical_variable_var.get() and csv_field2_var.get()=='':
+                mb.showwarning("Warning",
+                               "The selected treemap option with the use of numerical data requires a variable containing the numertical data.\n\nPlease, select the csv file field containing the numertical data and try again.")
+                return
+        import charts_treemaper_util
+
+        #def treemaper(data,outputFilename,interest,var,extra_dimension_average,average_variable=None):
+        chart_outputFilename = charts_treemaper_util.treemaper(inputFilename, outputFilename,
+                                                               outputDir, case_sensitive_var,
+                                                               temp_interest, label)
+
+# time_mapper --------------------------------------------------------------------------------
         if time_mapper_var:
             outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
                                                                      '.html', 'timeMapper')
@@ -144,11 +189,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
 
             import charts_timeline_util
             chart_outputFilename = charts_timeline_util.timeline(inputFilename, outputFilename, csv_field3_var, date_format_var, cumulative_var, monthly, yearly)
-            if chart_outputFilename != '':
-                filesToOpen.append(chart_outputFilename)
 
-        if openOutputFiles and len(filesToOpen) > 0:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+    if chart_outputFilename != '':
+        filesToOpen.append(chart_outputFilename)
+
+    if openOutputFiles and len(filesToOpen) > 0:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),

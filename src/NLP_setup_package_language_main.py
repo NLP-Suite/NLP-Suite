@@ -434,7 +434,7 @@ if error:
     answer = tk.messagebox.askyesno("Warning", 'Do you want to watch the video on how to setup NLP package and language options?')
     if answer:
         GUI_util.videos_dropdown_field.set('Setup NLP package & language options')
-        GUI_util.watch_video(videos_lookup, scriptName)
+        # GUI_util.watch_video(videos_lookup, scriptName)
 
 package_display_area_value_upon_entry = get_str_package_display_area_value()
 
