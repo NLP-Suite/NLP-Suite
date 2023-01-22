@@ -572,10 +572,10 @@ if sys.platform == 'darwin':  # Mac OS
 
 # Mac: data_visualization_main
 
-    visualization_csv_field_menu_pos = IO_configuration_menu
+    visualization_csv_field_menu_pos = 260
     visualization_add_button_pos = 983
-    visualization_reset_button_pos = 1038
-    visualization_show_button_pos = 1058
+    visualization_reset_button_pos = 1030
+    visualization_show_button_pos = 1092
 
     visualization_csv_field_dynamic_network_lb_pos = setup_pop_up_text_widget
     visualization_dynamic_network_field_pos = open_setup_x_coordinate  # 740
@@ -586,11 +586,12 @@ if sys.platform == 'darwin':  # Mac OS
     visualization_csv_field2_lb_pos = run_button_x_coordinate # 920
     visualization_csv_field2_menu_pos = visualization_csv_field2_lb_pos + 90 #120#1020
 
+    visualization_K_sent_begin_lb = visualization_csv_field_menu_pos
     visualization_K_sent_begin_pos = visualization_csv_field_menu_pos
     visualization_K_sent_end_lb_pos = visualization_filename_label_lb_pos
     visualization_K_sent_end_pos = visualization_filename_label_pos
     visualization_split_pos = open_setup_x_coordinate
-    visualization_do_not_split_pos = visualization_csv_field2_menu_pos # open_reminders_x_coordinate + 200
+    visualization_do_not_split_pos = visualization_csv_field2_menu_pos # open_reminders_x_coordinate + 400
 
 # Mac: shape_of_stories
 
@@ -960,7 +961,7 @@ else: #windows and anything else
 
 # Windows: data_visualization_main
 
-    visualization_csv_field_menu_pos = 260 # IO_configuration_menu
+    visualization_csv_field_menu_pos = 280
     visualization_add_button_pos = 1105
     visualization_reset_button_pos = 1140
     visualization_show_button_pos = 1190

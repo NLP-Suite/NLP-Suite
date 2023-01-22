@@ -498,7 +498,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "The widgets on this line refer to the Sankey option only")
 
-Sankey_limit1_lb = tk.Label(window, text='Limit for variable 1')
+Sankey_limit1_lb = tk.Label(window, text='Variable 1 max')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                Sankey_limit1_lb, True)
 
@@ -507,13 +507,13 @@ Sankey_limit1_var.set(5)
 Sankey_limit1_menu = tk.OptionMenu(window, Sankey_limit1_var, 5, 10)
 # Sankey_limit1_menu.configure(state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+130, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_pos, y_multiplier_integer,
                                    Sankey_limit1_menu,
                                    True, False, True, False, 90, GUI_IO_util.visualization_csv_field_dynamic_network_lb_pos,
                                    "Select the maximum number of categories for variable 1")
 
-Sankey_limit2_lb = tk.Label(window, text='Limit for variable 2')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+200, y_multiplier_integer,
+Sankey_limit2_lb = tk.Label(window, text='Variable 2 max')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                Sankey_limit2_lb, True)
 
 Sankey_limit2_var = tk.StringVar()
@@ -521,13 +521,13 @@ Sankey_limit2_var.set(5)
 Sankey_limit2_menu = tk.OptionMenu(window, Sankey_limit2_var, 5, 10, 20)
 # Sankey_limit1_menu.configure(state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+330, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+110, y_multiplier_integer,
                                    Sankey_limit2_menu,
                                    True, False, True, False, 90, GUI_IO_util.visualization_csv_field_dynamic_network_lb_pos,
                                    "Select the maximum number of categories for variable 2")
 
 
-Sankey_limit3_lb = tk.Label(window, text='Limit for variable 3')
+Sankey_limit3_lb = tk.Label(window, text='Variable 3 max')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_dynamic_network_field_pos, y_multiplier_integer,
                                                Sankey_limit3_lb, True)
 
@@ -536,7 +536,7 @@ Sankey_limit3_var.set(5)
 Sankey_limit3_menu = tk.OptionMenu(window, Sankey_limit3_var, 5, 10, 20, 30)
 # Sankey_limit1_menu.configure(state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+530, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_dynamic_network_field_pos+110, y_multiplier_integer,
                                    Sankey_limit3_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_csv_field_dynamic_network_lb_pos,
                                    "Select the maximum number of categories for variable 3")
@@ -583,9 +583,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                                y_multiplier_integer, filename_label_lb, True)
 
 filename_label_var.set('')
-filename_label = tk.Entry(window, state='disabled', textvariable=filename_label_var, width=GUI_IO_util.widget_width_medium)
+filename_label = tk.Entry(window, state='disabled', textvariable=filename_label_var, width=GUI_IO_util.widget_width_short)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_pos, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    filename_label,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Enter the comma-separated label/part of a filename to be used to sample the corpus for visualization (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...)")
