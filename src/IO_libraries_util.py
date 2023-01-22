@@ -469,7 +469,7 @@ def initialize_software_config_fields(existing_software_config: list) -> list:
     @param existing_software_config: current csv file in list format, similar to sample_csv below
     @return: the new csv files, with software fields up to date.
     """
-    sample_csv = [['Software', 'Path', 'Download_link'],
+    sample_csv = [['Software', 'Installation_path', 'Download_link'],
                   ['Stanford CoreNLP', '', CoreNLP_download],
                   ['Gephi', '', Gephi_download],
                   ['Google Earth Pro', '', Google_Earth_download],
@@ -676,16 +676,17 @@ def get_external_software_dir(calling_script, package, silent, only_check_missin
                 check_CoreNLPVersion(GUI_util.window,software_dir, calling_script)
                 # software_dir = ''
                 # missing_software = package
-            answer = tk.messagebox.askyesno(title=package, message='The external software ' + package + ' is already installed at ' + software_dir + '\n\nDo you want to re-install the software, in case you moved it to a different location?')
-            if answer == True:
-                # initialize_software_config_fields(existing_software_config, package)
-                delete_software_config(existing_software_config, package)
-                missing_software = package
-                software_dir = ''
-            else:
-                # if you are checking for a specific package and that is found return the appropriate directory
-                if (package!=''):
-                    return software_dir, software_url, missing_software
+            if not 'Java' in package:
+                answer = tk.messagebox.askyesno(title=package, message='The external software ' + package + ' is already installed at ' + software_dir + '\n\nDo you want to re-install the software, in case you moved it to a different location?')
+                if answer == True:
+                    # initialize_software_config_fields(existing_software_config, package)
+                    delete_software_config(existing_software_config, package)
+                    missing_software = package
+                    software_dir = ''
+                else:
+                    # if you are checking for a specific package and that is found return the appropriate directory
+                    if (package!=''):
+                        return software_dir, software_url, missing_software
 
 
     # check for missing external software
@@ -746,12 +747,12 @@ def external_software_download(calling_script, software_name, existing_software_
     archive_location_warning = '\n\nDO NOT MOVE THE EXTERNAL SOFTWARE FOLDER INSIDE THE NLP SUITE FOLDER OR IT MAY BE OVERWRITTEN IN CASE YOU NEED TO RE-INSTALL THE SUITE.'
     # Setup user messages for the various types of external software and platforms
         # in Mac, Gephi and Google Earth Pro are installed in Applications
-    if platform == 'darwin' and (software_name != 'Google Earth Pro' and software_name != 'Gephi' and software_name != 'Java (JDK)'):
+    if platform == 'darwin' and (software_name != 'Google Earth Pro' and software_name != 'Gephi'):
         message2 = "You will be asked next to select the directory (NOT Mac Applications!) where the software\n\n" + software_name.upper() + "\n\nwas installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
     if platform == 'darwin' and (software_name == 'Google Earth Pro' or software_name == 'Gephi'):
         message2 = "You will be asked next to select the Mac Applications directory where the software\n\n" + software_name.upper() + "\n\nwas installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
-    if platform == 'win32' and software_name != 'Java (JDK)':
-        message2 = "You will be asked next to select the directory where the software\n\n" + software_name.upper() + "\n\nwas installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
+    # if platform == 'win32' and software_name != 'Java (JDK)':
+    #     message2 = "You will be asked next to select the directory where the software\n\n" + software_name.upper() + "\n\nwas installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
     if platform != 'darwin' and (software_name != 'Google Earth Pro' and software_name != 'Gephi' and software_name != 'Java (JDK)'):
         message1 = "\n\nYou will then be asked to select the directory where the software\n\n" + software_name.upper() + "\n\nwas installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
         message3 = ". Please, select the directory where the software was installed after downloading; you can press CANCEL or ESC if you have not downloaded the software yet."
@@ -865,14 +866,17 @@ def external_software_install(calling_script, software_name, existing_software_c
             message3 = ""
 
     if software_dir != '':  # and package.lower() in software_name.lower():
-        mb.showwarning(title=software_name+' installation.',message=software_name+' is already installed. If you want to change the installation directory, select next a new directory, otherwise press Esc or Cancel when the dialogue box opens.')
-        temp_software_dir = tk.filedialog.askdirectory(initialdir=software_dir,
-                                                  title='Select a new directory for ' + software_name + '. Press Esc or Cancel to exit.')
-        if temp_software_dir !='':
-            if not check_inputExternalProgramFile(calling_script, temp_software_dir, software_name, False, False):
-                software_dir = None
-            else:
-                software_dir = temp_software_dir
+        if 'Java' in software_dir:
+            mb.showwarning(title=software_name+' installation.',message=software_name+' is already installed on your machine:\n\n'+software_dir + ' as saved in NLP_setup_external_software_config.csv.\n\nIf you want to install a new version, you need to uninstall the current version, since Java is in your environment variables.')
+        else:
+            mb.showwarning(title=software_name+' installation.',message=software_name+' is already installedon your machine. If you want to change the installation directory, select next a new directory, otherwise press Esc or Cancel when the dialogue box opens.')
+            temp_software_dir = tk.filedialog.askdirectory(initialdir=software_dir,
+                                                      title='Select a new directory for ' + software_name + '. Press Esc or Cancel to exit.')
+            if temp_software_dir !='':
+                if not check_inputExternalProgramFile(calling_script, temp_software_dir, software_name, False, False):
+                    software_dir = None
+                else:
+                    software_dir = temp_software_dir
     else:
         existing_software_config = get_existing_software_config()
 

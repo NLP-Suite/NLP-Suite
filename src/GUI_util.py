@@ -65,6 +65,7 @@ def clear(e):
     videos_dropdown_field.set('Watch videos')
     tips_dropdown_field.set('Open TIPS files')
     reminders_dropdown_field.set('Open reminders')
+    data_tools_options_widget.set('Data tools')
     setup_menu.set('Setup')
 window.bind("<Escape>", clear)
 
@@ -109,6 +110,7 @@ videos_dropdown_field = tk.StringVar()
 tips_dropdown_field = tk.StringVar()
 reminders_dropdown_field = tk.StringVar()
 setup_menu = tk.StringVar()
+data_tools_options_widget = tk.StringVar()
 
 run_button = tk.Button(window, text='RUN', width=10,height=2)
 
@@ -1053,18 +1055,25 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        GUI_IO_util.open_setup_x_coordinate,
                                                        "The selection of specific chart types is still under development.\nCharts are currently automatically visualized as bar or line charts.")
 
-        if not 'data_manipulation_main.py' in scriptName:
-            # TODO manipulate csv data widget (same as RUN)
-            manipulate_scv_data_button = tk.Button(window, text='Manipulate & visualize csv data (Open GUI)', command=lambda: call("python data_manipulation_main.py", shell=True))
-            # place widget with hover-over info
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate,
-                                                           y_multiplier_integer,
-                                                           manipulate_scv_data_button,
-                                                           False,False,False,False,90,
-                                                           GUI_IO_util.open_TIPS_x_coordinate,
-                                                           "Click on the button to open the csv data manipulation GUI where you can append, concatenate, merge, and purge rows and columns in csv file(s).")
-        else:
-            y_multiplier_integer += 1
+        # if not 'data_manipulation_main.py' in scriptName and not not 'data_visualization_main.py' in scriptName :
+        data_tools_options = ['Data manipulation', 'Data visualization']
+        data_tools_options_widget.set('Data tools')
+        data_tools_menu_lb = tk.OptionMenu(window, data_tools_options_widget, *data_tools_options)
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       data_tools_menu_lb,
+                                                       False, False, False, False, 90,
+                                                       GUI_IO_util.open_reminders_x_coordinate,
+                                                       "Select the option to open the csv data manipulation GUI where you can append, concatenate, merge, and purge rows and columns in csv file(s).\nOr select the option to visualize data in a variety of ways.")
+        def run_data_tool(*args):
+            if not 'data_manipulation_main.py' in scriptName and 'manipulation' in data_tools_options_widget.get():
+                call("python data_manipulation_main.py", shell=True)
+            if not 'data_visualization_main.py' in scriptName and 'visualization' in data_tools_options_widget.get():
+                call("python data_visualization_main.py", shell=True)
+        data_tools_options_widget.trace('w',run_data_tool)
+    else:
+        y_multiplier_integer += 1
 
         # def warning_message(*args):
     #     if charts_package_options_widget.get()!='Excel':
