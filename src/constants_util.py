@@ -552,13 +552,13 @@ NLP_Suite_visualization_tools_menu = 'Excel charts', 'Geographic maps: Geocoding
                                     'Sentence visualization: Dependency tree viewer (png graphs)', 'Wordclouds (ALL options GUI)'
 
 NLP_Suite_data_file_handling_tools_menu = \
+'Data manipulation (ALL options GUI)', \
 'File handler (ALL options GUI)', \
-'Sample data (ALL options GUI)', \
+'Sample corpus (ALL options GUI)', \
 'Search (ALL options GUI)', \
 '', \
 '-----------------------------------------------------------------------------------------', \
 '', \
-'Data manipulation (csv files via Pandas)', \
 'File checker (file name)', \
 'File classifier (dumb classifier via embedded date) (file name)', \
 'File-type converter (csv, docx, pdf, rtf --> txt)', \

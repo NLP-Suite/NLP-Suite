@@ -737,7 +737,8 @@ def external_software_download(calling_script, software_name, existing_software_
     if 'Java' in software_name:
         # since Stanford CoreNLP, Gephi, and MALLET need Java, check for Java installation
         Java_errorFound, error_code, system_output, java_version = check_java_installation(software_name)
-        software_dir="Java version "+java_version+" installed"
+        if not Java_errorFound:
+            software_dir="Java version "+java_version+" installed"
     else:
         if software_dir == None:
             software_dir = ''

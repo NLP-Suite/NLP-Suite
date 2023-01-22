@@ -19,6 +19,8 @@ plotly.offline.init_notebook_mode(connected=True)
 #import warnings
 #warnings.filterwarnings("ignore")
 
+import tkinter.messagebox as mb
+
 # Function creates a new column that identifies the documents based on a specific interest variable
 # two inputs taken: data is the dataset in question, interest is a vector that the user will have to define, as it changes depending on the corpus
 def separator(data,interest):
@@ -47,6 +49,10 @@ def separator(data,interest):
 def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,beginning_and_end=False,first_sentences=None,last_sentences=None,half_text=None):
     if type(data)==str:
         data=pd.read_csv(data)
+    if type(data[label])!=str:
+        mb.showwarning("Warning",
+                   "The csv file field selected should be categorical.\n\nYou should select a categorical field, rather than a continuous numeric field, and try again.")
+
     #the last 3 arguments are optional. If first_sentences is specified and last_sentences is not or vice versa, we return a message stating they must both be specified or absent at the same time
     if (first_sentences==None and last_sentences!=None) or (first_sentences!=None and last_sentences==None):
         return 'both number of first sentences and number of last sentences have to be specified or absent at the same time'
