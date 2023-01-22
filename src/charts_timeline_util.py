@@ -25,7 +25,11 @@ def timeline(data, outputFilename, var,date_format_var, cumulative, monthly=None
 #convert csv to pandas
     if type(data)==str:
         data=pd.read_csv(data)
-#Extract day from document
+    if type(data[var][0]) != str:
+        mb.showwarning("Warning",
+                       "The csv file field selected must be categorical.\n\nPlease select a categorical field, rather than a continuous numeric field, and try again.")
+        return
+    #Extract day from document
     date=[]
     year=[]
     month=[]
