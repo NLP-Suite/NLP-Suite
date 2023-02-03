@@ -28,6 +28,10 @@ if test -f $HOME/anaconda/bin/activate; then
     source $HOME/anaconda/bin/activate
 fi
 
+if test -f $HOME/opt/anaconda3/bin/activate; then
+    source $HOME/opt/anaconda3/bin/activate
+fi
+
 conda create -y -n NLP python=3.8
 conda activate NLP
 
