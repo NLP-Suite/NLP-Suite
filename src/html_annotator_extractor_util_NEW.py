@@ -14,7 +14,7 @@ import charts_util
 import IO_libraries_util
 import IO_user_interface_util
 
-if IO_libraries_util.install_all_packages("html_annotator_extractor_util",['os','tkinter','re','csv','ntpath'])==False:
+if IO_libraries_util.install_all_Python_packages("html_annotator_extractor_util",['os','tkinter','re','csv','ntpath'])==False:
     sys.exit(0)
 
 import re

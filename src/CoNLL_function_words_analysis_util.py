@@ -17,7 +17,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"function_words_analysis_main",['csv','os','collections','tkinter','ntpath'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"function_words_analysis_main",['csv','os','collections','tkinter','ntpath'])==False:
     sys.exit(0)
 
 import os
@@ -94,7 +94,8 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
                                                             complete_sid=False)  # TODO to be changed
 
             if chart_outputFilename != None:
-                filesToOpen.append(chart_outputFilename)
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
 
     # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running PRONOUN Analysis at', True, '', True, startTime, True)
     return filesToOpen
@@ -146,7 +147,9 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
                                                             complete_sid=False)  # TODO to be changed
 
             if chart_outputFilename != None:
-                filesToOpen.append(chart_outputFilename)
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
+
     return filesToOpen
 
 def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createCharts, chartPackage):
@@ -197,7 +200,8 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
                                                             complete_sid=False)  # TODO to be changed
 
             if chart_outputFilename != None:
-                filesToOpen.append(chart_outputFilename)
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
     return filesToOpen
 
 def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutputFiles,createCharts, chartPackage):
@@ -245,7 +249,8 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
                                                             complete_sid=False)  # TODO to be changed
 
             if chart_outputFilename != None:
-                filesToOpen.append(chart_outputFilename)
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
 
             # function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, outputDir, '.xlsx', 'FW', 'Conjunctions', 'stats_pie_chart')
             # filesToOpen.append(function_words_stats_file_name)
@@ -298,7 +303,8 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
                                                             complete_sid=False)  # TODO to be changed
 
             if chart_outputFilename != None:
-                filesToOpen.append(chart_outputFilename)
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
 
             return filesToOpen
 

@@ -2,7 +2,7 @@
 Author: Matthew Chau November 2019
 Edited: Roberto Franzosi, Claude Hu August 2020
 The script takes an input txt file that contains section headings (e.g., chapter titles)
-    and splits it into sub-documents, 
+    and splits it into sub-documents,
     one document for each of the headings listed in a TOC file (Table of Content)
 """
 
@@ -10,7 +10,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"File_splitter_ByTOC",['os','io','re','ntpath','tkinter','shutil'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"File_splitter_ByTOC",['os','io','re','ntpath','tkinter','shutil'])==False:
     sys.exit(0)
 
 import io

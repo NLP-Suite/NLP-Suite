@@ -7,7 +7,7 @@ from tracemalloc import start
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "knowledge_graph_DBpedia_util.py",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "knowledge_graph_DBpedia_util.py",
                                           ['os', 'SPARQLWrapper', 'requests', 'urllib', 'ssl', 'shutil']) == False:
     sys.exit(0)
 

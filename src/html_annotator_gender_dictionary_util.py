@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if not IO_libraries_util.install_all_packages(GUI_util.window,"html_annotator_gender_dictionary_util",['tkinter','pandas','stanza']):
+if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"html_annotator_gender_dictionary_util",['tkinter','pandas','stanza']):
     sys.exit(0)
 
 import os

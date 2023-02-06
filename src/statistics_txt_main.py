@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"statistics_txt_main.py",['os','csv','tkinter','ntpath','collections','subprocess'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"statistics_txt_main.py",['os','csv','tkinter','ntpath','collections','subprocess'])==False:
     sys.exit(0)
 
 import os

@@ -10,7 +10,7 @@ import GUI_util
 import IO_libraries_util
 import pandas as pd
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "Verb Analysis",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "Verb Analysis",
 										  ['csv', 'os', 'collections', 'tkinter']) == False:
 	sys.exit(0)
 
@@ -184,7 +184,8 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 												   hover_info_column_list=[],
 												   count_var=count_var)
 		if chart_outputFilename != None:
-			filesToOpen.append(chart_outputFilename)
+			if len(chart_outputFilename) > 0:
+				filesToOpen.extend(chart_outputFilename)
 
 	return filesToOpen
 
@@ -282,7 +283,8 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 												   count_var=count_var,
 												   complete_sid=False)  # TODO to be changed
 		if chart_outputFilename != None:
-			filesToOpen.append(chart_outputFilename)
+			if len(chart_outputFilename) > 0:
+				filesToOpen.extend(chart_outputFilename)
 
 	return filesToOpen
 
@@ -391,7 +393,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 												   		 complete_sid=False)  # TODO to be changed
 		if chart_outputFilename != None:
 			if len(chart_outputFilename) > 0:
-				filesToOpen.append(chart_outputFilename)
+				filesToOpen.extend(chart_outputFilename)
 
 		# # temporary headers added, not sure why the verb_voice_list doesn't have headers
 		# df = pd.read_csv(verb_file_name, header=None, encoding='utf-8', error_bad_lines=False)

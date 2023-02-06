@@ -12,30 +12,54 @@ import GUI_IO_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(window, inputFilename, inputDir, outputDir, selectedFile, extract_sentences_search_words_var):
+def run(window, inputFilename, inputDir, outputDir, selectedFile,
+            openOutputFiles,
+            createCharts,
+            chartPackage,
+            sample_by_keywords_inFilename,
+            keywords_inFilename,
+            sample_by_keywords_inDocument,
+            keywords_inDocument):
 
-    # if extract_sentences_var:
-        # it is better to open the GUI that will allow search options (e.g., case sensitive)
-        # import sentence_analysis_util
-        # statistics_txt_util.extract_sentences(window, inputFilename, inputDir, outputDir, extract_sentences_search_words_var)
-        # extract_sentences_search_words_var=''
-        # search_words_entry.configure(state='disabled')
-        # return
+    outputDir = os.path.join(inputDir, 'subcorpus_search')
 
-    if selectedFile=='':
-        mb.showwarning(title='Warning',
-                       message='The RUN command needs a csv file to be used to sample files by Document ID. Alternatively... click on any of the buttons to open a GUI.')
+    if sample_by_keywords_inFilename:
+        if keywords_inFilename=='':
+            mb.showwarning(title='Warning',message='You have selected the option of creating a subcorpus of the input files based on search words found in the filenames, but no search words have been entered.\n\nPlease, enter the search words that a filename must contain and try again.')
+            return
+        import sample_corpus_util
+        sample_corpus_util.sample_corpus_by_search_words_inFileName(window, inputDir, keywords_inFilename)
+    elif sample_by_keywords_inDocument:
+        if keywords_inDocument=='':
+            mb.showwarning(title='Warning',message='You have selected the option of creating a subcorpus of the input files based on search words foound in the input documents, but no search words have been entered.\n\nPlease, enter the search words that documents must contain and try again.')
+            return
+
+        import file_search_byWord_util
+        outputDir = os.path.join(inputDir, 'subcorpus_search')
+        filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dictionary=False,
+                                              search_by_search_keywords=True, search_keywords_list=keywords_inDocument, create_subcorpus_var=True, search_options_list=[], lang='English',
+                                              createCharts=createCharts, chartPackage=chartPackage)
+    else:
+        mb.showwarning(title='Warning',message='The selected option is not available yet. Please, check back soon.\n\nSorry!')
         return
-    import sample_corpus_util
-    sample_corpus_util.sample_corpus_by_document_id(selectedFile, inputDir, outputDir)
 
+    if openOutputFiles == True:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+
+    # sample_corpus_util.sample_corpus_by_document_id(selectedFile, inputDir, outputDir)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(window, GUI_util.inputFilename.get(),
                                GUI_util.input_main_dir_path.get(),
                                GUI_util.output_dir_path.get(),
                                selectedFile.get(),
-                               extract_sentences_search_words_var.get())
+                               GUI_util.open_csv_output_checkbox.get(),
+                               GUI_util.create_chart_output_checkbox.get(),
+                               GUI_util.charts_package_options_widget.get(),
+                               sample_by_keywords_inFilename_var.get(),
+                               keywords_inFilename_var.get(),
+                               sample_by_keywords_inDocument_var.get(),
+                               keywords_inDocument_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -77,11 +101,14 @@ config_filename=GUI_util.config_filename
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
-extract_sentences_var = tk.IntVar()
-extract_sentences_search_words_var = tk.StringVar()
-selectedFile_var=tk.StringVar()
+selectedFile_var = tk.StringVar()
 
 def clear(e):
+    selectedFile_var.set('')
+    date_value_var.set('')
+    keywords_inFilename_var.set('')
+    keywords_inDocument_var.set('')
+
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -107,7 +134,7 @@ y_multiplier_integer= y_multiplier_integer +.5
 
 sample_by_documentID_var = tk.IntVar()
 sample_by_documentID_checkbox = tk.Checkbutton(window, text='Sample files by Document ID', variable=sample_by_documentID_var,
-                                    onvalue=1, command=lambda:activate_visualization_options(()))
+                                    onvalue=1, command=lambda:activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    sample_by_documentID_checkbox,
@@ -129,7 +156,7 @@ x_coordinate_hover_over = GUI_IO_util.labels_x_indented_coordinate+500
 
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
-                                               openFile_button, True, False, True, False, 90, x_coordinate_hover_over, "Open selected csv file")
+                                               openFile_button, True, False, True, False, 90, GUI_IO_util.setup_pop_up_text_widget, "Open selected csv file")
 
 selectedFile_var.set('')
 selectedFile=tk.Entry(window, width=GUI_IO_util.widget_width_long,textvariable=selectedFile_var)
@@ -138,7 +165,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_c
 
 sample_by_date_var = tk.IntVar()
 sample_by_date_checkbox = tk.Checkbutton(window, text='Sample files by date in filename', variable=sample_by_date_var,
-                                    onvalue=1, command=lambda:activate_visualization_options(()))
+                                    onvalue=1, command=lambda:activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    sample_by_date_checkbox,
@@ -206,8 +233,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                y_multiplier_integer,
                                                date_menu,
                                                True, False, False, False, 90,
-                                               GUI_IO_util.open_setup_x_coordinate,
-                                               'Select the date value to be used in filtering files by date')
+                                               GUI_IO_util.labels_x_indented_coordinate + 200,
+                                               'Select the date value to be used for filtering files by date')
 
 comparator_var = tk.StringVar()
 comp_menu_values = ['<>', '=', '>', '>=', '<', '<=']
@@ -220,7 +247,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                y_multiplier_integer,
                                                comparator_menu,
                                                True, False, False, False, 90,
-                                               GUI_IO_util.open_setup_x_coordinate,
+                                               GUI_IO_util.labels_x_indented_coordinate + 400,
                                                'Select the comparator operator to be used in filtering files by date')
 
 date_value_var = tk.StringVar()
@@ -228,7 +255,7 @@ date_value_var.set('')
 date_value = tk.Entry(window,width=GUI_IO_util.widget_width_short,textvariable=date_value_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.date_char_sep_lb_coordinate, y_multiplier_integer,
                     date_value, False, False, True, False,
-                    90, GUI_IO_util.watch_videos_x_coordinate,
+                    90, GUI_IO_util.date_char_sep_lb_coordinate,
                     "Enter the date value to be used in filtering files by date (e.g., 1995, 12-11-1898)")
 def check_dateFields(*args):
     if sample_by_date_var.get() == 1:
@@ -241,43 +268,119 @@ def check_dateFields(*args):
         date_position_menu.config(state="disabled")
 sample_by_date_var.trace('w',check_dateFields)
 
-sample_by_string_var = tk.IntVar()
-sample_by_string_checkbox = tk.Checkbutton(window, text='Sample files by string in filename', variable=sample_by_string_var,
-                                    onvalue=1, command=lambda:activate_visualization_options(()))
+sample_by_keywords_inFilename_var = tk.IntVar()
+sample_by_keywords_inFilename_checkbox = tk.Checkbutton(window, text='Sample files by string in filename', variable=sample_by_keywords_inFilename_var,
+                                    onvalue=1, command=lambda:activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   sample_by_string_checkbox,
+                                   sample_by_keywords_inFilename_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Tick the checkbox if you wish to sample your corpus by a string contained in the filename (NOT THE DOCUMENT CONTENT)")
 
-string_value_var = tk.StringVar()
-string_value_var.set('')
-string_value = tk.Entry(window,width=GUI_IO_util.widget_width_long,textvariable=string_value_var)
+keywords_inFilename_var = tk.StringVar()
+keywords_inFilename_var.set('')
+keywords_inFilename_value = tk.Entry(window,width=GUI_IO_util.widget_width_long,textvariable=keywords_inFilename_var)
 
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
-                    string_value, False, False, True, False,
+                    keywords_inFilename_value, False, False, True, False,
                     90, GUI_IO_util.watch_videos_x_coordinate,
                     "Enter the comma-separated, case-sensitive words/set of words that a FILENAME (NOT DOCUMENT CONTENT) must contain")
 
-
-search_by_keyword_var = tk.IntVar()
-search_by_keyword_var.set(0)
-search_by_keyword_checkbox = tk.Checkbutton(window, text='Sample corpus by search word(s)', variable=search_by_keyword_var, onvalue=1, offvalue=0)
+sample_by_keywords_inDocument_var = tk.IntVar()
+sample_by_keywords_inDocument_var.set(0)
+sample_by_keywords_inDocument_checkbox = tk.Checkbutton(window, text='Sample corpus by search word(s)', variable=sample_by_keywords_inDocument_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                    search_by_keyword_checkbox, True, False, True, False,
+                    sample_by_keywords_inDocument_checkbox, True, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate,
                     "Tick the checkbox to sample your corpus by word(s) contained in your document(s) (NOT THE FILENAME) (e.g, coming out, standing in line, boyfriend)")
 
-keyword_value_var = tk.StringVar()
-keyword_value_var.set('')
-keyword_value = tk.Entry(window,width=GUI_IO_util.widget_width_long,textvariable=keyword_value_var)
+keywords_inDocument_var = tk.StringVar()
+keywords_inDocument_var.set('')
+keywords_inDocument_value = tk.Entry(window,width=GUI_IO_util.widget_width_long,textvariable=keywords_inDocument_var)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
-                    keyword_value, False, False, True, False,
+                    keywords_inDocument_value, False, False, True, False,
                     90, GUI_IO_util.watch_videos_x_coordinate,
                     "Enter the comma-separated, case-sensitive words/set of words that a DOCUMENT (NOT FILENAME) must contain (e.g, coming out, standing in line, boyfriend).")
 
+def activate_all_options():
+    sample_by_documentID_checkbox.configure(state='normal')
+    sample_by_date_checkbox.configure(state='normal')
+    sample_by_keywords_inFilename_checkbox.configure(state='normal')
+    sample_by_keywords_inDocument_checkbox.configure(state='normal')
+
+    sample_by_documentID_button.configure(state="disabled")
+    openFile_button.configure(state="disabled")
+    selectedFile.configure(state="disabled")
+
+    date_format_menu.configure(state="disabled")
+    date_separator.configure(state="disabled")
+    date_position_menu.configure(state="disabled")
+    date_menu.configure(state="disabled")
+    comparator_menu.configure(state="disabled")
+    date_value.configure(state="disabled")
+
+    keywords_inFilename_value.configure(state="disabled")
+
+    keywords_inDocument_value.configure(state="disabled")
+
+    if sample_by_documentID_var.get():
+        sample_by_documentID_button.configure(state="normal")
+        openFile_button.configure(state="normal")
+        selectedFile.configure(state="normal")
+
+        # sample_by_documentID_checkbox.configure(state='disabled')
+        sample_by_date_checkbox.configure(state='disabled')
+        sample_by_keywords_inFilename_checkbox.configure(state='disabled')
+        sample_by_keywords_inFilename_checkbox.configure(state='disabled')
+
+        date_value_var.set('')
+        keywords_inFilename_var.set('')
+        keywords_inDocument_var.set('')
+
+    elif sample_by_date_var.get():
+        date_format_menu.configure(state="normal")
+        date_separator.configure(state="normal")
+        date_position_menu.configure(state="normal")
+        date_menu.configure(state="normal")
+        comparator_menu.configure(state="normal")
+        date_value.configure(state="normal")
+
+        sample_by_documentID_checkbox.configure(state='disabled')
+        # sample_by_date_checkbox.configure(state='disabled')
+        sample_by_keywords_inFilename_checkbox.configure(state='disabled')
+        sample_by_keywords_inDocument_checkbox.configure(state='disabled')
+
+        selectedFile_var.set('')
+        keywords_inFilename_var.set('')
+        keywords_inDocument_var.set('')
+
+    elif sample_by_keywords_inFilename_var.get():
+        keywords_inFilename_value.configure(state="normal")
+
+        sample_by_documentID_checkbox.configure(state='disabled')
+        sample_by_date_checkbox.configure(state='disabled')
+        # sample_by_keywords_inFilename_var.configure(state='disabled')
+        sample_by_keywords_inDocument_checkbox.configure(state='disabled')
+
+        selectedFile_var.set('')
+        date_value_var.set('')
+        keywords_inDocument_var.set('')
+
+    elif sample_by_keywords_inDocument_var.get():
+        keywords_inDocument_value.configure(state="normal")
+
+        sample_by_documentID_checkbox.configure(state='disabled')
+        sample_by_date_checkbox.configure(state='disabled')
+        sample_by_keywords_inFilename_checkbox.configure(state='disabled')
+        # search_by_keyword_checkbox.configure(state='disabled')
+
+        selectedFile_var.set('')
+        date_value_var.set('')
+        keywords_inFilename_var.set('')
+
+activate_all_options()
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -306,10 +409,13 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                   "Please, enter the varoius options for filtering your corpus by date.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, tick the checkbox to sample your corpus by a specific string in the filename.")
+                                  "Please, tick the checkbox to sample your corpus by a specific string in the filename of the input documents." \
+                                  "\n\nIn INPUT the scripts expect a set of txt files in a directory." \
+                                  "\n\nIn OUTPUT the algorithm will export all the txt files that contain the search words in the filename to a directory called 'subcorpus_search' inside the input directory. It will also generate a set of csv files in the same directory.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, tick the checkbox to sample your corpus by specific word(s) in the text file.")
-    # \nAfter clicking the button the data entry widget will be become available. You can enter there, the comma separated list of strings to be used to search the input text file(s) and export all the sentences where the search strings were found.\n\nIn INPUT the function takes the txt file(s) listed in the Setup I/O configuration widget.\n\nIn OUTPUT the function will create a 'sentences_' subdirectory of the output directory with two further subdirectories: extract and extract_wo-searchword. The two subdirectories contain, respectively, the same input file(s) with only the sentences that match the search string(s) (extract) and the the sentences that do NOT match the search string(s) (extract_wo-searchword).
+                                  "Please, tick the checkbox to sample your corpus by specific word(s) in the input documents." \
+                                    "\n\nIn INPUT the scripts expect a set of txt files in a directory." \
+                                    "\n\nIn OUTPUT the algorithm will export all the txt files that contain the search words to a directory called 'subcorpus_search' inside the input directory. It will also generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

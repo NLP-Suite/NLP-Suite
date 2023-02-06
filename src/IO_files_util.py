@@ -5,7 +5,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-# if not IO_libraries_util.install_all_packages(GUI_util.window,"DB_SQL",['io','os','tkinter','subprocess','re','datetime','shutil','ntpath']):
+# if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"DB_SQL",['io','os','tkinter','subprocess','re','datetime','shutil','ntpath']):
 #     sys.exit(0)
 
 import os
@@ -166,7 +166,7 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False):
             files.append(str(path))
         if len(files) == 0:
             mb.showwarning(title='Input files error',
-                           message='No files of type ' + fileType + ' found in the directory ' + inputDir)
+                           message='No files of type ' + fileType + ' found in the directory\n\n' + inputDir)
     else:
         if not checkFile(inputFile):
             return files
@@ -605,7 +605,7 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
 
     if sys.platform == 'win32':  # Windows
         if len(outFilename)>255:
-            mb.showwarning(title='Warning',message='The length (' + str(len(outFilename)) + ' characters) of the filename ' + outFilename + ' exceeds the maximum length of 255 characters allowed by Windows Operating System.\n\nPlease, reduce the filename length.')
+            mb.showwarning(title='Warning',message='The length (' + str(len(outFilename)) + ' characters) of the filename\n\n' + outFilename + '\n\nexceeds the maximum length of 255 characters allowed by Windows Operating System.\n\nPlease, reduce the filename length and try again.')
 
     return outFilename
 

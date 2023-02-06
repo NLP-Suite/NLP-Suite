@@ -9,11 +9,11 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"file_splitter_ByNumber_util",['os'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"file_splitter_ByNumber_util",['os'])==False:
     sys.exit(0)
 
 import os
-    
+
 #This function split a txt file by recognizing number sequence in lines, and naming subfiles by the number recognized
 def run(inputFilename, outputPath, post_number_string = ''):
     #post_number_string is the string behind each number
@@ -23,13 +23,13 @@ def run(inputFilename, outputPath, post_number_string = ''):
     lines = []#list of each line in the txt files
     with open(inputFilename, 'r', encoding='utf-8',errors='ignore') as iptf: #read each line
         line = iptf.readline()
-        while line: 
+        while line:
             lines.append(line)
             line = iptf.readline()
     subfilename = outputPath+"/"+title+"_prenumber"+".txt"#first splitfile: the contents before the first number at the head of one line
     subfile = open(subfilename, 'w',encoding='utf-8',errors='ignore')
     j = len(post_number_string)
-    for l in lines: 
+    for l in lines:
         spaceless = l.lstrip()#get rid of spaces at the head of one line
         recognized = True
         if len(spaceless) > 0 and spaceless[0].isdigit():#not a blank line and the head character is a number
@@ -38,13 +38,13 @@ def run(inputFilename, outputPath, post_number_string = ''):
             while spaceless[i].isdigit():#colect all digits of the number
                 num += l.lstrip()[i]
                 i += 1
-                
+
             if len(post_number_string) > 0 and spaceless[i: i + j] != post_number_string:#if the number has post_number_string behind it
-                recognized = False         
-        else: 
-            recognized = False  
-        
-        if recognized: 
+                recognized = False
+        else:
+            recognized = False
+
+        if recognized:
             subfilename = outputPath+"/"+title+"_"+num+".txt"#split file with the number in its title
             i = 1
             while os.path.exists(subfilename):

@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"WordNet",['os','csv','tkinter','subprocess','nltk','pandas'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"WordNet",['os','csv','tkinter','subprocess','nltk','pandas'])==False:
     sys.exit(0)
 
 import os
@@ -83,6 +83,13 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
 # what matters is the first column; and there can be multiple columns tha will not be processed
 def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_verb,openOutputFiles,createCharts, chartPackage, language_var=''):
     filesToOpen=[]
+    WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('SVO_main',
+                                                                                                      'WordNet',
+                                                                                                      silent=False,
+                                                                                                      only_check_missing=False)
+    if WordNetDir == None or WordNetDir == '':
+        return filesToOpen
+
     if language_var=='' and language_var!='English':
         reminders_util.checkReminder(
             config_filename,

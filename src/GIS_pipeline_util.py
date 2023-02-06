@@ -113,8 +113,8 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     outputCsvLocationsOnly = ''
 
     software=config_filename.replace('_config.csv','')
-    GoogleEarthProDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir(software + ', with the option of mappping locations,','Google Earth Pro', silent=True, only_check_missing=False)
-    if GoogleEarthProDir == None:
+    GoogleEarthProDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('GIS_pipeline_util','Google Earth Pro', silent=False, only_check_missing=False)
+    if GoogleEarthProDir == None or GoogleEarthProDir == '':
         return
 
     startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS pipeline at',

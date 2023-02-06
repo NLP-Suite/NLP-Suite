@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "Social Science Research",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "Social Science Research",
                                           ['os', 'tkinter', 'subprocess', 'csv']) == False:
     sys.exit(0)
 
@@ -199,7 +199,8 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
                                                   column_xAxis_label_var='Classes of percentage duplication',
                                                   hover_info_column_list=hover_label)
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
         # Plot Lucene_classes_time_freq.csv line plot (temporal plot); outputFilenameCSV_2
         if fileName_embeds_date:
@@ -217,7 +218,8 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
                                                       column_xAxis_label_var='Year',
                                                       hover_info_column_list=hover_label)
             if chart_outputFilename != None:
-                filesToOpen.append(chart_outputFilename)
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
 
         # No plot for Lucene_document_classes_freq.csv
         #   because it could potentially have thousands of documents
@@ -237,7 +239,8 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
                                                   column_xAxis_label_var='',
                                                   hover_info_column_list=hover_label)
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running PLAGIARIST at', True, '', True, startTime)
 
@@ -260,8 +263,8 @@ def run(inputDir, input_secondary_dir_path, outputDir, openOutputFiles, createCh
     global filesToOpen
     filesToOpen = []
     # check that the CoreNLPdir as been setup
-    CoreNLPdir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('social_science_research', 'Stanford CoreNLP', silent=True, only_check_missing=False)
-    if CoreNLPdir==None:
+    CoreNLPdir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('social_science_research_main', 'Stanford CoreNLP', silent=False, only_check_missing=False)
+    if CoreNLPdir==None or CoreNLPdir=='':
         return filesToOpen
 
     if (check_filename_var == False and character_var == False and character_home_var == False and missing_character_var == False and intruder_var == False and Levenshtein_var==False and ancestor_var == False and plagiarist_var == False):

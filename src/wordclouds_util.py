@@ -5,7 +5,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"wordclouds_util",['wordcloud','numpy','matplotlib','ntpath','PIL','stanza','csv'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"wordclouds_util",['wordcloud','numpy','matplotlib','ntpath','PIL','stanza','csv'])==False:
     sys.exit(0)
 
 # The script uses Andreas Christian Mueller WordCloud package
@@ -392,6 +392,16 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
     global filesToOpen
     filesToOpen=[]
 
+    if differentColumns_differentColors==True or inputFilename[-3:]=='csv':
+        fileType='.csv'
+    else:
+        fileType='.txt'
+
+    inputDocs=IO_files_util.getFileList(inputFilename, inputDir,fileType, silent=False)
+    nDocs=len(inputDocs)
+    if nDocs==0:
+        return filesToOpen
+
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='wordcloud',
                                                        silent=True)
@@ -409,11 +419,6 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
         prefer_horizontal=.9
     else:
         prefer_horizontal=1
-
-    if differentColumns_differentColors==True or inputFilename[-3:]=='csv':
-        fileType='.csv'
-    else:
-        fileType='.txt'
 
     img = None
 
@@ -459,11 +464,6 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
     # if differentColumns_differentColors:
     #     processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles, csvField_color_list, doNotListIndividualFiles, bg_image=img, bg_image_flag=use_contour_only)
     #     return
-
-    inputDocs=IO_files_util.getFileList(inputFilename, inputDir,fileType, silent=False)
-    nDocs=len(inputDocs)
-    if nDocs==0:
-        return
 
     # RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, GREY for ADVERBS
     #   YELLOW for anything else; no longer used
@@ -596,7 +596,8 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
                             if lowercase:
                                 if word_str=='':
                                     word_str = word.text
-                                word_str = word_str.lower()
+                                if word_str!=None:
+                                    word_str = word_str.lower()
                             if exclude_punctuation:
                                 if word.pos == "PUNCT":
                                     continue  # do not process stopwords & punctuation marks

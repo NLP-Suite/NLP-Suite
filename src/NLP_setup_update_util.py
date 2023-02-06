@@ -7,7 +7,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "NLP_setup_update_main.py",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "NLP_setup_update_util.py",
                                           ['pygit2']) == False:
     sys.exit(0)
 
@@ -30,7 +30,7 @@ import config_util
 # current_config_input_output_alphabetic_options value returned in GUI_util by config_util.read_config_file
 # called from GUI_util when hitting CLOSE
 def exit_window(window, local_release_version, GitHub_release_version):
-    # if IO_libraries_util.install_all_packages(window, "GUI_IO_util.py",
+    # if IO_libraries_util.install_all_Python_packages(window, "GUI_IO_util.py",
     #                                           ['pygit2']) == False:
     #     sys.exit(0)
 

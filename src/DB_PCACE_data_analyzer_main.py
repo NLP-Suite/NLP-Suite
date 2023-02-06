@@ -3,7 +3,7 @@ import sys
 import IO_libraries_util
 import GUI_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "DB_PC-ACE_data_analyzer_main.py", ['os', 'tkinter','pandas'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "DB_PC-ACE_data_analyzer_main.py", ['os', 'tkinter','pandas'])==False:
     sys.exit(0)
 
 import os
@@ -27,7 +27,7 @@ import charts_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
-        simplex_data_text, simplex_data_date, simplex_data_number,
+        simplex_data_type, simplex_data,
         setup_complex,setup_simplex,
         ALL_complex_objects_frequencies_var, SELECTED_complex_objects_frequencies_var,
         ALL_simplex_objects_frequencies_var, SELECTED_simplex_objects_frequencies_var,
@@ -164,9 +164,8 @@ run_script_command=lambda: run(
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
-                                simplex_data_text.get(),
-                                simplex_data_date.get(),
-                                simplex_data_number.get(),
+                                simplex_data_type_var.get(),
+                                simplex_data.get(),
                                 setup_complex.get(),
                                 setup_simplex.get(),
                                 ALL_complex_objects_frequencies_var.get(),
@@ -277,45 +276,60 @@ select_DB_tables['values'] = table_menu_values
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120,y_multiplier_integer,select_DB_tables)
 
 
+simplex_data_type_lb = tk.Label(window, text='Data type ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,simplex_data_type_lb,True)
 
-simplex_data_text_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_complex.csv'))
-
-simplex_data_text = ttk.Combobox(window, width=GUI_IO_util.widget_width_short)
-# setup_complex.configure(state='disabled')
-simplex_data_text['values'] = simplex_data_text_menu
+simplex_data_type_var= tk.StringVar()
+simplex_data_type_var.set('date')
+simplex_data_type_menu = tk.OptionMenu(window, simplex_data_type_var, 'text','date', 'number')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120, y_multiplier_integer,
-                                   simplex_data_text,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate+120,
-                                   "Use the dropdown menu to select the simplex TEXT data value for which you want to find simplex & complex objects usage")
+                                   simplex_data_type_menu,
+                                   True, False, True, False, 90, GUI_IO_util.open_S_dictionary,
+                                   "Use the dropdown menu to select the data type to be used to extract a list of values.")
+
+simplex_data_menu_var = tk.StringVar()
+simplex_data_menu_var.set('ANNA')
+simplex_data_menu = ttk.Combobox(window, textvariable = simplex_data_menu_var, width=GUI_IO_util.widget_width_short)
+# simplex_data_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_simplex.csv'))
+# simplex_data_menu = DB_PCACE_data_analyzer_util...YOUR FUNCTION ANNA with simplex_data_menu_var
+
+simplex_data = ttk.Combobox(window, width=GUI_IO_util.widget_width_short)
+# setup_complex.configure(state='disabled')
+simplex_data['values'] = simplex_data_menu
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+300, y_multiplier_integer,
+                                   simplex_data,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate+300,
+                                   "Use the dropdown menu to select the simplex data type value (e.g., police) for which you want to find simplex & complex objects usage")
 
 # simplex_data_date_lb = tk.Label(window, text='Date ')
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,y_multiplier_integer,simplex_data_date_lb,True)
 
-simplex_data_date_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_complex.csv'))
-
-simplex_data_date = ttk.Combobox(window, width=GUI_IO_util.widget_width_short)
-# setup_complex.configure(state='disabled')
-simplex_data_date['values'] = simplex_data_date_menu
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate-10, y_multiplier_integer,
-                                   simplex_data_date,
-                                   True, False, True, False, 90, GUI_IO_util.setup_IO_brief_coordinate-10,
-                                   "Use the dropdown menu to select the simplex DATE data value for which you want to find simplex & complex objects usage")
-
-# simplex_data_number_lb = tk.Label(window, text='Number ')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,y_multiplier_integer,simplex_data_number_lb,True)
-
-simplex_data_number_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_complex.csv'))
-
-simplex_data_number = ttk.Combobox(window, width=GUI_IO_util.widget_width_short)
-# setup_complex.configure(state='disabled')
-simplex_data_number['values'] = simplex_data_number_menu
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate+340, y_multiplier_integer,
-                                   simplex_data_number,
-                                   False, False, True, False, 90, GUI_IO_util.setup_IO_brief_coordinate-10,
-                                   "Use the dropdown menu to select the simplex NUMBER data value for which you want to find simplex & complex objects usage")
+# simplex_data_date_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_simplex.csv'))
+#
+# simplex_data_date = ttk.Combobox(window, width=GUI_IO_util.widget_width_short)
+# # setup_complex.configure(state='disabled')
+# simplex_data_date['values'] = simplex_data_date_menu
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate-10, y_multiplier_integer,
+#                                    simplex_data_date,
+#                                    True, False, True, False, 90, GUI_IO_util.setup_IO_brief_coordinate-10,
+#                                    "Use the dropdown menu to select the simplex DATE data value for which you want to find simplex & complex objects usage")
+#
+# # simplex_data_number_lb = tk.Label(window, text='Number ')
+# # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,y_multiplier_integer,simplex_data_number_lb,True)
+#
+# simplex_data_number_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_simplex.csv'))
+#
+# simplex_data_number = ttk.Combobox(window, width=GUI_IO_util.widget_width_short)
+# # setup_complex.configure(state='disabled')
+# simplex_data_number['values'] = simplex_data_number_menu
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate+340, y_multiplier_integer,
+#                                    simplex_data_number,
+#                                    False, False, True, False, 90, GUI_IO_util.setup_IO_brief_coordinate-10,
+#                                    "Use the dropdown menu to select the simplex NUMBER data value for which you want to find simplex & complex objects usage")
 
 complex_objects_lb = tk.Label(window, text='Complex objects ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complex_objects_lb,True)
@@ -334,7 +348,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Use the dropdown menu to select a specific complex object for which to compute frequencies.\nWhen a hierarchical complex object is selected (e.g., macro-event or event) and the checkbox Semantic triplets below is ticked...\n...semantic triplets will be listed in chronological order within the specific higher-level hierarchical complex object selected (e.g., macro-events, events).")
 
 ALL_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for ALL objects', variable=ALL_complex_objects_frequencies_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ALL_complex_objects_checkbox, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ALL_complex_objects_checkbox,True)
 
 SELECTED_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for SELECTED object', variable=SELECTED_complex_objects_frequencies_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+300,y_multiplier_integer,SELECTED_complex_objects_checkbox)

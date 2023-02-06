@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "Ngrams-CoOccurrence_Viewer",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "Ngrams-CoOccurrence_Viewer",
                                 ['subprocess', 'os', 'tkinter', 'datetime','pandas','csv','glob','numpy']) == False:
     sys.exit(0)
 
@@ -251,7 +251,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                   chart_title=chartTitle, column_xAxis_label_var=xAxis,
                                                   hover_info_column_list=hover_label)
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
     # plot co-occurrences
     if createCharts and co_occurrences_outputFile!='':
@@ -277,7 +278,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                chart_title_label='')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
-                    filesToOpen.append(chart_outputFilename)
+                    filesToOpen.extend(chart_outputFilename)
 
     # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences end',
     #                     'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime,True)

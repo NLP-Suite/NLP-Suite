@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"what\'s in your corpus",['os','tkinter','subprocess'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"what\'s in your corpus",['os','tkinter','subprocess'])==False:
     sys.exit(1)
 
 import os
@@ -382,9 +382,6 @@ def run(inputFilename,inputDir, outputDir,
                                                                   silent=True)
         if nouns_var or verbs_var:
             if nouns_var or verbs_var or what_else_menu_var == '*':
-                WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('whats_in_your_corpus', 'WordNet', silent=True, only_check_missing=False)
-                if WordNetDir == None:
-                    return
                 if language_var != 'English':
                     reminders_util.checkReminder(
                         config_filename,
@@ -397,28 +394,30 @@ def run(inputFilename,inputDir, outputDir,
                                                 outputDir_what_else, openOutputFiles, createCharts, chartPackage,
                                                 annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
                     if len(files) > 0:
-                            noun_verb=''
-                            if verbs_var == True:
-                                inputFilename = files[0] # Verbs but... double check
-                                if "verbs" in inputFilename.lower():
-                                    noun_verb='VERB'
-                                else:
-                                    return
-                                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
-                                                                            openOutputFiles, createCharts, chartPackage, language_var)
-                                if output!=None:
-                                    filesToOpen.append(output)
+                        # the WordNet installation directory is now checked in aggregate_GoingUP
+                        WordNetDir = ''
+                        noun_verb=''
+                        if verbs_var == True:
+                            inputFilename = files[0] # Verbs but... double check
+                            if "verbs" in inputFilename.lower():
+                                noun_verb='VERB'
+                            else:
+                                return
+                            output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
+                                                                        openOutputFiles, createCharts, chartPackage, language_var)
+                            if output!=None and output!='':
+                                filesToOpen.append(output)
 
-                            if nouns_var == True:
-                                inputFilename = files[1]  # Nouns but... double check
-                                if "nouns" in inputFilename.lower():
-                                    noun_verb='NOUN'
-                                else:
-                                    return
-                                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
-                                                                            openOutputFiles, createCharts, chartPackage, language_var)
-                                if output!=None:
-                                    filesToOpen.append(output)
+                        if nouns_var == True:
+                            inputFilename = files[1]  # Nouns but... double check
+                            if "nouns" in inputFilename.lower():
+                                noun_verb='NOUN'
+                            else:
+                                return
+                            output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
+                                                                        openOutputFiles, createCharts, chartPackage, language_var)
+                            if output!=None and output!='':
+                                filesToOpen.append(output)
                     else:
                         if (what_else_var and what_else_menu_var == '*'):
                             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Missing WordNet',

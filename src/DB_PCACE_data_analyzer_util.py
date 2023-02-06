@@ -3,7 +3,7 @@ import sys
 import IO_libraries_util
 import GUI_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "DB_PC-ACE_data_analyzer_main.py", ['os', 'tkinter','pandas','numpy'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "DB_PC-ACE_data_analyzer_main.py", ['os', 'tkinter','pandas','numpy'])==False:
     sys.exit(0)
 
 import numpy as np
@@ -43,6 +43,23 @@ def import_PCACE_tables(inputDir):
         tableList=[]
     return tableList
 
+# find the id of the input complex (name)
+# parameter: name of an complex in list type, dataframe of setup_Complex
+# return: a dataframe: id, name of the input complex
+def find_setup_id(complex, setup_Complex):
+    data = setup_Complex[setup_Complex['Name'].isin(complex)]
+    data = data[['ID_setup_complex', 'Name']]
+    data['ID_setup_complex'] = [int(x) for x in data['ID_setup_complex']]
+    return data
+
+# find the id of the input simplex (name)
+# parameter: name of an complex in list type, dataframe of setup_Complex
+# return: a dataframe: id, name of the input complex
+def find_setup_id_simplex(simplex, setup_Simplex):
+    data = setup_Simplex[setup_Simplex['Name'].isin(simplex)]
+    data = data[['ID_setup_simplex', 'Name']]
+    data['ID_setup_simplex'] = [int(x) for x in data['ID_setup_simplex']]
+    return data
 
 # give the list for all table names (e.g., simplex, complex)
 # parameter: dataframe of setup_Complex or filename with path
@@ -87,6 +104,32 @@ def give_all_complex_name(setup_Complex):
             list_complex_name.sort()
     return list_complex_name
 
+# helper method for give_Simplex_text / give_Simplex_date / give_Simplex_number
+def give_all_Simplex(data):
+    data = data[data['Value'].notna()]
+    simplex = data['Value'].values.tolist()
+    return simplex
+
+# give all simplex in data_SimplexText.csv
+def give_Simplex_text(inputDir):
+    data_SimplexText = os.path.join(inputDir, 'data_SimplexText.csv')
+    if os.path.isfile(data_SimplexText):
+        data_SimplexText_df = pd.read_csv(data_SimplexText)
+    return give_all_Simplex(data_SimplexText_df);
+
+# give all simplex in data_SimplexDate.csv
+def give_Simplex_date(inputDir):
+    data_SimplexDate = os.path.join(inputDir, 'data_SimplexDate.csv')
+    if os.path.isfile(data_SimplexDate):
+        data_SimplexDate_df = pd.read_csv(data_SimplexDate)
+    return give_all_Simplex(data_SimplexDate_df);
+
+# give all simplex in data_SimplexNumber.csv
+def give_Simplex_number(inputDir):
+    data_SimplexNumber = os.path.join(inputDir, 'data_SimplexNumber.csv')
+    if os.path.isfile(data_SimplexNumber):
+        data_SimplexNumber_df = pd.read_csv(data_SimplexNumber)
+    return give_all_Simplex(data_SimplexNumber_df);
 
 # give data for the input simplex name
 # parameter: name: simplex name in list type
@@ -138,14 +181,8 @@ def get_simplex_frequencies(name, inputDir, outputDir):
     return simplex_frequency_file_name
 
 
-# find the id of the input complex (name)
-# parameter: name of an complex in list type, dataframe of setup_Complex
-# return: a dataframe: id, name of the input complex
-def find_setup_id(complex, setup_Complex):
-    data = setup_Complex[setup_Complex['Name'].isin(complex)]
-    data = data[['ID_setup_complex', 'Name']]
-    data['ID_setup_complex'] = [int(x) for x in data['ID_setup_complex']]
-    return data
+
+
 
 
 # find the related names of simplexes to the input complex(es)
@@ -166,21 +203,13 @@ def corresponding_name_simplex_complex(complexes, setup_Complex, setup_xref_Simp
     return simplexes
 
 
-# find the id of the input simplex (name)
-# parameter: name of an complex in list type, dataframe of setup_Complex
-# return: a dataframe: id, name of the input complex
-def find_setup_id_simplex(simplex, setup_Simplex):
-    data = setup_Simplex[setup_Simplex['Name'].isin(simplex)]
-    data = data[['ID_setup_simplex', 'Name']]
-    data['ID_setup_simplex'] = [int(x) for x in data['ID_setup_simplex']]
-    return data
+
 
 # find the one level lower complex of the input complex
 # parameter: name of complex in string type, inputDir
 # return: a list of child complex
 def find_child_complex(complex, inputDir):
     lower_level_complex = []
-    has_files = True
 
     if isinstance(complex, str):
         complex = [complex]
@@ -188,31 +217,26 @@ def find_child_complex(complex, inputDir):
     setup_Complex = os.path.join(inputDir, 'setup_Complex.csv')
     if os.path.isfile(setup_Complex):
         setup_Complex_df = pd.read_csv(setup_Complex)
-    else:
-        has_files = False
 
     setup_xref_Complex_Complex = os.path.join(inputDir, 'setup_xref_Complex_Complex.csv')
     if os.path.isfile(setup_xref_Complex_Complex):
         setup_xref_Complex_Complex_df = pd.read_csv(setup_xref_Complex_Complex)
-    else:
-        has_files = False
 
-    if(has_files):
-        complex_id = find_setup_id(complex, setup_Complex_df)
-        complex_id = complex_id['ID_setup_complex'].values.tolist()
+    complex_id = find_setup_id(complex, setup_Complex_df)
+    complex_id = complex_id['ID_setup_complex'].values.tolist()
 
-        lower_level_complex = setup_xref_Complex_Complex_df[setup_xref_Complex_Complex_df['HigherComplex'].isin(complex_id)]
-        lower_level_complex = lower_level_complex[['LowerComplex', 'Name']]
-        lower_level_complex = lower_level_complex['Name'].values.tolist()
+    lower_level_complex = setup_xref_Complex_Complex_df[setup_xref_Complex_Complex_df['HigherComplex'].isin(complex_id)]
+    lower_level_complex = lower_level_complex[['LowerComplex', 'Name']]
+    lower_level_complex = lower_level_complex['Name'].values.tolist()
 
     return lower_level_complex
+
 
 # find the one level higher complex of the input complex
 # parameter: name of complex in string type, inputDir
 # return: a list of parent complex
 def find_parent_complex(complex, inputDir):
-    lower_level_complex = []
-    has_files = True
+    higher_level_complex = []
 
     if isinstance(complex, str):
         complex = [complex]
@@ -220,31 +244,62 @@ def find_parent_complex(complex, inputDir):
     setup_Complex = os.path.join(inputDir, 'setup_Complex.csv')
     if os.path.isfile(setup_Complex):
         setup_Complex_df = pd.read_csv(setup_Complex)
-    else:
-        has_files = False
 
     setup_xref_Complex_Complex = os.path.join(inputDir, 'setup_xref_Complex_Complex.csv')
     if os.path.isfile(setup_xref_Complex_Complex):
         setup_xref_Complex_Complex_df = pd.read_csv(setup_xref_Complex_Complex)
-    else:
-        has_files = False
 
-    if(has_files):
-        complex_id = find_setup_id(complex, setup_Complex_df)
-        complex_id = complex_id['ID_setup_complex'].values.tolist()
+    complex_id = find_setup_id(complex, setup_Complex_df)
+    complex_id = complex_id['ID_setup_complex'].values.tolist()
 
-        higher_level_complex = setup_xref_Complex_Complex_df[setup_xref_Complex_Complex_df['LowerComplex'].isin(complex_id)]
-        higher_level_complex = higher_level_complex['HigherComplex'].values.tolist()
-        higher_level_complex = [str(x) for x in higher_level_complex]
+    higher_level_complex = setup_xref_Complex_Complex_df[setup_xref_Complex_Complex_df['LowerComplex'].isin(complex_id)]
+    higher_level_complex = higher_level_complex['HigherComplex'].values.tolist()
+    # higher_level_complex = [str(x) for x in higher_level_complex]
 
-        higher_level_complex = setup_Complex_df[setup_Complex_df['ID_setup_complex'].isin(higher_level_complex)]
-        higher_level_complex = higher_level_complex[['ID_setup_complex', 'Name']]
-        higher_level_complex = higher_level_complex.rename(columns={'ID_setup_complex': 'HigherComplex', 'Name': 'Name'})
+    setup_Complex_df = setup_Complex_df[setup_Complex_df['Name'].notna()]
+    setup_Complex_df[['ID_setup_complex']] = setup_Complex_df[['ID_setup_complex']].astype(int)
+    setup_Complex_df = setup_Complex_df[['ID_setup_complex', 'Name']]
 
-        higher_level_complex = higher_level_complex['Name'].values.tolist()
+    higher_level_complex = setup_Complex_df[setup_Complex_df['ID_setup_complex'].isin(higher_level_complex)]
+
+    higher_level_complex = higher_level_complex['Name'].values.tolist()
 
     return higher_level_complex
 
+
+def find_parent_simplex(simplex, inputDir):
+    higher_level_complex = []
+
+    if isinstance(simplex, str):
+        simplex = [simplex]
+
+    setup_Simplex = os.path.join(inputDir, 'setup_Simplex.csv')
+    if os.path.isfile(setup_Simplex):
+        setup_Simplex_df = pd.read_csv(setup_Simplex)
+
+    setup_xref_Simplex_Complex = os.path.join(inputDir, 'setup_xref_Complex_Complex.csv')
+    if os.path.isfile(setup_xref_Simplex_Complex):
+        setup_xref_Simplex_Complex_df = pd.read_csv(setup_xref_Simplex_Complex)
+
+    setup_Complex = os.path.join(inputDir, 'setup_Complex.csv')
+    if os.path.isfile(setup_Complex):
+        setup_Complex_df = pd.read_csv(setup_Complex)
+
+    simplex_id = find_setup_id_simplex(simplex, setup_Simplex_df)
+    simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+
+    complex_id = setup_xref_Simplex_Complex_df[setup_xref_Simplex_Complex_df['ID_setup_simplex'].isin(simplex_id)]
+    complex_id = complex_id['ID_setup_complex'].values.tolist()
+
+    # reset type of 'ID_setup_complex' in setup_Complex.csv
+    setup_Complex_df = setup_Complex_df[setup_Complex_df['Name'].notna()]
+    setup_Complex_df[['ID_setup_complex']] = setup_Complex_df[['ID_setup_complex']].astype(int)
+    setup_Complex_df = setup_Complex_df[['ID_setup_complex', 'Name']]
+
+    higher_level_complex = setup_Complex_df[setup_Complex_df['ID_setup_complex'].isin(complex_id)]
+    higher_level_complex = higher_level_complex['Name'].values.tolist()
+
+    return higher_level_complex
 
 # find the one level lower complex of the input complex
 # parameter: name(s) of complex in list type, dataframe of setup_Complex and setup_xref_Complex_Complex
@@ -731,6 +786,9 @@ def dist_1(name, setup_Simplex, setup_xref_Simplex_Complex, data_xref_Simplex_Co
 
   return count
 
+
+
+
 # give identifier version of semantic triplet
 # return: dataframe: Semantic triplet data id, S data id, S Identifier, V data id, V Identifier, O data id, O Identifier
 def semantic_triplet_complex(setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex, data_Complex):
@@ -836,10 +894,6 @@ def semantic_triplet_simplex(inputDir, outputDir):
     if os.path.isfile(setup_Complex):
         setup_Complex_df=pd.read_csv(setup_Complex)
 
-    setup_Simplex=os.path.join(inputDir,'setup_Simplex.csv')
-    if os.path.isfile(setup_Simplex):
-        setup_Simplex_df=pd.read_csv(setup_Simplex)
-
     setup_xref_Complex_Complex=os.path.join(inputDir,'setup_xref_Complex_Complex.csv')
     if os.path.isfile(setup_xref_Complex_Complex):
         setup_xref_Complex_Complex_df=pd.read_csv(setup_xref_Complex_Complex)
@@ -882,6 +936,8 @@ def semantic_triplet_simplex(inputDir, outputDir):
     simplex_version.to_csv(triplet_file_name, encoding='utf-8', index=False)
 
     return triplet_file_name
+
+
 
 
 # helper method for semantic_triplet_time
@@ -1060,10 +1116,6 @@ def semantic_triplet_space(inputDir, outputDir):
     if os.path.isfile(data_SimplexText):
         data_SimplexText_df=pd.read_csv(data_SimplexText)
 
-    data_xref_Simplex_Complex = os.path.join(inputDir, 'data_xref_Simplex_Complex.csv')
-    if os.path.isfile(data_xref_Simplex_Complex):
-        data_xref_Simplex_Complex_df = pd.read_csv(data_xref_Simplex_Complex)
-
     triplet = semantic_triplet_simplex(setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df)
 
     space1 = find_space_simplex(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, data_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df)
@@ -1134,6 +1186,12 @@ def semantic_triplet_time_space(inputDir, outputDir):
                                                                        'triplet (SVO) with space and time')
     triplet_with_time_space.to_csv(triplet_with_space_time_file_name, encoding='utf-8', index=False)
     return triplet_with_space_time_file_name
+
+
+
+
+
+
 
 # give indivudal characteristics
 def individual_characteristics(inputDir, outputDir):
@@ -1464,7 +1522,7 @@ def collective_actor_characteristics(inputDir, outputDir):
     # Age
     data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID')
     data_Simplex_temp1 = data_Simplex_temp1.dropna(subset = ['Value'])
-    data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID_data_date_number_text')
+    data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID')
     data_Simplex_temp2 = data_Simplex_temp2.dropna(subset = ['Value'])
     data_Simplex_temp = pd.concat([data_Simplex_temp1, data_Simplex_temp2])
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'Value']]
@@ -1576,7 +1634,7 @@ def institution_features(inputDir, outputDir):
     complex_name = 'Institution'
     simplex_names = corresponding_name_simplex_complex([complex_name], setup_Complex_df, setup_xref_Simplex_Complex_df)
 
-    for i in range(2):
+    for i in range(3):
       simplex_name = simplex_names[0][i]
       simplex_id = find_setup_id_simplex([simplex_name], setup_Simplex_df)
       simplex_id = simplex_id['ID_setup_simplex'].values.tolist()

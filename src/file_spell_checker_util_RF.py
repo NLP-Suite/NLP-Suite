@@ -11,7 +11,7 @@ import IO_libraries_util
 # Instead of passing "pyspellchecker" as a listed package to be verified, we need to pass "spellchecker".
 # This is because "spellchecker" is the module installed by the pyspellchecker package (https://pypi.org/project/pyspellchecker/).
 
-if not IO_libraries_util.install_all_packages(GUI_util.window,"spell_checker_util",['nltk','tkinter','os','langdetect','spacy','spacy_langdetect','langid','csv','spellchecker','textblob','autocorrect','stanfordcorenlp','pandas','collections']):
+if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"spell_checker_util",['nltk','tkinter','os','langdetect','spacy','spacy_langdetect','langid','csv','spellchecker','textblob','autocorrect','stanfordcorenlp','pandas','collections']):
     sys.exit(0)
 
 import os
@@ -129,7 +129,8 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
                                                    hover_info_column_list=hover_label,
                                                    count_var=1)
         if chart_outputFilename != None:
-             filesToOpen.append(chart_outputFilename)
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -445,7 +446,8 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                 chart_outputFilename=createChart(outputFileName_simple, outputDir, [[10, 10]], '')
 
                 if chart_outputFilename != None:
-                    filesToOpen.append(chart_outputFilename)
+                    if len(chart_outputFilename) > 0:
+                        filesToOpen.extend(chart_outputFilename)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)

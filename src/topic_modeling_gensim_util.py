@@ -10,7 +10,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"topic_modeling_gensim_util.py",['nltk','os','tkinter','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"topic_modeling_gensim_util.py",['nltk','os','tkinter','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython'])==False:
     sys.exit(0)
 
 import os
@@ -250,7 +250,8 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
                                               hover_info_column_list=hover_label)
 
     if chart_outputFilename != None:
-        filesToOpen.append(chart_outputFilename)
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
 
     # Topic distribution across documents
     # Number of Documents for Each Topic
@@ -510,8 +511,8 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
 
     if run_Mallet==True:
         # check that the MalletDir as been setup
-        MalletDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('topic_modeling_gensim', 'MALLET', silent=True, only_check_missing=False)
-        if MalletDir==None:
+        MalletDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('topic_modeling_gensim_util', 'MALLET', silent=False, only_check_missing=False)
+        if MalletDir==None or MalletDir=='':
             return
 
         MalletDir = os.path.join(MalletDir, "bin/mallet")

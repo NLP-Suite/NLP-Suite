@@ -29,7 +29,7 @@ import GUI_util
 import IO_libraries_util
 import IO_files_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "Concreteness Analysis",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "Concreteness Analysis",
 										  ['os', 'csv', 'statistics', 'argparse', 'pandas', 'tkinter',
 										   'time', 'stanza']) == False:
 	sys.exit(0)

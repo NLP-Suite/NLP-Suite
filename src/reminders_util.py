@@ -4,7 +4,7 @@ import GUI_IO_util
 import IO_files_util
 import sys
 
-# if IO_util.install_all_packages(window,"reminders_util",['os','tkinter','pandas'])==False:
+# if IO_util.install_all_Python_packages(window,"reminders_util",['os','tkinter','pandas'])==False:
 #     sys.exit(0)
 
 import os

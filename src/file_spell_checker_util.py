@@ -12,7 +12,7 @@ import IO_libraries_util
 # Instead of passing "pyspellchecker" as a listed package to be verified, we need to pass "spellchecker".
 # This is because "spellchecker" is the module installed by the pyspellchecker package (https://pypi.org/project/pyspellchecker/).
 
-if not IO_libraries_util.install_all_packages(GUI_util.window,"spell_checker_util",['nltk','tkinter','os','langdetect','spacy','spacy_langdetect','langid','csv','spellchecker','textblob','autocorrect','stanfordcorenlp','pandas','collections','fuzzywuzzy']):
+if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"spell_checker_util",['nltk','tkinter','os','langdetect','spacy','spacy_langdetect','langid','csv','spellchecker','textblob','autocorrect','stanfordcorenlp','pandas','collections','fuzzywuzzy']):
     sys.exit(0)
 
 import os
@@ -79,8 +79,8 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
     outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'NLTK_unus', 'stats')
     filesToOpen.append(outputFilename)
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'NLTK unusual words/spelling checker start',
-                                       'Started running NLTK unusual words/spelling checker at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'NLTK unusual words-spelling checker start',
+                                       'Started running NLTK unusual words-spelling checker at',
                                                  True, '', True, '', True)
 
     # already shown in NLP.py
@@ -102,11 +102,11 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
         #sort the list
         unusual.sort()
         [container.append([word, documentID, IO_csv_util.dressFilenameForCSVHyperlink(file)]) for word in unusual]
-    container.insert(0, ['Misspelled/unusual word','Document ID', 'Document'])
+    container.insert(0, ['Misspelled-unusual word','Document ID', 'Document'])
     if len(container)>0:
         if IO_csv_util.list_to_csv(window,container,outputFilename): return
     else:
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Spelling checker (via nltk)', 'No misspelled/unusual words found in\n' + file, True)
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Spelling checker (via nltk)', 'No misspelled-unusual words found in\n' + file, True)
         if nFile==1:
             return
 
@@ -120,13 +120,13 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
                  pass
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Misspelled/unusual word'],
-                                                   chartTitle='Frequency of Misspelled/Unusual Words',
+                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Misspelled-unusual word'],
+                                                   chartTitle='Frequency of Misspelled-Unusual Words',
                                                    count_var=1, hover_label=[],
                                                    outputFileNameType='',  # 'line_bar',
                                                    column_xAxis_label='Word',
                                                    groupByList=['Document ID', 'Document'],
-                                                   plotList=['Misspelled/Unusual Words Statistics'],
+                                                   plotList=['Misspelled-Unusual Words Statistics'],
                                                    chart_title_label='')
 
         if chart_outputFilename != None:
@@ -255,8 +255,8 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
     ner_dict = {}
 
     # check that the CoreNLPDir as been setup
-    CoreNLPDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('spell_checker_main', 'Stanford CoreNLP', silent=True, only_check_missing=False)
-    if CoreNLPDir == None:
+    CoreNLPDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('file_spell_checker_util', 'Stanford CoreNLP', silent=False, only_check_missing=False)
+    if CoreNLPDir == None or CoreNLPDir=='':
         return
     if by_all_tokens_var:
         pass
@@ -494,7 +494,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                                chart_title_label='')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
-                    filesToOpen.append(chart_outputFilename)
+                    filesToOpen.extend(chart_outputFilename)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -959,8 +959,9 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                                                   column_xAxis_label_var='Language',
                                                   hover_info_column_list=hover_label,
                                                   count_var=1)
-        if chartPackage=='Excel' and chart_outputFilename!='':
-            filesToOpen.append(chart_outputFilename)
+        if chartPackage=='Excel' and chart_outputFilename!='' and chart_outputFilename!=None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
     # if openOutputFiles:
     #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

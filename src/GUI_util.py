@@ -10,7 +10,7 @@ import requests
 import IO_libraries_util
 
 # Creates a circular dependent imports
-# if IO_libraries_util.install_all_packages(GUI_util.window, "GUI_util", ['tkinter', 'os', 'subprocess', 'PIL']) == False:
+# if IO_libraries_util.install_all_Python_packages(GUI_util.window, "GUI_util", ['tkinter', 'os', 'subprocess', 'PIL']) == False:
 #     sys.exit(0)
 
 import tkinter as tk
@@ -167,8 +167,8 @@ def trace_checkbox_NoLabel(checkbox_var, checkbox_text, onText, offText):
 
 def display_logo():
     # Necessary to avoid creating a circular dependent import
-    from IO_libraries_util import install_all_packages
-    if install_all_packages(window, "GUI_util", ['tkinter', 'os', 'subprocess', 'PIL']) == False:
+    from IO_libraries_util import install_all_Python_packages
+    if install_all_Python_packages(window, "GUI_util", ['tkinter', 'os', 'subprocess', 'PIL']) == False:
         sys.exit(0)
 
     from PIL import Image, ImageTk
@@ -1056,7 +1056,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        "The selection of specific chart types is still under development.\nCharts are currently automatically visualized as bar or line charts.")
 
         # if not 'data_manipulation_main.py' in scriptName and not not 'data_visualization_main.py' in scriptName :
-        data_tools_options = ['Data manipulation', 'Data visualization']
+        data_tools_options = ['Data manipulation', 'Data visualization', 'Corpus sampling']
         data_tools_options_widget.set('Data tools')
         data_tools_menu_lb = tk.OptionMenu(window, data_tools_options_widget, *data_tools_options)
         # place widget with hover-over info
@@ -1064,16 +1064,19 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        y_multiplier_integer,
                                                        data_tools_menu_lb,
                                                        False, False, False, False, 90,
-                                                       GUI_IO_util.open_reminders_x_coordinate,
+                                                       GUI_IO_util.open_TIPS_x_coordinate,
                                                        "Select the option to open the csv data manipulation GUI where you can append, concatenate, merge, and purge rows and columns in csv file(s).\nOr select the option to visualize data in a variety of ways.")
         def run_data_tool(*args):
             if not 'data_manipulation_main.py' in scriptName and 'manipulation' in data_tools_options_widget.get():
                 call("python data_manipulation_main.py", shell=True)
+        # Corpus sampling
             if not 'data_visualization_main.py' in scriptName and 'visualization' in data_tools_options_widget.get():
                 call("python data_visualization_main.py", shell=True)
+            if not 'sample_corpus_main.py' in scriptName and 'sampling' in data_tools_options_widget.get():
+                call("python sample_corpus_main.py", shell=True)
         data_tools_options_widget.trace('w',run_data_tool)
-    else:
-        y_multiplier_integer += 1
+    # else:
+    #     y_multiplier_integer += 1
 
         # def warning_message(*args):
     #     if charts_package_options_widget.get()!='Excel':

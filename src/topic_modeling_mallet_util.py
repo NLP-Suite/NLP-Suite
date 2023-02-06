@@ -27,7 +27,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if not IO_libraries_util.install_all_packages(GUI_util.window, "Mallet Topic modeling",
+if not IO_libraries_util.install_all_Python_packages(GUI_util.window, "Mallet Topic modeling",
                                               ['os', 'tkinter.messagebox', 'subprocess']):
     sys.exit(0)
 
@@ -55,10 +55,10 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
     # del os.environ['MALLET_HOME']
 
     # check that the MalletDir as been setup
-    MalletDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('topic_modeling_mallet',
+    MalletDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('topic_modeling_mallet_util',
                                                                                        'MALLET',
-                                                                                       silent=True, only_check_missing=False)
-    if MalletDir is None:
+                                                                                       silent=False, only_check_missing=False)
+    if MalletDir == None or MalletDir=='':
         return
 
     MalletPath = ''
@@ -282,7 +282,8 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                                                   column_yAxis_label_var=yAxis)
 
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0, 1]]
@@ -302,7 +303,8 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                                                   column_yAxis_label_var=yAxis)
 
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
