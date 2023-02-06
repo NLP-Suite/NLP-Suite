@@ -76,8 +76,6 @@ The NLP Suite updates the scripts automatically to the lastest release available
 
 	chsh -s /bin/zsh
 
-	"terminal.integrated.shell.osx": "/bin/zsh",
-
 	conda init zsh
 
 Useful Anaconda & pip commands
@@ -202,5 +200,7 @@ Useful Anaconda & pip commands
 		3. Show the version of Python installed on your machine
 
 			python --version
-
-
+			
+		4. delete/remove anaconda
+		
+			rm -rf ~/anaconda

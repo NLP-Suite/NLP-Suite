@@ -8,7 +8,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "SVO main",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "SVO main",
                                           ['subprocess', 'os', 'tkinter']) == False:
     sys.exit(0)
 
@@ -96,13 +96,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                        message="No option has been selected.\n\nPlease, select an option and try again.")
         return
 
-    if inputFilename[-4:] == '.txt':
-        if (package_var=='') and (
-                gephi_var == True or wordcloud_var == True or google_earth_var == True):
-            mb.showerror(title='Input file/option error',
-                         message="The data visualization option(s) you have selected require either an _svo.csv/_SVO_Result file in input or CoreNLP OpenIE and/or SENNA selected.\n\nPlease, check your input file and/or algorithm selections and try again.")
-            return
-    elif inputFilename[-4:] == '.csv':
+    if inputFilename[-4:] == '.csv':
         if not 'SVO_' in inputFilename:
             mb.showerror(title='Input file error',
                          message="The selected input is a csv file, but... not an _svo.csv file.\n\nPlease, select an _svo.csv file (or txt file(s)) and try again.")
@@ -207,14 +201,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
         outputSVOFilterDir = outputSVODir + os.sep + 'SVO-filtered'
 
-    if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-        WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('SVO_main',
-                                                                                            'WordNet',
-                                                                                            silent=True, only_check_missing=False)
-        if WordNetDir == None:
-            return
-
     if google_earth_var:
+        # Google_Earth_Pro_dir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir(
+        #     'SVO_main',
+        #     'Google Earth Pro',
+        #     silent=False, only_check_missing=True)
+        # if Google_Earth_Pro_dir == None or Google_Earth_Pro_dir == '':
+        #     return
+
         # create a GIS subdirectory of the output directory
         outputGISDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
                                                               label='GIS',
@@ -223,7 +217,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                      'SVO_' + package_var+ '_LOCATIONS')
         outputLocations.append(location_filename)
 
-# CoreNLP Dependencies ++ _____________________________________________________
+# SVO CoreNLP Dependencies ++ _____________________________________________________
 
     if package_var=='CoreNLP':
 
@@ -404,15 +398,19 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 outputWNDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
                                                                      label='WordNet',
                                                                      silent=True)
-                if lemmatize_subjects or lemmatize_objects:
+
+                if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
                     outputFilename = IO_csv_util.extract_from_csv(SVO_filename, outputWNDir, '',
                                                               ['Subject (S)', 'Object (O)'])
+
+                    # the WordNet installation directory is now checked in aggregate_GoingUP
+                    WordNetDir=''
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
                                                                              config_filename, 'NOUN',
                                                                              openOutputFiles, createCharts,
                                                                              chartPackage, language_var)
                     os.remove(outputFilename)
-                    if output != None:
+                    if output != None and output != '':
                         filesToOpen.extend(output)
                 if lemmatize_verbs:
                     outputFilename = IO_csv_util.extract_from_csv(SVO_filename, outputWNDir, '', ['Verb (V)'])
@@ -421,7 +419,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                              openOutputFiles, createCharts,
                                                                              chartPackage, language_var)
                     os.remove(outputFilename)
-                    if output != None:
+                    if output != None and output != '':
                         filesToOpen.extend(output)
 
             else:
@@ -446,13 +444,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 if nRecords > 1:   # including headers; file is empty
                     gexf_file = Gephi_util.create_gexf(window,fileBase, outputSVOSVODir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
                                                        "Sentence ID")
-                    filesToOpen.append(gexf_file)
+                    if gexf_file != None and gexf_file != '':
+                        filesToOpen.append(gexf_file)
                 else:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_result_list[0])
                     if nRecords > 1:  # including headers; file is empty
                         gexf_file = Gephi_util.create_gexf(window,fileBase, inputFilename, svo_result_list[0],
                                                            "Subject (S)", "Verb (V)", "Object (O)", "Sentence ID")
-                        filesToOpen.append(gexf_file)
+                        if gexf_file != None and gexf_file != '':
+                            filesToOpen.append(gexf_file)
             else:  # txt input file
                 for f in svo_result_list:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
@@ -464,7 +464,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], tempOutputDir, f, "Subject (S)", "Verb (V)", "Object (O)",
                                                            "Sentence ID")
                         if "CoreNLP" in f or "SENNA_SVO" in f or "spaCy" in f or "Stanza" in f:
-                            filesToOpen.append(gexf_file)
+                            if gexf_file!=None and gexf_file!='':
+                                filesToOpen.append(gexf_file)
                         if not save_intermediate_file:
                             gexf_files = [os.path.join(outputDir, f) for f in os.listdir(tempOutputDir) if
                                           f.endswith('.gexf')]
@@ -535,7 +536,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                      [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
                                      [1], [1]) # bold_var_list, italic_var_list
 
-                        if out_file!=None:
+                        if out_file!=None and out_file!='':
                             if len(out_file) > 0:
                                 # since out_file produced by KML is a list cannot use append
                                 filesToOpen = filesToOpen + out_file
@@ -687,7 +688,7 @@ google_earth_var = tk.IntVar()
 def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
 
-pre_processing_button = tk.Button(window, text='Pre-processing tools (Open file checking & cleaning GUI)',width=GUI_IO_util.widget_width_short,command=lambda:open_GUI())
+pre_processing_button = tk.Button(window, text='Pre-processing tools (Open file checking & cleaning GUI) ',command=lambda:open_GUI())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    pre_processing_button,

@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Statistics",['csv','tkinter','os','collections','pandas','numpy','scipy','itertools'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Statistics",['csv','tkinter','os','collections','pandas','numpy','scipy','itertools'])==False:
     sys.exit(0)
 
 import os
@@ -226,7 +226,8 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
                                                   hover_info_column_list=hover_label,
                                                   remove_hyperlinks = True)
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
     return filesToOpen
 
@@ -542,8 +543,11 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
     removed_hyperlinks, inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
     data = pd.read_csv(inputFilename,encoding='utf-8',error_bad_lines=False)
     # TODO check if data is empty exit
+    # fileNameType=fileNameType.replace('/','-')
+    # outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
+    #                 '.csv', 'col-freq_'+fileNameType)
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
-                    '.csv', 'col-freq_'+fileNameType)
+                    '.csv','col-freq')
 
     if len(selected_col) == 0:
         mb.showwarning('Missing field', 'You have not selected the csv field for which to compute frequencies.\n\nPlease, select the field and try again.')

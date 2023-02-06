@@ -2,7 +2,7 @@ from itertools import count
 import sys
 # import GUI_util
 # import IO_libraries_util
-# if not IO_libraries_util.install_all_packages(GUI_util.window,"GUI_IO_util", ['tkinter', 'os']):
+# if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"GUI_IO_util", ['tkinter', 'os']):
 #     sys.exit(0)
 
 import os
@@ -361,7 +361,7 @@ if sys.platform == 'darwin':  # Mac OS
 
 # MAC NLP_setup_external_software_main.py
     missing_software_display_area_width = 55
-    dowload_install = 320
+    download_install = 320
     website_url_placement = 600
 
 # MAC OK
@@ -772,7 +772,7 @@ else: #windows and anything else
 
 # Windows NLP_setup_external_software_main.py
     missing_software_display_area_width = 85
-    dowload_install = 320
+    download_install = 320
     website_url_placement = 600
 
 # Windows OK

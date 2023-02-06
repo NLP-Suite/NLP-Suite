@@ -14,7 +14,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "file_search_byWord_util.py",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "file_search_byWord_util.py",
                                           ['os', 'tkinter','stanza']) == False:
     sys.exit(0)
 
@@ -49,6 +49,27 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dic
     nFile = len(files)
     if nFile == 0:
         return
+
+    if create_subcorpus_var:
+        if inputFilename!='':
+            head, tail = os.path.split(inputFilename)
+            # remove the extension
+            tail=tail[:-4]
+        elif inputDir!='':
+            head, tail = os.path.split(inputDir)
+        search_list=''
+        for search_option in search_keywords_list:
+            # Tony search_keywords_list is not a list but a string and every single character in the string is processed separately
+            #   we should test
+            #   if isinstance(search_keywords_list, str) convert to list
+            search_list = search_list + ' ' + search_option
+        # txt subsample files are exported as a folder inside the input folder
+        outputDir = os.path.join(inputDir, 'subcorpus_search')
+        if not os.path.exists(outputDir):
+            try:
+                os.mkdir(outputDir)
+            except Exception:
+                print(Exception)
 
     case_sensitive = False
     lemmatize = False
@@ -271,26 +292,31 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dic
                 filesToOpen.extend(chart_outputFilename)
 
     # copy all the files in the set to the output directory
-    if create_subcorpus_var:
-        if inputFilename!='':
-            head, tail = os.path.split(inputFilename)
-            # remove the extension
-            tail=tail[:-4]
-        elif inputDir!='':
-            head, tail = os.path.split(inputDir)
-        search_list=''
-        for search_option in search_keywords_list:
-            search_list = search_list + ' ' + search_option
-        path = os.path.join(outputDir, 'subcorpus_search_' + tail)
-        if not os.path.exists(path):
-            try:
-                os.mkdir(path)
-            except Exception:
-                print(Exception)
+    # if create_subcorpus_var:
+    #     if inputFilename!='':
+    #         head, tail = os.path.split(inputFilename)
+    #         # remove the extension
+    #         tail=tail[:-4]
+    #     elif inputDir!='':
+    #         head, tail = os.path.split(inputDir)
+    #     search_list=''
+    #     for search_option in search_keywords_list:
+    #         # Tony search_keywords_list is not a list but a string and every single character in the string is processed separately
+    #         #   we should test
+    #         #   if isinstance(search_keywords_list, str) convert to list
+    #         search_list = search_list + ' ' + search_option
+    #     # txt subsample files are exported as a folder inside the input folder
+    #     path = os.path.join(inputDir, 'subcorpus_search')
+    #     if not os.path.exists(path):
+    #         try:
+    #             os.mkdir(path)
+    #         except Exception:
+    #             print(Exception)
         if len(corpus_to_copy) > 0:
             for file in corpus_to_copy:
-                shutil.copy(file, path)
-            mb.showwarning(title='Warning',message='The search function has created a subcorpus of the files containing the search word(s) "' + search_list + '" in the subdirectory of the output directory:\n\n'+path)
+                shutil.copy(file, outputDir)
+            mb.showwarning(title='Warning',message='The search function has created a subcorpus of the files containing the search word(s) "' + search_list + '" as a subdirectory called "subcorpus_search" of the input directory:\n\n'+outputDir + \
+                           '\n\nA set of csv files have also been exported to the same directory.')
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the Search word function at',
                                        True, '', True, startTime,  False)

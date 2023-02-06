@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"knowledge_graphs_WordNet_main",['os','tkinter','pandas'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"knowledge_graphs_WordNet_main",['os','tkinter','pandas'])==False:
     sys.exit(0)
 
 import os
@@ -53,7 +53,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
 
     language_var='English' # WordNet works only for English language
 
-    WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('knowledge_graphs_WordNet_main', 'WordNet', silent=True, only_check_missing=False)
+    WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('knowledge_graphs_WordNet_main', 'WordNet', silent=False, only_check_missing=False)
     if WordNetDir == None:
         return
 

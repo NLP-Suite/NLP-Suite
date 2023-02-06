@@ -3,7 +3,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "BERT_util",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "BERT_util",
                                           ['os', 'transformers', 'csv', 'argparse', 'tkinter', 'time', 'stanza',
                                            'summarizer','sacremoses','contextualSpellCheck','sentencepiece','sentence_transformers', 'tensorflow']) == False:
     sys.exit(0)

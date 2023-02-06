@@ -12,7 +12,7 @@
 # import GUI_util
 # import IO_libraries_util
 #
-# if not IO_libraries_util .install_all_packages(GUI_util.window,"config_util",['os','tkinter']):
+# if not IO_libraries_util .install_all_Python_packages(GUI_util.window,"config_util",['os','tkinter']):
 #     sys.exit(0)
 
 import os

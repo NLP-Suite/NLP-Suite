@@ -5,7 +5,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"charts_plotly_util",['os','pandas','plotly','kaleido'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"charts_plotly_util",['os','pandas','plotly','kaleido'])==False:
     sys.exit(0)
 # if plotly fails, install version 0.1.0 of kaleido
 # pip install kaleido==0.1.0post1

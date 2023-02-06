@@ -5,7 +5,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"utf8_compliance_util",['os','re','tkinter','chardet'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"utf8_compliance_util",['os','re','tkinter','chardet'])==False:
     sys.exit(0)
 
 import os
@@ -48,13 +48,13 @@ def predict_encoding(window, inputFilename, inputDir, outputDir, n_lines=20):
 
 
 # https://geek-tips.github.io/articles/494831/index.html
-# decoding occurs for each buffered data block, 
-#   and not for a text string. 
-#   If you need to detect errors line by line, 
-#   use the surrogateescape handler and check each read line 
+# decoding occurs for each buffered data block,
+#   and not for a text string.
+#   If you need to detect errors line by line,
+#   use the surrogateescape handler and check each read line
 #   for the presence of code points in the surrogate range
 
-#'surrogateescape' will represent any invalid bytes as unicode points 
+#'surrogateescape' will represent any invalid bytes as unicode points
 #   in the Unicode Private Use Range, ranging from U + DC80 to U + DCFF.
 #These private code points will then be returned in the same bytes when the surrogateescape error handler is used to write data. This is useful for processing files in an unknown encoding.
 
@@ -80,7 +80,7 @@ def detect_decoding_errors_line(l, _s=_surrogates.finditer):
             for m in _s(l)]
 
 #https://stackoverflow.com/questions/19771751/how-to-use-unidecode-in-python-3-3
-#convert a non utf-8 to the closest ASCII value 
+#convert a non utf-8 to the closest ASCII value
 #   https://pypi.python.org/pypi/Unidecode
 def check_utf8_compliance(window,inputFilename,inputDir,outputDir,openOutputFiles=False,silent=False):
     if len(inputDir)>0:

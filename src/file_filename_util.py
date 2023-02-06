@@ -5,7 +5,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "file_filename_util",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "file_filename_util",
                                 ['csv', 'os', 'platform', 'shutil', 'time', 'datetime']) == False:
     sys.exit(0)
 

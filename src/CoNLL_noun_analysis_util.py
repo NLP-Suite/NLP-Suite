@@ -9,7 +9,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "CoNLL Table Analyzer",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "CoNLL Table Analyzer",
                                           ['csv', 'os', 'collections']) == False:
     sys.exit(0)
 
@@ -180,7 +180,8 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                      complete_sid=False)  # TODO to be changed
 
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, noun_deprel_stats_file_name, outputDir,
 														 outputFileLabel='Nouns_DEPREL',
@@ -193,7 +194,8 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                          complete_sid=False)  # TODO to be changed
 
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, noun_ner_stats_file_name, outputDir,
                                      outputFileLabel='Nouns_NER',
@@ -206,7 +208,8 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                      complete_sid=False)  # TODO to be changed
 
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running NOUN ANALYSES at', True, '', True, startTime, True)
 

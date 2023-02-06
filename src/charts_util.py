@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"charts_Excel_util",['csv','tkinter','os','collections','openpyxl'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"charts_Excel_util",['csv','tkinter','os','collections','openpyxl'])==False:
     sys.exit(0)
 
 import tkinter as tk
@@ -188,7 +188,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
 
-    print("\n\n\nRecords in inputfile",nRecords, '  ', inputFilename)
+    print("\n\n\nRecords in inputfile (in charts_util)",nRecords, '  ', inputFilename)
 # standard bar chart ------------------------------------------------------------------------------
     if len(columns_to_be_plotted_numeric[0])>0: # compute only if the double list is not empty
         chart_outputFilename = run_all(columns_to_be_plotted_numeric, inputFilename, outputDir,

@@ -2,7 +2,7 @@ import GUI_util
 import IO_libraries_util
 import sys
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"spaCy_util",['os','spacy','tkinter','pandas','warnings','subprocess'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"spaCy_util",['os','spacy','tkinter','pandas','warnings','subprocess'])==False:
     sys.exit(0)
 
 import spacy

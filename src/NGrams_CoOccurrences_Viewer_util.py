@@ -297,11 +297,14 @@ def run(inputDir="relative_path_here",
     else:
         docIndex = 1
         coOcc_results_binary = {}
+        docIndex = 1
         for file in files:  # iterate over each file
+            head, tail = os.path.split(file)
+            print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
+            docIndex += 1
             coOcc_results_binary[file] = {"Search Word(s)": original_search_word, "CO-Occurrence": "NO",
                                           "Document ID": docIndex,
                                           "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
-            docIndex += 1
             collocation = ''
             collocation_found = False
             index = 0
@@ -324,7 +327,6 @@ def run(inputDir="relative_path_here",
                         break
                     token = tokens_[collocationIndex]
                     if CoOcc_Viewer:
-
                         for search_word in search_word_list:
                             iterations = search_word.count(' ')
                             split_search_word = search_word.split(' ')

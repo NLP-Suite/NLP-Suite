@@ -9,7 +9,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"NLP",['os','tkinter'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"NLP",['os','tkinter'])==False:
     sys.exit(0)
 
 import os
@@ -381,9 +381,8 @@ def setup_external_programs_checkbox(software, only_check_missing=False):
         if software_dir == None and software == '':
             return
         # missing_external_software = IO_libraries_util.get_missing_external_software_list('NLP_menu', '', '',True)
-        software_dir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu', software, silent, only_check_missing)
-        if missing_external_software!='':
-
+        software_dir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu_main', software, silent, only_check_missing)
+        if software_dir==None or software_dir=='':
             setup_software_OK_checkbox_var.set(0)
         else:
             setup_software_OK_checkbox_var.set(1)
@@ -471,8 +470,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                linguistic_tools_lb)
 
 corpus_tools_lb = tk.Label(window, text='CORPUS Analysis Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               corpus_tools_lb, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer, corpus_tools_lb, True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate, "The NLP tools in this category apply to a corpus of files and not to single files.")
+
 # tools that apply exclusively to a corpus
 corpus_menu = ttk.Combobox(window, width = 90, textvariable = corpus_tools_var)
 corpus_menu['values'] = constants_util.NLP_Suite_corpus_tools_menu
@@ -483,8 +483,9 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coor
 
 # corpus_document_tools_var.set('')
 corpus_document_tools_lb = tk.Label(window, text='CORPUS/DOCUMENT Analysis Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               corpus_document_tools_lb, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer, corpus_document_tools_lb, True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate, "The NLP tools in this category apply either to a corpus of files or to single files.")
+
 #tools that can be applied to either corpus or single document
 corpus_documents_menu = ttk.Combobox(window, width = 90, textvariable = corpus_document_tools_var)
 corpus_documents_menu['values'] = constants_util.NLP_Suite_corpus_document_tools_menu
@@ -493,8 +494,9 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coor
 
 sentence_tools_var.set('')
 sentence_tools_lb = tk.Label(window, text='SENTENCE Analysis Tools')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               sentence_tools_lb, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer, sentence_tools_lb, True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate, "The NLP tools in this category apply to single sentences in files.")
+
 sentence_tools_menu = ttk.Combobox(window, width = 90, textvariable = sentence_tools_var)
 sentence_tools_menu['values'] = ['Sentence analysis (ALL options GUI)']
 # place widget with hover-over info

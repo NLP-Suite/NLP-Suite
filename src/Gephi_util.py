@@ -1073,8 +1073,8 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
     :param corpus: A Corpus Object
     :return: gexf file path.
     """
-    GephiDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('','Gephi', silent=True, only_check_missing=False)
-    if GephiDir == None:
+    GephiDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('Gephi_util','Gephi', silent=False, only_check_missing=False)
+    if GephiDir == None or GephiDir=='':
         return
 
     startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',

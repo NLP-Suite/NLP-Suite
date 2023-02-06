@@ -11,7 +11,7 @@ import GUI_util
 import IO_libraries_util
 import Gephi_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "CoNLL table_search_util",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "CoNLL table_search_util",
                                           ['os', 'tkinter', 'enum', 'typing']) == False:
     sys.exit(0)
 
@@ -450,8 +450,9 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
         mb.showwarning(title='Empty query results',message=noResults)
         return outputDir, filesToOpen
 
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'CoNLL-search',
-                                                               srcField_kw, form_of_token, _field_)
+    # outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
+    #                                                            '', srcField_kw, _field_)
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv')
 
     # convert list to dataframe and save
     df = pd.DataFrame(deprel_list_queried)
@@ -562,8 +563,8 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
                                     'Searched Token/Word',
                                     'POS Tag of Searched Token/Word',
                                     'Co-occurring Token/Word', 'Sentence ID')
-
-    filesToOpen.append(Gephi_file)
+    if Gephi_file!=None:
+        filesToOpen.append(Gephi_file)
 
     return outputDir, filesToOpen
 

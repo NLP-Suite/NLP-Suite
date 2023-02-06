@@ -7,7 +7,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Find Non-related Documents",['stanza','tkinter','stanfordcorenlp','os','tkinter','glob'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Find Non-related Documents",['stanza','tkinter','stanfordcorenlp','os','tkinter','glob'])==False:
     sys.exit(0)
 
 from stanfordcorenlp import StanfordCoreNLP # python wrapper for Stanford CoreNLP
@@ -234,7 +234,8 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
                                                   hover_info_column_list=hover_label,
                                                   count_var=1)
     if chart_outputFilename != None:
-        filesToOpen.append(chart_outputFilename)
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

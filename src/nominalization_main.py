@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Nominalization",['tkinter','nltk','pywsd','wn','csv','re','os','collections'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Nominalization",['tkinter','nltk','pywsd','wn','csv','re','os','collections'])==False:
     sys.exit(0)
 
 import os
@@ -353,7 +353,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                                                                  count_var=0)
                 if chart_outputFilename != None:
                     if len(chart_outputFilename) > 0:
-                        filesToOpen.append(chart_outputFilename)
+                        filesToOpen.extend(chart_outputFilename)
 
                 # chart_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window, [counter_nominalized_list], output_filename_dir_nominalized_frequencies,
                 #                             outputDir,'NOM_verb',
@@ -380,7 +380,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 #                             outputDir,'NOM_noun',
                 #                             "Nouns", ["bar"])
                 if len(chart_outputFilename) > 0:
-                    filesToOpen.append(chart_outputFilename)
+                    filesToOpen.extend(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Nominalization at', True, '', True, startTime)
 

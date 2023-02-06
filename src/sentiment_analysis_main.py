@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if not IO_libraries_util.install_all_packages(GUI_util.window,"sentiment_analysis_main.py",['os','tkinter','subprocess']):
+if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"sentiment_analysis_main.py",['os','tkinter','subprocess']):
     sys.exit(0)
 
 import os

@@ -8,7 +8,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Summary CoreNLP Checker",['nltk','stanfordcorenlp','os','tkinter','glob'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Summary CoreNLP Checker",['nltk','stanfordcorenlp','os','tkinter','glob'])==False:
     sys.exit(0)
 
 from stanfordcorenlp import StanfordCoreNLP # python wrapper for Stanford CoreNLP
@@ -407,7 +407,8 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
                                                   column_xAxis_label_var='Type of Error',
                                                   hover_info_column_list=hover_label)
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
 
     if openOutputFiles:

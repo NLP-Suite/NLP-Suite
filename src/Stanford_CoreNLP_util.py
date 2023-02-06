@@ -22,7 +22,7 @@ import sys
 import IO_libraries_util
 import GUI_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "CoreNLP_annotator", ['os', 'tkinter','time','json','re','subprocess','string','pandas','pycorenlp','nltk'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "CoreNLP_annotator", ['os', 'tkinter','time','json','re','subprocess','string','pandas','pycorenlp','nltk'])==False:
     sys.exit(0)
 
 from typing import Any, Tuple
@@ -194,7 +194,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # start_time = time.time()#start time
     filesToOpen = []
     # check that the CoreNLPdir has been setup
-    CoreNLPdir, software_url,            missing_external_software=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_annotator', 'Stanford CoreNLP', silent=True, only_check_missing=False)
+    CoreNLPdir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_util', 'Stanford CoreNLP', silent=False, only_check_missing=False)
     if CoreNLPdir== '' or CoreNLPdir== None or 'corenlp' in missing_external_software.lower():
         return filesToOpen
     # check the version of CoreNLP

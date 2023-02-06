@@ -5,7 +5,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"data_visualization.py",['os','tkinter'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"data_visualization.py",['os','tkinter'])==False:
     sys.exit(0)
 
 import os
@@ -33,6 +33,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         Gephi_var,
         csv_file_field_list,
         dynamic_network_field_var,
+        Sankey_limit1_var, Sankey_limit2_var, Sankey_limit3_var,
         categorical_var,
         filename_label_var,
         csv_field2_var,
@@ -92,17 +93,22 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
 # Sankey  --------------------------------------------------------------------------------
 
         if Sankey_var:
-            mb.showwarning(title='Warning',message='The option is under construction. Sorry!\n\nPlease, try again soon.')
-            return
             if len(csv_file_field_list)!=2 and len(csv_file_field_list)!=3:
                 mb.showwarning("Warning",
                                "You must select 2 or 3 csv fields to be used in the computation of a Sankey plot (e.g., Subject, Verb, Object or Subject, Object).")
                 return
             import charts_Sankey_util
-            chart_outputFilename = charts_Sankey_util.Sankey(inputFilename, outputFilename, inflow, outflow)
+            if len(csv_file_field_list)==3:
+                three_way_Sankey=True
+                var3=csv_file_field_list[2]
+                # Sankey_limit3_var
+            else:
+                three_way_Sankey = None
+                var3=None
+                Sankey_limit3_var=None
+            chart_outputFilename = charts_Sankey_util.Sankey(inputFilename, outputFilename,
+                                csv_file_field_list[0], Sankey_limit1_var, csv_file_field_list[1], Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
             # Function takes a csv file as data input,
-            # inflow is the variable of choice into which the outflow variable flows.
-            # For example, in coreference, inflow would be Pronoun and outflow would be Reference
 
 # Categorical data (sunburst or treemap) --------------------------------------------------------------------------------
 
@@ -217,6 +223,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             Gephi_var.get(),
                             csv_file_field_list,
                             dynamic_network_field_var.get(),
+                            Sankey_limit1_var.get(), Sankey_limit2_var.get(), Sankey_limit3_var.get(),
                             categorical_var.get(),
                             filename_label_var.get(),
                             csv_field2_var.get(),
@@ -460,7 +467,7 @@ def activate_csv_fields_selection(comingFromPlus=False):
         if len(csv_file_field_list) == 3:
             csv_field_menu.configure(state='disabled')
             dynamic_network_field_menu.config(state='normal')
-            mb.showwarning(title='Warning', message='The "csv file field" has been disabled. You have selected the 3 fields required by Gephi for node1, edge, node2.\n\nPress the "Show" button to display your selection. Press the "Reset" button to clear your selection and start again.')
+            mb.showwarning(title='Warning', message='You have selected the maximum number of fields (3) to visualize relations.\n\nPress the "Show" button to display your selection. Press the "Reset" button to clear your selection and start again.')
     else:
         csv_field_menu.config(state='normal')
         dynamic_network_field_menu.config(state='normal')
@@ -502,10 +509,10 @@ Sankey_limit1_lb = tk.Label(window, text='Variable 1 max')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                Sankey_limit1_lb, True)
 
-Sankey_limit1_var = tk.StringVar()
+Sankey_limit1_var = tk.IntVar()
 Sankey_limit1_var.set(5)
 Sankey_limit1_menu = tk.OptionMenu(window, Sankey_limit1_var, 5, 10)
-# Sankey_limit1_menu.configure(state='disabled')
+Sankey_limit1_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_pos, y_multiplier_integer,
                                    Sankey_limit1_menu,
@@ -516,10 +523,10 @@ Sankey_limit2_lb = tk.Label(window, text='Variable 2 max')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                Sankey_limit2_lb, True)
 
-Sankey_limit2_var = tk.StringVar()
-Sankey_limit2_var.set(5)
+Sankey_limit2_var = tk.IntVar()
+Sankey_limit2_var.set(10)
 Sankey_limit2_menu = tk.OptionMenu(window, Sankey_limit2_var, 5, 10, 20)
-# Sankey_limit1_menu.configure(state='disabled')
+Sankey_limit1_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+110, y_multiplier_integer,
                                    Sankey_limit2_menu,
@@ -531,10 +538,10 @@ Sankey_limit3_lb = tk.Label(window, text='Variable 3 max')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_dynamic_network_field_pos, y_multiplier_integer,
                                                Sankey_limit3_lb, True)
 
-Sankey_limit3_var = tk.StringVar()
-Sankey_limit3_var.set(5)
+Sankey_limit3_var = tk.IntVar()
+Sankey_limit3_var.set(20)
 Sankey_limit3_menu = tk.OptionMenu(window, Sankey_limit3_var, 5, 10, 20, 30)
-# Sankey_limit1_menu.configure(state='disabled')
+Sankey_limit1_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_dynamic_network_field_pos+110, y_multiplier_integer,
                                    Sankey_limit3_menu,
@@ -813,6 +820,9 @@ def activate_visualization_options(*args):
     relations_menu.configure(state='disabled')
     csv_field_menu.configure(state='disabled')
     dynamic_network_field_menu.configure(state='disabled')
+    Sankey_limit1_menu.configure(state='disabled')
+    Sankey_limit2_menu.configure(state='disabled')
+    Sankey_limit3_menu.configure(state='disabled')
 
     # categorical options
     categorical_menu.configure(state='disabled')
@@ -847,6 +857,9 @@ def activate_visualization_options(*args):
             dynamic_network_field_menu.configure(state='disabled')
             Gephi_var.set(False)
             Sankey_var.set(True)
+            Sankey_limit1_menu.configure(state='normal')
+            Sankey_limit2_menu.configure(state='normal')
+            Sankey_limit3_menu.configure(state='normal')
 
     elif categorical_var.get():
         # case_sensitive_checkbox.configure(state='normal')

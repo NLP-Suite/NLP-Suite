@@ -7,7 +7,7 @@ import IO_libraries_util
 # if pafy gives an error
 #   pip uninstall pafy
 #   pip install git+https://github.com/Cupcakus/pafy
-# if IO_libraries_util.install_all_packages('',"videos_util",['tkinter','vlc','pafy'])==False:
+# if IO_libraries_util.install_all_Python_packages('',"videos_util",['tkinter','vlc','pafy'])==False:
 #     sys.exit(0)
 
 import tkinter.messagebox as mb
