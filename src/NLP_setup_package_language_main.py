@@ -65,6 +65,7 @@ window.bind("<Escape>", clear)
 def display_available_options():
     global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers, memory_var, document_length_var, limit_sentence_length_var, package_display_area_value
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory, document_length, limit_sentence_length = config_util.read_NLP_package_language_config()
+    package_var.set(package)
     package_basics_var.set(package_basics)
     if language_var.get()!=language:
         language_var.set(language)

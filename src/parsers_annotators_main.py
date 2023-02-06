@@ -462,7 +462,7 @@ def activate_SentenceTable(*args):
 CoNLL_table_analyzer_var.set(0)
 CoNLL_table_analyzer_checkbox = tk.Checkbutton(window, text='CoNLL table analyzer', variable=CoNLL_table_analyzer_var,
                                                onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+10, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_lb_pos, y_multiplier_integer,
                                                CoNLL_table_analyzer_checkbox, True)
 CoNLL_table_analyzer_checkbox_msg = tk.Label()
 CoNLL_table_analyzer_checkbox_msg.config(text="Open the CoNLL table analyzer GUI")
@@ -659,7 +659,7 @@ def activate_NLP_options(*args):
         for s in parsers:
             s=s.lstrip() # remove leading blanks since parsers are separated by ,blank
             m.add_command(label=s, command=lambda value=s: parser_menu_var.set(value))
-    parser_lb = tk.Label(window, text=available_parsers)
+    parser_lb = tk.Label(window, text=available_parsers) # len('Stanford CoreNLP') - len(package)) #justify='left', width=27 , anchor='ne'
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.parsers_annotators_parser_lb_pos,
                                                    y_multiplier_integer_SV,
                                                    parser_lb, True, False, False, False, 90,
