@@ -366,7 +366,7 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName, re
             mb.showinfo(title='Warning',
                     message='The installation directory\n\n' + software_dir + '\m\nfor the external software ' + programName +
                             ' stored in the config file NLP_setup_external_software_config.csv DOES NOT EXIST.\n\n\You may have moved it or renamed it.'
-                            '\n\nPlease, reinstall ' + + programName + '.')
+                            '\n\nPlease, reinstall ' + programName + '.')
         else:
             for file in os.listdir(software_dir):
                 # create a list of files inside the program directory so that they can be checked for validity
