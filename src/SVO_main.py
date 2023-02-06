@@ -773,7 +773,7 @@ def activate_filter_dictionaries(*args):
     else:
         # objects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
         objects_dict_var.set('social-actor-list.csv')
-        filter_subjects_var.trace('w',activate_filter_dictionaries)
+filter_subjects_var.trace('w',activate_filter_dictionaries)
 filter_verbs_var.trace('w',activate_filter_dictionaries)
 filter_objects_var.trace('w',activate_filter_dictionaries)
 
@@ -1090,15 +1090,21 @@ reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_o
 
 warnUser()
 
+do_not_repeat_language_warning = False
 
 def activate_NLP_options(*args):
-    global error, package_basics, package, language, language_var, language_list, y_multiplier_integer
-
+    global error, package_basics, package, language, language_var, language_list, y_multiplier_integer, do_not_repeat_language_warning
     # after update no display
     error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
     language_list = [language]
     package_var.set(package)
     if language!='English':
+        if language != 'English' and not do_not_repeat_language_warning:
+            mb.showwarning(title='Warning',
+                           message='The current SVO extraction algorithm is rule based, dependent upon specific POStag values developed for the English language.'
+                                   '\n\nChinese, for instance, has different sets of Part-Of-Speech tags and SVO results would be unreliable. Use with caution for languages other than English.')
+        do_not_repeat_language_warning = True
+
         filter_subjects_var.set(0)
         filter_verbs_var.set(0)
         filter_objects_var.set(0)
@@ -1106,18 +1112,21 @@ def activate_NLP_options(*args):
         verbs_dict_var.set('')
         objects_dict_var.set('')
     else:
+        do_not_repeat_language_warning = False
         filter_subjects_var.set(1)
         filter_verbs_var.set(1)
         filter_objects_var.set(0)
         activate_filter_dictionaries()
 GUI_util.setup_menu.trace('w', activate_NLP_options)
+
 activate_NLP_options()
 
 if error:
     mb.showwarning(title='Warning',
                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
     call("python NLP_setup_package_language_main.py", shell=True)
-    # this will display the correct hover-over info after the python call, in case options were changed
-    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+
+# this will display the correct hover-over info after the python call, in case options were changed
+error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
 GUI_util.window.mainloop()
