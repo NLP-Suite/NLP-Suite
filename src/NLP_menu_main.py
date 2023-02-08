@@ -381,7 +381,13 @@ def setup_external_programs_checkbox(software, only_check_missing=False):
         if software_dir == None and software == '':
             return
         # missing_external_software = IO_libraries_util.get_missing_external_software_list('NLP_menu', '', '',True)
-        software_dir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('NLP_menu_main', software, silent, only_check_missing)
+        # check that the GEP has been setup
+        software_dir, existing_software_config = IO_libraries_util.external_software_install(
+            'NLP_menu_main',
+            software,
+            '',
+            silent)
+
         if software_dir==None or software_dir=='':
             setup_software_OK_checkbox_var.set(0)
         else:

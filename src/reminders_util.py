@@ -402,9 +402,10 @@ def getReminders_list(config_filename,silent=False):
         create_remindersFile()
         return getReminders_list(config_filename, silent)
     except Exception as e:
-        print(str(e))
         if silent==False:
-            mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory is ill formed. Most likely, it contains extra , in one of the three fields (Routine, Title, Message).\n\nPlease, let the NLP Suite development team know the problem so it can be fixed.\n\nIf any of the fields contain , the field content must be enclosed in \"\".")
+            message = 'Error encountered: ' + str(e) + ".\n\nError encountered with the checkReminder function in reminders_util.\n\nPlease, let the NLP Suite development team know the problem so it can be fixed."
+            import IO_user_interface_util
+            startTime = IO_user_interface_util.timed_alert('', 2000, 'Reminders error', message, False, '', True, '', False)
         return None
     # check among the * routine to make sure that the title is not there
     title_options = df[df['Routine'] == '*']['Title'].tolist()
@@ -456,6 +457,7 @@ def displayReminder(df,row_num,title, message, event, currentStatus, question, s
 # * in the Routine column are used for reminders that apply to any GUI
 # set silent to True if you just want to check the status of the reminder ON or OFF without asking the question
 def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_event=False, silent=False):
+
     # * denotes messages that apply to ALL scripts
     status=''
     if config_filename=='*':
@@ -475,11 +477,12 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
         df = pd.read_csv(remindersFile)
     except FileNotFoundError:
         create_remindersFile()
-        # mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory was not found. If this is your first time running NLP Suite, do not worry. A default reminders.csv has been automatically generated for you.")
         return checkReminder(config_filename, title_options, message, triggered_by_GUI_event)
-    except Exception:
+    except Exception as e:
         if not silent:
-            mb.showwarning(title='Reminders file error', message="The reminders.csv file saved in the reminders subdirectory is ill formed. Most likely, it contains extra , in one of the three fields (Routine, Title, Message).\n\nPlease, let the NLP Suite development team know the problem so it can be fixed.\n\nIf any of the fields contain , the field content must be enclosed in \"\".")
+            message = 'Error encountered: ' + str(e) + ".\n\nError encountered with the checkReminder function in reminders_util.\n\nPlease, let the NLP Suite development team know the problem so it can be fixed."
+            import IO_user_interface_util
+            startTime = IO_user_interface_util.timed_alert('', 2000, 'Reminders error', message, False, '', True, '', False)
             return None # open_message
     # get the row number of the routine that we are looking at
     silent = False

@@ -119,11 +119,6 @@ def install_all_Python_packages(window, calling_script, modules_to_try):
         if 'stanfordnlp' or 'stanza' in missingModules:
             # sys.version_info is the Python version
             if (sys.version_info[0] < 3) or (sys.version_info[0] == 3 and sys.version_info[1] < 6):
-                # if 'stanfordnlp' in missingModules:
-                #     mb.showwarning(title='Python version error',
-                #                    message="The module 'stanfordnlp' requires a Python version 3.6 or higher. You are currently running version " +
-                #                            sys.version_info[0] + "." + sys.version_info[
-                #                                0] + ".\n\nTo install Python with Anaconda, in command prompt/terminal type 'Conda install Python=3.7'.")
                 if 'stanza' in missingModules:
                     mb.showwarning(title='Python version error',
                                    message="The module 'stanza' requires a Python version 3.6 or higher. You are currently running version " +
@@ -319,13 +314,13 @@ MALLET_download = "http://mallet.cs.umass.edu/download.php" # Mac tar-gz file; W
 WordNet_download = "https://wordnet.princeton.edu/download/current-version" # Mac tar-gz file; Windows exe file
 
 # the function checks that if Stanford CoreNLP version matches with the latest downloadable version
-def check_CoreNLPVersion(CoreNLPdir,calling_script=''):
+def check_CoreNLPVersion(CoreNLPdir,calling_script='',silent=False):
     # get latest downloadable version
     try:
         response = requests.get("https://api.github.com/repos/stanfordnlp/CoreNLP/releases/latest")
     except:
         # no internet
-        return False
+        return
     github_version = response.json()["name"][1:]
     # get local stanford corenlp version
     onlyfiles = [f for f in os.listdir(CoreNLPdir) if os.path.isfile(os.path.join(CoreNLPdir, f))]
@@ -333,16 +328,13 @@ def check_CoreNLPVersion(CoreNLPdir,calling_script=''):
         if f.startswith("stanford-corenlp-"):
             local_version = f[:-4].split("-")[2]
             if github_version != local_version:
-                IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'Stanford CoreNLP version',
-                               "Oops! Your local Stanford CoreNLP version is " + local_version +
-                               ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nYour current version of Stanford CoreNLP will run anyway, but you should update to the latest release.",
-                                                   False,'',True)
-                # mb.showwarning("Warning", "Oops! Your local Stanford CoreNLP version is " + local_version +
-                #                ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nYour current version of Stanford CoreNLP will run anyway, but you should update to the latest release.")
-                if calling_script != 'NLP_menu_main':
-                    get_external_software_dir('calling_script', 'Stanford CoreNLP', silent=False, only_check_missing=False, install_download='download')
-                return False
-    return True
+                if not silent:
+                    IO_user_interface_util.timed_alert(GUI_util.window, 6000, 'Stanford CoreNLP version',
+                                   "Oops! Your local Stanford CoreNLP version is " + local_version +
+                                   ".\n\nIt is behind the latest Stanford CoreNLP version available on GitHub (" + github_version + ").\n\nYour current version of Stanford CoreNLP will run anyway, but you should update to the latest release.",
+                                                       False,'',True)
+                break
+    return
 
 # the function checks that external programs (e.g., Gephi, StanfordCoreNLP) have been properly installed
 #   it either reads a config csv file or it comes from having selected a program directory
@@ -365,7 +357,7 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName, re
         if not os.path.isdir(software_dir):
             mb.showinfo(title='Warning',
                     message='The installation directory\n\n' + software_dir + '\m\nfor the external software ' + programName +
-                            ' stored in the config file NLP_setup_external_software_config.csv DOES NOT EXIST.\n\n\You may have moved it or renamed it.'
+                            ' stored in the config file NLP_setup_external_software_config.csv DOES NOT EXIST.\n\nYou may have moved it or renamed it.'
                             '\n\nPlease, reinstall ' + programName + '.')
         else:
             for file in os.listdir(software_dir):
@@ -577,16 +569,13 @@ def save_software_config(existing_software_config, missing_software_string, sile
 #   1. the function is called from a specific script that uses the software_name (e.g., parsers_annotators_main)
 #   2. the function is called from NLP_menu_main when clicking on the button Setup external software
 # return software_dir, missing_software
+
 def get_external_software_dir(calling_script, software_name_checked, silent, only_check_missing, install_download=''):
     software_dir = ''
     software_url = ''
-    software_name = ''
     index = 0
     errorFound = False
-    Cancel = False
     missing_software=''
-    # java_found = any(['Java' in row[0] for row in existing_software_config])
-    ###
 
     # get a list of software in software-config.csv
     existing_software_config = get_existing_software_config()
@@ -597,71 +586,43 @@ def get_external_software_dir(calling_script, software_name_checked, silent, onl
         software_name = row[0]
         software_dir = row[1]
         software_url = row[2]
-        # if checking a specific external software (i.e., software_name)
-        #   you do not want a list of missing external software
-        if software_name_checked.lower()!='' and \
+
+        if software_name_checked.lower() != '' and \
                 ((software_name_checked.lower() == software_name.lower()) or
-                ('Java' in software_name_checked and 'Java' in software_name)):
-            errorFound = False
-            break
+                 ('Java' in software_name_checked and 'Java' in software_name)):
+            if software_dir == '':
+                errorFound=True
+
+# software_dir does NOT exists
+        if software_dir == None or software_dir == '':
+            if missing_software=='':
+                missing_software = str(software_name).upper() + '\n\n'
+                errorFound = True
+            else:
+                missing_software = missing_software + str(software_name).upper() + '\n\n'
+# software_dir exists
         else:
-            # continue
-
-        #     # if (software_name_checked.lower()!='') and (software_name_checked.lower() in software_name.lower()):
-        #     #     errorFound = False
-        #     #     break
-        # if (software_name_checked.lower()!='') and (software_name_checked.lower() not in software_name.lower()):
-        #     continue
-
-
-        # platform = 'darwin' # forcing darwin for testing in a Windows machine
-            if software_dir == None or software_dir == '':
-                if missing_software=='':
-                    missing_software = str(software_name).upper() + '\n\n'
-                    errorFound = True
-                else:
-                    missing_software = missing_software + str(software_name).upper() + '\n\n'
-            else: # software_dir exists
-                errorFound=False
-                # the software directory is stored in config file but...
-                #   check that the software directory still exists and the software_name has not been moved
-                ExternalProgramFile_result = check_inputExternalProgramFile(calling_script, software_dir, software_name, True, True )
+            errorFound=False
+            # the software directory is stored in config file but...
+            #   check that the software directory still exists and the software_name has not been moved
+            ExternalProgramFile_result = check_inputExternalProgramFile(calling_script, software_dir, software_name, True, True )
 
         if errorFound:
             software_dir = existing_software_config[index][1]
             software_url = existing_software_config[index][2]
             existing_software_config[index][1] = software_dir
-            # if you are checking for a specific software_name and the directory is NOT found
-            #   return None; no point continuing
-            # if (software_name_checked.lower()!='') and (software_name_checked.lower() in software_name.lower()):
-            #     errorFound = False
-            #     break
 
-        if (not errorFound) and (software_name_checked!='') and ((calling_script=='NLP_menu') or (calling_script=='NLP_setup_external_software_main.py')):
-            if software_name == 'Stanford CoreNLP' and software_name_checked == 'Stanford CoreNLP':
-                check_CoreNLPVersion(software_dir, calling_script)
-                # software_dir = ''
-                # missing_software = software_name
-            if not 'Java' in software_name:
-                if not silent:
-                    answer = tk.messagebox.askyesno(title=software_name_checked, message='The external software ' + software_name_checked + ' is already installed at ' + software_dir +
-                            '\n\nDo you want to re-install the software, in case you moved it to a different location?')
-                    if answer == True:
-                        # initialize_software_config_fields(existing_software_config, software_name)
-                        delete_software_config(existing_software_config, software_name_checked)
-                        missing_software = software_name_checked
-                        software_dir = ''
-                    ###
-                    # else:
-                    #     # if you are checking for a specific software_name and that is found return the appropriate directory
-                    #     if (software_name_checked!=''):
-                    #         return software_dir, software_url, missing_software
+        # if you are checking for a specific software_name and the directory is NOT found
+        #   return None; no point continuing in the for loop
+        if (software_name_checked.lower()!='') and (software_name_checked.lower() in software_name.lower()):
+            # errorFound = False
+            break
 
-        if software_dir == None or software_dir == '':
-            software_dir = None # specific calling scripts (e.g. Stanford CoreNL) check for None
+    if software_dir == None or software_dir == '':
+        software_dir = None # specific calling scripts (e.g. Stanford CoreNL) check for None
 
     return software_dir, software_url, missing_software
-
+    # end of get_external_software_dir
 def ask_download_installation_questions(download_install, software_name, software_dir, message, silent=False):
     cancel_download_install = False
     if software_dir != None and software_dir != '':  # and software_name.lower() in software_name.lower():
@@ -802,8 +763,8 @@ def display_download_installation_messages(download_install, software_name, soft
                                 'you will only have to do this once (the selected installation directory will be saved in NLP_setup_external_software_config.csv).'
     else:
         # NL_menu__main
-        if not 'NLP_menu' in calling_script and not 'NLP_setup_external_software' in calling_script:
-                opening_message = 'The script ' + calling_script.upper() + ' requires the external software ' + software_name.upper() + ' to run.' \
+        if (software_dir=='' or  software_dir==None) and (not 'NLP_menu' in calling_script and not 'NLP_setup_external_software' in calling_script):
+                opening_message = 'The script ' + calling_script.upper() + ' requires the external software ' + software_name.upper() + ' to run. The software needs to downloaded/installed.' \
                     '\n\nFor your convenience, the download function can automatically open the NLP_setup_external_software_main.py GUI ' \
                     'where you can download and install this and any other required external software.' \
                     '\n\nDO YOU WANT TO OPEN THE GUI?'
@@ -812,6 +773,13 @@ def display_download_installation_messages(download_install, software_name, soft
                     if answer:
                         download_message = ''
                         call("python NLP_setup_external_software_main.py", shell=False)
+                        # must get software_dir in case it was changed in the NLP_setup_external_software_main GUI
+                        software_dir, software_url, missing_software = get_external_software_dir(calling_script,
+                                                                                                 software_name,
+                                                                                                 silent=True,
+                                                                                                 only_check_missing=True,
+                                                                                                 install_download='install')
+
                     else:
                         # download_message, installation_message are set to '' when no new download or installation is desired
                         download_message = ''
@@ -866,7 +834,8 @@ def display_download_installation_messages(download_install, software_name, soft
                     if not Java_errorFound:
                         software_dir = "Java version " + java_version + " installed"
                         mb.showwarning(title=software_name + ' installation.',
-                                       message=software_name + ' is already installed on your machine:\n\n' + software_dir + ' as saved in NLP_setup_external_software_config.csv.\n\nIf you want to install a new version, you need to uninstall the current version, since Java is in your environment variables, and then download/install a different version.')
+                                       message=software_name + ' is already installed on your machine:\n\n' + software_dir + ' as saved in NLP_setup_external_software_config.csv.'
+                                                '\n\nIf you want to install a new version, you need to uninstall the current version, since Java is in your environment variables, and then download/install a different version.')
                         # download_message='' is used to detect a cancellation
                         download_message = ""
                         return software_dir, title, opening_message, download_message, installation_message
@@ -891,13 +860,15 @@ def display_download_installation_messages(download_install, software_name, soft
                     if not Java_errorFound:
                         software_dir = "Java version " + java_version + " installed"
                     mb.showwarning(title=software_name + ' installation.',
-                                   message=software_name + ' is already installed on your machine:\n\n' + software_dir + ' as saved in NLP_setup_external_software_config.csv.\n\nIf you want to install a new version, you need to uninstall the current version, since Java is in your environment variables, and then download/install a different version.')
+                                   message=software_name + ' is already installed on your machine:\n\n' + software_dir + ' as saved in NLP_setup_external_software_config.csv.'
+                                                        '\n\nIf you want to install a new version, you need to uninstall the current version, since Java is in your environment variables, and then download/install a different version.')
                     # download_message, installation_message are set to '' when no new download or installation is desired
                     download_message = ''
                     return software_dir, title, opening_message, download_message, installation_message
 
             already_downloaded_message = software_name.upper() + " has already been downloaded and installed on your machine.\n\n" \
-                                        "Do you want to access the software_name url\n\n  " + software_url + "\n\nand download it again (maybe a different release)?\n\n"
+                                        "Do you want to access the software_name url\n\n  " + software_url + "\n\nand download it again (maybe a different release)?\n\n" \
+                                        '\n\nIf, instead, you have moved the software directory to a location different from the one saved in the config file, use the dropdown menu "Software install" to select the new location.'
             cancel_download_install = ask_download_installation_questions(download_install, software_name,
                                       software_dir, already_downloaded_message,
                                       silent=False)
@@ -969,9 +940,11 @@ def display_download_installation_messages(download_install, software_name, soft
 
         else: # already installed
 
-            installation_message = software_name.upper() + " has already been installed on your machine.\n\nDo you want to install it again, " \
-                "selecting a different directory location from the current location?\n\n" + software_dir
-
+            if 'NLP_menu' in calling_script or 'NLP_setup_external_software' in calling_script:
+                installation_message = software_name.upper() + " has already been installed on your machine.\n\nDo you want to install it again, " \
+                    "selecting a different directory location from the current location?\n\n" + software_dir
+            else:
+                installation_message=''
             if 'Java' in software_name:
                 # since Stanford CoreNLP, Gephi, and MALLET need Java, check for Java installation
                 Java_errorFound, error_code, system_output, java_version = check_java_installation(software_name)
@@ -982,6 +955,18 @@ def display_download_installation_messages(download_install, software_name, soft
                                     'you need to uninstall the current version, since Java is in your environment variables, and then use the "Software download" button to download and install a different version.')
                 # download_message, installation_message are set to '' when no new download or installation is desired
                 download_message = ''
+                return software_dir, title, opening_message, download_message, installation_message
+
+            # check that Stanford CoreNLP is the latest release
+            if software_name == 'Stanford CoreNLP':
+                check_CoreNLPVersion(software_dir, calling_script, silent)
+                # software_dir = ''
+                # missing_software = software_name
+
+
+            # when called from a specific GUI that requires an external software (e.g., Stanford_CoreNLP_util)
+            #  if the software is installed, you do not want to ask any questions
+            if installation_message=='':
                 return software_dir, title, opening_message, download_message, installation_message
 
             cancel_download_install = ask_download_installation_questions(download_install, software_name,

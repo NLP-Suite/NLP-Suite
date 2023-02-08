@@ -194,9 +194,16 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # start_time = time.time()#start time
     filesToOpen = []
     # check that the CoreNLPdir has been setup
-    CoreNLPdir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_util', 'Stanford CoreNLP', silent=False, only_check_missing=False)
-    if CoreNLPdir== '' or CoreNLPdir== None or 'corenlp' in missing_external_software.lower():
+    CoreNLPdir, existing_software_config = IO_libraries_util.external_software_install('Stanford_CoreNLP_util',
+                                                                                         'Stanford CoreNLP',
+                                                                                         '',
+                                                                                         silent=False)
+    if CoreNLPdir== '' or CoreNLPdir== None:
         return filesToOpen
+
+    # CoreNLPdir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_util', 'Stanford CoreNLP', silent=False, only_check_missing=False)
+    # if CoreNLPdir== '' or CoreNLPdir== None or 'corenlp' in missing_external_software.lower():
+    #     return filesToOpen
     # check the version of CoreNLP
     IO_libraries_util.check_CoreNLPVersion(CoreNLPdir)
 
@@ -648,7 +655,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     params_NN['parse.model'] = lang_models['nn']
                     params_NN['annotators'] = param_string_NN
                     if "quote" in param_string_NN and single_quote_var:
-                        print("debugging: Include Single Quote")
+                        # print("debugging: Include Single Quote")
                         params_NN["quote.singleQuotes"] = True
                     NN_start_time = time.time()
                     CoreNLP_output = nlp.annotate(text, properties=params_NN)
@@ -892,6 +899,8 @@ def check_sentence_length(sentence_length, sentenceID, config_filename):
             order = "st"
         elif sentenceID % 10 == 2:
             order = "nd"
+            if sentenceID == 12:
+                order = "th"
         elif sentenceID % 10 == 3:
             order = "rd"
 

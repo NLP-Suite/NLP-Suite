@@ -262,8 +262,11 @@ def run(inputDir, input_secondary_dir_path, outputDir, openOutputFiles, createCh
         plagiarist_var, similarityIndex_Plagiarist_var, Levenshtein_var):
     global filesToOpen
     filesToOpen = []
-    # check that the CoreNLPdir as been setup
-    CoreNLPdir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('social_science_research_main', 'Stanford CoreNLP', silent=False, only_check_missing=False)
+    # check that the CoreNLPdir has been setup
+    CoreNLPdir, existing_software_config = IO_libraries_util.external_software_install('social_science_research_main',
+                                                                                         'Stanford CoreNLP',
+                                                                                         '',
+                                                                                         silent=False)
     if CoreNLPdir==None or CoreNLPdir=='':
         return filesToOpen
 

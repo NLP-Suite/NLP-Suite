@@ -54,10 +54,13 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
     # os.environ.pop("MALLET_HOME")
     # del os.environ['MALLET_HOME']
 
-    # check that the MalletDir as been setup
-    MalletDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('topic_modeling_mallet_util',
-                                                                                       'MALLET',
-                                                                                       silent=False, only_check_missing=False)
+    # check that the CoreNLPdir as been setup
+    MalletDir, existing_software_config = IO_libraries_util.external_software_install(
+        'topic_modeling_mallet_util',
+        'MALLET',
+        '',
+        silent=False)
+
     if MalletDir == None or MalletDir=='':
         return
 
