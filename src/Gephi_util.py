@@ -1073,7 +1073,11 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
     :param corpus: A Corpus Object
     :return: gexf file path.
     """
-    GephiDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('Gephi_util','Gephi', silent=False, only_check_missing=False)
+    # check that the CoreNLPdir has been setup
+    GephiDir, existing_software_config = IO_libraries_util.external_software_install('Gephi_util',
+                                                                                         'Gephi',
+                                                                                         '',
+                                                                                         silent=False)
     if GephiDir == None or GephiDir=='':
         return
 

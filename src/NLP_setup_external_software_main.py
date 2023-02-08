@@ -224,7 +224,7 @@ def activate_software_install(download_install,software_dir, software_url, missi
             software_name = software_install_var.get()
         else:
             software_name = software_download_var.get()
-        # get software_dir, software_url of software_name
+        # get software_dir, software_url of software_name; must be silent to avoid message
         software_dir, software_url, missing_software =IO_libraries_util.get_external_software_dir(scriptName, software_name,
                                   silent=True, only_check_missing=True, install_download='install')
         # software_install_dir_var.set(software_dir)
@@ -337,6 +337,7 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 software_dir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir(scriptName, software_download_var.get(), silent=False, only_check_missing=True)
 if missing_external_software == '':
     missing_software_var.set('All external software has been installed')
+    mb.showwarning(title='Warning',message='All external software has been installed.')
     error = False
 else:
     # must be displayed at the end after the whole GUI has been laid

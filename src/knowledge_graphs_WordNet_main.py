@@ -53,7 +53,12 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
 
     language_var='English' # WordNet works only for English language
 
-    WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('knowledge_graphs_WordNet_main', 'WordNet', silent=False, only_check_missing=False)
+    # check that the GEP has been setup
+    WordNetDir, existing_software_config = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
+                                                                                         'WordNet',
+                                                                                         '',
+                                                                                         silent=False)
+
     if WordNetDir == None:
         return
 

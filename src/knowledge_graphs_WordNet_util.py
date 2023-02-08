@@ -83,10 +83,13 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
 # what matters is the first column; and there can be multiple columns tha will not be processed
 def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_verb,openOutputFiles,createCharts, chartPackage, language_var=''):
     filesToOpen=[]
-    WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('SVO_main',
-                                                                                                      'WordNet',
-                                                                                                      silent=False,
-                                                                                                      only_check_missing=False)
+
+    # check that the GEP has been setup
+    WordNetDir, existing_software_config = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
+                                                                                         'WordNet',
+                                                                                         '',
+                                                                                         silent=False)
+
     if WordNetDir == None or WordNetDir == '':
         return filesToOpen
 

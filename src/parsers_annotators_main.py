@@ -659,14 +659,17 @@ def activate_NLP_options(*args):
         for s in parsers:
             s=s.lstrip() # remove leading blanks since parsers are separated by ,blank
             m.add_command(label=s, command=lambda value=s: parser_menu_var.set(value))
-    parser_lb = tk.Label(window, text=available_parsers) # len('Stanford CoreNLP') - len(package)) #justify='left', width=27 , anchor='ne'
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.parsers_annotators_parser_lb_pos,
-                                                   y_multiplier_integer_SV,
-                                                   parser_lb, True, False, False, False, 90,
-                                                   GUI_IO_util.labels_x_coordinate,
-                                                   "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
-    # parser_lb.config(text=available_parsers)
-    # print("available parsers",available_parsers)
+
+    try:
+        parser_lb.config(text=available_parsers)
+    except NameError:
+        parser_lb = tk.Label(window, text=available_parsers)
+        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.parsers_annotators_parser_lb_pos,
+                                                       y_multiplier_integer_SV,
+                                                       parser_lb, True, False, False, False, 90,
+                                                       GUI_IO_util.labels_x_coordinate,
+                                                       "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
+
 GUI_util.setup_menu.trace('w', activate_NLP_options)
 activate_NLP_options()
 
