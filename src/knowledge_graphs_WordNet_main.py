@@ -53,7 +53,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
 
     language_var='English' # WordNet works only for English language
 
-    # check that the GEP has been setup
+    # check that the WordNet has been setup
     WordNetDir, existing_software_config = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
                                                                                          'WordNet',
                                                                                          '',
@@ -744,5 +744,22 @@ reminders_util.checkReminder(
         reminders_util.title_options_English_language_WordNet,
         reminders_util.message_English_language_WordNet,
         True)
+
+do_not_repeat_language_warning = False
+
+def activate_NLP_options(*args):
+    global error, package_basics, package, language, language_var, language_list, y_multiplier_integer, do_not_repeat_language_warning
+    # after update no display
+    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
+    language_list = [language]
+    if language!='English':
+        if language != 'English' and not do_not_repeat_language_warning:
+            mb.showwarning(title='Warning',
+                           message='The WordNet algorithms only work for the English language. Your selected language is ' + language + '.\n\nYou can use the Setup dropdown menu at the bottom of this GUI and select "Setup NLP package and corpus language" option to select a differnt language if have an English-language corpus.')
+        do_not_repeat_language_warning = True
+
+GUI_util.setup_menu.trace('w', activate_NLP_options)
+
+activate_NLP_options()
 
 GUI_util.window.mainloop()

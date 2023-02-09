@@ -65,7 +65,7 @@ GUI_label='Graphical User Interface (GUI) for a suite of tools of Natural Langua
 # there is currently NO way to setup a specific I/O config for the NLP_menu_main; it can only have the default setup
 # config_filename='NLP_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+config_filename = scriptName.replace('main_menu.py', 'config.csv')
 # overwrite the standard way of setting up config_filename, since NLP_menu_main saves to default_config
 config_filename = 'NLP_default_IO_config.csv'
 
@@ -364,7 +364,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                open_default_NLP_package_language_config_button, False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate, "Open the NLP_default_package_language_config.csv file containing the default NLP parser and annotators and corpus language options")
 
 setup_software_checkbox = tk.Checkbutton(window, state='disabled',
-                                         variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0, command=lambda: setup_external_programs_checkbox('',False))
+                                         variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0, command=lambda: setup_external_programs_checkbox())
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                              setup_software_checkbox,
@@ -374,41 +374,35 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 software_dir = ''
 
-def setup_external_programs_checkbox(software, only_check_missing=False):
-    global software_dir
-    silent = False
-    if setup_software_OK_checkbox_var.get()==0 or software != '':
-        if software_dir == None and software == '':
-            return
-        # missing_external_software = IO_libraries_util.get_missing_external_software_list('NLP_menu', '', '',True)
-        # check that the GEP has been setup
-        software_dir, existing_software_config = IO_libraries_util.external_software_install(
-            'NLP_menu_main',
-            software,
-            '',
-            silent)
-
-        if software_dir==None or software_dir=='':
-            setup_software_OK_checkbox_var.set(0)
-        else:
-            setup_software_OK_checkbox_var.set(1)
+def setup_external_programs_checkbox():
+    # get the software_dir and software_url for the selected software_name
+    software_dir, software_url, missing_software = IO_libraries_util.get_external_software_dir('NLP_menu_main', '',
+                                                        silent=True, only_check_missing=True, install_download='download')
+    if missing_software!='':
+        setup_software_OK_checkbox_var.set(0)
+    else:
+        setup_software_OK_checkbox_var.set(1)
     return missing_external_software
-# setup_software_OK_checkbox_var.trace('w', lambda x, y, z: setup_external_programs_checkbox(''))
+
 
 def callback(software: str):
-    print('IN CALLBACK')
+    # print('IN CALLBACK')
     software_setup_var.set(software)
-    setup_external_programs_checkbox(software,False)
+    setup_external_programs_checkbox()
 
 def setup_software_warning():
     global software
     mb.showwarning('External software option', 'Please, select next the external software that you would like to download/install using the dropdown menu.')
     software = GUI_IO_util.dropdown_menu_widget(window, "Please, select the external software to setup using the dropdown menu on the left, then click OK to accept your selection", ['Stanford CoreNLP', 'Gephi', 'Google Earth Pro', 'MALLET', 'WordNet'],'Stanford CoreNLP',callback)
     if software != None:
-        setup_external_programs_checkbox(software,True)
+        setup_external_programs_checkbox()
+
+def setup_software():
+    call("python NLP_setup_external_software_main.py", shell=False)
+    setup_external_programs_checkbox()
 
 # software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_software_warning())
-software_setup_button = tk.Button(window, text='SETUP external software', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_external_software_main.py", shell=True))
+software_setup_button = tk.Button(window, text='SETUP external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_software())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
                                                y_multiplier_integer,
@@ -624,7 +618,7 @@ if sys.platform == 'darwin':
 setup_IO_checkbox()
 
 # check for missing external software
-missing_external_software = setup_external_programs_checkbox('', True)
+missing_external_software = setup_external_programs_checkbox()
 
 if missing_external_software!='':
     reminders_util.checkReminder(temp_config_filename,
@@ -634,7 +628,11 @@ if missing_external_software!='':
     routine_options = reminders_util.getReminders_list(temp_config_filename)
 
 if not setup_IO_OK_checkbox_var.get() or not handle_setup_options_OK_checkbox_var.get() or not setup_software_OK_checkbox_var.get():
-    answer = tk.messagebox.askyesno("Warning", 'Some (or all) of the required three NLP Suite setup options (I/O configuration, NLP package and language, external software displayed in the three buttons at the top of this GUI) are not completed.\n\nDo you want to watch the video on how to setup the NLP Suite options?')
+    answer = tk.messagebox.askyesno("Warning", 'Some (or all) of the required three setup options:\n'
+                                               '\n\nSetup default I/O options...\nSetup default NLP parsers and annotators...\nSetup external software'
+                                               '\n\ndisplayed in the three buttons at the top of this GUI are not completed (the checkbox to the left of the incomplete setup button is not ticked off).'
+                                               '\n\nYou should click on the appropriate Setup button and complete the required setup.'
+                                               '\n\nDo you want to watch the video on how to setup the NLP Suite options?')
     if answer:
         GUI_util.videos_dropdown_field.set('Setup the NLP Suite')
         # GUI_util.watch_video(videos_lookup, scriptName)
