@@ -618,9 +618,12 @@ def get_external_software_dir(calling_script, software_name_checked, silent, onl
             # errorFound = False
             break
 
-    if software_dir == None or software_dir == '':
+    if software_dir == '':
         software_dir = None # specific calling scripts (e.g. Stanford CoreNL) check for None
-
+    else:
+        if software_name_checked=='':
+            software_dir = None
+            software_url = ''
     return software_dir, software_url, missing_software
     # end of get_external_software_dir
 def ask_download_installation_questions(download_install, software_name, software_dir, message, silent=False):
@@ -1018,6 +1021,9 @@ def external_software_download(calling_script, software_name, existing_software_
     # get the software_dir and software_url for the selected software_name
     software_dir, software_url, missing_software = get_external_software_dir(calling_script, software_name,
                                                         silent=True, only_check_missing=True, install_download='download')
+    download_message=''
+    if missing_software=='':
+        return software_dir, software_url, download_message
 
     software_dir, title, opening_message, download_message, installation_message = \
         display_download_installation_messages('download', software_name, software_dir, software_url, calling_script, '', silent)
@@ -1053,7 +1059,8 @@ def external_software_install(calling_script, software_name, existing_software_c
     # get installation directory and website
     software_dir, software_url, missing_software = get_external_software_dir(calling_script, software_name,
                                                             silent=True, only_check_missing=True, install_download='install')
-
+    if missing_software=='':
+        return software_dir, existing_software_config
     software_dir, title, opening_message, download_message, installation_message = \
         display_download_installation_messages('install', software_name, software_dir, software_url, calling_script, missing_software, silent)
     # download_message, installation_message are set to '' when no new download or installation is desired

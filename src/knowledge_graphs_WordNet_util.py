@@ -48,6 +48,9 @@ def process_keyword(wordNet_keyword_list, noun_verb):
             print (each.lemmas()[0].name())
 
 def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb):
+    # check WordNet
+    IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/WordNet', 'WordNet')
+
     filesToOpen=[]
     if IO_libraries_util.check_inputPythonJavaProgramFile('WordNet_Search_DOWN.jar') == False:
         return
@@ -82,6 +85,9 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
 # the header does not matter, it can be NUN or VERB or anything else
 # what matters is the first column; and there can be multiple columns tha will not be processed
 def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_verb,openOutputFiles,createCharts, chartPackage, language_var=''):
+    # check WordNet
+    IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/WordNet', 'WordNet')
+
     filesToOpen=[]
 
     # check that the GEP has been setup
