@@ -750,7 +750,7 @@ do_not_repeat_language_warning = False
 def activate_NLP_options(*args):
     global error, package_basics, package, language, language_var, language_list, y_multiplier_integer, do_not_repeat_language_warning
     # after update no display
-    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
+    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.setup_parsers_annotators(y_multiplier_integer, scriptName)
     language_list = [language]
     if language!='English':
         if language != 'English' and not do_not_repeat_language_warning:
