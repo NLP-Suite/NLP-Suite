@@ -626,7 +626,6 @@ NLP_Suite_corpus_document_tools_menu = \
 '', \
 'Specialized tools --------------------------------------------------------------------------------', \
 '', \
-'Gender guesser', \
 'Geographic maps: From texts to maps', \
 'Geographic maps: Google Earth Pro', \
 'Knowledge graphs: DBpedia & YAGO', \
@@ -645,13 +644,16 @@ NLP_Suite_corpus_document_tools_menu = \
 'Style analysis tools -----------------------------------------------------------------------------------', \
 '', \
 'Style analysis (ALL options GUI)', \
+'Language detection', \
 'N-grams (word & character)', \
+'N-grams/co-occurrences viewer', \
 'Nominalization', \
 'Sentence complexity', \
 'Sentence/text readability (via textstat)', \
 'Similarities between words (Levenshtein distance)', \
 'Spelling checkers', \
 'Spelling checker cleaner (Find & Replace string)', \
+'Who wrote the text? Man or woman? (via Gender guesser)', \
 '', \
 'Search & extraction tools -----------------------------------------------------------------------', \
 '', \

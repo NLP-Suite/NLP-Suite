@@ -80,6 +80,16 @@ def watch_video(video_button):
     # GUI_util.watch_video(videos_lookup,scriptName)
     # videos_util.get_video(videos_options, videos_lookup)
 
+def open_TIPS():
+    import sys
+    import subprocess
+    TIPS_file='TIPS_NLP_Questions & answers.pdf'
+    if os.path.isfile(os.path.join(GUI_IO_util.TIPSPath, TIPS_file)):
+        if sys.platform in ['win32', 'cygwin', 'win64']:
+            subprocess.Popen([GUI_IO_util.TIPSPath + os.sep + TIPS_file], shell=True)
+        else:
+            call(['open', GUI_IO_util.TIPSPath + os.sep + TIPS_file])
+
 images = []
 
 
@@ -169,8 +179,7 @@ def display_bottom_line_buttons():
 
     TIPS_button = tk.Button(window, text='Open TIPS file', width=15, height=1, foreground="red",
                              font=("Arial", 12, "italic"),
-                             command=lambda: watch_video(TIPS_button))
-    TIPS_button.configure(state='disabled')
+                             command=lambda: open_TIPS())
     TIPS_button.grid(row=9, column=1, columnspan=3, sticky=(tk.N,tk.W),padx=30)
 
     video_button = tk.Button(window, text='Watch video', width=15, height=1, foreground="red",

@@ -24,6 +24,7 @@ import GUI_IO_util
 import IO_files_util
 import reminders_util
 import constants_util
+import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -94,8 +95,8 @@ window = GUI_util.window
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 setup_IO_OK_checkbox_var = tk.IntVar()
-handle_setup_options_OK_checkbox_var = tk.IntVar()
-setup_software_OK_checkbox_var = tk.IntVar()
+setup_parsers_annotators_OK_checkbox_var = tk.IntVar()
+setup_external_software_OK_checkbox_var = tk.IntVar()
 
 script_to_run=''
 IO_values=''
@@ -233,12 +234,11 @@ pydict["Geographic maps: Geocoding & maps"] = ["GIS_main.py", 1]
 pydict["Geographic maps: Google Earth Pro"] = ["GIS_Google_Earth_main.py", 1]
 pydict["Geographic maps: From texts to maps"] = ["GIS_main.py", 1]
 pydict["Geographic distances between locations"] = ["GIS_distance_main.py", 1]  # GIS_distance_main.py
-pydict["Gender guesser"] = ["Gender guesser", 0, 0, '']
 pydict["Language detection"] = ["style_analysis_main.py", 1]
 pydict["NER (Named Entity Recognition) annotator"] = ["NER_main.py", 1]
 pydict["Newspaper article/Document titles"] = ["file_checker_converter_cleaner_main.py", 1]
 pydict["N-grams (word & character)"] = ["style_analysis_main.py", 1]
-pydict["N-grams viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
+pydict["N-grams/co-occurrences viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["Nominalization"] = ["nominalization_main.py", 1]
 pydict["Sample corpus (ALL options GUI)"] = ["sample_corpus_main.py", 1]
 pydict["File handler (ALL options GUI)"] = ["file_handler_ALL_main.py", 1]
@@ -277,6 +277,7 @@ pydict["Style analysis (ALL options GUI)"] = ["style_analysis_main.py", 1]
 pydict["Narrative analysis (ALL options GUI)"] = ["narrative_analysis_ALL_main.py", 1]
 pydict["WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW"] = ["whats_in_your_corpus_main.py", 1]
 pydict["Corpus/document(s) statistics (Sentences, words, lines)"] = ["style_analysis_main.py", 1]
+pydict["Who wrote the text? Man or woman? (via Gender guesser)"] = ["Gender guesser", 0, 0, '']
 pydict["Wordclouds (ALL options GUI)"] = ["wordclouds_main.py", 1]
 pydict["WordNet"] = ["knowledge_graphs_WordNet_main.py", 1]
 pydict["Word embeddings (Word2Vec) (via BERT & Gensim)"] = ["word2vec_main.py", 1]
@@ -314,8 +315,13 @@ def setup_IO():
     setup_IO_checkbox()
 
 def setup_IO_checkbox():
-    state = str(GUI_util.run_button['state'])
-    if state != 'disabled':
+    # RUN is always normal for NLP_mnenu_main so this test would fail
+    # state = str(GUI_util.run_button['state'])
+    # if state != 'disabled':
+
+    config_input_output_alphabetic_options, missingIO = config_util.read_config_file(config_filename, config_input_output_numeric_options)
+
+    if missingIO=='':
         setup_IO_OK_checkbox_var.set(1)
     else:
         setup_IO_OK_checkbox_var.set(0)
@@ -332,24 +338,24 @@ open_default_IO_config_button = tk.Button(window, width=GUI_IO_util.open_file_di
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_IO_config_button, y_multiplier_integer,
                                                open_default_IO_config_button, False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate, "Open the NLP_default_IO_config.csv file containing the default Input/Output options")
 
-handle_setup_options_OK_checkbox = tk.Checkbutton(window, state='disabled',
-                                      variable=handle_setup_options_OK_checkbox_var, onvalue=1, offvalue=0)
+setup_parsers_annotators_OK_checkbox = tk.Checkbutton(window, state='disabled',
+                                      variable=setup_parsers_annotators_OK_checkbox_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                             handle_setup_options_OK_checkbox,
+                                             setup_parsers_annotators_OK_checkbox,
                                              True, False, True, False,
                                              90, GUI_IO_util.labels_x_coordinate,
                                              "The checkbox, always disabled, is ticked ON when the parser/annotator and corpus language options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default NLP parser...' button to set up.")
 
 NLP_package_language_config = GUI_IO_util.configPath+os.sep+'NLP_default_package_language_config.csv'
-def handle_setup_options_checkbox(NLP_package_language_config):
+def setup_parsers_annotators_checkbox(NLP_package_language_config):
     if os.path.isfile(NLP_package_language_config):
-        handle_setup_options_OK_checkbox_var.set(1)
+        setup_parsers_annotators_OK_checkbox_var.set(1)
     else:
-        handle_setup_options_OK_checkbox_var.set(0)
-handle_setup_options_OK_checkbox_var.trace('w', lambda x, y, z: handle_setup_options_checkbox(NLP_package_language_config))
+        setup_parsers_annotators_OK_checkbox_var.set(0)
+setup_parsers_annotators_OK_checkbox_var.trace('w', lambda x, y, z: setup_parsers_annotators_checkbox(NLP_package_language_config))
 
-handle_setup_options_checkbox(NLP_package_language_config)
+setup_parsers_annotators_checkbox(NLP_package_language_config)
 
 NLP_package_language_setup_button = tk.Button(window, text='SETUP default NLP parsers & annotators package and default corpus language', width=95, font=("Courier", 10, "bold"), command=lambda: call("python NLP_setup_package_language_main.py", shell=True))
 # place widget with hover-over info
@@ -363,11 +369,11 @@ open_default_NLP_package_language_config_button = tk.Button(window, width=GUI_IO
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_NLP_package_language_config_button, y_multiplier_integer,
                                                open_default_NLP_package_language_config_button, False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate, "Open the NLP_default_package_language_config.csv file containing the default NLP parser and annotators and corpus language options")
 
-setup_software_checkbox = tk.Checkbutton(window, state='disabled',
-                                         variable=setup_software_OK_checkbox_var, onvalue=1, offvalue=0, command=lambda: setup_external_programs_checkbox())
+setup_external_software_checkbox = tk.Checkbutton(window, state='disabled',
+                                         variable=setup_external_software_OK_checkbox_var, onvalue=1, offvalue=0, command=lambda: setup_external_programs_checkbox())
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                             setup_software_checkbox,
+                                             setup_external_software_checkbox,
                                              True, False, True, False,
                                              90, GUI_IO_util.labels_x_coordinate,
                                              "The checkbox, always disabled, is ticked ON when all external software have been installed.\nIf the checkbox is OFF, click on the 'SETUP external software' button to set up.")
@@ -379,9 +385,9 @@ def setup_external_programs_checkbox():
     software_dir, software_url, missing_software = IO_libraries_util.get_external_software_dir('NLP_menu_main', '',
                                                         silent=True, only_check_missing=True, install_download='download')
     if missing_software!='':
-        setup_software_OK_checkbox_var.set(0)
+        setup_external_software_OK_checkbox_var.set(0)
     else:
-        setup_software_OK_checkbox_var.set(1)
+        setup_external_software_OK_checkbox_var.set(1)
     return missing_external_software
 
 
@@ -390,19 +396,19 @@ def callback(software: str):
     software_setup_var.set(software)
     setup_external_programs_checkbox()
 
-def setup_software_warning():
+def setup_external_software_warning():
     global software
     mb.showwarning('External software option', 'Please, select next the external software that you would like to download/install using the dropdown menu.')
     software = GUI_IO_util.dropdown_menu_widget(window, "Please, select the external software to setup using the dropdown menu on the left, then click OK to accept your selection", ['Stanford CoreNLP', 'Gephi', 'Google Earth Pro', 'MALLET', 'WordNet'],'Stanford CoreNLP',callback)
     if software != None:
         setup_external_programs_checkbox()
 
-def setup_software():
-    call("python NLP_setup_external_software_main.py", shell=False)
+def setup_external_software():
+    call("python NLP_setup_external_software_main.py", shell=True)
     setup_external_programs_checkbox()
 
-# software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_software_warning())
-software_setup_button = tk.Button(window, text='SETUP external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_software())
+# software_setup_button = tk.Button(window, text='Setup external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_external_software_warning())
+software_setup_button = tk.Button(window, text='SETUP external software', width=95, font=("Courier", 10, "bold"), command=lambda: setup_external_software())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+30,
                                                y_multiplier_integer,
@@ -411,7 +417,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                "The NLP Suite relies on a handful of external software to carry out specialized tasks (e.g., Stanford CoreNLP, Gephi)\nClick on the Setup button to download and install these freeware software packages\nYou only have to do this once")
 
 open_setup_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, GUI_IO_util.configPath+os.sep+'NLP_setup_external_software_config.csv'))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_setup_software_button, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+GUI_IO_util.open_setup_external_software_button, y_multiplier_integer,
                                                open_setup_button, False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate, "Open the NLP_setup_external_software_config.csv file containing all external software installation paths")
 
 general_tools_lb = tk.Label(window, text='General Utility Tools', foreground="red",font=("Courier", 12, "bold"))
@@ -627,7 +633,7 @@ if missing_external_software!='':
                                  True)
     routine_options = reminders_util.getReminders_list(temp_config_filename)
 
-if not setup_IO_OK_checkbox_var.get() or not handle_setup_options_OK_checkbox_var.get() or not setup_software_OK_checkbox_var.get():
+if not setup_IO_OK_checkbox_var.get() or not setup_parsers_annotators_OK_checkbox_var.get() or not setup_external_software_OK_checkbox_var.get():
     answer = tk.messagebox.askyesno("Warning", 'Some (or all) of the required three setup options:\n'
                                                '\n\nSetup default I/O options...\nSetup default NLP parsers and annotators...\nSetup external software'
                                                '\n\ndisplayed in the three buttons at the top of this GUI are not completed (the checkbox to the left of the incomplete setup button is not ticked off).'

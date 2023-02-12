@@ -38,6 +38,11 @@ def exit_window(window, local_release_version, GitHub_release_version):
     # current_config_input_output_alphabetic_options a list such as
     #   ['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/newspaperArticles/A Spool of Blue Thread_Anne Tyler_Rebecca Pepper Sinkler_02-13-2015.txt', '', '', 'C:/Program Files (x86)/NLP_backup/Output']
     def exit_handler():
+        os.environ["NLP_SUITE_OPEN_WINDOWS"] = str(int(os.environ["NLP_SUITE_OPEN_WINDOWS"]) - 1)
+        # if there are still other windows open, don't download new code
+        if int(os.environ["NLP_SUITE_OPEN_WINDOWS"]) != 0:
+            return
+
         try:
             # set equal to test
             # local_release_version = GitHub_release_version

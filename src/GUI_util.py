@@ -33,6 +33,12 @@ import IO_internet_util
 y_multiplier_integer = 1
 noLicenceError=False
 
+# track that a window (another GUI) was opened
+try:
+    os.environ["NLP_SUITE_OPEN_WINDOWS"] = str(int(os.environ["NLP_SUITE_OPEN_WINDOWS"]) + 1)
+except KeyError:
+    os.environ["NLP_SUITE_OPEN_WINDOWS"] = "1"
+
 # gather GUI info from external file
 # def set_window(size, label, config, config_option):
 def set_window(size, label, config, config_option):
@@ -927,7 +933,7 @@ def display_setup_hover_over(y_multiplier_integer):
     # y_multiplier_integer=y_multiplier_integer-1
     return y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var
 
-def handle_setup_options(y_multiplier_integer, scriptName):
+def setup_parsers_annotators(y_multiplier_integer, scriptName):
     global setup_menu_lb
     package_display_area_value_new=''
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
@@ -1198,7 +1204,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     if not 'NLP_menu_main' in scriptName and not 'package_language' in config_filename and not 'external_software' in config_filename:
         # window.nametowidget(setup_menu_lb)
         # error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
-        handle_setup_options(y_multiplier_integer, scriptName)
+        setup_parsers_annotators(y_multiplier_integer, scriptName)
 
     # there is no RUN button when setting up IO information in any of the NLP_setup scripts
     #   or in any of the GUIs that are ALL options GUIs
@@ -1272,7 +1278,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # avoid tracing again since tracing is already done at the bottom of those scripts
     if scriptName!='SVO_main.py' and scriptName!='parsers_annotators_main.py':
-        setup_menu.trace('w',lambda x, y, z: handle_setup_options(y_multiplier_integer, scriptName))
+        setup_menu.trace('w',lambda x, y, z: setup_parsers_annotators(y_multiplier_integer, scriptName))
 
     # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
     # run_button_state, answer = activateRunButton(temp_config_filename, IO_setup_display_brief, scriptName, silent)
