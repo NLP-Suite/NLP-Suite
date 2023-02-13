@@ -110,7 +110,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
 
-GUI_label='Graphical User Interface (GUI) for Word2Vec with Gensim'
+GUI_label='Graphical User Interface (GUI) for Word2Vec with BERT and Gensim'
 head, scriptName = os.path.split(os.path.basename(__file__))
 config_filename = scriptName.replace('main.py', 'config.csv')
 

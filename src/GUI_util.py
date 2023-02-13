@@ -196,7 +196,17 @@ def display_logo():
 # define the variable local_release_version
 local_release_version = '0.0.0' #stored in lib\release_version.txt
 GitHub_newest_release = '0.0.0'
-def get_GitHub_release(silent = False):
+
+def get_local_release_version():
+    release_version_file = GUI_IO_util.libPath + os.sep + "release_version.txt"
+
+    if os.path.isfile(release_version_file):
+        with open(release_version_file,'r', encoding='utf-8', errors='ignore') as file:
+            local_release_version = file.read()
+    return local_release_version
+
+# also called from exit_window in NLP_setup_update_util
+def get_GitHub_release_version(silent = False):
     # check internet connection
     if not IO_internet_util.check_internet_availability_warning("GUI_util.py (Function Automatic check for NLP Suite newest release version on GitHub)"):
         GitHub_newest_release = '0.0.0'
@@ -212,7 +222,7 @@ def get_GitHub_release(silent = False):
     return GitHub_newest_release
 
 def check_GitHub_release(local_release_version: str, silent = False):
-    GitHub_newest_release = get_GitHub_release()
+    GitHub_newest_release = get_GitHub_release_version()
     if GitHub_newest_release == None or GitHub_newest_release == '0.0.0': # when not connected to internet
         return
     # local_release_version = '2.3.1' # line used for testing; should be LOWER than the version on GitHub
@@ -252,7 +262,7 @@ def check_GitHub_release(local_release_version: str, silent = False):
             # webbrowser.open_new_tab("https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History")
 
 # get the release version available on GitHub
-## GitHub_newest_release = get_GitHub_release()
+## GitHub_newest_release = get_GitHub_release_version()
 
 def display_release():
     # first digit for major upgrades
@@ -260,13 +270,14 @@ def display_release():
     # third digit for bug fixes and minor changes to current version
     # must also change the Release version in readMe on GitHub
 
-    global local_release_version
-    release_version_file = GUI_IO_util.libPath + os.sep + "release_version.txt"
-
-    if os.path.isfile(release_version_file):
-        with open(release_version_file,'r', encoding='utf-8', errors='ignore') as file:
-            local_release_version = file.read()
-
+    # global local_release_version
+    local_release_version = get_local_release_version()
+    # release_version_file = GUI_IO_util.libPath + os.sep + "release_version.txt"
+    #
+    # if os.path.isfile(release_version_file):
+    #     with open(release_version_file,'r', encoding='utf-8', errors='ignore') as file:
+    #         local_release_version = file.read()
+    #
     release_version_var.set(local_release_version)
 
     if sys.platform == 'darwin':  # Mac OS
@@ -275,7 +286,7 @@ def display_release():
         y_multiplier_integer = -.9
 
     ## get the release version available on GitHub
-    GitHub_newest_release = get_GitHub_release()
+    GitHub_newest_release = get_GitHub_release_version()
 
     release_display = 'Release ' + str(release_version_var.get().replace('\n','')) + "/" + str(GitHub_newest_release)
     release_lb = tk.Label(window, text=release_display, foreground="red")
@@ -1223,7 +1234,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # TODO CLOSE button
     def _close_window():
 
-        global local_release_version, GitHub_newest_release
+        # global local_release_version, GitHub_newest_release
 
         # local_release_version = local_release_version.strip('\n')
         # GitHub_release_version = GitHub_release_version_var.get()
@@ -1231,8 +1242,9 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         # GitHub_release_version = GitHub_release_version.strip('\r')
 
         # hitting the CLOSE button will automatically pull from GitHub the latest release available on GitHub
+        GitHub_newest_release = get_GitHub_release_version()
         import NLP_setup_update_util
-        NLP_setup_update_util.exit_window(window, local_release_version, GitHub_newest_release)
+        NLP_setup_update_util.exit_window()
 
     # do not display CLOSE button for the 3 NLP_setup GUIs; the CLOSE is handled in those GUIs
     if not "NLP_setup_" in scriptName:

@@ -82,7 +82,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,x_coordinate_hover_over, y
                                                openInputConfigFile_button, False, False, True,False, 90,
                                                x_coordinate_hover_over-120, "Open csv config file")
 
-software_download_lb = tk.Label(window,text='Software download from web')
+software_download_lb = tk.Label(window,text='Software DOWNLOAD from web')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, software_download_lb, True)
 software_download_var.set('')
@@ -130,7 +130,7 @@ def openSoftwareDir(software_dir):
         mb.showwarning(title='Warning',
                 message='There is no external software directory to open.\n\nPlease, using the dropdown menu, select the "Software install" option you want to access and try again.')
 
-software_install_lb = tk.Label(window,text='Software install on your machine')
+software_install_lb = tk.Label(window,text='Software INSTALL on your machine')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, software_install_lb, True)
 software_install_var.set('')
@@ -290,7 +290,7 @@ def close_GUI():
         if answer:
             # existing_software_config is a global variable
             save_external_software_config()
-    NLP_setup_update_util.exit_window(window, GUI_util.local_release_version, GUI_util.GitHub_newest_release)
+    NLP_setup_update_util.exit_window()
 
 close_button = tk.Button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI())
 # place widget with hover-over info

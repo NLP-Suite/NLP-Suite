@@ -20,16 +20,22 @@ import stat
 import tkinter.messagebox as mb
 import shutil
 import subprocess
+import tkinter as tk
 
 import IO_user_interface_util
 import config_util
+
+window=GUI_util.window
 
 #config_filename has no path;
 # config_input_output_numeric_options is set to [0 0,0,0] for GUIs that are placeholders for more specialized GUIs
 #   in these cases (e.g., narrative_analysis_ALL_main, there are no I/O options to save
 # current_config_input_output_alphabetic_options value returned in GUI_util by config_util.read_config_file
-# called from GUI_util when hitting CLOSE
-def exit_window(window, local_release_version, GitHub_release_version):
+
+# called from GUI_util, NLP_welcome_main, and the 3 NLP_setup scripts since they handle their own CLOSE
+def exit_window():
+    local_release_version = GUI_util.get_local_release_version()
+    GitHub_release_version = GUI_util.get_GitHub_release_version()
     # if IO_libraries_util.install_all_Python_packages(window, "GUI_IO_util.py",
     #                                           ['pygit2']) == False:
     #     sys.exit(0)
@@ -39,7 +45,7 @@ def exit_window(window, local_release_version, GitHub_release_version):
     #   ['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/newspaperArticles/A Spool of Blue Thread_Anne Tyler_Rebecca Pepper Sinkler_02-13-2015.txt', '', '', 'C:/Program Files (x86)/NLP_backup/Output']
     def exit_handler():
         os.environ["NLP_SUITE_OPEN_WINDOWS"] = str(int(os.environ["NLP_SUITE_OPEN_WINDOWS"]) - 1)
-        # if there are still other windows open, don't download new code
+        # if there are still other windows open, don't display the message of downloading a new release and do not download
         if int(os.environ["NLP_SUITE_OPEN_WINDOWS"]) != 0:
             return
 
@@ -47,7 +53,12 @@ def exit_window(window, local_release_version, GitHub_release_version):
             # set equal to test
             # local_release_version = GitHub_release_version
             if GitHub_release_version != local_release_version:
-                errorFound = update_self(window, GitHub_release_version)
+                # GitHub_release_version, local_release_version contain \n that must be removed for display
+                # the question is annoying for most users that are not developers
+                # answer = tk.messagebox.askyesno("Warning", "Your local NLP Suite version " + str(local_release_version[:-1]) + " is not up-to-date with the release currently available on GitHub " + str(GitHub_release_version[:-1]) + ".\n\nDo you want to update your local version, pulling from GitHub?\n\nIF YOU ARE AN NLP SUITE DEVELOPER, PULLING FROM GitHub WILL OVERWRITE ANY CODE YOU WILL HAVE WRITTEN.")
+                # if not answer:
+                #     return
+                errorFound = update_self(GitHub_release_version)
             else:
                 # should test for stack and not print if 'NLP_menu_main' or 'NLP_welcome_main' are open
                 # import psutil
@@ -70,7 +81,7 @@ def exit_window(window, local_release_version, GitHub_release_version):
 
 # called by exit_window
 # returns True when error found
-def update_self(window,GitHub_release_version):
+def update_self(GitHub_release_version):
     """
     Update the current script to the latest version.
     """

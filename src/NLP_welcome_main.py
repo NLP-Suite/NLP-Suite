@@ -66,7 +66,7 @@ def run_NLP():
 def close_NLP():
     global local_release_version, GitHub_release_version
     # NLP_setup_update_util.exit_window(window, '', 'NLP_welcome_main', [0,0,0,0], [], local_release_version, GitHub_release_version)
-    NLP_setup_update_util.exit_window(window, local_release_version, GitHub_release_version)
+    NLP_setup_update_util.exit_window()
 
 def watch_video(video_button):
     # videos_lookup = {'Setup external software': 'https://www.youtube.com/watch?v=K8jUe_pKPPQ'}
