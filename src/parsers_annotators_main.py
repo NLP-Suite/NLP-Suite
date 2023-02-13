@@ -403,13 +403,13 @@ def open_GUI(param):
     else:
         call('python coreference_main.py',shell=True)
 
-pre_processing_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: open_GUI('preprocess'))
+pre_processing_button = tk.Button(window, width=GUI_IO_util.widget_width_medium, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: open_GUI('preprocess'))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    pre_processing_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
-coreference_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Coreference resolution (Open GUI)',command=lambda: open_GUI('coref'))
+coreference_button = tk.Button(window, width=GUI_IO_util.widget_width_medium, text='Coreference resolution (Open GUI)',command=lambda: open_GUI('coref'))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    coreference_button,
@@ -492,15 +492,15 @@ annotators_menu = tk.OptionMenu(window, annotators_menu_var,
         '   POS annotator',
         '   NER (Open GUI)',
         'Special annotators (via BERT, CoreNLP, spaCy, Stanza) -----------------------------------------',
-        '   Coreference PRONOMINAL resolution (via BERT, CoreNLP, spaCy Neural Network)',
-        '   Sentiment analysis (Neural Network)',
-        '   OpenIE - Relation triples extractor (via CoreNLP Neural Network)',
+        '   Coreference PRONOMINAL resolution (via BERT, CoreNLP, spaCy)',
+        '   Sentiment analysis',
+        '   OpenIE - Relation triples extractor (via CoreNLP)',
         '   SVO extraction (via CoreNLP, spaCy, Stanza)',
         '   Word embeddings (Word2Vec) (via BERT, Gensim, spaCy)',
         'More special annotators (CoreNLP only) --------------------------------------------------------',
-        '   Gender annotator (via CoreNLP Neural Network)',
+        '   Gender annotator (via CoreNLP)',
         '   Normalized NER date annotator (via CoreNLP)',
-        '   Quote/dialogue annotator (via CoreNLP Neural Network)')
+        '   Quote/dialogue annotator (via CoreNLP)')
 
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_annotator_pos, y_multiplier_integer,
                                                annotators_menu)
@@ -536,7 +536,7 @@ def activate_annotators_menu(*args):
         if '*' in annotators_menu_var.get() or 'dialogue' in annotators_menu_var.get():
             y_multiplier_integer=y_multiplier_integer_SV1-1
             quote_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_col2_pos,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_manual_coref_edit_pos,
                                                            y_multiplier_integer,
                                                            quote_checkbox,True)
             quote_checkbox.configure(state='normal')
