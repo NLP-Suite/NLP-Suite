@@ -237,6 +237,9 @@ def geocode(window,locations, inputFilename, outputDir,
 	geowriterNotFound = csv.writer(csvfileNotFound)
 	geowriterNotFoundNonDistinct = csv.writer(csvfileNotFoundNonDistinct)
 
+	# define variable
+	NER_Tag = ''
+
 	if inputIsCoNLL==True: #the filename, sentence, date were exported
 		if datePresent==True:
 			# always use the locationColumnName variable passed by algorithms to make sure locations are then matched

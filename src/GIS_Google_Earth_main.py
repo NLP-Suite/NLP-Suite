@@ -126,16 +126,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if openOutputFiles == 1:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
-# def run(inputFilename, outputDir, openOutputFiles,
-#             encoding_var,
-#             locationColumnName,
-#             date_var, date_format_var,
-#             group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
-#             icon_var_list, specific_icon_var_list,
-#             name_var_list, scale_var_list, color_var_list, color_style_var_list,
-#             description_csv_field_var, bold_var_list, italic_var_list,
-#             description_var_list, description_csv_field_var_list):
-
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
                 GUI_util.output_dir_path.get(),GUI_util.open_csv_output_checkbox.get(),
@@ -770,7 +760,7 @@ def changed_GIS_filename(*args):
     if inputIsCoNLL == True:
         location_var.set('NER')
 inputFilename.trace('w', changed_GIS_filename)
-GUI_util.input_main_dir_path.trace('w', changed_GIS_filename)
+# GUI_util.input_main_dir_path.trace('w', changed_GIS_filename)
 
 # changed_GIS_filename() added at the end after all widgets have been displayed
 
