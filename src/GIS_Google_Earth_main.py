@@ -291,7 +291,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 
 date_format_var.set('')
 date_format_lb = tk.Label(window, text='Date format ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 250, y_multiplier_integer,
+
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate, y_multiplier_integer,
                                                date_format_lb, True)
 date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm',
                                  'yyyy-mm', 'yyyy')
@@ -379,7 +380,7 @@ def add_group_to_list():
         bold_var_list.clear() # append("")
 
         description_var.set(0)
-        description_csv_field_var.clear()
+        description_csv_field_var.set('')
         bold_var.set(1)
         italic_var.set(1)
     else:
@@ -397,20 +398,21 @@ group_lb = tk.Label(window, text='Group ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                group_lb, True)
 group_number = tk.Entry(window, width=3, state='disabled', textvariable=group_number_var)
+
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 50, y_multiplier_integer,
                                                group_number, True)
 
 add_group_button = tk.Button(window, text='+', width=2, height=1, state='disabled', command=lambda: add_group_to_list())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 90, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 100, y_multiplier_integer,
                                                add_group_button, True)
 
 reset_group_button = tk.Button(window, text='Reset', width=5, height=1, state='disabled',
                                command=lambda: reset_all_values())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 130, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 140, y_multiplier_integer,
                                                reset_group_button, True)
 
 csv_field_forGroups_lb = tk.Label(window, text='Select csv field ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 250, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate, y_multiplier_integer,
                                                csv_field_forGroups_lb, True)
 
 if menu_values != '':
@@ -447,19 +449,19 @@ def groupSelection(*args):
 group_var.trace('w', groupSelection)
 
 group_values_lb = tk.Label(window, text='Enter value(s) ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 500, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 550, y_multiplier_integer,
                                                group_values_lb, True)
 group_values_entry = tk.Entry(window, width=10, textvariable=group_values_entry_var)
 group_values_entry.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 600, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 650, y_multiplier_integer,
                                                group_values_entry, True)
 
 group_lb = tk.Label(window, text='Group label ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 700, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 760, y_multiplier_integer,
                                                group_lb, True)
 group_label_entry = tk.Entry(window, width=10, textvariable=group_label_entry_var)
 group_label_entry.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 800, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 850, y_multiplier_integer,
                                                group_label_entry)
 
 icon_var.set('Pushpins')
@@ -467,7 +469,7 @@ icon_var_list.append('Pushpins')
 icon_lb = tk.Label(window, text='ICON ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer, icon_lb,
                                                True)
-icon_value_lb = tk.Label(window, text='Select icon type ')
+icon_value_lb = tk.Label(window, text='Icon type ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                icon_value_lb, True)
 icon_menu = tk.OptionMenu(window, icon_var, 'Directions', 'Paddles (teardrop)', 'Paddles (square)', 'Pushpins',
@@ -478,16 +480,16 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 
 specific_icon_var.set('red')
 specific_icon_var_list.append('red')
-specific_icon_value_lb = tk.Label(window, text='Select type of ' + str(icon_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 250,
+specific_icon_value_lb = tk.Label(window, text='Icon sub-type') # 'Select type of ' + str(icon_var.get()))
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,
                                                y_multiplier_integer, specific_icon_value_lb, True)
 icon_menu_values = ['blue', 'green', 'light_blue', 'pink', 'purple', 'red', 'white', 'yellow']
 specific_icon_menu = tk.OptionMenu(window, specific_icon_var, *icon_menu_values)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 500,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 400,
                                                y_multiplier_integer, specific_icon_menu, True)
 
 image_lb = tk.Label(window)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 500, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 650, y_multiplier_integer,
                                                image_lb, False)
 
 y_multiplier_integer_save = y_multiplier_integer - 1
@@ -501,7 +503,7 @@ def display_icon_image(pic_url, y_multiplier_integer_save):
     my_picture = io.BytesIO(my_page.read())
     pil_img = Image.open(my_picture)
     # The (25, 25) is (height, width)
-    pil_img = pil_img.resize((25, 25), Image.ANTIALIAS)
+    pil_img = pil_img.resize((25, 25), Image.Resampling.LANCZOS)
     tk_img = ImageTk.PhotoImage(pil_img)
     image_lb = tk.Label(window, image=tk_img)
     # display only if the Select type of icon has a value
@@ -510,8 +512,7 @@ def display_icon_image(pic_url, y_multiplier_integer_save):
     else:
         image_lb.image = ''
     image_lb.pack(padx=1, pady=1)
-    GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 900, y_multiplier_integer_save, image_lb, False)
-
+    GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 650, y_multiplier_integer_save, image_lb, False)
 
 # image_lb.config(state='normal')
 
@@ -577,7 +578,7 @@ specific_icon_var.trace('w', callback=lambda x, y, z: update_specific_icon_menu(
 
 
 def activate_specific_icon(icon_var, specific_icon_value_lb, specific_icon_menu, *args):
-    specific_icon_value_lb.config(text='Select type of ' + str(icon_var.get()))
+    specific_icon_value_lb.config(text='Icon sub-type ') # + str(icon_var.get()))
     specific_icon_var.set('')
     update_specific_icon_menu(icon_var, specific_icon_menu, y_multiplier_integer_save)
 
@@ -617,7 +618,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 color_var.set(0)
 color_var_list.append(0)
 color_checkbox = tk.Checkbutton(window, text='Color ', variable=color_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 250, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate, y_multiplier_integer,
                                                color_checkbox, True)
 
 color_style_var_list.append("")
@@ -770,7 +771,7 @@ bold_var_list.append(1)
 bold_var.set(1)
 bold_checkbox = tk.Checkbutton(window, text='Bold ', variable=bold_var, onvalue=1, offvalue=0)
 bold_checkbox.config(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+250, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate, y_multiplier_integer,
                                                bold_checkbox, True)
 
 italic_var.set(1)
@@ -1034,21 +1035,15 @@ readMe_message = "This Python 3 script relies on the Python Geopy library to geo
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
-# if (GUI_util.input_main_dir_path.get()!='') or (os.path.basename(GUI_util.inputFilename.get())[-4:] != ".csv"):
-#     GUI_util.run_button.configure(state='disabled')
-#     if not errorDisplayed:
-#         mb.showwarning(title='Input file error',
-#                        message='The GIS Google Earth Pro algorithm expects in input a csv type file of locations or of geocoded locations.\n\nThe RUN button is disabled until the expected csv file is seleted in input.\n\nPlease, select a csv input file and try again.')
-#     inputError = True
-# else:
-#     if IO_csv_util.rename_header(inputFilename.get(), "Word", "Location") == False:
-#         GUI_util.run_button.configure(state='disabled')
-#         inputError = True
-#     else:
-#         GUI_util.run_button.configure(state='normal')
-#         menu_values = IO_csv_util.get_csvfile_headers(inputFilename.get())
-#         inputError=False
-
 display_icon_image(pic_url, y_multiplier_integer_save)
 
 GUI_util.window.mainloop()
+
+# 2 IO_configuration_menu + 50 400
+# 4 IO_configuration_menu + 100 480
+# 1 IO_configuration_menu + 140 520
+# IO_configuration_menu + 400 750
+# 1 IO_configuration_menu + 550 850
+# 3 IO_configuration_menu + 650 950
+# 1 IO_configuration_menu + 750 1050
+# 1 IO_configuration_menu + 850 1150
