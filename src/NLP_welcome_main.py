@@ -108,7 +108,7 @@ def make_images(canvas_width, canvas_height):
                     GUI_IO_util.image_libPath + os.sep + "visual11.jpg",
                     GUI_IO_util.image_libPath + os.sep + "visual12.jpg"]
     # can use im.width, im.height in resize
-    # .resize((450, 250), Image.LANCZOS)
+    # .resize((450, 250), Image.Resampling.LANCZOS)
     image_list = image_1_list + image_2_list + image_3_list
     photos_list = []
     for image in image_list:
@@ -120,7 +120,7 @@ def make_images(canvas_width, canvas_height):
         if canvas_width < image_width:
             image_height = image_height * canvas_width / image_width
             image_width = canvas_width
-        image_obj = Image.open(image).resize((int(image_width), int(image_height)), Image.LANCZOS)
+        image_obj = Image.open(image).resize((int(image_width), int(image_height)), Image.Resampling.LANCZOS)
         images.append(image_obj)
         photo_image = ImageTk.PhotoImage(image_obj)
         photos_list.append(photo_image)
