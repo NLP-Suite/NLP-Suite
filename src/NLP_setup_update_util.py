@@ -34,8 +34,10 @@ window=GUI_util.window
 
 # called from GUI_util, NLP_welcome_main, and the 3 NLP_setup scripts since they handle their own CLOSE
 def exit_window():
+    global local_release_version, GitHub_release_version # so that it can be used in the sub-function exit_handler()
     local_release_version = GUI_util.get_local_release_version()
     GitHub_release_version = GUI_util.get_GitHub_release_version()
+
     # if IO_libraries_util.install_all_Python_packages(window, "GUI_IO_util.py",
     #                                           ['pygit2']) == False:
     #     sys.exit(0)
@@ -101,7 +103,7 @@ def update_self(GitHub_release_version):
     # testing for Git
     # https: // stackoverflow.com / questions / 11113896 / use - git - commands - within - python - code
     try:
-        subprocess.call(["git", "pull"])
+        subprocess.call(["git", "pull"]) # subprocess.call(["git", "pull"], check=True, stdout=subprocess.PIPE)
     except:
         if not IO_libraries_util.open_url('Git', url, ask_to_open=True, message_title='Git installation', message=message_Git):
             return True

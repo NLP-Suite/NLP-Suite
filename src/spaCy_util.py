@@ -5,10 +5,18 @@ import sys
 if IO_libraries_util.install_all_Python_packages(GUI_util.window,"spaCy_util",['os','spacy','tkinter','pandas','warnings','subprocess'])==False:
     sys.exit(0)
 
-import spacy
+import tkinter.messagebox as mb
+
+# import spacy will trigger tensorflow
+try:
+    import spacy
+except Exception as e:
+    # print(err)
+    mb.showwarning(title='Warning',message='The NLP Suite encountered an error in importing spacy, most likely due to tensorflow.\n\nERROR: ' + str(e))
+    sys.exit(0)
+
 from spacytextblob.spacytextblob import SpacyTextBlob
 import pandas as pd
-import tkinter.messagebox as mb
 import os
 import warnings
 import subprocess
@@ -75,7 +83,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
             extract_date_from_filename_var = True
         if key == 'google_earth_var' and value == True:
             google_earth_var = True
-            
+
     # annotating each input file
     docID = 0
 
