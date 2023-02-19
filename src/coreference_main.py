@@ -316,30 +316,20 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 continue_manual_Coref_var_checkbox.configure(state='disabled')
 
 
-def activateCoRefOptions(*args):
-
-    if CoRef_var.get() == 1:
-        if input_main_dir_path.get()!='':
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
-                                         reminders_util.message_CoreNLP_coref, True)
-            manual_Coref_checkbox.configure(state='disabled')
-            manual_Coref_var.set(0)
-        else:
-            manual_Coref_checkbox.configure(state='normal')
-            manual_Coref_var.set(1)
-    else:
+def activateCoRefOptions():
+    if GUI_util.input_main_dir_path.get()!='':
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
+                                     reminders_util.message_CoreNLP_coref, True)
         manual_Coref_checkbox.configure(state='disabled')
         manual_Coref_var.set(0)
-CoRef_var.trace('w', activateCoRefOptions)
+    else:
+        manual_Coref_checkbox.configure(state='normal')
 
 def changed_filename(tracedInputFile):
     activateCoRefOptions()
 GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_util.input_main_dir_path.get()))
 # must trace on input_main_dir_path, rather than inputFilename,
 #   because inputFilename is set BEFORE input_main_dir_path in GUI_util and it is not up-to-date
-
-# activateCoRefOptions()
-
 
 # def activateTxtFileOptions(*args):
 #     if corefed_txt_file.get()!='':
