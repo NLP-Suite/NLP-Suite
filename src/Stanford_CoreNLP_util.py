@@ -259,6 +259,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # more annotators may be added to SVO later depending upon the annotators_params passed to SVO
     #   you do not want to add coref, quote, gender, unless required
     SVO_annotators=['tokenize', 'ssplit', 'pos', 'depparse', 'natlog', 'lemma', 'ner']
+    for key, value in kwargs.items():
+        if key == "gender_var" and value == True:
+            SVO_annotators.append('coref')
+        if key == "quote_var" and value == True:
+            SVO_annotators.append('quote')
+
     params_option = {
         'Sentence': {'annotators':['ssplit']},
         'tokenize': {'annotators':['tokenize']},
@@ -513,12 +519,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
         if language == 'English':
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer',  '-parse.maxlen' + str(sentence_length), '-timeout', '999999'])
+                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer',  '-parse.maxlen' + str(sentence_length), '-timeout', '999999', '2&>1 >/dev/null'])
         else:
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer','-props', language.lower(),
-                 '-parse.maxlen' + str(sentence_length), '-timeout', '999999'])
+                 '-parse.maxlen' + str(sentence_length), '-timeout', '999999', '2&>1 >/dev/null'])
 
     else:
         # CoreNLP_nlp = subprocess.Popen(
@@ -527,12 +533,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
         if language == 'English':
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
-                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
+                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999', '2&>1 >/dev/null'])
         else:
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-props', language.lower(),
-                 '-parse.maxlen' + str(sentence_length),'-timeout', '999999'])
+                 '-parse.maxlen' + str(sentence_length),'-timeout', '999999', '2&>1 >/dev/null'])
 
     time.sleep(5)
 

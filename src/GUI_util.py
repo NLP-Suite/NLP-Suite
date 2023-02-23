@@ -1218,10 +1218,10 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         setup_parsers_annotators(y_multiplier_integer, scriptName)
 
     # there is no RUN button when setting up IO information in any of the NLP_setup scripts
-    #   or in any of the GUIs that are ALL options GUIs
+    #   or in any of the GUIs that are ALL options GUIs (except for narrative_analysis where we use checkboxes instead of buttons))
     # TODO RUN button
-    if not "NLP_setup_" in scriptName \
-            and not "ALL_main" in scriptName:
+    if ('narrative_analysis' in scriptName) or (not "NLP_setup_" in scriptName \
+            and (not "ALL_main" in scriptName)):
         # place widget with hover-over info
         y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate,
                                                        y_multiplier_integer_SV,

@@ -3,8 +3,8 @@ import sys
 import IO_libraries_util
 import GUI_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "DB_PC-ACE_data_analyzer_main.py", ['os', 'tkinter','pandas'])==False:
-    sys.exit(0)
+# if IO_libraries_util.install_all_Python_packages(GUI_util.window, "DB_PC-ACE_data_analyzer_main.py", ['os', 'tkinter','pandas'])==False:
+#     sys.exit(0)
 
 import os
 import tkinter as tk
@@ -69,8 +69,18 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
                 filesToOpen.extend(chart_outputFilename)
 
     if semantic_triplet_var:
-        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_simplex(inputDir, outputDir)
-        if outputFile!='':
+        outputFile = ''
+
+        if time_var and space_var:
+            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time_space(inputDir, outputDir)
+        elif time_var:
+            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time(inputDir, outputDir)
+        elif space_var:
+            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_space_main(inputDir, outputDir)
+        else:
+            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_simplex_main(inputDir, outputDir)
+
+        if outputFile != '':
             filesToOpen.append(outputFile)
 
         # Gephi ----------------------------------------------------------------------------------------
@@ -96,19 +106,10 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
                     filesToOpen.append(out_file)
 
     if actors_var:
-        outputFile = DB_PCACE_data_analyzer_util.individual_characteristics(inputDir, outputDir)
+        outputFile = DB_PCACE_data_analyzer_util.collective_actor_characteristics(inputDir, outputDir)
         if outputFile!='':
             filesToOpen.append(outputFile)
 
-    if time_var and semantic_triplet_var:
-        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time(inputDir, outputDir)
-        if outputFile != '':
-            filesToOpen.append(outputFile)
-
-    if space_var and semantic_triplet_var:
-        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_space(inputDir, outputDir)
-        if outputFile!='':
-            filesToOpen.append(outputFile)
 
     # GIS maps _____________________________________________________
 
@@ -289,10 +290,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Use the dropdown menu to select the data type to be used to extract a list of values.")
 
 simplex_data_menu_var = tk.StringVar()
-simplex_data_menu_var.set('ANNA')
+simplex_list = DB_PCACE_data_analyzer_util.give_Simplex_text_date_number(simplex_data_type_var.get(), os.path.join(inputDir.get(),'data_SimplexText.csv'), os.path.join(inputDir.get(),'data_SimplexDate.csv'), os.path.join(inputDir.get(),'data_SimplexNumber.csv'))
+simplex_data_menu_var.set(simplex_list)
 simplex_data_menu = ttk.Combobox(window, textvariable = simplex_data_menu_var, width=GUI_IO_util.widget_width_short)
 # simplex_data_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_simplex.csv'))
-# simplex_data_menu = DB_PCACE_data_analyzer_util...YOUR FUNCTION ANNA with simplex_data_menu_var
+# simplex_data_menu = DB_PCACE_data_analyzer_util.give_Simplex_text_date_number(simplex_data_menu_var, data_SimplexText, data_SimplexDate, data_SimplexNumber)
 
 simplex_data = ttk.Combobox(window, width=GUI_IO_util.widget_width_short)
 # setup_complex.configure(state='disabled')
@@ -302,6 +304,18 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    simplex_data,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate+300,
                                    "Use the dropdown menu to select the simplex data type value (e.g., police) for which you want to find simplex & complex objects usage")
+
+def activate_date_number_text(*args):
+    simplex_list = DB_PCACE_data_analyzer_util.give_Simplex_text_date_number(simplex_data_type_var.get(), os.path.join(inputDir.get(),
+                                                                                                  'data_SimplexText.csv'),
+                                                                             os.path.join(inputDir.get(),
+                                                                                          'data_SimplexDate.csv'),
+                                                                             os.path.join(inputDir.get(),
+                                                                                          'data_SimplexNumber.csv'))
+    simplex_data_menu_var.set(simplex_list)
+    simplex_data['values'] = simplex_list
+    print()
+simplex_data_type_var.trace('w',activate_date_number_text)
 
 # simplex_data_date_lb = tk.Label(window, text='Date ')
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,y_multiplier_integer,simplex_data_date_lb,True)
