@@ -75,6 +75,7 @@ GUI_label = 'Graphical User Interface (GUI) for Setting Up Input/Output, I/O, Op
 
 # define variables
 y_multiplier_integer = 0
+IO_configuration_upon_entry = ''
 # GUI_size is reset many times in the script
 GUI_width=str(GUI_IO_util.get_GUI_width(2))
 GUI_size = GUI_width + 'x210'
@@ -462,13 +463,12 @@ def get_IO_options_list():
     return current_config_input_output_alphabetic_options
 
 
-
 def save_config(config_input_output_alphabetic_options):
     current_config_input_output_alphabetic_options=get_IO_options_list()
     config_util.write_IO_config_file(window, config_filename, config_input_output_numeric_options,
                                      current_config_input_output_alphabetic_options, silent=False)
 
-def close_GUI():
+def close_GUI(IO_configuration_upon_entry):
     IO_configuration_current=get_IO_options_str()
     import NLP_setup_update_util
     if IO_configuration_upon_entry!=IO_configuration_current:
@@ -477,7 +477,7 @@ def close_GUI():
             save_config(config_input_output_alphabetic_options)
     NLP_setup_update_util.exit_window()
 
-close_button = tk.Button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI())
+close_button = tk.Button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI(IO_configuration_upon_entry))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate,
                                                y_multiplier_integer,

@@ -9,7 +9,6 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "BERT_util",
     sys.exit(0)
 
 
-from regex import R
 from transformers import AutoTokenizer, AutoModelForTokenClassification
 from transformers import BertTokenizerFast, EncoderDecoderModel
 from transformers import pipeline
