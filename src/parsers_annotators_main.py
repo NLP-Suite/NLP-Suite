@@ -292,11 +292,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # open the analyzer having saved the new parser output in config so that it opens the right input file
         config_filename_temp = 'conll_table_analyzer_config.csv'
         config_input_output_numeric_options_temp=[1, 0, 0, 1]
-        # TODO Roby must pass the correct config_input_output_alphabetic_options
-        config_input_output_alphabetic_options = [str(tempOutputFiles[0]), '','',outputDir,date_format_var,date_separator_var,date_position_var]
-        config_util.write_IO_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options_temp, config_input_output_alphabetic_options, True)
+        # config_input_output_alphabetic_options is a double list with no headers
+        #   with one sublist for each of the four types of IO configurations: filename, input main dir, input secondary dir, output dir
+        # each sublist has four items: path, date format, date separator, date position
+        # e.g., [['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/The Three Little Pigs.txt', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['C:\\Program Files (x86)\\NLP_backup\\Output', '', '', '']]
+        config_input_output_alphabetic_options_temp, missingIO = config_util.read_config_file(config_filename_temp, config_input_output_numeric_options_temp)
+        # add the CoNLL table file to the config file 'conll_table_analyzer_config.csv'
+        config_input_output_alphabetic_options_temp[0][1]=filesToOpen[0][0]
+        # add the output directory to the config file 'conll_table_analyzer_config.csv'
+        config_input_output_alphabetic_options_temp[3][1] = outputDir
+        config_util.write_IO_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options_temp, config_input_output_alphabetic_options_temp, True)
 
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(config_filename_temp,
                                      reminders_util.title_options_CoNLL_analyzer,
                                      reminders_util.message_CoNLL_analyzer,
                                      True)
