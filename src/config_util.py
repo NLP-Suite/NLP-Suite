@@ -384,7 +384,7 @@ def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_displ
 # config lines are blank, if NOT required by the specific NLP script
 
 # config_input_output_alphabetic_options is a double list with no headers,
-#   with one sublist for each of the four types of IO confiigurations: filename, input main dir, input secondary dir, output dir
+#   with one sublist for each of the four types of IO configurations: filename, input main dir, input secondary dir, output dir
 # each sublist has four items: path, date format, date separator, date position
 # e.g., [['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/The Three Little Pigs.txt', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['C:\\Program Files (x86)\\NLP_backup\\Output', '', '', '']]
 def write_IO_config_file(window, config_filename, config_input_output_numeric_options, config_input_output_alphabetic_options, silent=False):

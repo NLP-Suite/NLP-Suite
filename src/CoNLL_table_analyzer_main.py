@@ -415,7 +415,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
 def changed_filename(tracedInputFile):
     global error
     if os.path.isfile(tracedInputFile):
-        if not CoNLL_util.check_CoNLL(tracedInputFile):
+        if not CoNLL_util.check_CoNLL(tracedInputFile,True):
             error = True
             return
         else:
@@ -627,6 +627,11 @@ GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inpu
 state = str(GUI_util.run_button['state'])
 if state == 'disabled':
     error = True
+    # check to see if there is a GUI-specific config file, i.e., a CoNLL table file, and set it to the setup_IO_menu_var
+    if os.path.isfile(os.path.join(GUI_IO_util.configPath, config_filename)):
+        GUI_util.setup_IO_menu_var.set('GUI-specific I/O configuration')
+        mb.showwarning(title='Warning',
+               message="Since a GUI-specific conll_table_analyzer_config.csv file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
 
 activate_all_options()
 
