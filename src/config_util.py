@@ -122,6 +122,7 @@ def read_NLP_package_language_config():
     language = ''
     encoding_var = 'utf-8'
     export_json_var = 0
+    timeout_var = 15000
     memory_var= 4
     limit_document_length_var = 90000
     limit_sentence_length_var = 100
@@ -136,9 +137,10 @@ def read_NLP_package_language_config():
         language = dataset.iat[0, 3]
         encoding_var = dataset.iat[0, 4]
         export_json_var = int(dataset.iat[0, 5])
-        memory_var = int(dataset.iat[0, 6])
-        limit_document_length_var = int(dataset.iat[0, 7])
-        limit_sentence_length_var = int(dataset.iat[0, 8])
+        timeout_var = int(dataset.iat[0, 6])
+        memory_var = int(dataset.iat[0, 7])
+        limit_document_length_var = int(dataset.iat[0, 8])
+        limit_sentence_length_var = int(dataset.iat[0, 9])
         # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
         #   several times in this scripts (search for instance for MAIN NLP PACKAGE and change
         #   they also need to be changed in one line in NLP_setup_package_language_main.py
@@ -151,6 +153,7 @@ def read_NLP_package_language_config():
         language = ''
         encoding_var = 'utf-8'
         export_json_var = 0
+        timeout_var = 15000
         memory_var = 4
         limit_document_length_var = 90000
         limit_sentence_length_var = 100
@@ -160,11 +163,11 @@ def read_NLP_package_language_config():
         #                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup button.")
         # package_display_area_value = ''
     package_display_area_value = f"MAIN NLP PACKAGE: {package}, LEMMATIZER PACKAGE: {basics_package}, LANGUAGE(S): {language}"
-    return error, package, parsers, basics_package, language, package_display_area_value, encoding_var, export_json_var, memory_var, limit_document_length_var, limit_sentence_length_var
+    return error, package, parsers, basics_package, language, package_display_area_value, encoding_var, export_json_var, timeout_var, memory_var, limit_document_length_var, limit_sentence_length_var
 
 def write_NLP_package_language_config_file(window, config_filename,
                                            currently_selected_options, currently_selected_parsers,
-                                           encoding_var, export_json_var, memory, limit_document_length, limit_sentence_length):
+                                           encoding_var, export_json_var, timeout, memory, limit_document_length, limit_sentence_length):
     # check that the config directory exists inside the NLP main directory
     if os.path.isdir(GUI_IO_util.configPath) is False:
         try:
@@ -186,6 +189,7 @@ def write_NLP_package_language_config_file(window, config_filename,
         csv_file.at[0, 'Corpus language'] = currently_selected_options['LANGUAGE(S)']
         csv_file.at[0, 'Language encoding'] = encoding_var
         csv_file.at[0, 'Export Json'] = export_json_var
+        csv_file.at[0, 'CoreNLP timeout'] = int(timeout)
         csv_file.at[0, 'CoreNLP memory'] = int(memory)
         csv_file.at[0, 'CoreNLP document length'] = int(limit_document_length)
         csv_file.at[0, 'CoreNLP sentence-length limit'] = int(limit_sentence_length)
@@ -204,7 +208,7 @@ def save_NLP_package_language_config(window, currently_selected_options,
                                      package, basics_package, language,
                                      parsers,
                                      encoding, export_json,
-                                     memory, limit_document_length, limit_sentence_length):
+                                     timeout, memory, limit_document_length, limit_sentence_length):
     config_filename = GUI_IO_util.configPath + os.sep + 'NLP_default_package_language_config.csv'
     # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
     #   several times in this scripts (search for instance for MAIN NLP PACKAGE and change
@@ -213,7 +217,7 @@ def save_NLP_package_language_config(window, currently_selected_options,
     write_NLP_package_language_config_file(window, config_filename,
                                            currently_selected_options, parsers,
                                            encoding, export_json,
-                                           memory, limit_document_length, limit_sentence_length)
+                                           timeout, memory, limit_document_length, limit_sentence_length)
 
 # config_input_output_alphabetic_options is a double list with no headers,
 #   with one sublist for each of the four types of IO confiigurations: filename, input main dir, input secondary dir, output dir

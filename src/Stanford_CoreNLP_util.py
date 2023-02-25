@@ -173,6 +173,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      DoCleanXML,
                      language,
                      export_json_var=0,
+                     timeout_var = 15000,
                      memory_var=6,
                      document_length=90000,
                      sentence_length=1000, # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
@@ -512,6 +513,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         params['annotators'] = params['annotators'] + ',cleanXML'
         param_string_NN = param_string_NN + ',cleanXML'
 
+    # https://stanfordnlp.github.io/CoreNLP/corenlp-server.html)
     # -d64 to use 64 bits JAVA, normally set to 32 as default; option not recognized in Mac
     if sys.platform == 'darwin':  # Mac OS
         # mx is the same as Xmx and refers to maximum Java heap size
@@ -519,12 +521,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
         if language == 'English':
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer',  '-parse.maxlen' + str(sentence_length), '-timeout', '999999', '2&>1 >/dev/null'])
+                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer',  '-parse.maxlen' + str(sentence_length), '-timeout' + str(timeout_var)])
         else:
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer','-props', language.lower(),
-                 '-parse.maxlen' + str(sentence_length), '-timeout', '999999', '2&>1 >/dev/null'])
+                 '-parse.maxlen' + str(sentence_length), '-timeout'+ str(timeout_var)])
 
     else:
         # CoreNLP_nlp = subprocess.Popen(
@@ -533,12 +535,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
         if language == 'English':
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
-                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout', '999999', '2&>1 >/dev/null'])
+                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout' + str(timeout_var)])
         else:
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-props', language.lower(),
-                 '-parse.maxlen' + str(sentence_length),'-timeout', '999999', '2&>1 >/dev/null'])
+                 '-parse.maxlen' + str(sentence_length),'-timeout' + str(timeout_var)])
 
     time.sleep(5)
 

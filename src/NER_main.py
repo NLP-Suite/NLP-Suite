@@ -30,7 +30,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     filesToOpen = []  # Store all files that are to be opened once finished
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 
@@ -70,7 +70,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                     createCharts, chartPackage,
                                                     'NER', False,
                                                     language,
-                                                    memory_var, document_length_var, limit_sentence_length_var,
+                                                    timeout_var, memory_var, document_length_var, limit_sentence_length_var,
                                                     extract_date_from_filename_var=extract_date_from_filename_var,
                                                     date_format=date_format_var,
                                                     date_separator_var=date_separator_var,
@@ -90,7 +90,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       createCharts, chartPackage,
                                                       'NER', False,
                                                       language_list,
-                                                      memory_var, document_length_var, limit_sentence_length_var,
+                                                      timeout_var, memory_var, document_length_var, limit_sentence_length_var,
                                                       extract_date_from_filename_var=extract_date_from_filename_var,
                                                       date_format=date_format_var,
                                                       date_separator_var=date_separator_var,
@@ -109,6 +109,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                             NERs=NER_list,
                                                             DoCleanXML=False,
                                                             export_json_var= export_json_var,
+                                                            timeout_var=timeout_var,
                                                             memory_var=memory_var,
                                                             document_length=document_length_var,
                                                             sentence_length=limit_sentence_length_var,
