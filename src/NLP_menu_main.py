@@ -119,7 +119,6 @@ def clear(e):
 
 window.bind("<Escape>", clear)
 
-
 # IO fields do not need to be checked for scripts that open their own GUI
 # TODO we should move this function to the GUI?
 # IO_values 1 required file; 2 required dir; 3 either file or dir
@@ -643,4 +642,27 @@ if not setup_IO_OK_checkbox_var.get() or not setup_parsers_annotators_OK_checkbo
     if answer:
         GUI_util.videos_dropdown_field.set('Setup the NLP Suite')
         # GUI_util.watch_video(videos_lookup, scriptName)
+
+if sys.platform=='darwin':
+    import platform
+    if platform.machine()!='x86_64':
+        import subprocess
+        # Run pip freeze command and capture output
+        output = subprocess.check_output(["pip", "freeze"]).decode("utf-8")
+        # Check if tensorflow-metal is in the output
+        if not "tensorflow-metal" in output:
+            mb.showwarning(title='Warning',message='Your Mac is based on an Apple M1 or M2 chips.\n\n' \
+                   'You will have problems running some of the algorithms in the NLP Suite (e.g., the cutting edge BERT based on Google tensorflow).\n\n' \
+                   'You must delete the currently installed Anaconda version and then install the ARM version of Anaconda.\n\n' \
+                    'To remove Anaconda, open ternminal and type one of the following commands:\n\n' \
+                    'rm -rf anaconda3\n' \
+                    'rm -rf ~/anaconda3\n' \
+                    'rm -rf ~/opt/anaconda3\n\n' \
+                    'Once you have run the remove command, close and reopen your terminal to refresh it. You should no longer see (base) in your terminal prompt.\n\n' \
+                    'You can get more information on Anaconda installation at https://docs.anaconda.com/anaconda/install/uninstall/\n\n' \
+                    'You will be directed next to download the ARM version of Anaconda. Once download is complete, double click on the downloaded file to install it.\n\n' \
+                    'Following this, close the NLP Suite GUIs and re-run STEP 2 and STEP 3.')
+            anaconda_arm_download_url='https://nam11.safelinks.protection.outlook.com/?url=https%3A%2F%2Frepo.anaconda.com%2Farchive%2FAnaconda3-2022.10-MacOSX-arm64.pkg&data=05%7C01%7Crfranzo%40emory.edu%7C842cbdaeb8374097024a08db103ce5a7%7Ce004fb9cb0a4424fbcd0322606d5df38%7C0%7C0%7C638121625954175023%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=Jas0c9fNf3Z3Eo0jCgPZiv741KCT%2BjcBqtUCnM8D9fs%3D&reserved=0'
+            webbrowser.open_new_tab(anaconda_arm_download_url)
+
 GUI_util.window.mainloop()

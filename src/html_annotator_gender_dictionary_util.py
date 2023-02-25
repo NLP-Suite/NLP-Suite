@@ -50,7 +50,7 @@ def text_generate(inputFilename, inputDir):
     return articles, inputDir
 
 
-def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, dictionary_file, personal_pronouns_var):
+def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, timeout_var, memory_var, dictionary_file, personal_pronouns_var):
     document_length_var = 90000
     limit_sentence_length_var = 100
     extract_date_from_text_var = False
@@ -66,6 +66,7 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
                                                         'NER',
                                                         NERs=['PERSON'],
                                                         DoCleanXML=False,
+                                                        timeout_var=timeout_var,
                                                         memory_var=memory_var,
                                                         document_length=document_length_var,
                                                         sentence_length=limit_sentence_length_var,

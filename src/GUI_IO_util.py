@@ -350,7 +350,7 @@ if sys.platform == 'darwin':  # Mac OS
     document_length_lb = 510
     document_length_pos = 670
     sentence_length_lb = 880
-    sentence_length_pos = 1030
+    sentence_length_pos = 1000
 
 # MAC NLP_setup_IO_main Mac
     date_format_coordinate = 530
@@ -761,7 +761,7 @@ else: #windows and anything else
     document_length_lb = all_widget_pos
     document_length_pos = 590
     sentence_length_lb = 880
-    sentence_length_pos = 1010
+    sentence_length_pos = 990
 
 # Windows NLP_setup_IO_main
     date_format_coordinate = 460

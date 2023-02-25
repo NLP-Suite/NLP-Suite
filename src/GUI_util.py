@@ -923,7 +923,7 @@ def get_hover_over_info(package_display_area_value):
 def display_setup_hover_over(y_multiplier_integer):
     global y_multiplier_integer_SV
 
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
     hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
 
@@ -942,19 +942,19 @@ def display_setup_hover_over(y_multiplier_integer):
                                                    hover_over_info)
 
     # y_multiplier_integer=y_multiplier_integer-1
-    return y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var
+    return y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var
 
 def setup_parsers_annotators(y_multiplier_integer, scriptName):
     global setup_menu_lb
     package_display_area_value_new=''
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
-    y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json, memory_var, document_length_var, limit_sentence_length_var = display_setup_hover_over(y_multiplier_integer)
+    y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json, timeout_var, memory_var, document_length_var, limit_sentence_length_var = display_setup_hover_over(y_multiplier_integer)
 
     if setup_menu.get()=='Setup NLP package and corpus language':
         call("python NLP_setup_package_language_main.py", shell=True)
         # this will display the correct hover-over info after the python call, in case options were changed
-        y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json, memory_var, document_length_var, limit_sentence_length_var = display_setup_hover_over(y_multiplier_integer)
+        y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json, timeout_var, memory_var, document_length_var, limit_sentence_length_var = display_setup_hover_over(y_multiplier_integer)
         setup_menu.set('Setup')
         # unfortunately the next lines do not Enter/Leave the previous Setup
         # hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
@@ -967,7 +967,7 @@ def setup_parsers_annotators(y_multiplier_integer, scriptName):
         setup_IO_configuration_options(False, scriptName, True)
 
     setup_menu.set("Setup")
-    return error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var
+    return error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var
 
 # Watching video inside the NLP Suite but vlc and pafy gives loads of problems
 # def watch_video(*args):
@@ -1214,7 +1214,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     # do not display the setup widget when calling from a setup GUI or from NLP_menu_main
     if not 'NLP_menu_main' in scriptName and not 'package_language' in config_filename and not 'external_software' in config_filename:
         # window.nametowidget(setup_menu_lb)
-        # error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+        # error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
         setup_parsers_annotators(y_multiplier_integer, scriptName)
 
     # there is no RUN button when setting up IO information in any of the NLP_setup scripts
