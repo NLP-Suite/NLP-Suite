@@ -644,13 +644,18 @@ if not setup_IO_OK_checkbox_var.get() or not setup_parsers_annotators_OK_checkbo
         # GUI_util.watch_video(videos_lookup, scriptName)
 
 if sys.platform=='darwin':
+    # In 2021 Apple released new Mac models with M1 chips, and later even M2 chips
+    # Developers need to be able to run  x86_64 (also known as x64, x86_64, AMD64, and Intel 64) on these newer Mac computers that are built with an Apple Silicon (M1) processor, which is an ARM64 architecture.
+    # Some of the NLP Suite algorithms based on Google tensorflow will break the code unless changes are made
     import platform
+    print("\n\n--------------- platform.machine()\n\n--------------- ",platform.machine())
     if platform.machine()!='x86_64':
         import subprocess
         # Run pip freeze command and capture output
         output = subprocess.check_output(["pip", "freeze"]).decode("utf-8")
-        # Check if tensorflow-metal is in the output
-        if not "tensorflow-metal" in output:
+        print("\n\n--------------- output\n\n--------------- ", str(output))
+        # Check if tensorflow-metal or tensorflow-macos is in the output
+        if not "tensorflow-metal" in output and not "tensorflow-macos" in output:
             mb.showwarning(title='Warning',message='Your Mac is based on an Apple M1 or M2 chips.\n\n' \
                    'You will have problems running some of the algorithms in the NLP Suite (e.g., the cutting edge BERT based on Google tensorflow).\n\n' \
                    'You must delete the currently installed Anaconda version and then install the ARM version of Anaconda.\n\n' \
