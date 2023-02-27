@@ -11,6 +11,8 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window, "NLP_welcome_m
 import os
 import tkinter as tk
 from itertools import cycle
+from PIL import Image
+
 # https://pillow.readthedocs.io/en/3.0.x/handbook/tutorial.html
 # https://pillow.readthedocs.io/en/stable/installation.html
 # Pillow and PIL cannot co-exist in the same environment. Before installing Pillow, please uninstall PIL.
