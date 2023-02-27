@@ -50,6 +50,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         subjects_dict_var,
         verbs_dict_var,
         objects_dict_var,
+        filter_subjects,
+        filter_verbs,
+        filter_objects,
         lemmatize_subjects,
         lemmatize_verbs,
         lemmatize_objects,
@@ -198,7 +201,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     # create an SVO-filtered subdirectory of the main output directory
     outputSVOFilterDir=''
-    if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
+    if filter_subjects or filter_verbs or filter_objects:
         outputSVOFilterDir = outputSVODir + os.sep + 'SVO-filtered'
 
     if google_earth_var:
@@ -379,43 +382,48 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if len(svo_result_list)>0:
         # if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or \
         #         lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
-            output = SVO_util.filter_svo(window,SVO_filename,
-                            subject_filePath, verb_filePath, object_filePath,
-                            lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                            outputSVOSVODir, createCharts, chartPackage)
+        if filter_subjects or filter_verbs or filter_objects or \
+            lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
+            output = SVO_util.filter_lemmatize_svo(window,SVO_filename,
+                        filter_subjects, filter_verbs, filter_objects,
+                        subject_filePath, verb_filePath, object_filePath,
+                        lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
+                        outputSVOSVODir, createCharts, chartPackage)
             if output != None:
                 SVO_filtered_filename=output[0]
+                SVO_lemmatized_filename=output[1]
+                SVO_filtered_lemmatized_filename=output[2]
                 filesToOpen.extend(output)
-                svo_result_list.append(SVO_filtered_filename)
+                if SVO_filtered_filename!='':
+                    svo_result_list.append(SVO_filtered_filename)
+                if SVO_lemmatized_filename!='':
+                    svo_result_list.append(SVO_lemmatized_filename)
+                if SVO_filtered_lemmatized_filename!='':
+                    svo_result_list.append(SVO_filtered_lemmatized_filename)
 
         if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             # tempOutputFiles[0] is the filename with lemmatized SVO values
             # we want to aggregate with WordNet the verbs in column 'V'
             # check that SVO output file contains records
-            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(SVO_filename,
+            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(SVO_lemmatized_filename,
                                                                                    encodingValue='utf-8')
             if nRecords > 1:
-                # create a subdirectory of the output directory
-                outputWNDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
-                                                                     label='WordNet',
-                                                                     silent=True)
-
-                if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-                    outputFilename = IO_csv_util.extract_from_csv(SVO_filename, outputWNDir, '',
+                # outputWNDir is created in SVO_util
+                outputWNDir = outputSVODir + os.sep + 'WordNet'
+                outputFilename = IO_csv_util.extract_from_csv(SVO_lemmatized_filename, outputWNDir, '',
                                                               ['Subject (S)', 'Object (O)'])
 
-                    # the WordNet installation directory is now checked in aggregate_GoingUP
-                    WordNetDir=''
-                    output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
-                                                                             config_filename, 'NOUN',
-                                                                             openOutputFiles, createCharts,
-                                                                             chartPackage, language_var)
-                    os.remove(outputFilename)
-                    if output != None and output != '':
-                        filesToOpen.extend(output)
+                # the WordNet installation directory, WordNetDir,  is now checked in aggregate_GoingUP
+                WordNetDir=''
+                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
+                                                                         config_filename, 'NOUN',
+                                                                         openOutputFiles, createCharts,
+                                                                         chartPackage, language_var)
+                os.remove(outputFilename)
+                if output != None and output != '':
+                    filesToOpen.extend(output)
                 if lemmatize_verbs:
-                    outputFilename = IO_csv_util.extract_from_csv(SVO_filename, outputWNDir, '', ['Verb (V)'])
+                    outputFilename = IO_csv_util.extract_from_csv(SVO_lemmatized_filename, outputWNDir, '', ['Verb (V)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
                                                                              config_filename, 'VERB',
                                                                              openOutputFiles, createCharts,
@@ -459,7 +467,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 for f in svo_result_list:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
                     if nRecords > 1:  # including headers; file is empty
-                        if 'SVO-filter' in svo_result_list[i]:
+                        if 'SVO_filter_lemma' in svo_result_list[i] or 'SVO_lemma' in svo_result_list[i]:
+                            tempOutputDir = outputWNDir
+                        elif 'SVO_filter' in svo_result_list[i]:
                             tempOutputDir = outputSVOFilterDir
                         else:
                             tempOutputDir = outputSVOSVODir
@@ -496,7 +506,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         myfile = IO_files_util.openCSVFile(f, "r")
                         #CYNTHIA
                         # out_file = wordclouds_util.SVOWordCloud(myfile, f, outputSVODir + os.sep + 'SVO', "", prefer_horizontal=.9)
-                        if 'SVO-filter' in svo_result_list[i]:
+                        if 'SVO_filter_lemma' in svo_result_list[i] or 'SVO_lemma' in svo_result_list[i]:
+                            tempOutputDir = outputWNDir
+                        elif 'SVO_filter' in svo_result_list[i]:
                             tempOutputDir = outputSVOFilterDir
                         else:
                             tempOutputDir = outputSVOSVODir
@@ -578,6 +590,9 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  subjects_dict_var.get(),
                                  verbs_dict_var.get(),
                                  objects_dict_var.get(),
+                                 filter_subjects_var.get(),
+                                 filter_verbs_var.get(),
+                                 filter_objects_var.get(),
                                  lemmatize_subjects_var.get(),
                                  lemmatize_verbs_var.get(),
                                  lemmatize_objects_var.get(),
@@ -647,7 +662,6 @@ def clear(e):
     filter_subjects_var.set(1)
     filter_verbs_var.set(1)
     filter_objects_var.set(0)
-    activate_filter_dictionaries()
     lemmatize_subjects_checkbox.configure(state='normal')
     lemmatize_verbs_checkbox.configure(state='normal')
     lemmatize_objects_checkbox.configure(state='normal')
@@ -660,6 +674,14 @@ def clear(e):
     gephi_checkbox.configure(state='normal')
     wordcloud_checkbox.configure(state='normal')
     google_earth_checkbox.configure(state='normal')
+
+    global subject_filePath, verb_filePath, object_filePath
+
+    subject_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
+    verb_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-action-list.csv'
+    object_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
+    # activate_filter_dictionaries()
+
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -792,16 +814,17 @@ def getDictFile(checkbox_var, dict_var, checkbox_value, dictFile):
         initialFolder = GUI_IO_util.wordLists_libPath
         filePath = tk.filedialog.askopenfilename(title='Select INPUT csv ' + dictFile + ' dictionary filter file',
                                                  initialdir=initialFolder, filetypes=[("csv files", "*.csv")])
-        if len(filePath) == 0:
-            checkbox_var.set(0)
-        else:
-            if dictFile == 'Subject':
-                subject_filePath = filePath
-            elif dictFile == 'Verb':
-                verb_filePath = filePath
-            elif dictFile == 'Object':
-                object_filePath = filePath
-            filePath=os.path.basename(os.path.normpath(filePath))
+    if len(filePath) == 0:
+        checkbox_var.set(0)
+    else:
+        filePath=os.path.basename(os.path.normpath(filePath))
+    if dictFile == 'Subject':
+        subject_filePath = filePath
+    elif dictFile == 'Verb':
+        verb_filePath = filePath
+    elif dictFile == 'Object':
+        object_filePath = filePath
+    # filePath=os.path.basename(os.path.normpath(filePath))
     dict_var.set(filePath)
 
 filter_subjects_var.set(1)
@@ -953,14 +976,22 @@ SRL_checkbox.configure(state='disabled')
 gephi_var.set(1)
 gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network graphs (via Gephi) ',
                                 variable=gephi_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               gephi_checkbox, True)
+                                   gephi_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "When filtering subjects/verbs/objects, network graphs will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO-filtered subdirectories.\n"                                  
+                                   "When lemmatizing, network graphs will aso be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
 
 wordcloud_var.set(1)
 wordcloud_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in wordcloud', variable=wordcloud_var,
                                     onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, wordcloud_checkbox,
-                                               True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
+                                   wordcloud_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "When filtering subjects/verbs/objects, wordclouds will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO-filtered subdirectories\n" 
+                                   "When lemmatizing, wordclouds will aso be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
 
 google_earth_var.set(1)
 google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Earth Pro & Google Maps)',
@@ -968,8 +999,9 @@ google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
                                    google_earth_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "To draw pin and heat maps with Google Earth Pro and Google Maps you will need a free Google API key.\nRead the TIPS file 'Google API Key' on how to get the API key.")
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Draw pin and heat maps with Google Earth Pro and Google Maps. Maps are exported to the SVO subdirectory only, whether filtering or lemmatizing to avoid missing locations.\n"
+                                   "You will need a free Google API key. Read the TIPS file 'Google API Key' on how to get the API key.")
 def activateFilters(*args):
 
     if package_var.get()!='':
