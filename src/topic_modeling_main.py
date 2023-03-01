@@ -33,6 +33,7 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"topic_modeling
 
 import os
 import tkinter as tk
+import tkinter.messagebox as mb
 # necessary to avoid opening the GUI repeatedly
 from multiprocessing import current_process
 
@@ -306,5 +307,13 @@ if current_process().name == 'MainProcess':
         reminders_util.title_options_English_language_Gensim,
         reminders_util.message_English_language_Gensim,
         True)
+
+    state = str(GUI_util.run_button['state'])
+    if state == 'disabled':
+        # check to see if there is a GUI-specific config file and set it to the setup_IO_menu_var
+        if os.path.isfile(os.path.join(GUI_IO_util.configPath, config_filename)):
+            GUI_util.setup_IO_menu_var.set('GUI-specific I/O configuration')
+            mb.showwarning(title='Warning',
+                           message="Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
 
     GUI_util.window.mainloop()

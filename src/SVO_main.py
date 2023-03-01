@@ -981,7 +981,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    gephi_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "When filtering subjects/verbs/objects, network graphs will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO-filtered subdirectories.\n"                                  
-                                   "When lemmatizing, network graphs will aso be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
+                                   "When lemmatizing, network graphs will also be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
 
 wordcloud_var.set(1)
 wordcloud_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in wordcloud', variable=wordcloud_var,
@@ -991,7 +991,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column
                                    wordcloud_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "When filtering subjects/verbs/objects, wordclouds will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO-filtered subdirectories\n" 
-                                   "When lemmatizing, wordclouds will aso be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
+                                   "When lemmatizing, wordclouds will also be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
 
 google_earth_var.set(1)
 google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Earth Pro & Google Maps)',
