@@ -624,6 +624,8 @@ def get_external_software_dir(calling_script, software_name_checked, silent, onl
         if software_name_checked=='':
             software_dir = None
             software_url = ''
+        else:
+            ask_download_installation_questions("install", software_name, software_dir, message='', silent=False)
     return software_dir, software_url, missing_software
     # end of get_external_software_dir
 def ask_download_installation_questions(download_install, software_name, software_dir, message, silent=False):

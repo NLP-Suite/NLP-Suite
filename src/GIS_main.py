@@ -60,8 +60,9 @@ def run(inputFilename,
                        message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
         return
 
-    config_filename=''
+    # config_filename=''
     # get the date options from filename
+    config_filename = GUI_util.config_filename
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
     extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
@@ -140,6 +141,7 @@ def run(inputFilename,
                                                                 outputDir, openOutputFiles, createCharts, chartPackage, 'NER', False,
                                                                 language_var,
                                                                 export_json_var,
+                                                                timeout_var,
                                                                 memory_var,
                                                                 NERs=NERs,
                                                                 extract_date_from_text_var=0,

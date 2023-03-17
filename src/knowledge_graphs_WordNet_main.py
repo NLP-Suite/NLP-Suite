@@ -326,27 +326,37 @@ def activate_keyword_menu():
 
 add_keyword_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                                command=lambda: activate_keyword_menu())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
-                                               add_keyword_button, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+                                             add_keyword_button,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.entry_box_x_coordinate,
+                                             "Click on the + button to add another synset")
 
 reset_keywords_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, state='disabled',
                                   command=lambda: clear_keyword_list())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_reset_pos, y_multiplier_integer,
-                                               reset_keywords_button, True)
-
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_reset_pos, y_multiplier_integer,
+                                             reset_keywords_button,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.WordNet_reset_pos,
+                                             "Click on the Reset button to clear currently selected synsets and start fresh")
 def showKeywordList():
     mb.showwarning(title='Warning', message='The currently selected keywords are:\n\n' + ','.join(
-        wordNet_keyword_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
-
+        wordNet_keyword_list) + '\n\nPress OK to approve selection; press the RESET button (or ESCape) to start fresh and select different keywords.')
 
 show_keywords_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width, height=1, state='disabled',
                                  command=lambda: showKeywordList())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_show_pos, y_multiplier_integer,
-                                               show_keywords_button, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_show_pos, y_multiplier_integer,
+                                             show_keywords_button,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.WordNet_show_pos,
+                                             "Click on the Show button to display the currently selected synsets")
 
 noun_verb_menu_options = []
 keyWord_var.set('')
-keyWord_menu_lb = tk.Label(window, text='Keyword (synset)')
+keyWord_menu_lb = tk.Label(window, text='Top-level synset ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_noun_verb_menu_pos, y_multiplier_integer,
                                                keyWord_menu_lb, True)
 
@@ -356,16 +366,24 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_
                                              keyWord_menu,
                                              False, False, True, False,
                                              90, GUI_IO_util.labels_x_coordinate,
-                                             "Use the dropdown menu to select the top-level synset(s) for NOUN or VERB to be used to find semantically releated terms in the WordNet lexical database.")
+                                             "Use the dropdown menu to select the top-level synset(s) for NOUN or VERB to be used to find semantically related terms in the WordNet lexical database.\n" \
+                                             "The use of this widget is mutually exclusive with the widget 'YOUR synset(s)'. You can use one or the other.")
 
-keyWord_entry_lb = tk.Label(window, text='YOUR keyword(s) ')
+keyWord_entry_lb = tk.Label(window, text='YOUR synset(s) ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_noun_verb_menu_pos, y_multiplier_integer,
                                                keyWord_entry_lb, True)
 
 keyWord_entry = tk.Entry(window, width=GUI_IO_util.WordNet_keyWord_entry_width, textvariable=keyWord_entry_var)
 keyWord_entry.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos, y_multiplier_integer,
-                                               keyWord_entry, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos, y_multiplier_integer,
+                                             keyWord_entry,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "Enter the comma-separated synset(s) you want to use to search the WordNet lexical database for NOUN or VERB. Particularly useful for searching lower-level synsets (e.g., 'ethnic group' instead of 'person').\n" \
+                                             "The use of this widget is mutually exclusive with the widget 'Top-level synset'. You can use one or the other.")
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos, y_multiplier_integer,
+#                                                keyWord_entry, True)
 
 OK_button = tk.Button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled', command=lambda: accept_WordNet_list())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_OK_button_pos, y_multiplier_integer,
