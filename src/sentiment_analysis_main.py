@@ -138,8 +138,8 @@ def run(inputFilename,inputDir,outputDir,
             return
         if len(tempOutputFiles) > 0:
             filesToOpen.extend(tempOutputFiles)
-
-# spaCy  _______________________________________________________
+            outputFilename = tempOutputFiles[0]
+    # spaCy  _______________________________________________________
 
     if SA_algorithm_var == '*' or spaCy_var == 1 and (mean_var or median_var):
         # check internet connection
@@ -170,6 +170,7 @@ def run(inputFilename,inputDir,outputDir,
 
         if len(tempOutputFiles) > 0:
             filesToOpen.extend(tempOutputFiles)
+            outputFilename = tempOutputFiles[0]
 
 # Stanford CORENLP  _______________________________________________________
 
@@ -223,18 +224,30 @@ def run(inputFilename,inputDir,outputDir,
 
         if len(tempOutputFiles) > 0:
             filesToOpen.extend(tempOutputFiles)
+            outputFilename = tempOutputFiles[0]
 
 # shape of stories ------------------------------------------------------------------------
 
-    if (spaCy_var or CoreNLP_var or Stanza_var) and shape_of_stories_var:
+    if (BERT_var or spaCy_var or CoreNLP_var or Stanza_var) and shape_of_stories_var:
         if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py') == False:
             return
 
-        # open the shape of stories GUI  having saved the new SA output in config so that it opens the right input file
+        # open the shape of stories GUI having saved the new SA output in config so that it opens the right input file
         config_filename_temp = 'shape_of_stories_config.csv'
-        config_input_output_numeric_options = [3, 1, 0, 1]
-        config_input_output_alphabetic_options = [outputFilename, '','',outputDir]
-        config_util.write_IO_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options, True)
+        config_input_output_numeric_options_temp = [3, 0, 0, 1]
+
+        # config_input_output_alphabetic_options is a double list with no headers
+        #   with one sublist for each of the four types of IO configurations: filename, input main dir, input secondary dir, output dir
+        # each sublist has four items: path, date format, date separator, date position
+        # e.g., [['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/The Three Little Pigs.txt', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['C:\\Program Files (x86)\\NLP_backup\\Output', '', '', '']]
+        config_input_output_alphabetic_options_temp, missingIO = config_util.read_config_file(config_filename_temp, config_input_output_numeric_options_temp)
+        # add the sentiment csv file to the config file 'shape_of_stories_config.csv'
+        config_input_output_alphabetic_options_temp[0][1]=outputFilename
+        # add the output directory to the config file 'shape_of_stories_config.csv'
+        config_input_output_alphabetic_options_temp[3][1] = outputDir
+
+        # config_input_output_alphabetic_options = [['', outputFilename, '','',outputDir]]
+        config_util.write_IO_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options_temp, True)
 
         reminders_util.checkReminder(config_filename,
                                      reminders_util.title_options_shape_of_stories,
@@ -429,8 +442,8 @@ ALL_options_button = tk.Button(window, text='Sentiments/emotions (ALL options GU
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,ALL_options_button)
 
 def activate_SOS(*args):
-    # the Shape of Stories is only available when processing a directory and using oreNLP
-    if input_main_dir_path.get()=='' or (SA_algorithm_var.get()!='Stanford CoreNLP' and SA_algorithm_var.get()!='*'):
+    # the Shape of Stories is only available when processing a directory and using CoreNLP
+    if input_main_dir_path.get()=='' or (not 'BERT' in SA_algorithm_var.get().strip() and SA_algorithm_var.get().strip()!='spaCy' and SA_algorithm_var.get().strip()!='Stanza' and SA_algorithm_var.get().strip()!='Stanford CoreNLP'):
         shape_of_stories_checkbox.config(state='disabled')
     else:
         shape_of_stories_checkbox.config(state='normal')
@@ -488,7 +501,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkboxes for either Mean or Median in output csv files. BY DEFAULT, BOTH VALUES ARE COMPUTED.\n\nStanford CoreNLP Sentiment Analysis only computes mean values for each sentence.\n\nVADER only computes 'compound' values for each sentence.\n\nSentiWordNet as well does not provide sentence mean/median values.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, using the dropdown menu, select the algorithm to be used for computing sentiment analysis.\n\nSelect * to run ALL algorithms.\n\nspaCy, Stanford CoreNLP, Stanza neural network approach to Sentiment Analysis typically achieves better results than dictionary-based approaches.\n\nCoreNLP computes mean values only for each sentence on a scale 0-4 (minimum-maximum).\n\nANEW (Affective Norms for English Words) computes sentiment/arousal/dominance mean/median values for each sentence using the ANEW ratings for SENTIMENT (VALENCE), AROUSAL, and DOMINANCE (CONTROL) by Bradley, M.M. & Lang, P.J. (2017). Affective Norms for English Words (ANEW): Instruction manual and affective ratings. Technical Report C-3. Gainesville, FL:UF Center for the Study of Emotion and Attention.\n\nContrary to all other approaches, the ANEW script computes three different measures, for SENTIMENT, AROUSAL, and DOMINANCE:\nSENTIMENT or VALENCE measures how pleasant/unpleasant a word makes us feel;\nAROUSAL measures how calm/excited a word makes us feel;\nDOMINANCE or CONTROL measures how dominated/in control a word makes us feel.\n\nTHE SCRIPT EXPECTS TO FIND THE FILE EnglishShortenedANEW.csv IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE Sentiment_Analysis_ANEW.py SCRIPT IS STORED.\n\nIn OUTPUT, the script creates a csv file containing the calculated mean/median sentiment values for each sentence, where each rating can have a total of maximum 9 points.\n\nValues for sentiment, arousal, and dominance are classified on a scale 0-9, grouped in 5 categories: <3, >=3 and < 5, 5 (neutral), >5 and <8, >=8 and <=9.\n\nThe hedonometer algorithm uses the hedonometer.org rated dictionary to compute sentiment mean/median values for each sentence.\n\nThe script has been shown to work best with social media texts (e.g., Twitter), New York Times editorials, movie reviews, and product reviews.\n\nTHE SCRIPT EXPECTS TO FIND THE FILE hedonometer.json IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE Sentiment_Analysis_Hedonometer.py SCRIPT IS STORED.\n\nIn OUTPUT, the script creates a csv file containing the calculated mean/median sentiment values for each sentence.\n\nSentiment values are classified on a scale 0-10, grouped in 3 categories: negative (>=0 and <4), neutral (>=4 and <=6), and positive (>6 and <=10).\n\nThe NLTK VADER (VADER, Valence Aware Dictionary and sEntiment Reasoner) uses the NLTK rated dictionary to compute sentiment mean/median values for each sentence.\n\nThe script has been shown to work best with social media texts (e.g., Twitter).\n\nIn INPUT the script expects either a single text file or a set of text files stored in a directory. THE SCRIPT ALSO EXPECTS TO FIND THE VADER RATED DICTIONARY FILE vader_lexicon.txt IN A ""lib"" SUBFOLDER OF THE FOLDER WHERE THE Sentiment_Analysis_VADER.py SCRIPT IS STORED.\n\nIn OUTPUT, the script creates a csv file containing the calculated 'compound' sentiment values for each sentence.\n\nMean and Median calculations are not available for VADER; VADER computes 'compound' values for each sentence.\n\nSentiment values are classified on a scale -1 (most negative) to 1 as (most positive) grouped in 3 categories: negative (<-0.05), neutral (>=-0.05 and <=0.05), and positive (>0.05 and <=1).\n\nVADER heavily relies on a number of NLTK libraries. If VADER fails to run, make sure that in command line you run\n   python -m nltk.downloader all")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to display a line plot of sentiment scores by sentence index across a specific document.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to open the 'Shape of stories' GUI. The 'Shape of stories' algorithms will compute and visualize the \'shape of stories\' of a set of sentiment scores across different documents using different data reduction methods: Hiererchical Clustering, Singular Value Decomposition, Non-Negative Matrix Factorization.\n\nThe 'Shape of stories' GUI is only available when computing sentiment scores via Stanford CoreNLP on a corpus of txt files in an input directory.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to open the 'Shape of stories' GUI. The 'Shape of stories' algorithms will compute and visualize the \'shape of stories\' of a set of sentiment scores across different documents using different data reduction methods: Hiererchical Clustering, Singular Value Decomposition, Non-Negative Matrix Factorization.\n\nThe 'Shape of stories' GUI is only available when computing sentiment scores via BERT, spaCy, Stanford CoreNLP, or Stanza on a corpus of txt files in an input directory.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                               "Please, click on the button to open the GUI for ALL options to analyze emotions/sentiments available in the NLP Suite.")

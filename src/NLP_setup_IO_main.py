@@ -513,4 +513,7 @@ result = reminders_util.checkReminder(config_filename,
 
 IO_configuration_upon_entry = get_IO_options_str()
 
+# to make sure the release version is updated even when users do not click on the CLOSE button
+#   but on the Mac top-left red button or Windows top-right X button
+GUI_util.window.protocol("WM_DELETE_WINDOW", lambda: close_GUI(IO_configuration_upon_entry))
 GUI_util.window.mainloop()

@@ -188,6 +188,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
     if sentence_length<50:
         sentence_length=100  # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
 
+    timeout_var=999999
+
     silent=True
     start_time = time.time()
     speed_assessment = []#storing the information used for speed assessment
@@ -521,12 +523,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
         if language == 'English':
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
-                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer',  '-parse.maxlen' + str(sentence_length), '-timeout' + str(timeout_var)])
+                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer',  '-parse.maxlen', str(sentence_length), '-timeout', str(timeout_var)])
         else:
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp', os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer','-props', language.lower(),
-                 '-parse.maxlen' + str(sentence_length), '-timeout'+ str(timeout_var)])
+                 '-parse.maxlen', str(sentence_length), '-timeout', str(timeout_var)])
 
     else:
         # CoreNLP_nlp = subprocess.Popen(
@@ -535,12 +537,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
         if language == 'English':
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
-                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen' + str(sentence_length),'-timeout' + str(timeout_var)])
+                 'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-parse.maxlen', str(sentence_length),'-timeout', str(timeout_var)])
         else:
             CoreNLP_nlp = subprocess.Popen(
                 ['java', '-mx' + str(memory_var) + "g", '-cp',  os.path.join(CoreNLPdir, '*'),
                  'edu.stanford.nlp.pipeline.StanfordCoreNLPServer', '-props', language.lower(),
-                 '-parse.maxlen' + str(sentence_length),'-timeout' + str(timeout_var)])
+                 '-parse.maxlen', str(sentence_length),'-timeout', str(timeout_var)])
 
     time.sleep(5)
 
@@ -765,6 +767,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir_chosen, '.csv',
                                                                              'CoreNLP_'+annotator_chosen+'_lemma_'+output_format[index][0])
                 else:
+                    #@@@
                     outputFilename = IO_files_util.generate_output_file_name(str(doc), inputDir, outputDir_chosen,'.csv',
                                                                               'CoreNLP_'+annotator_chosen+'_lemma'+output_format[index][0])
                 filesToOpen.append(outputFilename)

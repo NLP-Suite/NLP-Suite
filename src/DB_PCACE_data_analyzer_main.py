@@ -197,8 +197,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=680, # height at brief display
-                                                 GUI_height_full=720, # height at full display
+                                                 GUI_height_brief=640, # height at brief display
+                                                 GUI_height_full=680, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -263,6 +263,14 @@ google_earth_var = tk.IntVar()
 def clear(e):
     setup_complex=''
     setup_simplex=''
+    select_DB_tables_var.set('')
+    simplex_data_type_var.set('')
+    simplex_list=[]
+    simplex_data_menu_var.set('')
+    value_parent_object_var.set(0)
+
+    setup_complex_var.set('')
+    setup_simplex_var.set('')
     GUI_util.tips_dropdown_field.set('Open TIPS files')
 window.bind("<Escape>", clear)
 
@@ -270,10 +278,22 @@ table_list = []
 table_menu_list = []
 
 view_relations_button = tk.Button(window, text='View table relations', width=20,height=1,state='normal', command=lambda: view_relations())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,view_relations_button)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   view_relations_button,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Click to open a pdf file of the PC-ACE table relations")
 
-select_DB_tables_lb = tk.Label(window, text='Select DB table ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_DB_tables_lb,True)
+# https://www.geeksforgeeks.org/convert-excel-to-csv-in-python/
+view_relations_button = tk.Button(window, text='Convert PC-ACE Excel tables to csv  ', height=1,state='normal', command=lambda: view_relations())
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   view_relations_button,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Click to convert the Excel files exported from Microsoft ACCESS database to csv files for use in this GUI")
+
+select_DB_tables_lb = tk.Label(window, text='Open DB table ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,y_multiplier_integer,select_DB_tables_lb,True)
 
 table_menu_values = ''
 table_list=[]
@@ -283,10 +303,13 @@ if os.path.isdir(inputDir.get()):
 select_DB_tables = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=select_DB_tables_var)
 select_DB_tables.configure(state='disabled')
 select_DB_tables['values'] = table_menu_values
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120,y_multiplier_integer,select_DB_tables)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate+120, y_multiplier_integer,
+                                   select_DB_tables,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate+120,
+                                   "Use the dropdown menu to select a PC-ACE table to be opened for display; click RUN after selection.")
 
-
-simplex_data_type_lb = tk.Label(window, text='Data type ')
+simplex_data_type_lb = tk.Label(window, text='PC-ACE data type ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,simplex_data_type_lb,True)
 
 simplex_data_type_var= tk.StringVar()
@@ -368,10 +391,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    setup_simplex,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Use the dropdown menu to select a specific simplex object for which to compute frequencies")
-def activate_parents(*args):
-    parents_menu = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get(),inputDir.get())
-    select_parents_var.set(parents_menu)
-setup_complex_var.trace('w',activate_parents)
+
+#@@@
+# def activate_parents(*args):
+#     parents_menu = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get(),inputDir.get())
+#     select_parents_var.set(parents_menu)
+# setup_complex_var.trace('w',activate_parents)
 
 ALL_simplex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for ALL objects', variable=ALL_simplex_objects_frequencies_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ALL_simplex_objects_checkbox,True)
@@ -391,17 +416,28 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "The menu displays a list of complex objects parent of the 'Complex objects' or 'Simplex objects' selected in the widgets above")
 
 select_children_lb = tk.Label(window, text='Children complex objects ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+500,y_multiplier_integer,select_children_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+600,y_multiplier_integer,select_children_lb,True)
 
 select_children = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=select_children_var)
 # select_children.configure(state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150, y_multiplier_integer,
                                    select_children,
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "The menu displays a list of complex objects children of the 'Complex objects' selected in the widget above.\nThe option is only available for the 'Complex objects' widget above.")
 
 def activate_children(*args):
+    parent_complex_list = []
+    parent_simplex_list = []
+    parent_complex_list = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get(),inputDir.get())
+    parent_simplex_list = DB_PCACE_data_analyzer_util.find_parent_simplex(setup_simplex_var.get(),inputDir.get())
+    parent_menu_values = ''
+    if len(parent_complex_list)>0:
+        parent_menu_values = ", ".join(parent_complex_list)
+    if len(parent_simplex_list)>0:
+        parent_menu_values = ", ".join(parent_simplex_list)
+    select_parents['values'] = parent_menu_values
+
     children_list = []
     children_menu_values = ''
     children_list = DB_PCACE_data_analyzer_util.find_child_complex(setup_complex_var.get(),inputDir.get())
@@ -409,6 +445,8 @@ def activate_children(*args):
     select_children['values'] = children_menu_values
     # select_children_var.set(children_menu[0])
 setup_complex_var.trace('w',activate_children)
+setup_simplex_var.trace('w',activate_children)
+#@@@
 
 semantic_triplet_checkbox = tk.Checkbutton(window, text='Semantic triplet (SVO)', variable=semantic_triplet_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
@@ -418,12 +456,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Tick the checkbox to list in chronological order the semantic triplets within a specific higher-level hierarchical complex object (selected in the Complex objects widget, e.g., event, macro-event).\nWhen no hierarchical complex oject is selected in the Complex objects widget, all triplets are listed for all higher-level hierarchical complex objects (e.g., macro-events, events).")
 
 actors_lb = tk.Label(window, text='Actors ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,actors_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+20,y_multiplier_integer,actors_lb,True)
 
 actors_var.set('')
 actors_menu = tk.OptionMenu(window, actors_var, 'collective actor','individual', 'organization')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+70, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+90, y_multiplier_integer,
                                    actors_menu,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Use the dropdown menu to select the type of actor you want to analyze")
@@ -437,7 +475,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x
 gephi_var.set(1)
 gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network graphs (via Gephi) ',
                                 variable=gephi_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+20, y_multiplier_integer,
                                                gephi_checkbox, True)
 
 wordcloud_var.set(1)
@@ -474,6 +512,8 @@ def changed_filename(*args):
         if len(table_menu_values)>0:
             select_DB_tables.configure(state='normal')
             select_DB_tables.set(table_menu_values[0])
+            select_DB_tables.set('')
+
         else:
             select_DB_tables.set('')
             select_DB_tables.configure(state='disabled')
@@ -481,7 +521,8 @@ def changed_filename(*args):
         setup_complex['values'] = setup_complex_menu
         if len(setup_complex_menu)>0:
             setup_complex.configure(state='normal')
-            setup_complex.set(setup_complex_menu[0])
+            # setup_complex.set(setup_complex_menu[0])
+            setup_complex.set('')
         else:
             setup_complex.set('')
             setup_complex.configure(state='disabled')
@@ -490,7 +531,8 @@ def changed_filename(*args):
         if len(setup_simplex_menu)>0:
             setup_simplex.configure(state='normal')
             SELECTED_simplex_objects_checkbox.configure(state='normal')
-            setup_simplex.set(setup_simplex_menu[0])
+            # setup_simplex.set(setup_simplex_menu[0])
+            setup_simplex_var.set('')
         else:
             setup_simplex.set('')
             SELECTED_simplex_objects_checkbox.configure(state='disabled')
@@ -526,8 +568,9 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the View table relations button to open a pdf file visualizing PC-ACE table relations." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, use the dropdown menu to select the PC-ACE table you want to open to inspect its content." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the View table relations button to open a pdf file visualizing PC-ACE table relations." +
+                                "\n\nClick on the 'Convert PC-ACE Excel tables to csv' button to convert the Excel files exported from the PC-ACE ACCESS database to csv files." +
+                                "\n\nUse the dropdown menu to open a selected table file." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the simplex data value for which you want to see its usage among parent simplex and complex." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help",
@@ -544,7 +587,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          "Please, tick the checkbox for the type of simplex object for which you want to compute frequencies." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the PARENT object and/or the CHILD object." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to visualize semantic triplets." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to visualize actors, time, and space." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, use the dropdown menu to select the type of actor to be visualized (collective actor, individual, or organization), and  tick the checkboxes to visualize time and space." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to visualize Subejcts, Verbs, Objects in network graphs and wordclouds, and to visualize space in geographic maps." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 

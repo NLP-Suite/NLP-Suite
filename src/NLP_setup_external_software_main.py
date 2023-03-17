@@ -142,6 +142,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
                                                GUI_IO_util.labels_x_coordinate, "Select the external software to be installed after having downloaded it; the software installation directory will be displayed after selection."
                                                                                       "\nYOU CAN MAKE MULTIPLE SELECTIONS AND SAVE UPON CLOSING.\nThe software installation directory will be automatically saved in the config file NLP_setup_external_software_config.csv when you CLOSE.")
 
+
 software_install_dir_var=tk.StringVar()
 software_install_area = tk.Entry(width=GUI_IO_util.missing_software_display_area_width, state='disabled', textvariable=software_install_dir_var)
 # place widget with hover-over info
@@ -363,4 +364,7 @@ missing_external_software_upon_entry=missing_software_var.get()
 
 existing_software_config = IO_libraries_util.get_existing_software_config()
 
+# to make sure the release version is updated even when users do not click on the CLOSE button
+#   but on the Mac top-left red button or Windows top-right X button
+GUI_util.window.protocol("WM_DELETE_WINDOW", close_GUI)
 GUI_util.window.mainloop()

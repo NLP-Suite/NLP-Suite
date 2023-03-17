@@ -120,7 +120,7 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
     head, tail = os.path.split(inputFilename)
     error = None
     if isinstance(CoreNLP_output, str):
-        logger.warning("[Warning] Stanford CoreNLP is not JSON. Trying to convert output to JSON... ")
+        logger.warning("[Warning] Stanford CoreNLP output is not JSON. Trying to convert output to JSON... ")
 
         if text and not CoreNLP_output:
             error = 'Bad Response from Stanford CoreNLP Server. This might be due to various reasons. The server might' \
@@ -134,7 +134,7 @@ def process_CoreNLP_error(window, CoreNLP_output, inputFilename, nDocs, filesErr
                 logger.warning("[Info] Successfully converted CoreNLP output to JSON. Proceeding as normal.")
                 # logger.warning(CoreNLP_output)
             except Exception as e:
-                logger.error("[Error] Could not convert output to JSON! Error: " + str(e))
+                logger.error("[Error] Could not convert CoreNLP output to JSON! Please, check your input file for any corruption. Error: " + str(e))
                 errorFound = True
                 error = str(e)
     # OutOfMemoryError Java heap space

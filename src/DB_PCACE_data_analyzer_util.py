@@ -30,9 +30,9 @@ def import_PCACE_tables(inputDir):
             # Strip off the .csv extension
             # tableList.append(file[:len(file) - 4])
             if not file in str(tableList):
-                if file=='data_Complex.csv':
-                    print('')
-                print(file)
+                # if file=='data_Complex.csv':
+                #     print('')
+                # print(file)
                 tableList.append(file)
     # if len(tableList) == 0:
     #     mb.showwarning(title='Warning',
@@ -274,7 +274,7 @@ def find_parent_complex(complex, inputDir):
 
         higher_level_complex = setup_xref_Complex_Complex_df[setup_xref_Complex_Complex_df['LowerComplex'].isin(complex_id)]
         higher_level_complex = higher_level_complex['HigherComplex'].values.tolist()
-        higher_level_complex = [str(x) for x in higher_level_complex]
+        # higher_level_complex = [str(x) for x in higher_level_complex]
 
         higher_level_complex = setup_Complex_df[setup_Complex_df['ID_setup_complex'].isin(higher_level_complex)]
         higher_level_complex = higher_level_complex[['ID_setup_complex', 'Name']]
@@ -327,6 +327,23 @@ def find_parent_simplex(name, inputDir):
 
         higher_level_complex = setup_Complex_df[setup_Complex_df['ID_setup_complex'].isin(complex_id)]
         higher_level_complex = higher_level_complex['Name'].values.tolist()
+
+    return higher_level_complex
+
+def find_parent_simplex_util(name, setup_Simplex, setup_xref_Simplex_Complex, setup_Complex):
+    simplex_id = find_setup_id_simplex(name, setup_Simplex)
+    simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
+
+    complex_id = setup_xref_Simplex_Complex[setup_xref_Simplex_Complex['ID_setup_simplex'].isin(simplex_id)]
+    complex_id = complex_id['ID_setup_complex'].values.tolist()
+
+    # reset type of 'ID_setup_complex' in setup_Complex.csv
+    setup_Complex = setup_Complex[setup_Complex['Name'].notna()]
+    setup_Complex[['ID_setup_complex']] = setup_Complex[['ID_setup_complex']].astype(int)
+    setup_Complex = setup_Complex[['ID_setup_complex', 'Name']]
+
+    higher_level_complex = setup_Complex[setup_Complex['ID_setup_complex'].isin(complex_id)]
+    higher_level_complex = higher_level_complex['Name'].values.tolist()
 
     return higher_level_complex
 
@@ -507,8 +524,7 @@ def find_simplex_data(data, cols, data_xref_Simplex_Complex, data_Simplex, data_
 #           complex_name: name of complex in list type
 #           data_Simplex, data_SimplexText, setup_Complex, data_Complex, data_xref_Simplex_Complex
 # return: dataframe containing individual data id, simplex, identifer
-def find_simplex_identifier_one_complextype(complex_name, data_Simplex, data_SimplexText, setup_Complex, data_Complex,
-                                            data_xref_Simplex_Complex):
+def find_simplex_identifier_one_complextype(complex_name, data_Simplex, data_SimplexText, setup_Complex, data_Complex, data_xref_Simplex_Complex):
     data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how='left', left_on='ID_data_date_number_text',
                                  right_on='ID')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'Value']]
@@ -2252,7 +2268,7 @@ def individual_simplex_info(simplex, setup_Simplex, setup_Complex, setup_xref_Si
     # complex related info
     for i in range(len(simplex_info)):
         simplex_name = simplex_info[i][0]
-        complex_name = find_parent_simplex([simplex_name], setup_Simplex, setup_xref_Simplex_Complex, setup_Complex)
+        complex_name = find_parent_simplex_util([simplex_name], setup_Simplex, setup_xref_Simplex_Complex, setup_Complex)
         # highercomplex
         higher_complex = find_higher_complex(complex_name, setup_Complex, setup_xref_Complex_Complex)
         higher_complex = higher_complex['Name'].values.tolist()

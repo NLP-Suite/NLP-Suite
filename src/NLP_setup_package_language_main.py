@@ -462,4 +462,7 @@ if error:
 
 package_display_area_value_upon_entry = get_str_package_display_area_value()
 
+# to make sure the release version is updated even when users do not click on the CLOSE button
+#   but on the Mac top-left red button or Windows top-right X button
+GUI_util.window.protocol("WM_DELETE_WINDOW", close_GUI)
 GUI_util.window.mainloop()

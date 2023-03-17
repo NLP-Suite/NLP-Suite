@@ -29,8 +29,9 @@ def runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_fiel
 
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles,
+        relations_var,
+        relations_menu_var,
         csv_field_var,
-        Gephi_var,
         csv_file_field_list,
         dynamic_network_field_var,
         Sankey_limit1_var, Sankey_limit2_var, Sankey_limit3_var,
@@ -62,8 +63,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                            "The visualization options requires in input a csv file.\n\nPlease, select a csv file and try again.")
             return
 
-    if relations_menu_var.get()!='':
-        output_label=relations_menu_var.get()
+    if relations_menu_var!='':
+        output_label=relations_menu_var
     elif categorical_menu_var.get()!='':
         output_label = categorical_menu_var.get()
     else:
@@ -75,15 +76,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
 
 # Visualize relations: Gephi, Sankey  --------------------------------------------------------------------------------
 
-    if relations_var.get():
-        if relations_menu_var.get() == '':
+    if relations_var:
+        if relations_menu_var == '':
             mb.showwarning("Warning",
                            "Please, use the dropdown menu to select one of the options for for visualizing relations: Gephi, Sankey and try again.")
             return
 
 # Gephi  --------------------------------------------------------------------------------
 
-        if Gephi_var:
+        if relations_menu_var=='Gephi':
             if len(csv_file_field_list)!=3:
                 mb.showwarning("Warning",
                                "You must select three csv fields to be used in the computation of the network graph, in the order of node, edge, node (e.g., Subject, Verb, Object).\n\nIf you wish to create a dynamic network graph you can select a fourth field to be used as the dynamic index (e.g., Sentence ID).")
@@ -92,7 +93,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
 
 # Sankey  --------------------------------------------------------------------------------
 
-        if Sankey_var:
+        if relations_menu_var=='Sankey':
             if len(csv_file_field_list)!=2 and len(csv_file_field_list)!=3:
                 mb.showwarning("Warning",
                                "You must select 2 or 3 csv fields to be used in the computation of a Sankey plot (e.g., Subject, Verb, Object or Subject, Object).")
@@ -219,8 +220,9 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
+                            relations_var.get(),
+                            relations_menu_var.get(),
                             csv_field_var.get(),
-                            Gephi_var.get(),
                             csv_file_field_list,
                             dynamic_network_field_var.get(),
                             Sankey_limit1_var.get(), Sankey_limit2_var.get(), Sankey_limit3_var.get(),
