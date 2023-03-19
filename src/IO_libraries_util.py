@@ -624,8 +624,7 @@ def get_external_software_dir(calling_script, software_name_checked, silent, onl
         if software_name_checked=='':
             software_dir = None
             software_url = ''
-        else:
-            ask_download_installation_questions("install", software_name, software_dir, message='', silent=False)
+
     return software_dir, software_url, missing_software
     # end of get_external_software_dir
 def ask_download_installation_questions(download_install, software_name, software_dir, message, silent=False):
@@ -1061,8 +1060,9 @@ def external_software_install(calling_script, software_name, existing_software_c
     # get installation directory and website
     software_dir, software_url, missing_software = get_external_software_dir(calling_script, software_name,
                                                             silent=True, only_check_missing=True, install_download='install')
-    if missing_software=='':
-        return software_dir, existing_software_config
+    #@@@
+    # if missing_software=='':
+    #     return software_dir, existing_software_config
     software_dir, title, opening_message, download_message, installation_message = \
         display_download_installation_messages('install', software_name, software_dir, software_url, calling_script, missing_software, silent)
     # download_message, installation_message are set to '' when no new download or installation is desired

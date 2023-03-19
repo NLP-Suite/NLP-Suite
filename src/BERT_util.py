@@ -514,6 +514,12 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
             'No input specified. Please, provide either a single file -- file or a directory of files to be analyzed --dir.')
         sys.exit(1)
 
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_BERT',
+                                                       silent=True)
+    if outputDir == '':
+        return
+
     outputFilename = IO_files_util.generate_output_file_name(
         inputFilename, inputDir, outputDir, '.csv', 'roBERTa', '', '', '', '', False, True)
 
