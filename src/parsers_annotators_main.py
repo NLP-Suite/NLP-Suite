@@ -118,11 +118,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         if IO_libraries_util.check_inputPythonJavaProgramFile(
                                 "Stanford_CoreNLP_coReference_util.py") == False:
                             return
+
+
                         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename,
                                                                                            inputDir,
                                                                                            outputDir, openOutputFiles,
                                                                                            createCharts, chartPackage,
-                                                                                           language, memory_var,
+                                                                                           language, timeout_var, memory_var,
                                                                                            export_json_var,
                                                                                            manual_Coref)
 

@@ -286,7 +286,11 @@ def save_external_software_config():
 
 def close_GUI():
     import NLP_setup_update_util
-    if missing_external_software_upon_entry!=missing_software_var.get():
+    current_software_config = []
+    for row in existing_software_config[1:]:  # skip header line
+        current_software_config.append(row[1])
+    # if missing_external_software_upon_entry!=missing_software_var.get():
+    if existing_software_config_upon_entry!=current_software_config:
         answer = tk.messagebox.askyesno("Warning", 'You have made changes to the installed software.\n\nYou will lose your changes if you CLOSE without saving.\n\nWOULD YOU LIKE TO SAVE THE CHANGES MADE?')
         if answer:
             # existing_software_config is a global variable
@@ -363,6 +367,9 @@ else:
 missing_external_software_upon_entry=missing_software_var.get()
 
 existing_software_config = IO_libraries_util.get_existing_software_config()
+existing_software_config_upon_entry=[]
+for row in existing_software_config[1:]:  # skip header line
+    existing_software_config_upon_entry.append(row[1])
 
 # to make sure the release version is updated even when users do not click on the CLOSE button
 #   but on the Mac top-left red button or Windows top-right X button
