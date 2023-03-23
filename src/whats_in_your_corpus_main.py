@@ -86,7 +86,7 @@ def run(inputFilename,inputDir, outputDir,
 
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 
@@ -392,7 +392,7 @@ def run(inputFilename,inputDir, outputDir,
                     annotator = ['POS']
                     files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                 outputDir_what_else, openOutputFiles, createCharts, chartPackage,
-                                                annotator, False, language_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var)
+                                                annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
                     if len(files) > 0:
                         # the WordNet installation directory is now checked in aggregate_GoingUP
                         WordNetDir = ''
@@ -432,7 +432,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator_list, False,
-                                                                      language_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                      language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
                 filesToOpen.append(output)
@@ -445,7 +445,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False,
-                                                                      language_var, export_json_var, timeout_var, memory_var, document_length_var,
+                                                                      language_var, export_json_var, memory_var, document_length_var,
                                                                       limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
@@ -456,7 +456,7 @@ def run(inputFilename,inputDir, outputDir,
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
-                                                                      annotator, False, language_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var)
+                                                                      annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
 
             if output != None:
                 filesToOpen.append(output)
@@ -466,7 +466,7 @@ def run(inputFilename,inputDir, outputDir,
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
-                                                                      annotator, False, language_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                      annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       single_quote_var = single_quote)
             if output != None:
                 filesToOpen.append(output)
@@ -475,7 +475,7 @@ def run(inputFilename,inputDir, outputDir,
             annotator='normalized-date'
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir_what_else,
                         openOutputFiles, createCharts, chartPackage,
-                        annotator, False, language_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var)
+                        annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
             if output != None:
                 filesToOpen.append(output)
 
@@ -487,7 +487,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False,
-                                                                      language_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                      language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
                 filesToOpen.append(output)
@@ -498,7 +498,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       createCharts, chartPackage,
                                                                       annotator, False,
-                                                                      timeout_var, memory_var, export_json_var, document_length_var,
+                                                                      memory_var, export_json_var, document_length_var,
                                                                       limit_sentence_length_var)
             if output != None:
                 filesToOpen.append(output)
@@ -514,7 +514,7 @@ def run(inputFilename,inputDir, outputDir,
                                                                          outputDir_what_else, openOutputFiles,
                                                                          createCharts, chartPackage, 'NER',
                                                                          False,
-                                                                         language_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                                         language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                          NERs=NERs,
                                                                          extract_date_from_text_var=0,
                                                                          extract_date_from_filename_var=extract_date_from_filename_var,
@@ -598,7 +598,6 @@ def run(inputFilename,inputDir, outputDir,
                                                                                'SVO', False,
                                                                                language_var,
                                                                                export_json_var,
-                                                                               timeout_var=timeout_var,
                                                                                memory_var=memory_var,
                                                                                document_length_var=document_length_var,
                                                                                limit_sentence_length_var=limit_sentence_length_var,

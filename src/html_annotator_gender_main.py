@@ -31,7 +31,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
     filesToOpen=[]
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
     if package_display_area_value == '':
@@ -58,7 +58,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
     if CoreNLP_gender_annotator_var==True:
         output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
                                         outputDir, openOutputFiles,
-                                        createCharts, chartPackage, 'gender', False, language, export_json_var, timeout_var, memory_var)
+                                        createCharts, chartPackage, 'gender', False, language, export_json_var, memory_var)
 
         # annotator returns a list and not a string
         # the gender annotator returns 2 Excel charts in addition to the csv file

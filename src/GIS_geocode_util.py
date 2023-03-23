@@ -82,7 +82,7 @@ def get_geolocator(geocoder,Google_API=''):
 	return geolocator
 
 # Country specification; uses 2-digit lowercase ISO_3166 country codes
-def nominatim_geocode(geolocator,loc,country_bias='',box_tuple='',restrict=False,timeout=4, featuretype=None):
+def nominatim_geocode(geolocator, loc, country_bias='', box_tuple='', restrict=False, timeout=4, featuretype=None):
 	# https://geopy.readthedocs.io/en/stable/#geopy.geocoders.options
 	# this will renew the SSL certificate indefinitely
 	# pip install pyOpenSSL
@@ -132,11 +132,11 @@ def nominatim_geocode(geolocator,loc,country_bias='',box_tuple='',restrict=False
 		return geolocator.geocode(loc,language='en',country_codes=country_bias,viewbox=box_tuple, bounded=restrict, timeout=timeout, featuretype=featuretype)
 		# https: // gis.stackexchange.com / questions / 173569 / avoid - time - out - error - nominatim - geopy - openstreetmap
 	except:
-		print("******************************************** Nominatim TIMEOUT",timeout)
+		print("******************************************** Nominatim TIMEOUT", timeout)
 		if timeout<20:
 			# try again, adding timeout
 			try:
-				return nominatim_geocode(geolocator,loc=loc,country_codes=country_bias,box_tuple=box_tuple,bounded=restrict,timeout=timeout + 2, featuretype=featuretype)# add 2 second for the next round
+				return nominatim_geocode(geolocator, loc=loc, country_codes=country_bias, box_tuple=box_tuple, bounded=restrict, timeout=timeout + 2, featuretype=featuretype)# add 2 second for the next round
 			except:
 				return None
 		else:
@@ -145,13 +145,13 @@ def nominatim_geocode(geolocator,loc,country_bias='',box_tuple='',restrict=False
 
 # https://developers.google.com/maps/documentation/embed/get-api-key
 # console.developers.google.com/apis
-def google_geocode(geolocator,loc,region=None,timeout=10):
+def google_geocode(geolocator, loc, region=None, timeout=10):
 	# print("Processing Google location for geocoding:",loc)
 	region='.US'
 	try:
-		return geolocator.geocode(loc,region=region,timeout=timeout)
+		return geolocator.geocode(loc, region=region, timeout=timeout)
 	except GeocoderTimedOut:
-		return google_geocode(geolocator,loc,region=region,timeout=timeout)
+		return google_geocode(geolocator, loc, region=region, timeout=timeout)
 
 # the function processes an INPUT list of NON DISTINCT locations
 #   Since you do NOT want to geocode the same location multiple times and be thrown out by the selected geocoder service

@@ -173,7 +173,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      DoCleanXML,
                      language,
                      export_json_var=0,
-                     timeout_var = 15000,
                      memory_var=6,
                      document_length=90000,
                      sentence_length=1000, # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
@@ -188,7 +187,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
     if sentence_length<50:
         sentence_length=100  # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
 
-    #timeout_var=999999
 
     silent=True
     start_time = time.time()

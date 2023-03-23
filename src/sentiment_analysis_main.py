@@ -41,7 +41,7 @@ def run(inputFilename,inputDir,outputDir,
     filesToOpen = []  # Store all files that are to be opened once finished
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
     if package_display_area_value == '':
@@ -159,7 +159,7 @@ def run(inputFilename,inputDir,outputDir,
                                                     createCharts, chartPackage,
                                                     annotator, False,
                                                     language_var,
-                                                    timeout_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                    memory_var, document_length_var, limit_sentence_length_var,
                                                     extract_date_from_filename_var=0,
                                                     date_format='',
                                                     date_separator_var='',
@@ -190,7 +190,7 @@ def run(inputFilename,inputDir,outputDir,
         outputFilename = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                           outputDir, openOutputFiles, createCharts, chartPackage,'sentiment', False,
                                                                           language_var, export_json_var,
-                                                                          timeout_var, memory_var)
+                                                                          memory_var)
         # outputFilename=outputFilename[0] # annotators return a list and not a string
         if SA_algorithm_var!='*' and len(outputFilename)>0:
             filesToOpen.extend(outputFilename)
@@ -213,7 +213,7 @@ def run(inputFilename,inputDir,outputDir,
                                                       createCharts, chartPackage,
                                                       annotator, False,
                                                       [language_var], # Stanza_util takes language_var as a list
-                                                      timeout_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                      memory_var, document_length_var, limit_sentence_length_var,
                                                       extract_date_from_filename_var=0,
                                                       date_format='',
                                                       date_separator_var='',
@@ -515,7 +515,7 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 def activate_NLP_options(*args):
     global error, package_basics, package, language, language_var, language_list
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 GUI_util.setup_menu.trace('w', activate_NLP_options)
@@ -526,7 +526,7 @@ if error:
                    message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
     call("python NLP_setup_package_language_main.py", shell=True)
     # this will display the correct hover-over info after the python call, in case options were changed
-    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
 title = ["NLP setup options"]
 message = "Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " \
