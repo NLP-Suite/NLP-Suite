@@ -150,7 +150,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         if geocoder == 'Nominatim':
             changed = False
             nom_df = pd.DataFrame(locations, columns=['Location', 'Date','NER']) if len(locations[0])==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0','NER'])
-            if nom_df==None:
+            if nom_df is None:
                 return
             drop_idx = []
             changed_idx = {}

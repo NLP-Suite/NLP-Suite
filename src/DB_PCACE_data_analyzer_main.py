@@ -39,8 +39,12 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
     filesToOpen = []
     outputFile = ''
 
-    print("select_parents_var",select_parents_var,'select_children_var',select_children_var)
+    if select_DB_tables_var.get()!='':
+        IO_files_util.openFile(window, inputDir + os.sep + select_DB_tables_var.get() + ".xlsx")
+        return
 
+    # print("select_parents_var",select_parents_var,'select_children_var',select_children_var)
+    #
     # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
     outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                                      label='DB_PC-ACE',
@@ -89,7 +93,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
 
         if gephi_var:
             svo_result_list=[]
-            fileBase = os.path.basename(outputFile)[0:-4]
+            fileBase = os.path.basename(outputFile)[0:-5]
             nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFile, encodingValue='utf-8')
             if nRecords > 1:  # including headers; file is empty
                 gexf_file = Gephi_util.create_gexf(window, fileBase, outputDir, outputFile,
@@ -130,7 +134,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
         area_var = ''
         restrict = False
         # TODO temporary for now
-        location_filename=os.path.join(outputDir,'NLP_simplex_freq_Dir_Lynching_csv_SQLite.csv')
+        location_filename=os.path.join(outputDir,'NLP_simplex_freq_Dir_Lynching_csv_SQLite.xlsx')
 
         if setup_simplex == 'City name':
             IO_csv_util.rename_header(location_filename, 'City name', 'Location')
@@ -285,15 +289,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Click to open a pdf file of the PC-ACE table relations")
 
 # https://www.geeksforgeeks.org/convert-excel-to-csv-in-python/
-view_relations_button = tk.Button(window, text='Convert PC-ACE Excel tables to csv  ', height=1,state='normal', command=lambda: view_relations())
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
-                                   view_relations_button,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click to convert the Excel files exported from Microsoft ACCESS database to csv files for use in this GUI")
+# view_relations_button = tk.Button(window, text='Convert PC-ACE Excel tables to csv  ', height=1,state='normal', command=lambda: view_relations())
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+#                                    view_relations_button,
+#                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+#                                    "Click to convert the Excel files exported from Microsoft ACCESS database to csv files for use in this GUI")
 
 select_DB_tables_lb = tk.Label(window, text='Open DB table ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,y_multiplier_integer,select_DB_tables_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,select_DB_tables_lb,True)
 
 table_menu_values = ''
 table_list=[]
@@ -304,7 +308,7 @@ select_DB_tables = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, te
 select_DB_tables.configure(state='disabled')
 select_DB_tables['values'] = table_menu_values
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate+120, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+350, y_multiplier_integer,
                                    select_DB_tables,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate+120,
                                    "Use the dropdown menu to select a PC-ACE table to be opened for display; click RUN after selection.")
@@ -322,7 +326,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Use the dropdown menu to select the data type to be used to extract a list of values.")
 
 simplex_data_menu_var = tk.StringVar()
-simplex_list = DB_PCACE_data_analyzer_util.give_Simplex_text_date_number(simplex_data_type_var.get(), os.path.join(inputDir.get(),'data_SimplexText.csv'), os.path.join(inputDir.get(),'data_SimplexDate.csv'), os.path.join(inputDir.get(),'data_SimplexNumber.csv'))
+simplex_list = DB_PCACE_data_analyzer_util.give_Simplex_text_date_number(simplex_data_type_var.get(), os.path.join(inputDir.get(),'data_SimplexText.xlsx'), os.path.join(inputDir.get(),'data_SimplexDate.xlsx'), os.path.join(inputDir.get(),'data_SimplexNumber.xlsx'))
 simplex_data_menu_var.set(simplex_list)
 simplex_data_menu = ttk.Combobox(window, textvariable = simplex_data_menu_var, width=GUI_IO_util.widget_width_short)
 # simplex_data_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_simplex.csv'))
@@ -332,18 +336,18 @@ simplex_data = ttk.Combobox(window, width=GUI_IO_util.widget_width_short)
 # setup_complex.configure(state='disabled')
 simplex_data['values'] = simplex_data_menu
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+300, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+350, y_multiplier_integer,
                                    simplex_data,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate+300,
                                    "Use the dropdown menu to select the simplex data type value (e.g., police) for which you want to find simplex & complex objects usage")
 
 def activate_date_number_text(*args):
     simplex_list = DB_PCACE_data_analyzer_util.give_Simplex_text_date_number(simplex_data_type_var.get(), os.path.join(inputDir.get(),
-                                                                                                  'data_SimplexText.csv'),
+                                                                                                  'data_SimplexText.xlsx'),
                                                                              os.path.join(inputDir.get(),
-                                                                                          'data_SimplexDate.csv'),
+                                                                                          'data_SimplexDate.xlsx'),
                                                                              os.path.join(inputDir.get(),
-                                                                                          'data_SimplexNumber.csv'))
+                                                                                          'data_SimplexNumber.xlsx'))
     simplex_data_menu_var.set(simplex_list)
     simplex_data['values'] = simplex_list
 simplex_data_type_var.trace('w',activate_date_number_text)
@@ -358,7 +362,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 complex_objects_lb = tk.Label(window, text='Complex objects ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complex_objects_lb,True)
 
-setup_complex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_complex.csv'))
+setup_complex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_complex.xlsx'))
 
 setup_complex_var=tk.StringVar()
 setup_complex = ttk.Combobox(window, textvariable = setup_complex_var, width=GUI_IO_util.widget_width_short)
@@ -374,12 +378,12 @@ ALL_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencie
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ALL_complex_objects_checkbox,True)
 
 SELECTED_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for SELECTED object', variable=SELECTED_complex_objects_frequencies_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+300,y_multiplier_integer,SELECTED_complex_objects_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+350,y_multiplier_integer,SELECTED_complex_objects_checkbox)
 
 simplex_objects_lb = tk.Label(window, text='Simplex objects ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,simplex_objects_lb, True)
 
-setup_simplex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_simplex.csv'))
+setup_simplex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_simplex.xlsx'))
 
 setup_simplex_var = tk.StringVar()
 
@@ -393,6 +397,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Use the dropdown menu to select a specific simplex object for which to compute frequencies")
 
 #@@@
+# trace below also
 # def activate_parents(*args):
 #     parents_menu = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get(),inputDir.get())
 #     select_parents_var.set(parents_menu)
@@ -402,7 +407,7 @@ ALL_simplex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencie
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ALL_simplex_objects_checkbox,True)
 
 SELECTED_simplex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for SELECTED object', variable=SELECTED_simplex_objects_frequencies_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+300,y_multiplier_integer,SELECTED_simplex_objects_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+350,y_multiplier_integer,SELECTED_simplex_objects_checkbox)
 
 select_parents_lb = tk.Label(window, text='Parent objects ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_parents_lb,True)
@@ -499,14 +504,14 @@ def changed_filename(*args):
         GUI_util.run_button.configure(state='normal')
         table_list = DB_PCACE_data_analyzer_util.import_PCACE_tables(inputDir.get())
         # 25 files including all comments files
-        if (len(table_list) == 0) or ((len(table_list) > 18) and (not "data_Document.csv" in str(table_list) and not "data_Complex.csv" in str(table_list))):
+        if (len(table_list) == 0) or ((len(table_list) > 18) and (not "data_Document.xlsx" in str(table_list) and not "data_Complex.xlsx" in str(table_list))):
                 GUI_util.run_button.configure(state='disabled')
                 table_menu_values=[]
                 error = True
         else:
             for table in table_list:
                 # keep only table name and Strip off the .csv extension
-                table_values.append(table[:len(table)-4])
+                table_values.append(table[:len(table)-5])
             table_menu_values = table_values # ", ".join(table_values)
             select_DB_tables['values'] = table_menu_values
         if len(table_menu_values)>0:
@@ -517,7 +522,7 @@ def changed_filename(*args):
         else:
             select_DB_tables.set('')
             select_DB_tables.configure(state='disabled')
-        setup_complex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(), 'setup_complex.csv'))
+        setup_complex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(), 'setup_complex.xlsx'))
         setup_complex['values'] = setup_complex_menu
         if len(setup_complex_menu)>0:
             setup_complex.configure(state='normal')
@@ -526,7 +531,7 @@ def changed_filename(*args):
         else:
             setup_complex.set('')
             setup_complex.configure(state='disabled')
-        setup_simplex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(), 'setup_simplex.csv'))
+        setup_simplex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(), 'setup_simplex.xlsx'))
         setup_simplex['values'] = setup_simplex_menu
         if len(setup_simplex_menu)>0:
             setup_simplex.configure(state='normal')
