@@ -61,7 +61,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         os.mkdir(sosDir)
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 
@@ -106,7 +106,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if sentimentAnalysis == 1:
 
         # get the NLP package and language options
-        error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+        error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
         language_var = language
         language_list = [language]
 
@@ -164,7 +164,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                         createCharts, chartPackage,
                                                         annotator, False,
                                                         language_var,
-                                                        timeout_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                        memory_var, document_length_var, limit_sentence_length_var,
                                                         extract_date_from_filename_var=0,
                                                         date_format='',
                                                         date_separator_var='',
@@ -195,7 +195,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                     outputDir, openOutputFiles, createCharts,
                                                                     chartPackage, 'sentiment', False,
                                                                     language_var, export_json_var,
-                                                                    timeout_var, memory_var)
+                                                                    memory_var)
             # outputFilename=outputFilename[0] # annotators return a list and not a string
             if len(tempOutputFiles) > 0:
                 sentiment_scores_input = tempOutputFiles[0]
@@ -219,7 +219,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                           annotator, False,
                                                           [language_var],
                                                           # Stanza_util takes language_var as a list
-                                                          timeout_var, memory_var, document_length_var,
+                                                          memory_var, document_length_var,
                                                           limit_sentence_length_var,
                                                           extract_date_from_filename_var=0,
                                                           date_format='',

@@ -41,7 +41,6 @@ package_basics_var = tk.StringVar()
 language_var = tk.StringVar()
 language_list = []
 
-timeout_var = tk.IntVar()
 memory_var = tk.IntVar()
 document_length_var = tk.IntVar()
 limit_sentence_length_var = tk.IntVar()
@@ -65,13 +64,12 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 def display_available_options():
-    global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers, timeout_var, memory_var, document_length_var, limit_sentence_length_var, package_display_area_value
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, timeout, memory, document_length, limit_sentence_length = config_util.read_NLP_package_language_config()
+    global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers, memory_var, document_length_var, limit_sentence_length_var, package_display_area_value
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory, document_length, limit_sentence_length = config_util.read_NLP_package_language_config()
     package_var.set(package)
     package_basics_var.set(package_basics)
     if language_var.get()!=language:
         language_var.set(language)
-    timeout_var.set(int(timeout))
     memory_var.set(int(memory))
     document_length_var.set(int(document_length))
     limit_sentence_length_var.set(int(limit_sentence_length))
@@ -91,7 +89,6 @@ def get_str_package_display_area_value():
         str(language_var.get()) + \
         str(encoding_var.get()) + \
         str(export_json_var.get()) + \
-        str(timeout_var.get()) + \
         str(memory_var.get()) + \
         str(document_length_var.get()) + \
         str(limit_sentence_length_var.get())
@@ -237,47 +234,30 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                export_json_label, False, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
                                                "Tick the checkbox to export json files for every input file processed\nDepending upon the number of input files processed, the option may considerably affect disk space and processing speed")
-
-# timeout options
-timeout_var_lb = tk.Label(window, text='Timeout ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               timeout_var_lb, True)
-
-# https://stanfordnlp.github.io/CoreNLP/corenlp-server.html)
-timeout_var = tk.Scale(window, from_=3000, to=15000, orient=tk.HORIZONTAL)
-timeout_var.pack()
-timeout_var.set(15000)
-# place widget with hover-over info # memory_pos
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+70,
-                                               y_multiplier_integer,
-                                               timeout_var, True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_indented_coordinate,
-                                               "Use the slider widget to adjust The maximum amount of time, in milliseconds, to wait for a Stanford CoreNLP annotation to finish before cancelling it\nWith longer timeout, complex sentences may significantly increase processing time in CoreNLP")
-
 # memory options
 memory_var_lb = tk.Label(window, text='Memory ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                memory_var_lb, True)
 
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(4)
 # place widget with hover-over info # memory_pos
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate+70,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+70,
                                                y_multiplier_integer,
                                                memory_var, True, False, False, False, 90,
                                                GUI_IO_util.labels_x_indented_coordinate,
                                                "Use the slider widget to adjust the memory (NOT DISK SPACE!) you make available to Stanford CoreNLP\n4 OK for most CoreNLP annotators; coreference may need more memory\nThe memory widget is only available for the Stanford CoreNLP package for parser & annotators")
 
 document_length_var_lb = tk.Label(window, text='Document length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                                document_length_var_lb, True)
 
 document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
 document_length_var.pack()
 document_length_var.set(90000)
 # place widget with hover-over info # document_length_pos
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+130,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate+130,
                                                y_multiplier_integer,
                                                document_length_var, True, False, False, False, 90,
                                                GUI_IO_util.labels_x_indented_coordinate,
@@ -299,7 +279,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.sentence_leng
 def save_NLP_config(parsers):
     encoding = encoding_var.get()
     export_json = export_json_var.get()
-    timeout = timeout_var.get()
     memory = memory_var.get()
     document_length = document_length_var.get()
     limit_sentence_length = limit_sentence_length_var.get()
@@ -314,7 +293,7 @@ def save_NLP_config(parsers):
     currently_selected_package_language= {'MAIN NLP PACKAGE': package_var.get(), 'LEMMATIZER PACKAGE': package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
     config_util.save_NLP_package_language_config(window, currently_selected_package_language, package_var.get(), package_basics_var.get(),
                             language_var.get(), parsers_display_area['text'],
-                            encoding, export_json, timeout, memory, document_length, limit_sentence_length)
+                            encoding, export_json, memory, document_length, limit_sentence_length)
     display_available_options()
 
 def activate_language_var():
@@ -358,12 +337,10 @@ def changed_NLP_package(*args):
     global y_multiplier_integer_SV2
     global parsers_display_area
     if 'CoreNLP' in package_var.get():
-        timeout_var.configure(state='normal')
         memory_var.configure(state='normal')
         document_length_var.configure(state='normal')
         limit_sentence_length_var.configure(state='normal')
     else:
-        timeout_var.configure(state='disabled')
         memory_var.configure(state='disabled')
         document_length_var.configure(state='disabled')
         limit_sentence_length_var.configure(state='disabled')
@@ -439,7 +416,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                                          "Tick the checkbox to export or not export the Json file(s) in txt format produced by the selected NLP package." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                                         "The performance of different NLP tools (e.g., Stanford CoreNLP) is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the timeout and memory size Stanford CoreNLP will use. Default timeout is 20000. Longer timeout may significantly increase processing time. Default memory is 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the memory size when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf." + GUI_IO_util.msg_Esc)
+                                                         "The performance of different NLP tools (e.g., Stanford CoreNLP) is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default memory is 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the memory size when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf." + GUI_IO_util.msg_Esc)
     return y_multiplier_integer
 
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)

@@ -49,7 +49,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
     filesToOpen = []  # Store all files that are to be opened once finished
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
     language_var='English' # WordNet works only for English language
 
@@ -151,7 +151,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         language_var='English'
         files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                  outputDir, openOutputFiles, createCharts, chartPackage,
-                                                                 annotator, False, language_var, export_json_var, timeout_var, memory_var)
+                                                                 annotator, False, language_var, export_json_var, memory_var)
         if len(files) > 0:
             noun_verb = ''
             if verbs_var == True:
@@ -783,7 +783,7 @@ do_not_repeat_language_warning = False
 def activate_NLP_options(*args):
     global error, package_basics, package, language, language_var, language_list, y_multiplier_integer, do_not_repeat_language_warning
     # after update no display
-    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.setup_parsers_annotators(y_multiplier_integer, scriptName)
+    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.setup_parsers_annotators(y_multiplier_integer, scriptName)
     language_list = [language]
     if language!='English':
         if language != 'English' and not do_not_repeat_language_warning:

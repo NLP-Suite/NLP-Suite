@@ -73,7 +73,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     files_to_open = []
 
     # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
 
@@ -184,7 +184,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename,
                                        inputFilename, inputDir, outputCorefDir,
                                        openOutputFiles, createCharts, chartPackage,
-                                       language_var, timeout_var, memory_var, export_json_var,
+                                       language_var, memory_var, export_json_var,
                                        manual_coref_var)
         if error_indicator != 0:
             return
@@ -256,7 +256,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                    createCharts,
                                    chartPackage,
                                    params, False,
-                                   language_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var,
+                                   language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                    extract_date_from_text_var=extract_date_from_text_var,
                                    extract_date_from_filename_var=extract_date_from_filename_var,
                                    date_format=date_format_var,
@@ -296,7 +296,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                            chartPackage,
                                                                            'OpenIE',
                                                                            False,
-                                                                           language_var, timeout_var, memory_var, export_json_var, document_length_var, limit_sentence_length_var,
+                                                                           language_var, memory_var, export_json_var, document_length_var, limit_sentence_length_var,
                                                                            extract_date_from_text_var=extract_date_from_text_var,
                                                                            extract_date_from_filename_var=extract_date_from_filename_var,
                                                                            date_format=date_format_var,
@@ -336,7 +336,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                     createCharts, chartPackage,
                                                     annotator, False,
                                                     language,
-                                                    timeout_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                    memory_var, document_length_var, limit_sentence_length_var,
                                                     extract_date_from_filename_var=extract_date_from_filename_var,
                                                     date_format=date_format_var,
                                                     date_separator_var=date_separator_var,
@@ -362,7 +362,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       createCharts, chartPackage,
                                                       annotator, False,
                                                       language_list,
-                                                      timeout_var, memory_var, document_length_var, limit_sentence_length_var,
+                                                      memory_var, document_length_var, limit_sentence_length_var,
                                                       extract_date_from_filename_var=extract_date_from_filename_var,
                                                       date_format=date_format_var,
                                                       date_separator_var=date_separator_var,
@@ -1129,7 +1129,7 @@ do_not_repeat_language_warning = False
 def activate_NLP_options(*args):
     global error, package_basics, package, language, language_var, language_list, y_multiplier_integer, do_not_repeat_language_warning
     # after update no display
-    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.setup_parsers_annotators(y_multiplier_integer, scriptName)
+    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.setup_parsers_annotators(y_multiplier_integer, scriptName)
     language_list = [language]
     package_var.set(package)
     if language!='English':
@@ -1161,7 +1161,7 @@ if error:
     call("python NLP_setup_package_language_main.py", shell=True)
 
 # this will display the correct hover-over info after the python call, in case options were changed
-error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, timeout_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
 # GUI_util.window.focus_force()
 
