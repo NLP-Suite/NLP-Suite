@@ -18,13 +18,14 @@ import IO_files_util
 def Extract(lst):
 	return [item[0] for item in lst]
 
-def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, createCharts, chartPackage, openOutputFiles=True,
+def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, configFileName,
+								  createCharts, chartPackage, openOutputFiles=True,
 								  input_dictionary_file='', chartTitle=''):
 	from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
 	filesToOpen = []
 	DictionaryList = []
-	file_list = IO_files_util.getFileList(inputFilename, inputDir, '.txt')
+	file_list = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
 	nFile = len(file_list)
 	if nFile == 0:
 		return

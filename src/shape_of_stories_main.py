@@ -42,6 +42,11 @@ import file_checker_util as utf
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
         hierarchical_clustering, SVD, NMF, best_topic_estimation):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     global nSAscoreFiles
     nSAscoreFiles = 0
 
@@ -98,7 +103,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     # check corpus statistics
     if corpus_analysis:
-        statistics_txt_util.compute_corpus_statistics(GUI_util.window, inputDir, inputDir, outputDir, openOutputFiles,
+        statistics_txt_util.compute_corpus_statistics(GUI_util.window, inputDir, inputDir, outputDir, config_filename, openOutputFiles,
                                                       createCharts, chartPackage)
 
 # ----------------------------------------------------------------------------------------------------
@@ -159,15 +164,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             document_length_var = 1
             limit_sentence_length_var = 1000
             tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
-                                                        outputDir,
+                                                        outputDir, config_filename,
                                                         openOutputFiles,
                                                         createCharts, chartPackage,
                                                         annotator, False,
                                                         language_var,
                                                         memory_var, document_length_var, limit_sentence_length_var,
-                                                        extract_date_from_filename_var=0,
+                                                        filename_embeds_date_var=0,
                                                         date_format='',
-                                                        date_separator_var='',
+                                                        items_separator_var='',
                                                         date_position_var=0)
 
             if tempOutputFiles == None:
@@ -221,9 +226,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                           # Stanza_util takes language_var as a list
                                                           memory_var, document_length_var,
                                                           limit_sentence_length_var,
-                                                          extract_date_from_filename_var=0,
+                                                          filename_embeds_date_var=0,
                                                           date_format='',
-                                                          date_separator_var='',
+                                                          items_separator_var='',
                                                           date_position_var=0)
 
             if tempOutputFiles == None:

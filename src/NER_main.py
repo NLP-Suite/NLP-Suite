@@ -23,11 +23,16 @@ import Stanza_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-# def run(CoreNLPdir,inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPackage,encoding_var,memory_var,extract_date_from_text_var,extract_date_from_filename_var,date_format,date_separator_var,date_position_var,NER_list,NER_split_prefix_values_entry_var,NER_split_suffix_values_entry_var,NER_sentence_var):
+# def run(CoreNLPdir,inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPackage,encoding_var,memory_var,extract_date_from_text_var,filename_embeds_date_var,date_format,items_separator_var,date_position_var,NER_list,NER_split_prefix_values_entry_var,NER_split_suffix_values_entry_var,NER_sentence_var):
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, config_filename,
         NER_package, NER_list):
 
     filesToOpen = []  # Store all files that are to be opened once finished
+
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
 
     # get the NLP package and language options
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
@@ -35,9 +40,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     language_list = [language]
 
     # get the date options from filename
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
@@ -57,7 +60,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     if 'BERT' in NER_package:
         import BERT_util
-        tempOutputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, '', createCharts, chartPackage)
+        tempOutputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, config_filename, '', createCharts, chartPackage)
         if tempOutputFiles != '':
             filesToOpen.append(tempOutputFiles)
 
@@ -71,9 +74,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                     'NER', False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
-                                                    extract_date_from_filename_var=extract_date_from_filename_var,
+                                                    filename_embeds_date_var=filename_embeds_date_var,
                                                     date_format=date_format_var,
-                                                    date_separator_var=date_separator_var,
+                                                    items_separator_var=items_separator_var,
                                                     date_position_var=date_position_var)
 
         if tempOutputFiles == None:
@@ -91,9 +94,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       'NER', False,
                                                       language_list,
                                                       memory_var, document_length_var, limit_sentence_length_var,
-                                                      extract_date_from_filename_var=extract_date_from_filename_var,
+                                                      filename_embeds_date_var=filename_embeds_date_var,
                                                       date_format=date_format_var,
-                                                      date_separator_var=date_separator_var,
+                                                      items_separator_var=items_separator_var,
                                                       date_position_var=date_position_var)
 
         if tempOutputFiles == None:
@@ -113,9 +116,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                             document_length=document_length_var,
                                                             sentence_length=limit_sentence_length_var,
                                                             extract_date_from_text_var=extract_date_from_text_var,
-                                                            extract_date_from_filename_var=extract_date_from_filename_var,
+                                                            filename_embeds_date_var=filename_embeds_date_var,
                                                             date_format=date_format_var,
-                                                            date_separator_var=date_separator_var,
+                                                            items_separator_var=items_separator_var,
                                                             date_position_var=date_position_var)
 
         if len(tempOutputFiles)>0:
@@ -124,7 +127,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # TODO Excel charts; the basic bar charts are carried out in the _annotator_util
 
     # # TODO date
-    # if extract_date_from_text_var or extract_date_from_filename_var:
+    # if extract_date_from_text_var or filename_embeds_date_var:
     # 	df = pd.DataFrame(data, columns=['Word', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date'])
     # else:
     # 	df = pd.DataFrame(data, columns=['Word', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
@@ -234,22 +237,22 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 
 # NER tags menu
 NER_tag_var.set('All NER tags') #--- All NER tags
-NER_menu = tk.OptionMenu(window,NER_tag_var,'--- All NER tags', '--- All quantitative expressions','NUMBER', 'ORDINAL', 'PERCENT', '--- All social actors', 'PERSON', 'ORGANIZATION', '--- All spatial expressions', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', '--- All temporal expressions', 'DATE', 'TIME', 'DURATION', 'SET',  '--- All other expressions', 'MISC', 'CAUSE_OF_DEATH', 'CRIMINAL_CHARGE', 'EMAIL',  'IDEOLOGY', 'MONEY',  'NATIONALITY', 'RELIGION', 'TITLE','URL')
+NER_menu = tk.OptionMenu(window,NER_tag_var,'All NER tags', '--- All quantitative expressions','NUMBER', 'ORDINAL', 'PERCENT', '--- All social actors', 'PERSON', 'ORGANIZATION', '--- All spatial expressions', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', '--- All temporal expressions', 'DATE', 'TIME', 'DURATION', 'SET',  '--- All other expressions', 'MISC', 'CAUSE_OF_DEATH', 'CRIMINAL_CHARGE', 'EMAIL',  'IDEOLOGY', 'MONEY',  'NATIONALITY', 'RELIGION', 'TITLE','URL')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_menu_pos, y_multiplier_integer,
                     NER_menu, True, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate,
                     "Options currently available only for Stanford CoreNLP.\nSelect the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.")
 
-add_NER_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_NER_Options(True,False))
+add_NER_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_NER_Options(True,False))
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                     add_NER_button, True, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate,
                     "Click on the + button, when available, to add a new NEW tag. Option currently available only for Stanford CoreNLP.\nSelect the NER tag(s) you wish to search for. Click on the + or Reset buttons when the widget is disabled to add new NER tags or to start fresh.")
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,add_NER_button, True)
 
-reset_NER_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: clear_NER_list(coming_from_add=False,coming_from_reset=True))
+reset_NER_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: clear_NER_list(coming_from_add=False,coming_from_reset=True))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_reset_NER_button_pos, y_multiplier_integer,
                     reset_NER_button, True, False, True, False,
@@ -261,12 +264,12 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_reset_NER_bu
 NER_entry_lb = tk.Label(window, text='NER list')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_entry_lb_pos,y_multiplier_integer,NER_entry_lb,True)
 
-NER_entry = tk.Entry(window,width=GUI_IO_util.widget_width_long,textvariable=NER_entry_var)
+NER_entry = tk.Entry(window,width=GUI_IO_util.widget_width_medium,textvariable=NER_entry_var)
 NER_entry.configure(state="disabled")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_entry_pos,y_multiplier_integer,NER_entry)
 
 def clear(e):
-    clear_NER_list()
+    clear_NER_list(coming_from_add=False,coming_from_reset=True)
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -314,7 +317,7 @@ def add_NER_tag(coming_from_add, coming_from_reset):
         mb.showwarning(title='Warning', message='The NER tag "'+ NER_tag_var.get() + '" is already in your selection list: '+ str(NER_entry_var.get()) + '.\n\nPlease, select another NER tag.')
         window.focus_force()
         return
-    if NER_tag_var.get()!='':
+    if NER_tag_var.get().strip():
         # NER_split_values_prefix_entry.configure(state="normal")
         # NER_split_values_suffix_entry.configure(state="normal")
         if not('---' in NER_tag_var.get()):
@@ -374,15 +377,14 @@ def activate_NER_Options(coming_from_add, coming_from_reset):
                        "The selected " + NER_packages_var.get() + " option is not available yet.\n\nSorry! Please, check back soon...")
 NER_packages_var.trace('w',lambda x,y,z: activate_NER_Options(coming_from_add, coming_from_reset))
 
-activate_NER_Options(coming_from_add, coming_from_reset)
-
+# activate_NER_Options(coming_from_add, coming_from_reset)
 
 def clear_NER_list(coming_from_add, coming_from_reset):
-    if coming_from_reset and NER_packages_var.get()=='Stanford CoreNLP':
+    if coming_from_reset: # and NER_packages_var.get()=='Stanford CoreNLP':
         NER_list.clear()
         NER_entry_var.set('')
         NER_entry=''
-        NER_tag_var.set('')
+        NER_tag_var.set(' ')
         # NER_split_values_prefix_entry_var.set('')
         # NER_split_values_suffix_entry_var.set('')
 

@@ -222,12 +222,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
     #     inputFilename = inputDir
     # decide on to provide output or to return value
 
-    # global extract_date_from_text_var, extract_date_from_filename_var
+    # global extract_date_from_text_var, filename_embeds_date_var
     extract_date_from_text_var=False
-    extract_date_from_filename_var=False
+    filename_embeds_date_var=False
     single_quote_var = False
     date_format = ''
-    date_separator_var = ''
+    items_separator_var = ''
     date_position_var = 0
     date_str = ''
     # language initialized here and reset later in language = value
@@ -238,12 +238,12 @@ def CoreNLP_annotate(config_filename,inputFilename,
             extract_date_from_text_var = True
         if key == 'NERs':
             NERs = value
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
         if key == 'date_format':
             date_format = value
-        if key == 'date_separator_var':
-            date_separator_var = value
+        if key == 'items_separator_var':
+            items_separator_var = value
         if key == 'date_position_var':
             date_position_var = value
         if key == 'single_quote_var':
@@ -400,7 +400,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     nDocs = 0#number of input documents
 
     #collecting input txt files
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=config_filename)
     nDocs = len(inputDocs)
     if nDocs==0:
         return filesToOpen
@@ -812,7 +812,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
             if output_format != 'text' and not isinstance(output_format[0],list): # output is csv file
                 # when NER tags (notably, locations) are extracted with the date option
                 #   for dynamic GIS maps (as called from GIS_main with date options)
-                if extract_date_from_text_var or extract_date_from_filename_var:
+                if extract_date_from_text_var or filename_embeds_date_var:
                     # 'Date' added at the end of the column list for SVO, for instance
                     output_format.append("Date")
                 # save csv file with the expected header (i.e., output_format)
@@ -931,23 +931,23 @@ def build_sentence_string (sentence):
     return complete_sent
 
 def date_in_filename(document, **kwargs):
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     date_format = ''
-    date_separator_var = ''
+    items_separator_var = ''
     date_position_var = 0
     date_str = ''
     # process the optional values in kwargs
     for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
         if key == 'date_format':
             date_format = value
-        if key == 'date_separator_var':
-            date_separator_var = value
+        if key == 'items_separator_var':
+            items_separator_var = value
         if key == 'date_position_var':
             date_position_var = value
-    if extract_date_from_filename_var:
-        date, date_str, month, day, year = IO_files_util.getDateFromFileName(document, date_format, date_separator_var, date_position_var)
+    if filename_embeds_date_var:
+        date, date_str, month, day, year = IO_files_util.getDateFromFileName(document, date_format, items_separator_var, date_position_var)
     return date_str
 
 # ["Word", "Normalized date", "tid","tense","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
@@ -973,11 +973,11 @@ def date_get_tense(norm_date):
 
 def process_json_normalized_date(config_filename,documentID, document, sentenceID,json, **kwargs):
     print("   Processing Json output file for NER NORMALIZED DATE annotator")
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
 
     for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
 
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
@@ -1016,7 +1016,7 @@ def process_json_normalized_date(config_filename,documentID, document, sentenceI
                     words = word + words
                 elif token['normalizedNER'] != norm_date:
                     # writer.writerow([words,norm_date, sentence_id, sent_str, documentID,file])
-                    if extract_date_from_filename_var:
+                    if filename_embeds_date_var:
                         temp = [words, norm_date, tid,  info, sentenceID, complete_sent, documentID,
                                              IO_csv_util.dressFilenameForCSVHyperlink(document), date_str]
                     else:
@@ -1042,7 +1042,7 @@ def process_json_normalized_date(config_filename,documentID, document, sentenceI
             else:
                 if words != '' or norm_date != '':
                     # writer.writerow([words,norm_date, sentence_id, sent_str, documentID, file])
-                    if extract_date_from_filename_var:
+                    if filename_embeds_date_var:
                         temp = [words, norm_date, tid, info, sentenceID, complete_sent, documentID,
                                          IO_csv_util.dressFilenameForCSVHyperlink(document), date_str]
 
@@ -1087,10 +1087,10 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
     print("   Processing Json output file for NER annotator")
     # establish the kwarg local vars
     extract_date_from_text_var = False
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     request_NER = []
     # date_format = ''
-    # date_separator_var = ''
+    # items_separator_var = ''
     # date_position_var = 0
     # date_str = ''
     # process the optional values in kwargs
@@ -1099,15 +1099,15 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
             extract_date_from_text_var = True
         if key == 'NERs':
             request_NER = value
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
         # if key == 'date_format':
         #     date_format = value
-        # if key == 'date_separator_var':
-        #     date_separator_var = value
+        # if key == 'items_separator_var':
+        #     items_separator_var = value
         # if key == 'date_position_var':
         #     date_position_var = value
-    # print("With date embed in titles: ", extract_date_from_filename_var)
+    # print("With date embed in titles: ", filename_embeds_date_var)
     # print("With date embed in text contents: ", extract_date_from_text_var)
     NER = []
     result = []
@@ -1115,8 +1115,8 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
     date_str = date_in_filename(document, **kwargs)
     if date_str!='':
         print("Date in this file: ", date_str)
-    # if extract_date_from_filename_var:
-    #     date, date_str = IO_files_util.getDateFromFileName(document, date_separator_var, date_position_var,
+    # if filename_embeds_date_var:
+    #     date, date_str = IO_files_util.getDateFromFileName(document, items_separator_var, date_position_var,
     #                                                        date_format)
 
     for sentence in json['sentences']:
@@ -1139,7 +1139,7 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
                     IO_csv_util.dressFilenameForCSVHyperlink(document)]
             # check in NER tag column
             if temp[1] in request_NER:
-                if extract_date_from_filename_var:
+                if filename_embeds_date_var:
                     temp.append(date_str)
                     NER.append(temp)
                 else:
@@ -1192,10 +1192,10 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
 
 def process_json_sentiment(config_filename,documentID, document, sentenceID, json, **kwargs):
     print("   Processing Json output file for SENTIMENT annotator")
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
 
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
@@ -1214,7 +1214,7 @@ def process_json_sentiment(config_filename,documentID, document, sentenceID, jso
 
         check_sentence_length(len(sentence['tokens']), sentenceID, config_filename)
 
-        if extract_date_from_filename_var:
+        if filename_embeds_date_var:
             temp = [sentence["sentimentValue"], sentence["sentiment"].lower(), date_str, sentence['index'] + 1, text,documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
         else:
             temp = [sentence["sentimentValue"], sentence["sentiment"].lower(), sentence['index'] + 1, text, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
@@ -1314,10 +1314,10 @@ def process_json_gender(config_filename,documentID, document, start_sentenceID, 
     # print("CoreNLP output: ")
     # pprint.pprint(json)
     print("   Processing Json output file for GENDER annotator")
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
 
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
@@ -1351,7 +1351,7 @@ def process_json_gender(config_filename,documentID, document, start_sentenceID, 
             else:
                 # get complete sentence
                 complete = sent_dict[elmt['sentNum']]
-                if extract_date_from_filename_var:
+                if filename_embeds_date_var:
                     result.append([elmt['text'], elmt['gender'], elmt['sentNum'] + start_sentenceID, complete, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str])
                 else:
                     result.append([elmt['text'], elmt['gender'], elmt['sentNum'] + start_sentenceID, complete, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
@@ -1362,10 +1362,10 @@ def process_json_gender(config_filename,documentID, document, start_sentenceID, 
 
 def process_json_quote(config_filename,documentID, document, sentenceID, json, **kwargs):
     print("   Processing Json output file for QUOTE annotator")
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
 
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
@@ -1399,7 +1399,7 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
 
         check_sentence_length(len(sentence_data['tokens']), sentenceID, config_filename)
 
-        if extract_date_from_filename_var:
+        if filename_embeds_date_var:
             # TODO MINO: rearrange the columns
             temp = [str(speakers[quoted_sent_id][0]), number_of_quotes, sentenceID,
                     complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str]
@@ -1436,12 +1436,12 @@ def process_json_sentence(config_filename, documentID, document, sentenceID, jso
 # Dec. 21
 def process_json_SVO_enhanced_dependencies(config_filename,documentID, document, sentenceID, json, **kwargs):
     #extract date from file name
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     gender_var = False
     quote_var = False
     for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
         if key == "gender_var" and value == True:
             gender_var = True
         if key == "quote_var" and value == True:
@@ -1461,7 +1461,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
     if quote_var:
         raw_quote_info = process_json_quote(config_filename, documentID, document, sentenceID, json, **kwargs)
         # TODO MINO: process quotes with pandas without for-loop, and rearrange the columns
-        if extract_date_from_filename_var:
+        if filename_embeds_date_var:
             quote_columns = ["Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document", "Date"]
         else:
             quote_columns = ["Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]
@@ -1506,7 +1506,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
             else:
                 tmp_T_S = "; ".join(T_S)
                 tmp_T_T = "; ".join(T_T)
-            if extract_date_from_filename_var:
+            if filename_embeds_date_var:
                 SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), tmp_T_S, tmp_T_T, sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document),date_str])
             else:
                 SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), tmp_T_S, tmp_T_T, sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
@@ -1579,10 +1579,10 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
     return SVO_enhanced_dependencies
 
 def process_json_openIE(config_filename,documentID, document, sentenceID, json, **kwargs):
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
     date_str = date_in_filename(document, **kwargs)
 
     openIE = []
@@ -1643,7 +1643,7 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
                container.append(SVO_value)
         if len(container) > 0:
             for row in container:
-                if extract_date_from_filename_var:
+                if filename_embeds_date_var:
                     openIE.append([row[0], row[1], row[2], 'N/A', "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),date_str, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
                 else:
                     openIE.append([row[0], row[1], row[2], 'N/A', "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
@@ -1660,10 +1660,10 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
 
 def process_json_lemma(config_filename, documentID, document, sentenceID, recordID, json, **kwargs):
     print("   Processing Json output file for Lemma")
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
 
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
@@ -1695,7 +1695,7 @@ def process_json_lemma(config_filename, documentID, document, sentenceID, record
             temp.append(str(documentID))
             # temp.append(file)
             temp.append(IO_csv_util.dressFilenameForCSVHyperlink(document))
-            if extract_date_from_filename_var:
+            if filename_embeds_date_var:
                 temp.append(date_str)
             result.append(temp)
 
@@ -1727,10 +1727,10 @@ def process_json_postag(config_filename,documentID, document, sentenceID, json, 
 # return True, which means the two strings are very similar
 def process_json_all_postag(config_filename,documentID, document, sentenceID, recordID, json, **kwargs):
     print("   Processing Json output file for All Postags")
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
 
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
@@ -1762,7 +1762,7 @@ def process_json_all_postag(config_filename,documentID, document, sentenceID, re
             temp.append(str(documentID))
             # temp.append(file)
             temp.append(IO_csv_util.dressFilenameForCSVHyperlink(document))
-            if extract_date_from_filename_var:
+            if filename_embeds_date_var:
                 temp.append(date_str)
             result.append(temp)
             # print("Row in the CSV: ")
@@ -1779,10 +1779,10 @@ def process_json_all_postag(config_filename,documentID, document, sentenceID, re
 
 def process_json_deprel(config_filename,documentID, document, sentenceID, recordID,json, **kwargs):
     print("   Processing Json output file for DepRel")
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
 
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
@@ -1824,7 +1824,7 @@ def process_json_deprel(config_filename,documentID, document, sentenceID, record
             temp.append(str(documentID))
             # temp.append(file)
             temp.append(IO_csv_util.dressFilenameForCSVHyperlink(document))
-            if extract_date_from_filename_var:
+            if filename_embeds_date_var:
                 temp.append(date_str)
             result.append(temp)
 
@@ -1835,10 +1835,10 @@ def process_json_deprel(config_filename,documentID, document, sentenceID, record
 # processes both lemma and POS
 def process_json_single_annotation(config_filename, documentID, document, sentenceID, recordID, annotation, json, **kwargs):
     print("   Processing Json output file for All Postags and Lemma")
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
 
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
@@ -1870,7 +1870,7 @@ def process_json_single_annotation(config_filename, documentID, document, senten
             temp.append(str(documentID))
             # temp.append(file)
             temp.append(IO_csv_util.dressFilenameForCSVHyperlink(document))
-            if extract_date_from_filename_var:
+            if filename_embeds_date_var:
                 temp.append(date_str)
             result.append(temp)
 
@@ -1882,10 +1882,10 @@ def process_json_single_annotation(config_filename, documentID, document, senten
 def process_json_parser(config_filename, documentID, document, sentenceID, recordID, pcfg, json, **kwargs):
     print("   Processing Json output file for Parser")
     old_recordID = recordID
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
 
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
@@ -1963,7 +1963,7 @@ def process_json_parser(config_filename, documentID, document, sentenceID, recor
             temp.append(str(documentID))
             # temp.append(file)
             temp.append(IO_csv_util.dressFilenameForCSVHyperlink(document))
-            if extract_date_from_filename_var:
+            if filename_embeds_date_var:
                 temp.append(date_str)
             result.append(temp)
 
@@ -2008,7 +2008,7 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
         for locs in sent[2]:
             if ("extract_date_from_text_var" in kwargs and kwargs["extract_date_from_text_var"] == True) \
                     or (
-                    "extract_date_from_filename_var" in kwargs and kwargs["extract_date_from_filename_var"] == True):
+                    "filename_embeds_date_var" in kwargs and kwargs["filename_embeds_date_var"] == True):
                 to_write.append(
                     [locs[0], locs[1], sent[0], sent[1], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str]
                 )
@@ -2017,7 +2017,7 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
                     [locs[0], locs[1], sent[0], sent[1], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
     columns = ["Location", "NER Tag", "Sentence ID", "Sentence", "Document ID", "Document"]
     if ("extract_date_from_text_var" in kwargs and kwargs["extract_date_from_text_var"] == True) \
-        or ("extract_date_from_filename_var" in kwargs and kwargs["extract_date_from_filename_var"] == True):
+        or ("filename_embeds_date_var" in kwargs and kwargs["filename_embeds_date_var"] == True):
         columns = ["Location", "NER Tag", "Sentence ID", "Sentence", "Document ID", "Document", "Date"]
 
     df = pd.DataFrame(to_write, columns=columns)

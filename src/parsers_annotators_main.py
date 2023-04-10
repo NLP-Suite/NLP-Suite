@@ -54,13 +54,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                        message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
         return
 
-    # get the date options from filename
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        temp_config_filename = 'NLP_default_IO_config.csv'
+        config_filename = 'NLP_default_IO_config.csv'
     else:
-        temp_config_filename = scriptName.replace('main.py', 'config.csv')
-    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = \
-        config_util.get_date_options(temp_config_filename, config_input_output_numeric_options)
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
+    # get the date options from filename
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = \
+        config_util.get_date_options(config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
     if parser_var == 0 and CoNLL_table_analyzer_var == 1:
@@ -142,9 +143,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                                openOutputFiles, createCharts, chartPackage,
                                                                                annotator, False, #'All POS',
                                                                                language, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
-                                                                               extract_date_from_filename_var=extract_date_from_filename_var,
+                                                                               filename_embeds_date_var=filename_embeds_date_var,
                                                                                date_format=date_format_var,
-                                                                               date_separator_var=date_separator_var,
+                                                                               items_separator_var=items_separator_var,
                                                                                date_position_var=date_position_var,
                                                                                single_quote_var = single_quote)
 
@@ -200,14 +201,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         limit_sentence_length_var = 1000
         tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
+                                                    config_filename,
                                                     openOutputFiles,
                                                     createCharts, chartPackage,
                                                     annotator, False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
-                                                    extract_date_from_filename_var=extract_date_from_filename_var,
+                                                    filename_embeds_date_var=filename_embeds_date_var,
                                                     date_format=date_format_var,
-                                                    date_separator_var=date_separator_var,
+                                                    items_separator_var=items_separator_var,
                                                     date_position_var=date_position_var)
 
         if tempOutputFiles == None:
@@ -271,9 +273,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       annotator, False,
                                                       language_list,
                                                       memory_var, document_length_var, limit_sentence_length_var,
-                                                      extract_date_from_filename_var=extract_date_from_filename_var,
+                                                      filename_embeds_date_var=filename_embeds_date_var,
                                                       date_format=date_format_var,
-                                                      date_separator_var=date_separator_var,
+                                                      items_separator_var=items_separator_var,
                                                       date_position_var=date_position_var)
 
         if tempOutputFiles == None:

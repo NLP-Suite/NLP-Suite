@@ -307,7 +307,7 @@ run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
                                  fileName_embeds_date.get(),
                                  date_format.get(),
                                  date_position_var.get(),
-                                 date_separator_var.get(),
+                                 items_separator_var.get(),
                                  check_filename_var.get(),
                                  character_var.get(),
                                  character_home_var.get(),
@@ -376,7 +376,7 @@ Levenshtein_var = tk.IntVar()
 fileName_embeds_date = tk.IntVar()
 
 date_format = tk.StringVar()
-date_separator_var = tk.StringVar()
+items_separator_var = tk.StringVar()
 date_position_var = tk.IntVar()
 
 keyWord_var = tk.StringVar()
@@ -399,13 +399,13 @@ date_format_menu.configure(width=10, state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 90, y_multiplier_integer,
                                                date_format_menu, True)
 
-date_separator_var_lb = tk.Label(window, text='Date character separator ')
+items_separator_var_lb = tk.Label(window, text='Date character separator ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 210, y_multiplier_integer,
-                                               date_separator_var_lb, True)
-date_separator_var_menu = tk.Entry(window, textvariable=date_separator_var)
-date_separator_var_menu.configure(width=2, state="disabled")
+                                               items_separator_var_lb, True)
+items_separator_var_menu = tk.Entry(window, textvariable=items_separator_var)
+items_separator_var_menu.configure(width=2, state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 360, y_multiplier_integer,
-                                               date_separator_var_menu, True)
+                                               items_separator_var_menu, True)
 
 date_position_var_menu_lb = tk.Label(window, text='Date position ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 390, y_multiplier_integer,
@@ -494,11 +494,11 @@ window.bind("<Escape>", clear)
 def activate_dateOptions(*args):
     if fileName_embeds_date.get() == False:
         date_format_menu.configure(width=10, state="disabled")
-        date_separator_var_menu.configure(width=2, state="disabled")
+        items_separator_var_menu.configure(width=2, state="disabled")
         date_position_var_menu.configure(width=4, state="disabled")
     else:
         date_format_menu.configure(width=10, state="normal")
-        date_separator_var_menu.configure(width=2, state="normal")
+        items_separator_var_menu.configure(width=2, state="normal")
         date_position_var_menu.configure(width=4, state="normal")
 
 
@@ -705,7 +705,7 @@ def plagiaristOptions(dateFormatField, dateSeparatorField, datePositionField):
 
 
 # return dateFormat, dateSeparator, datePosition
-plagiaristOptions(date_format, date_separator_var, date_position_var)
+plagiaristOptions(date_format, items_separator_var, date_position_var)
 
 # y_multiplier_integer = y_multiplier_integer+1
 

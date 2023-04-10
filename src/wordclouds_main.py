@@ -35,6 +35,11 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
         prepare_image_var,selectedImage, use_contour_only,
         differentColumns_differentColors, csvField_color_list, openOutputFiles, doNotCreateIntermediateFiles):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     # get the NLP package and language options
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
@@ -99,7 +104,7 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
         import wordclouds_util
         if not IO_internet_util.check_internet_availability_warning("wordclouds_main.py"):
             return
-        wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_contour_only, prefer_horizontal, font, int(max_words), lemmatize, stopwords, punctuation, lowercase, differentPOS_differentColor,differentColumns_differentColors, csvField_color_list,doNotCreateIntermediateFiles,openOutputFiles, collocation)
+        wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, config_filename,  selectedImage, use_contour_only, prefer_horizontal, font, int(max_words), lemmatize, stopwords, punctuation, lowercase, differentPOS_differentColor,differentColumns_differentColors, csvField_color_list,doNotCreateIntermediateFiles,openOutputFiles, collocation)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 

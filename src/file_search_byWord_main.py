@@ -55,14 +55,14 @@ def run(inputFilename,inputDir, outputDir,
 
     if search_by_keyword:
         # check create_subcorpus_var
-        filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dictionary,
+        filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, config_filename, search_by_dictionary,
                                                   search_by_keyword, search_keyword_values, create_subcorpus_var, search_options_list, language,
-                                                  createCharts, chartPackage)
+                                                  createCharts, chartPackage, config_filename)
 
     if extract_sentences_var:
-        # TODO must pass and process minus_K_var and plus_K_var
-        file_search_byWord_util.search_extract_sentences(window, inputFilename, inputDir, outputDir,
+        file_search_byWord_util.search_extract_sentences(window, inputFilename, inputDir, outputDir, config_filename,
                                                  extract_sentences_search_words_var_str, search_options_list,
+                                                 minus_K_var, plus_K_var,
                                                  createCharts, chartPackage)
         extract_sentences_search_words_var.set('')
         extract_sentences_search_words_entry.configure(state='disabled')
@@ -120,7 +120,7 @@ config_filename = scriptName.replace('main.py', 'config.csv')
 #   input dir
 #   input secondary dir
 #   output dir
-config_input_output_numeric_options=[6,1,0,1]
+config_input_output_numeric_options=[0,1,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -302,7 +302,7 @@ minus_K_lb = tk.Label(window, text='-K')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,1050,y_multiplier_integer,minus_K_lb,True)
 
 minus_K_var.set(0)
-minus_K_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
+minus_K_entry = tk.Entry(window, textvariable=minus_K_var) #extract_sentences_search_words_var)
 minus_K_entry.configure(width=3, state='disabled')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
@@ -311,13 +311,13 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
                     "Enter the number of sentences preceding the search sentences to be extracted, for context, together with the search sentences")
 
 plus_K_lb = tk.Label(window, text='+K')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,1120,y_multiplier_integer,plus_K_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,1140,y_multiplier_integer,plus_K_lb,True)
 
 plus_K_var.set(0)
-plus_K_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
+plus_K_entry = tk.Entry(window, textvariable=plus_K_var) #extract_sentences_search_words_var)
 plus_K_entry.configure(width=3, state='disabled')
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window, 1170, y_multiplier_integer,
                     plus_K_entry, False, False, True, False,
                     90, GUI_IO_util.watch_videos_x_coordinate,
                     "Enter the number of sentences following the search sentences to be extracted, for context, together with the search sentences")
@@ -435,6 +435,14 @@ message = "Some of the algorithms behind this GUI rely on a specific NLP package
           + str(language) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " \
           + str(package_basics) + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
 reminders_util.checkReminder(config_filename, title, message)
+
+state = str(GUI_util.run_button['state'])
+if state == 'disabled':
+    # check to see if there is a GUI-specific config file and set it to the setup_IO_menu_var
+    if os.path.isfile(os.path.join(GUI_IO_util.configPath, config_filename)):
+        GUI_util.setup_IO_menu_var.set('GUI-specific I/O configuration')
+        mb.showwarning(title='Warning',
+                       message="Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
 
 GUI_util.window.mainloop()
 

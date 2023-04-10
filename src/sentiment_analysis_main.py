@@ -40,6 +40,12 @@ def run(inputFilename,inputDir,outputDir,
     flag="" #used by CoreNLP
     filesToOpen = []  # Store all files that are to be opened once finished
 
+
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     # get the NLP package and language options
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
@@ -154,15 +160,15 @@ def run(inputFilename,inputDir,outputDir,
         limit_sentence_length_var = 1000
         import spaCy_util
         tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
-                                                    outputDir,
+                                                    outputDir, config_filename,
                                                     openOutputFiles,
                                                     createCharts, chartPackage,
                                                     annotator, False,
                                                     language_var,
                                                     memory_var, document_length_var, limit_sentence_length_var,
-                                                    extract_date_from_filename_var=0,
+                                                    filename_embeds_date_var=0,
                                                     date_format='',
-                                                    date_separator_var='',
+                                                    items_separator_var='',
                                                     date_position_var=0)
 
         if tempOutputFiles == None:
@@ -214,9 +220,9 @@ def run(inputFilename,inputDir,outputDir,
                                                       annotator, False,
                                                       [language_var], # Stanza_util takes language_var as a list
                                                       memory_var, document_length_var, limit_sentence_length_var,
-                                                      extract_date_from_filename_var=0,
+                                                      filename_embeds_date_var=0,
                                                       date_format='',
-                                                      date_separator_var='',
+                                                      items_separator_var='',
                                                       date_position_var=0)
 
         if tempOutputFiles == None:

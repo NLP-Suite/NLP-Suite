@@ -145,7 +145,7 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 
 filesToOpen = []  # LINE ADDED
 
-def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPackage, processType=''):
+def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutputFiles,createCharts,chartPackage, processType=''):
 	"""
 	Runs analyzefile on the appropriate files, provided that the input paths are valid.
 	:param inputFilename:
@@ -199,7 +199,7 @@ def main(window, inputFilename, inputDir, outputDir, openOutputFiles,createChart
 			head, tail = os.path.split(inputDir)
 			chart_title = "Directory: " + tail
 			documentID = 0
-			inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+			inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
 
 			Ndocs = str(len(inputDocs))
 			index = 0

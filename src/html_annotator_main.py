@@ -69,16 +69,16 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
             return
         if csv_field2_var=='':
             csvValue_color_list=[]
-        filesToOpen = html_annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, html_dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.txt')
+        filesToOpen = html_annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, config_filename, html_dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.txt','')
     elif html_annotator_add_dictionary_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_dictionary_util.py')==False:
             return
-        filesToOpen = html_annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, html_dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.html')
+        filesToOpen = html_annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, config_filename, html_dictionary_file, csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, '.html','')
     elif html_annotator_extractor==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_extractor_util.py')==False:
             return
         import html_annotator_extractor_util
-        html_annotator_extractor_util.buildcsv(inputFilename, input_main_dir_path, outputDir,openOutputFiles,createCharts, chartPackage)
+        html_annotator_extractor_util.buildcsv(inputFilename, input_main_dir_path, outputDir,openOutputFiles,createCharts, chartPackage, config_filename)
     elif html_gender_annotator_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_gender_main.py')==False:
             return

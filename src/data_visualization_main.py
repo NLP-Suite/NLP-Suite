@@ -195,7 +195,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
                                                                  '.html', 'timeMapper')
 
-        if csv_field3_var.get()=='':
+        if csv_field3_var=='':
             mb.showwarning("Warning",
                            "The csv file field is blank. The Plotly timeline algorithm expects in input a valid csv file field.\n\nPlease, select a csv file field and try again.")
             return
@@ -207,7 +207,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             yearly=True
 
         import charts_timeline_util
-        chart_outputFilename = charts_timeline_util.timeline(inputFilename, outputFilename, csv_field3_var.get(), date_format_var, cumulative_var, monthly, yearly)
+        chart_outputFilename = charts_timeline_util.timeline(inputFilename, outputFilename, csv_field3_var, date_format_var, cumulative_var, monthly, yearly)
 
     if chart_outputFilename != '':
         filesToOpen.append(chart_outputFilename)
@@ -610,7 +610,7 @@ csv_field2_menu.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_menu_pos, y_multiplier_integer,
                                    csv_field2_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_K_sent_end_pos,
-                                   "Select the csv file field to be used to visualize specific data (e.g., 'Sentiment label' in a sentiment analysis csv output file")
+                                   "Select the csv file field to be used to visualize specific data (e.g., 'Sentiment label' in a sentiment analysis csv output file)")
 
 sunburst_lb = tk.Label(window, text='Sunburst parameters')
 # place widget with hover-over info
@@ -671,7 +671,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 
 use_numerical_variable_var.set(0)
 use_numerical_variable_checkbox = tk.Checkbutton(window, state='disabled', text='Use numerical variable', variable=use_numerical_variable_var,
-                 onvalue=1)
+                 onvalue=1, offvalue=0)
 use_numerical_variable_checkbox.configure(state='disabled')
 
 # place widget with hover-over info
@@ -700,7 +700,8 @@ time_mapper_checkbox = tk.Checkbutton(window, text='Visualize temporal data', va
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    time_mapper_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox if you wish to visualize data in a dynamic time mapper\nIn input the filenames under Document must contain date values")
+                                   "Tick the checkbox if you wish to visualize data in a dynamic time mapper\nIn input the filenames under the 'Document' field in the csv file must contain date values\n"
+                                               "(e.g., /Users/me/Desktop/Janet Maslin_Living Centuries Apart_2014-12-12.txt)")
 
 
 date_format_lb = tk.Label(window,text='Date format ')
@@ -732,15 +733,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                    "Select the time option")
 
 cumulative_var.set(0)
-cumulative_checkbox = tk.Checkbutton(window, text='Cumulative',
-                                    onvalue=1)
+cumulative_checkbox = tk.Checkbutton(window, text='Cumulative', variable=cumulative_var,
+                                    onvalue=1, offvalue=0)
 cumulative_checkbox.configure(state='disabled')
 
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    cumulative_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Tick the checkbox for a cumulative time chart showing the frequency of the chosen variable up until a current day rather than visualizing the frequency day by day")
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Tick the checkbox for a cumulative time chart showing the frequency of the chosen variable up until a current day/month/year rather than visualizing the frequency day/month/year by day/month/year")
 
 csv_field3_lb = tk.Label(window, text='csv file field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_lb_pos, y_multiplier_integer,
@@ -751,7 +752,7 @@ csv_field3_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_menu_pos, y_multiplier_integer,
                                    csv_field3_menu,
-                                   False, False, True, False, 90, GUI_IO_util.visualization_K_sent_end_pos,
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Select the csv file field to be used to visualize specific data\nThe field must be categorical rather than numeric (e.g., 'Sentiment label', rather than 'Sentiment score', in a sentiment analysis csv output file)")
 
 
@@ -930,18 +931,14 @@ K_sent_end_var.trace('w',activate_visualization_options)
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf",
+TIPS_lookup = {
+               "Network Graphs (via Gephi)": "TIPS_NLP_Gephi network graphs.pdf",
+               "Special visuals in Plotly":"TIPS_NLP_Plotly special visuals.pdf",
                "Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf",
-               "Wordle":"TIPS_NLP_Wordclouds Wordle.pdf",
-               "Tagxedo":"TIPS_NLP_Wordclouds Tagxedo.pdf",
-               "Tagcrowd":"TIPS_NLP_Wordclouds Tagcrowd.pdf",
                'Excel charts': 'TIPS_NLP_Excel Charts.pdf',
-               'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
-               'Network Graphs (via Gephi)': 'TIPS_NLP_Gephi network graphs.pdf',
-               'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf',
-               'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
+               'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf'}
 
-TIPS_options='Lemmas & stopwords', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle', 'Excel smoothing data series', 'Network Graphs (via Gephi)', 'csv files - Problems & solutions', 'Statistical measures'
+TIPS_options='Network Graphs (via Gephi)', 'Special visuals in Plotly', 'Word clouds', 'Excel charts', 'csv files - Problems & solutions'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -967,9 +964,10 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the comma-separated labels/parts of a filename to be used to separate fields in the filename (e.g., in the filename, Harry Potter_Book1_1, Harry Potter_Book2_3, ..., Harry Potter_Book4_1... you could enter Book1, Book3 to sample the files to be used for visualization.\n\nThe number of distinct labels/parts of filename should be small (e.g., the 7 Harry Potter books).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SUNBUST PLOT ONLY.\n\nPlease, enter the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the checkbox 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.\n\nTick the checkbox 'Do NOT split documents' if you wish to visualize an entire document.\n\nThe three options are mutually exclusive.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE TREEMAP PLOT ONLY.\n\nPlease, tick the checkbox if you wish to use the values of a numerical variable to improve the treemap plot.\n\nUse the dropdown menu to select the csv file numeric field to be used for plotting.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to analyze time-dependent data in an interactive bar chart.\n\nIn INPUT the scripts expects filenames in the 'Document' field that contain date values.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select the options to be applied to the timeline chart:\n\n1. date format embedded in the filename\n2. Timeline (daily, monthly, yearly)\n3. Cumulative, for a time chart showing the frequency of the chosen variable up until a current day rather than visualizing the frequency day by day\n4. csv file variable to be used for plotting (the variable must contain CATEGORICAL data)." \
-            "\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE 'Setup INPUT/OUTPUT configuration' WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOX 'Extract date from filename' WHEN THE NLP_setup_IO_main GUI OPENS.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to analyze time-dependent data in an interactive bar chart.\n\nIn INPUT the script expects the filenames under the 'Document' field in the csv file to contain date values (e.g., /Users/me/Desktop/Janet Maslin_Living Centuries Apart_2014-12-12.txt)."
+            "\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE 'Setup INPUT/OUTPUT configuration' WIDGET AT THE TOP OF THE ALGORITHM GUI THAT HAS PRODUCED THE CSV FILE USED HERE IN INPUT AND THEN TICKING THE CHECKBOXS 'Filename embeds multiple items' AND 'Filename embeds date' WHEN THE NLP_setup_IO_main GUI OPENS.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select the options to be applied to the timeline chart:\n\n1. date format embedded in the filename\n2. Timeline (daily, monthly, yearly)\n3. Cumulative, for a time chart showing the frequency of the chosen variable up until a current day rather than visualizing the frequency day by day\n4. csv file variable to be used for plotting (the variable must contain CATEGORICAL data; for instance, it could be the POStag or NER fields in a CoNLL table exported by a parser that processed a corpus of files that embedded a date)." \
+            "\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE 'Setup INPUT/OUTPUT configuration' WIDGET AT THE TOP OF THE ALGORITHM GUI THAT HAS PRODUCED THE CSV FILE USED HERE IN INPUT AND THEN TICKING THE CHECKBOXS 'Filename embeds multiple items' AND 'Filename embeds date' WHEN THE NLP_setup_IO_main GUI OPENS.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)

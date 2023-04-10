@@ -21,7 +21,7 @@ import IO_csv_util
 import IO_files_util
 import IO_user_interface_util
 
-def backup_files (inputFilename,inputDir,scripName, fileType='.txt',silent=False):
+def backup_files (inputFilename,inputDir,scripName, fileType='.txt',configFileName=''):
     if inputFilename != "":
         temp_inputDir, tail = os.path.split(inputFilename)
     else:
@@ -34,7 +34,7 @@ def backup_files (inputFilename,inputDir,scripName, fileType='.txt',silent=False
         IO_files_util.make_directory(backup_path)
     else:
         return True
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType)
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType, False, configFileName)
     nDocs = len(inputDocs)
     docID=0
     for doc in inputDocs:

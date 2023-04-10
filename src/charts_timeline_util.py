@@ -1,4 +1,4 @@
-# written by Samir Kaddoura, December 2022
+# written by Samir Kaddoura, March 2023
 
 import sys
 import GUI_util
@@ -21,15 +21,15 @@ import tkinter.messagebox as mb
 #   if both are passed as false, return daily graph
 #   both cannot be simultaneously true
 
-def timeline(data, outputFilename, var,date_format_var, cumulative, monthly=None, yearly=None):
+
+#choose a data set, a variable to show the evolution through time, outputFilename to save output, monthly and yearly are boolean variables
+#If both are passed as false, return daily graph
+#if monthly or yearly is passed as true, return monthly or yearly graph respectively
+#Both cannot be simultaneously true
+def timeline(data,outputFilename,var,date_format_var,cumulative,monthly=None,yearly=None):
 #convert csv to pandas
     if type(data)==str:
         data=pd.read_csv(data)
-    if type(data[var][0]) != str:
-        mb.showwarning("Warning",
-                       "The csv file field selected must be categorical.\n\nPlease select a categorical field, rather than a continuous numeric field, and try again.")
-        return
-    #Extract day from document
     date=[]
     year=[]
     month=[]
@@ -61,7 +61,7 @@ def timeline(data, outputFilename, var,date_format_var, cumulative, monthly=None
             date.append(re.search('\d.*\d',data['Document'][i])[0])
         for i in range(0,len(data['Document'])):
             year.append(re.search('\d{4}',date[i])[0])
-        for i in range(0,len(data['Document'])):
+        for i in range(0,en(data['Document'])):
             month.append(year[i]+'-'+date[i][3:5])
         for i in range(0,len(data['Document'])):
             day.append(month[i]+'-'+date[i][0:2])
@@ -102,13 +102,12 @@ def timeline(data, outputFilename, var,date_format_var, cumulative, monthly=None
         data['year']=year
         data['month']=month
         data['day']=day
+
 #Plot corresponding graph depending on the options
     if cumulative==False:
-        #monthly and yearly can't simultaneously be True
         if monthly==True and yearly==True:
             return "Choose one of the following: daily graph, monthly graph, yearly graph"
-
-        elif monthly==True:#If monthly is True, return monthly non-cumulative graph
+        elif monthly==True:
             data=data.sort_values('month')
             finalframe=pd.DataFrame()
             for i in sorted(set(data['month'])):
@@ -123,9 +122,11 @@ def timeline(data, outputFilename, var,date_format_var, cumulative, monthly=None
                 tester['date']=date
                 tester=tester.reset_index(drop=True)
                 finalframe=pd.concat([finalframe,tester])
-            fig=px.bar(finalframe,var,'Frequency',animation_frame='date').update_xaxes(categoryorder='total ascending')
-
-        elif yearly==True:#If yearly is True, return yearly non-cumulative graph
+                value=[]
+                for i in list(set(finalframe[var])):
+                    value.append(max(finalframe[finalframe[var]==i]['Frequency']))
+            fig=px.bar(finalframe,y=var,x='Frequency',animation_frame='date',orientation='h',range_x=[0,max(value)]).update_yaxes(categoryorder='total ascending')
+        elif yearly==True:
             data=data.sort_values('year')
             finalframe=pd.DataFrame()
             for i in sorted(set(data['year'])):
@@ -140,8 +141,11 @@ def timeline(data, outputFilename, var,date_format_var, cumulative, monthly=None
                 tester['date']=date
                 tester=tester.reset_index(drop=True)
                 finalframe=pd.concat([finalframe,tester])
-            fig=px.bar(finalframe,var,'Frequency',animation_frame='date').update_xaxes(categoryorder='total ascending')
-        else:#If neither is True, return daily non-cumulative graph
+                value=[]
+                for i in list(set(finalframe[var])):
+                    value.append(max(finalframe[finalframe[var]==i]['Frequency']))
+            fig=px.bar(finalframe,y=var,x='Frequency',animation_frame='date',orientation='h',range_x=[0,max(value)]).update_yaxes(categoryorder='total ascending')
+        else:
             data=data.sort_values('day')
             finalframe=pd.DataFrame()
             for i in sorted(set(data['day'])):
@@ -156,11 +160,14 @@ def timeline(data, outputFilename, var,date_format_var, cumulative, monthly=None
                 tester['date']=date
                 tester=tester.reset_index(drop=True)
                 finalframe=pd.concat([finalframe,tester])
-            fig=px.bar(finalframe,var,'Frequency',animation_frame='date').update_xaxes(categoryorder='total ascending')
+                value=[]
+                for i in list(set(finalframe[var])):
+                    value.append(max(finalframe[finalframe[var]==i]['Frequency']))
+            fig=px.bar(finalframe,y=var,x='Frequency',animation_frame='date',orientation='h',range_x=[0,max(value)]).update_yaxes(categoryorder='total ascending')
     else:
         if monthly==True and yearly==True:
             return "Choose one of the following: daily graph, monthly graph, yearly graph"
-        elif yearly==True:#If yearly is True, return yearly cumulative graph
+        elif yearly==True:
             data=data.sort_values('year')
             finalframe=pd.DataFrame()
             for i in sorted(set(data['year'])):
@@ -175,8 +182,11 @@ def timeline(data, outputFilename, var,date_format_var, cumulative, monthly=None
                 tester['date']=date
                 tester=tester.reset_index(drop=True)
                 finalframe=pd.concat([finalframe,tester])
-            fig=px.bar(finalframe,var,'Frequency',animation_frame='date').update_xaxes(categoryorder='total ascending')
-        elif monthly==True:#If monthly is True, return monthly cumulative graph
+                value=[]
+                for i in list(set(finalframe[var])):
+                    value.append(max(finalframe[finalframe[var]==i]['Frequency']))
+            fig=px.bar(finalframe,y=var,x='Frequency',animation_frame='date',orientation='h',range_x=[0,max(value)]).update_yaxes(categoryorder='total ascending')
+        elif monthly==True:
             data=data.sort_values('month')
             finalframe=pd.DataFrame()
             for i in sorted(set(data['month'])):
@@ -191,8 +201,11 @@ def timeline(data, outputFilename, var,date_format_var, cumulative, monthly=None
                 tester['date']=date
                 tester=tester.reset_index(drop=True)
                 finalframe=pd.concat([finalframe,tester])
-            fig=px.bar(finalframe,var,'Frequency',var,animation_frame='date').update_xaxes(categoryorder='total ascending')
-        else:#If neither is True, return daily cumulative graph
+                value=[]
+                for i in list(set(finalframe[var])):
+                    value.append(max(finalframe[finalframe[var]==i]['Frequency']))
+            fig=px.bar(finalframe,y=var,x='Frequency',animation_frame='date',orientation='h',range_x=[0,max(value)]).update_yaxes(categoryorder='total ascending')
+        else:
             data=data.sort_values('day')
             finalframe=pd.DataFrame()
             for i in sorted(set(data['day'])):
@@ -207,9 +220,11 @@ def timeline(data, outputFilename, var,date_format_var, cumulative, monthly=None
                 tester['date']=date
                 tester=tester.reset_index(drop=True)
                 finalframe=pd.concat([finalframe,tester])
-            fig=px.bar(finalframe,var,'Frequency',animation_frame='date').update_xaxes(categoryorder='total ascending')
-
+                value=[]
+                for i in list(set(finalframe[var])):
+                    value.append(max(finalframe[finalframe[var]==i]['Frequency']))
+            fig=px.bar(finalframe,y=var,x='Frequency',animation_frame='date',orientation='h',range_x=[0,max(value)]).update_yaxes(categoryorder='total ascending')
     fig=fig.update_geos(projection_type="equirectangular", visible=True, resolution=110)
-
     fig.write_html(outputFilename)
+
     return outputFilename

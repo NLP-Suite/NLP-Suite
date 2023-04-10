@@ -1,3 +1,11 @@
+import sys
+import GUI_util
+import IO_libraries_util
+
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "charts_Sankey_util",
+                                          ['pandas', 'numpy',  'plotly'], 'tkinter') == False:
+    sys.exit(0)
+
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go

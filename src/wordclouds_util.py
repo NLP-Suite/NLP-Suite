@@ -277,7 +277,7 @@ def display_wordCloud_sep_color(inputFilename, outputDir, text, color_to_words, 
 
 def display_wordCloud(inputFilename,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, collocation, prefer_horizontal,bg_image = None, bg_image_flag = True, font = None, max_words=100):
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='abstr-concret',
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='wordcloud',
                                                        silent=True)
     if outputDir == '':
         return
@@ -383,7 +383,7 @@ def processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles,csvFie
     myfile.close()
     return tempOutputfile
 
-def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_contour_only, prefer_horizontal, font, max_words, lemmatize, exclude_stopwords, exclude_punctuation, lowercase, differentPOS_differentColors, differentColumns_differentColors, csvField_color_list, doNotListIndividualFiles,openOutputFiles, collocation):
+def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selectedImage, use_contour_only, prefer_horizontal, font, max_words, lemmatize, exclude_stopwords, exclude_punctuation, lowercase, differentPOS_differentColors, differentColumns_differentColors, csvField_color_list, doNotListIndividualFiles,openOutputFiles, collocation):
     # https://www.geeksforgeeks.org/generating-word-cloud-python/
     # Python program to generate WordCloud
     # for a more sophisticated Python script see
@@ -397,7 +397,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, selectedImage, use_cont
     else:
         fileType='.txt'
 
-    inputDocs=IO_files_util.getFileList(inputFilename, inputDir,fileType, silent=False)
+    inputDocs=IO_files_util.getFileList(inputFilename, inputDir,fileType, silent=False, configFileName=configFileName)
     nDocs=len(inputDocs)
     if nDocs==0:
         return filesToOpen

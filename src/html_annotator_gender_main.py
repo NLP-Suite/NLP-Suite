@@ -30,6 +30,11 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
 
     filesToOpen=[]
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     # get the NLP package and language options
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
@@ -73,7 +78,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
         import annotator_gender_dictionary_util
         # csvValue_color_list, bold_var, tagAnnotations, '.txt'
         fileSubsc='gender'
-        output= html_annotator_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, outputDir, openOutputFiles, createCharts, chartPackage, memory_var, annotator_dictionary_file_var,personal_pronouns_var,fileSubsc)
+        output= html_annotator_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, outputDir, config_filename, openOutputFiles, createCharts, chartPackage, memory_var, annotator_dictionary_file_var,personal_pronouns_var,fileSubsc)
         if len(output)>0:
             # output=output[0]
             filesToOpen.append(output)
@@ -246,7 +251,7 @@ year_state_lb = tk.Label(window, text='By US state/year')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_gender_select_dictionary_file_annotator,y_multiplier_integer,year_state_lb,True)
 
 year_state_menu = tk.OptionMenu(window,year_state_var,'State','Year','Year of birth','State & Year','State & Year of birth')
-year_state_menu.configure(width=20,state='disabled')
+year_state_menu.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_gender_by_type_dropdown,y_multiplier_integer,year_state_menu,True)
 
 firstName_entry_lb = tk.Label(window, text='Enter first name(s)')
