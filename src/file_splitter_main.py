@@ -60,7 +60,7 @@ def run(inputFilename,inputDir, outputDir,
     if inputDir=='' and inputFilename!='':
         files=[inputFilename]
     elif inputDir!='':
-        files= IO_files_util.getFileList(inputFilename, inputDir, 'txt')
+        files= IO_files_util.getFileList(inputFilename, inputDir, 'txt', silent=False, configFileName=config_filename)
     if len(files) == 0:
         return
 
@@ -76,7 +76,7 @@ def run(inputFilename,inputDir, outputDir,
 
             return
         import file_splitter_ByBME_K_sentences_util
-        filesToOpen = file_splitter_ByBME_K_sentences_util.sample_doc_beginning_middle_end(window, config_filename, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, Begin_K_sent, End_K_sent)
+        filesToOpen = file_splitter_ByBME_K_sentences_util.sample_doc_beginning_middle_end(window, config_filename, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, Begin_K_sent, End_K_sent, config_filename)
 
     else:
         for file in files:

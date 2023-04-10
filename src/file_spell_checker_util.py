@@ -67,12 +67,12 @@ def lemmatizing(word):#edited by Claude Hu 08/2020
     return result
 
 # https://www.nltk.org/book/ch02.html
-def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles, createCharts=True, chartPackage='Excel', silent=False):
+def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, openOutputFiles, createCharts=True, chartPackage='Excel'):
     filesToOpen=[]
     unusual=[]
     container=[]
     documentID=0
-    files=IO_files_util.getFileList(inputFilename, inputDir, '.txt')
+    files=IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
     nFile=len(files)
     if nFile==0:
         return
@@ -508,7 +508,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
     return filesToOpen
 
 
-def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutputFiles):
+def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutputFiles,configFileName):
     mb.showwarning(title='Find & Replace csv file (with \'Original\' and \'Corrected\' headers)',
                    message='Please, select the csv file that contains the information about words that need correcting.\n\nMostly likely this file was created by the spell checker algorithms and edited by you keeping only correct entries.\n\nThe Find & Replace will expect 2 column headers \'Original\' and \'Corrected\'.\n\nPlease, make sure that your csv file has those characteristics.')
     # initialdir=initialFolder,
@@ -537,7 +537,7 @@ def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutp
             if math.isnan(corrected[i]):
                 corrected[i]=''
             input_corrected.append(corrected[i])
-    file_cleaner_util.find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFiles,input_original,input_corrected,False)
+    file_cleaner_util.find_replace_string(window,inputFilename, inputDir, outputDir, configFileName, openOutputFiles,input_original,input_corrected)
 
 def spellchecking_autocorrect(text: str, inputFilename) -> (str, DataFrame):
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Autocorrect spelling checker start',
@@ -634,6 +634,7 @@ def spellchecking_text_blob(text: str, inputFilename) -> (str, DataFrame):
     original_str_list = []
     treebank = nltk.tokenize.treebank.TreebankWordDetokenizer()
     # for word in nltk.word_tokenize(text):
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
     for word in word_tokenize_stanza(stanzaPipeLine(text)):
         if word.isalnum():
             original_str_list.append(word)
@@ -780,7 +781,7 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
 # https://towardsdatascience.com/benchmarking-language-detection-for-nlp-8250ea8b67c
 # TODO print all languages and their probabilities in a csv file, with Language, Probability, Document ID, Document (with hyperlink)
 
-def language_detection(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
+def language_detection(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, createCharts, chartPackage):
 
     folderID = 0
     fileID = 0
@@ -789,7 +790,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
     outputFilenameCSV=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'lang_detect')
     filesToOpen.append(outputFilenameCSV)
 
-    files=IO_files_util.getFileList(inputFilename, inputDir, '.txt')
+    files=IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
     if len(files) == 0:
         return
 

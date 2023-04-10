@@ -87,6 +87,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         tagAnnotations = ['<span style=\"color: ' + color_palette_dict_var + '; font-weight: bold\">', '</span>']
 
         filesToOpen = html_annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
+                                                                    config_filename,
                                                                     csv_file, 'Term', csvValue_color_list,
                                                                     bold_var, tagAnnotations, '.txt','WordNet_'+noun_verb)
 

@@ -43,12 +43,15 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
         IO_files_util.openFile(window, inputDir + os.sep + select_DB_tables_var.get() + ".xlsx")
         return
 
-    # print("select_parents_var",select_parents_var,'select_children_var',select_children_var)
-    #
-    # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
     outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                                      label='DB_PC-ACE',
                                                                      silent=True)
+
+
+    if ALL_complex_objects_frequencies_var:
+        outputFile = DB_PCACE_data_analyzer_util.get_complex_frequencies_all(inputDir, outputDir)
+    if SELECTED_complex_objects_frequencies_var:
+        outputFile = DB_PCACE_data_analyzer_util.get_complex_frequencies(setup_complex, inputDir, outputDir)
     if simplex_data!='' and value_parent_object_var:
         outputFile = DB_PCACE_data_analyzer_util.individual_simplex_info_main(simplex_data, inputDir, outputDir)
     if ALL_simplex_objects_frequencies_var:
@@ -125,11 +128,11 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
 
     if google_earth_var and (setup_simplex=='City name' or setup_simplex=='County') and SELECTED_simplex_objects_frequencies_var:
         extract_date_from_text_var = 0
-        extract_date_from_filename_var = 0
+        filename_embeds_date_var = 0
         reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
                                      reminders_util.message_geocoder, True)
         # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
-        date_present = (extract_date_from_text_var == True) or (extract_date_from_filename_var == True)
+        date_present = (extract_date_from_text_var == True) or (filename_embeds_date_var == True)
         country_bias = ''
         area_var = ''
         restrict = False
@@ -354,7 +357,7 @@ simplex_data_type_var.trace('w',activate_date_number_text)
 
 value_parent_object_checkbox = tk.Checkbutton(window, text='Get simplex/complex objects of selected data type & value', variable=value_parent_object_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+700, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150, y_multiplier_integer,
                                    value_parent_object_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Tick the checkbox to export simplex and complex objects that use the selected data type & value")
@@ -371,17 +374,12 @@ setup_complex['values'] = setup_complex_menu
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120, y_multiplier_integer,
                                    setup_complex,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Use the dropdown menu to select a specific complex object for which to compute frequencies.\nWhen a hierarchical complex object is selected (e.g., macro-event or event) and the checkbox Semantic triplets below is ticked...\n...semantic triplets will be listed in chronological order within the specific higher-level hierarchical complex object selected (e.g., macro-events, events).")
 
-ALL_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for ALL objects', variable=ALL_complex_objects_frequencies_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ALL_complex_objects_checkbox,True)
-
-SELECTED_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for SELECTED object', variable=SELECTED_complex_objects_frequencies_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+350,y_multiplier_integer,SELECTED_complex_objects_checkbox)
 
 simplex_objects_lb = tk.Label(window, text='Simplex objects ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,simplex_objects_lb, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+600,y_multiplier_integer,simplex_objects_lb, True)
 
 setup_simplex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_simplex.xlsx'))
 
@@ -391,26 +389,19 @@ setup_simplex = ttk.Combobox(window, textvariable = setup_simplex_var, width=GUI
 # setup_complex.configure(state='disabled')
 setup_simplex['values'] = setup_simplex_menu
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+120, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+150, y_multiplier_integer,
                                    setup_simplex,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   False, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "Use the dropdown menu to select a specific simplex object for which to compute frequencies")
 
-#@@@
-# trace below also
-# def activate_parents(*args):
-#     parents_menu = DB_PCACE_data_analyzer_util.find_parent_complex(setup_complex_var.get(),inputDir.get())
-#     select_parents_var.set(parents_menu)
-# setup_complex_var.trace('w',activate_parents)
+ALL_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for ALL objects', variable=ALL_complex_objects_frequencies_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ALL_complex_objects_checkbox,True)
 
-ALL_simplex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for ALL objects', variable=ALL_simplex_objects_frequencies_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ALL_simplex_objects_checkbox,True)
-
-SELECTED_simplex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for SELECTED object', variable=SELECTED_simplex_objects_frequencies_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+350,y_multiplier_integer,SELECTED_simplex_objects_checkbox)
+SELECTED_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for SELECTED object', variable=SELECTED_complex_objects_frequencies_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+350,y_multiplier_integer,SELECTED_complex_objects_checkbox)
 
 select_parents_lb = tk.Label(window, text='Parent objects ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,select_parents_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,select_parents_lb,True)
 
 select_parents = ttk.Combobox(window, width=GUI_IO_util.widget_width_short, textvariable=select_parents_var)
 # select_parents.configure(state='disabled')
@@ -451,31 +442,23 @@ def activate_children(*args):
     # select_children_var.set(children_menu[0])
 setup_complex_var.trace('w',activate_children)
 setup_simplex_var.trace('w',activate_children)
-#@@@
 
-semantic_triplet_checkbox = tk.Checkbutton(window, text='Semantic triplet (SVO)', variable=semantic_triplet_var, onvalue=1, offvalue=0)
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   semantic_triplet_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox to list in chronological order the semantic triplets within a specific higher-level hierarchical complex object (selected in the Complex objects widget, e.g., event, macro-event).\nWhen no hierarchical complex oject is selected in the Complex objects widget, all triplets are listed for all higher-level hierarchical complex objects (e.g., macro-events, events).")
-
-actors_lb = tk.Label(window, text='Actors ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+20,y_multiplier_integer,actors_lb,True)
+actors_lb = tk.Label(window, text='Extract semantic triplet (SVO) by type of actor ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,actors_lb,True)
 
 actors_var.set('')
-actors_menu = tk.OptionMenu(window, actors_var, 'collective actor','individual', 'organization')
+actors_menu = tk.OptionMenu(window, actors_var, '*', 'collective actor', 'individual', 'organization')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+90, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+350, y_multiplier_integer,
                                    actors_menu,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Use the dropdown menu to select the type of actor you want to analyze")
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Use the dropdown menu to select the type of actor for which you want to extract Subjcet-Verb-Objects semantic triplets ")
 
 time_checkbox = tk.Checkbutton(window, text='Time', variable=time_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,time_checkbox, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,time_checkbox, True)
 
 space_checkbox = tk.Checkbutton(window, text='Space', variable=space_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,y_multiplier_integer,space_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,space_checkbox)
 
 gephi_var.set(1)
 gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network graphs (via Gephi) ',
@@ -494,6 +477,14 @@ google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google
                                        variable=google_earth_var, onvalue=1, offvalue=0)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
                                                google_earth_checkbox)
+
+verifier_comments_var = tk.IntVar()
+verifier_comments_checkbox = tk.Checkbutton(window, text='Get verifiers comments ', variable=verifier_comments_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,verifier_comments_checkbox)
+
+document_sources_var = tk.IntVar()
+document_sources_checkbox = tk.Checkbutton(window, text='Visualize document sources ', variable=document_sources_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,document_sources_checkbox)
 
 error = False
 table_values = []
@@ -535,12 +526,10 @@ def changed_filename(*args):
         setup_simplex['values'] = setup_simplex_menu
         if len(setup_simplex_menu)>0:
             setup_simplex.configure(state='normal')
-            SELECTED_simplex_objects_checkbox.configure(state='normal')
             # setup_simplex.set(setup_simplex_menu[0])
             setup_simplex_var.set('')
         else:
             setup_simplex.set('')
-            SELECTED_simplex_objects_checkbox.configure(state='disabled')
             setup_simplex.configure(state='disabled')
     else:
         if inputFilename.get()!='':
@@ -574,26 +563,25 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the View table relations button to open a pdf file visualizing PC-ACE table relations." +
-                                "\n\nClick on the 'Convert PC-ACE Excel tables to csv' button to convert the Excel files exported from the PC-ACE ACCESS database to csv files." +
                                 "\n\nUse the dropdown menu to open a selected table file." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the simplex data value for which you want to see its usage among parent simplex and complex." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the simplex data value (text, date, or number) "
+                            "for which you want to see its usage among parent simplex and complex."
+                            "\n\nThe available values will be displayed in the next dropdown menu widget where you can select a specific value."
+                            "\n\nYou can then tick the 'Get simplex/complex objects...' checkbox if you wish to visualize all simplex and complex ojects that use the selected value (e.g.,'police') " + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help",
-                                                         "Please, using the dropdown menu, select the COMPLEX object for which you would like to obtain query results." + GUI_IO_util.msg_Esc)
+                                                         "The dropdown menu displays all the COMPLEX or SIMPLEX objects parent and children of the objects selected in the 'Complex objects' or 'Simplex objects' dropdown menu widgets." + GUI_IO_util.msg_Esc)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help",
-                                                         "Please, tick the checkbox for the type of complex object for which you want to compute frequencies." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                                         "NLP Suite Help",
-                                                         "Please, using the dropdown menu, select the SIMPLEX object for which you would like to obtain query results." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
-                                                         "NLP Suite Help",
-                                                         "Please, tick the checkbox for the type of simplex object for which you want to compute frequencies." + GUI_IO_util.msg_Esc)
+                                                         "Please, tick the 'Get value frequencies for ALL objects' checkbox to compute the frequencies of all available complex and simplex objects."
+                                                         "\n\nTick the 'Get value frequencies for SELECTED object' checkbox to compute the frequencies of the selected Complex or Simplex object." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the PARENT object and/or the CHILD object." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to visualize semantic triplets." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, use the dropdown menu to select the type of actor to be visualized (collective actor, individual, or organization), and  tick the checkboxes to visualize time and space." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to visualize Subejcts, Verbs, Objects in network graphs and wordclouds, and to visualize space in geographic maps." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, use the dropdown menu to select the type of actor for which you wish to extract all instances of semantic triplets, i.e., Subject-Verb-Object combinations (* for all types of actors)." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the 'Time' and/or 'Space' checkboxes to visualize the time and location of action." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to visualize Subjects, Verbs, Objects in network graphs and wordclouds, and to visualize space in geographic maps." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to visualize Verifier's comments." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to visualize the documents (e.g., newspaper articles) that are the sources of information for specific objects." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
@@ -604,7 +592,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,increment)
 
 # change the value of the readMe_message
-readMe_message="This Python 3 script can construct an SQLite relational database from a set of input csv files characterized by the presence of overlapping relational fields.\n\nThe script allows to perform SQL queries on any sqlite databases thus constructed."
+readMe_message="The Python 3 scripts, based on the Pandas package, can extract information from input xlsx files exported from a MS Access PC-ACE relational database.\n\nThe script allows to perform data queries on any PC-ACE database."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 

@@ -409,7 +409,7 @@ run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
                                 include_subdir_var.get(),
                                 fileName_embeds_date.get(),
                                 date_format.get(),
-                                date_separator_var.get(),
+                                items_separator_var.get(),
                                 date_position_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -493,7 +493,7 @@ character_entry_var=tk.StringVar()
 include_subdir_var=tk.IntVar()
 fileName_embeds_date = tk.IntVar()
 date_format = tk.StringVar()			#the following 3 fields are also used by SSR and NGRAMS
-date_separator_var = tk.StringVar()
+items_separator_var = tk.StringVar()
 date_position_var = tk.IntVar()
 
 def clear(e):
@@ -943,7 +943,7 @@ def activate_characters_entry_option(*args):
 character_count_file_manager_var.trace('w',activate_characters_entry_option)
 
 date_format.set('mm-dd-yyyy')
-date_separator_var.set('_')
+items_separator_var.set('_')
 date_position_var.set(2)
 
 fileName_embeds_date_checkbox = tk.Checkbutton(window, text='Filename embeds date', variable=fileName_embeds_date, onvalue=1, offvalue=0)
@@ -958,7 +958,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coor
 
 date_separator_lb = tk.Label(window, text='Date character separator ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+210,y_multiplier_integer, date_separator_lb,True)
-date_separator = tk.Entry(window, textvariable=date_separator_var)
+date_separator = tk.Entry(window, textvariable=items_separator_var)
 date_separator.configure(width=2)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+350,y_multiplier_integer, date_separator,True)
 

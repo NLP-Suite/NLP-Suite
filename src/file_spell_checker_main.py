@@ -34,6 +34,11 @@ def run(inputFilename, inputDir, outputDir,
     df_list = []
     df = []
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     # spell checking by Python algorithms -------------------------------------------------------------------------------------------------
 
     if spelling_checker_var:
@@ -44,11 +49,11 @@ def run(inputFilename, inputDir, outputDir,
             else:
                 silent=False
             # openOutputFiles=False
-            filesToOpen=file_spell_checker_util.nltk_unusual_words(GUI_util.window, inputFilename, inputDir, outputDir, False,
-													   createCharts,chartPackage, silent)
+            filesToOpen=file_spell_checker_util.nltk_unusual_words(GUI_util.window, inputFilename, inputDir, outputDir, config_filename, False,
+													   createCharts,chartPackage, silent, config_filename)
 
         if checker_value_var == '*' or "detector" in checker_value_var:
-            file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage)
+            file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, config_filename, openOutputFiles, createCharts, chartPackage)
 
         if checker_value_var == '*' or 'autocorrect' in checker_value_var or 'pyspellchecker' in checker_value_var or 'textblob' in checker_value_var:
             autocorrect_df, pyspellchecker_df,textblob_df = file_spell_checker_util.spellcheck(inputFilename, inputDir, checker_value_var, check_withinSubDir_spell_checker_var)
@@ -70,7 +75,7 @@ def run(inputFilename, inputDir, outputDir,
             textblob_df.to_csv(textblob_file_name,encoding='utf-8', index=False)
             filesToOpen.append(textblob_file_name)
         if 'Replace' in checker_value_var:
-            file_spell_checker_util.spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutputFiles)
+            file_spell_checker_util.spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutputFiles,config_filename)
 
         if checker_value_var == "Spell checker (via Java tool)":
             mb.showwarning(title='Option not available',

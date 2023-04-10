@@ -145,9 +145,9 @@ def check_utf8_compliance(window,inputFilename,inputDir,outputDir,openOutputFile
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running utf-8 compliance test at', True, '', True, startTime, True)
 
 
-def check_empty_file(inputFilename, inputDir):
+def check_empty_file(inputFilename, inputDir, configFileName):
     # collecting input txt files
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
     nDocs = len(inputDocs)
     docID = 0
     if nDocs == 0:

@@ -161,7 +161,7 @@ def excludeStopWords_list(words):
 # https://www.nltk.org/book/ch02.html
 # For the Gutenberg Corpus they provide the programming code to do it. section 1.9   Loading your own Corpus.
 # see also https://people.duke.edu/~ccc14/sta-663/TextProcessingSolutions.html
-def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
+def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, createCharts, chartPackage,
                               excludeStopWords=True, lemmatizeWords=True):
     filesToOpen = []
 
@@ -173,7 +173,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, openOu
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'corpus_stats', '')
     filesToOpen.append(outputFilename)
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
 
     # read_line(inputFilename, inputDir, outputDir)
     # return
@@ -350,9 +350,9 @@ def same_document_check(jgram):
     return True
 
 
-def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir, createCharts, chartPackage):
+def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, createCharts, chartPackage):
     filesToOpen = []
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
     Ndocs = len(inputDocs)
     if Ndocs == 0:
         return
@@ -392,7 +392,7 @@ def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir,
                     writer.writerow(
                         [len(tokens), sentenceID, sentence, fileID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
         csvOut.close()
-        reminder_status = reminders_util.checkReminder(config_filename,
+        reminder_status = reminders_util.checkReminder(configFileName,
                                                        reminders_util.title_options_TIPS_file,
                                                        reminders_util.message_TIPS_file,
                                                        True)
@@ -420,15 +420,15 @@ def compute_sentence_length(config_filename, inputFilename, inputDir, outputDir,
 
     return filesToOpen
 
-def compute_line_length(window, config_filename, inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage):
+def compute_line_length(window, configFileName, inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage):
     filesToOpen=[]
     outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'line_length')
     filesToOpen.append(outputFilename)
-    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
     Ndocs = str(len(inputDocs))
     if Ndocs==0:
         return
-    reminders_util.checkReminder(config_filename, reminders_util.title_options_line_length,
+    reminders_util.checkReminder(configFileName, reminders_util.title_options_line_length,
                                  reminders_util.message_line_length, True)
     fieldnames=[
         'Line length (in characters)',
@@ -502,7 +502,8 @@ def compute_line_length(window, config_filename, inputFilename, inputDir, output
 # frequency = 0 n-grams
 # frequency = 1 hapax
 
-def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngramsNumber=3,
+def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, configFileName,
+                                  ngramsNumber=3,
                                   normalize=False, excludePunctuation=True, wordgram=None,
                                   frequency = 0, openOutputFiles=False,
                                   createCharts=True, chartPackage='Excel', bySentenceID=None):
@@ -518,7 +519,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
                                        'Started running Word/Characters N-Grams at',
                                        True, '', True, '', False)
 
-    files = IO_files_util.getFileList(inputFilename, inputDir, '.txt')
+    files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
     nFile=len(files)
     if nFile==0:
         return
@@ -548,7 +549,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir,ngrams
         else:
             bySentenceID=0
 
-    filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber, wordgram, excludePunctuation, frequency,
+    filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, wordgram, excludePunctuation, frequency,
                                 bySentenceID,  createCharts, chartPackage)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
@@ -602,7 +603,7 @@ def process_hapax(ngramsList, frequency, excludePunctuation):
 # re-written by Roberto June 2022
 
 # return a list for each document
-def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1, excludePunctuation=True, frequency = None, bySentenceID=False, createCharts=True,chartPackage='Excel'):
+def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber=3, wordgram=1, excludePunctuation=True, frequency = None, bySentenceID=False, createCharts=True,chartPackage='Excel'):
 
     # the function combines each token with the next token in the list
     def combine_tokens_in_ngrams(ngrams_list):
@@ -619,7 +620,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, ngramsNumber=3, wordgram=1
     if wordgram==0:
         mb.showinfo(title='Warning', message='The computation of character n-grams is currently not available. Sorry!')
         return
-    files = IO_files_util.getFileList(inputFilename, inputDir, '.txt')
+    files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
     nFile=len(files)
     if nFile==0:
         return
@@ -788,14 +789,14 @@ def get_yules_k_i(s):
     return (k, i)
 
 # https://swizec.com/blog/measuring-vocabulary-richness-with-python/swizec/2528
-def yule(window, inputFilename, inputDir, outputDir, hideMessage=False):
+def yule(window, inputFilename, inputDir, outputDir, configFileName, hideMessage=False):
     # yule's I measure (the inverse of yule's K measure)
     # higher number is higher diversity - richer vocabulary
     filesToOpen = []
     Yule_value_list=[]
     headers = ["Yule's K Value", "Document ID", "Document"]
     index = 0
-    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
 
     Ndocs=str(len(inputDocs))
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Yule K')
@@ -865,7 +866,7 @@ def print_results(window, words, class_word_list, header, inputFilename, outputD
 
 
 # called by sentence_analysis_main and style_analysis_main
-def process_words(window, config_filename, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, processType='', excludeStopWords=True,word_length=3):
+def process_words(window, config_filename, inputFilename,inputDir,outputDir, configFileName, openOutputFiles, createCharts, chartPackage, processType='', excludeStopWords=True,word_length=3):
     filesToOpen=[]
     documentID = 0
     multiple_punctuation=0
@@ -887,7 +888,7 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
 
     fin = open('../lib/wordLists/stopwords.txt', 'r')
     stops = set(fin.read().splitlines())
-    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
 
     Ndocs=str(len(inputDocs))
 
@@ -921,7 +922,8 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, ope
         excludePunctuation = True
         wordgram = True
         bySentenceID = False
-        tempOutputFiles = compute_character_word_ngrams(window, inputFilename, inputDir, outputDir, ngramsNumber,
+        tempOutputFiles = compute_character_word_ngrams(window, inputFilename, inputDir, outputDir, config_filename,
+                                                        ngramsNumber,
                                                         normalize, excludePunctuation,
                                                         wordgram, frequency,
                                                         openOutputFiles, createCharts, chartPackage,
@@ -1257,7 +1259,7 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
     outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'corpus', 'lemma_stw')
     filesToOpen.append(outputFilename)
 
-    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
 
     Ndocs=str(len(inputDocs))
 
@@ -1304,7 +1306,7 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
 
 
 # https://pypi.org/project/textstat/
-def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
+def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, createCharts, chartPackage):
     filesToOpen = []
     documentID = 0
 
@@ -1314,7 +1316,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
     if outputDir == '':
         return
 
-    files = IO_files_util.getFileList(inputFilename, inputDir, '.txt')
+    files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
     nFile = len(files)
     if nFile == 0:
         return

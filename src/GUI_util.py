@@ -485,16 +485,22 @@ def set_IO_brief_values(config_filename, y_multiplier_integer):
 
 # checking inputFilename -----------------------------------------------------
     if config_input_output_alphabetic_options[0][1] != '':  # check that there is a file path
+        try:
+            config_input_output_alphabetic_options[0][5]
+        except:
+            mb.showwarning(title='Warning',
+                           message='The config file ' + config_filename + ' is an old file without the new Sort order field.\n\nPlease, click on the "Setup INPUT/OUTPUT configuration" widget and select the appropriate values for the "Filename embeds multiple items" and "Filename embeds date" and save the changes when clicking on CLOSE.')
+            return '', '', config_input_output_alphabetic_options, missingIO
         # date label already added in NLP_setup_IO_main
         # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from filename since it will be used in ALL GUIs
         inputFilename.set(IO_files_util.open_file_removing_date_from_filename(window,config_input_output_alphabetic_options[0][1],False))
         input_main_dir_path.set('')
         file_date_label=''
-        if str(config_input_output_alphabetic_options[0][2]) != '':  # date format available
+        if str(config_input_output_alphabetic_options[0][4]) != '':  # date format available
             date_hover_over_label = 'The input file has a date embedded in the filename with the following values:\n' \
-                                    'Date format: ' + str(config_input_output_alphabetic_options[0][2]) + \
+                                    'Date format: ' + str(config_input_output_alphabetic_options[0][4]) + \
                                     ' Date character(s) separator: ' + str(config_input_output_alphabetic_options[0][3]) + \
-                                    ' Date position: ' + str(config_input_output_alphabetic_options[0][4])
+                                    ' Date position: ' + str(config_input_output_alphabetic_options[0][5])
         else:
             date_hover_over_label = 'The input file does not have a date embedded in the filename'
             # # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from filename
@@ -502,6 +508,12 @@ def set_IO_brief_values(config_filename, y_multiplier_integer):
 
 # checking input directory  -----------------------------------------------------
     if config_input_output_alphabetic_options[1][1] != '':  # check that there is a dir path
+        try:
+            config_input_output_alphabetic_options[1][5]
+        except:
+            mb.showwarning(title='Warning',
+                           message='The config file ' + config_filename + ' is an old file without the new Sort order field.\n\nPlease, click on the "Setup INPUT/OUTPUT configuration" widget and select the appropriate values for the "Filename embeds multiple items" and "Filename embeds date" and save the changes when clicking on CLOSE.')
+            return '', '', config_input_output_alphabetic_options, missingIO
         # date label already added in NLP_setup_IO_main
         # remove date in input_main_dir_path since it will be used in ALL GUIs
         input_main_dir_path.set(IO_files_util.open_directory_removing_date_from_directory(
@@ -509,12 +521,12 @@ def set_IO_brief_values(config_filename, y_multiplier_integer):
         if input_main_dir_path.get()!='':
             inputFilename.set('')
         dir_date_label=''
-        if str(config_input_output_alphabetic_options[1][2]) != '':  # date format available
+        if str(config_input_output_alphabetic_options[1][4]) != '':  # date format available
             if date_hover_over_label == '':
-                date_hover_over_label = 'The txt files in the input directory contain a date embedded in the filename with the following values:\n' + \
-                            'Date format: ' + str(config_input_output_alphabetic_options[1][2]) + \
+                date_hover_over_label = 'The txt files in the input directory contain a date embedded in the filenames with the following values:\n' + \
+                            'Date format: ' + str(config_input_output_alphabetic_options[1][4]) + \
                             ' Date character(s) separator: ' + str(config_input_output_alphabetic_options[1][3]) + \
-                            ' Date position: ' + str(config_input_output_alphabetic_options[1][4])
+                            ' Date position: ' + str(config_input_output_alphabetic_options[1][5])
         else: # no date available
             date_hover_over_label = 'The txt files in the input directory do not contain a date embedded in the filename'
             # remove the date portion (e.g., (Date: mm-dd-yyyy, _, 4) from dir name

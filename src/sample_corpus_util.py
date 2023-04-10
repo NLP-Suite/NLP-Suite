@@ -20,10 +20,10 @@ import os
 import shutil
 import IO_files_util
 
-def sample_corpus_by_search_words_inFileName(window, inputDir,keywords_inFilename):
+def sample_corpus_by_search_words_inFileName(window, inputDir, configFileName, keywords_inFilename):
     keywords_inFilename_list = [word.lstrip().rstrip() for word in keywords_inFilename.split(",")]
     SubSampleDir=IO_files_util.make_directory(inputDir+os.sep+'subcorpus_sample')
-    inputDocs = IO_files_util.getFileList('', inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList('', inputDir, fileType='.txt', silent=False, configFileName=configFileName)
     Ndocs = len(inputDocs)
     if Ndocs == 0:
         mb.showwarning(title='Warning',message='The selected input directory\n' + inputDir + '\ncontains no file of txt type. Routine aborted.')

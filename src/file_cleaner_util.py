@@ -21,7 +21,7 @@ import IO_files_util
 import GUI_IO_util
 import IO_user_interface_util
 import IO_csv_util
-import file_filename_util
+
 
 
 # the function checks for end of paragraph punctuation
@@ -33,13 +33,14 @@ import file_filename_util
 #       https://stanfordnlp.github.io/CoreNLP/memory-time.html
 
 # extra parameters passed to uniform the funct call
-def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, openOutputFiles,createCharts=False,chartPackage='Excel'):
-    result=file_filename_util.backup_files(inputFilename, inputDir,'Add full-stops to paragraphs')
+def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles,createCharts=False,chartPackage='Excel'):
+    import file_filename_util
+    result=file_filename_util.backup_files(inputFilename, inputDir,'Add full-stops to paragraphs', '.txt', configFileName)
     if result==False:
         return
 
     # collecting input txt files
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
     nDocs = len(inputDocs)
     docID = 0
     if nDocs == 0:
@@ -95,10 +96,10 @@ def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, openO
 
     mb.showwarning(title='End of paragraph punctuation', message=msgString)
 
-def check_typesetting_hyphenation(window,inputFilename,inputDir, outputDir='',openOutputFiles=False,createCharts=False,chartPackage='Excel'):
+def check_typesetting_hyphenation(window,inputFilename,inputDir, outputDir='',configFileName='',openOutputFiles=False,createCharts=False,chartPackage='Excel'):
     filesToOpen=[]
     docID = 0
-    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt')
+    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt', silent=False, configFileName=configFileName)
     nDocs = len(files)
     if nDocs==0:
         return
@@ -132,7 +133,7 @@ def check_typesetting_hyphenation(window,inputFilename,inputDir, outputDir='',op
     else:
         mb.showwarning('Warning', 'There are ' + str(hyphenated_lines) + ' typesetting hyphenated lines in the input file(s).')
 
-def remove_typeseting_hyphenation(window,inputFilename,inputDir, outputDir='',openOutputFiles=False,createCharts=False,chartPackage='Excel'):
+def remove_typeseting_hyphenation(window,inputFilename,inputDir, outputDir='',openOutputFiles=False,createCharts=False,chartPackage='Excel',configFileName=''):
 
     # if not IO_user_interface_util.input_output_save('Remove end-of-line typesetting hyphenation and join split parts'):
     #     return
@@ -141,11 +142,11 @@ def remove_typeseting_hyphenation(window,inputFilename,inputDir, outputDir='',op
     answer = tk.messagebox.askyesno("Warning", message)
     if answer:
         check_typesetting_hyphenation(window, inputFilename, inputDir, outputDir, openOutputFiles,
-                                      createCharts=False, chartPackage='Excel')
+                                      createCharts=False, chartPackage='Excel',configFileName=configFileName)
         return
 
     docID = 0
-    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt')
+    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt', silent=False, configFileName=configFileName)
     nDocs = len(files)
     if nDocs==0:
         return
@@ -175,7 +176,7 @@ def remove_typeseting_hyphenation(window,inputFilename,inputDir, outputDir='',op
         save_msg = ''
     mb.showwarning('Warning',str(removed_hyphens) + ' end-line typesetting hyphens removed from the input file(s).'+ save_msg)
 
-def remove_characters_between_characters(window,inputFilename,inputDir, outputDir='',openOutputFiles=False, startCharacter='', endCharacter=''):
+def remove_characters_between_characters(window,inputFilename,inputDir, outputDir='',openOutputFiles=False, startCharacter='', endCharacter='', configFileName=''):
 
     if not IO_user_interface_util.input_output_save('Remove all characters between characters'):
         return
@@ -195,7 +196,7 @@ def remove_characters_between_characters(window,inputFilename,inputDir, outputDi
             return
 
     docID = 0
-    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt')
+    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt', silent=False, configFileName=configFileName)
     nDocs = len(files)
     if nDocs==0:
         return
@@ -235,12 +236,13 @@ def remove_characters_between_characters(window,inputFilename,inputDir, outputDi
             mb.showwarning(title='Edits saved', message=str(i) + ' substrings contained between ' + startCharacter + ' ' + endCharacter + ' were removed and saved directly in the input file ' + tail)
 
 # inputFilename contains path
-def remove_blank_lines(window,inputFilename,inputDir, outputDir='',openOutputFiles=False,createCharts=False,chartPackage='Excel'):
-    result=file_filename_util.backup_files(inputFilename, inputDir,"Remove blank lines")
+def remove_blank_lines(window,inputFilename,inputDir, outputDir='', configFileName='', openOutputFiles=False,createCharts=False,chartPackage='Excel'):
+    import file_filename_util
+    result=file_filename_util.backup_files(inputFilename, inputDir,"Remove blank lines", '.txt', configFileName)
     if result==False:
         return
 
-    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt')
+    files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt', silent=False, configFileName=configFileName)
     nDocs = len(files)
     if nDocs==0:
         return
@@ -301,7 +303,7 @@ def isTitle(sentence,Title_length_limit):
         # print sentence
         return True
 
-def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPackage):
+def newspaper_titles(window,inputFilename,inputDir,outputDir, configFileName, openOutputFiles,createCharts,chartPackage):
     from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
 
     if inputDir=='' and inputFilename!='':
@@ -340,7 +342,7 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles,cre
         os.makedirs(path_aritclesWithTitles)
 
     #collecting input txt files
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
     nDocs = len(inputDocs)
     docID = 0
     if nDocs==0:
@@ -460,12 +462,13 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir,openOutputFiles,cre
 #   The character "%" is allowed but is interpreted as the start of a special escaped sequence.
 # Needs special handling https://stackoverflow.com/questions/6067673/urldecoder-illegal-hex-characters-in-escape-pattern-for-input-string
 # https://stackoverflow.com/questions/7395789/replacing-a-weird-single-quote-with-blank-string-in-python
-def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
-    result=file_filename_util.backup_files(inputFilename, inputDir,"Convert non-ASCII quotes")
+def convert_quotes(window,inputFilename, inputDir, outputDir, configFileName):
+    import file_filename_util
+    result=file_filename_util.backup_files(inputFilename, inputDir,"Convert non-ASCII quotes",".txt",configFileName)
     if result==False:
         return False
 
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
     Ndocs=len(inputDocs)
     index=0
     if Ndocs==0:
@@ -547,14 +550,15 @@ def convert_quotes(window,inputFilename, inputDir,temp1='',temp2=''):
 # 			file.write(fullText)
 # 			file.close()
 
-def find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFiles=True,string_IN=[],string_OUT=[],silent=False):
+def find_replace_string(window,inputFilename, inputDir, outputDir, configFileName, openOutputFiles=True,string_IN=[],string_OUT=[],silent=False):
     #edited by Claude Hu 02/2021
     #string_IN=[],string_OUT=[], in the form as list so that running this function can finish replacement of multiple strings without open one file repetitively
-    result=file_filename_util.backup_files(inputFilename, inputDir,"Find and replace string")
+    import file_filename_util
+    result=file_filename_util.backup_files(inputFilename, inputDir,"Find and replace string", '.txt', configFileName)
     if result==False:
         return
 
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
     filesToOpen=[]
     Ndocs=len(inputDocs)
     index=0

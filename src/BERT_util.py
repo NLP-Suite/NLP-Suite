@@ -46,11 +46,11 @@ import word2vec_distances_util
 import IO_internet_util
 
 # Provides NER tags per sentence for every doc and stores in a csv file
-def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts, chartPackage):
+def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mode, createCharts, chartPackage):
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-large-finetuned-conll03-english")
     model = AutoModelForTokenClassification.from_pretrained("xlm-roberta-large-finetuned-conll03-english")
 
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
 
     Ndocs = str(len(inputDocs))
 
@@ -101,14 +101,14 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts
 
 
 # provides summary of text per doc and stores in a csv file
-def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts, chartPackage):
+def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts, chartPackage, configFileName):
 
 
     result_summary_list = []
 
     header = ["Document Name", "Summary", "Document ID", "Document"]
 
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
 
     Ndocs = str(len(inputDocs))
 
@@ -138,9 +138,10 @@ def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, createCha
     return tempOutputFiles
 
 # Creates a list of vectors/word embeddings for input files and subsequently plots them on a 2d graph
-def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, vis_menu_var, dim_menu_var, compute_distances_var, top_words_var, keywords_var, lemmatize_var, remove_stopwords_var):
+def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, vis_menu_var,
+            dim_menu_var, compute_distances_var, top_words_var, keywords_var, lemmatize_var, remove_stopwords_var, configFileName):
     model = SentenceTransformer('sentence-transformers/all-distilroberta-v1')
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
     filesToOpen = []
     Ndocs = str(len(inputDocs))
     header = ["Word", "Vector", "Sentence ID", "Sentence", "Document ID", "Document"]

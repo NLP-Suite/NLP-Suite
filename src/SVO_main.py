@@ -77,12 +77,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     language_var = language
     language_list = [language]
 
-    # get the date options from filename
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
     else:
         config_filename = scriptName.replace('main.py', 'config.csv')
-    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
+
+    # get the date options from filename
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
@@ -258,9 +259,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                    params, False,
                                    language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                    extract_date_from_text_var=extract_date_from_text_var,
-                                   extract_date_from_filename_var=extract_date_from_filename_var,
+                                   filename_embeds_date_var=filename_embeds_date_var,
                                    date_format=date_format_var,
-                                   date_separator_var=date_separator_var,
+                                   items_separator_var=items_separator_var,
                                    date_position_var=date_position_var,
                                    google_earth_var=google_earth_var,
                                    location_filename = location_filename,
@@ -298,9 +299,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                            False,
                                                                            language_var, memory_var, export_json_var, document_length_var, limit_sentence_length_var,
                                                                            extract_date_from_text_var=extract_date_from_text_var,
-                                                                           extract_date_from_filename_var=extract_date_from_filename_var,
+                                                                           filename_embeds_date_var=filename_embeds_date_var,
                                                                            date_format=date_format_var,
-                                                                           date_separator_var=date_separator_var,
+                                                                           items_separator_var=items_separator_var,
                                                                            date_position_var=date_position_var,
                                                                            google_earth_var = google_earth_var,
                                                                            location_filename = location_filename)
@@ -331,15 +332,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         limit_sentence_length_var = 1000
         annotator = 'SVO'
         tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
-                                                    outputSVODir,
+                                                    outputSVODir, config_filename,
                                                     openOutputFiles,
                                                     createCharts, chartPackage,
                                                     annotator, False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
-                                                    extract_date_from_filename_var=extract_date_from_filename_var,
+                                                    filename_embeds_date_var=filename_embeds_date_var,
                                                     date_format=date_format_var,
-                                                    date_separator_var=date_separator_var,
+                                                    items_separator_var=items_separator_var,
                                                     date_position_var=date_position_var,
                                                     google_earth_var=google_earth_var,
                                                     location_filename=location_filename)
@@ -363,9 +364,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       annotator, False,
                                                       language_list,
                                                       memory_var, document_length_var, limit_sentence_length_var,
-                                                      extract_date_from_filename_var=extract_date_from_filename_var,
+                                                      filename_embeds_date_var=filename_embeds_date_var,
                                                       date_format=date_format_var,
-                                                      date_separator_var=date_separator_var,
+                                                      items_separator_var=items_separator_var,
                                                       date_position_var=date_position_var,
                                                       google_earth_var=google_earth_var,
                                                       location_filename=location_filename)
@@ -530,7 +531,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
                                                  reminders_util.message_geocoder, True)
                     # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
-                    date_present = (extract_date_from_text_var == True) or (extract_date_from_filename_var == True)
+                    date_present = (extract_date_from_text_var == True) or (filename_embeds_date_var == True)
                     country_bias = ''
                     area_var = ''
                     restrict = False
@@ -857,9 +858,9 @@ filter_verbs_var.set(1)
 verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=filter_verbs_var, onvalue=1, offvalue=0,
                                 command=lambda: getDictFile(filter_verbs_var, verbs_dict_var, filter_verbs_var.get(), 'Verb'))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    verbs_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Filter verbs list excluding verbs that are not social actions.\nThe option for filtering verbs for social actions via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the verbs file
@@ -874,7 +875,7 @@ lemmatize_verbs_checkbox = tk.Checkbutton(window, text='Lemmatize Verb', variabl
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.lemmatize_V, y_multiplier_integer,
                                                lemmatize_verbs_checkbox,
                                                True, False, True, False, 90,
-                                               GUI_IO_util.lemmatize_V,
+                                               GUI_IO_util.open_reminders_x_coordinate,
                                                "When lemmatizing verbs, WordNet will be used to aggregate verbs into top synsets verb categories")
 
 filter_objects_var.set(0)
@@ -882,7 +883,7 @@ objects_checkbox = tk.Checkbutton(window, text='Filter Object', variable=filter_
                                   command=lambda: getDictFile(filter_objects_var, objects_dict_var, filter_objects_var.get(),
                                                               'Object'))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                    objects_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
                                    "Filter objects list excluding objects that are not social actors.\nThe option for filtering objects for social actors via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
@@ -890,7 +891,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column
 # setup a button to open Windows Explorer on the objects file
 openInputFile_objects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                          command=lambda: IO_files_util.openFile(window, object_filePath))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_O_dictionary, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate+130, y_multiplier_integer,
                                                openInputFile_objects_button,True, False, True, False, 90, GUI_IO_util.open_O_dictionary, "Open csv file containing OBJECT filters")
 
 lemmatize_objects_var.set(1)
@@ -916,17 +917,17 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 verbs_dict_var.set('social-action-list.csv')
 verbs_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_V_width, state="disabled", textvariable=verbs_dict_var)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    verbs_dict_entry,
-                                   True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
+                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "The complete path of the verb social action list is "+ verb_filePath+"\nTick twice the checkbox 'Filter Verb' to select a different file.")
 
 objects_dict_var.set('')
 objects_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_O_width, state="disabled", textvariable=objects_dict_var)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                    objects_dict_entry,
-                                   False, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
+                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "The complete path of the object social actor list is "+ object_filePath+"\nTick twice the checkbox 'Filter Object' to select a different file.")
 
 gender_var.set(0)
@@ -953,7 +954,7 @@ quote_var.set(0)
 quote_checkbox = tk.Checkbutton(window, text='S & O quote/speaker',
                                                 variable=quote_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    quote_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
                                    "The neural network quote annotator is available only via Stanford CoreNLP")
@@ -969,7 +970,7 @@ activateQuote()
 SRL_var.set(0)
 SRL_checkbox = tk.Checkbutton(window, text='SRL (Semantic Role Labeling)',
                                                 variable=SRL_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                                SRL_checkbox)
 SRL_checkbox.configure(state='disabled')
 
@@ -987,7 +988,7 @@ wordcloud_var.set(1)
 wordcloud_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in wordcloud', variable=wordcloud_var,
                                     onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    wordcloud_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "When filtering subjects/verbs/objects, wordclouds will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO-filtered subdirectories\n" 
@@ -997,7 +998,7 @@ google_earth_var.set(1)
 google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Earth Pro & Google Maps)',
                                        variable=google_earth_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                    google_earth_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Draw pin and heat maps with Google Earth Pro and Google Maps. Maps are exported to the SVO subdirectory only, whether filtering or lemmatizing to avoid missing locations.\n"

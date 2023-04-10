@@ -62,7 +62,7 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
 # returns list of a list of terms with appropriate annotations for each file
 # annotation allows custom tagging style (via csv, etc.)
 # NOTICE: csv_field1_var and first entry of csvValue_color_list should be a list
-def dictionary_annotate(inputFile, inputDir, outputDir, dict_file,
+def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_file,
                         csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, fileType='.txt', fileSubc=''):
     writeout = []
     filesToOpen = []
@@ -70,7 +70,7 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file,
     #   would need to use split()
     if isinstance(csv_field1_var,str):
         csv_field1_var=[csv_field1_var]
-    files=IO_files_util.getFileList(inputFile, inputDir, fileType)
+    files=IO_files_util.getFileList(inputFile, inputDir, fileType, silent=False, configFileName=configFileName)
     nFile=len(files)
     if nFile==0:
         return

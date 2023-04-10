@@ -54,9 +54,9 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
     document_length_var = 90000
     limit_sentence_length_var = 100
     extract_date_from_text_var = False
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     date_format = ''
-    date_separator_var = ''
+    items_separator_var = ''
     date_position_var = ''
 
     from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
@@ -70,9 +70,9 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
                                                         document_length=document_length_var,
                                                         sentence_length=limit_sentence_length_var,
                                                         dateExtractedFromFileContent=extract_date_from_text_var,
-                                                        filename_embeds_date_var=extract_date_from_filename_var,
+                                                        filename_embeds_date_var=filename_embeds_date_var,
                                                         date_format=date_format,
-                                                        date_separator_var=date_separator_var,
+                                                        items_separator_var=items_separator_var,
                                                         date_position_var=date_position_var)
 
     if len(tempOutputFiles)==0:

@@ -28,7 +28,7 @@ def run(window, inputFilename, inputDir, outputDir, selectedFile,
             mb.showwarning(title='Warning',message='You have selected the option of creating a subcorpus of the input files based on search words found in the filenames, but no search words have been entered.\n\nPlease, enter the search words that a filename must contain and try again.')
             return
         import sample_corpus_util
-        sample_corpus_util.sample_corpus_by_search_words_inFileName(window, inputDir, keywords_inFilename)
+        sample_corpus_util.sample_corpus_by_search_words_inFileName(window, inputDir, config_filename, keywords_inFilename)
     elif sample_by_keywords_inDocument:
         if keywords_inDocument=='':
             mb.showwarning(title='Warning',message='You have selected the option of creating a subcorpus of the input files based on search words foound in the input documents, but no search words have been entered.\n\nPlease, enter the search words that documents must contain and try again.')
@@ -187,13 +187,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                GUI_IO_util.date_format_coordinate,
                                                'Select the date type embedded in your filename')
 
-date_separator_var = tk.StringVar()
-date_separator_var.set('_')
+items_separator_var = tk.StringVar()
+items_separator_var.set('_')
 date_separator_lb = tk.Label(window, text='Character separator ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_char_sep_lb_coordinate,
                                                y_multiplier_integer, date_separator_lb, True)
 
-date_separator = tk.Entry(window, textvariable=date_separator_var, width=3)
+date_separator = tk.Entry(window, textvariable=items_separator_var, width=3)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                GUI_IO_util.open_setup_x_coordinate,

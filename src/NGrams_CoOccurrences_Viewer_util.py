@@ -24,6 +24,7 @@ NGramsCoOccurrences implements the ability to generate NGram and CoOccurrences d
 
 def run(inputDir="relative_path_here",
         outputDir="relative_path_here",
+        configFileName='',
         n_grams_viewer=False,
         CoOcc_Viewer=True,
         search_wordsLists=None,
@@ -99,7 +100,7 @@ def run(inputDir="relative_path_here",
     elif temporal_aggregation=='month':
         byMonth = True  # set to True if want to aggregate by years
         aggregateBy = 'month'
-    files = IO_files_util.getFileList('', inputDir, ".txt")  # get all input files
+    files = IO_files_util.getFileList('', inputDir, ".txt", silent=False, configFileName=configFileName)  # get all input files
     original_search_word = search_wordsLists + ""
     search_word_list = search_wordsLists.split(',')
     ngram_results = {}

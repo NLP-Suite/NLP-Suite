@@ -65,7 +65,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         date_options,
         temporal_aggregation_var,
         viewer_options_list):
-    # print(date_options, temporal_aggregation_var, date_format, date_separator_var, date_position_var)
+    # print(date_options, temporal_aggregation_var, date_format, items_separator_var, date_position_var)
     filesToOpen = []
 
     print("language_list",language_list)
@@ -75,12 +75,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     error_filenames = []
     error_flag = False
 
-    # get the date options from filename
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
     else:
         config_filename = scriptName.replace('main.py', 'config.csv')
-    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
+
+    # get the date options from filename
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
@@ -103,7 +104,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 total_file_number = total_file_number + 1
                 try:
                     date_text = ''
-                    date_text = filename.split(date_separator_var)[date_position_var - 1]
+                    date_text = filename.split(items_separator_var)[date_position_var - 1]
                 except: # if a file in the folder has no date it will break the code
                     pass
                 try:
@@ -209,6 +210,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     n_grams_outputFile, co_occurrences_outputFile = NGrams_CoOccurrences_Viewer_util.run(
             inputDir,
             outputDir,
+            config_filename,
             n_grams_viewer_var,
             CoOcc_Viewer_var,
             search_words,
@@ -218,7 +220,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             temporal_aggregation_var,
             number_of_years,
             date_format_var,
-            date_separator_var,
+            items_separator_var,
             date_position_var,
             viewer_options_list)
 
@@ -351,7 +353,7 @@ CoOcc_Viewer_var = tk.IntVar()
 search_words_var=tk.StringVar()
 
 # date_format_var=tk.StringVar()
-# date_separator_var=tk.StringVar()
+# items_separator_var=tk.StringVar()
 # date_position_var=tk.IntVar()
 
 date_options = tk.IntVar()
@@ -578,7 +580,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         '\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer script.'\
         '\n\nYou can run both Viewers at the same time.'\
         '\n\nThe NGrams part of the algorithm requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872). '\
-        'YOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOX "Extract date from filename" WHEN THE NLP_setup_IO_main GUI OPENS.'\
+        'YOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXES "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'\
         '\n\nFor both viewers, results will be visualized in Excel line plots.'\
         '\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. '\
         'For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
@@ -586,7 +588,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         'Please, enter the comma-separated list of single words or collocations (i.e., sets of words such as coming out, beautiful sunny day) for which you want to know N-Grams/Co-occurrences statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
         'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences. ' \
-            'YOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOX "Extract date from filename" WHEN THE NLP_setup_IO_main GUI OPENS.'\
+            'YOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXS "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'\
             '\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: group of years, year, quarter, month.'\
             '\n\nFor both viewers, results will be visualized in Excel line plots.'\
             '\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. '\
@@ -606,7 +608,7 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,
 readMe_message="""
 The NGrams_CoOccurrences script allows searches for Ngrams or word co-occurrences, i.e., key words (e.g., “nursery school” (a 2-gram or bigram), “kindergarten” (a 1-gram or unigram) and “child care” (another bigram) that occur in a set of documents.
 \n\nThe NGrams VIEWER requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872). It computes the number of words that appear in documents within a selected time period (e.g., month, year). It works similarly to Google Ngram Viewer except this routine works on documents supplied by the user rather than on the millions of Google books (see https://books.google.com/ngrams/info).
-'\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOX "Extract date from filename" WHEN THE NLP_setup_IO_main GUI OPENS.'
+'\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXS "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'
 \n\nThe routine relies on Stanza for lemmatizing words.
 \n\n   For NGRAMS, the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the FREQUENCY OF DOCUMENTS where searched word(s) appear.
 \n\n   For CO-OCCURRING words, the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear together in the same document, NOT the frequency of the searched word(s) as with NGrams.

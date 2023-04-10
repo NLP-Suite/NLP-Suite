@@ -353,7 +353,7 @@ if sys.platform == 'darwin':  # Mac OS
     sentence_length_pos = 800
 
 # MAC NLP_setup_IO_main Mac
-    date_format_coordinate = 530
+    date_format_coordinate = 550
     date_char_sep_lb_coordinate = 690
     date_char_sep_coordinate = 825
     date_position_lb_coordinate = 900
@@ -389,20 +389,14 @@ if sys.platform == 'darwin':  # Mac OS
     GIS_distance_labels_align = 150+370 #TODO changed from labels_x_coordinate+350 to GIS_distance_labels_align
 
 # MAC GIS_main.py
-    geocoder_label_loc = 315
+    label_columns  = 300
+
     csv_file_width=85
     country_bias_width=25
     area_width=40
 
-    country_bias_pos = geocoder_label_loc
-    area_lb = 670
-    area_pos = 720
-    restrict_pos = 1100
-
-    GIS_package_pos = 480
-    GIS_open_GUI = 820
-    GIS_open_API = 250
-    GIS_openAPI_file = 420
+    area_pos = 810
+    restrict_pos = 1200
 
 # MAC SVO_main Mac
     SVO_1st_column = 120
@@ -412,16 +406,16 @@ if sys.platform == 'darwin':  # Mac OS
     SVO_2nd_column = 520# filter & dictionary options for Verbs
     open_V_dictionary = 615
     lemmatize_V = 680
-    SVO_3rd_column = 920 # filter & dictionary options for Objects
+    SVO_3rd_column = 940 # filter & dictionary options for Objects; now run_button_x_coordinate
     open_O_dictionary = 1025
     lemmatize_O = 1090
 
     SVO_2nd_column_top = 400
     SVO_3rd_column_top = 800
 
-    dictionary_S_width=37
-    dictionary_V_width=37
-    dictionary_O_width=37
+    dictionary_S_width=30
+    dictionary_V_width=30
+    dictionary_O_width=30
 
 # MAC CoNLL_table_analyzer_main
     combobox_position = 210
@@ -621,12 +615,12 @@ if sys.platform == 'darwin':  # Mac OS
     file_search_byWord_extract_sentences_search_words_entry_pos = 510
 
     # Mac Word2Vec
-    Word2Vec_vector_size_entry_pos = 270
+    Word2Vec_vector_size_entry_pos = 280
     Word2Vec_window_size_lb_pos = Word2Vec_vector_size_entry_pos
     Word2Vec_window_size_entry_pos= Word2Vec_window_size_lb_pos+260
     Word2Vec_min_count_lb_pos=setup_pop_up_text_widget
     Word2Vec_min_count_entry_pos = Word2Vec_min_count_lb_pos +150
-    Word2Vec_top_words_pos = 930
+    Word2Vec_top_words_pos = 1000
 
 # Mac statistics_csv
 
@@ -670,18 +664,19 @@ if sys.platform == 'darwin':  # Mac OS
     coreference_CoRef_var_menu_pos = 320
 
     # Mac NER
-    NER_NER_packages_menu_pos = 220
-    NER_NER_menu_pos = 220
-    NER_reset_NER_button_pos = 590
-    NER_NER_entry_lb_pos = 660
-    NER_NER_entry_pos = 720
+    NER_NER_packages_menu_pos = 250
+    NER_NER_menu_pos = 250
+    NER_reset_NER_button_pos = 600
+    NER_NER_entry_lb_pos = 720
+    NER_NER_entry_pos = 800
 
 # Mac whats_in_your_corpus_main
     whats_in_your_corpus_corpus_statistics_options_menu_lb_pos = IO_configuration_menu
     whats_in_your_corpus_corpus_statistics_options_menu_pos = IO_configuration_menu+130
     whats_in_your_corpus_corpus_options_menu_lb_pos = 920
-    whats_in_your_corpus_corpus_options_menu_pos = 1000
+    whats_in_your_corpus_corpus_options_menu_pos = 1040
 
+    # no longer user run_button_x_coordinate instead
     whats_in_your_corpus_open_wordclouds_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
     whats_in_your_corpus_topics_Mallet_pos = 560
     whats_in_your_corpus_topics_Gensim_pos = 690
@@ -764,11 +759,11 @@ else: #windows and anything else
     sentence_length_pos = 800
 
 # Windows NLP_setup_IO_main
-    date_format_coordinate = 460
+    date_format_coordinate = 530
     date_char_sep_lb_coordinate = 620
     date_char_sep_coordinate = 745
-    date_position_lb_coordinate = 810
-    date_position_coordinate = 880
+    date_position_lb_coordinate = open_setup_x_coordinate # 810
+    date_position_coordinate = open_setup_x_coordinate + 130 # 880
 
 # Windows NLP_setup_external_software_main.py
     missing_software_display_area_width = 85
@@ -799,34 +794,27 @@ else: #windows and anything else
 
     open_S_dictionary = 260
     lemmatize_S = 320
-    SVO_2nd_column = 520# filter & dictionary options for Verbs
-    open_V_dictionary = 640
-    lemmatize_V = 700
-    SVO_3rd_column = 920 # filter & dictionary options for Objects
-    open_O_dictionary = 1050
-    lemmatize_O = 1110
+    SVO_2nd_column = 550# filter & dictionary options for Verbs; now open_reminders_x_coordinate
+    open_V_dictionary = 660
+    lemmatize_V = 720
+    SVO_3rd_column = 940 # filter & dictionary options for Objects; now run_button_x_coordinate
+    open_O_dictionary = 1070 # 1050
+    lemmatize_O = 1130
 
     SVO_2nd_column_top = 400
     SVO_3rd_column_top = 800
 
-    dictionary_S_width=55
-    dictionary_V_width=55
-    dictionary_O_width=55
+    dictionary_S_width=45
+    dictionary_V_width=45
+    dictionary_O_width=45
 
 # Windows GIS_main.py
-    geocoder_label_loc = 320
+    label_columns  = 300
     csv_file_width = 130
     country_bias_width = 35
-    area_width = 55
-    country_bias_pos = geocoder_label_loc
-    area_lb = 670
-    area_pos = 720
-    restrict_pos = 1100
-
-    GIS_package_pos = 480
-    GIS_open_GUI = 820
-    GIS_open_API = 250
-    GIS_openAPI_file = 420
+    area_width = 50
+    area_pos = 800
+    restrict_pos = 1150
 
 # Windows CoNLL_table_analyzer_main
     combobox_position = 200
@@ -1010,7 +998,7 @@ else: #windows and anything else
     file_search_byWord_extract_sentences_search_words_entry_pos = 430
 
 # Windows Word2Vec
-    Word2Vec_vector_size_entry_pos = 250
+    Word2Vec_vector_size_entry_pos = 260
     Word2Vec_window_size_lb_pos = Word2Vec_vector_size_entry_pos
     Word2Vec_window_size_entry_pos= Word2Vec_window_size_lb_pos+220
     Word2Vec_min_count_lb_pos=setup_pop_up_text_widget
@@ -1070,8 +1058,9 @@ else: #windows and anything else
     whats_in_your_corpus_corpus_statistics_options_menu_lb_pos = IO_configuration_menu
     whats_in_your_corpus_corpus_statistics_options_menu_pos = IO_configuration_menu+130
     whats_in_your_corpus_corpus_options_menu_lb_pos = 920
-    whats_in_your_corpus_corpus_options_menu_pos = 1000
+    whats_in_your_corpus_corpus_options_menu_pos = 1040
 
+    # no longer user run_button_x_coordinate instead
     whats_in_your_corpus_open_wordclouds_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
     whats_in_your_corpus_topics_Mallet_pos = 560
     whats_in_your_corpus_topics_Gensim_pos = 690

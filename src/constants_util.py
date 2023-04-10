@@ -547,7 +547,7 @@ YAGO_ontology_class_menu= 'BioChemEntity','Gene','MolecularEntity','Taxon','Bran
 NLP_Suite_visualization_tools_menu = 'Excel charts', 'Geographic maps: Geocoding & maps', \
 'Geographic maps: Google Earth Pro', 'Geographic distances between locations', \
 'HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)', \
-                                    "Animated time-dependent bar plot (Plotly) (Open GUI)", "Network graphs (Gephi) (Open GUI)", \
+                                    "Animated time-dependent bar plot (Plotly) (Open GUI)", "Boxplot (Open GUI)", "Multiple bar charts (Open GUI)", "Network graphs (Gephi) (Open GUI)", \
                                     "Sankey flowchart (Plotly) (Open GUI)", "Sunburst pie chart (Plotly) (Open GUI)", "Treemap (Plotly) (Open GUI)", \
                                     'Sentence visualization: Dependency tree viewer (png graphs)', 'Wordclouds (ALL options GUI)'
 

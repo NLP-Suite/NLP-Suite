@@ -61,11 +61,13 @@ def run(inputFilename,
         return
 
     # config_filename=''
-    # get the date options from filename
-    config_filename = GUI_util.config_filename
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
-    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
+    # get the date options from filename
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
@@ -144,9 +146,9 @@ def run(inputFilename,
                                                                 memory_var,
                                                                 NERs=NERs,
                                                                 extract_date_from_text_var=0,
-                                                                extract_date_from_filename_var=extract_date_from_filename_var,
+                                                                filename_embeds_date_var=filename_embeds_date_var,
                                                                 date_format=date_format_var,
-                                                                date_separator_var=date_separator_var,
+                                                                items_separator_var=items_separator_var,
                                                                 date_position_var=date_position_var)
 
         if len(locationFiles)==0:
@@ -455,7 +457,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 geocoder_lb = tk.Label(window, text='Geocoder')
 
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.geocoder_label_loc,y_multiplier_integer,geocoder_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.label_columns,y_multiplier_integer,geocoder_lb,True)
 geocoder_var.set('Nominatim')
 geocoder = tk.OptionMenu(window,geocoder_var,'Nominatim','Google')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,geocoder)
@@ -482,7 +484,7 @@ geocoder_var.trace('w',activate_Google_API_geocode)
 # split lines
 
 country_bias_lb = tk.Label(window, text='Country bias')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.country_bias_pos,y_multiplier_integer,country_bias_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.label_columns,y_multiplier_integer,country_bias_lb,True)
 
 country_menu = constants_util.ISO_GIS_country_menu
 
@@ -496,8 +498,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coor
                     90, GUI_IO_util.labels_x_coordinate, "Select a country to privilege geocoding locations in that country when similar locations are found in other countries (e.g., Rome, Georgia, US, and Rome, Italy)")
 
 area_lb = tk.Label(window, text='Area')
-
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.area_lb,y_multiplier_integer,area_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,y_multiplier_integer,area_lb,True)
 
 area_var.set('e.g., (34.98527, -85.59790), (30.770444, -81.521974)')
 area=tk.Entry(window, width=GUI_IO_util.area_width,textvariable=area_var)
@@ -570,23 +571,24 @@ def call_reminders(*args):
         return
 map_locations_var.trace('w',call_reminders)
 
+GIS_package_lb = tk.Label(window, text='Software')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.label_columns,y_multiplier_integer,GIS_package_lb,True)
 
 GIS_package_var.set('Google Earth Pro & Google Maps')
-GIS_package_lb = tk.Label(window, text='Software')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,y_multiplier_integer,GIS_package_lb,True)
 GIS_package = tk.OptionMenu(window,GIS_package_var,'Google Earth Pro & Google Maps','Google Earth Pro','Google Maps','QGIS','Tableau','TimeMapper')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.GIS_package_pos, y_multiplier_integer,GIS_package,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,GIS_package,True)
 
 GIS_package2_var.set(0)
 GIS_package2_checkbox = tk.Checkbutton(window, variable=GIS_package2_var, onvalue=1, offvalue=0)
 GIS_package2_checkbox.config(text="GIS package - Open GUI")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.GIS_open_GUI, y_multiplier_integer,GIS_package2_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,GIS_package2_checkbox)
 
 open_API_config_lb = tk.Label(window, text='View Google API key')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,open_API_config_lb,True)
+
 open_API_config_var.set('Google Maps')
 API = tk.OptionMenu(window,open_API_config_var,'Google Maps','Google geocoding')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.GIS_open_API, y_multiplier_integer,API, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.label_columns, y_multiplier_integer,API, True)
 
 open_API_config_button=tk.Button()
 if 'Maps' in open_API_config_var.get():
@@ -597,9 +599,9 @@ open_API_config_button = tk.Button(window, width=3,
                                      text='',
                                      command=lambda:GIS_pipeline_util.getGoogleAPIkey(window,  config_file,True))
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.GIS_openAPI_file, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                     open_API_config_button, False, False, True, False,
-                    90, GUI_IO_util.GIS_openAPI_file, "Open csv file for Google API key")
+                    90, GUI_IO_util.open_reminders_x_coordinate, "Open csv file for Google API key")
 
 
 # https://developers.google.com/maps/documentation/embed/get-api-key

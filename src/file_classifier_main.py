@@ -72,7 +72,7 @@ run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
                             GUI_util.charts_package_options_widget.get(),
                             by_date_var.get(),
                             date_format.get(),
-                            date_separator_var.get(),
+                            items_separator_var.get(),
                             date_position_var.get(),
                             date_distance_value_var.get(),
                             date_type_var.get(),
@@ -121,7 +121,7 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 
 by_date_var = tk.IntVar()
 date_format = tk.StringVar()
-date_separator_var = tk.StringVar()
+items_separator_var = tk.StringVar()
 date_position_var = tk.IntVar()
 date_distance_value_var=tk.StringVar()
 date_type_var=tk.StringVar()
@@ -135,7 +135,7 @@ similarityIndex_var = tk.DoubleVar()
 
 by_date_var.set(0)
 date_format.set('mm-dd-yyyy')
-date_separator_var.set('_')
+items_separator_var.set('_')
 date_position_var.set(2)
 by_NER_var.set(0)
 
@@ -150,7 +150,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 date_separator_lb = tk.Label(window, text='Date character separator ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+210,y_multiplier_integer, date_separator_lb,True)
-date_separator = tk.Entry(window, state='normal', textvariable=date_separator_var)
+date_separator = tk.Entry(window, state='normal', textvariable=items_separator_var)
 date_separator.configure(width=2)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+350,y_multiplier_integer, date_separator,True)
 

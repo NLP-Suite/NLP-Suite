@@ -65,13 +65,13 @@ def gatherAnnotations(inputFile, tags, mustInclude='<p>', cleanMultiples=True):
     return result
 
 
-def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCharts, chartPackage):
+def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCharts, chartPackage, configFileName):
     filesToOpen=[]
     outputFilename=IO_files_util.generate_output_file_name('DBpedia annotations', '', outputDir, '.csv', 'html extractor', '', '')
     filesToOpen.append(outputFilename)
     annotatedHtmlFiles = []
 
-    annotatedHtmlFiles=IO_files_util.getFileList(inputHTMLFile, inputHTMLFolder, '.html')
+    annotatedHtmlFiles=IO_files_util.getFileList(inputHTMLFile, inputHTMLFolder, '.html', silent=False, configFileName=configFileName)
     nFile=len(annotatedHtmlFiles)
 
     if nFile==0:

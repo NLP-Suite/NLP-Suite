@@ -120,7 +120,10 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     # if we
     headers = IO_csv_util.get_csvfile_headers_pandas(inputFilename)
     if len(headers)==0:
-        mb.showwarning(title='Empty file', message='The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.')
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Empty csv file',
+                                                       'The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.',
+                                                       True, '', True, '', False)
+        # mb.showwarning(title='Empty file', message='The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.')
         print('The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.')
         return filesToOpen
     field_number_xAxis = None
