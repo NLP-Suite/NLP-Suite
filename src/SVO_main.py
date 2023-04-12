@@ -891,7 +891,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_c
 # setup a button to open Windows Explorer on the objects file
 openInputFile_objects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                          command=lambda: IO_files_util.openFile(window, object_filePath))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate+130, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_O_dictionary, y_multiplier_integer,
                                                openInputFile_objects_button,True, False, True, False, 90, GUI_IO_util.open_O_dictionary, "Open csv file containing OBJECT filters")
 
 lemmatize_objects_var.set(1)
