@@ -284,8 +284,8 @@ def add_NER_tag(coming_from_add, coming_from_reset):
         return
     reset_NER_button.configure(state='normal')
     if coming_from_reset:
-        NER_tag_var.set('')
-        NER_entry_var.set('')
+        NER_tag_var.set(' ')
+        NER_entry_var.set(' ')
         coming_from_reset = False
         return coming_from_reset
     if coming_from_add:
@@ -310,7 +310,7 @@ def add_NER_tag(coming_from_add, coming_from_reset):
         NER_entry_var.set('DATE, TIME, DURATION, SET')
     elif NER_tag_var.get()=='--- All other expressions':
         mb.showwarning(title='Warning', message='You cannot select the option --- All other expressions.\n\nPlease, select a different option and try again.')
-        NER_tag_var.set('')
+        NER_tag_var.set(' ')
         window.focus_force()
         return
     if NER_tag_var.get() in NER_list and not('---' in NER_tag_var.get()):
@@ -363,15 +363,15 @@ def activate_NER_Options(coming_from_add, coming_from_reset):
         NER_menu.configure(state='normal')
         reset_NER_button.configure(state='normal')
         if coming_from_reset:
-            NER_tag_var.set('')
+            NER_tag_var.set(' ')
         else:
             if not coming_from_add:
                 NER_tag_var.set('All NER tags')  # --- All NER tags
     else:
         NER_menu.configure(state='disabled')
         reset_NER_button.configure(state='disabled')
-        NER_tag_var.set('')
-        NER_entry_var.set('')
+        NER_tag_var.set(' ')
+        NER_entry_var.set(' ')
     if 'IBM' in NER_packages_var.get():
         mb.showwarning("Option not available",
                        "The selected " + NER_packages_var.get() + " option is not available yet.\n\nSorry! Please, check back soon...")
@@ -382,7 +382,7 @@ NER_packages_var.trace('w',lambda x,y,z: activate_NER_Options(coming_from_add, c
 def clear_NER_list(coming_from_add, coming_from_reset):
     if coming_from_reset: # and NER_packages_var.get()=='Stanford CoreNLP':
         NER_list.clear()
-        NER_entry_var.set('')
+        NER_entry_var.set(' ')
         NER_entry=''
         NER_tag_var.set(' ')
         # NER_split_values_prefix_entry_var.set('')

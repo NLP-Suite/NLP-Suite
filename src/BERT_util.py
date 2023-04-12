@@ -311,13 +311,15 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
       # compute distances
     if compute_distances_var:
 
-
-
-        word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts, chartPackage,
+        outputFiles = word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts, chartPackage,
                                    word_vectors,
                                    result_df,
                                    keywords_var,
                                    compute_distances_var, top_words_var, BERT=True)
+        if outputFiles!=None:
+            if len(outputFiles) > 0:
+                filesToOpen.extend(outputFiles)
+
 
         # print(f'\nStarted computing word distances between top {top_words_var} words at {time.asctime( time.localtime(time.time()))}')
         # # find user-selected top most-frequent words

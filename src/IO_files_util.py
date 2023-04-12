@@ -208,10 +208,13 @@ def do_compare(input_list, compare_split, compare_date, file_end, date_loc,order
     # file_end, what file ending is the file, for instance, .txt in the above case
     # date_loc, where is your date location. For instance, the above is 3 (natural order).
     # ordering: the string like "2,3"
+
     def compare(pair1, pair2):
         try:
-            c1 = pair1.split(compare_split)
-            c2 = pair2.split(compare_split)
+            c1 = pair1.replace(inputDir, '').replace(file_end, '')
+            c2 = pair2.replace(inputDir, '').replace(file_end, '')
+            c1 = c1.split(compare_split)
+            c2 = c2.split(compare_split)
             i = 0
             q = complete_order(len(c1),[int(x) for x in ordering.split(",")])
 

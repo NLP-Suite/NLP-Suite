@@ -274,7 +274,7 @@ class Matcher():
         else:
             centroids_folder = f'{path}/added_centroids_{added_centroids[0]}_{added_centroids[1]}'
         centroids_d = {}
-        for w in tqdm(sorted(vocab)):
+        for w in sorted(vocab):
             if f'{w}.npy' not in os.listdir(centroids_folder): continue
             centroids = np.load(f'{centroids_folder}/{w}.npy', allow_pickle=True)
             centroids_d[w] = centroids
@@ -313,7 +313,7 @@ class Matcher():
         ongoing_word = []
         ongoing_rep = []
         data_dict = defaultdict(list) # { word : [(user, rep)] }
-        for b, _ in tqdm(enumerate(batched_data), total=len(batched_data), desc='Matching...'):
+        for b, _ in enumerate(batched_data):
             # each item in these lists/tensors is a sentence
             tokens_tensor = batched_data[b].to(device)
             atten_tensor = batched_masks[b].to(device)

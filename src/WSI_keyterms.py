@@ -72,16 +72,21 @@ def sense_keywords(d, o_path, re_pattern='[^a-zA-Z\'\-’ ]', max_df=0.8, mf_pro
 #    print(kw_dfs)    
     if not os.path.exists(o_path):
         os.makedirs(o_path)
-    kw_df.to_csv(f'{o_path}/keywords_ngram_range={ngram_range[0]}_{ngram_range[1]}.csv')
-
-    return kw_df
+    k_path = f'{o_path}/keywords_ngram_range={ngram_range[0]}_{ngram_range[1]}.csv'
+    kw_df.to_csv(k_path)
+    
+    return kw_df, k_path
 
 
 def get_keyterms(docs, paths, ngram_range=(1, 2), topn=10):
-    
+   
+    k_paths = []
     for doc in docs:
-        i_path = f'{paths[doc]}/clusters'
+        i_path = paths[doc]
         with open(f'{i_path}/d.pickle', 'rb') as f:
             d = pickle.load(f)
-        sense_keywords(d, i_path, topn=topn, ngram_range=ngram_range)
+        _, k_path = sense_keywords(d, i_path, topn=topn, ngram_range=ngram_range)
+        k_paths.append(k_path)
+    print('\nDone.')
 
+    return k_paths
