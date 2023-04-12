@@ -404,11 +404,11 @@ if sys.platform == 'darwin':  # Mac OS
     open_S_dictionary = 260
     lemmatize_S = 320
     SVO_2nd_column = 520# filter & dictionary options for Verbs
-    open_V_dictionary = 615
-    lemmatize_V = 680
+    open_V_dictionary = 670
+    lemmatize_V = 730
     SVO_3rd_column = 940 # filter & dictionary options for Objects; now run_button_x_coordinate
-    open_O_dictionary = 1025
-    lemmatize_O = 1090
+    open_O_dictionary = 1050
+    lemmatize_O = 1125
 
     SVO_2nd_column_top = 400
     SVO_3rd_column_top = 800
