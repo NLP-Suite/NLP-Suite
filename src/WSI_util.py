@@ -74,21 +74,23 @@ websites = "[.](com|net|org|io|gov)"
 digits = "([0-9])"
 
 
-def get_vocab(text, u_vocab=[], top_n=5, min_count=7, add_stopwords=['said']):
-    
-    if len(u_vocab) == 0:
+def get_vocab(text, u_vocab='', top_n=5, min_count=7, add_stopwords=['said']):
+
+    if u_vocab == '':
         pattern = re.compile('[^A-Za-z0-9 ]+')
         text = ' '.join(re.sub(pattern, '', text).split())
         en = spacy.load('en_core_web_sm')
         stopwords = list(en.Defaults.stop_words) + add_stopwords
         u_vocab = Counter([w for w in text.split() if w.lower() not in stopwords])
         u_vocab = [w for w, i in u_vocab.most_common(top_n) if i >= min_count]
-        
+    else:
+        u_vocab = [w.strip() for w in u_vocab.split(',')]
+
     return u_vocab
 
 
 def split_into_sentences(text, docID):
-    
+
     text = " " + text + "  "
     text = text.replace("\n", " ")
     text = re.sub(prefixes, "\\1<prd>", text)
@@ -119,26 +121,28 @@ def split_into_sentences(text, docID):
 
 
 def get_sent(doc, o_path):
-    
+
     with open(doc, 'r', encoding='utf-8', errors='ignore') as f:
         fullText = f.read().lower()
     fullText.replace('\n', ' ')
     docID = doc.split('/')[-1]
-    sentences = split_into_sentences(fullText, docID) 
+    sentences = split_into_sentences(fullText, docID)
     with open(f'{o_path}/sentences.pickle', 'wb') as f_name:
         pickle.dump(sentences, f_name)
-    
+
     return sentences, fullText
 
 
-def get_data(inputFilename, inputDir, outputDir, u_vocab=[], fileType='.txt'):
+def get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=[], fileType='.txt', configFileName=''):
 
     docs = {}
     vocabs = {}
     o_paths = {}
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType=fileType)
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType=fileType,silent=False,configFileName=configFileName)
     for doc in inputDocs:
-        o_path = f'{outputDir}/WSI_{doc.split("/")[-1].split(".")[0]}'
+        # o_path = f'{Word2Vec_Dir}/{doc.split("/")[-1].split(".")[0]}'
+        head, tail = os.path.split(doc)
+        o_path = Word2Vec_Dir+os.sep+tail[:-4]
         if not os.path.exists(o_path):
             os.makedirs(o_path)
         sentences, fullText = get_sent(doc, o_path)
@@ -146,13 +150,14 @@ def get_data(inputFilename, inputDir, outputDir, u_vocab=[], fileType='.txt'):
         docs[doc] = sentences
         vocabs[doc] = vocab
         o_paths[doc] = o_path
-    
+
     return docs, vocabs, o_paths
 
 
 def get_centroids(docs, vocabs, paths, k_range, sample=None):
 
     #load model
+    print('\nStarted word sense induction...')
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
     model_name = BertModel.from_pretrained('bert-base-uncased', output_hidden_states=True)
     model = Clusterer(tokenizer, model_name)
@@ -172,8 +177,8 @@ def get_centroids(docs, vocabs, paths, k_range, sample=None):
             embeddings, do_wordpiece = model.get_embeddings(batched_data, batched_words, batched_masks, batched_users, w)
             data = model.group_wordpiece(embeddings, w, do_wordpiece)
             centroids = model.cluster_embeddings(data, k_range, lamb=10000)
-            np.save(f'{c_path}/{w}.npy', centroids)            
-        
+            np.save(f'{c_path}/{w}.npy', centroids)
+
 
 def match_embeddings(docs, vocabs, paths, added_centroids=None):
 
@@ -181,8 +186,7 @@ def match_embeddings(docs, vocabs, paths, added_centroids=None):
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
     model_name = BertModel.from_pretrained('bert-base-uncased', output_hidden_states=True)
     model = Matcher(tokenizer, model_name)
-    for doc in docs:
-        print(f'Processing {doc}')
+    for doc in tqdm(docs, total=len(docs), desc='Matching...'):
         sentences = docs[doc]
         vocab = vocabs[doc]
         o_path = f'{paths[doc]}'
@@ -197,37 +201,42 @@ def match_embeddings(docs, vocabs, paths, added_centroids=None):
             seq += [tpl for tpl in sentences if w in tpl[1]]
         batched_data, batched_words, batched_masks, batched_users = model.get_batches(seq, batch_size)
         model.get_embeddings_and_match(batched_data, batched_words, batched_masks, batched_users, centroids_d, o_path)
+    print('\nWord sense induction finished. Producing output files...')
 
 
 def get_cluster_sentences(docs, paths):
-    
+
+    s_paths = []
     for doc in docs:
         i_path = paths[doc]
         with open(f'{i_path}/senses', 'r') as f:
             tokens = f.read().split('\n')[:-1]
         with open(f'{i_path}/sentences.pickle', 'rb') as f:
             sentences = pickle.load(f)
-        o_path = f'{i_path}/clusters'
-        if not os.path.exists(o_path):
-            os.makedirs(o_path)
+#        o_path = f'{i_path}/clusters'
+#        if not os.path.exists(o_path):
+#            os.makedirs(o_path)
         senses = list(set([tok.split('\t')[-1] for tok in tokens]))
         vocab = list(set([tok.split('\t')[1] for tok in tokens]))
         tokens = [tok.split('\t') for tok in tokens]
         d = {}
         for w in vocab:
             d[w] = {}
-            w_path = f'{o_path}/{w}'
+            w_path = f'{i_path}/{w}'
             if not os.path.exists(w_path):
                 os.makedirs(w_path)
             doc = open(f'{w_path}/{w}_clusters.txt', 'w')
+            s_paths.append(f'{w_path}/{w}_clusters.txt')
             for s in senses:
                 doc.write(f'\n\n{s}\n')
-                occs = [tok for tok in tokens if tok[-1] == s and tok[1] == w] 
+                occs = [tok for tok in tokens if tok[-1] == s and tok[1] == w]
                 sents = list(set([sentences[int(tok[0])][1] for tok in occs]))
-                d[w][s] = sents 
+                d[w][s] = sents
                 doc.write('\n'.join(sents))
-        with open(f'{o_path}/d.pickle', 'wb') as f:
+        with open(f'{i_path}/d.pickle', 'wb') as f:
             pickle.dump(d, f)
+
+    return s_paths
 
 
 def main():
@@ -238,6 +247,6 @@ def main():
     print(vocab)
 
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     main()
-    
+

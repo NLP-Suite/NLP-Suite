@@ -49,6 +49,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     global nSAscoreFiles
     nSAscoreFiles = 0
+    filesToOpen = []
+
 
     if sentimentAnalysis==False and corpus_analysis==False and hierarchical_clustering==False and SVD==False and NMF==False and best_topic_estimation==False:
         mb.showwarning(title='Option selection error',
@@ -58,7 +60,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # Error set to True
     if check_IO_requirements(inputFilename,inputDir):
         return
-
 
     # check if "Shape of Stories" default output directory exists
     sosDir = os.path.join(outputDir, "Shape of Stories")
@@ -94,8 +95,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     #                                  True)
 
 # RUN SCRIPTS ---------------------------------------------------------------------------
-
-    filesToOpen = []
 
     # utf.check_utf8_compliance(GUI_util.window, "", inputDir, outputDir, openOutputFiles)
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
@@ -529,7 +528,7 @@ def check_IO_requirements(inputFilename, inputDir):
     if inputFilename!='':
         if sentimentAnalysis == True or corpus_analysis == True:
             # txt files required
-            mb.showwarning(title='Directory error',
+            mb.showwarning(title='Input directory error',
                            message=txt_fileErr)
             Error = True
             return Error
@@ -559,36 +558,42 @@ def check_IO_requirements(inputFilename, inputDir):
     else: # inputDir
         if inputDir!='':
             if sentimentAnalysis == True or corpus_analysis == True:
-                nSAscoreFiles=IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
-                if nSAscoreFiles == 0:
+                nSAscoretxtFiles=IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
+                if nSAscoretxtFiles == 0:
                     # text files required
                     mb.showwarning(title="Input directory error",
                                    message=txt_DirErr)
                     Error = True
                     return Error
-                if nSAscoreFiles < 50 and sentimentAnalysis == True:
+                if nSAscoretxtFiles < 50 and sentimentAnalysis == True:
                     # too few txt files
-                    answer = mb.askyesno("Directory warning",
+                    answer = mb.askyesno("Input directory warning",
                                          message=txt_dirWarning)
                     if answer == False:
                         Error = True
                         return Error
 
-            if (not sentimentAnalysis) and (hierarchical_clustering or SVD or NMF or best_topic_estimation):
-                nSAscoreFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'csv')
-                if nSAscoreFiles==0:
-                    # directory requires csv files
-                    mb.showwarning(title="Directory error",
-                                   message=csv_DirErr)
-                    Error = True
-                    return Error
-                elif nSAscoreFiles < 50 and sentimentAnalysis == True:
-                    # too few csv files
-                    answer = mb.askyesno("Data reduction algorithms",
-                                         message=csv_dirWarning)
-                    if answer == False:
+            if (not sentimentAnalysis):
+                if hierarchical_clustering or SVD or NMF or best_topic_estimation:
+                    nSAscorecsvFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'csv')
+                    if nSAscorecsvFiles==0:
+                        alternative_msg = ''
+                        nSAscoretxtFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
+                        if nSAscoretxtFiles > 0:
+                            if nSAscoretxtFiles < 50:
+                                alternative_msg="\n\nALTERNATIVELY, tick the checkbox 'Sentiment analysis,' select one of the available sentiment analysis algorithms (neural network highly recommended), and try again. YOUR INPUT DIRECTORY, HOWEVER, CONTAINS ONLY " + str(nSAscoretxtFiles) + " txt FILES, FEWER THAN THE RECOMMENDED 50 MINIMUM, ALTHOUGH THE ALGORITHMS WILL STILL RUN."
+                            else:
+                                alternative_msg = "\n\nALTERNATIVELY, tick the checkbox 'Sentiment analysis,' select one of the available sentiment analysis algorithms (neural network highly recommended), and try again. "
+                        mb.showwarning(title="Input directory error",
+                                       message=csv_DirErr+alternative_msg)
                         Error = True
-                        return Error
+                    elif nSAscorecsvFiles < 50 and sentimentAnalysis == True:
+                        # too few csv files
+                        answer = mb.askyesno("Data reduction algorithms",
+                                             message=csv_dirWarning)
+                        if answer == False:
+                            Error = True
+                return Error
 
     # check input file that must be a csv file containing sentiment analysis score of any data reduction options are ticked
     if inputFilename!='' and sentiment_analysis_var.get() == False and corpus_analysis_var.get() == False and (
@@ -717,7 +722,7 @@ readMe_message="The Python 3 scripts provide ways of analyzing the emotional arc
 "In OUTPUT the algorithms will produce sentiment analysis scores (if the option is selected) and a number of visual plots (e.g., sentiment arcs). " \
 "\n\nPlease, use the 'Select INPUT/OUTPUT configuration' button to select the appropriate options. " \
 "Output files will be saved in a sub-directory called \'Shape of Stories\' itself a subdirectory of the current default output directory; inside this \'Shape of Stories\' subdirecory all files will be saved inside a further subdirectory with the name of the final part of the input directory.\n\n" \
-"Four different approaches to SENTIMENT ANALYSIS can be used to measure the emotional arc of stories: ANEW, VADER, hedonometer, Stanford CoreNLP neural network approach (recommended).\n\n" \
+"Two different types of approaches to SENTIMENT ANALYSIS are used: 1. neural network and 2. dictionary-based approaches.\n\nNeural network approaches, albeit slower, are far more reliable. The NLP Suite provides four different neural network algorithms - BERT, spaCy, Stanford CoreNLP, Stanza - and four dictionary-based algorithms - ANEW, hedonometer, sentiWordNet, VADER.\n\n" \
 "Three different approaches to DATA REDUCTION are used: Hierarchical clustering (HC), Singular Value Decomposition (SVD), Non-Negative Matrix Factorization (NMF).\n\n" \
 "During execution, the algorithm will ask the user to confirm three different PARAMETERS used by the data reduction algorithms: Window size, Sentiment Vector Size, Cluster (modes) size.\n\n" \
 "   WINDOW SIZE: the number of sentences that will be averaged to obtain one point of the story arc.\n   Lower bound: At least one sentence must be take average to get the values in sentiment score vector.\n   Upper bound: minimum document length-1. Window size should be less than the minimum document length, i.e, number of sentences in the shortest document.\n" \

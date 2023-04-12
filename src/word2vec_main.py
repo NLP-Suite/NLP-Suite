@@ -27,6 +27,11 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
 
     filesToOpen = []
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     if not 'Do not' in vis_menu_var:
         result = mb.askyesno('Visualization via t-SNE',
                              'You have selected to run Word2Vec with the t-SNE visualization option. Depending upon the total number of words in your corpus, this option is computationally VERY demanding (it can take many hours on a standard laptop, particularly with BERT). Compressing an n-dimensional space into a a 2D or 3D graph can also be somewhat misleading (cosine similarities provide a better alternative).\n\nAre you sure you want to continue?')
@@ -39,10 +44,9 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
         label='Word2Vec_BERT'
     if Gensim_var:
         label='Word2Vec_Gensim'
-    if label != '':
-        Word2Vec_Dir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label=label, silent=True)
-    else:
-        Word2Vec_Dir = None
+    if WSI_var:
+        label = 'WSI'
+    Word2Vec_Dir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label=label, silent=True)
     if Word2Vec_Dir == '':
         return
 
@@ -52,14 +56,17 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
         #placeholder for reminders etc.
 
         import WSI_util, WSI_viz, WSI_keyterms
-        docs, vocabs, paths = WSI_util.get_data(inputFilename, inputDir, outputDir, u_vocab=WSI_keywords_var.get(), fileType='.txt')
+
+        docs, vocabs, paths = WSI_util.get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=WSI_keywords_var.get(),
+                                                fileType='.txt', configFileName=config_filename)
         k_range = (k_means_min_var.get(), k_means_max_var.get())
         WSI_util.get_centroids(docs, vocabs, paths, k_range)
         WSI_util.match_embeddings(docs, vocabs, paths)
-        WSI_util.get_cluster_sentences(docs, paths)
-        WSI_viz.pie_charts(docs, paths)
+        s_paths = WSI_util.get_cluster_sentences(docs, paths)
+        v_paths = WSI_viz.pie_charts(docs, paths)
         n = int(ngrams_menu_var.get().split('-')[0])
-        WSI_keyterms.get_keyterms(docs, paths, topn=top_keywords_var.get(), ngram_range=(1, n))
+        k_paths = WSI_keyterms.get_keyterms(docs, paths, topn=top_keywords_var.get(), ngram_range=(1, n))
+        filesToOpen = s_paths + v_paths + k_paths
 
     if BERT_var:
         reminders_util.checkReminder(config_filename,
