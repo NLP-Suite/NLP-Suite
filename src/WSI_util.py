@@ -74,7 +74,7 @@ websites = "[.](com|net|org|io|gov)"
 digits = "([0-9])"
 
 
-def get_vocab(text, u_vocab='', top_n=5, min_count=7, add_stopwords=['said']):
+def get_vocab(text, u_vocab='', top_n=5, min_count=5, add_stopwords=['said']):
 
     if u_vocab == '':
         pattern = re.compile('[^A-Za-z0-9 ]+')
@@ -157,7 +157,7 @@ def get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=[], fileType='.txt',
 def get_centroids(docs, vocabs, paths, k_range, sample=None):
 
     #load model
-    print('\nStarted word sense induction...')
+    print('\nStarted word sense induction...\n')
     tokenizer = BertTokenizer.from_pretrained('bert-base-uncased', do_lower_case=True)
     model_name = BertModel.from_pretrained('bert-base-uncased', output_hidden_states=True)
     model = Clusterer(tokenizer, model_name)
@@ -201,7 +201,7 @@ def match_embeddings(docs, vocabs, paths, added_centroids=None):
             seq += [tpl for tpl in sentences if w in tpl[1]]
         batched_data, batched_words, batched_masks, batched_users = model.get_batches(seq, batch_size)
         model.get_embeddings_and_match(batched_data, batched_words, batched_masks, batched_users, centroids_d, o_path)
-    print('\nWord sense induction finished. Producing output files...')
+    print('\nWord sense induction finished. Producing output files...\n')
 
 
 def get_cluster_sentences(docs, paths):
