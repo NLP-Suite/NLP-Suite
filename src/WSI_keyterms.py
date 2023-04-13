@@ -23,7 +23,7 @@ def extract_topn_from_vector(feature_names, sorted_items, topn):
 
 
 #https://github.com/matejMartinc/scalable_semantic_shift/blob/a105c8409db0996c99f0df11d40c35017eb3337c/interpretation.py#L85
-def sense_keywords(d, o_path, re_pattern='[^a-zA-Z\'\-’ ]', max_df=0.8, mf_prop=1, topn=10, ngram_range=(1, 2), add_stopwords=None):
+def sense_keywords(d, o_path, re_pattern='[^a-zA-Z\'\-’ ]', mf_prop=1, topn=10, ngram_range=(1, 2), add_stopwords=None):
     
     regex = re.compile(re_pattern)
     sp = spacy.load('en_core_web_sm')
@@ -41,7 +41,7 @@ def sense_keywords(d, o_path, re_pattern='[^a-zA-Z\'\-’ ]', max_df=0.8, mf_pro
         vocab = list(itertools.chain.from_iterable(clusters))
         v_size = len(set([w for w in vocab if w not in stopwords]))
         clusters = [' '.join(c) for c in clusters]
-        tfidf_transformer = TfidfVectorizer(smooth_idf=True, use_idf=True, ngram_range=ngram_range, max_df=max_df, max_features=int(mf_prop * v_size), stop_words=stopwords)
+        tfidf_transformer = TfidfVectorizer(smooth_idf=True, use_idf=True, ngram_range=ngram_range, max_features=int(mf_prop * v_size), stop_words=stopwords)
         tfidf_transformer.fit(clusters)
         feature_names = tfidf_transformer.get_feature_names()
         kw_d[w] = {}
@@ -87,6 +87,6 @@ def get_keyterms(docs, paths, ngram_range=(1, 2), topn=10):
             d = pickle.load(f)
         _, k_path = sense_keywords(d, i_path, topn=topn, ngram_range=ngram_range)
         k_paths.append(k_path)
-    print('\nDone.')
+    print('\nDone.\n')
 
     return k_paths
