@@ -331,6 +331,7 @@ def check_csv_file_headers(csv_file):
             location_menu_var.set('Location') #RF
             location_menu='Location' #RF
     elif 'Latitude' in headers and 'Longitude' in headers:
+        NER_extractor_var.set(0)
         geocode_locations_var.set(0)
         geocode_locations_checkbox.configure(state='disabled')
         geocode_locations=False

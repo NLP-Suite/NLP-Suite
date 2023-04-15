@@ -349,19 +349,21 @@ open_GUI_lb = tk.Label(window, text='Open special visualization options GUI')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                open_GUI_lb, True)
 
-open_GUI_menu = tk.OptionMenu(window, open_GUI_var, 'Excel charts (Open GUI)','Geographic maps (Open GUI)','HTML annotator (Open GUI)','Wordclouds (Open GUI)')
+open_GUI_menu = tk.OptionMenu(window, open_GUI_var, 'Excel charts (Open GUI)','Geographic maps: From texts to maps (Open GUI)',"Geographic maps: Google Earth Pro (Open GUI)", 'HTML annotator (Open GUI)','Wordclouds (Open GUI)')
 # open_GUI_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    open_GUI_menu,
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Open a GUI for special visualization options: Excel charts, geographic maps, HTML, wordclouds")
+                                   "Open a GUI for special visualization options: Excel charts, geographic maps (from texts to maps), geographic maps (Google Earth Pro), HTML, wordclouds")
 
 def open_GUI(*args):
     if 'Excel' in open_GUI_var.get():
         call("python charts_Excel_main.py", shell=True)
-    elif 'Geographic' in open_GUI_var.get():
+    elif 'texts to maps' in open_GUI_var.get():
         call("python GIS_main.py", shell=True)
+    elif 'Google Earth' in open_GUI_var.get():
+        call("python GIS_Google_Earth_main.py", shell=True)
     elif 'HTML' in open_GUI_var.get():
         call("python html_annotator_main.py", shell = True)
     elif 'Wordclouds' in open_GUI_var.get():

@@ -322,7 +322,7 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Mallet LDA topic modeling at',True, '', True, startTime)
 
-def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
+def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_stopwords_var,
                                       lemmatize, nounsOnly, run_Mallet, openOutputFiles,createCharts, chartPackage):
     global filesToOpen
     filesToOpen=[]
@@ -350,7 +350,13 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
     outputFilename = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.html', 'Gensim_topic_modeling')
 
     content = []
-    for fileName in os.listdir(inputDir):
+    inputDocs = IO_files_util.getFileList('', inputDir, fileType='.txt', silent=False,
+                                          configFileName=config_filename)
+    nFile = len(inputDocs)
+    if nFile == 0:
+        return
+
+    for fileName in inputDocs:
         if fileName.endswith('.txt'):
             with open(os.path.join(inputDir, fileName), 'r', encoding='utf-8', errors='ignore') as file:
                 content.append(file.read())

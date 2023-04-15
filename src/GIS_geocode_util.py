@@ -162,6 +162,67 @@ def google_geocode(geolocator, loc, region=None, timeout=10):
 # return 2 filenames of csv files of geocoded and non-geocoded locations
 #	 filenames are '' if empty, perhaps for a permission error
 
+def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
+			locationColumnName, encodingValue):
+	Google_API = GIS_pipeline_util.getGoogleAPIkey(window, 'Google-geocode-API_config.csv')
+	kml = simplekml.Kml()
+	icon_url = GIS_Google_pin_util.pin_icon_select(['Pushpins'], ['red'])
+	kmloutputFilename = inputFilename.replace('.csv', '.kml')
+
+	inputIsCoNLL, inputIsGeocoded, withHeader, \
+		headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
+	input_df = pd.read_csv(inputFilename, encoding=encodingValue)
+	# input_df = input_df[['Location', 'Latitude', 'Longitude']]
+	input_df = input_df.reset_index()
+	for index, row in input_df.iterrows():
+		location = row['Location']
+		lat = row['Latitude']
+		lng = row['Longitude']
+		date = row['Date']
+		# try:
+		# 	description = row['Description']
+		# except:
+		# 	print('No description field available')
+
+
+		# TODO MINO GIS create kml record
+		print("   Processing geocoded record for kml file for Google Earth Pro")
+		pnt = kml.newpoint(coords=[(lng, lat)])
+		pnt.style.iconstyle.icon.href = icon_url
+		pnt.name = location
+		pnt.style.labelstyle.scale = '1'
+		# pnt.style.labelstyle.color = simplekml.Color.rgb(int(r_value), int(g_value), int(b_value))
+		# the code would break if no sentence is passed (e.g., from DB_PC-ACE)
+		try:
+			label = 'Event'
+			sentence = input_df.at[index-1, label]
+			pnt.description = "<i><b>Location</b></i>: " + location + "<br/><br/>" \
+																		   "<i><b>Label</b></i>: " + sentence + "<br/><br/>"
+		except:
+			pnt.description = "<i><b>Location</b></i>: " + location + "<br/><br/>"
+		# TODO MINO GIS date option
+		if datePresent:
+			GGPdateFormat = convertToGGP(date)
+			pnt.timespan.begin = GGPdateFormat
+			pnt.timespan.end = GGPdateFormat
+
+	try:
+		kml.save(kmloutputFilename)
+	except:
+		mb.showwarning(title='kml file save failure',
+					   message="Saving the kml file failed. A typical cause of failure is is bad characters in the input text/csv file(s) (e.g, 'LINE TABULATION' or 'INFORMATION SEPARATOR ONE' characters).\n\nThe GIS KML script will now try to automattically clean the kml file, save it in safe mode, and open the kml file in Google Earth Pro.\n\nIf the file cleaning was successful, the map will display correctly. If not, Google Earth Pro will open exactly on the bad character position. Remove the character and save the file. But, you should really clean the original input txt/csv file.")
+		# Save kml regardless of validity. Let the user find any bad characters.
+		kml.save(kmloutputFilename, False)
+		# Clean out any "LINE TABULATION" and "INFORMATION SEPARATOR ONE" characters from the input (causes error with KML).
+		with open(kmloutputFilename, 'r+', encoding='utf_8', errors='ignore') as kmlfile:
+			content = kmlfile.read()
+			content = content.replace(u"\u000B", "")
+			content = content.replace(u"\u001F", "")
+			kmlfile.seek(0)
+			kmlfile.write(content)
+			kmlfile.truncate()
+	return kmloutputFilename
+
 def geocode(window,locations, inputFilename, outputDir,
 			locationColumnName,
 			geocoder,country_bias,area,restrict,
@@ -446,7 +507,11 @@ def convertToGGP(date):
 					break
 				except ValueError as err:
 					pass
-		currentDateFormat = dateutil.parser.parse(date)
+		try:
+			currentDateFormat = dateutil.parser.parse(date)
+		except:
+			mb.showerror(title='Date error',
+							message="There was an error in processing the date '" + date + "'.\n\nThe date format '" + fmt + "' was automatically applied to process the date, where format values are as follows:\n%B or %b   alphabetic month name in full or first 3 characters;\n%m   2-digit month (1 to 12);\n%d   2-digit day of the month (1 to 31);\n%Y   4-digit and %y 2-digit year (1918, 18).\n\nBut... either\n1.   the format automatically applied is incorrect for the date;\n2.   the date is in unrecognized format (e.g., it contains time besides date);\n3.   the date is prior to 1900. The library 'strftime' used here to deal with dates cannot process dates prior to 1900 in Windows.")
 		# years before 1900 cannot be used
 		# pre 1900 dates may give a problem in Windows: ValueError: format %y requires year >= 1900 on Windows
 		try:

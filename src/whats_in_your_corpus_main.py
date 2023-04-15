@@ -242,7 +242,7 @@ def run(inputFilename,inputDir, outputDir,
 
         if '*' in corpus_statistics_options_menu_var or 'complexity' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.compute_sentence_complexity(GUI_util.window, inputFilename,
-                                                                     inputDir, outputDir,
+                                                                     inputDir, outputDir, config_filename,
                                                                      openOutputFiles, createCharts, chartPackage)
             if output != None:
                 filesToOpen.append(output)

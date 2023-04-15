@@ -139,7 +139,7 @@ def run(inputFilename,inputDir,outputDir,
             model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
         else:
             model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
-        tempOutputFiles = BERT_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage, model_path)
+        tempOutputFiles = BERT_util.main(inputFilename, inputDir, outputDir, config_filename, mode, createCharts, chartPackage, model_path)
         if tempOutputFiles == None:
             return
         if len(tempOutputFiles) > 0:
@@ -287,7 +287,7 @@ def run(inputFilename,inputDir,outputDir,
         startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running SentiWordNet Sentiment Analysis at',
                                                      True, '', True, '', False)
 
-        outputFiles = sentiment_analysis_SentiWordNet_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
+        outputFiles = sentiment_analysis_SentiWordNet_util.main(inputFilename, inputDir, outputDir, config_filename, mode, createCharts, chartPackage)
 
         if SA_algorithm_var!='*' and len(outputFiles)>0:
             filesToOpen.append(outputFiles)

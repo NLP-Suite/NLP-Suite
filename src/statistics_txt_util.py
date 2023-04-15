@@ -1681,7 +1681,7 @@ def sentence_structure_tree(inputFilename, outputDir):
             cf.print_to_file(outputDir + '/' + os.path.basename(inputFilename) + '_' + str(sentenceID) + '_tree.ps')
 
 # written by Mino Cha March/April 2022
-def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
+def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, createCharts, chartPackage):
     ## list for csv file
     columns=[]
     documentID = []
@@ -1714,13 +1714,19 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, open
                 document.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(inputDir, doc)))
                 all_input_docs[dId] = text
     else:
-        numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
-        if numFiles == 0:
-            mb.showerror(title='Number of files error',
-                         message='The selected input directory does NOT contain any file of txt type.\n\nPlease, select a different directory and try again.')
+        # numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
+        # if numFiles == 0:
+        #     mb.showerror(title='Number of files error',
+        #                  message='The selected input directory does NOT contain any file of txt type.\n\nPlease, select a different directory and try again.')
+        #     return
+
+        inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False,
+                                                  configFileName=configFileName)
+        nFile = len(inputDocs)
+        if nFile == 0:
             return
 
-        for doc in os.listdir(inputDir):
+        for doc in inputDocs:
             if doc.endswith('.txt'):
                 head, tail = os.path.split(doc)
                 with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:

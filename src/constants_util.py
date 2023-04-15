@@ -544,11 +544,11 @@ DBpedia_ontology_class_menu = 'Thing', ' Activity', '    Game', '    Sales', '  
 YAGO_ontology_class_menu= 'BioChemEntity','Gene','MolecularEntity','Taxon','Brand','BroadcastChannel', \
 'CreativeWork', 'Emotion', 'MedicalEntity', 'Organization',	'Person', 'Place', 'Product'
 
-NLP_Suite_visualization_tools_menu = 'Excel charts', 'Geographic maps: Geocoding & maps', \
-'Geographic maps: Google Earth Pro', 'Geographic distances between locations', \
+NLP_Suite_visualization_tools_menu = 'Excel charts', 'Geographic maps: From texts to maps via Google Earth Pro and Google Maps', \
+'Geographic maps: From csv file to maps via Google Earth Pro and Google Maps', 'Geographic distances between locations', \
 'HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)', \
-                                    "Animated time-dependent bar plot (Plotly) (Open GUI)", "Boxplot (Open GUI)", "Multiple bar charts (Open GUI)", "Network graphs (Gephi) (Open GUI)", \
-                                    "Sankey flowchart (Plotly) (Open GUI)", "Sunburst pie chart (Plotly) (Open GUI)", "Treemap (Plotly) (Open GUI)", \
+                                    "Animated time-dependent bar plot (Plotly)", "Boxplot", "Multiple bar charts", "Network graphs (Gephi)", \
+                                    "Sankey flowchart (Plotly)", "Sunburst pie chart (Plotly)", "Treemap (Plotly)", \
                                     'Sentence visualization: Dependency tree viewer (png graphs)', 'Wordclouds (ALL options GUI)'
 
 NLP_Suite_data_file_handling_tools_menu = \
@@ -626,8 +626,7 @@ NLP_Suite_corpus_document_tools_menu = \
 '', \
 'Specialized tools --------------------------------------------------------------------------------', \
 '', \
-'Geographic maps: From texts to maps', \
-'Geographic maps: Google Earth Pro', \
+'Geographic maps: From texts to maps via Google Earth Pro and Google Maps', \
 'Knowledge graphs: DBpedia & YAGO', \
 'NER (Named Entity Recognition) annotator', \
 'Narrative analysis (ALL options GUI)', \

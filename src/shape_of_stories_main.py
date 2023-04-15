@@ -142,7 +142,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment"  # multilingual model
             else:
                 model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"  # English language model
-            tempOutputFiles = BERT_util.main(inputFilename, inputDir, outputDir, '', createCharts, chartPackage, model_path)
+            tempOutputFiles = BERT_util.main(inputFilename, inputDir, outputDir, config_filename, '', createCharts, chartPackage, model_path)
             if tempOutputFiles == None:
                 return
             if len(tempOutputFiles) > 0:

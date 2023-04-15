@@ -88,7 +88,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
             mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of case-sensitive keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
             return
         import word2vec_Gensim_util
-        filesToOpen = word2vec_Gensim_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir,openOutputFiles, createCharts, chartPackage,
+        filesToOpen = word2vec_Gensim_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir, config_filename, openOutputFiles, createCharts, chartPackage,
                                  remove_stopwords_var, lemmatize_var,
                                  keywords_var,
                                  compute_distances_var, top_words_var,
@@ -183,7 +183,7 @@ keywords_var = tk.StringVar()
 def clear(e):
     remove_stopwords_var.set(1)
     lemmatize_var.set(1)
-    vis_menu_var.set('Do not plot word vectors')
+    vis_menu_var.set('Plot word vectors')
     dim_menu_var.set('')
     sg_menu_var.set('Skip-Gram')
     vector_size_var.set(100)
@@ -207,7 +207,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 vis_var_lb = tk.Label(window,text='Select visualization option')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,vis_var_lb,True)
-vis_menu_var.set('Do not plot word vectors')
+vis_menu_var.set('Plot word vectors')
 vis_menu = tk.OptionMenu(window,vis_menu_var, 'Do not plot word vectors', 'Plot word vectors')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
@@ -217,7 +217,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
     "The visualizaton of an n-dimensional space in a 2 or 3 dimensional space is\n1. computationally very demanding (depending upon the number of words)\n2. somewhat misleading (you are better off looking at cosine similarities).")
 
 #### 2D or 3D plot
-dim_menu_var.set('')
+dim_menu_var.set('2D')
 dim_menu = tk.OptionMenu(window,dim_menu_var, '2D', '3D')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,dim_menu)
 

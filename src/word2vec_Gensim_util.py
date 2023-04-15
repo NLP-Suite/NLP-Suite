@@ -31,7 +31,7 @@ fin = open('../lib/wordLists/stopwords.txt', 'r')
 stop_words = set(fin.read().splitlines())
 punctuations = set(string.punctuation)
 
-def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
+def run_Gensim_word2vec(inputFilename, inputDir, outputDir, configFileName, openOutputFiles, createCharts, chartPackage,
                         remove_stopwords_var, lemmatize_var,
                         keywords_var,
                         compute_distances_var, top_words_var,
@@ -80,11 +80,17 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                 all_input_docs[dId] = text
                 tail_list[dId] = tail
     else:
-        numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
-        if numFiles == 0:
-            mb.showerror(title='Number of files error',
-                        message='The selected input directory does NOT contain any file of txt type.\n\nPlease, select a different directory and try again.')
-        for doc in list(os.listdir(inputDir)):
+        # numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
+        # if numFiles == 0:
+        #     mb.showerror(title='Number of files error',
+        #                 message='The selected input directory does NOT contain any file of txt type.\n\nPlease, select a different directory and try again.')
+        inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False,
+                                                  configFileName=configFileName)
+        nFile = len(inputDocs)
+        if nFile == 0:
+            return filesToOpen
+
+        for doc in inputDocs: # list(os.listdir(inputDir)):
             head, tail = os.path.split(doc)
             if doc.endswith('.txt'):
                 with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:

@@ -147,9 +147,10 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnNumber,encodingValue, datePresent, dateColumnNumber)
         if locations == None or len(locations) == 0:
             return
-        if geocoder == 'Nominatim':
+        if not inputIsGeocoded and geocoder == 'Nominatim':
             changed = False
-            nom_df = pd.DataFrame(locations, columns=['Location', 'Date','NER']) if len(locations[0])==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0','NER'])
+            # nom_df = pd.DataFrame(locations, columns=['Location', 'Date','NER']) if len(locations[0])==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0','NER'])
+            nom_df = pd.DataFrame(locations, columns=['Location', 'Date']) if len(locations[0])==2 else pd.DataFrame(locations, columns=['Location', 'Index', '0'])
             if nom_df is None:
                 return
             drop_idx = []
@@ -202,18 +203,28 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                                                                               geoName, 'Not-Found',
                                                                               locationColumnName, '',
                                                                               False, True)
+    geocodedLocationsOutputFilename=inputFilename
+
+    # RF
     kmloutputFilename = geocodedLocationsOutputFilename.replace('.csv', '.kml')
 
-    geocodedLocationsOutputFilename, \
-    locationsNotFoundoutputFilename, \
-    locationsNotFoundNonDistinctoutputFilename, \
-    kmloutputFilename = \
-        GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
-            locationColumnName,geocoder,country_bias,area_var,restrict,encodingValue,split_locations_prefix,split_locations_suffix)
-    if kmloutputFilename!='':
-        filesToOpen.append(kmloutputFilename)
-    if geocodedLocationsOutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
-        return
+    # RF
+    if not inputIsGeocoded:
+        geocodedLocationsOutputFilename, \
+        locationsNotFoundoutputFilename, \
+        locationsNotFoundNonDistinctoutputFilename, \
+        kmloutputFilename = \
+            GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
+                locationColumnName,geocoder,country_bias,area_var,restrict,encodingValue,split_locations_prefix,split_locations_suffix)
+        if kmloutputFilename!='':
+            filesToOpen.append(kmloutputFilename)
+        if geocodedLocationsOutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
+            return
+    else:
+        kmloutputFilename = GIS_geocode_util.process_geocoded_data_for_kml(window, locations, inputFilename, outputDir,
+                                      locationColumnName, encodingValue)
+        if kmloutputFilename!='':
+            filesToOpen.append(kmloutputFilename)
 
     if len(locations) > 0 and inputIsCoNLL == True:
         # locations contains the following values:
@@ -250,51 +261,53 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                 if len(chart_outputFilename) > 0:
                     filesToOpen.extend(chart_outputFilename)
 
-    if locationsNotFoundNonDistinctoutputFilename!='':
-        nRecordsNotFound, nColumns  = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(locationsNotFoundNonDistinctoutputFilename)
-        if nRecordsNotFound>0:
-            filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
-            if createCharts:
-                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
-                                                                       outputDir,
-                                                                       columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
-                                                                       chartTitle='Frequency Distribution of Locations not Found by ' + geocoder,
-                                                                       # count_var = 1 for columns of alphabetic values
-                                                                       count_var=1, hover_label=[],
-                                                                       outputFileNameType='not-found',  # 'NER_tag_bar',
-                                                                       column_xAxis_label='Locations',
-                                                                       groupByList=[],
-                                                                       plotList=[],
-                                                                       chart_title_label='')
+    # RF
+    if not inputIsGeocoded:
+        if locationsNotFoundNonDistinctoutputFilename!='':
+            nRecordsNotFound, nColumns  = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(locationsNotFoundNonDistinctoutputFilename)
+            if nRecordsNotFound>0:
+                filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
+                if createCharts:
+                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
+                                                                           outputDir,
+                                                                           columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
+                                                                           chartTitle='Frequency Distribution of Locations not Found by ' + geocoder,
+                                                                           # count_var = 1 for columns of alphabetic values
+                                                                           count_var=1, hover_label=[],
+                                                                           outputFileNameType='not-found',  # 'NER_tag_bar',
+                                                                           column_xAxis_label='Locations',
+                                                                           groupByList=[],
+                                                                           plotList=[],
+                                                                           chart_title_label='')
+                    if chart_outputFilename != None:
+                        if len(chart_outputFilename) > 0:
+                            filesToOpen.extend(chart_outputFilename)
+
+                # save to csv file and run visualization
+                outputFilename= IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv','found-notFound')
+                with open(outputFilename, "w", newline="", encoding='utf-8', errors='ignore') as csvFile:
+                    writer = csv.writer(csvFile)
+                    writer.writerow(
+                        ["Number of Distinct Locations Found by Geocoder ", "Number of Distinct Locations NOT Found by Geocoder"])
+                    writer.writerow([nRecordsFound, nRecordsNotFound])
+                    csvFile.close()
+                # no need to display since the chart will contain the values
+                # return_files.append(outputFilename)
+                columns_to_be_plotted_yAxis=["Number of Distinct Locations Found by Geocoder ", "Number of Distinct Locations NOT Found by Geocoder"]
+                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                                                                   outputDir,
+                                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
+                                                                   chartTitle='Number of DISTINCT Locations Found and not Found by Geocoder',
+                                                                   # count_var = 1 for columns of alphabetic values
+                                                                   count_var=0, hover_label=[],
+                                                                   outputFileNameType='',
+                                                                   column_xAxis_label='Geocoder results',
+                                                                   groupByList=[],
+                                                                   plotList=[],
+                                                                   chart_title_label='')
                 if chart_outputFilename != None:
                     if len(chart_outputFilename) > 0:
                         filesToOpen.extend(chart_outputFilename)
-
-            # save to csv file and run visualization
-            outputFilename= IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv','found-notFound')
-            with open(outputFilename, "w", newline="", encoding='utf-8', errors='ignore') as csvFile:
-                writer = csv.writer(csvFile)
-                writer.writerow(
-                    ["Number of Distinct Locations Found by Geocoder ", "Number of Distinct Locations NOT Found by Geocoder"])
-                writer.writerow([nRecordsFound, nRecordsNotFound])
-                csvFile.close()
-            # no need to display since the chart will contain the values
-            # return_files.append(outputFilename)
-            columns_to_be_plotted_yAxis=["Number of Distinct Locations Found by Geocoder ", "Number of Distinct Locations NOT Found by Geocoder"]
-            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                                                               outputDir,
-                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                               chartTitle='Number of DISTINCT Locations Found and not Found by Geocoder',
-                                                               # count_var = 1 for columns of alphabetic values
-                                                               count_var=0, hover_label=[],
-                                                               outputFileNameType='',
-                                                               column_xAxis_label='Geocoder results',
-                                                               groupByList=[],
-                                                               plotList=[],
-                                                               chart_title_label='')
-            if chart_outputFilename != None:
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
 
     # ------------------------------------------------------------------------------------
     # map
