@@ -480,8 +480,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                             if gexf_file!=None and gexf_file!='':
                                 filesToOpen.append(gexf_file)
                         if not save_intermediate_file:
-                            gexf_files = [os.path.join(outputDir, f) for f in os.listdir(tempOutputDir) if
-                                          f.endswith('.gexf')]
+                            inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt',
+                                                                  silent=False,
+                                                                  configFileName=config_filename)
+
+                            # gexf_files = [os.path.join(outputDir, f) for f in os.listdir(tempOutputDir) if
+                            gexf_files = [os.path.join(outputDir, f) for f in inputDocs if
+                                                        f.endswith('.gexf')]
                             for f in gexf_files:
                                 if "CoreNLP" not in f and "SENNA_SVO" not in f and "spaCy" not in f and "Stanza" not in f: #CoreNLP accounts for both ++ and OpenIE
                                     os.remove(f)

@@ -201,11 +201,14 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 			documentID = 0
 			inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
 
-			Ndocs = str(len(inputDocs))
+			Ndocs = len(inputDocs)
+			if Ndocs == 0:
+				return filesToOpen
+
 			index = 0
 			if os.path.isdir(inputDir):
 				directory = os.fsencode(inputDir)
-				for file in os.listdir(directory):
+				for file in inputDocs:
 					filename = os.path.join(inputDir, os.fsdecode(file))
 					if filename.endswith(".txt"):
 						index = index + 1

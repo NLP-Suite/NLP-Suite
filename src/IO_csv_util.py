@@ -412,7 +412,7 @@ def header_check(inputFile):
     if isinstance(inputFile, pd.DataFrame):
         header = list(inputFile.columns)
     else:
-        header = IO_csv_util.get_csvfile_headers(inputFile)
+        header = get_csvfile_headers(inputFile)
     if 'Sentence ID' in header:
         sentenceID_pos = header.index('Sentence ID')
     else:

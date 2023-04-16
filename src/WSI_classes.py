@@ -1,3 +1,4 @@
+from tkinter import messagebox as mb
 import os
 tcache_path = f'{os.getcwd()}/cache'
 if not os.path.exists(tcache_path):
@@ -170,7 +171,7 @@ class Clusterer():
         return np.array(data)
     
     
-    def cluster_embeddings(self, data, k_range, ID=None, dim_reduct=None, rs=SEED, lamb=10000, finetuned=False, a_s=None):
+    def cluster_embeddings(self, data, k_range, w, doc, ID=None, dim_reduct=None, rs=SEED, lamb=10000, finetuned=False, a_s=None):
     
             if a_s is None:
                 ks = range(k_range[0], k_range[1])
@@ -179,10 +180,15 @@ class Clusterer():
             centroids = {}
             rss = np.zeros(len(ks))
             for i, k in enumerate(ks):
-                km = KMeans(k, random_state=rs)
-                km.fit(data)
-                rss[i] = km.inertia_
-                centroids[k] = km.cluster_centers_
+                try:
+                    km = KMeans(k, random_state=rs)
+                    km.fit(data)
+                    rss[i] = km.inertia_
+                    centroids[k] = km.cluster_centers_
+                except ValueError as e:
+                    if 'should be >=' in str(e):
+                        mb.showerror(title=':-(', message=f'The frequency of "{w}" in "{os.path.basename(doc)}" is less than the number of sense clusters ({k}) to be produced.\n\nPlease try to either lower the range of sense clusters to be produced or choose more frequent words to analyse and try again.\n\nAlso consider the possibility that the document "{os.path.basename(doc)}" is too small to use word sense induction on.')
+                        raise
             crits = []
             for i in range(len(ks)):
                 k = ks[i]

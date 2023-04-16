@@ -50,7 +50,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             icon_var_list, specific_icon_var_list,
             name_var_list, scale_var_list, color_var_list, color_style_var_list,
             description_csv_field_var, bold_var_list, italic_var_list,
-            description_var_list, description_csv_field_var_list):
+            description_var_list, description_csv_field_var_list, heat_map_var):
 
     filesToOpen = []
     inputIsCoNLL = False
@@ -101,10 +101,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                             silent=True)
     if outputDir == '':
         return
-
+    if heat_map_var:
+        mapping_package = 'Google Earth & Google Maps'
+    else:
+        mapping_package = 'Google Earth'
     filesToOpen = GIS_pipeline_util.GIS_pipeline(GUI_util.window,config_filename,
                                        inputFilename, inputDir, outputDir,
-                                       geocoder, 'Google Earth Pro', createCharts, chartPackage,
+                                       geocoder, mapping_package, createCharts, chartPackage,
                                        datePresent,
                                        country_bias,
                                        area_var,
@@ -138,7 +141,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 icon_var_list, specific_icon_var_list,
                 name_var_list, scale_var_list, color_var_list, color_style_var_list,
                 description_csv_field_var.get(), italic_var_list, bold_var_list,
-                description_var_list, description_csv_field_var_list)
+                description_var_list, description_csv_field_var_list, heat_map_var.get())
 
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
@@ -152,8 +155,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=510, # height at brief display
-                                                 GUI_height_full=550, # height at full display
+                                                 GUI_height_brief=550, # height at brief display
+                                                 GUI_height_full=590, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -983,6 +986,12 @@ def bold_var_list_update(*args):
 bold_var.trace('w', bold_var_list_update)
 bold_var_list_update()
 
+heat_map_var = tk.IntVar()
+heat_map_var.set(1)
+heat_map_checkbox = tk.Checkbutton(window, text='Heat map (via Google Maps)', variable=heat_map_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               heat_map_checkbox, True)
+
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
@@ -1025,16 +1034,18 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, enter various types of information required for the pin DESCRIPTION option. DESCRIPTION contains the information that will be displayed when clicking on a pin.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. FOR CONLL FILES, THE DESCRIPTION FIELD IS AUTOMATICALLY COMPUTED, DISPLAYING THE LOCATION, THE FILENAME, AND THE SENTENCE WHERE THE LOCATION IS MENTIONED.\n\nSelect the field name from the input csv file whose values will be displayed when clicking on a pin on the map.\n\nTick the bold checkbox if you want to display in BOLD the field name.\n\nTick the italic checkbox if you want to display in ITALIC the field name."+ GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Please, tick ther checkbox if you wish to produce a heat map using Google Maps.\n\n\MUST HAVE a GOOGLE MAPS API KEY."+ GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
-readMe_message = "This Python 3 script relies on the Python Geopy library to geocode locations, i.e., finding a locaton latitude and longitude so that it can be mapped using Google Earth Pro.\n\nYOU MUST DOWNLOAD AND INSTALL THE FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro.\n\nIn INPUT, the script can take:" \
+readMe_message = "This Python 3 script relies on the Python Geopy library to geocode locations, i.e., finding a locaton latitude and longitude so that it can be mapped using Google Earth Pro for pin maps and Google Maps for heat maps.\n\nFOR THESE OPTIONS YOU MUST HAVE GOOGLE API KEYS.\n\nYOU MUST DOWNLOAD AND INSTALL THE FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro.\n\nIn INPUT, the script can take:" \
     "\n   1. A CoNLL table produced by Stanford CoreNLP parser and use the NER (Named Entity Recognition) LOCATION, CITY, STATE-OR-PROVINCE, and COUNTRY values for geocoding;" \
     "\n   2. a csv file, however created (e.g., CoreNLP NER annotator), containing a list of locations to be geocoded (e.g., Chicago);" \
-    "\n   3. a csv file that contains geocoded location names with latitude and longitude.\n\ncsv files, except for the CoNLL table, must have a column header 'Location' (the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location').\n\nWhen a CoNLL file is used, if the file contains a date, the script can automatically process a wide variety of date formats: day, month, and year in numeric form and in different order, year in 2 or 4 digit form, and month in numeric or alphabetic form and, in the latter case, in 3 or full characters (e.g., Jan or January).\n\nThe current release of the script relies on Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe script prepares the kml file to be displayed in Google Earth Pro.\n\nThe script can also be used to compute geographic distances between locations, in both kilometers and miles, by either geodesic distance or by great circle distance. Distances will be visualized in Excel charts."
+    "\n   3. a csv file that contains geocoded location names with latitude and longitude.\n\ncsv files, except for the CoNLL table, must have a column header 'Location' (the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location'), two column headers 'Latitude' and 'Longitude'.\n\nIf a column header 'Date' is present, the field will be used to compute dynamic Google Earth Pro maps.\n\nWhen a CoNLL file is used, if the file contains a date, the script can automatically process a wide variety of date formats: day, month, and year in numeric form and in different order, year in 2 or 4 digit form, and month in numeric or alphabetic form and, in the latter case, in 3 or full characters (e.g., Jan or January).\n\nThe current release of the script relies on Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe script prepares the kml file to be displayed in Google Earth Pro.\n\nThe script can also be used to compute geographic distances between locations, in both kilometers and miles, by either geodesic distance or by great circle distance. Distances will be visualized in Excel charts."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
@@ -1048,9 +1059,9 @@ if state == 'disabled':
         GUI_util.setup_IO_menu_var.set('GUI-specific I/O configuration')
         mb.showwarning(title='Warning',
                        message="Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
+        changed_GIS_filename()
         error = False
 
-# changed_GIS_filename()
 
 GUI_util.window.mainloop()
 

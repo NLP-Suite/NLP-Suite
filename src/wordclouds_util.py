@@ -612,9 +612,11 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                             if differentColumns_differentColors:
                                 if word.pos == "NOUN" or word.pos == "VERB" or \
                                         word.pos == "ADJ" or word.pos == "ADV":
+                                    if word_str!= None:
                                         textToProcess = textToProcess + ' ' + word_str
-                            else:
-                                textToProcess = textToProcess + ' ' + word_str
+                                else:
+                                    if word_str != None:
+                                        textToProcess = textToProcess + ' ' + word_str
                     if len(textToProcess) == 0:
                         textToProcess = currenttext
 

@@ -491,7 +491,7 @@ def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Docu
 
 
 # helper main method for sentiment analysis
-def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPackage='Excel', model_path="cardiffnlp/twitter-xlm-roberta-base-sentiment"):
+def main(inputFilename, inputDir, outputDir, configFileName, mode, createCharts=False, chartPackage='Excel', model_path="cardiffnlp/twitter-xlm-roberta-base-sentiment"):
     # model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
     # model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
 
@@ -549,7 +549,11 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
             documentID = 0
             if os.path.isdir(inputDir):
                 directory = os.fsencode(inputDir)
-                for file in os.listdir(directory):
+                inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt',
+                                                      silent=False,
+                                                      configFileName=configFileName)
+
+                for file in inputDocs:
                     filename = os.path.join(inputDir, os.fsdecode(file))
                     if filename.endswith(".txt"):
                         # start_time = time.asctime( time.localtime(time.time()))()
@@ -612,6 +616,8 @@ if __name__ == '__main__':
                         help='a string to hold the INPUT path of the directory of ALL txt files to be processed; use "" if path contains spaces')
     parser.add_argument('--out', type=str, dest='outputDir', default='',
                         help='a string to hold the path of the OUTPUT directory; use "" if path contains spaces')
+    parser.add_argument('--configFileName', type=str, dest='outputDir', default='',
+                        help='a string to hold the path of the configFileName')
     parser.add_argument('--outfile', type=str, dest='outputFilename', default='',
                         help='output file')
 
@@ -621,7 +627,7 @@ if __name__ == '__main__':
 
     # run main
     sys.exit(main(args.inputFilename, args.inputDir,
-                  args.outputDir, args.outputFilename, args.mode))
+                  args.outputDir, args.configFileName, args.outputFilename, args.mode))
 
 # very fast method to split a text file into a list whose elements are each sentence in that file. Found on: https://stackoverflow.com/a/31505798
 # -*- coding: utf-8 -*-

@@ -93,14 +93,12 @@ def run(inputFilename,
     if display_txt_file_options()==True:
          return
 
-    if csv_file != '':
-        inputFilename=csv_file
-
     if csv_file!='':
         result = mb.askokcancel("GIS pipeline input file",
                        "This is a reminder that you are now running the GIS pipeline with the csv input file\n\n"+csv_file+'\n\nPress Cancel then Esc to clear the csv file widget if you want to run the GIS pipeline from your input txt file(s) and try again.')
         if result == False:
             return
+        inputFilename=csv_file
 
     geocoder = 'Nominatim'
     geoName = 'geo-' + str(geocoder[:3])
@@ -175,6 +173,8 @@ def run(inputFilename,
         csv_file_var.set(NER_outputFilename)
         filesToOpen.append(NER_outputFilename)
         locationColumnName = 'Location'
+        check_csv_file_headers(NER_outputFilename)
+
     else:
         NER_outputFilename=csv_file_var.get()
         locationColumnName = location_menu #RF
@@ -207,13 +207,16 @@ def run(inputFilename,
         if out_file!=None:
             if len(out_file)>0:
                 filesToOpen.extend(out_file)
+                csv_file_var.set(out_file[1])
+                NER_extractor_var.set(0)
+                NER_extractor_checkbox.config(state='disabled')
+                geocode_locations_var.set(0)
         if len(filesToOpen)>0:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
     else:
         if GIS_package_var!='':
             mb.showwarning("Option not available","The " + GIS_package_var + " option is not available yet.\n\nSorry! Please, check back soon...")
             return
-
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -289,6 +292,8 @@ GIS_package2_var=tk.IntVar()
 map_locations_var=tk.IntVar()
 open_API_config_var=tk.StringVar()
 
+inputIsGeocoded = False
+
 def clear(e):
     csv_file_var.set('')
     NER_extractor_var.set(1)
@@ -331,6 +336,8 @@ def check_csv_file_headers(csv_file):
             location_menu_var.set('Location') #RF
             location_menu='Location' #RF
     elif 'Latitude' in headers and 'Longitude' in headers:
+        NER_extractor_var.set(0)
+        NER_extractor_checkbox.config(state='disabled')
         geocode_locations_var.set(0)
         geocode_locations_checkbox.configure(state='disabled')
         geocode_locations=False
@@ -346,9 +353,10 @@ def check_csv_file_headers(csv_file):
         NER_extractor_checkbox.config(state='disabled')
         # cannotRun = True
         # return cannotRun
-    else:
+    else: # no location or lat long
         geocode_locations_var.set(1)
         geocode_locations=True
+        NER_extractor_checkbox.config(state='disabled')
         NER_extractor_var.set(1)
         NER_extractor = True
 
@@ -522,6 +530,7 @@ map_locations_checkbox.config(text="MAP locations")
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,map_locations_checkbox,True)
 
 def display_txt_file_options(*args):
+    global inputIsGeocoded
     cannotRun = False
     if csv_file_var.get() == '':
         if inputFilename.get()!='' or input_main_dir_path.get()!='':
@@ -536,13 +545,19 @@ def display_txt_file_options(*args):
                 NER_extractor = True
                 NER_extractor_checkbox.configure(state='disabled')
                 country_bias.configure(state='normal')
-                geocode_locations_var.set(1)
-                geocode_locations = True
+                if inputIsGeocoded:
+                    geocode_locations_var.set(0)
+                    geocode_locations = False
+                else:
+                    geocode_locations_var.set(1)
+                    geocode_locations = True
                 map_locations_var.set(1)
                 map_locations = True
         else:
             location_menu_var.set('')
             location_field.config(state='disabled')
+    else:
+        display_csv_file_options()
     return cannotRun
 inputFilename.trace('w',display_txt_file_options)
 input_main_dir_path.trace('w',display_txt_file_options)

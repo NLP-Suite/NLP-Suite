@@ -198,7 +198,7 @@ def clear(e):
     selectedImage_var.set('')
     use_contour_only_var.set(1)
     prefer_horizontal_var.set(0)
-    lemmatize_var.set(0)
+    lemmatize_var.set(1)
     stopwords_var.set(0)
     punctuation_var.set(0)
     lowercase_var.set(0)
@@ -279,9 +279,9 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_max
                                    True, False, True, False, 90, GUI_IO_util.wordclouds_max_words_number,
                                    "Enter the maximum number of words to be displayed on the wordclouds image")
 
+lemmatize_var.set(1)
 lemmatize_checkbox = tk.Checkbutton(window, variable=lemmatize_var,
                                                        onvalue=1, offvalue=0)
-
 lemmatize_checkbox.config(text="Lemmas")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_lemmas_pos, y_multiplier_integer,
@@ -549,8 +549,8 @@ def activate_Python_options(*args):
         lowercase_checkbox.config(state='normal')
         collocation_checkbox.config(state='normal')
         differentPOS_differentColor_checkbox.config(state='normal')
-        stopwords_var.set(1)
-        punctuation_var.set(1)
+        stopwords_var.set(0)
+        punctuation_var.set(0)
         lowercase_var.set(1)
         collocation_var.set(1)
 
