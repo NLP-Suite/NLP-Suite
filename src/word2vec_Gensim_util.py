@@ -44,7 +44,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, configFileName, open
     tail_list = {}
     all_input_docs = {}
     dId = 0
-    numFiles = 1
+    nFile = 1
     filesToOpen = []
     sentences_out = []
 
@@ -96,7 +96,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, configFileName, open
                 with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
                     dId += 1
                     text = file.read()
-                    print('Importing file ' + str(dId) + '/' + str(numFiles) + ' ' + tail)
+                    print('Importing file ' + str(dId) + '/' + str(nFile) + ' ' + tail)
                     document.append(os.path.join(inputDir, doc))
                     all_input_docs[dId] = text
                     tail_list[dId] = tail
@@ -112,7 +112,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, configFileName, open
     # process input file(s)
     out_df = pd.DataFrame()
     for doc_idx, txt in enumerate(all_input_docs.items()):
-        print('Processing file ' + str(doc_idx+1) + '/' + str(numFiles) + ' ' + tail_list[doc_idx+1])
+        print('Processing file ' + str(doc_idx+1) + '/' + str(nFile) + ' ' + tail_list[doc_idx+1])
         temp_out_df = pd.DataFrame()
         stanza_doc = stanzaPipeLine(txt[1])
 

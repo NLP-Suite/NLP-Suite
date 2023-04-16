@@ -184,7 +184,7 @@ def clear(e):
     remove_stopwords_var.set(1)
     lemmatize_var.set(1)
     vis_menu_var.set('Plot word vectors')
-    dim_menu_var.set('')
+    dim_menu_var.set('2D')
     sg_menu_var.set('Skip-Gram')
     vector_size_var.set(100)
     window_var.set(5)
