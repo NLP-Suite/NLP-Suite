@@ -193,7 +193,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, configFileName, open
         ## visualization
         import word2vec_tsne_plot_util
         outputFiles = word2vec_tsne_plot_util.run_word2vec_plot(inputFilename, inputDir, outputDir,
-                              word_vector_list,
+                              np.asarray(word_vector_list),
                               filtered_words,
                               vis_menu_var, dim_menu_var)
         filesToOpen.extend(outputFiles)

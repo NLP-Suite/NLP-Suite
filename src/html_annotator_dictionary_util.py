@@ -61,7 +61,10 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
 # takes in file to annotate and list of terms to check against
 # returns list of a list of terms with appropriate annotations for each file
 # annotation allows custom tagging style (via csv, etc.)
-# NOTICE: csv_field1_var and first entry of csvValue_color_list should be a list
+# NOTICE:
+#   csv_field1_var ['Name']
+#   csvValue_color_list should be a list, for gender is csvValue_color_list = [genderCol, '|', 'FEMALE', 'red', '|', 'MALE', 'blue', '|']
+#   tagAnnotations is also a list, for gender  ['<span style="color: blue; font-weight: bold">', '</span>']
 def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_file,
                         csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, fileType='.txt', fileSubc=''):
     writeout = []
@@ -90,9 +93,12 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
                 return
             wordColNum.append(col)
         catColNum = []
+        # csvValue_color_list=[csvValue_color_list]
         if len(csvValue_color_list) > 0:
-            for field in csvValue_color_list[0]:
-                catColNum.append(IO_csv_util.get_columnNumber_from_headerValue(headers, field, dict_file))
+            # for field in str(csvValue_color_list[0]):
+            #     catColNum.append(IO_csv_util.get_columnNumber_from_headerValue(headers, field, dict_file))
+            field=csvValue_color_list[0]
+            catColNum.append(IO_csv_util.get_columnNumber_from_headerValue(headers, field, dict_file))
 
     dictionary, color_list = readCsv(wordColNum, catColNum, dict_file, csvValue_color_list)
     reserved_dictionary = ['bold', 'color', 'font', 'span', 'style', 'weight', 'black', 'blue', 'green', 'pink', 'yellow', 'red']

@@ -186,7 +186,7 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 
 
 		# TODO MINO GIS create kml record
-		print("   Processing geocoded record for kml file for Google Earth Pro")
+		print("   Processing geocoded record for kml file for Google Earth Pro " + str(index+1) + '/' + str(len(input_df.index)))
 		pnt = kml.newpoint(coords=[(lng, lat)])
 		pnt.style.iconstyle.icon.href = icon_url
 		pnt.name = location
@@ -494,6 +494,10 @@ def geocode(window,locations, inputFilename, outputDir,
 # from GIS_KML_util
 def convertToGGP(date):
 	GGPdateFormat = ''
+	if 'float' in str(type(date)): # this occurs when dealing with an integer YEAR only
+		date=str(int(date))
+	if 'int' in str(type(date)): # this occurs when dealing with an integer YEAR only
+		date=str(int(date))
 	if date != 'nan' and date != '':
 		fmts = ('%Y', '%y', '%Y-%m-%d', '%y-%m-%d', '%Y-%m', '%y-%m',
 				'%Y-%B-%d', '%y-%B-%d', '%Y-%b-%d', '%y-%b-%d', '%Y-%B', '%y-%B', '%Y-%b', '%y-%b'

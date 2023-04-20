@@ -104,7 +104,11 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
         import wordclouds_util
         if not IO_internet_util.check_internet_availability_warning("wordclouds_main.py"):
             return
-        wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, config_filename,  selectedImage, use_contour_only, prefer_horizontal, font, int(max_words), lemmatize, stopwords, punctuation, lowercase, differentPOS_differentColor,differentColumns_differentColors, csvField_color_list,doNotCreateIntermediateFiles,openOutputFiles, collocation)
+        wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, config_filename,  selectedImage,
+                                use_contour_only, prefer_horizontal, font,
+                                int(max_words), lemmatize, stopwords, punctuation,
+                                lowercase, differentPOS_differentColor,differentColumns_differentColors,
+                                csvField_color_list,doNotCreateIntermediateFiles,openOutputFiles, collocation)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 
