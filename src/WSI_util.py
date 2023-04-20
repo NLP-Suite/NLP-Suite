@@ -176,7 +176,7 @@ def get_centroids(docs, vocabs, paths, k_range, sample=None):
             batched_data, batched_words, batched_masks, batched_users = model.get_batches(seq, batch_size)
             embeddings, do_wordpiece = model.get_embeddings(batched_data, batched_words, batched_masks, batched_users, w)
             data = model.group_wordpiece(embeddings, w, do_wordpiece)
-            centroids = model.cluster_embeddings(data, k_range, lamb=10000)
+            centroids = model.cluster_embeddings(data, k_range, w, doc, lamb=10000)
             np.save(f'{c_path}/{w}.npy', centroids)
 
 

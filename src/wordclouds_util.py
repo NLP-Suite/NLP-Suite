@@ -586,6 +586,8 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                             #   YELLOW for anything else; no longer used
                             if lemmatize:
                                 word_str = word.lemma
+                                if word_str==None:
+                                    word_str = word.text
                             else:
                                 word_str = word.text
                             if exclude_stopwords:
@@ -600,7 +602,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                                     word_str = word_str.lower()
                             if exclude_punctuation:
                                 if word.pos == "PUNCT":
-                                    continue  # do not process stopwords & punctuation marks
+                                    continue  # do not process punctuation marks
                             if word.pos == "NOUN":
                                 color_to_words[red_code].append(word_str)
                             elif word.pos == "VERB":

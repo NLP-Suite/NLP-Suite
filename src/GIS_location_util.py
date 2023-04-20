@@ -154,7 +154,7 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 	if withHeader==True:
 		index=1 #skip header
 		for index, row in dt.iterrows():
-			print("Processing record " + str(index)+"/"+str(count_row)+ " in csv file; location: " + str(row[locationColumnNumber]))
+			print("Processing record " + str(index+1)+"/"+str(count_row)+ " in csv file; location: " + str(row[locationColumnNumber]))
 			if str(row[locationColumnNumber])!='' and str(row[locationColumnNumber])!='nan':
 				if datePresent == True:
 					# locList.append([row[locationColumnNumber], row[dateColumnNumber], row['NER Tag']])

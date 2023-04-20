@@ -18,8 +18,8 @@ import GUI_IO_util
 import IO_files_util
 import reminders_util
 import Stanford_CoreNLP_util
-import html_annotator_gender_dictionary_util
 import html_annotator_dictionary_util
+import html_annotator_gender_dictionary_util
 import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
@@ -75,10 +75,13 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
     elif annotator_dictionary_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_gender_dictionary_util.py')==False:
             return
-        import annotator_gender_dictionary_util
         # csvValue_color_list, bold_var, tagAnnotations, '.txt'
+        csv_field1_var=['Name']
+        csvValue_color_list = ['Gender', '|', 'Female', 'red', '|', 'Male', 'blue', '|']
+        tagAnnotations = ['<span style="color: blue; font-weight: bold">', '</span>']
         fileSubsc='gender'
-        output= html_annotator_dictionary_util.dictionary_annotate(config_filename,inputFilename, input_main_dir_path, outputDir, config_filename, openOutputFiles, createCharts, chartPackage, memory_var, annotator_dictionary_file_var,personal_pronouns_var,fileSubsc)
+        output= html_annotator_dictionary_util.dictionary_annotate(inputFilename, input_main_dir_path, outputDir, config_filename, annotator_dictionary_file_var,
+                                                                   csv_field1_var, csvValue_color_list, True, tagAnnotations, '.txt', fileSubsc)
         if len(output)>0:
             # output=output[0]
             filesToOpen.append(output)
