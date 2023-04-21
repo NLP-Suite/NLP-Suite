@@ -1722,8 +1722,8 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
 
         inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False,
                                                   configFileName=configFileName)
-        nFile = len(inputDocs)
-        if nFile == 0:
+        numFiles = len(inputDocs)
+        if numFiles == 0:
             return
 
         for doc in inputDocs:
@@ -1783,7 +1783,21 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
             # print(f"Frazier: {fAvg}, {fSum}\n")
 
             # new ordering
-            op = op.append({
+            # op = op.append({
+            #     'Sentence length (No. of words)': sentence_length,
+            #     'Yngve score': yAvg,
+            #     'Yngve sum': ySum,
+            #     'Frazier score': fAvg,
+            #     'Frazier sum': fSum,
+            #     'Sentence ID': i + 1,
+            #     'Sentence': sentence.text,
+            #     'Document ID': idx + 1,
+            #     'Document': document[idx],
+            # },ignore_index=True)
+            # op = op.append({ deprecated
+            # https://stackoverflow.com/questions/75956209/dataframe-object-has-no-attribute-append
+            # df = pd.concat([df, pd.DataFrame([new_row])], ignore_index=True)
+            op = pd.concat([op, pd.DataFrame([{
                 'Sentence length (No. of words)': sentence_length,
                 'Yngve score': yAvg,
                 'Yngve sum': ySum,
@@ -1792,9 +1806,8 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
                 'Sentence ID': i + 1,
                 'Sentence': sentence.text,
                 'Document ID': idx + 1,
-                'Document': document[idx],
-            },
-                ignore_index=True)
+                'Document': document[idx]}])],
+            ignore_index=True)
     # not necessary sorted already
     # op.sort_values(by=['Document ID', 'Sentence ID'], ascending=True, inplace=True)
 
