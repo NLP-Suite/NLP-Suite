@@ -168,7 +168,7 @@ class GroupedColorFunc(object):
 # CYNTHIA: wordcloud function particularly designed for SVO
 def SVOWordCloud(svoFile, inputFilename, outputDir, transformed_image_mask, prefer_horizontal):
     # read SVO result in
-    svo_df = pd.read_csv(svoFile, encoding='utf-8',error_bad_lines=False)
+    svo_df = pd.read_csv(svoFile, encoding='utf-8',on_bad_lines='skip')
     svo_df = svo_df.fillna("")
     words_list = []
     # RGB color codes: red for S, blue for V, green for O
@@ -531,7 +531,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
             else:
                 try:
                     # this assumes that the input csv file is a CoNLL table
-                    df = pd.read_csv(doc, encoding='utf-8',error_bad_lines=False)
+                    df = pd.read_csv(doc, encoding='utf-8',on_bad_lines='skip')
                     postags_ = df['POStag']
                     forms_ = df['Form']
                     lemmas_ = df['Lemma']

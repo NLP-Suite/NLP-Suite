@@ -515,7 +515,7 @@ def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutp
     csv_spelling_file = filedialog.askopenfilename(title='Select INPUT csv spelling file (with \'Original\' and \'Corrected\' headers)', filetypes=[("csv files", "*.csv")]) #https://docs.python.org/3/library/dialog.html
     if csv_spelling_file=='':
         return
-    df = pd.read_csv(csv_spelling_file, encoding='utf-8', error_bad_lines=False)
+    df = pd.read_csv(csv_spelling_file, encoding='utf-8', on_bad_lines='skip')
     try:#make sure the csv have two columns of "original" and "corrected"
         original = df['Original']
         corrected = df['Corrected']

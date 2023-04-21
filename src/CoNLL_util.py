@@ -232,7 +232,7 @@ def compute_sentence(CoNLL_table, recordID, sentenceID, documentID):
     :type documentID: object
     """
     # Open ConLL
-    df = pd.read_csv(io.open(CoNLL_table, 'rb'), sep=',', index_col=False, encoding='utf-8',error_bad_lines=False)
+    df = pd.read_csv(io.open(CoNLL_table, 'rb'), sep=',', index_col=False, encoding='utf-8',on_bad_lines='skip')
     df = df[df["Sentence ID"] == sentenceID]
     df = df[df["Document ID"] == documentID]
     rows = []  # Store data
@@ -265,7 +265,7 @@ def compute_sentence_table(CoNLL_table, output_path):
         IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started computing the Sentence table at', True)
     # tk.messagebox.showinfo("Stanford CoreNLP has finished", "Started computing the Sentence table at " + str(startTime[3]) + ':' + str(startTime[4]))
     # df = pd.read_csv(io.open(os.path.join(output_path,CoNLL_table), 'rb'), sep='\t', header=None, index_col=False) # Open ConLL
-    df = pd.read_csv(io.open(os.path.join(output_path, CoNLL_table), 'rb'), sep=',', index_col=False, encoding='utf-8',error_bad_lines=False)  # Open ConLL
+    df = pd.read_csv(io.open(os.path.join(output_path, CoNLL_table), 'rb'), sep=',', index_col=False, encoding='utf-8',on_bad_lines='skip')  # Open ConLL
     rows = []  # Store data
     sent_str = ""  # Build string
     # Keep track of variables
@@ -307,7 +307,7 @@ def compute_sentence_table(CoNLL_table, output_path):
 # inputFilename contains path
 def get_nouns_verbs_CoNLL(inputFilename,output_dir):
 
-    conll_table = pd.read_csv(inputFilename, encoding='utf-8',error_bad_lines=False)
+    conll_table = pd.read_csv(inputFilename, encoding='utf-8',on_bad_lines='skip')
 
     verb_form_set = set()
     verb_lemma_set = set()
