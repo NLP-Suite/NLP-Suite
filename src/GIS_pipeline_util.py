@@ -327,7 +327,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                                                                         geocoder, locationColumnName, '', '',
                                                                         False, True)
         coordList = []
-        df = pd.read_csv(geocodedLocationsOutputFilename, encoding='utf-8', error_bad_lines=False)
+        df = pd.read_csv(geocodedLocationsOutputFilename, encoding='utf-8', on_bad_lines='skip')
         if 'Latitude' in df and 'Longitude' in df:
             lat = df.Latitude
             lon = df.Longitude

@@ -53,10 +53,10 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
         data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange)
     else:
         try:
-            data = pd.read_csv(inputFilename,encoding='utf-8',error_bad_lines=False)
+            data = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
         except:
             try:
-                data = pd.read_csv(inputFilename,encoding='ISO-8859-1', error_bad_lines=False)
+                data = pd.read_csv(inputFilename,encoding='ISO-8859-1', on_bad_lines='skip')
                 IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
                                                    'Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 in reading into pandas the csv file ' + inputFilename)
                 print("Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 encoding in reading into pandas the csv file " + inputFilename)
@@ -722,7 +722,7 @@ def add_missing_IDs(input, outputFilename):
     if isinstance(input, pd.DataFrame):
         df = input
     else:
-        df = pd.read_csv(input, encoding='utf-8', error_bad_lines=False)
+        df = pd.read_csv(input, encoding='utf-8', on_bad_lines='skip')
     # define variables
     start_sentence = 1 # first sentence in loop
     end_sentence = 1 # last sentence in loop
@@ -807,7 +807,7 @@ def add_missing_IDs(input, outputFilename):
 # use instead add_missing_IDs
 
 def complete_sentence_index(file_path):
-    data = pd.read_csv(file_path, encoding='utf-8', error_bad_lines=False)
+    data = pd.read_csv(file_path, encoding='utf-8', on_bad_lines='skip')
     if not 'Sentence ID' in data:
         head, tail = os.path.split(file_path)
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Wrong csv file',

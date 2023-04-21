@@ -257,7 +257,7 @@ def filter_lemmatize_svo(window,svo_file_name, filter_s, filter_v, filter_o, fil
                                                    'Started running the filter algorithm for Subject-Verb-Object (SVO) at',
                                                    True, '', True)
 
-    df = pd.read_csv(svo_file_name, encoding='utf-8',error_bad_lines=False)
+    df = pd.read_csv(svo_file_name, encoding='utf-8',on_bad_lines='skip')
     num_rows = df.shape[0]
 
     unfiltered_svo = df.to_dict('index')

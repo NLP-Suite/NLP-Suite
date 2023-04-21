@@ -14,7 +14,7 @@ def geocoded_checker(numColumns, minColumns, headers, locationColumnValue, input
     latitude_name = headers[location_num + 1]
     longitude_name = headers[location_num + 2]
     try:
-        dt = pd.read_csv(inputFilename, encoding=encodingValue, error_bad_lines=False)
+        dt = pd.read_csv(inputFilename, encoding=encodingValue, on_bad_lines='skip')
     except IOError as e:
         mb.showerror(title='Input file error', message="There was an error reading the input file\n" + str(
             inputFilename) + "\nwith geocoded input.\n\n"+str(e))
@@ -50,7 +50,7 @@ def geocoded_checker(numColumns, minColumns, headers, locationColumnValue, input
 # Checks that the location column is a column of strings
 def location_column_checker(inputFilename, locationColumnValue, encodingValue):
     try:
-        dt = pd.read_csv(inputFilename, encoding=encodingValue, error_bad_lines=False)
+        dt = pd.read_csv(inputFilename, encoding=encodingValue, on_bad_lines='skip')
     except:
         mb.showerror(title='Input file error', message="There was an error reading the input file\n" + str(
             inputFilename) + "\nwith geocoded input. Most likely, the error is due to an encoding error. Your current encoding value is " + encodingValue + ".\n\nSelect a different encoding value and try again.")
