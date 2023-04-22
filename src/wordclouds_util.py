@@ -275,7 +275,7 @@ def display_wordCloud_sep_color(inputFilename, outputDir, text, color_to_words, 
         wc.to_file(output_file_name)
     return output_file_name
 
-def display_wordCloud(inputFilename,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, collocation, prefer_horizontal,bg_image = None, bg_image_flag = True, font = None, max_words=100):
+def display_wordCloud(inputFilename,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, stopwords, collocation, prefer_horizontal,bg_image = None, bg_image_flag = True, font = None, max_words=100):
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='wordcloud',
                                                        silent=True)
@@ -302,7 +302,7 @@ def display_wordCloud(inputFilename,inputDir,outputDir,textToProcess,doNotListIn
                         max_words=100,
                         mask=transformed_image_mask,
                         prefer_horizontal=prefer_horizontal,
-                        # stopwords = stopwords,
+                        stopwords = stopwords,
                         contour_width=c_wid,
                         contour_color='firebrick',
                         #min_font_size = 10, collocations=collocation).generate(comment_words)
@@ -314,7 +314,7 @@ def display_wordCloud(inputFilename,inputDir,outputDir,textToProcess,doNotListIn
                         background_color ='white',
                         max_words=max_words,
                         prefer_horizontal=prefer_horizontal,
-                        # stopwords = stopwords,
+                        stopwords = stopwords,
                         contour_width=c_wid,
                         #min_font_size = 10, collocations=collocation).generate(comment_words)
                         #min_font_size = 10, collocations = collocation).generate(textToProcess)
@@ -493,15 +493,11 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
         #   to avoid the same improper word to appear with lower and upper case at the beginning of a sentence
         stannlp = stanza.Pipeline(lang='en', processors='tokenize, mwt')
         runStanza = True
+        stannlp = stanza.Pipeline(lang='en', processors='tokenize, mwt')
         if lemmatize:
             # stanza.download('en')#set the annotator that gives postag
             stannlp = stanza.Pipeline(lang='en', processors='tokenize, mwt, lemma')
             runStanza=True
-        if exclude_stopwords:
-            stopwords = set(STOPWORDS)
-            # stanza.download('en')#set the annotator that gives postag
-            stannlp = stanza.Pipeline(lang='en', processors='tokenize, mwt')
-            runStanza = True
         if exclude_punctuation or differentPOS_differentColors:
             # stanza.download('en') #set the annotator that gives postag
             stannlp = stanza.Pipeline(lang='en', processors='tokenize,mwt,pos')
@@ -515,6 +511,16 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
         startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Running STANZA & wordcloud',
                                            'Started running STANZA and wordcloud at', True,
                                            'Please, be patient. Depending upon the number of documents processed this may take a few minutes.',True,'',False)
+
+    # stopwords = set(STOPWORDS)  # STOPWORDS are all lowercase, so any exclusion will have to be converted
+    # with stopwords = '' stopwords will be included in the output visual
+    # do not process stopwords when processing by POS tag value
+    if not exclude_stopwords and not differentPOS_differentColors:
+        print("\nLIST OF WORDCLOUDS STOPWORDS\n",STOPWORDS,"\n")
+    else:
+        stopwords = set(STOPWORDS) # STOPWORDS are all lowercase, so any exclusion will have to be converted
+        # stanza.download('en')#set the annotator that gives postag
+
     for doc in inputDocs:
         i = i+1
         head, tail = os.path.split(doc)
@@ -591,13 +597,13 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                             else:
                                 word_str = word.text
                             if exclude_stopwords:
-                                if word_str in stopwords:
+                                if word_str.lower() in stopwords: # STOPWORDS are all lowercase, so any exclusion will have to be converted
                                     continue  # do not process stopwords & punctuation marks
                             # print("   word_str",word_str,"word.pos",word.pos)
                             # convert to lower case for same improper words that may appear after a full stop
                             if lowercase:
-                                if word_str=='':
-                                    word_str = word.text
+                                # if word_str=='':
+                                #     word_str = word.text
                                 if word_str!=None:
                                     word_str = word_str.lower()
                             if exclude_punctuation:
@@ -611,14 +617,14 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                                 color_to_words[green_code].append(word_str)
                             elif word.pos == "ADV":
                                 color_to_words[grey_code].append(word_str)
-                            if differentColumns_differentColors:
-                                if word.pos == "NOUN" or word.pos == "VERB" or \
-                                        word.pos == "ADJ" or word.pos == "ADV":
-                                    if word_str!= None:
-                                        textToProcess = textToProcess + ' ' + word_str
-                                else:
-                                    if word_str != None:
-                                        textToProcess = textToProcess + ' ' + word_str
+                            if differentPOS_differentColors:
+                                if word.pos != "NOUN" and word.pos != "VERB" and \
+                                        word.pos != "ADJ" and word.pos != "ADV":
+                                    continue
+
+                            if word_str != None:
+                                textToProcess = textToProcess + ' ' + word_str
+
                     if len(textToProcess) == 0:
                         textToProcess = currenttext
 
@@ -627,7 +633,8 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                     tempOutputfile = display_wordCloud_sep_color(doc, outputDir, textToProcess, color_to_words,
                                                                  transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
                 else:
-                    tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only , font = font, max_words = max_words)
+                    # when stopwords = '' stopwords will be INCLUDEED in the output visual
+                    tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, stopwords, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only , font = font, max_words = max_words)
                 filesToOpen.append(tempOutputfile)
                 # write an output txt file that can be used for internet wordclouds services
                 if lemmatize or exclude_stopwords:
@@ -639,7 +646,8 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
         if differentPOS_differentColors:
             tempOutputfile=display_wordCloud_sep_color(inputDir, outputDir, combinedtext, color_to_words, transformed_image_mask, collocation, prefer_horizontal,bg_image=img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
         else:
-            tempOutputfile=display_wordCloud(inputDir,inputDir,outputDir,combinedtext, doNotListIndividualFiles,transformed_image_mask, collocation,prefer_horizontal, bg_image=img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
+            # when stopwords = '' stopwords will be INCLUDEED in the output visual
+            tempOutputfile=display_wordCloud(inputDir,inputDir,outputDir,combinedtext, doNotListIndividualFiles, transformed_image_mask, stopwords, collocation,prefer_horizontal, bg_image=img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
         filesToOpen.append(tempOutputfile)
         # write an output txt file that can be used for internet wordclouds services
         if lemmatize or exclude_stopwords:
