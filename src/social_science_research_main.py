@@ -103,7 +103,7 @@ newspaper and take the average
 """
 
 
-def group_newspaper(document_class_csv, output_filename):
+def group_newspaper(document_class_csv, outputFilename):
     newspaper_frequency_classes = {}  # accumulate frequency for different classes for each newspaper
     newspaper_frequency = {}  # count the # of times this newspaper occurs
     newspaper_names = []  # list of unique newspaper names
@@ -129,7 +129,7 @@ def group_newspaper(document_class_csv, output_filename):
                     newspaper_frequency_classes[newspaper][i - 1] += int(row[i])
     newspaper_names.sort()  # sort by newspaper name
     # write to output csv file
-    with open(output_filename, "w", newline='', encoding='utf-8', errors='ignore') as f:
+    with open(outputFilename, "w", newline='', encoding='utf-8', errors='ignore') as f:
         writer = csv.writer(f)
         # write header
         header = ["Newspaper Name", "0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%", "70-80%",

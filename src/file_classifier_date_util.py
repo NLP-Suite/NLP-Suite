@@ -79,10 +79,10 @@ def classifier(input_first_dir, input_sec_dir,outputDir,openOutputFiles, date_fo
                                 data.append([IO_csv_util.dressFilenameForCSVHyperlink(input_first_dir + os.sep + ungrouped), IO_csv_util.dressFilenameForCSVHyperlink(folder), 'Successfully Copied!', splitDuration])
                             else:
                                 data.append([IO_csv_util.dressFilenameForCSVHyperlink(input_first_dir + os.sep + ungrouped), IO_csv_util.dressFilenameForCSVHyperlink(folder), 'Processed but did not copy!', splitDuration])
-    output_filename = IO_files_util.generate_output_file_name('', input_first_dir, outputDir, '.csv')
-    filesToOpen.append(output_filename)
+    outputFilename = IO_files_util.generate_output_file_name('', input_first_dir, outputDir, '.csv')
+    filesToOpen.append(outputFilename)
     df = pd.DataFrame(data, columns= ['Source_file_path', 'Target_directory','File_status','Date_range'])
-    df.to_csv(output_filename,encoding='utf-8', index=False)
+    df.to_csv(outputFilename,encoding='utf-8', index=False)
 
     print("\n\nNumber of SOURCE input documents processed:",nDocs)
     print("Number of TARGET input documents processed:",nTargetDocs)

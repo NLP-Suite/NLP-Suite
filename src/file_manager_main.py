@@ -65,7 +65,7 @@ def run(inputDir, outputDir,
         if command==False:
             return
 
-    output_filename=''
+    outputFilename=''
     options=0
     i=0
     itemCount=0
@@ -84,23 +84,23 @@ def run(inputDir, outputDir,
     if list_var==1:
         options=options+1
         operation = 'listed'
-        output_filename = "List_files_" + currentSubfolder + ".csv"
+        outputFilename = "List_files_" + currentSubfolder + ".csv"
     if rename_var==1:
         options=options+1
         operation = 'renamed'
-        output_filename = "List_renamed_files_" + currentSubfolder + ".csv"
+        outputFilename = "List_renamed_files_" + currentSubfolder + ".csv"
     if copy_var==1:
         options=options+1
         operation = 'copied'
-        output_filename = "List_copied_files_" + currentSubfolder + ".csv"
+        outputFilename = "List_copied_files_" + currentSubfolder + ".csv"
     if move_var==1:
         options=options+1
         operation = 'moved'
-        output_filename = "List_moved_files_" + currentSubfolder + ".csv"
+        outputFilename = "List_moved_files_" + currentSubfolder + ".csv"
     if delete_var==1:
         options=options+1
         operation = 'deleted'
-        output_filename = "List_deleted_files_" + currentSubfolder + ".csv"
+        outputFilename = "List_deleted_files_" + currentSubfolder + ".csv"
         command = tk.messagebox.askyesno("Deleting files", "You are about to delete files. Make sure you have a backup! Files deleted via a Python command will not be recoverable from the Recycle Bin\n\nAre you sure you want to do continue?")
         if command==False:
             return
@@ -108,13 +108,13 @@ def run(inputDir, outputDir,
         i=1
         options=options+1
         operation = 'counted'
-        output_filename = "Count_files_" + currentSubfolder + ".csv"
+        outputFilename = "Count_files_" + currentSubfolder + ".csv"
 
     if split_var==1:
         i=1
         options=options+1
         operation = 'split'
-        output_filename = "split_files_" + currentSubfolder + ".csv"
+        outputFilename = "split_files_" + currentSubfolder + ".csv"
 
     if options==0:
         mb.showwarning(title='File manager', message='No file manager option has been selected.\n\nPlease, select one option (rename, copy, move, delete) and try again.')
@@ -183,14 +183,14 @@ def run(inputDir, outputDir,
     if list_var==1:
         # extract the last subfolder of the path to be displayed as part of the output filename
         subDir = os.path.basename(os.path.normpath(inputDir))
-        # output_filename = "List__files" + str(subDir) + ".csv"
+        # outputFilename = "List__files" + str(subDir) + ".csv"
 
     if count_file_manager_var==True:
         # fieldnames = ['Main_Dir', 'Subdir', 'pdf', 'doc', 'docx', 'txt', 'Matching']
         #i=len(os.listdir(inputDir))
-        i=file_filename_util.get_count(inputDir, outputDir, output_filename)
+        i=file_filename_util.get_count(inputDir, outputDir, outputFilename)
     else:
-        with open(outputDir + os.sep + output_filename, 'w', errors='ignore', newline='') as csvfile:
+        with open(outputDir + os.sep + outputFilename, 'w', errors='ignore', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
 
@@ -283,7 +283,7 @@ def run(inputDir, outputDir,
                 fileFound, characterCount,\
                 creation_date,modification_date,\
                 author,date, \
-                dateStr = file_filename_util.processFile(inputDir,outputDir,filename,output_filename,
+                dateStr = file_filename_util.processFile(inputDir,outputDir,filename,outputFilename,
 							fieldnames,
 							selectedCsvFile_var,
 							hasFullPath,
@@ -322,7 +322,7 @@ def run(inputDir, outputDir,
             print("Full path present, processing regardless of existence in input directory")
             for filename in fileList:
                 fileFound, characterCount, creation_date, modification_date, author, date, dateStr = file_filename_util.processFile(
-                    inputDir, outputDir, filename, output_filename, fieldnames, selectedCsvFile_var, hasFullPath,
+                    inputDir, outputDir, filename, outputFilename, fieldnames, selectedCsvFile_var, hasFullPath,
 					utf8_var, ASCII_var,
 					list_var, rename_var,
                     copy_var, move_var, delete_var, split_var, rename_new_entry, file_type_menu_var, by_creation_date_var,
@@ -345,7 +345,7 @@ def run(inputDir, outputDir,
                         processFile = True
                     if processFile:
                         fileFound, characterCount,creation_date,modification_date,author,date, \
-                            dateStr = file_filename_util.processFile(inputDir,outputDir,filename,output_filename,
+                            dateStr = file_filename_util.processFile(inputDir,outputDir,filename,outputFilename,
                                 fieldnames,
                                 selectedCsvFile_var,
                                 hasFullPath,
@@ -365,7 +365,7 @@ def run(inputDir, outputDir,
         else:
             mb.showwarning(title='File manager', message=str(i) + ' files ' + msg + operation + '.')
             filesToOpen=[]
-            filesToOpen.append(os.path.join(outputDir,output_filename))
+            filesToOpen.append(os.path.join(outputDir,outputFilename))
             IO_files_util.OpenOutputFiles(GUI_util.window, True, filesToOpen, outputDir)
     else:
         mb.showwarning(title='File manager', message='No files ' + msg + operation + '.\n\nPlease, check the following information:\n  1. INPUT files directory;\n  2. selected file type (if you ticked the By file type option);\n  3. Include subdirectory option.')

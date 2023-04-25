@@ -178,7 +178,7 @@ def purge_partial_matches(window, inputFilename, outputDir, openOutputFiles, nam
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
 
-def writeOutput(inputPath, inputFilenamename, outputPath, output_filename, fieldnames,
+def writeOutput(inputPath, inputFilenamename, outputPath, outputFilename, fieldnames,
                 by_creation_date_var, creation_date, modification_date,
                 by_author_var, author,
                 string_entry_var,
@@ -189,7 +189,7 @@ def writeOutput(inputPath, inputFilenamename, outputPath, output_filename, field
 
     if not os.path.isdir(os.path.join(inputPath, inputFilenamename)):
         printLine = {}
-        with open(outputPath + os.sep + output_filename, 'a', errors='ignore', newline='') as csvfile:
+        with open(outputPath + os.sep + outputFilename, 'a', errors='ignore', newline='') as csvfile:
             # write file headers
             writer = csv.DictWriter(csvfile, fieldnames)
             head, tail = os.path.split(inputFilenamename)
@@ -223,7 +223,7 @@ def writeOutput(inputPath, inputFilenamename, outputPath, output_filename, field
         fileFound = False
 
 
-def processFile(inputPath, outputPath, filename, output_filename,
+def processFile(inputPath, outputPath, filename, outputFilename,
                 fieldnames,
                 selectedCsvFile_var,
                 hasFullPath,
@@ -429,7 +429,7 @@ def processFile(inputPath, outputPath, filename, output_filename,
 
     if (fileFound == True):
 
-        writeOutput(inputPath, filename, outputPath, output_filename, fieldnames,
+        writeOutput(inputPath, filename, outputPath, outputFilename, fieldnames,
                     by_creation_date_var, creation_date, modification_date,
                     by_author_var, author,
                     string_entry_var,
@@ -443,7 +443,7 @@ def processFile(inputPath, outputPath, filename, output_filename,
 
 # https://automatetheboringstuff.com/chapter9/
 
-def get_count(path, outputPath, output_filename):
+def get_count(path, outputPath, outputFilename):
     folders = []
     for i in os.scandir(path):
         if i.is_dir():
@@ -451,8 +451,8 @@ def get_count(path, outputPath, output_filename):
 
     fieldnames = ['Main_Dir', 'Subdir', 'pdf', 'doc', 'docx', 'txt', 'Matching']
     # fieldnames = ['a','b','c','d','e','f','g']
-    # output_filename = 'Ext_count.csv'
-    with open(outputPath + os.sep + output_filename, 'w', newline='') as csvfile:
+    # outputFilename = 'Ext_count.csv'
+    with open(outputPath + os.sep + outputFilename, 'w', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         i = 0

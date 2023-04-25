@@ -180,21 +180,20 @@ def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, lang
     return outputFilename
 
 # list_output has the following type format [['PRONOUN ANALYSIS','FREQUENCY'], ['PRP', 105], ['PRP$', 11], ['WP', 5], ['WP$', 0]]
-# output_filename is the name of the outputfile with path
+# outputFilename is the name of the outputfile with path
 # returns True when an error is found
 
 # TODO this is a quick way to still use the old-fashioned way of saving a csv fle
-def list_to_csv(window,list_output,output_filename,colnum=0, encoding='utf-8'):
+def list_to_csv(window,list_output,outputFilename,colnum=0, encoding='utf-8'):
     error = False
     if not isinstance(list_output, list):
         return True
     #if a specific column number is given, generate only the colnum columns as output
     if colnum!=0:
         list_output = [i[:colnum] for i in list_output]
-
-    # convert list to dataframe
+# convert list to dataframe
     df = pd.DataFrame(list_output)
-    df_to_csv(GUI_util.window, df, output_filename)
+    df_to_csv(GUI_util.window, df, outputFilename)
     return error
 
 

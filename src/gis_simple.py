@@ -14,7 +14,7 @@ import googlemaps
 #set up working dir and set up input and output filenames
 os.chdir('C:\\Program Files (x86)\\PC-ACE\\NLP')
 inputFilenamename = 'city_freq_2019nov5.csv'
-output_filename = 'OUT_city_freq_2019nov5.csv'
+outputFilename = 'OUT_city_freq_2019nov5.csv'
 
 #import data
 #df = pd.read_csv(inputFilenamename, encoding='utf-8')
@@ -59,4 +59,4 @@ df.isnull().sum() #135 null results
 none = df[df['Add'].isnull()]
 
 #export results
-pd.DataFrame(df).to_csv(output_filename, encoding='utf-8')
+pd.DataFrame(df).to_csv(outputFilename, encoding='utf-8')
