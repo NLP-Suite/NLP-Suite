@@ -24,7 +24,7 @@ def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, createChart
 
     file_matcher_util.run_default(GUI_util.window, [inputPath], outputPath, selectedCsvFile_var, openOutputFiles, matching_var, source_extension_var, target_extension_var, copy_var, move_var, character_value, number_of_items)
 
-    # output_filename=''
+    # outputFilename=''
     # i=0
     # fieldnames = []
     # currentSubfolder=os.path.basename(os.path.normpath(inputPath))
@@ -44,7 +44,7 @@ def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, createChart
     # if i > 0:
     # 	mb.showwarning(title='File matcher', message=str(i) + ' files have been matched.')
     # 	filesToOpen=[]
-    # 	filesToOpen.append(os.path.join(outputPath,output_filename))
+    # 	filesToOpen.append(os.path.join(outputPath,outputFilename))
     # 	IO_util.OpenOutputFiles(GUI_util.window,True,filesToOpen)
     # else:
     # 	mb.showwarning(title='File matcher', message='No files have been matched.')

@@ -293,15 +293,15 @@ def compute_sentence_table(CoNLL_table, output_path):
                  'Sentence length (Number of characters)', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
     df2 = pd.DataFrame(columns=col_names, data=rows)
 
-    output_fileName = os.path.join(output_path, CoNLL_table[:-4] + "_sentence" + ".csv")
-    df2.to_csv(output_fileName, encoding='utf-8',
-               index=False)  # os.path.join(output_path,output_fileName), sep='\t', encoding='utf-8')
+    outputFilename = os.path.join(output_path, CoNLL_table[:-4] + "_sentence" + ".csv")
+    df2.to_csv(outputFilename, encoding='utf-8',
+               index=False)  # os.path.join(output_path,outputFilename), sep='\t', encoding='utf-8')
     if RunningCoreNLPFromCommandLine != True:
         IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis end', 'Finished computing the Sentence table at', True)
-    # tk.messagebox.showinfo("Stanford CoreNLP has finished", "Finished computing the Sentence table at " + str(endTime[3]) + ':' + str(endTime[4])  + ". \n\nSentence table exported as: " + output_fileName) #os.path.join(output_path,output_fileName))
+    # tk.messagebox.showinfo("Stanford CoreNLP has finished", "Finished computing the Sentence table at " + str(endTime[3]) + ':' + str(endTime[4])  + ". \n\nSentence table exported as: " + outputFilename) #os.path.join(output_path,outputFilename))
     endTime = time.localtime()
-    print ("\nSentence table output written to: " + output_fileName)  # os.path.join(output_path,output_fileName))     #Time when compute sentence table finished, for future reference
-    return output_fileName
+    print ("\nSentence table output written to: " + outputFilename)  # os.path.join(output_path,outputFilename))     #Time when compute sentence table finished, for future reference
+    return outputFilename
 
 # the function extracts DISTINCT nouns and verbs from the CoNLL table in both form and lemma
 # inputFilename contains path

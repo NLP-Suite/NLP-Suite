@@ -135,11 +135,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # 	df = charts_Excel_util.add_missing_IDs(df)
 
     # if inputDir!='':
-    # 	output_filename = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'NER_extractor_dir')
+    # 	outputFilename = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'NER_extractor_dir')
     # else:
-    # 	output_filename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NER_extractor')
-    # df.to_csv(output_filename,index=False)
-    # filesToOpen.append(output_filename)
+    # 	outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NER_extractor')
+    # df.to_csv(outputFilename,index=False)
+    # filesToOpen.append(outputFilename)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

@@ -80,23 +80,23 @@ def pdf_converter(window,fileName, inputDir, outputDir,openOutputFiles,createCha
                 inputDir=os.path.dirname(fileName)
             common = os.path.commonprefix([doc, inputDir])
             relativePath = os.path.relpath(doc, common)
-            output_fileName=os.path.join(outputDir, relativePath[:-4] + ".txt")
-            if not os.path.exists(os.path.dirname(output_fileName)):
+            outputFilename=os.path.join(outputDir, relativePath[:-4] + ".txt")
+            if not os.path.exists(os.path.dirname(outputFilename)):
                 try:
-                    os.makedirs(os.path.dirname(output_fileName))
+                    os.makedirs(os.path.dirname(outputFilename))
                 except OSError as exc:
                     if exc.errno != errno.EEXIST:
                         raise
-            f = open(output_fileName, "w+", encoding="utf-8")
+            f = open(outputFilename, "w+", encoding="utf-8")
             for page in PDFPage.get_pages(fp):
                 interpreter.process_page(page)
                 data = retstr.getvalue()
             f.write(data)
 
             f.close()
-    IO_user_interface_util.timed_alert(window, 700, 'pdf converter ', 'Finished running pdf converter at', True, str(numberOfDocs) + ' files were successfully converted from pdf to txt format and saved in directory ' + os.path.dirname(output_fileName))
+    IO_user_interface_util.timed_alert(window, 700, 'pdf converter ', 'Finished running pdf converter at', True, str(numberOfDocs) + ' files were successfully converted from pdf to txt format and saved in directory ' + os.path.dirname(outputFilename))
     if openOutputFiles and len(fileName)>0:
-        IO_files_util.openFile(window, output_fileName)
+        IO_files_util.openFile(window, outputFilename)
 
 if __name__ == '__main__':
     pdf_converter(sys.argv[1], sys.argv[2], sys.argv[3])
