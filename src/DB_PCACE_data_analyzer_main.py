@@ -52,7 +52,6 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
                                                                      label='DB_PC-ACE',
                                                                      silent=True)
 
-
     if ALL_objects_frequencies_var:
         outputFile = DB_PCACE_data_analyzer_util.get_complex_frequencies_all(inputDir, outputDir)
     if SELECTED_objects_frequencies_var:
@@ -211,6 +210,7 @@ run_script_command=lambda: run(
 GUI_util.run_button.configure(command=run_script_command)
 
 # GUI section ______________________________________________________________________________________________________________________________________________________
+
 
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
@@ -403,7 +403,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
 primary_complex_objects_lb = tk.Label(window, text='Primary complex objects (Macro event)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,primary_complex_objects_lb,True)
 
-setup_primary_complex_menu = DB_PCACE_data_analyzer_util.get_all_table_names(os.path.join(inputDir.get(),'setup_complex.xlsx'))
+setup_primary_complex_menu = '' # DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
 
 setup_primary_complex_var=tk.StringVar()
 setup_primary_complex = ttk.Combobox(window, textvariable = setup_primary_complex_var, width=GUI_IO_util.widget_width_short)
@@ -502,9 +502,8 @@ def activate_children(*args):
 setup_complex_var.trace('w',activate_children)
 setup_simplex_var.trace('w',activate_children)
 
-triplet_var = tk.IntVar()
-triplet_var_checkbox = tk.Checkbutton(window, text='Semantic triplets (SVO)', variable=triplet_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,triplet_var_checkbox,True)
+semantic_triplet_var_checkbox = tk.Checkbutton(window, text='Semantic triplets (SVO)', variable=semantic_triplet_var, onvalue=1, offvalue=0)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,semantic_triplet_var_checkbox,True)
 
 time_checkbox = tk.Checkbutton(window, text='Time', variable=time_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,time_checkbox, True)
@@ -516,7 +515,7 @@ actors_lb = tk.Label(window, text='Extract actors ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,actors_lb,True)
 
 actors_var.set('')
-actors_menu = tk.OptionMenu(window, actors_var, '*', 'collective actor', 'individual', 'organization')
+actors_menu = tk.OptionMenu(window, actors_var, 'collective actor', 'individual', 'organization')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    actors_menu,
@@ -685,5 +684,7 @@ if error:
                        message="The PC-ACE table analyzer scripts require in input a directory of Excel (xlsx) files. But the directory in 'Default I/O configuration' does not contain the required PC-ACE Excel files.\n\n"
                                 "Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
         error = False
+setup_primary_complex_menu = DB_PCACE_data_analyzer_util.build_macro_event_dropdown_menu(inputDir.get())
+setup_primary_complex['values'] = setup_primary_complex_menu
 GUI_util.window.mainloop()
 

@@ -286,7 +286,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
 
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+                filesToOpen.append(chart_outputFilename)  # a string is returned, rather than a list; must use append
 
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0, 1]]
@@ -307,7 +307,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
 
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+                filesToOpen.append(chart_outputFilename) # a string is returned, rather than a list; must use append
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
