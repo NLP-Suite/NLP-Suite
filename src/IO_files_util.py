@@ -665,8 +665,7 @@ def getFilename(passed_string):
     # when X-axis values contain a document dressed for hyperlink and with full path
     #   undressed the hyperlink and only display the tail of the document
     tail=passed_string
-    tail_noExtension=''
-
+    tail_noExtension=tail
 
     if isinstance(passed_string, str): # and math.isnan(passed_string) is False
         if '=hyperlink' in passed_string:

@@ -2,6 +2,12 @@
 #edited by Elaine Dong, Dec 04 2019
 #edited by Roberto Franzosi, Nov 2019, October 2020
 
+# https://stackoverflow.com/questions/2836959/adjective-nominalization-in-python-nltk
+# https://stackoverflow.com/questions/45109767/get-verb-from-noun-wordnet-python
+
+# https://github.com/topics/nominalization
+# https://pypi.org/project/qanom/0.0.1/
+
 import sys
 import GUI_util
 import IO_libraries_util
@@ -162,9 +168,8 @@ def nominalized_verb_detection(docID,doc,sent):
         if word_count[i]>0:
             # result1.append([docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), i+1, sentence[i], word_count[i], nomi_sen[i], nomi_count[i],
                               #                  100.0*nomi_count[i]/word_count[i]])
-            temp_list=[word_count[i], nomi_sen[i], nomi_count[i], 100.0 * nomi_count[i] / word_count[i],
-                       i + 1, sentence[i], docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)]
-            result1.append(temp_list)
+            result1.append([word_count[i], nomi_sen[i], nomi_count[i], 100.0 * nomi_count[i] / word_count[i],
+                       i + 1, sentence[i], docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
         else:
             # result1.append([docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), i+1, sentence[i], word_count[i], nomi_sen[i], nomi_count[i]])
             result1.append(
@@ -257,10 +262,12 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 fname=doc
 
             # used for both individual files and directories
+            # outputFilename_bySentenceIndex = IO_files_util.generate_output_file_name(fname, '', outputDir,
+            #                                                                           '.csv', 'NOM', 'sent', '', '',
+            #                                                                           '', False, True)
+            #
             outputFilename_bySentenceIndex = IO_files_util.generate_output_file_name(fname, '', outputDir,
-                                                                                      '.csv', 'NOM', 'sent', '', '',
-                                                                                      '', False, True)
-
+                                                                                      '.csv', 'NOM', 'sent')
             if len(inputDir) == 0 or doNotListIndividualFiles == False:
                 counter_nominalized_list = []
                 counter_noun_list = []
@@ -284,14 +291,21 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 head, fname=os.path.split(doc)
                 fname=fname[:-4]
 
-                outputFilename_noun_frequencies = IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM',
-                                                                                'noun_freq', '', '', '', False,
-                                                                                           True)
+                # outputFilename_noun_frequencies = IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM',
+                #                                                                 'noun_freq', '', '', '', False,
+                #                                                                            True)
+                outputFilename_noun_frequencies = IO_files_util.generate_output_file_name(fname, inputDir, outputDir, '.csv', 'NOM',
+                                                                                'noun_freq')
                 filesToOpen.append(outputFilename_noun_frequencies)
+                # outputFilename_nominalized_frequencies = IO_files_util.generate_output_file_name(fname,
+                #                                                                 '', outputDir, '.csv', 'NOM',
+                #                                                                  'nominal_freq', '', '', '', False,
+                #                                                                                   True)
                 outputFilename_nominalized_frequencies = IO_files_util.generate_output_file_name(fname,
-                                                                                '', outputDir, '.csv', 'NOM',
-                                                                                 'nominal_freq', '', '', '', False,
-                                                                                                  True)
+                                                                                inputDir, outputDir, '.csv', 'NOM',
+                                                                                 'nominal_freq')
+
+
                 filesToOpen.append(outputFilename_nominalized_frequencies)
 
                 # export nominalized verbs
@@ -301,8 +315,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 list_to_csv(outputFilename_noun_frequencies, counter_noun_list)
 
                 outputFilename_TRUE_FALSE = IO_files_util.generate_output_file_name(fname + '_TRUE_FALSE', '', outputDir,
-                                                                               '.csv', 'NOM', '', '', '', '', False,
-                                                                                     True)
+                                                                               '.csv', 'NOM')
 
                 # TODO this leads to a huge file when processing a directory; comment for now
                 # filesToOpen.append(outputFilename_TRUE_FALSE)
@@ -312,9 +325,11 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 filesToOpen.append(outputFilename_bySentenceIndex)
 
         if len(inputDir)>0 and doNotListIndividualFiles == True:
-            outputFilename_TRUE_FALSE_dir = IO_files_util.generate_output_file_name(fname + '_TRUE_FALSE', '', outputDir, '.csv', 'NOM', '', '', '', '', False, True)
+            # outputFilename_TRUE_FALSE_dir = IO_files_util.generate_output_file_name(fname + '_TRUE_FALSE', '', outputDir, '.csv', 'NOM', '', '', '', '', False, True)
+            outputFilename_TRUE_FALSE_dir = IO_files_util.generate_output_file_name(fname + '_TRUE_FALSE', '', outputDir, '.csv', 'NOM')
             outputFilename_dir_noun_frequencies=IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM', 'noun_freq', '', '', '', False, True)
-            outputFilename_dir_nominalized_frequencies=IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM', 'nominal_freq', '', '', '', False, True)
+            # outputFilename_dir_nominalized_frequencies=IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM', 'nominal_freq', '', '', '', False, True)
+            outputFilename_dir_nominalized_frequencies=IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM', 'nominal_freq')
 
             result2.insert(0, ['Number of words in sentence', 'Nominalized verbs',
                                'Number of nominalizations in sentence', 'Percentage of nominalizations in sentence','Sentence ID', 'Sentence', 'Document ID', 'Document'])

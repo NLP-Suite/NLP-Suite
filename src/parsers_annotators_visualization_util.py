@@ -314,7 +314,7 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                     filesToOpen.extend(chart_outputFilename)
 
 # generate visualization output ----------------------------------------------------------------
-# SVO OpenIE ________________________________________________________________
+# SVO and OpenIE ________________________________________________________________
 
     elif ('SVO' in str(annotator_params) and 'SVO' in outputFilename) or \
             ('OpenIE' in str(annotator_params) and 'OpenIE' in outputFilename):

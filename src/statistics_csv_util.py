@@ -227,7 +227,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
                                                   remove_hyperlinks = True)
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+                filesToOpen.append(chart_outputFilename) # only one file is returned as string rather than as list
 
     return filesToOpen
 

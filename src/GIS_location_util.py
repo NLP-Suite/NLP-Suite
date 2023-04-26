@@ -152,13 +152,17 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 		mb.showerror(title='Input file error', message="There was an error in the function 'Extract csv locations' reading the input csv file\n" + str(inputFilename) + "\nMost likely, the error is due to an encoding error. Your current encoding value is '" + encodingValue + "'.\n\nSelect a different encoding value and try again.")
 		return
 	if withHeader==True:
+
 		index=1 #skip header
 		for index, row in dt.iterrows():
 			print("Processing record " + str(index+1)+"/"+str(count_row)+ " in csv file; location: " + str(row[locationColumnNumber]))
 			if str(row[locationColumnNumber])!='' and str(row[locationColumnNumber])!='nan':
 				if datePresent == True:
-					# locList.append([row[locationColumnNumber], row[dateColumnNumber], row['NER Tag']])
-					locList.append([row[locationColumnNumber], row[dateColumnNumber]])
+					try:
+						#NER Tag may not be present when an expernal input csv file of locations is passed
+						locList.append([row[locationColumnNumber], row[dateColumnNumber], row['NER Tag']])
+					except:
+						locList.append([row[locationColumnNumber], row[dateColumnNumber]])
 				else:
 					# the code would break if no NER Tag is passed (e.g., from DB_PC-ACE)
 					try:

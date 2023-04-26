@@ -124,7 +124,37 @@ def give_Simplex_text_date_number(simplex_type, data_SimplexText, data_SimplexDa
                     if num.is_integer():
                         list_simplex_data[i] = int(num)
 
-    return list_simplex_data
+    return list_simplex_data.sort()
+
+def find_complex_in_document(name, inputDir, outputDir):
+    setup_Complex = os.path.join(inputDir, 'setup_Complex.xlsx')
+    if os.path.isfile(setup_Complex):
+        setup_Complex_df = pd.DataFrame(pd.read_excel(setup_Complex))
+        setup_Complex_df = setup_Complex_df.rename(columns = {'ID':'ID_setup_complex'})
+
+    data_Complex = os.path.join(inputDir, 'data_Complex.xlsx')
+    if os.path.isfile(data_Complex):
+        data_Complex_df = pd.DataFrame(pd.read_excel(data_Complex))
+        data_Complex_df = data_Complex_df.rename(columns = {"ID":"ID_data_complex", "ComplexType":"ID_setup_complex"})
+
+    data_xref_Complex_Document=os.path.join(inputDir,'data_xref_Complex-Document.xlsx')
+    if os.path.isfile(data_xref_Complex_Document):
+        data_xref_Complex_Document_df = pd.DataFrame(pd.read_excel(data_xref_Complex_Document))
+
+    if type(name) == str:
+        name = [name]
+
+    complex_setup_info = find_setup_id(name, setup_Complex_df)
+    complex_id = complex_setup_info['ID_setup_complex'].values.tolist()
+    data = pd.merge(data_Complex_df, data_xref_Complex_Document_df, how = 'left', left_on = 'ID_data_complex', right_on = 'Complex')
+    data = data[data['ID_setup_complex'].isin(complex_id)]
+    data = data[['Document', 'ID_data_complex', 'Identifier']]
+
+    complex_in_document_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
+                                                                       'complex_in_document')
+    data.to_csv(complex_in_document_name, encoding='utf-8', index=False)
+
+    return complex_in_document_name
 
 
 # give data for the input simplex name
@@ -798,7 +828,7 @@ def process_simplex(setup_Simplex, data_Simplex, data_SimplexText, data_xref_Sim
 # give the semantic triplet with simplex
 # return: dataframe: Semantic triplet data id, S data id, S Type, S Simplex, V data id, V Simplex, O data id, O Type, O Simplex
 # p.s. Type = Individual / Orgaization / Collective actor
-def semantic_triplet_simplex(setup_Complex, setup_Simplex, setup_xref_Complex_Complex, data_xref_Complex_Complex, data_Complex, data_Simplex, data_SimplexText, data_xref_Simplex_Complex):
+def semantic_triplet_simplex(setup_Complex, setup_Simplex, setup_xref_Complex_Complex, data_xref_Complex_Complex, data_Complex, data_Simplex, data_SimplexText, data_xref_Simplex_Complex, data_xref_Complex_Document, data_xref_VComment):
     triplet = semantic_triplet_complex(setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex, data_Complex)
     s = participant_simplex('Participant-S', data_Simplex, data_SimplexText, setup_Complex, setup_Simplex, data_Complex, data_xref_Simplex_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
     s = s.rename(columns = {'Value':'Subject (S)', 'Type':'S Type'})
@@ -850,6 +880,18 @@ def semantic_triplet_simplex(setup_Complex, setup_Simplex, setup_xref_Complex_Co
     simplex_version = pd.merge(macro_event_event_semantic_triplet, simplex_version, how='left',
                                left_on='Semantic Triplet', right_on='Semantic Triplet')
 
+    # S5: add document information
+    # ref: complex id for semantic triplet
+    data_xref_Complex_Document_modified = data_xref_Complex_Document[['Complex','Document']]
+    simplex_version = pd.merge(simplex_version, data_xref_Complex_Document_modified, how = 'left', left_on = 'Semantic Triplet', right_on = 'Complex')
+    simplex_version = simplex_version.drop('Complex', axis = 1)
+
+    # S6: add VComment
+    # ref: complex id for semantic triplet
+    data_xref_VComment_modified = data_xref_VComment[['Complex','Comment','VerifierID']]
+    simplex_version = pd.merge(simplex_version, data_xref_VComment_modified, how = 'left', left_on = 'Macro Event', right_on = 'Complex')
+    simplex_version = simplex_version.drop('Complex', axis = 1)
+
     return simplex_version
 
 
@@ -897,7 +939,15 @@ def semantic_triplet_simplex_main(inputDir, outputDir):
         data_xref_Simplex_Complex_df = pd.DataFrame(pd.read_excel(data_xref_Simplex_Complex))
         data_xref_Simplex_Complex_df = data_xref_Simplex_Complex_df.rename(columns = {'ID':'ID_data_xref_simplex-complex', 'xrefID':'ID_setup_xref_simplex_complex', 'Simplex':'ID_data_simplex', 'Complex':'ID_data_complex'})
 
-    simplex_version = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df)
+    data_xref_Complex_Document=os.path.join(inputDir,'data_xref_Complex-Document.xlsx')
+    if os.path.isfile(data_xref_Complex_Document):
+        data_xref_Complex_Document_df = pd.DataFrame(pd.read_excel(data_xref_Complex_Document))
+
+    data_xref_VComment=os.path.join(inputDir,'data_xref_VComment.xlsx')
+    if os.path.isfile(data_xref_VComment):
+        data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
+
+    simplex_version = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df)
 
     triplet_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'triplet (SVO)')
     simplex_version.to_csv(triplet_file_name, encoding='utf-8', index=False)
@@ -978,13 +1028,34 @@ def semantic_triplet_time(inputDir, outputDir):
         data_xref_Simplex_Complex_df = pd.DataFrame(pd.read_excel(data_xref_Simplex_Complex))
         data_xref_Simplex_Complex_df = data_xref_Simplex_Complex_df.rename(columns = {'ID':'ID_data_xref_simplex-complex', 'xrefID':'ID_setup_xref_simplex_complex', 'Simplex':'ID_data_simplex', 'Complex':'ID_data_complex'})
 
+    data_xref_Complex_Document=os.path.join(inputDir,'data_xref_Complex-Document.xlsx')
+    if os.path.isfile(data_xref_Complex_Document):
+        data_xref_Complex_Document_df = pd.DataFrame(pd.read_excel(data_xref_Complex_Document))
 
-    triplet = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df)
+    data_xref_VComment=os.path.join(inputDir,'data_xref_VComment.xlsx')
+    if os.path.isfile(data_xref_VComment):
+        data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
+
+
+    triplet = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df)
+    # triplet has document information in it
     time = find_time_simplex(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df)
 
     triplet_with_time = pd.merge(triplet, time, how = 'left', left_on = 'V', right_on = 'Process')
     triplet_with_time = triplet_with_time.drop('Process', axis = 1)
     triplet_with_time = triplet_with_time.rename(columns = {'Indefinite time of day':'Time', 'Time':'Time Simplex'})
+
+    # move Document column to the last position of the dataframe
+    document_id = triplet_with_time.pop('Document')
+    triplet_with_time.insert(len(triplet_with_time.columns), 'Document', document_id)
+
+    # move Comment column to the last position of the dataframe
+    comment = triplet_with_time.pop('Comment')
+    triplet_with_time.insert(len(triplet_with_time.columns), 'Comment', comment)
+
+    # move VerifierID column to the last position of the dataframe
+    VerifierID = triplet_with_time.pop('VerifierID')
+    triplet_with_time.insert(len(triplet_with_time.columns), 'VerifierID', VerifierID)
 
     triplet_with_time_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'triplet (SVO) with time')
@@ -1063,8 +1134,9 @@ def find_space_simplex_event(setup_Simplex, data_Simplex, data_SimplexText, setu
 
 
 # give semantic triplet with space
-def semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, data_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df):
-    triplet = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df)
+def semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, data_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df):
+    triplet = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df)
+    # triplet has document information in it
 
     space1 = find_space_simplex(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df)
     triplet_with_space1 = pd.merge(triplet, space1, how = 'left', left_on = 'V', right_on = 'Process')
@@ -1081,6 +1153,18 @@ def semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_d
 
     triplet_with_space = pd.concat([triplet_with_space1, triplet_with_space2])
     triplet_with_space = pd.merge(triplet, triplet_with_space, how = 'left', left_on = 'V', right_on = 'V')
+
+    # move Document column to the last position of the dataframe
+    document_id = triplet_with_space.pop('Document')
+    triplet_with_space.insert(len(triplet_with_space.columns), 'Document', document_id)
+
+    # move Comment column to the last position of the dataframe
+    comment = triplet_with_space.pop('Comment')
+    triplet_with_space.insert(len(triplet_with_space.columns), 'Comment', comment)
+
+    # move VerifierID column to the last position of the dataframe
+    VerifierID = triplet_with_space.pop('VerifierID')
+    triplet_with_space.insert(len(triplet_with_space.columns), 'VerifierID', VerifierID)
 
     return triplet_with_space
 
@@ -1127,8 +1211,16 @@ def semantic_triplet_space_main(inputDir, outputDir):
         data_xref_Simplex_Complex_df = pd.DataFrame(pd.read_excel(data_xref_Simplex_Complex))
         data_xref_Simplex_Complex_df = data_xref_Simplex_Complex_df.rename(columns = {'ID':'ID_data_xref_simplex-complex', 'xrefID':'ID_setup_xref_simplex_complex', 'Simplex':'ID_data_simplex', 'Complex':'ID_data_complex'})
 
+    data_xref_Complex_Document=os.path.join(inputDir,'data_xref_Complex-Document.xlsx')
+    if os.path.isfile(data_xref_Complex_Document):
+        data_xref_Complex_Document_df = pd.DataFrame(pd.read_excel(data_xref_Complex_Document))
 
-    triplet_with_space = semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, data_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df)
+    data_xref_VComment=os.path.join(inputDir,'data_xref_VComment.xlsx')
+    if os.path.isfile(data_xref_VComment):
+        data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
+
+
+    triplet_with_space = semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, data_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df)
 
     triplet_with_space_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'triplet (SVO) with space')
@@ -1178,15 +1270,34 @@ def semantic_triplet_time_space(inputDir, outputDir):
         data_xref_Simplex_Complex_df = pd.DataFrame(pd.read_excel(data_xref_Simplex_Complex))
         data_xref_Simplex_Complex_df = data_xref_Simplex_Complex_df.rename(columns = {'ID':'ID_data_xref_simplex-complex', 'xrefID':'ID_setup_xref_simplex_complex', 'Simplex':'ID_data_simplex', 'Complex':'ID_data_complex'})
 
+    data_xref_Complex_Document=os.path.join(inputDir,'data_xref_Complex-Document.xlsx')
+    if os.path.isfile(data_xref_Complex_Document):
+        data_xref_Complex_Document_df = pd.DataFrame(pd.read_excel(data_xref_Complex_Document))
+
+    data_xref_VComment=os.path.join(inputDir,'data_xref_VComment.xlsx')
+    if os.path.isfile(data_xref_VComment):
+        data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
 
 
     # triplet = semantic_triplet_simplex(setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df)
 
-    triplet_with_space = semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, data_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df)
+    triplet_with_space = semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, data_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df)
     time = find_time_simplex(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df)
     triplet_with_time_space = pd.merge(triplet_with_space, time, how = 'left', left_on = 'V', right_on = 'Process')
     triplet_with_time_space = triplet_with_time_space.drop('Process', axis = 1)
     triplet_with_time_space = triplet_with_time_space.rename(columns = {'Indefinite time of day':'Time', 'Time':'Time Simplex'})
+
+    # move Document column to the last position of the dataframe
+    document_id = triplet_with_time_space.pop('Document')
+    triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'Document', document_id)
+
+    # move Comment column to the last position of the dataframe
+    comment = triplet_with_time_space.pop('Comment')
+    triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'Comment', comment)
+
+    # move VerifierID column to the last position of the dataframe
+    VerifierID = triplet_with_time_space.pop('VerifierID')
+    triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'VerifierID', VerifierID)
 
     triplet_with_space_time_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'triplet (SVO) with space and time')
@@ -1243,6 +1354,15 @@ def individual_characteristics(inputDir, outputDir):
     data_SimplexNumber = os.path.join(inputDir, 'data_SimplexNumber.xlsx')
     if os.path.isfile(data_SimplexNumber):
         data_SimplexNumber_df = pd.DataFrame(pd.read_excel(data_SimplexNumber))
+
+    data_xref_Complex_Document=os.path.join(inputDir,'data_xref_Complex-Document.xlsx')
+    if os.path.isfile(data_xref_Complex_Document):
+        data_xref_Complex_Document_df = pd.DataFrame(pd.read_excel(data_xref_Complex_Document))
+
+    data_xref_VComment=os.path.join(inputDir,'data_xref_VComment.xlsx')
+    if os.path.isfile(data_xref_VComment):
+        data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
+
 
     # build table for complex
     id_complex = find_setup_id(['Individual'], setup_Complex_df).iat[0, 0]
@@ -1393,6 +1513,17 @@ def individual_characteristics(inputDir, outputDir):
         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':name, 'Value':name+' Simplex'})
         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
 
+    # add document information
+    # ref: complex id for individual
+    data_xref_Complex_Document_modified = data_xref_Complex_Document_df[['Complex','Document']]
+    table_simplex = pd.merge(table_simplex, data_xref_Complex_Document_modified, how = 'left', left_on = 'Individual', right_on = 'Complex')
+    table_simplex = table_simplex.drop('Complex', axis = 1)
+
+    # add comment information
+    # ref: complex id for individual
+    data_xref_VComment_modified = data_xref_VComment_df[['Complex','Comment','VerifierID']]
+    table_simplex = pd.merge(table_simplex, data_xref_VComment_modified, how = 'left', left_on = 'Individual', right_on = 'Complex')
+    table_simplex = table_simplex.drop('Complex', axis = 1)
 
     individual_characteristics_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'individual characteristics')
@@ -1450,6 +1581,14 @@ def collective_actor_characteristics(inputDir, outputDir):
     data_SimplexNumber = os.path.join(inputDir, 'data_SimplexNumber.xlsx')
     if os.path.isfile(data_SimplexNumber):
         data_SimplexNumber_df = pd.DataFrame(pd.read_excel(data_SimplexNumber))
+
+    data_xref_Complex_Document=os.path.join(inputDir,'data_xref_Complex-Document.xlsx')
+    if os.path.isfile(data_xref_Complex_Document):
+        data_xref_Complex_Document_df = pd.DataFrame(pd.read_excel(data_xref_Complex_Document))
+
+    data_xref_VComment=os.path.join(inputDir,'data_xref_VComment.xlsx')
+    if os.path.isfile(data_xref_VComment):
+        data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
 
 
     # build table for complex
@@ -1619,6 +1758,17 @@ def collective_actor_characteristics(inputDir, outputDir):
         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':name, 'Value':name+' Simplex'})
         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
 
+    # add document information
+    # ref: complex id for Collective actor
+    data_xref_Complex_Document_modified = data_xref_Complex_Document_df[['Complex','Document']]
+    table_simplex = pd.merge(table_simplex, data_xref_Complex_Document_modified, how = 'left', left_on = 'Collective actor', right_on = 'Complex')
+    table_simplex = table_simplex.drop('Complex', axis = 1)
+
+    # add comment information
+    # ref: complex id for individual
+    data_xref_VComment_modified = data_xref_VComment_df[['Complex','Comment','VerifierID']]
+    table_simplex = pd.merge(table_simplex, data_xref_VComment_modified, how = 'left', left_on = 'Collective actor', right_on = 'Complex')
+    table_simplex = table_simplex.drop('Complex', axis = 1)
 
     collective_actor_characteristics_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'collective actor characteristics')
@@ -1627,7 +1777,7 @@ def collective_actor_characteristics(inputDir, outputDir):
     return collective_actor_characteristics_file_name
 
 
-def organization_characteristics(setup_Simplex, data_Simplex, data_SimplexText, data_SimplexNumber, data_Complex, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex, setup_xref_Simplex_Complex, data_xref_Simplex_Complex):
+def organization_characteristics(setup_Simplex, data_Simplex, data_SimplexText, data_SimplexNumber, data_Complex, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex, setup_xref_Simplex_Complex, data_xref_Simplex_Complex, data_xref_Complex_Document_df):
     # organization
     id_complex = find_setup_id(['Organization'], setup_Complex).iat[0, 0]
     table = data_Complex[data_Complex['ID_setup_complex'].isin([id_complex])]
@@ -1893,6 +2043,12 @@ def organization_characteristics(setup_Simplex, data_Simplex, data_SimplexText, 
         organization_table = organization_table.rename(columns = {'ID_data_simplex':name, 'Value':name+' Simplex'})
         organization_table = organization_table.drop('ID_setup_simplex', axis = 1)
 
+    # add document information
+    # ref: complex id for Organization
+    data_xref_Complex_Document_modified = data_xref_Complex_Document_df[['Complex','Document']]
+    organization_table = pd.merge(organization_table, data_xref_Complex_Document_modified, how = 'left', left_on = 'Organization', right_on = 'Complex')
+    organization_table = organization_table.drop('Complex', axis = 1)
+
     return organization_table
 
 
@@ -1945,7 +2101,11 @@ def organization_characteristics_main(inputDir, outputDir):
     if os.path.isfile(data_SimplexNumber):
         data_SimplexNumber_df = pd.DataFrame(pd.read_excel(data_SimplexNumber))
 
-    table_simplex = organization_characteristics(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, data_SimplexNumber_df, data_Complex_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, setup_xref_Simplex_Complex_df, data_xref_Simplex_Complex_df)
+    data_xref_Complex_Document=os.path.join(inputDir,'data_xref_Complex-Document.xlsx')
+    if os.path.isfile(data_xref_Complex_Document):
+        data_xref_Complex_Document_df = pd.DataFrame(pd.read_excel(data_xref_Complex_Document))
+
+    table_simplex = organization_characteristics(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, data_SimplexNumber_df, data_Complex_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, setup_xref_Simplex_Complex_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df)
 
     organization_characteristics_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'organization characteristics')
@@ -2582,3 +2742,95 @@ def individual_simplex_info_main(simplex, inputDir, outputDir):
     df.to_csv(individual_simplex_info_file_name, encoding='utf-8', index=False)
 
     return individual_simplex_info_file_name
+
+
+
+
+
+def build_macro_event_dropdown_menu(inputDir):
+    # inputDir=GUI_util.input_main_dir_path.get()
+    downdown_menu_list = []
+    has_files = True
+
+    setup_Complex=os.path.join(inputDir,'setup_Complex.xlsx')
+    if os.path.isfile(setup_Complex):
+        setup_Complex_df = pd.DataFrame(pd.read_excel(setup_Complex))
+        setup_Complex_df = setup_Complex_df.rename(columns = {'ID':'ID_setup_complex'})
+    else:
+        has_files = False
+
+    data_Complex=os.path.join(inputDir,'data_Complex.xlsx')
+    if os.path.isfile(data_Complex):
+        data_Complex_df = pd.DataFrame(pd.read_excel(data_Complex))
+        data_Complex_df = data_Complex_df.rename(columns = {"ID":"ID_data_complex", "ComplexType":"ID_setup_complex"})
+    else:
+        has_files = False
+
+    if(has_files):
+        macro_event_name_id = find_setup_id(["Macro Event"], setup_Complex_df)
+        macro_event_name_id = macro_event_name_id.iloc[0,0]
+
+        macro_event_identifier = data_Complex_df[data_Complex_df['ID_setup_complex'] == macro_event_name_id]
+
+        downdown_menu_list = macro_event_identifier.apply(lambda x: f"{x['ID_data_complex']} - {x['Identifier']}", axis=1).tolist()
+
+    return downdown_menu_list
+
+def semantic_triplet_simplex_main(macro_event_id, inputDir, outputDir):
+    setup_Complex=os.path.join(inputDir,'setup_Complex.xlsx')
+    if os.path.isfile(setup_Complex):
+        setup_Complex_df = pd.DataFrame(pd.read_excel(setup_Complex))
+        setup_Complex_df = setup_Complex_df.rename(columns = {'ID':'ID_setup_complex'})
+
+    setup_Simplex=os.path.join(inputDir,'setup_Simplex.xlsx')
+    if os.path.isfile(setup_Simplex):
+        setup_Simplex_df = pd.DataFrame(pd.read_excel(setup_Simplex))
+        setup_Simplex_df = setup_Simplex_df.rename(columns = {'ID':'ID_setup_simplex'})
+
+    setup_xref_Complex_Complex=os.path.join(inputDir,'setup_xref_Complex-Complex.xlsx')
+    if os.path.isfile(setup_xref_Complex_Complex):
+        setup_xref_Complex_Complex_df = pd.DataFrame(pd.read_excel(setup_xref_Complex_Complex))
+        setup_xref_Complex_Complex_df = setup_xref_Complex_Complex_df.rename(columns = {'ID':'ID_setup_xref_complex-complex'})
+
+    data_xref_Complex_Complex=os.path.join(inputDir,'data_xref_Complex-Complex.xlsx')
+    if os.path.isfile(data_xref_Complex_Complex):
+        data_xref_Complex_Complex_df = pd.DataFrame(pd.read_excel(data_xref_Complex_Complex))
+        data_xref_Complex_Complex_df = data_xref_Complex_Complex_df.rename(columns = {'ID':'ID_data_xref_complex-complex', 'HigherComplex':'ID_data_complex', 'xrefID':'ID_setup_xref_complex_complex', 'LowerComplex':'ID_data_complex.1'})
+
+    data_Complex=os.path.join(inputDir,'data_Complex.xlsx')
+    if os.path.isfile(data_Complex):
+        data_Complex_df = pd.DataFrame(pd.read_excel(data_Complex))
+        data_Complex_df = data_Complex_df.rename(columns = {"ID":"ID_data_complex", "ComplexType":"ID_setup_complex"})
+
+    data_Simplex=os.path.join(inputDir,'data_Simplex.xlsx')
+    if os.path.isfile(data_Simplex):
+        data_Simplex_df = pd.DataFrame(pd.read_excel(data_Simplex))
+        data_Simplex_df = data_Simplex_df.rename(columns = {"ID":"ID_data_simplex", "SimplexType":"ID_setup_simplex", "refValue":"ID_data_date_number_text"})
+
+    data_SimplexText=os.path.join(inputDir,'data_SimplexText.xlsx')
+    if os.path.isfile(data_SimplexText):
+        data_SimplexText_df = pd.DataFrame(pd.read_excel(data_SimplexText))
+
+    data_xref_Simplex_Complex = os.path.join(inputDir, 'data_xref_Simplex-Complex.xlsx')
+    if os.path.isfile(data_xref_Simplex_Complex):
+        data_xref_Simplex_Complex_df = pd.DataFrame(pd.read_excel(data_xref_Simplex_Complex))
+        data_xref_Simplex_Complex_df = data_xref_Simplex_Complex_df.rename(columns = {'ID':'ID_data_xref_simplex-complex', 'xrefID':'ID_setup_xref_simplex_complex', 'Simplex':'ID_data_simplex', 'Complex':'ID_data_complex'})
+
+    data_xref_Complex_Document=os.path.join(inputDir,'data_xref_Complex-Document.xlsx')
+    if os.path.isfile(data_xref_Complex_Document):
+        data_xref_Complex_Document_df = pd.DataFrame(pd.read_excel(data_xref_Complex_Document))
+
+    data_xref_VComment=os.path.join(inputDir,'data_xref_VComment.xlsx')
+    if os.path.isfile(data_xref_VComment):
+        data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
+
+    simplex_version = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df)
+
+    macro_event_id = int(macro_event_id.split()[0])
+
+    simplex_version_specific = simplex_version[simplex_version['Macro Event'] == macro_event_id]
+
+    triplet_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'triplet (SVO)')
+    simplex_version_specific.to_csv(triplet_file_name, encoding='utf-8', index=False)
+
+    return triplet_file_name

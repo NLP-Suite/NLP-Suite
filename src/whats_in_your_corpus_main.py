@@ -321,7 +321,7 @@ def run(inputFilename,inputDir, outputDir,
                         True)
                 else:
                     # run with all default values; do not run MALLET
-                    output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir_TM, num_topics=20,
+                    output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir_TM, config_filename, num_topics=20,
                                                           remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createCharts=createCharts, chartPackage=chartPackage)
                     if output!=None:
                         filesToOpen.append(output)
@@ -381,12 +381,12 @@ def run(inputFilename,inputDir, outputDir,
     if (what_else_var and what_else_menu_var == '*') or nouns_var==True or verbs_var==True or people_organizations_var==True or gender_var==True or dialogues_var==True or times_var==True or locations_var==True or nature_var or sentiments_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py')==False:
             return
-        if what_else_var and what_else_menu_var == '*':
-            outputDir_what_else = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                                  label='what_else',
-                                                                  silent=True)
-        else:
-            outputDir_what_else = outputDir
+    if what_else_var and what_else_menu_var == '*':
+        outputDir_what_else = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                              label='what_else',
+                                                              silent=True)
+    else:
+        outputDir_what_else = outputDir
 
 # WordNet ----------------------------------
         if nature_var:

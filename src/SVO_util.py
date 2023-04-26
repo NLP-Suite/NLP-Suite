@@ -346,7 +346,7 @@ def filter_lemmatize_svo(window,svo_file_name, filter_s, filter_v, filter_o, fil
         nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_filter_file_name)
         filtered_records = num_rows - nRecords
         IO_user_interface_util.timed_alert(window,6000,'Filtered records', 'The filter algorithms have filtered out ' + str(filtered_records) + \
-            ' records. \nNumber of original SVO records: ' + str(num_rows) + '\nNumber of filtered SVO records: ' + str(nRecords))
+            ' records.\n\nNumber of original SVO records: ' + str(num_rows) + '\nNumber of filtered SVO records: ' + str(nRecords))
     else:
         svo_filter_file_name=''
 
