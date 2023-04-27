@@ -192,7 +192,10 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     # geocode (the new geocoding function also creates the kml Google Earth Pro map file)
     # ------------------------------------------------------------------------------------
 
-    geoName = 'geo-' + str(geocoder[:3])
+    if geocoder!='':
+        geoName = 'geo-' + str(geocoder[:3])
+    else:
+        geoName = 'geo-'
     geocodedLocationsOutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
                                                                               'GIS',
                                                                               geoName, locationColumnName, '', '',
@@ -246,10 +249,14 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     if geocodedLocationsOutputFilename != '' and nRecordsFound >0:
         filesToOpen.append(geocodedLocationsOutputFilename)
         if createCharts:
+            if geocoder=='':
+                chartTitle = 'Frequency of Locations'
+            else:
+                chartTitle = 'Frequency of Locations Found by ' + geocoder
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
-                                                               chartTitle='Frequency Distribution of Locations Found by ' + geocoder,
+                                                               chartTitle=chartTitle,
                                                                # count_var = 1 for columns of alphabetic values
                                                                count_var=1, hover_label=[],
                                                                outputFileNameType='found',  # 'NER_tag_bar',
@@ -271,7 +278,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
                                                                            outputDir,
                                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
-                                                                           chartTitle='Frequency Distribution of Locations not Found by ' + geocoder,
+                                                                           chartTitle='Frequency of Locations not Found by ' + geocoder,
                                                                            # count_var = 1 for columns of alphabetic values
                                                                            count_var=1, hover_label=[],
                                                                            outputFileNameType='not-found',  # 'NER_tag_bar',

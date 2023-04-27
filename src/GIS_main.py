@@ -40,6 +40,7 @@ def run(inputFilename,
         csv_file,
         NER_extractor,
         location_menu,
+        geocoder,
         geocode_locations,
         country_bias_var,
         area_var,
@@ -100,7 +101,7 @@ def run(inputFilename,
             return
         inputFilename=csv_file
 
-    geocoder = 'Nominatim'
+    # geocoder = 'Nominatim'
     geoName = 'geo-' + str(geocoder[:3])
     kmloutputFilename = ''
     # locationColumnName = 'Location'
@@ -127,14 +128,19 @@ def run(inputFilename,
     # ----------------------------------------------------------------------------------------------------------------------------------------------
     # NER extraction via CoreNLP
 
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
+                                                       silent=True)
+    if outputDir == '':
+        return
+
     # checking for txt: NER=='LOCATION', provide a csv output with column: [Locations]
     if NER_extractor and csv_file=='':
         # create a subdirectory of the output directory
-        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
-                                                           silent=True)
-        if outputDir == '':
-            return
-
+        # outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='GIS',
+        #                                                    silent=True)
+        # if outputDir == '':
+        #     return
         NERs = ['COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION']
 
         locationFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
@@ -191,8 +197,8 @@ def run(inputFilename,
         #   any changes to the columns will result in error
         # out_file includes both kml file and Google Earth files
         out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
-                        NER_outputFilename, inputDir, outputDir,
-                        'Nominatim', GIS_package_var, createCharts, chartPackage,
+                        NER_outputFilename, inputDir, outputDir, geocoder,
+                        GIS_package_var, createCharts, chartPackage,
                         extract_date_from_text_var,
                         country_bias,
                         box_tuple,
@@ -228,6 +234,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             csv_file_var.get(),
                             NER_extractor_var.get(),
                             location_menu_var.get(),
+                            geocoder_var.get(),
                             geocode_locations_var.get(),
                             country_bias_var.get(),
                             area_var.get(),
@@ -567,6 +574,7 @@ def activate_geocoder(*args):
     if geocode_locations_var.get()==True:
         geocoder.configure(state='normal')
     else:
+        geocoder_var.set('')
         geocoder.configure(state='disabled')
 
     if geocode_locations_var.get()==0:

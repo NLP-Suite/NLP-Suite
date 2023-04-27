@@ -168,6 +168,11 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 	kml = simplekml.Kml()
 	icon_url = GIS_Google_pin_util.pin_icon_select(['Pushpins'], ['red'])
 	kmloutputFilename = inputFilename.replace('.csv', '.kml')
+	head, tail = os.path.split(kmloutputFilename)
+	# when you are processing a csv file in input separately from the regular input file,
+	# 	you do not want to save the kml file in the input directory of the csv file
+	# 	but in the regular output directory
+	kmloutputFilename = outputDir + os.sep + tail
 
 	inputIsCoNLL, inputIsGeocoded, withHeader, \
 		headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
@@ -178,7 +183,9 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 		location = row['Location']
 		lat = row['Latitude']
 		lng = row['Longitude']
-		date = row['Date']
+		if datePresent:
+			date = row['Date']
+
 		# try:
 		# 	description = row['Description']
 		# except:
@@ -197,7 +204,7 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 			label = 'Event'
 			sentence = input_df.at[index-1, label]
 			pnt.description = "<i><b>Location</b></i>: " + location + "<br/><br/>" \
-																		   "<i><b>Label</b></i>: " + sentence + "<br/><br/>"
+																		   "<i><b>Description</b></i>: " + sentence + "<br/><br/>"
 		except:
 			pnt.description = "<i><b>Location</b></i>: " + location + "<br/><br/>"
 		# TODO MINO GIS date option
