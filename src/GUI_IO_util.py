@@ -295,6 +295,7 @@ if sys.platform == 'darwin':  # Mac OS
     help_button_x_coordinate = 70
     labels_x_coordinate = 150  # start point of all labels in the second column (first column after ? HELP)
     labels_x_indented_coordinate = 160
+    labels_x_indented_indented_coordinate = 170
     entry_box_x_coordinate = 470 #start point of all labels in the third column (second column after ? HELP); where IO filename, dir, etc. are displayed
 
     widget_width_extra_short = 10
