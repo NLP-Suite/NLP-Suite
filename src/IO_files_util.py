@@ -697,17 +697,22 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
         Dir = os.path.basename(os.path.normpath(inputDir))
         inputfile='Dir_' + Dir
         inputfile_noExtension=''
-    else:
+    elif inputFilename!='':
         inputfile, inputfile_noExtension, filename_no_hyperlink = getFilename(inputFilename)
         # use inputfile_noExtension for json
         inputfile = inputfile_noExtension
+    else:
+        inputfile = ''
     default_outputFilename_str =''
     # do not add the NLP_ prefix if processing a file previously processed and with the prefix already added
     if inputfile[0:4]!='NLP_': #"NLP_" not in inputfile:
         if label1=='':
             default_outputFilename_str = 'NLP_' + inputfile  # adding to front of file name
         else:
-            default_outputFilename_str = 'NLP_' + str(label1) + "_" + inputfile  # adding to front of file name
+            if inputfile!='':
+                default_outputFilename_str = 'NLP_' + str(label1) + "_" + inputfile  # adding to front of file name
+            else:
+                default_outputFilename_str = 'NLP_' + str(label1)   # adding to front of file name
     else:
         if label1=='':
             default_outputFilename_str=inputfile

@@ -89,7 +89,7 @@ def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_fil
             col = IO_csv_util.get_columnNumber_from_headerValue(headers,field, dict_file)
             if col == None:
                 mb.showerror(title='Input file error',
-                             message="The selected dictionary file\n\n" + dict_file + "\n\ndoes not contain the expected header \'" + csv_field1_var + "\'\n\nPlease, select a different dictionary file and try again.")
+                             message="The selected dictionary file\n\n" + dict_file + "\n\ndoes not contain the expected header \'" + str(csv_field1_var) + "\'\n\nPlease, select a different dictionary file and try again.")
                 return
             wordColNum.append(col)
         catColNum = []

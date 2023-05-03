@@ -521,7 +521,7 @@ def activate_allOptions():
     else:
         input_label = 'INPUT DIR'
     if n_grams_viewer_var.get() and ('(Date: ' not in GUI_util.IO_setup_var.get()):
-        mb.showwarning(title='Warning',message='The N-grams VIEWER option requires file(s) with a date embedded in the filename.\n\nYour current ' + input_label + ' selection does not show the Date option.\n\nPlease, select a different Input configuration or run the Co-Occurrences VIEWER option instead that does not require a date embedded in filenames.')
+        mb.showwarning(title='Warning',message='The N-grams VIEWER option requires file(s) with a date embedded in the filename.\n\nYour current ' + input_label + ' selection does not show the Date option (THE DATE OPTION IS SET IN THE I/O SETUP GUI; CLICK THE "Setup INPUT/OUTPUT configuration" BUTTON TO OPEN THE GUI).\n\nPlease, select a different Input configuration or run the Co-Occurrences VIEWER option instead that does not require a date embedded in filenames.')
         n_grams_viewer_var.set(0)
     if n_grams_viewer_var.get() or CoOcc_Viewer_var.get():
         search_words_entry.configure(state='normal')
