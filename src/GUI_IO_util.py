@@ -558,8 +558,8 @@ if sys.platform == 'darwin':  # Mac OS
     NGrams_Co_occurrences_Viewer_search_words_entry_pos = 300
     NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
     NGrams_Co_occurrences_Viewer_date_options_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = 535#510
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = 625 #600
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = open_reminders_x_coordinate #535#510
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos + 90 # 625 #600
     NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
     NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos
     NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = 594
@@ -941,8 +941,8 @@ else: #windows and anything else
     NGrams_Co_occurrences_Viewer_search_words_entry_pos = 260
     NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
     NGrams_Co_occurrences_Viewer_date_options_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = 500
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = 600
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos =  open_reminders_x_coordinate # 500
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = open_reminders_x_coordinate + 100
     NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
     NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos  # 500
     NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = NGrams_Co_occurrences_Viewer_add_viewer_button_pos + 40  # 540

@@ -208,7 +208,7 @@ def filter_list_by_deprel(keyword_list, kw_desired_deprel='*'):
 
 
 # Chen
-def filter_output_list(list_queried, related_token_DEPREL="*", Sentence_ID="*", related_token_POSTAG="*"):
+def filter_output_list(list_queried, header, related_token_DEPREL="*", Sentence_ID="*", related_token_POSTAG="*"):
     """
     filter the output list by related_token_DEPREL, Sentence_ID, and related_token_POSTAG
     Parameters
@@ -244,6 +244,8 @@ def filter_output_list(list_queried, related_token_DEPREL="*", Sentence_ID="*", 
         deprel_list_queried = list(filter(lambda tok: tok[7] == related_token_DEPREL, postag_list_queried))
     else:
         deprel_list_queried = postag_list_queried
+    # re-insert the header filtered out
+    deprel_list_queried.insert(0,header)
     return deprel_list_queried
 
 
@@ -379,11 +381,11 @@ def do_include_word(word: List[str], filters: List[CoNLLFilter]) -> bool:
 
 
 # Chen
-def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoNLL_records, form_of_token, _field_='FORM',
+def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoNLL_records, form_of_token,
+                       _field_='FORM',
                        related_token_POSTAG="*",
                        related_token_DEPREL="*",
                        Sentence_ID="*", _tok_postag_='*', _tok_deprel_='*'):
-
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_search',
@@ -435,7 +437,7 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
     list_queried.insert(0,header)
 
     # filter the output list
-    deprel_list_queried = filter_output_list(list_queried, related_token_DEPREL, Sentence_ID, related_token_POSTAG)
+    deprel_list_queried = filter_output_list(list_queried, header, related_token_DEPREL, Sentence_ID, related_token_POSTAG)
 
     if len(deprel_list_queried) == 0:
         mb.showwarning(title='Empty query results', message=noResults)
@@ -457,6 +459,7 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
     # convert list to dataframe and save
     df = pd.DataFrame(deprel_list_queried)
     # headers=['list_queried, related_token_DEPREL, Sentence_ID, related_token_POSTAG']
+    # header = ["Searched Token/Word", "ID of Searched Token/Word", "POS Tag of Searched Token/Word", "DepRel of Searched Token/Word" , "Co-occurring Token/Word", " ID of Co-occurring Token/Word", "POS Tag of Co-occurring Token/Word", "DepRel of Co-occurring Token/Word", "Head ID", "Sentence ID", "Sentence", "Document ID", "Document"]
     IO_csv_util.df_to_csv(GUI_util.window, df, outputFilename, headers=None, index=False,
                           language_encoding='utf-8')
 
@@ -479,9 +482,9 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
                                                            outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                           chartTitle="Frequency Distribution of POS Tag of Searched Token/Word",
+                                                           chartTitle="Frequency Distribution of ' + _tok_postag_ + ' POS Tag of Searched Token/Word",
                                                            outputFileNameType='search',
-                                                           column_xAxis_label='POS Tag',
+                                                           column_xAxis_label=_tok_postag_ + ' POS Tag for the word "' + form_of_token + '"',
                                                            count_var=count_var,
                                                            hover_label=[],
                                                            groupByList=[],  # ['Document ID', 'Document'],
@@ -492,12 +495,13 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
 
             columns_to_be_plotted_xAxis = ['DepRel of Searched Token/Word']
             columns_to_be_plotted_yAxis = ['DepRel of Searched Token/Word']
+            # @@@
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
                                                                outputFilename, outputDir,
                                                                columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                               chartTitle="Frequency Distribution of DepRel of Searched Token/Word",
+                                                               chartTitle="Frequency Distribution of " + _tok_deprel_ + " DepRel of Searched Token/Word",
                                                                outputFileNameType='search',
-                                                               column_xAxis_label='DepRel Tag',
+                                                               column_xAxis_label=_tok_deprel_ + ' DepRel Tag for the word "' + form_of_token + '"',
                                                                count_var=count_var,
                                                                hover_label=[],
                                                                groupByList=[],  # ['Document ID', 'Document'],
@@ -512,9 +516,9 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
                                                            outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                           chartTitle="Frequency Distribution of Co-occurring Tokens/Words",
+                                                           chartTitle="Frequency Distribution of Co-occurring " + related_token_POSTAG + " words/tokens",
                                                            outputFileNameType='search',
-                                                           column_xAxis_label='Co-occurring Token/Word',
+                                                           column_xAxis_label=related_token_POSTAG  + ' Co-occurring words for the word "' + form_of_token + '"',
                                                            count_var=count_var,
                                                            hover_label=[],
                                                            groupByList=[],  # ['Document ID', 'Document'],
@@ -529,9 +533,9 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
                                                            outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                           chartTitle="Frequency Distribution of POS Tag of Co-occurring Token/Word",
+                                                           chartTitle="Frequency Distribution of Co-occurring " + related_token_POSTAG + " POS Tags",
                                                            outputFileNameType='search_CoOc_POS',
-                                                           column_xAxis_label='POS Tag',
+                                                           column_xAxis_label= related_token_POSTAG  + ' POS Tag co-occurring with the word "' + form_of_token + '"',
                                                            count_var=count_var,
                                                            hover_label=[],
                                                            groupByList=[],  # ['Document ID', 'Document'],
@@ -542,12 +546,13 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
 
         columns_to_be_plotted_xAxis = ['DepRel of Co-occurring Token/Word']
         columns_to_be_plotted_yAxis = ['DepRel of Co-occurring Token/Word']
+
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
                                                            outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
-                                                           chartTitle="Frequency Distribution of DepRel of Co-occurring Token/Word",
+                                                           chartTitle="Frequency Distribution of Co-occurring " + related_token_DEPREL + " DepRel Tags",
                                                            outputFileNameType='search_CoOc_DepRel',
-                                                           column_xAxis_label='DepRel Tag',
+                                                           column_xAxis_label=related_token_DEPREL + ' DepRel Tag co-occurring with the word "' + form_of_token + '"',
                                                            count_var=count_var,
                                                            hover_label=[],
                                                            groupByList=[],  # ['Document ID', 'Document'],
