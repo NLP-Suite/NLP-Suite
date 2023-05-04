@@ -25,37 +25,6 @@ import NGrams_CoOccurrences_Viewer_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def processSearchWords(inputStr):
-    word_list = []
-    if inputStr.find("\"") == -1:
-        # no quotation mark
-        word_list += inputStr.split(",")
-    else:
-        # contains quotation mark
-        curWord = ""
-        i = 0
-        while i < len(inputStr):
-            if inputStr[i] == " ":
-                if curWord != "":
-                    word_list.append(curWord)
-                curWord = ""
-            elif inputStr[i] == "\"":
-                endIndex = inputStr.index("\"", i + 1)
-                word_list.append(inputStr[i + 1: endIndex])
-                i = endIndex
-            else:
-                curWord = curWord + inputStr[i]
-            i += 1
-    return word_list
-
-
-def validate(date_text):
-    try:
-        datetime.datetime.strptime(date_text, '%Y-%m-%d')
-    except ValueError:
-        raise ValueError("Incorrect data format, should be YYYY-MM-DD")
-
-
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         n_grams_list,
         n_grams_viewer_var,
@@ -193,24 +162,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             mb.showwarning(title='Warning',
                            message='No Date options selected. The N-Grams routine requires date metadata (i.e., date information embedded in the document filenames, e.g., The New York Times_12-18-1899).\n\nPlease, tick the Date options checkbox, enter the appropariate date options and try again.')
             return
-        ngram_list = processSearchWords(search_words)
-        ngram_list = ['-checkNGrams'] + ngram_list
-        # cmd.append(ngram_list)
 
-    # startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences start',
-    #                     'Started running N-Grams Word Co-Occurrences Viewer at', True,
-    #                     'VIEWER options: ' + str(viewer_options_list)+'\nSEARCH words: '+search_words,True,'',True)
-    #
     reminders_util.checkReminder(config_filename,
                                  reminders_util.title_options_NGrams,
                                  reminders_util.message_NGrams,
                                  True)
 
     # run VIEWER ------------------------------------------------------------------------------------
-    n_grams_outputFile, co_occurrences_outputFile = NGrams_CoOccurrences_Viewer_util.run(
+    filesToOpen = NGrams_CoOccurrences_Viewer_util.run(
             inputDir,
             outputDir,
             config_filename,
+            createCharts, chartPackage,
             n_grams_viewer_var,
             CoOcc_Viewer_var,
             search_words,
@@ -223,67 +186,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             items_separator_var,
             date_position_var,
             viewer_options_list)
-
-    # plot Ngrams
-    if createCharts == True and n_grams_outputFile!='':
-        xlsxFilename = n_grams_outputFile
-        filesToOpen.append(n_grams_outputFile)
-        xAxis = temporal_aggregation_var
-        chartTitle = 'N-Grams Viewer'
-        columns_to_be_plotted_xAxis=[]
-        columns_to_be_plotted_yAxis=[]
-        # it will iterate through i = 0, 1, 2, …., n-1
-        # this assumes the data are in this format: temporal_aggregation, frequency of search-word_1, frequency of search-word_2, ...
-        i = 0
-        j = 0
-        while i < (len(ngram_list)-1):
-            if temporal_aggregation_var=="quarter" or temporal_aggregation_var=="month":
-                if i == 0:
-                    j=j+3
-                columns_to_be_plotted_yAxis.append([0, j])
-            else:
-                columns_to_be_plotted_yAxis.append([0, i + 1])
-            i += 1
-            j += 1
-        hover_label = []
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
-                                                  'n-grams_viewer',
-                                                  chartPackage=chartPackage,
-                                                  chart_type_list=["line"],
-                                                  chart_title=chartTitle, column_xAxis_label_var=xAxis,
-                                                  hover_info_column_list=hover_label)
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
-
-    # plot co-occurrences
-    if createCharts and co_occurrences_outputFile!='':
-        xlsxFilename = co_occurrences_outputFile
-        filesToOpen.append(co_occurrences_outputFile)
-        chartTitle = 'Co-Occurrences Viewer: ' + search_words
-        if date_options == 0:
-            xAxis = 'Document'
-        else:
-            xAxis = temporal_aggregation_var
-        hover_label = []
-        if xAxis == 'Document':
-
-            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, xlsxFilename, outputDir,
-                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['CO-Occurrence'],
-                                                               chartTitle='Frequency Distribution of Co-Occurring Words',
-                                                               count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
-                                                               hover_label=[],
-                                                               outputFileNameType='',
-                                                               column_xAxis_label='Co-occurring word',
-                                                               groupByList=[],
-                                                               plotList=[],
-                                                               chart_title_label='')
-            if chart_outputFilename != None:
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
-
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences end',
-    #                     'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime,True)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -385,7 +287,12 @@ search_words_lb = tk.Label(window, text='Search word(s)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,search_words_lb,True)
 search_words_entry = tk.Entry(window, textvariable=search_words_var)
 search_words_entry.configure(width=GUI_IO_util.widget_width_extra_long)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos,y_multiplier_integer,search_words_entry)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos, y_multiplier_integer,
+                                   search_words_entry,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Enter the comma-separated words/collocations to be searched;\nfor N-grams each item in the list will be plotted separately; for Co-occurrences all items will be plotted together ")
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos,y_multiplier_integer,search_words_entry)
 
 date_options.set(0)
 date_options_checkbox = tk.Checkbutton(window, text='Date options', variable=date_options, onvalue=1, offvalue=0)
