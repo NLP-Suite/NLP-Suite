@@ -16,7 +16,7 @@ from subprocess import call
 import GUI_IO_util
 import IO_csv_util
 import IO_files_util
-
+import charts_util
 
 def runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var):
     import Gephi_util
@@ -96,9 +96,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         if relations_menu_var=='Sankey':
             if len(csv_file_field_list)!=2 and len(csv_file_field_list)!=3:
                 mb.showwarning("Warning",
-                               "You must select 2 or 3 csv fields to be used in the computation of a Sankey plot (e.g., Subject, Verb, Object or Subject, Object).")
+                               "You must select 2 or 3 csv fields to be used in the computation of a Sankey plot (e.g., Subject, Verb, Object or Subject, Object).\n\nMAKE SURE TO CLICK ON THE + BUTTON AFTER THE LAST SELECTION. CLICK ON THE SHOW BUTTON TO SEE THE CURRENT SELECTION.")
                 return
-            import charts_Sankey_util
             if len(csv_file_field_list)==3:
                 three_way_Sankey=True
                 var3=csv_file_field_list[2]
@@ -107,7 +106,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 three_way_Sankey = None
                 var3=None
                 Sankey_limit3_var=None
-            chart_outputFilename = charts_Sankey_util.Sankey(inputFilename, outputFilename,
+            chart_outputFilename = charts_util.Sankey(inputFilename, outputFilename,
                                 csv_file_field_list[0], Sankey_limit1_var, csv_file_field_list[1], Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
             # Function takes a csv file as data input,
 
@@ -174,8 +173,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             #     temp_interest.append(interest[i].lstrip())
             # # label is a string that has the header field in the csv file to be used for display
             # label=csv_field2_var
-            import charts_sunburst_util
-            chart_outputFilename = charts_sunburst_util.Sunburster(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
+            chart_outputFilename = charts_util.Sunburster(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
                                             do_not_split_var, int_K_sent_begin_var, int_K_sent_end_var, split_var)
 
 # Categorical data: treemap --------------------------------------------------------------------------------
@@ -185,9 +183,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             mb.showwarning("Warning",
                            "The selected treemap option with the use of numerical data requires a variable containing the numertical data.\n\nPlease, select the csv file field containing the numertical data and try again.")
             return
-        import charts_treemaper_util
+        import RF_charts_treemaper_util
         #def treemaper(data,outputFilename,interest,var,extra_dimension_average,average_variable=None):
-        chart_outputFilename = charts_treemaper_util.treemaper(inputFilename, outputFilename,
+        chart_outputFilename = charts_util.treemaper(inputFilename, outputFilename,
                                                                temp_interest, label, use_numerical_variable_var.get(),csv_field2_var)
 
 # time_mapper --------------------------------------------------------------------------------
@@ -206,8 +204,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         elif time_var=='Yearly':
             yearly=True
 
-        import charts_timeline_util
-        chart_outputFilename = charts_timeline_util.timeline(inputFilename, outputFilename, csv_field3_var, date_format_var, cumulative_var, monthly, yearly)
+        chart_outputFilename = charts_util.timeline(inputFilename, outputFilename, csv_field3_var, date_format_var, cumulative_var, monthly, yearly)
 
     if chart_outputFilename != '':
         filesToOpen.append(chart_outputFilename)
