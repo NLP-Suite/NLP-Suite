@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"CoReference Resolution",['os','tkinter','re'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"CoReference Resolution",['os','tkinter','re'])==False:
     sys.exit(0)
 
 import os
@@ -318,8 +318,12 @@ def run(config_filename,inputFilename, inputDir, outputDir, openOutputFiles, cre
     errorFound = False
 
     # check that the CoreNLPdir as been setup
-    CoreNLPdir, software_url, missing_external_software=IO_libraries_util.get_external_software_dir('Stanford_CoreNLP_coreference_util', 'Stanford CoreNLP', silent=True, only_check_missing=False)
-    if CoreNLPdir==None:
+    CoreNLPdir, existing_software_config = IO_libraries_util.external_software_install('Stanford_CoreNLP_coreference_util',
+                                                                                         'Stanford CoreNLP',
+                                                                                         '',
+                                                                                         silent=False)
+
+    if CoreNLPdir==None or CoreNLPdir=='':
         return []
 
     # errorFound, error_code, system_output=IO_libraries_util.check_java_installation('CoreNLP coreference')

@@ -1,11 +1,14 @@
 # Written by Roberto Franzosi Fall 2020
 # Written by Roberto Franzosi Fall 2020
-
+import csv
 import sys
+
+import numpy as np
+
 import GUI_util
 import IO_libraries_util
 
-# if not IO_libraries_util.install_all_packages(GUI_util.window,"DB_SQL",['io','os','tkinter','subprocess','re','datetime','shutil','ntpath']):
+# if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"DB_SQL",['io','os','tkinter','subprocess','re','datetime','shutil','ntpath']):
 #     sys.exit(0)
 
 import os
@@ -16,7 +19,8 @@ from tkinter import filedialog
 import math
 import webbrowser
 import re
-import datetime
+# import datetime
+from datetime import datetime
 import subprocess
 from subprocess import call
 import shutil
@@ -157,7 +161,84 @@ def getFileList_SubDir(inputFilename, inputDir, fileType='.*', silent=False):
 #   examples of calls
 # https://thispointer.com/python-how-to-get-list-of-files-in-directory-and-sub-directories/
 
-def getFileList(inputFile, inputDir, fileType='.*',silent=False):
+import functools
+from datetime import datetime
+
+
+# the below is to convert from self-defined date format to the correct datetime format
+rule_to_format = {
+    "mm-dd-yyyy": "%m-%d-%Y",
+    "dd-mm-yyyy": "%d-%m-%Y",
+    "yyyy-mm-dd": "%Y-%m-%d",
+    "yyyy-dd-mm": "%Y-%d-%m",
+    "yyyy-mm": "%Y-%m",
+    "yyyy": "%Y",
+}
+def parse_date(date_str, date_formats):
+    # the parse date takes in a string like 09-19-2002 and converts using a date formats defined above
+    try:
+        return datetime.strptime(date_str, rule_to_format[date_formats])
+    except ValueError:
+        pass
+    return None
+# this below function attempts to make it more clear in structure.
+def help_date(c1,c2,date_loc,file_end,compare_date,inputDir):
+    #print(c1[date_loc].replace(file_end, '').replace(inputDir,''),c2[date_loc].replace(file_end, '').replace(inputDir,''))
+    #print(c1[date_loc].replace(file_end, '').replace(inputDir,''))
+    val1 = parse_date(c1[date_loc].replace(file_end, '').replace(inputDir,''), compare_date)
+    val2 = parse_date(c2[date_loc].replace(file_end, '').replace(inputDir,''), compare_date)
+    #print(val1,val2)
+    if val1 is not None and val2 is not None:
+        return val1<val2
+    return -1
+def complete_order(bb, c):
+    # Helper function. usage: bb is the number, for instance 4. c is the list of preference, that is not complete.
+    # for instance bb = 5, c = [1,3,4], then out = [0,2,3,1,4]. In short, it seeks
+    # to find a sequence where the desired sequence is preserved, and following that complement item
+    # index will be in order. This way the self compared function can be properly
+    # instantiated.
+    all_elements = set(range(1, bb+1))
+    non_appearing_elements = list(all_elements.difference(set(c)))
+    non_appearing_elements.sort()
+    return [x-1 for x in (c+ non_appearing_elements)]
+def do_compare(input_list, compare_split, compare_date, file_end, date_loc,ordering,inputDir):
+    # example: input_list: a lists of files
+    # compare_split, what do you want to be splitting each file. For instance, a_b_1989.txt, has it _.
+    # compare_date, what form of date do you want to be compared. For instance, YYYY
+    # file_end, what file ending is the file, for instance, .txt in the above case
+    # date_loc, where is your date location. For instance, the above is 3 (natural order).
+    # ordering: the string like "2,3"
+
+    def compare(pair1, pair2):
+        try:
+            c1 = pair1.replace(inputDir, '').replace(file_end, '')
+            c2 = pair2.replace(inputDir, '').replace(file_end, '')
+            c1 = c1.split(compare_split)
+            c2 = c2.split(compare_split)
+            i = 0
+            q = complete_order(len(c1),[int(x) for x in ordering.split(",")])
+
+            #print(date_loc)
+            while i<=len(c1)-1:
+                if q[i]+1==date_loc:
+
+                    if help_date(c1,c2,date_loc-1,file_end,compare_date,inputDir):
+                        return -1
+                    else:
+                        return 1
+                else:
+                    if c1[q[i]]<c2[q[i]]:
+                        return -1
+                    else:
+                        return 1
+                i+=1
+        except:
+            #print("There must be at least one file that is incomparable due to split size error. But we skip it and proceed.")
+            return -1
+    return sorted(input_list, key=functools.cmp_to_key(compare))
+
+
+def getFileListOld(inputFile, inputDir, fileType='.*',silent=False):
     files = []
     if inputDir != '':
         if not checkDirectory(inputDir):
@@ -167,7 +248,7 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False):
         files.sort()
         if len(files) == 0:
             mb.showwarning(title='Input files error',
-                           message='No files of type ' + fileType + ' found in the directory ' + inputDir)
+                           message='No files of type ' + fileType + ' found in the directory\n\n' + inputDir)
     else:
         if not checkFile(inputFile):
             return files
@@ -177,6 +258,69 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False):
             mb.showwarning(title='Input file error',
                            message='The input file type expected by the algorithm is ' + fileType + '.\n\nPlease, select the expected file type and try again.')
     return files
+def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=''): #New
+    files = []
+
+    if inputDir != '':
+        if not checkDirectory(inputDir):
+            return files
+        for path in Path(inputDir).glob('*' + fileType):
+            files.append(str(path))
+        if len(files) == 0:
+            mb.showwarning(title='Input files error',
+                           message='No files of type ' + fileType + ' found in the directory\n\n' + inputDir)
+    else:
+        if not checkFile(inputFile):
+            return files
+        if inputFile.endswith(fileType):
+            files = [inputFile]
+        else:
+            mb.showwarning(title='Input file error',
+                           message='The input file type expected by the algorithm is ' + fileType + '.\n\nPlease, select the expected file type and try again.')
+    configFileName= GUI_IO_util.configPath + os.sep+configFileName
+    #print(inputDir)
+
+    if configFileName!='':
+        import pandas as pd
+        try:
+            a = pd.read_csv(configFileName)
+        except:
+            if configFileName=='NLP_default_IO_config.csv':
+                mb.showwarning(title='Input config file error',
+                               message='The default I/O config file ' + configFileName + ' does not exist.\n\nPlease, use the "Setup INPUT/OUTPUT configuration" button to setup the I/O config file and try again.')
+            else:
+                mb.showwarning(title='Input config file error',
+                               message='The GUI-specific config file ' + configFileName + ' does not exist.\n\nPlease, use the dropdown menu "I/O configuration" to select the GUI-specific option, then click on "Setup INPUT/OUTPUT configuration" button to setup the GUI-specific I/O config file and try again.')
+            return files
+
+        sort_order = str(a['Sort order'][1])
+
+        if str(sort_order) =="nan":
+            sort_order = "1"
+        try:
+            aa = float(sort_order)
+            aa = int(aa)
+            sort_order = str(aa)
+        except:
+            pass
+        date_format = a['Date format'][1]
+        try:
+            date_pos = int(a['Date position'][1])
+        except:
+            date_pos = 9e999
+        separator = a['Item separator character(s)'][1]
+        if str(separator)=="nan":
+            separator=' '
+
+        # print("=========")
+        # print(separator, date_format, fileType, date_pos,sort_order,inputDir+os.sep)
+        try:
+            files = do_compare(files, separator, date_format, fileType, date_pos,sort_order,inputDir+os.sep)
+        except:
+            print('maybe error?')
+            print("Because of a significant error. We proceed using default logic.")
+            files.sort()
+        return files
 
 
 def selectFile(window, IsInputFile, checkCoNLL, title, fileType, extension, outputFileVar=None,
@@ -288,37 +432,43 @@ def getDateFromFileName(file_name, date_format='mm-dd-yyyy', sep='_', date_field
         try:
             dateStr = ''
             if date_format == 'mm-dd-yyyy':
-                date = datetime.datetime.strptime(raw_date, '%m-%d-%Y').date()
+                # date = datetime.datetime.strptime(raw_date, '%m-%d-%Y').date()
+                date = datetime.strptime(raw_date, '%m-%d-%Y').date()
                 dateStr = date.strftime('%m-%d-%Y')
                 month=dateStr[0:2]
                 day=dateStr[3:5]
                 year=dateStr[-4:]
             elif date_format == 'dd-mm-yyyy':
-                date = datetime.datetime.strptime(raw_date, '%d-%m-%Y').date()
+                # date = datetime.datetime.strptime(raw_date, '%d-%m-%Y').date()
+                date = datetime.strptime(raw_date, '%d-%m-%Y').date()
                 dateStr = date.strftime('%d-%m-%Y')
                 month=dateStr[3:5]
                 day=dateStr[0:2]
                 year=dateStr[-4:]
             elif date_format == 'yyyy-mm-dd':
-                date = datetime.datetime.strptime(raw_date, '%Y-%m-%d').date()
+                # date = datetime.datetime.strptime(raw_date, '%Y-%m-%d').date()
+                date = datetime.strptime(raw_date, '%Y-%m-%d').date()
                 dateStr = date.strftime('%Y-%m-%d')
                 month=dateStr[5:7]
                 day=dateStr[8:10]
                 year=dateStr[:4]
             elif date_format == 'yyyy-dd-mm':
-                date = datetime.datetime.strptime(raw_date, '%Y-%d-%m').date()
+                # date = datetime.datetime.strptime(raw_date, '%Y-%d-%m').date()
+                date = datetime.strptime(raw_date, '%Y-%d-%m').date()
                 dateStr = date.strftime('%Y-%d-%m')
                 month=dateStr[8:10]
                 day=dateStr[5:7]
                 year=dateStr[:4]
             elif date_format == 'yyyy-mm':
-                date = datetime.datetime.strptime(raw_date, '%Y-%m').date()
+                # date = datetime.datetime.strptime(raw_date, '%Y-%m').date()
+                date = datetime.strptime(raw_date, '%Y-%m').date()
                 dateStr = date.strftime('%Y-%m')
                 month=dateStr[5:7]
                 day=0
                 year=dateStr[:4]
             elif date_format == 'yyyy':
-                date = datetime.datetime.strptime(raw_date, '%Y').date()
+                # date = datetime.datetime.strptime(raw_date, '%Y').date()
+                date = datetime.strptime(raw_date, '%Y').date()
                 dateStr = date.strftime('%Y')
                 month = 0
                 day = 0
@@ -516,8 +666,7 @@ def getFilename(passed_string):
     # when X-axis values contain a document dressed for hyperlink and with full path
     #   undressed the hyperlink and only display the tail of the document
     tail=passed_string
-    tail_noExtension=''
-
+    tail_noExtension=tail
 
     if isinstance(passed_string, str): # and math.isnan(passed_string) is False
         if '=hyperlink' in passed_string:
@@ -549,17 +698,22 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
         Dir = os.path.basename(os.path.normpath(inputDir))
         inputfile='Dir_' + Dir
         inputfile_noExtension=''
-    else:
+    elif inputFilename!='':
         inputfile, inputfile_noExtension, filename_no_hyperlink = getFilename(inputFilename)
         # use inputfile_noExtension for json
         inputfile = inputfile_noExtension
+    else:
+        inputfile = ''
     default_outputFilename_str =''
     # do not add the NLP_ prefix if processing a file previously processed and with the prefix already added
     if inputfile[0:4]!='NLP_': #"NLP_" not in inputfile:
         if label1=='':
             default_outputFilename_str = 'NLP_' + inputfile  # adding to front of file name
         else:
-            default_outputFilename_str = 'NLP_' + str(label1) + "_" + inputfile  # adding to front of file name
+            if inputfile!='':
+                default_outputFilename_str = 'NLP_' + str(label1) + "_" + inputfile  # adding to front of file name
+            else:
+                default_outputFilename_str = 'NLP_' + str(label1)   # adding to front of file name
     else:
         if label1=='':
             default_outputFilename_str=inputfile
@@ -606,7 +760,7 @@ def generate_output_file_name(inputFilename, inputDir, outputDir, outputExtensio
 
     if sys.platform == 'win32':  # Windows
         if len(outFilename)>255:
-            mb.showwarning(title='Warning',message='The length (' + str(len(outFilename)) + ' characters) of the filename ' + outFilename + ' exceeds the maximum length of 255 characters allowed by Windows Operating System.\n\nPlease, reduce the filename length.')
+            mb.showwarning(title='Warning',message='The length (' + str(len(outFilename)) + ' characters) of the filename\n\n' + outFilename + '\n\nexceeds the maximum length of 255 characters allowed by Windows Operating System.\n\nPlease, reduce the filename length and try again.')
 
     return outFilename
 

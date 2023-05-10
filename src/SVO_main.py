@@ -8,7 +8,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "SVO main",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "SVO main",
                                           ['subprocess', 'os', 'tkinter']) == False:
     sys.exit(0)
 
@@ -50,6 +50,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         subjects_dict_var,
         verbs_dict_var,
         objects_dict_var,
+        filter_subjects,
+        filter_verbs,
+        filter_objects,
         lemmatize_subjects,
         lemmatize_verbs,
         lemmatize_objects,
@@ -74,12 +77,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     language_var = language
     language_list = [language]
 
-    # get the date options from filename
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
     else:
         config_filename = scriptName.replace('main.py', 'config.csv')
-    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
+
+    # get the date options from filename
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
@@ -96,13 +100,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                        message="No option has been selected.\n\nPlease, select an option and try again.")
         return
 
-    if inputFilename[-4:] == '.txt':
-        if (package_var=='') and (
-                gephi_var == True or wordcloud_var == True or google_earth_var == True):
-            mb.showerror(title='Input file/option error',
-                         message="The data visualization option(s) you have selected require either an _svo.csv/_SVO_Result file in input or CoreNLP OpenIE and/or SENNA selected.\n\nPlease, check your input file and/or algorithm selections and try again.")
-            return
-    elif inputFilename[-4:] == '.csv':
+    if inputFilename[-4:] == '.csv':
         if not 'SVO_' in inputFilename:
             mb.showerror(title='Input file error',
                          message="The selected input is a csv file, but... not an _svo.csv file.\n\nPlease, select an _svo.csv file (or txt file(s)) and try again.")
@@ -204,17 +202,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     # create an SVO-filtered subdirectory of the main output directory
     outputSVOFilterDir=''
-    if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
+    if filter_subjects or filter_verbs or filter_objects:
         outputSVOFilterDir = outputSVODir + os.sep + 'SVO-filtered'
 
-    if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-        WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('SVO_main',
-                                                                                            'WordNet',
-                                                                                            silent=True, only_check_missing=False)
-        if WordNetDir == None:
-            return
-
     if google_earth_var:
+        # Google_Earth_Pro_dir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir(
+        #     'SVO_main',
+        #     'Google Earth Pro',
+        #     silent=False, only_check_missing=True)
+        # if Google_Earth_Pro_dir == None or Google_Earth_Pro_dir == '':
+        #     return
+
         # create a GIS subdirectory of the output directory
         outputGISDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
                                                               label='GIS',
@@ -223,7 +221,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                      'SVO_' + package_var+ '_LOCATIONS')
         outputLocations.append(location_filename)
 
-# CoreNLP Dependencies ++ _____________________________________________________
+# SVO CoreNLP Dependencies ++ _____________________________________________________
 
     if package_var=='CoreNLP':
 
@@ -261,9 +259,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                    params, False,
                                    language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                    extract_date_from_text_var=extract_date_from_text_var,
-                                   extract_date_from_filename_var=extract_date_from_filename_var,
+                                   filename_embeds_date_var=filename_embeds_date_var,
                                    date_format=date_format_var,
-                                   date_separator_var=date_separator_var,
+                                   items_separator_var=items_separator_var,
                                    date_position_var=date_position_var,
                                    google_earth_var=google_earth_var,
                                    location_filename = location_filename,
@@ -301,9 +299,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                            False,
                                                                            language_var, memory_var, export_json_var, document_length_var, limit_sentence_length_var,
                                                                            extract_date_from_text_var=extract_date_from_text_var,
-                                                                           extract_date_from_filename_var=extract_date_from_filename_var,
+                                                                           filename_embeds_date_var=filename_embeds_date_var,
                                                                            date_format=date_format_var,
-                                                                           date_separator_var=date_separator_var,
+                                                                           items_separator_var=items_separator_var,
                                                                            date_position_var=date_position_var,
                                                                            google_earth_var = google_earth_var,
                                                                            location_filename = location_filename)
@@ -334,15 +332,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         limit_sentence_length_var = 1000
         annotator = 'SVO'
         tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
-                                                    outputSVODir,
+                                                    outputSVODir, config_filename,
                                                     openOutputFiles,
                                                     createCharts, chartPackage,
                                                     annotator, False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
-                                                    extract_date_from_filename_var=extract_date_from_filename_var,
+                                                    filename_embeds_date_var=filename_embeds_date_var,
                                                     date_format=date_format_var,
-                                                    date_separator_var=date_separator_var,
+                                                    items_separator_var=items_separator_var,
                                                     date_position_var=date_position_var,
                                                     google_earth_var=google_earth_var,
                                                     location_filename=location_filename)
@@ -366,9 +364,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       annotator, False,
                                                       language_list,
                                                       memory_var, document_length_var, limit_sentence_length_var,
-                                                      extract_date_from_filename_var=extract_date_from_filename_var,
+                                                      filename_embeds_date_var=filename_embeds_date_var,
                                                       date_format=date_format_var,
-                                                      date_separator_var=date_separator_var,
+                                                      items_separator_var=items_separator_var,
                                                       date_position_var=date_position_var,
                                                       google_earth_var=google_earth_var,
                                                       location_filename=location_filename)
@@ -379,49 +377,60 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             SVO_filename = tempOutputFiles[1]
             svo_result_list.append(tempOutputFiles[1])
 
-    # Filtering SVO for all packages
+# -------------------------------------------------------------------------------------------------------------------------------------
+# Filtering SVO for all packages
+
     if len(svo_result_list)>0:
         # if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get() or \
         #         lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
-        if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
-            output = SVO_util.filter_svo(window,SVO_filename,
-                            subject_filePath, verb_filePath, object_filePath,
-                            lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                            outputSVOSVODir, createCharts, chartPackage)
+        if filter_subjects or filter_verbs or filter_objects or \
+            lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
+            output = SVO_util.filter_lemmatize_svo(window,SVO_filename,
+                        filter_subjects, filter_verbs, filter_objects,
+                        subject_filePath, verb_filePath, object_filePath,
+                        lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
+                        outputSVOSVODir, createCharts, chartPackage)
             if output != None:
                 SVO_filtered_filename=output[0]
+                SVO_lemmatized_filename=output[1]
+                SVO_filtered_lemmatized_filename=output[2]
                 filesToOpen.extend(output)
-                svo_result_list.append(SVO_filtered_filename)
+                if SVO_filtered_filename!='':
+                    svo_result_list.append(SVO_filtered_filename)
+                if SVO_lemmatized_filename!='':
+                    svo_result_list.append(SVO_lemmatized_filename)
+                if SVO_filtered_lemmatized_filename!='':
+                    svo_result_list.append(SVO_filtered_lemmatized_filename)
 
         if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
             # tempOutputFiles[0] is the filename with lemmatized SVO values
             # we want to aggregate with WordNet the verbs in column 'V'
             # check that SVO output file contains records
-            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(SVO_filename,
+            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(SVO_lemmatized_filename,
                                                                                    encodingValue='utf-8')
             if nRecords > 1:
-                # create a subdirectory of the output directory
-                outputWNDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
-                                                                     label='WordNet',
-                                                                     silent=True)
-                if lemmatize_subjects or lemmatize_objects:
-                    outputFilename = IO_csv_util.extract_from_csv(SVO_filename, outputWNDir, '',
+                # outputWNDir is created in SVO_util
+                outputWNDir = outputSVODir + os.sep + 'WordNet'
+                outputFilename = IO_csv_util.extract_from_csv(SVO_lemmatized_filename, outputWNDir, '',
                                                               ['Subject (S)', 'Object (O)'])
-                    output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
-                                                                             config_filename, 'NOUN',
-                                                                             openOutputFiles, createCharts,
-                                                                             chartPackage, language_var)
-                    os.remove(outputFilename)
-                    if output != None:
-                        filesToOpen.extend(output)
+
+                # the WordNet installation directory, WordNetDir,  is now checked in aggregate_GoingUP
+                WordNetDir=''
+                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
+                                                                         config_filename, 'NOUN',
+                                                                         openOutputFiles, createCharts,
+                                                                         chartPackage, language_var)
+                os.remove(outputFilename)
+                if output != None and output != '':
+                    filesToOpen.extend(output)
                 if lemmatize_verbs:
-                    outputFilename = IO_csv_util.extract_from_csv(SVO_filename, outputWNDir, '', ['Verb (V)'])
+                    outputFilename = IO_csv_util.extract_from_csv(SVO_lemmatized_filename, outputWNDir, '', ['Verb (V)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
                                                                              config_filename, 'VERB',
                                                                              openOutputFiles, createCharts,
                                                                              chartPackage, language_var)
                     os.remove(outputFilename)
-                    if output != None:
+                    if output != None and output != '':
                         filesToOpen.extend(output)
 
             else:
@@ -446,28 +455,38 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 if nRecords > 1:   # including headers; file is empty
                     gexf_file = Gephi_util.create_gexf(window,fileBase, outputSVOSVODir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
                                                        "Sentence ID")
-                    filesToOpen.append(gexf_file)
+                    if gexf_file != None and gexf_file != '':
+                        filesToOpen.append(gexf_file)
                 else:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_result_list[0])
                     if nRecords > 1:  # including headers; file is empty
                         gexf_file = Gephi_util.create_gexf(window,fileBase, inputFilename, svo_result_list[0],
                                                            "Subject (S)", "Verb (V)", "Object (O)", "Sentence ID")
-                        filesToOpen.append(gexf_file)
+                        if gexf_file != None and gexf_file != '':
+                            filesToOpen.append(gexf_file)
             else:  # txt input file
                 for f in svo_result_list:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
                     if nRecords > 1:  # including headers; file is empty
-                        if 'SVO-filter' in svo_result_list[i]:
+                        if 'SVO_filter_lemma' in svo_result_list[i] or 'SVO_lemma' in svo_result_list[i]:
+                            tempOutputDir = outputWNDir
+                        elif 'SVO_filter' in svo_result_list[i]:
                             tempOutputDir = outputSVOFilterDir
                         else:
                             tempOutputDir = outputSVOSVODir
                         gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], tempOutputDir, f, "Subject (S)", "Verb (V)", "Object (O)",
                                                            "Sentence ID")
                         if "CoreNLP" in f or "SENNA_SVO" in f or "spaCy" in f or "Stanza" in f:
-                            filesToOpen.append(gexf_file)
+                            if gexf_file!=None and gexf_file!='':
+                                filesToOpen.append(gexf_file)
                         if not save_intermediate_file:
-                            gexf_files = [os.path.join(outputDir, f) for f in os.listdir(tempOutputDir) if
-                                          f.endswith('.gexf')]
+                            inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt',
+                                                                  silent=False,
+                                                                  configFileName=config_filename)
+
+                            # gexf_files = [os.path.join(outputDir, f) for f in os.listdir(tempOutputDir) if
+                            gexf_files = [os.path.join(outputDir, f) for f in inputDocs if
+                                                        f.endswith('.gexf')]
                             for f in gexf_files:
                                 if "CoreNLP" not in f and "SENNA_SVO" not in f and "spaCy" not in f and "Stanza" not in f: #CoreNLP accounts for both ++ and OpenIE
                                     os.remove(f)
@@ -493,7 +512,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         myfile = IO_files_util.openCSVFile(f, "r")
                         #CYNTHIA
                         # out_file = wordclouds_util.SVOWordCloud(myfile, f, outputSVODir + os.sep + 'SVO', "", prefer_horizontal=.9)
-                        if 'SVO-filter' in svo_result_list[i]:
+                        if 'SVO_filter_lemma' in svo_result_list[i] or 'SVO_lemma' in svo_result_list[i]:
+                            tempOutputDir = outputWNDir
+                        elif 'SVO_filter' in svo_result_list[i]:
                             tempOutputDir = outputSVOFilterDir
                         else:
                             tempOutputDir = outputSVOSVODir
@@ -515,7 +536,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
                                                  reminders_util.message_geocoder, True)
                     # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
-                    date_present = (extract_date_from_text_var == True) or (extract_date_from_filename_var == True)
+                    date_present = (extract_date_from_text_var == True) or (filename_embeds_date_var == True)
                     country_bias = ''
                     area_var = ''
                     restrict = False
@@ -535,7 +556,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                      [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
                                      [1], [1]) # bold_var_list, italic_var_list
 
-                        if out_file!=None:
+                        if out_file!=None and out_file!='':
                             if len(out_file) > 0:
                                 # since out_file produced by KML is a list cannot use append
                                 filesToOpen = filesToOpen + out_file
@@ -575,6 +596,9 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  subjects_dict_var.get(),
                                  verbs_dict_var.get(),
                                  objects_dict_var.get(),
+                                 filter_subjects_var.get(),
+                                 filter_verbs_var.get(),
+                                 filter_objects_var.get(),
                                  lemmatize_subjects_var.get(),
                                  lemmatize_verbs_var.get(),
                                  lemmatize_objects_var.get(),
@@ -644,7 +668,6 @@ def clear(e):
     filter_subjects_var.set(1)
     filter_verbs_var.set(1)
     filter_objects_var.set(0)
-    activate_filter_dictionaries()
     lemmatize_subjects_checkbox.configure(state='normal')
     lemmatize_verbs_checkbox.configure(state='normal')
     lemmatize_objects_checkbox.configure(state='normal')
@@ -657,6 +680,14 @@ def clear(e):
     gephi_checkbox.configure(state='normal')
     wordcloud_checkbox.configure(state='normal')
     google_earth_checkbox.configure(state='normal')
+
+    global subject_filePath, verb_filePath, object_filePath
+
+    subject_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
+    verb_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-action-list.csv'
+    object_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
+    # activate_filter_dictionaries()
+
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -687,7 +718,7 @@ google_earth_var = tk.IntVar()
 def open_GUI():
     call("python file_checker_converter_cleaner_main.py", shell=True)
 
-pre_processing_button = tk.Button(window, text='Pre-processing tools (Open file checking & cleaning GUI)',width=GUI_IO_util.widget_width_short,command=lambda:open_GUI())
+pre_processing_button = tk.Button(window, text='Pre-processing tools (Open file checking & cleaning GUI) ',command=lambda:open_GUI())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    pre_processing_button,
@@ -772,7 +803,7 @@ def activate_filter_dictionaries(*args):
     else:
         # objects_dict_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
         objects_dict_var.set('social-actor-list.csv')
-        filter_subjects_var.trace('w',activate_filter_dictionaries)
+filter_subjects_var.trace('w',activate_filter_dictionaries)
 filter_verbs_var.trace('w',activate_filter_dictionaries)
 filter_objects_var.trace('w',activate_filter_dictionaries)
 
@@ -789,16 +820,17 @@ def getDictFile(checkbox_var, dict_var, checkbox_value, dictFile):
         initialFolder = GUI_IO_util.wordLists_libPath
         filePath = tk.filedialog.askopenfilename(title='Select INPUT csv ' + dictFile + ' dictionary filter file',
                                                  initialdir=initialFolder, filetypes=[("csv files", "*.csv")])
-        if len(filePath) == 0:
-            checkbox_var.set(0)
-        else:
-            if dictFile == 'Subject':
-                subject_filePath = filePath
-            elif dictFile == 'Verb':
-                verb_filePath = filePath
-            elif dictFile == 'Object':
-                object_filePath = filePath
-            filePath=os.path.basename(os.path.normpath(filePath))
+    if len(filePath) == 0:
+        checkbox_var.set(0)
+    else:
+        filePath=os.path.basename(os.path.normpath(filePath))
+    if dictFile == 'Subject':
+        subject_filePath = filePath
+    elif dictFile == 'Verb':
+        verb_filePath = filePath
+    elif dictFile == 'Object':
+        object_filePath = filePath
+    # filePath=os.path.basename(os.path.normpath(filePath))
     dict_var.set(filePath)
 
 filter_subjects_var.set(1)
@@ -831,9 +863,9 @@ filter_verbs_var.set(1)
 verbs_checkbox = tk.Checkbutton(window, text='Filter Verb', variable=filter_verbs_var, onvalue=1, offvalue=0,
                                 command=lambda: getDictFile(filter_verbs_var, verbs_dict_var, filter_verbs_var.get(), 'Verb'))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    verbs_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Filter verbs list excluding verbs that are not social actions.\nThe option for filtering verbs for social actions via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the verbs file
@@ -848,7 +880,7 @@ lemmatize_verbs_checkbox = tk.Checkbutton(window, text='Lemmatize Verb', variabl
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.lemmatize_V, y_multiplier_integer,
                                                lemmatize_verbs_checkbox,
                                                True, False, True, False, 90,
-                                               GUI_IO_util.lemmatize_V,
+                                               GUI_IO_util.open_reminders_x_coordinate,
                                                "When lemmatizing verbs, WordNet will be used to aggregate verbs into top synsets verb categories")
 
 filter_objects_var.set(0)
@@ -856,7 +888,7 @@ objects_checkbox = tk.Checkbutton(window, text='Filter Object', variable=filter_
                                   command=lambda: getDictFile(filter_objects_var, objects_dict_var, filter_objects_var.get(),
                                                               'Object'))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                    objects_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
                                    "Filter objects list excluding objects that are not social actors.\nThe option for filtering objects for social actors via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
@@ -890,17 +922,17 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 verbs_dict_var.set('social-action-list.csv')
 verbs_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_V_width, state="disabled", textvariable=verbs_dict_var)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    verbs_dict_entry,
-                                   True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
+                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "The complete path of the verb social action list is "+ verb_filePath+"\nTick twice the checkbox 'Filter Verb' to select a different file.")
 
 objects_dict_var.set('')
 objects_dict_entry = tk.Entry(window, width=GUI_IO_util.dictionary_O_width, state="disabled", textvariable=objects_dict_var)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                    objects_dict_entry,
-                                   False, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
+                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "The complete path of the object social actor list is "+ object_filePath+"\nTick twice the checkbox 'Filter Object' to select a different file.")
 
 gender_var.set(0)
@@ -927,7 +959,7 @@ quote_var.set(0)
 quote_checkbox = tk.Checkbutton(window, text='S & O quote/speaker',
                                                 variable=quote_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    quote_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
                                    "The neural network quote annotator is available only via Stanford CoreNLP")
@@ -943,30 +975,39 @@ activateQuote()
 SRL_var.set(0)
 SRL_checkbox = tk.Checkbutton(window, text='SRL (Semantic Role Labeling)',
                                                 variable=SRL_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                                SRL_checkbox)
 SRL_checkbox.configure(state='disabled')
 
 gephi_var.set(1)
 gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network graphs (via Gephi) ',
                                 variable=gephi_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               gephi_checkbox, True)
+                                   gephi_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "When filtering subjects/verbs/objects, network graphs will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO-filtered subdirectories.\n"                                  
+                                   "When lemmatizing, network graphs will also be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
 
 wordcloud_var.set(1)
 wordcloud_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in wordcloud', variable=wordcloud_var,
                                     onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_2nd_column, y_multiplier_integer, wordcloud_checkbox,
-                                               True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                   wordcloud_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "When filtering subjects/verbs/objects, wordclouds will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO-filtered subdirectories\n" 
+                                   "When lemmatizing, wordclouds will also be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
 
 google_earth_var.set(1)
 google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Earth Pro & Google Maps)',
                                        variable=google_earth_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.SVO_3rd_column, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                    google_earth_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "To draw pin and heat maps with Google Earth Pro and Google Maps you will need a free Google API key.\nRead the TIPS file 'Google API Key' on how to get the API key.")
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Draw pin and heat maps with Google Earth Pro and Google Maps. Maps are exported to the SVO subdirectory only, whether filtering or lemmatizing to avoid missing locations.\n"
+                                   "You will need a free Google API key. Read the TIPS file 'Google API Key' on how to get the API key.")
 def activateFilters(*args):
 
     if package_var.get()!='':
@@ -1089,15 +1130,21 @@ reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_o
 
 warnUser()
 
+do_not_repeat_language_warning = False
 
 def activate_NLP_options(*args):
-    global error, package_basics, package, language, language_var, language_list, y_multiplier_integer
-
+    global error, package_basics, package, language, language_var, language_list, y_multiplier_integer, do_not_repeat_language_warning
     # after update no display
-    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
+    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.setup_parsers_annotators(y_multiplier_integer, scriptName)
     language_list = [language]
     package_var.set(package)
     if language!='English':
+        if language != 'English' and not do_not_repeat_language_warning:
+            mb.showwarning(title='Warning',
+                           message='The current SVO extraction algorithm is rule based, dependent upon specific POStag values developed for the English language.'
+                                   '\n\nChinese, for instance, has different sets of Part-Of-Speech tags and SVO results would be unreliable. Use with caution for languages other than English.')
+        do_not_repeat_language_warning = True
+
         filter_subjects_var.set(0)
         filter_verbs_var.set(0)
         filter_objects_var.set(0)
@@ -1105,18 +1152,23 @@ def activate_NLP_options(*args):
         verbs_dict_var.set('')
         objects_dict_var.set('')
     else:
+        do_not_repeat_language_warning = False
         filter_subjects_var.set(1)
         filter_verbs_var.set(1)
         filter_objects_var.set(0)
         activate_filter_dictionaries()
 GUI_util.setup_menu.trace('w', activate_NLP_options)
+
 activate_NLP_options()
 
 if error:
     mb.showwarning(title='Warning',
                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup next the default NLP package and language options.")
     call("python NLP_setup_package_language_main.py", shell=True)
-    # this will display the correct hover-over info after the python call, in case options were changed
-    error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+
+# this will display the correct hover-over info after the python call, in case options were changed
+error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+
+# GUI_util.window.focus_force()
 
 GUI_util.window.mainloop()

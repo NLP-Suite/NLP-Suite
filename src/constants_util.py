@@ -544,19 +544,21 @@ DBpedia_ontology_class_menu = 'Thing', ' Activity', '    Game', '    Sales', '  
 YAGO_ontology_class_menu= 'BioChemEntity','Gene','MolecularEntity','Taxon','Brand','BroadcastChannel', \
 'CreativeWork', 'Emotion', 'MedicalEntity', 'Organization',	'Person', 'Place', 'Product'
 
-NLP_Suite_visualization_tools_menu = 'Excel charts', 'Geographic maps: Geocoding & maps', \
-'Geographic maps: Google Earth Pro', 'Geographic distances between locations', \
-'HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)', 'Network graphs (Gephi)', \
-'Sentence visualization: Dependency tree viewer (png graphs)', 'Wordclouds (ALL options GUI)'
+NLP_Suite_visualization_tools_menu = 'Excel charts', 'Geographic maps: From texts to maps via Google Earth Pro and Google Maps', \
+'Geographic maps: From csv file to maps via Google Earth Pro and Google Maps', 'Geographic distances between locations', \
+'HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)', \
+                                    "Animated time-dependent bar plot (Plotly)", "Boxplot", "Multiple bar charts", "Network graphs (Gephi)", \
+                                    "Sankey flowchart (Plotly)", "Sunburst pie chart (Plotly)", "Treemap (Plotly)", \
+                                    'Sentence visualization: Dependency tree viewer (png graphs)', 'Wordclouds (ALL options GUI)'
 
 NLP_Suite_data_file_handling_tools_menu = \
+'Data manipulation (ALL options GUI)', \
 'File handler (ALL options GUI)', \
-'Sample data (ALL options GUI)', \
+'Sample corpus (ALL options GUI)', \
 'Search (ALL options GUI)', \
 '', \
 '-----------------------------------------------------------------------------------------', \
 '', \
-'Data manipulation (csv files via Pandas)', \
 'File checker (file name)', \
 'File classifier (dumb classifier via embedded date) (file name)', \
 'File-type converter (csv, docx, pdf, rtf --> txt)', \
@@ -624,9 +626,7 @@ NLP_Suite_corpus_document_tools_menu = \
 '', \
 'Specialized tools --------------------------------------------------------------------------------', \
 '', \
-'Gender guesser', \
-'Geographic maps: From texts to maps', \
-'Geographic maps: Google Earth Pro', \
+'Geographic maps: From texts to maps via Google Earth Pro and Google Maps', \
 'Knowledge graphs: DBpedia & YAGO', \
 'NER (Named Entity Recognition) annotator', \
 'Narrative analysis (ALL options GUI)', \
@@ -643,13 +643,16 @@ NLP_Suite_corpus_document_tools_menu = \
 'Style analysis tools -----------------------------------------------------------------------------------', \
 '', \
 'Style analysis (ALL options GUI)', \
+'Language detection', \
 'N-grams (word & character)', \
+'N-grams/co-occurrences viewer', \
 'Nominalization', \
 'Sentence complexity', \
 'Sentence/text readability (via textstat)', \
 'Similarities between words (Levenshtein distance)', \
 'Spelling checkers', \
 'Spelling checker cleaner (Find & Replace string)', \
+'Who wrote the text? Man or woman? (via Gender guesser)', \
 '', \
 'Search & extraction tools -----------------------------------------------------------------------', \
 '', \

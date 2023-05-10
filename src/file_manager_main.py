@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"file_manager.py",['csv','tkinter','os'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"file_manager.py",['csv','tkinter','os'])==False:
     sys.exit(0)
 
 import tkinter as tk
@@ -65,7 +65,7 @@ def run(inputDir, outputDir,
         if command==False:
             return
 
-    output_filename=''
+    outputFilename=''
     options=0
     i=0
     itemCount=0
@@ -84,23 +84,23 @@ def run(inputDir, outputDir,
     if list_var==1:
         options=options+1
         operation = 'listed'
-        output_filename = "List_files_" + currentSubfolder + ".csv"
+        outputFilename = "List_files_" + currentSubfolder + ".csv"
     if rename_var==1:
         options=options+1
         operation = 'renamed'
-        output_filename = "List_renamed_files_" + currentSubfolder + ".csv"
+        outputFilename = "List_renamed_files_" + currentSubfolder + ".csv"
     if copy_var==1:
         options=options+1
         operation = 'copied'
-        output_filename = "List_copied_files_" + currentSubfolder + ".csv"
+        outputFilename = "List_copied_files_" + currentSubfolder + ".csv"
     if move_var==1:
         options=options+1
         operation = 'moved'
-        output_filename = "List_moved_files_" + currentSubfolder + ".csv"
+        outputFilename = "List_moved_files_" + currentSubfolder + ".csv"
     if delete_var==1:
         options=options+1
         operation = 'deleted'
-        output_filename = "List_deleted_files_" + currentSubfolder + ".csv"
+        outputFilename = "List_deleted_files_" + currentSubfolder + ".csv"
         command = tk.messagebox.askyesno("Deleting files", "You are about to delete files. Make sure you have a backup! Files deleted via a Python command will not be recoverable from the Recycle Bin\n\nAre you sure you want to do continue?")
         if command==False:
             return
@@ -108,13 +108,13 @@ def run(inputDir, outputDir,
         i=1
         options=options+1
         operation = 'counted'
-        output_filename = "Count_files_" + currentSubfolder + ".csv"
+        outputFilename = "Count_files_" + currentSubfolder + ".csv"
 
     if split_var==1:
         i=1
         options=options+1
         operation = 'split'
-        output_filename = "split_files_" + currentSubfolder + ".csv"
+        outputFilename = "split_files_" + currentSubfolder + ".csv"
 
     if options==0:
         mb.showwarning(title='File manager', message='No file manager option has been selected.\n\nPlease, select one option (rename, copy, move, delete) and try again.')
@@ -183,14 +183,14 @@ def run(inputDir, outputDir,
     if list_var==1:
         # extract the last subfolder of the path to be displayed as part of the output filename
         subDir = os.path.basename(os.path.normpath(inputDir))
-        # output_filename = "List__files" + str(subDir) + ".csv"
+        # outputFilename = "List__files" + str(subDir) + ".csv"
 
     if count_file_manager_var==True:
         # fieldnames = ['Main_Dir', 'Subdir', 'pdf', 'doc', 'docx', 'txt', 'Matching']
         #i=len(os.listdir(inputDir))
-        i=file_filename_util.get_count(inputDir, outputDir, output_filename)
+        i=file_filename_util.get_count(inputDir, outputDir, outputFilename)
     else:
-        with open(outputDir + os.sep + output_filename, 'w', errors='ignore', newline='') as csvfile:
+        with open(outputDir + os.sep + outputFilename, 'w', errors='ignore', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames)
             writer.writeheader()
 
@@ -283,7 +283,7 @@ def run(inputDir, outputDir,
                 fileFound, characterCount,\
                 creation_date,modification_date,\
                 author,date, \
-                dateStr = file_filename_util.processFile(inputDir,outputDir,filename,output_filename,
+                dateStr = file_filename_util.processFile(inputDir,outputDir,filename,outputFilename,
 							fieldnames,
 							selectedCsvFile_var,
 							hasFullPath,
@@ -322,7 +322,7 @@ def run(inputDir, outputDir,
             print("Full path present, processing regardless of existence in input directory")
             for filename in fileList:
                 fileFound, characterCount, creation_date, modification_date, author, date, dateStr = file_filename_util.processFile(
-                    inputDir, outputDir, filename, output_filename, fieldnames, selectedCsvFile_var, hasFullPath,
+                    inputDir, outputDir, filename, outputFilename, fieldnames, selectedCsvFile_var, hasFullPath,
 					utf8_var, ASCII_var,
 					list_var, rename_var,
                     copy_var, move_var, delete_var, split_var, rename_new_entry, file_type_menu_var, by_creation_date_var,
@@ -345,7 +345,7 @@ def run(inputDir, outputDir,
                         processFile = True
                     if processFile:
                         fileFound, characterCount,creation_date,modification_date,author,date, \
-                            dateStr = file_filename_util.processFile(inputDir,outputDir,filename,output_filename,
+                            dateStr = file_filename_util.processFile(inputDir,outputDir,filename,outputFilename,
                                 fieldnames,
                                 selectedCsvFile_var,
                                 hasFullPath,
@@ -365,7 +365,7 @@ def run(inputDir, outputDir,
         else:
             mb.showwarning(title='File manager', message=str(i) + ' files ' + msg + operation + '.')
             filesToOpen=[]
-            filesToOpen.append(os.path.join(outputDir,output_filename))
+            filesToOpen.append(os.path.join(outputDir,outputFilename))
             IO_files_util.OpenOutputFiles(GUI_util.window, True, filesToOpen, outputDir)
     else:
         mb.showwarning(title='File manager', message='No files ' + msg + operation + '.\n\nPlease, check the following information:\n  1. INPUT files directory;\n  2. selected file type (if you ticked the By file type option);\n  3. Include subdirectory option.')
@@ -409,7 +409,7 @@ run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
                                 include_subdir_var.get(),
                                 fileName_embeds_date.get(),
                                 date_format.get(),
-                                date_separator_var.get(),
+                                items_separator_var.get(),
                                 date_position_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -493,7 +493,7 @@ character_entry_var=tk.StringVar()
 include_subdir_var=tk.IntVar()
 fileName_embeds_date = tk.IntVar()
 date_format = tk.StringVar()			#the following 3 fields are also used by SSR and NGRAMS
-date_separator_var = tk.StringVar()
+items_separator_var = tk.StringVar()
 date_position_var = tk.IntVar()
 
 def clear(e):
@@ -505,7 +505,7 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 menu_values = " "
-def get_additional_csvFile(window,title,fileType):
+def add_csvFile(window,title,fileType):
     global headers, noHeaders
     noHeaders = False
     menu_values=[]
@@ -538,8 +538,8 @@ def get_additional_csvFile(window,title,fileType):
 # 			selectedCsvFile_colNum= select_csv_field_var.get()-1
 # select_csv_field_var.trace('w',activate_csvfile_column)
 
-# add_file_button = tk.Button(window, text='csv file', width=2,height=1,state='disabled',command=lambda: get_additional_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
-add_file_button = tk.Button(window, text='csv file', command=lambda: get_additional_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
+# add_file_button = tk.Button(window, text='csv file', width=2,height=1,state='disabled',command=lambda: add_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
+add_file_button = tk.Button(window, text='csv file', command=lambda: add_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,add_file_button,True)
 
 #setup a button to open Windows Explorer on the selected input directory
@@ -943,7 +943,7 @@ def activate_characters_entry_option(*args):
 character_count_file_manager_var.trace('w',activate_characters_entry_option)
 
 date_format.set('mm-dd-yyyy')
-date_separator_var.set('_')
+items_separator_var.set('_')
 date_position_var.set(2)
 
 fileName_embeds_date_checkbox = tk.Checkbutton(window, text='Filename embeds date', variable=fileName_embeds_date, onvalue=1, offvalue=0)
@@ -958,7 +958,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coor
 
 date_separator_lb = tk.Label(window, text='Date character separator ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+210,y_multiplier_integer, date_separator_lb,True)
-date_separator = tk.Entry(window, textvariable=date_separator_var)
+date_separator = tk.Entry(window, textvariable=items_separator_var)
 date_separator.configure(width=2)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+350,y_multiplier_integer, date_separator,True)
 

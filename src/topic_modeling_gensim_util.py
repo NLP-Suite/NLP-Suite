@@ -10,7 +10,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"topic_modeling_gensim_util.py",['nltk','os','tkinter','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"topic_modeling_gensim_util.py",['nltk','os','tkinter','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython'])==False:
     sys.exit(0)
 
 import os
@@ -250,7 +250,8 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
                                               hover_info_column_list=hover_label)
 
     if chart_outputFilename != None:
-        filesToOpen.append(chart_outputFilename)
+        if len(chart_outputFilename) > 0:
+            filesToOpen.extend(chart_outputFilename)
 
     # Topic distribution across documents
     # Number of Documents for Each Topic
@@ -321,7 +322,7 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Mallet LDA topic modeling at',True, '', True, startTime)
 
-def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
+def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_stopwords_var,
                                       lemmatize, nounsOnly, run_Mallet, openOutputFiles,createCharts, chartPackage):
     global filesToOpen
     filesToOpen=[]
@@ -349,7 +350,13 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
     outputFilename = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.html', 'Gensim_topic_modeling')
 
     content = []
-    for fileName in os.listdir(inputDir):
+    inputDocs = IO_files_util.getFileList('', inputDir, fileType='.txt', silent=False,
+                                          configFileName=config_filename)
+    nFile = len(inputDocs)
+    if nFile == 0:
+        return
+
+    for fileName in inputDocs:
         if fileName.endswith('.txt'):
             with open(os.path.join(inputDir, fileName), 'r', encoding='utf-8', errors='ignore') as file:
                 content.append(file.read())
@@ -509,9 +516,14 @@ def run_Gensim(window, inputDir, outputDir, num_topics, remove_stopwords_var,
     start_new_thread(show_web, (vis,))
 
     if run_Mallet==True:
-        # check that the MalletDir as been setup
-        MalletDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('topic_modeling_gensim', 'MALLET', silent=True, only_check_missing=False)
-        if MalletDir==None:
+        # check that the CoreNLPdir as been setup
+        MalletDir, existing_software_config = IO_libraries_util.external_software_install(
+            'topic_modeling_gensim_util',
+            'MALLET',
+            '',
+            silent=False)
+
+        if MalletDir==None or MalletDir=='':
             return
 
         MalletDir = os.path.join(MalletDir, "bin/mallet")

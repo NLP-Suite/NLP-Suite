@@ -8,7 +8,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"file_checker_converter_cleaner_main.py",['tkinter','importlib'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"file_checker_converter_cleaner_main.py",['tkinter','importlib'])==False:
     sys.exit(0)
 
 import os
@@ -38,6 +38,11 @@ def run(inputFilename,inputDir, outputDir,
 
     filesToOpen=[]
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     if (check_tools=='') and (convert_tools=='') and (clean_tools==""):
         mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select one of the available options and try again.')
         return
@@ -60,6 +65,7 @@ def run(inputFilename,inputDir, outputDir,
         #                    message='The option is not available from this GUI.\n\nPlease, run the script from the style_analysis_main.')
         #     return
 
+
         pythonFile = importlib.import_module(script_to_run)
         func = getattr(pythonFile, function_to_run)
         if IO_libraries_util.check_inputPythonJavaProgramFile(script_to_run + ".py") == False:
@@ -76,11 +82,11 @@ def run(inputFilename,inputDir, outputDir,
                 'convert_quotes' in function_to_run or \
                 'empty_file' in function_to_run or \
                 'find_replace' in function_to_run:
-            func(GUI_util.window,inputFilename,inputDir,outputDir)
+            func(GUI_util.window,inputFilename,inputDir,outputDir, config_filename)
         elif 'sentence_length' in function_to_run:
-            outputFile=func(config_filename,inputFilename,inputDir,outputDir,createCharts,chartPackage)
+            outputFile=func(inputFilename,inputDir,outputDir,config_filename, createCharts,chartPackage)
         else:
-            func(GUI_util.window,inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPackage)
+            func(GUI_util.window,inputFilename,inputDir, outputDir,config_filename, openOutputFiles,createCharts,chartPackage)
 
         if len(outputFile)>0:
             filesToOpen.append(outputFile)

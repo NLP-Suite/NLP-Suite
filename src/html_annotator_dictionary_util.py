@@ -8,7 +8,7 @@ import sys
 import IO_libraries_util
 import GUI_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"html_annotator_dictionary_util",['os','re','csv','tkinter'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"html_annotator_dictionary_util",['os','re','csv','tkinter'])==False:
     sys.exit(0)
 
 import os
@@ -61,8 +61,11 @@ def readCsv(wordColNum, catColNum, dictFile, csvValue_color_list):
 # takes in file to annotate and list of terms to check against
 # returns list of a list of terms with appropriate annotations for each file
 # annotation allows custom tagging style (via csv, etc.)
-# NOTICE: csv_field1_var and first entry of csvValue_color_list should be a list
-def dictionary_annotate(inputFile, inputDir, outputDir, dict_file,
+# NOTICE:
+#   csv_field1_var ['Name']
+#   csvValue_color_list should be a list, for gender is csvValue_color_list = [genderCol, '|', 'FEMALE', 'red', '|', 'MALE', 'blue', '|']
+#   tagAnnotations is also a list, for gender  ['<span style="color: blue; font-weight: bold">', '</span>']
+def dictionary_annotate(inputFile, inputDir, outputDir, configFileName, dict_file,
                         csv_field1_var, csvValue_color_list, bold_var, tagAnnotations, fileType='.txt', fileSubc=''):
     writeout = []
     filesToOpen = []
@@ -70,7 +73,7 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file,
     #   would need to use split()
     if isinstance(csv_field1_var,str):
         csv_field1_var=[csv_field1_var]
-    files=IO_files_util.getFileList(inputFile, inputDir, fileType)
+    files=IO_files_util.getFileList(inputFile, inputDir, fileType, silent=False, configFileName=configFileName)
     nFile=len(files)
     if nFile==0:
         return
@@ -86,13 +89,16 @@ def dictionary_annotate(inputFile, inputDir, outputDir, dict_file,
             col = IO_csv_util.get_columnNumber_from_headerValue(headers,field, dict_file)
             if col == None:
                 mb.showerror(title='Input file error',
-                             message="The selected dictionary file\n\n" + dict_file + "\n\ndoes not contain the expected header \'" + csv_field1_var + "\'\n\nPlease, select a different dictionary file and try again.")
+                             message="The selected dictionary file\n\n" + dict_file + "\n\ndoes not contain the expected header \'" + str(csv_field1_var) + "\'\n\nPlease, select a different dictionary file and try again.")
                 return
             wordColNum.append(col)
         catColNum = []
+        # csvValue_color_list=[csvValue_color_list]
         if len(csvValue_color_list) > 0:
-            for field in csvValue_color_list[0]:
-                catColNum.append(IO_csv_util.get_columnNumber_from_headerValue(headers, field, dict_file))
+            # for field in str(csvValue_color_list[0]):
+            #     catColNum.append(IO_csv_util.get_columnNumber_from_headerValue(headers, field, dict_file))
+            field=csvValue_color_list[0]
+            catColNum.append(IO_csv_util.get_columnNumber_from_headerValue(headers, field, dict_file))
 
     dictionary, color_list = readCsv(wordColNum, catColNum, dict_file, csvValue_color_list)
     reserved_dictionary = ['bold', 'color', 'font', 'span', 'style', 'weight', 'black', 'blue', 'green', 'pink', 'yellow', 'red']

@@ -25,7 +25,7 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_va
     if outputDir == '':
         return outputDir, filesToOpen
 
-    conll = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False)
+    conll = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
     head = ["First/Last Sentences", "K value", "Words Count","Nouns Count","Nouns Proportion", "Verbs Count", "Verbs Proportion", "Adjectives Count","Adjectives Proportion","Proper-Nouns Count","Proper-Nouns Proportion", "Document ID", "Document"]
     result = []
 

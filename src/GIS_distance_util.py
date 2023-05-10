@@ -19,7 +19,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"GIS_distance_util",['tkinter','csv','pandas','geopy'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"GIS_distance_util",['tkinter','csv','pandas','geopy'])==False:
     sys.exit(0)
 
 import os
@@ -117,7 +117,7 @@ def computePairwiseDistances(window,inputFilename,outputDir,createCharts, header
     with open(inputFilename, 'r',newline='',encoding=encodingValue,errors='ignore') as inputFile, open(distanceoutputFilename, 'w',newline='',encoding=encodingValue,errors='ignore') as outputFile:
         geowriter = csv.writer(outputFile)
         try:
-            dt = pd.read_csv(inputFile,encoding=encodingValue, error_bad_lines=False)
+            dt = pd.read_csv(inputFile,encoding=encodingValue, on_bad_lines='skip')
         except:
             mb.showerror(title='Input file error', message="There was an error in the function 'Compute GIS distance' reading the input file\n" + str(inputFile) + "\nMost likely, the error is due to an encoding error. Your current encoding value is " + encodingValue + ".\n\nSelect a different encoding value and try again.")
             filesToOpen.append('')
@@ -231,7 +231,7 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createCh
         geocodedLocationsoutputFilename, locationsNotFoundFilename = GIS_geocode_util.geocode(window,locations,inputFilename, outputDir, locationColumnName,geocoder,'',encodingValue)
 
         try:
-            dt = pd.read_csv(geocodedLocationsoutputFilename,encoding=encodingValue, error_bad_lines=False)
+            dt = pd.read_csv(geocodedLocationsoutputFilename,encoding=encodingValue, on_bad_lines='skip')
         except:
             mb.showerror(title='File error', message="There was an error in the function 'Compute GIS distance from specific location' reading the output file\n" + str(geocodedLocationsoutputFilename) + "\nwith non geocoded input. Most likely, the error is due to an encoding error. Your current encoding value is " + encodingValue + ".\n\nSelect a different encoding value and try again.")
             filesToOpen.append('')
@@ -250,7 +250,7 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createCh
     # geocoded input
     else:
         try:
-            dt = pd.read_csv(inputFilename,encoding=encodingValue, error_bad_lines=False)
+            dt = pd.read_csv(inputFilename,encoding=encodingValue, on_bad_lines='skip')
         except:
             mb.showerror(title='Input file error', message="There was an error in the function 'Compute GIS distance from specific location' reading the input file\n" + str(inputFilename) + "\nwith geocoded input. Most likely, the error is due to an encoding error. Your current encoding value is " + encodingValue + ".\n\nSelect a different encoding value and try again.")
             filesToOpen.append('')

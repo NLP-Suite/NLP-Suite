@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"file_matcher.py",['csv','tkinter','os'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"file_matcher.py",['csv','tkinter','os'])==False:
     sys.exit(0)
 
 import os
@@ -24,7 +24,7 @@ def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, createChart
 
     file_matcher_util.run_default(GUI_util.window, [inputPath], outputPath, selectedCsvFile_var, openOutputFiles, matching_var, source_extension_var, target_extension_var, copy_var, move_var, character_value, number_of_items)
 
-    # output_filename=''
+    # outputFilename=''
     # i=0
     # fieldnames = []
     # currentSubfolder=os.path.basename(os.path.normpath(inputPath))
@@ -44,7 +44,7 @@ def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, createChart
     # if i > 0:
     # 	mb.showwarning(title='File matcher', message=str(i) + ' files have been matched.')
     # 	filesToOpen=[]
-    # 	filesToOpen.append(os.path.join(outputPath,output_filename))
+    # 	filesToOpen.append(os.path.join(outputPath,outputFilename))
     # 	IO_util.OpenOutputFiles(GUI_util.window,True,filesToOpen)
     # else:
     # 	mb.showwarning(title='File matcher', message='No files have been matched.')
@@ -129,7 +129,7 @@ def clear(e):
     GUI_util.tips_dropdown_field.set('Open TIPS files')
 window.bind("<Escape>", clear)
 
-def get_additional_csvFile(window,title,fileType):
+def add_csvFile(window,title,fileType):
     import os
     initialFolder = os.path.dirname(os.path.abspath(__file__))
     filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
@@ -137,7 +137,7 @@ def get_additional_csvFile(window,title,fileType):
         selectedCsvFile.config(state='normal')
         selectedCsvFile_var.set(filePath)
 
-add_file_button = tk.Button(window, text='Select csv file', command=lambda: get_additional_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
+add_file_button = tk.Button(window, text='Select csv file', command=lambda: add_csvFile(window,'Select INPUT csv file', [("csv files", "*.csv")]))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer, add_file_button,
     True, False, True, False, 90, GUI_IO_util.labels_x_coordinate, "Click on the button to select the csv file to be used to find file matches")

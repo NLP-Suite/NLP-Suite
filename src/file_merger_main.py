@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"file_merger_main.py",['os','tkinter'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"file_merger_main.py",['os','tkinter'])==False:
     sys.exit(0)
 
 import os
@@ -43,7 +43,8 @@ def run(input_main_dir_path, output_dir_path,
                                 merge_separator_entry_begin,
                                 merge_separator_entry_end,
                                 merge_embed_subdir_name,
-                                merge_character_separator)
+                                merge_character_separator,
+								config_filename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end", "Finished running 'File Merger' at", True, '', True, startTime, True)
 

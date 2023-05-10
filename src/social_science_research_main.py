@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "Social Science Research",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "Social Science Research",
                                           ['os', 'tkinter', 'subprocess', 'csv']) == False:
     sys.exit(0)
 
@@ -103,7 +103,7 @@ newspaper and take the average
 """
 
 
-def group_newspaper(document_class_csv, output_filename):
+def group_newspaper(document_class_csv, outputFilename):
     newspaper_frequency_classes = {}  # accumulate frequency for different classes for each newspaper
     newspaper_frequency = {}  # count the # of times this newspaper occurs
     newspaper_names = []  # list of unique newspaper names
@@ -129,7 +129,7 @@ def group_newspaper(document_class_csv, output_filename):
                     newspaper_frequency_classes[newspaper][i - 1] += int(row[i])
     newspaper_names.sort()  # sort by newspaper name
     # write to output csv file
-    with open(output_filename, "w", newline='', encoding='utf-8', errors='ignore') as f:
+    with open(outputFilename, "w", newline='', encoding='utf-8', errors='ignore') as f:
         writer = csv.writer(f)
         # write header
         header = ["Newspaper Name", "0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%", "70-80%",
@@ -199,7 +199,8 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
                                                   column_xAxis_label_var='Classes of percentage duplication',
                                                   hover_info_column_list=hover_label)
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
         # Plot Lucene_classes_time_freq.csv line plot (temporal plot); outputFilenameCSV_2
         if fileName_embeds_date:
@@ -217,7 +218,8 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
                                                       column_xAxis_label_var='Year',
                                                       hover_info_column_list=hover_label)
             if chart_outputFilename != None:
-                filesToOpen.append(chart_outputFilename)
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
 
         # No plot for Lucene_document_classes_freq.csv
         #   because it could potentially have thousands of documents
@@ -237,7 +239,8 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
                                                   column_xAxis_label_var='',
                                                   hover_info_column_list=hover_label)
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running PLAGIARIST at', True, '', True, startTime)
 
@@ -259,9 +262,12 @@ def run(inputDir, input_secondary_dir_path, outputDir, openOutputFiles, createCh
         plagiarist_var, similarityIndex_Plagiarist_var, Levenshtein_var):
     global filesToOpen
     filesToOpen = []
-    # check that the CoreNLPdir as been setup
-    CoreNLPdir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('social_science_research', 'Stanford CoreNLP', silent=True, only_check_missing=False)
-    if CoreNLPdir==None:
+    # check that the CoreNLPdir has been setup
+    CoreNLPdir, existing_software_config = IO_libraries_util.external_software_install('social_science_research_main',
+                                                                                         'Stanford CoreNLP',
+                                                                                         '',
+                                                                                         silent=False)
+    if CoreNLPdir==None or CoreNLPdir=='':
         return filesToOpen
 
     if (check_filename_var == False and character_var == False and character_home_var == False and missing_character_var == False and intruder_var == False and Levenshtein_var==False and ancestor_var == False and plagiarist_var == False):
@@ -301,7 +307,7 @@ run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
                                  fileName_embeds_date.get(),
                                  date_format.get(),
                                  date_position_var.get(),
-                                 date_separator_var.get(),
+                                 items_separator_var.get(),
                                  check_filename_var.get(),
                                  character_var.get(),
                                  character_home_var.get(),
@@ -370,7 +376,7 @@ Levenshtein_var = tk.IntVar()
 fileName_embeds_date = tk.IntVar()
 
 date_format = tk.StringVar()
-date_separator_var = tk.StringVar()
+items_separator_var = tk.StringVar()
 date_position_var = tk.IntVar()
 
 keyWord_var = tk.StringVar()
@@ -393,13 +399,13 @@ date_format_menu.configure(width=10, state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 90, y_multiplier_integer,
                                                date_format_menu, True)
 
-date_separator_var_lb = tk.Label(window, text='Date character separator ')
+items_separator_var_lb = tk.Label(window, text='Date character separator ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 210, y_multiplier_integer,
-                                               date_separator_var_lb, True)
-date_separator_var_menu = tk.Entry(window, textvariable=date_separator_var)
-date_separator_var_menu.configure(width=2, state="disabled")
+                                               items_separator_var_lb, True)
+items_separator_var_menu = tk.Entry(window, textvariable=items_separator_var)
+items_separator_var_menu.configure(width=2, state="disabled")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 360, y_multiplier_integer,
-                                               date_separator_var_menu, True)
+                                               items_separator_var_menu, True)
 
 date_position_var_menu_lb = tk.Label(window, text='Date position ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 390, y_multiplier_integer,
@@ -488,11 +494,11 @@ window.bind("<Escape>", clear)
 def activate_dateOptions(*args):
     if fileName_embeds_date.get() == False:
         date_format_menu.configure(width=10, state="disabled")
-        date_separator_var_menu.configure(width=2, state="disabled")
+        items_separator_var_menu.configure(width=2, state="disabled")
         date_position_var_menu.configure(width=4, state="disabled")
     else:
         date_format_menu.configure(width=10, state="normal")
-        date_separator_var_menu.configure(width=2, state="normal")
+        items_separator_var_menu.configure(width=2, state="normal")
         date_position_var_menu.configure(width=4, state="normal")
 
 
@@ -699,7 +705,7 @@ def plagiaristOptions(dateFormatField, dateSeparatorField, datePositionField):
 
 
 # return dateFormat, dateSeparator, datePosition
-plagiaristOptions(date_format, date_separator_var, date_position_var)
+plagiaristOptions(date_format, items_separator_var, date_position_var)
 
 # y_multiplier_integer = y_multiplier_integer+1
 

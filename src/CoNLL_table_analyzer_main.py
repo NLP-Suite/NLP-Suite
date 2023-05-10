@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "CoNLL table_analyzer", ['os', 'tkinter','pandas']) == False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "CoNLL table_analyzer", ['os', 'tkinter','pandas']) == False:
     sys.exit(0)
 
 import os
@@ -415,7 +415,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
 def changed_filename(tracedInputFile):
     global error
     if os.path.isfile(tracedInputFile):
-        if not CoNLL_util.check_CoNLL(tracedInputFile):
+        if not CoNLL_util.check_CoNLL(tracedInputFile,True):
             error = True
             return
         else:
@@ -441,7 +441,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
 Begin_K_sent_entry = tk.Entry(window, textvariable=Begin_K_sent_var)
 Begin_K_sent_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+120,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+130,
                                                y_multiplier_integer,
                                                Begin_K_sent_entry, True, False, False, False, 90,
                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos,
@@ -449,13 +449,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminder
 
 End_K_sent_entry_lb = tk.Label(window,
                                     text='End K-sentences')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                                End_K_sent_entry_lb, True)
 
 End_K_sent_entry = tk.Entry(window, textvariable=End_K_sent_var)
 End_K_sent_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate+110,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate+120,
                                                y_multiplier_integer,
                                                End_K_sent_entry, False, False, False, False, 90,
                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos,
@@ -627,6 +627,12 @@ GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inpu
 state = str(GUI_util.run_button['state'])
 if state == 'disabled':
     error = True
+    # check to see if there is a GUI-specific config file, i.e., a CoNLL table file, and set it to the setup_IO_menu_var
+    if os.path.isfile(os.path.join(GUI_IO_util.configPath, config_filename)):
+        GUI_util.setup_IO_menu_var.set('GUI-specific I/O configuration')
+        mb.showwarning(title='Warning',
+               message="Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
+        error = False
 
 activate_all_options()
 

@@ -18,7 +18,7 @@ import GIS_pipeline_util
 # inserts correct javascript containing all of the points to plot on heatmap_template
 # gmaps_list is a list of lat/long values to be written in the java script html output file
 # then saves a new file that contains the html/js to display the heatmap
-def create_google_heatmap(window, output_filename, gmaps_list):
+def create_google_heatmap(window, outputFilename, gmaps_list):
     api_key = GIS_pipeline_util.getGoogleAPIkey(window, 'Google-Maps-API_config.csv')
     if api_key == '' or api_key == None :
         return
@@ -34,7 +34,7 @@ def create_google_heatmap(window, output_filename, gmaps_list):
     s = ""
     for item in gmaps_list:
         s += str(item+"\n")
-    js_output_file = open(output_filename, 'w+')
+    js_output_file = open(outputFilename, 'w+')
     js_output_file.write(js_to_write[0].replace("<YOUR API KEY HERE>",api_key))
     js_output_file.write(s)
     js_output_file.write(js_to_write[1])
@@ -43,14 +43,14 @@ def create_google_heatmap(window, output_filename, gmaps_list):
 
 # generate the javascript to be inserted into the template file to create the map
 # returns lines with lat long pairs in google maps api syntax
-# output_filename where to save heatmap html file
+# outputFilename where to save heatmap html file
 # locations is either a list of locations or a list of lat long lists
 # api_key is your google api key
 # if latLongList is true, then the locations do not need to be generated,
 # must provide geocoder if points are locations rather than lat longs
 # if lat longs are provided, it should be via a nested list, i.e. [[lat1, long1], [lat2, long2], ...]
 # otherwise it assumes the item provided is a list of locations (as strings)
-def create_js(window, output_filename, locations, geocoder, latLongList):
+def create_js(window, outputFilename, locations, geocoder, latLongList):
     gmaps_list = []
     if not latLongList:
         latLongList = []
@@ -63,7 +63,7 @@ def create_js(window, output_filename, locations, geocoder, latLongList):
         gmaps_str = ''.join(["new google.maps.LatLng(",str(item[0]),", ",str(item[1]),"),"])
         gmaps_list.append(gmaps_str)
         # gmaps_list geocoded values
-    create_google_heatmap(window, output_filename, gmaps_list)
+    create_google_heatmap(window, outputFilename, gmaps_list)
     config_filename = 'GIS_config.csv'
     reminders_util.checkReminder(config_filename,
                             reminders_util.title_options_Google_API,

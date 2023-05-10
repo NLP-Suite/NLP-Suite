@@ -177,7 +177,7 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
 
-        chart_outputFilename = visualize_html_file(inputFilename, inputDir, outputDir, outputFilename)
+        chart_outputFilename = visualize_html_file(inputFilename, inputDir, outputDir, config_filename, outputFilename)
         if chart_outputFilename!=None:
             if len(chart_outputFilename) > 0:
                 filesToOpen.extend(chart_outputFilename)
@@ -314,7 +314,7 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
                     filesToOpen.extend(chart_outputFilename)
 
 # generate visualization output ----------------------------------------------------------------
-# SVO OpenIE ________________________________________________________________
+# SVO and OpenIE ________________________________________________________________
 
     elif ('SVO' in str(annotator_params) and 'SVO' in outputFilename) or \
             ('OpenIE' in str(annotator_params) and 'OpenIE' in outputFilename):
@@ -427,7 +427,7 @@ def parsers_annotators_visualization(config_filename, inputFilename, inputDir, o
     return filesToOpen
 
 # the gender annotator displays results in an html file
-def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, genderCol=["Gender"], wordCol=[]):
+def visualize_html_file(inputFilename, inputDir, outputDir, configFileName, dictFilename, genderCol=["Gender"], wordCol=[]):
     import html_annotator_dictionary_util
     chart_outputFilename=[]
     for col in genderCol:
@@ -437,7 +437,7 @@ def visualize_html_file(inputFilename, inputDir, outputDir, dictFilename, gender
     csvValue_color_list = [genderCol, '|', 'FEMALE', 'red', '|', 'MALE', 'blue', '|']
     bold_var = True
     tagAnnotations = ['<span style="color: blue; font-weight: bold">', '</span>']
-    chart_outputFilename = html_annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
+    chart_outputFilename = html_annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir, configFileName,
                                                              dictFilename, wordCol,
                                                              csvValue_color_list, bold_var, tagAnnotations,
                                                              fileType='.txt', fileSubc='gender')

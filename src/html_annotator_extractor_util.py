@@ -1,7 +1,7 @@
 """
     Read in html file with words previously annotated via the annotation builders
     gather text between annotation tags
-    output aggregate data to cvs table, clean files NO HTML OUTPUT 
+    output aggregate data to cvs table, clean files NO HTML OUTPUT
     Last updated: July 18, 2019, April 2022
     by Jack Hester
     rewritten by Roberto Franzosi, Zhangyi Pan
@@ -16,7 +16,7 @@ import GUI_util
 import IO_libraries_util
 import IO_user_interface_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"html_annotator_extractor_util",['os','tkinter','re','csv','ntpath'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"html_annotator_extractor_util",['os','tkinter','re','csv','ntpath'])==False:
     sys.exit(0)
 
 import re
@@ -63,15 +63,15 @@ def gatherAnnotations(inputFile, tags, mustInclude='<p>', cleanMultiples=True):
     else:
         result=words
     return result
-        
 
-def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCharts, chartPackage):
+
+def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCharts, chartPackage, configFileName):
     filesToOpen=[]
     outputFilename=IO_files_util.generate_output_file_name('DBpedia annotations', '', outputDir, '.csv', 'html extractor', '', '')
     filesToOpen.append(outputFilename)
     annotatedHtmlFiles = []
 
-    annotatedHtmlFiles=IO_files_util.getFileList(inputHTMLFile, inputHTMLFolder, '.html')
+    annotatedHtmlFiles=IO_files_util.getFileList(inputHTMLFile, inputHTMLFolder, '.html', silent=False, configFileName=configFileName)
     nFile=len(annotatedHtmlFiles)
 
     if nFile==0:
@@ -124,7 +124,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCha
     #         filesToOpen.append(chart_outputFilename_1)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running html annotator extractor at', True, '', True, startTime)
-    
+
     if openOutputFiles==True :
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 

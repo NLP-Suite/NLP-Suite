@@ -12,7 +12,7 @@ import IO_libraries_util
 # Instead of passing "pyspellchecker" as a listed package to be verified, we need to pass "spellchecker".
 # This is because "spellchecker" is the module installed by the pyspellchecker package (https://pypi.org/project/pyspellchecker/).
 
-if not IO_libraries_util.install_all_packages(GUI_util.window,"spell_checker_util",['nltk','tkinter','os','langdetect','spacy','spacy_langdetect','langid','csv','spellchecker','textblob','autocorrect','stanfordcorenlp','pandas','collections','fuzzywuzzy']):
+if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"spell_checker_util",['nltk','tkinter','os','langdetect','spacy','spacy_langdetect','langid','csv','spellchecker','textblob','autocorrect','stanfordcorenlp','pandas','collections','fuzzywuzzy']):
     sys.exit(0)
 
 import os
@@ -67,20 +67,20 @@ def lemmatizing(word):#edited by Claude Hu 08/2020
     return result
 
 # https://www.nltk.org/book/ch02.html
-def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles, createCharts=True, chartPackage='Excel', silent=False):
+def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, openOutputFiles, createCharts=True, chartPackage='Excel'):
     filesToOpen=[]
     unusual=[]
     container=[]
     documentID=0
-    files=IO_files_util.getFileList(inputFilename, inputDir, '.txt')
+    files=IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
     nFile=len(files)
     if nFile==0:
         return
     outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'NLTK_unus', 'stats')
     filesToOpen.append(outputFilename)
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'NLTK unusual words/spelling checker start',
-                                       'Started running NLTK unusual words/spelling checker at',
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'NLTK unusual words-spelling checker start',
+                                       'Started running NLTK unusual words-spelling checker at',
                                                  True, '', True, '', True)
 
     # already shown in NLP.py
@@ -102,11 +102,11 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
         #sort the list
         unusual.sort()
         [container.append([word, documentID, IO_csv_util.dressFilenameForCSVHyperlink(file)]) for word in unusual]
-    container.insert(0, ['Misspelled/unusual word','Document ID', 'Document'])
+    container.insert(0, ['Misspelled-unusual word','Document ID', 'Document'])
     if len(container)>0:
         if IO_csv_util.list_to_csv(window,container,outputFilename): return
     else:
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Spelling checker (via nltk)', 'No misspelled/unusual words found in\n' + file, True)
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Spelling checker (via nltk)', 'No misspelled-unusual words found in\n' + file, True)
         if nFile==1:
             return
 
@@ -120,13 +120,13 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
                  pass
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Misspelled/unusual word'],
-                                                   chartTitle='Frequency of Misspelled/Unusual Words',
+                                                   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Misspelled-unusual word'],
+                                                   chartTitle='Frequency of Misspelled-Unusual Words',
                                                    count_var=1, hover_label=[],
                                                    outputFileNameType='',  # 'line_bar',
                                                    column_xAxis_label='Word',
                                                    groupByList=['Document ID', 'Document'],
-                                                   plotList=['Misspelled/Unusual Words Statistics'],
+                                                   plotList=['Misspelled-Unusual Words Statistics'],
                                                    chart_title_label='')
 
         if chart_outputFilename != None:
@@ -254,9 +254,12 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
     all_header_rows_dict = []
     ner_dict = {}
 
-    # check that the CoreNLPDir as been setup
-    CoreNLPDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('spell_checker_main', 'Stanford CoreNLP', silent=True, only_check_missing=False)
-    if CoreNLPDir == None:
+    # check that the CoreNLPdir has been setup
+    CoreNLPDir, existing_software_config = IO_libraries_util.external_software_install('file_spell_checker_util',
+                                                                                         'Stanford CoreNLP',
+                                                                                         '',
+                                                                                         silent=False)
+    if CoreNLPDir == None or CoreNLPDir=='':
         return
     if by_all_tokens_var:
         pass
@@ -494,7 +497,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                                chart_title_label='')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
-                    filesToOpen.append(chart_outputFilename)
+                    filesToOpen.extend(chart_outputFilename)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -505,14 +508,14 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
     return filesToOpen
 
 
-def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutputFiles):
+def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutputFiles,configFileName):
     mb.showwarning(title='Find & Replace csv file (with \'Original\' and \'Corrected\' headers)',
                    message='Please, select the csv file that contains the information about words that need correcting.\n\nMostly likely this file was created by the spell checker algorithms and edited by you keeping only correct entries.\n\nThe Find & Replace will expect 2 column headers \'Original\' and \'Corrected\'.\n\nPlease, make sure that your csv file has those characteristics.')
     # initialdir=initialFolder,
     csv_spelling_file = filedialog.askopenfilename(title='Select INPUT csv spelling file (with \'Original\' and \'Corrected\' headers)', filetypes=[("csv files", "*.csv")]) #https://docs.python.org/3/library/dialog.html
     if csv_spelling_file=='':
         return
-    df = pd.read_csv(csv_spelling_file, encoding='utf-8', error_bad_lines=False)
+    df = pd.read_csv(csv_spelling_file, encoding='utf-8', on_bad_lines='skip')
     try:#make sure the csv have two columns of "original" and "corrected"
         original = df['Original']
         corrected = df['Corrected']
@@ -534,7 +537,7 @@ def spelling_checker_cleaner(window,inputFilename, inputDir, outputDir, openOutp
             if math.isnan(corrected[i]):
                 corrected[i]=''
             input_corrected.append(corrected[i])
-    file_cleaner_util.find_replace_string(window,inputFilename, inputDir, outputDir, openOutputFiles,input_original,input_corrected,False)
+    file_cleaner_util.find_replace_string(window,inputFilename, inputDir, outputDir, configFileName, openOutputFiles,input_original,input_corrected)
 
 def spellchecking_autocorrect(text: str, inputFilename) -> (str, DataFrame):
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Autocorrect spelling checker start',
@@ -631,6 +634,7 @@ def spellchecking_text_blob(text: str, inputFilename) -> (str, DataFrame):
     original_str_list = []
     treebank = nltk.tokenize.treebank.TreebankWordDetokenizer()
     # for word in nltk.word_tokenize(text):
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
     for word in word_tokenize_stanza(stanzaPipeLine(text)):
         if word.isalnum():
             original_str_list.append(word)
@@ -777,7 +781,7 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
 # https://towardsdatascience.com/benchmarking-language-detection-for-nlp-8250ea8b67c
 # TODO print all languages and their probabilities in a csv file, with Language, Probability, Document ID, Document (with hyperlink)
 
-def language_detection(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
+def language_detection(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, createCharts, chartPackage):
 
     folderID = 0
     fileID = 0
@@ -786,7 +790,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
     outputFilenameCSV=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'lang_detect')
     filesToOpen.append(outputFilenameCSV)
 
-    files=IO_files_util.getFileList(inputFilename, inputDir, '.txt')
+    files=IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
     if len(files) == 0:
         return
 
@@ -959,8 +963,9 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
                                                   column_xAxis_label_var='Language',
                                                   hover_info_column_list=hover_label,
                                                   count_var=1)
-        if chartPackage=='Excel' and chart_outputFilename!='':
-            filesToOpen.append(chart_outputFilename)
+        if chartPackage=='Excel' and chart_outputFilename!='' and chart_outputFilename!=None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
     # if openOutputFiles:
     #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

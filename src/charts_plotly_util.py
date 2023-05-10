@@ -5,7 +5,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"charts_plotly_util",['os','pandas','plotly','kaleido'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"charts_plotly_util",['os','pandas','plotly','kaleido'])==False:
     sys.exit(0)
 # if plotly fails, install version 0.1.0 of kaleido
 # pip install kaleido==0.1.0post1
@@ -46,9 +46,9 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
         remove_hyperlinks,inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
 
     try:
-        data = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False)
+        data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
     except pd.errors.ParserError:
-        data = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False, sep='delimiter')
+        data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip', sep='delimiter')
     except:
         print("Error: failed to read the csv file named: "+inputFilename)
         return
@@ -137,7 +137,7 @@ def save_chart(fig, outputDir, chartTitle, static_flag, x_label = '', y_label = 
 #Users are expected to provide the x label and their hights.
 #If not call the get_frequencies function to get the frequencies of the categorical variables in x_label column
 def plot_bar_chart_px(x_label, fileName, chartTitle, height = ''):
-    data = pd.read_csv(fileName, encoding='utf-8', error_bad_lines=False)
+    data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
     if height == '':
         height = x_label+"_count"
         data = get_frequencies(data, x_label)
@@ -155,7 +155,7 @@ def plot_bar_chart_px(x_label, fileName, chartTitle, height = ''):
 #the output file would be a html file with hover over effect names by the chart title
 #duplicates allowed, would add up the counts
 def plot_pie_chart_px(x_label, fileName, chartTitle, height = ''):
-    data = pd.read_csv(fileName, encoding='utf-8', error_bad_lines=False)
+    data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
     if height == '':
         height = x_label+"_count"
         data = get_frequencies(data, x_label)
@@ -169,7 +169,7 @@ def plot_pie_chart_px(x_label, fileName, chartTitle, height = ''):
 #y_label indicates the column name of y axis from the data    COULD BE A DISCRETE VARIABLE
 #the output file would be a html file with hover over effect names by the chart title
 def plot_scatter_chart_px(x_label, y_label, fileName, chartTitle):
-    data = pd.read_csv(fileName, encoding='utf-8', error_bad_lines=False)
+    data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
     fig = px.scatter(data, x=x_label, y=y_label)
     fig.update_layout(title=chartTitle, title_x=0.5)
     return fig
@@ -181,7 +181,7 @@ def plot_scatter_chart_px(x_label, y_label, fileName, chartTitle):
 #the output file would be a html file with hover over effect names by the chart title
 #null value will cause an unclosed shape. This function default removes all rows contaning null values
 def plot_radar_chart_px(theta_label, fileName, chartTitle, r_label = None):
-    data = pd.read_csv(fileName, encoding='utf-8', error_bad_lines=False)
+    data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
     if r_label is None:
         r_label = theta_label+"_count"
         data = get_frequencies(data, theta_label)
@@ -206,7 +206,7 @@ def plot_multi_bar_chart_px(data, chartTitle, cols_to_plot):
 
 #plot multi line chart
 def plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, series_label_list = None):
-    data = pd.read_csv(fileName, encoding='utf-8', error_bad_lines=False)
+    data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
     data.fillna(0, inplace=True)
     figs = make_subplots()
     col_name = list(data.head())

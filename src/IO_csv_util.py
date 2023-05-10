@@ -2,8 +2,8 @@ import sys
 import GUI_util
 # import IO_libraries_util
 #
-# if IO_libraries_util.install_all_packages(GUI_util.window, "IO_csv_util",
-# if IO_libraries_util.install_all_packages(GUI_util.window, "IO_csv_util",
+# if IO_libraries_util.install_all_Python_packages(GUI_util.window, "IO_csv_util",
+# if IO_libraries_util.install_all_Python_packages(GUI_util.window, "IO_csv_util",
 # 								['os', 'tkinter','csv','pandas']) == False:
 # 	sys.exit(0)
 
@@ -76,7 +76,7 @@ def get_csvfile_headers_pandas(inputFilename):
     # index_col = 0 excludes the first column, an ID column; but... we need that column
     # headers = pd.read_csv(inputFilename, index_col=0, nrows=0).columns.tolist()
     try:
-        headers = pd.read_csv(inputFilename, nrows=0, encoding='utf-8',error_bad_lines=False).columns.tolist()
+        headers = pd.read_csv(inputFilename, nrows=0, encoding='utf-8',on_bad_lines='skip').columns.tolist()
     except:
         headers=[]
     return headers
@@ -180,21 +180,20 @@ def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, lang
     return outputFilename
 
 # list_output has the following type format [['PRONOUN ANALYSIS','FREQUENCY'], ['PRP', 105], ['PRP$', 11], ['WP', 5], ['WP$', 0]]
-# output_filename is the name of the outputfile with path
+# outputFilename is the name of the outputfile with path
 # returns True when an error is found
 
 # TODO this is a quick way to still use the old-fashioned way of saving a csv fle
-def list_to_csv(window,list_output,output_filename,colnum=0, encoding='utf-8'):
+def list_to_csv(window,list_output,outputFilename,colnum=0, encoding='utf-8'):
     error = False
     if not isinstance(list_output, list):
         return True
     #if a specific column number is given, generate only the colnum columns as output
     if colnum!=0:
         list_output = [i[:colnum] for i in list_output]
-
-    # convert list to dataframe
+# convert list to dataframe
     df = pd.DataFrame(list_output)
-    df_to_csv(GUI_util.window, df, output_filename)
+    df_to_csv(GUI_util.window, df, outputFilename)
     return error
 
 
@@ -224,7 +223,7 @@ def extract_from_csv(inputFilename, outputDir, data_files, columns_to_export=Non
                                                              'extract',
                                                              '', '', '', '', False, True)
 
-    df = pd.DataFrame(pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False))
+    df = pd.DataFrame(pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip'))
     # TODO must extract columns by specific values passed
     df.to_csv(outputFilename, encoding='utf-8', columns=columns_to_export, index=False)
     return outputFilename
@@ -244,7 +243,7 @@ def convert_Excel_to_csv(inputFilename,outputDir, headers=None):
                      header=True)
 
     # read csv file and convert into a dataframe object
-    df = pd.DataFrame(pd.read_csv(outputFilename, encoding='utf-8', error_bad_lines=False))
+    df = pd.DataFrame(pd.read_csv(outputFilename, encoding='utf-8', on_bad_lines='skip'))
     df.to_csv(outputFilename, encoding='utf-8', columns=headers, index=False)
     return outputFilename
 
@@ -253,7 +252,7 @@ def convert_Excel_to_csv(inputFilename,outputDir, headers=None):
 # sort a csv file by a set of columns
 # headers_tobe_sorted is a list of type ['Document ID','Sentence ID']
 def sort_csvFile_by_columns(inputFilename, outputFilename, headers_tobe_sorted):
-    df = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False)
+    df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
     df = df.sort_values(by=headers_tobe_sorted)
     df.to_csv(outputFilename,encoding='utf-8', index=False)
 
@@ -283,9 +282,9 @@ def undressFilenameForCSVHyperlink(fileName):
 #   the function will remove the hyperlinks from every col & row
 def remove_hyperlinks(inputFilename):
     try:
-        data = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False)
+        data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
     except pd.errors.ParserError:
-        data = pd.read_csv(inputFilename, encoding='utf-8', error_bad_lines=False, sep='delimiter')
+        data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip', sep='delimiter')
     except:
         print("Error: failed to read the csv file named: "+inputFilename)
         return False, ''
@@ -412,7 +411,7 @@ def header_check(inputFile):
     if isinstance(inputFile, pd.DataFrame):
         header = list(inputFile.columns)
     else:
-        header = IO_csv_util.get_csvfile_headers(inputFile)
+        header = get_csvfile_headers(inputFile)
     if 'Sentence ID' in header:
         sentenceID_pos = header.index('Sentence ID')
     else:

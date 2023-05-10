@@ -6,12 +6,11 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"WordNet",['os','csv','tkinter','subprocess','nltk','pandas'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"WordNet",['os','csv','tkinter','subprocess','nltk','pandas'])==False:
     sys.exit(0)
 
 import os
 import subprocess
-from nltk.corpus import wordnet as wn
 import pandas as pd
 import csv
 import tkinter.messagebox as mb
@@ -27,7 +26,7 @@ import statistics_csv_util
 
 filesToOpen=[]
 
-def process_keyword(wordNet_keyword_list, noun_verb):
+def process_keyword(wordNet_keyword_list, noun_verb, wn):
     for keyword in wordNet_keyword_list:
         if noun_verb == "VERB":
             synset = wn.synsets(keyword, pos = wn.VERB)
@@ -48,13 +47,27 @@ def process_keyword(wordNet_keyword_list, noun_verb):
             print (each.lemmas()[0].name())
 
 def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb):
+    # check WordNet
+    IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/WordNet', 'WordNet')
+    from nltk.corpus import wordnet as wn
+
     filesToOpen=[]
     if IO_libraries_util.check_inputPythonJavaProgramFile('WordNet_Search_DOWN.jar') == False:
-        return
+        return filesToOpen
+
+    # check that external software WordNet has been setup
+    WordNetDir, existing_software_config = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
+                                                                                         'WordNet',
+                                                                                         '',
+                                                                                         silent=False)
+
+    if WordNetDir == None or WordNetDir == '':
+        return filesToOpen
+
     errorFound, error_code, system_output, java_version = IO_libraries_util.check_java_installation('WordNet downward search')
     if errorFound:
-        return
-    process_keyword(wordNet_keyword_list, noun_verb)
+        return filesToOpen
+    process_keyword(wordNet_keyword_list, noun_verb, wn)
     if len(wordNet_keyword_list) > 1:
         fileName = wordNet_keyword_list[0] + "-plus-list"
     else:
@@ -65,15 +78,12 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Analysis start', 'Started running WordNet (Zoom IN/DOWN) at', True, 'Running WordNet with the ' + noun_verb + ' option with following keywords:\n\n' + str(wordNet_keyword_list))
     warning = subprocess.call(call_list)
     if warning == 1:
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Invalid Input',
-                                           'All keyword(s) in your search list do not exist in Wordnet for " + noun_verb + ".\n\nPlease, edit your keyword list and try again.')
-        # mb.showwarning(title = "Invalid Input", message = "All keyword(s) in your search list do not exist in Wordnet for " + noun_verb + ".\n\nPlease, edit your keyword list and try again.")
-        return
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Warning',
+                'The script WordNet_Search_DOWN.jar did not find any of the synset(s) in your search list:\n' + str(wordNet_keyword_list) + '\nin the WordNet lexical database for ' + noun_verb + '.\n\nPlease, make sure to have downloaded the correct version of WordNet (Mac WordNet-3.0.tar.gz or Windows  WordNet-2.1.exe) and check your synset list and try again.')
+        return filesToOpen
     elif warning == 2:
-        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Invalid Input',
-                                           'Some keyword(s) in your search list do not exist in Wordnet for " + noun_verb + ".\n\nPlease, edit your keyword list and try again.\n\nPlease, check the terminal/command line prompt to see the details.')
-        # mb.showwarning(title="Invalid Input",
-                       # message="Some keyword(s) in your search list do not exist in Wordnet for " + noun_verb + ".\n\nPlease, edit your keyword list and try again.\n\nPlease, check the terminal/command line prompt to see the details.")
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Warning',
+                'The script WordNet_Search_DOWN.jar did not find some of the synset(s) in your search list:\n' + str(wordNet_keyword_list) + '\nin the WordNet lexical database for ' + noun_verb + '.\n\nPlease, check your synset list (or your Java JDK version) and try again.')
     filesToOpen.append(os.path.join(outputDir, "NLP_WordNet_DOWN_" + fileName + ".csv"))
     filesToOpen.append(os.path.join(outputDir, "NLP_WordNet_DOWN_" + fileName + "-verbose.csv"))
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running WordNet (Zoom IN/DOWN) at', True, '', True, startTime)
@@ -82,7 +92,25 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
 # the header does not matter, it can be NUN or VERB or anything else
 # what matters is the first column; and there can be multiple columns tha will not be processed
 def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_verb,openOutputFiles,createCharts, chartPackage, language_var=''):
+    # check WordNet
+    IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/WordNet', 'WordNet')
+    from nltk.corpus import wordnet as wn
+
     filesToOpen=[]
+
+    # check that external software WordNet has been setup
+    WordNetDir, existing_software_config = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
+                                                                                         'WordNet',
+                                                                                         '',
+                                                                                         silent=False)
+
+    if WordNetDir == None or WordNetDir == '':
+        return filesToOpen
+
+    errorFound, error_code, system_output, java_version = IO_libraries_util.check_java_installation('WordNet upward search')
+    if errorFound:
+        return filesToOpen
+
     if language_var=='' and language_var!='English':
         reminders_util.checkReminder(
             config_filename,
@@ -111,7 +139,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
     warning = subprocess.call(['java', '-jar', 'WordNet_Search_UP.jar', '-wordNetPath', os.path.join(WordNetDir, "dict"), '-wordList', inputFile, "-pos" , noun_verb, '-outputDir', outputDir])
     if warning == 1:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Invalid Input',
-                                           "WordNet cannot find any word in the input csv file for " + noun_verb + ".\n\nThis error can also occur if any of the files previously generated by WordNet are open. Please, check your files, close them, and try again.")
+                                           "WordNet " + noun_verb + " aggregation.\n\nWordNet cannot find any word in Wordnet in the input csv file for " + noun_verb + ".\n\nPlease, make sure to have downloaded the correct version of WordNet (Mac WordNet-3.0.tar.gz or Windows  WordNet-2.1.exe).\n\nThis error can also occur if any of the files previously generated by WordNet are open. Please, check your files, close them, and try again.")
         return filesToOpen
     elif warning == 2:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Invalid Input',

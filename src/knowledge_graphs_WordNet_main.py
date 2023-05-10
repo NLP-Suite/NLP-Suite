@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"knowledge_graphs_WordNet_main",['os','tkinter','pandas'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"knowledge_graphs_WordNet_main",['os','tkinter','pandas'])==False:
     sys.exit(0)
 
 import os
@@ -53,7 +53,12 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
 
     language_var='English' # WordNet works only for English language
 
-    WordNetDir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir('knowledge_graphs_WordNet_main', 'WordNet', silent=True, only_check_missing=False)
+    # check that the WordNet has been setup
+    WordNetDir, existing_software_config = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
+                                                                                         'WordNet',
+                                                                                         '',
+                                                                                         silent=False)
+
     if WordNetDir == None:
         return
 
@@ -82,6 +87,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         tagAnnotations = ['<span style=\"color: ' + color_palette_dict_var + '; font-weight: bold\">', '</span>']
 
         filesToOpen = html_annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
+                                                                    config_filename,
                                                                     csv_file, 'Term', csvValue_color_list,
                                                                     bold_var, tagAnnotations, '.txt','WordNet_'+noun_verb)
 
@@ -90,7 +96,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
             mb.showerror(title='Option not available', message="You have selected to run the option 'Extract PROPER/IMPROPER nouns' with VERB.\n\nPlease, select NOUN and try again.")
             return
         if len(csv_file)==0:
-            mb.showerror(title='Missing input file', message="You have selected to run the option 'Extract PROPER/IMPROPER nouns'. The function expects in input a WordNet dictionary file previously exported with the 'Zoom IN/DOWN' function for nouns.\n\nPlease, select an input WordNet dictionary file and try again.")
+            mb.showerror(title='Missing input file', message="You have selected to run the option 'Extract PROPER/IMPROPER nouns'. The algorithm expects in input a WordNet dictionary file previously exported with the 'Zoom IN/DOWN' algorithm for nouns.\n\nPlease, select an input WordNet dictionary file and try again.")
             return
         check_column=0
         if extract_proper_nouns:
@@ -307,8 +313,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_co
 disaggregate_var.set(0)
 disaggregate_checkbox = tk.Checkbutton(window, text='Zoom IN/DOWN to find related words', variable=disaggregate_var,
                                     onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               disaggregate_checkbox, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                             disaggregate_checkbox,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "Tick the checkbox to search the WordNet lexical database for semantically related words in selected top-level synset(s) for NOUN or VERB.\n"
+                                             "The algorithm deals with WordNet records only and does not deal with the input document(s) selected in the I/O configuration")
 
 def activate_keyword_menu():
     if keyWord_var.get() != '':
@@ -316,43 +327,64 @@ def activate_keyword_menu():
 
 add_keyword_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                                command=lambda: activate_keyword_menu())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
-                                               add_keyword_button, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,
+                                             add_keyword_button,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.entry_box_x_coordinate,
+                                             "Click on the + button to add another synset")
 
 reset_keywords_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, state='disabled',
                                   command=lambda: clear_keyword_list())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_reset_pos, y_multiplier_integer,
-                                               reset_keywords_button, True)
-
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_reset_pos, y_multiplier_integer,
+                                             reset_keywords_button,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.WordNet_reset_pos,
+                                             "Click on the Reset button to clear currently selected synsets and start fresh")
 def showKeywordList():
     mb.showwarning(title='Warning', message='The currently selected keywords are:\n\n' + ','.join(
-        wordNet_keyword_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
-
+        wordNet_keyword_list) + '\n\nPress OK to approve selection; press the RESET button (or ESCape) to start fresh and select different keywords.')
 
 show_keywords_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width, height=1, state='disabled',
                                  command=lambda: showKeywordList())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_show_pos, y_multiplier_integer,
-                                               show_keywords_button, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_show_pos, y_multiplier_integer,
+                                             show_keywords_button,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.WordNet_show_pos,
+                                             "Click on the Show button to display the currently selected synsets")
 
 noun_verb_menu_options = []
 keyWord_var.set('')
-keyWord_menu_lb = tk.Label(window, text='Keyword (synset)')
+keyWord_menu_lb = tk.Label(window, text='Top-level synset ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_noun_verb_menu_pos, y_multiplier_integer,
                                                keyWord_menu_lb, True)
 
 keyWord_menu = tk.OptionMenu(window, keyWord_var, noun_verb_menu_options)
-# keyWord_menu.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos, y_multiplier_integer,
-                                               keyWord_menu)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos, y_multiplier_integer,
+                                             keyWord_menu,
+                                             False, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "Use the dropdown menu to select the top-level synset(s) for NOUN or VERB to be used to find semantically related terms in the WordNet lexical database.\n" \
+                                             "The use of this widget is mutually exclusive with the widget 'YOUR synset(s)'. You can use one or the other.")
 
-keyWord_entry_lb = tk.Label(window, text='YOUR keyword(s) ')
+keyWord_entry_lb = tk.Label(window, text='YOUR synset(s) ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_noun_verb_menu_pos, y_multiplier_integer,
                                                keyWord_entry_lb, True)
 
 keyWord_entry = tk.Entry(window, width=GUI_IO_util.WordNet_keyWord_entry_width, textvariable=keyWord_entry_var)
 keyWord_entry.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos, y_multiplier_integer,
-                                               keyWord_entry, True)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos, y_multiplier_integer,
+                                             keyWord_entry,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "Enter the comma-separated synset(s) you want to use to search the WordNet lexical database for NOUN or VERB. Particularly useful for searching lower-level synsets (e.g., 'ethnic group' instead of 'person').\n" \
+                                             "The use of this widget is mutually exclusive with the widget 'Top-level synset'. You can use one or the other.")
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos, y_multiplier_integer,
+#                                                keyWord_entry, True)
 
 OK_button = tk.Button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled', command=lambda: accept_WordNet_list())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_OK_button_pos, y_multiplier_integer,
@@ -436,8 +468,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 aggregate_POS_var.set(0)
 aggregate_POS_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP (classify/aggregate input text document(s) by CoreNLP NOUN & VERB POS tags and WordNet NOUN & VERB synsets)', variable=aggregate_POS_var,
                                     onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               aggregate_POS_checkbox)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                             aggregate_POS_checkbox,
+                                             False, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "Tick the checkbox to run the algorithm that extracts NOUN and VERB POS tags and then aggregate these values into WordNet top-level synsets.\n"
+                                             "In OUTPUT the algorithm produces a csv file of POS tags with their WordNet top-level synset (e.g., go as movement)")
 
 aggregate_bySentenceID_var.set(0)
 # aggregate_bySentenceID_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP by Sentence Index',
@@ -453,7 +490,7 @@ dict_WordNet_filename_lb = tk.Label(window, text='csv file of WordNet classified
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_dict_WordNet_filename_lb_pos, y_multiplier_integer,
                     dict_WordNet_filename_lb, True, False, True, False,
                     90, GUI_IO_util.WordNet_dict_WordNet_filename_lb_pos,
-                    "The csv file is obtained by running the ZOOM OUT/UP checkbox widget, above")
+                    "The csv file is obtained by running the ZOOM OUT/UP checkbox wiknowledge_graphs_WordNet_maindget, above")
 
 dict_WordNet_filename = tk.Entry(window, width=GUI_IO_util.WordNet_dict_WordNet_filename_width, textvariable=dict_WordNet_filename_var)
 dict_WordNet_filename.configure(state="disabled")
@@ -546,7 +583,7 @@ def activate_allOptions(noun_verb, fromaggregate=False):
         if csv_file_var.get() == '' and asked==False:
             asked=True
             mb.showwarning("csv WordNet dictionary",
-                           "Please, select next the csv WordNet dictionary file (either verbose or simple) generated by the ZOOM IN/DOWN function then click on the RUN button.")
+                           "Please, select next the csv WordNet dictionary file (either verbose or simple) generated by the ZOOM IN/DOWN algorithm then click on the RUN button.")
             filePath = get_csv_file(window, 'Select INPUT csv dictionary file', [("dictionary files", "*.csv")],
                                            False)
             if filePath == '':
@@ -625,7 +662,7 @@ def activate_allOptions(noun_verb, fromaggregate=False):
             if filePath == '':
                 return
             mb.showwarning("csv WordNet dictionary",
-                           "Please, select next the csv WordNet dictionary file generated by the ZOOM IN/DOWN function then click on the RUN button.")
+                           "Please, select next the csv WordNet dictionary file generated by the ZOOM IN/DOWN algorithm then click on the RUN button.")
             filePath = get_csv_file(window, 'Select INPUT csv dictionary file', [("dictionary files", "*.csv")],
                                            False)
             if len(filePath) > 0:
@@ -707,21 +744,21 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the synset type (NOUN or VERB) that you want to use for your WordNet searches.\n\nLists of NOUNS and VERBS can be exported from a CoNLL table computed via the Stanford_CoreNLP.py script. Nouns would have POSTAG values NN* (* for any NN value) and verbs VB*. Tick the checkbox 'Extract nouns & verbs from CoNLL' to extract the lists." + webSearch)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to run the Python 3 script 'Zoom IN/DOWN'. The script uses the WordNet lexicon database to provide a list of terms associated to a starting keyword (synset) in a lexical hierarchy.\n\nThe IN/DOWN Java algorithm uses the MIT JWI (Java Wordnet Interface) (https://projects.csail.mit.edu/jwi/) to interface with WordNet.\n\nIt uses both hyponymy and meronymy to go DOWN the hierarchy.\n\nHyponym is the specific term used to designate a member of a class. X is a hyponym of Y if X is a (kind of) Y.\n\nMeronymy is the name of a constituent part of, the substance of, or a member of something. X is a meronym of Y if X is a part of Y.\n\nThus, you can construct a list of social actors (i.e., human disaggregates, groups, or organizations) by selecting 'person' as starting point.\n\nPlease, using the dropdown menu, select the starting keyword(s) (synsets) that the script will use to traverse the database in order to provide the list.\n\nNOUNS have 25 top-level synsets and VERB have 15.\n\nMultiple starting words are allowed. If your research deals with fairy tales, animals may also be disaggregates (e.g., a talking fox), so the starting keyword can be 'animal', with both 'person' and 'animal' as your combined keywords.\n\nPress the + button for multiple selections.\n\nPress RESET (or ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.\n\nIn INPUT all is required is the starting keywords that you will have selected or entered.\n\nIn OUTPUT the script will create 2 csv files, a one-column file with a list of all the terms found in the synset, and a five-columns file marked as verbose: a list of terms found (column 1), the selected WordNet category (column 2), definitions of the category (column 3), frequency of senses of lemma that are ranked according to their frequency of occurrence in semantic concordance texts (column 4), examples of use (column 5)." + webSearch)
+                                  "Please, tick the checkbox if you wish to run the Python 3 script 'Zoom IN/DOWN'. The script uses the WordNet lexicon database to provide a list of terms associated to a starting keyword (synset) in a lexical hierarchy.\n\nThe IN/DOWN Java algorithm uses the MIT JWI (Java Wordnet Interface) (https://projects.csail.mit.edu/jwi/) to interface with WordNet.\n\nIt uses both hyponymy and meronymy to go DOWN the hierarchy.\n\nHyponym is the specific term used to designate a member of a class. X is a hyponym of Y if X is a (kind of) Y.\n\nMeronymy is the name of a constituent part of, the substance of, or a member of something. X is a meronym of Y if X is a part of Y.\n\nThus, you can construct a list of social actors (i.e., human disaggregates, groups, or organizations) by selecting 'person' as starting point.\n\nPlease, using the dropdown menu, select the starting keyword(s) (synsets) that the script will use to traverse the database in order to provide the list.\n\nNOUNS have 25 top-level synsets and VERB have 15.\n\nMultiple starting words are allowed. If your research deals with fairy tales, animals may also be disaggregates (e.g., a talking fox), so the starting keyword can be 'animal', with both 'person' and 'animal' as your combined keywords.\n\nPress the + button for multiple selections.\n\nPress RESET (or ESCape) to delete all values entered and start fresh.\n\nPress SHOW to display all selected values.\n\nIn INPUT all is required is the starting keywords that you will have selected or entered. The algorithm only uses the WordNet lexical database and does not use the document(s) selected in your I/O configuration.\n\nIn OUTPUT the script will create 2 csv files, a one-column file with a list of all the terms found in the synset, and a five-columns file marked as verbose: a list of terms found (column 1), the selected WordNet category (column 2), definitions of the category (column 3), frequency of senses of lemma that are ranked according to their frequency of occurrence in semantic concordance texts (column 4), examples of use (column 5)." + webSearch)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "You can enter one or more, comma separated, terms into the 'YOUR keyword(s)'field, ignoring the pre-selected keywords. This option is particularly helpful if you want to restrict your search at a lower level, e.g. 'ethnic group' instead of 'person' to obtain a much shorter list of terms.\n\nPress OK when finished entering YOUR own values." + webSearch)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to annotate your input document(s) using a dictionary csv file generated by the \'Zoom IN\DOWN\' algorithm. Thus, you can extract all \'PERSON\' items from WordNet and annotate your corpus by those values.\n\nIn INPUT the function expects\n   1. either a single txt file or a directory of txt files to be annotated (txt file(s) are selected in the Setup INPUT/OUTPUT configuration widget);\n   2. a csv dictionary file generated by the ZOOM IN/DOWN widget and containing with the WordNet tags that will be used to annotate the text. You will be prompted to select the csv file when you tick the checkbox.\n\nIn OUTPUT the fnction produces an html file annotated according to the values found in the input csv dictionary file." + webSearch)
+                                  "Please, tick the checkbox if you wish to annotate your input document(s) using a dictionary csv file generated by the \'Zoom IN\DOWN\' algorithm. Thus, you can extract all \'PERSON\' items from WordNet and annotate your corpus by those values.\n\nIn INPUT the algorithm expects\n   1. either a single txt file or a directory of txt files to be annotated (txt file(s) are selected in the Setup INPUT/OUTPUT configuration widget);\n   2. a csv dictionary file generated by the ZOOM IN/DOWN widget and containing with the WordNet tags that will be used to annotate the text. You will be prompted to select the csv file when you tick the checkbox.\n\nIn OUTPUT the algorithm produces an html file annotated according to the values found in the input csv dictionary file." + webSearch)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to extract proper or improper nouns from a NOUN ZOOM IN/DOWN list. Nouns are classified as proper or improper depending on whether the first character is upper or lower case.\n\nIn INPUT the function expects a csv file of NOUNs generated by the ZOOM IN/DOWN function (whether simple or verbose). You will be prompted to select the csv file when you tick the checkbox.\n\nIn OUTPUT, the function saves a csv file with only either proper or improper nouns, as identified by a first letter upper/lower case.\n\nThe first column of the dictionary file, whether simple or verbose, will always be used for extracting values.")
+                                  "Please, tick the checkbox if you wish to extract proper or improper nouns from a NOUN ZOOM IN/DOWN list. Nouns are classified as proper or improper depending on whether the first character is upper or lower case.\n\nIn INPUT the algorithm expects a csv file of NOUNs generated by the ZOOM IN/DOWN algorithm (whether simple or verbose). You will be prompted to select the csv file when you tick the checkbox.\n\nIn OUTPUT, the algorithm saves a csv file with only either proper or improper nouns, as identified by a first letter upper/lower case.\n\nThe first column of the dictionary file, whether simple or verbose, will always be used for extracting values.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run the Python 3 script 'Zoom OUT/UP'.\n\nThe script uses the WordNet lexicon database to aggregate LEMMATIZED NOUNS and VERBS (LEMMATIZED, since WordNet only contains lemmatized values) listed in a csv file (e.g., run, flee, walk, ... aggregated as verbs of motion).\n\nYou can aggregate any list of LEMMATIZED nouns and verbs however obtained. Most likely, you will want to aggregate LEMMATIZED nouns and verbs from the CoNLL table computed via Stanford_CoreNLP.py script. NOUNS WOULD HAVE POSTAG VALUES NN* AND VERBS VB*. Tick the checkbox 'Extract nouns & verbs from CoNLL' to extract the lists.\n\nThe OUT/UP Java algorithm uses the MIT JWI (Java Wordnet Interface) (https://projects.csail.mit.edu/jwi/) to interface with WordNet.\n\nThe algorithm uses both ypernymy and holonymy to go UP the hierarchy.\n\nHypernym is the generic term used to designate a whole class of specific instances. Y is a hypernym of X if X is a (kind of) Y.\n\nHolonym is the name of the whole of which the meronym names a part. Y is a holonym of X if X is a part of Y.\n\nIn INPUT, the script expects a csv file where the first column contains a list of LEMMATIZED NOUNS or VERBS to be aggregated (the column headerr does not matter). You will be prompted to select the csv file when you tick the checkbox. Tick the checkbox 'Extract nouns & verbs from CoNLL' to extract the lists.\n\nNotice that you can process either a LEMMATIZED NOUN list or a LEMMATIZED VERB list at a time. You cannot process both at the same time.\n\nIn OUTPUT the script will create a csv file that contains the aggregate values of the various nouns and verbs.\n\nCAVEAT: For VERBS, the 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies." + webSearch)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run a Python 3 script to extract all LEMMATIZED nouns and verbs from a CoNLL table (LEMMATIZED, since WordNet only contains lemmatized values) - nouns and verbs to be used by the 'Zoom OUT/UP' algorithm to aggregate nouns and verbs into WorNet categories.\n\nFor convenience, the script will also export the original words for nouns and verbs as found in FORM.\n\nIn INPUT, the script expects 2 csv files:\n  1. a csv CoNLL file;\n  2. a csv dictionary file containing the WordNet classification of LEMMATIZED words into higher-level aggregates (LEMMATIZED, since WordNet only contains lemmatized values). This file is generated by the 'Zoom OUT/UP' widget.\n   You will be prompted to select these csv files when you tick the checkbox.\n\nIn OUTPUT, the script produces a csv file and an Excel line plot of the aggregate WordNet categories by sentence index.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to classify your document(s) by the main NOUN & VERB WordNet synsets.\n\nThe function uses the Stanford CoreNLP POS (Part of Speech) annotator to extract Nouns and Verbs to be then classified via WordNet.\n\nIn INPUT the function expects either a single txt file or a directory of txt files.\n\nIn OUTPUT the fnction produces a csv file of nouns and verbs classified by WordNet top synsets.")
+                                  "Please, tick the checkbox if you wish to classify your document(s) by the main NOUN & VERB WordNet synsets.\n\nThe algorithm uses the Stanford CoreNLP POS (Part of Speech) annotator to extract Nouns and Verbs to be then classified via WordNet.\n\nIn INPUT the algorithm expects either a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm produces a csv file of nouns and verbs classified by WordNet top synsets.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to run the Python 3 script 'Zoom OUT/UP by Sentence Index' to provide a csv file and an Excel line plot of the aggregate WordNet categories by sentence index for more in-grained linguistic analyses.\n\nIn INPUT, the script expects 2 csv files:\n  1. a csv CoNLL file;\n  2. a csv dictionary file containing the WordNet classification of LEMMATIZED words into higher-level aggregates generated by the 'Zoom OUT/UP' widget (LEMMATIZED, since WordNet only contains lemmatized values).\n   You will be prompted to select these csv files when you tick the checkbox.\n\nIn OUTPUT, the script produces a csv file and an Excel line plot of the aggregate WordNet categories by sentence index.")
+                                  "Please, tick the checkbox if you wish to run the Python 3 script 'Zoom OUT/UP by Sentence Index' to provide a csv file and an Excel line plot of the aggregate WordNet categories by sentence index for more in-grained linguistic analyses.\n\nIn INPUT, the algorithm expects 2 csv files:\n  1. a csv CoNLL file;\n  2. a csv dictionary file containing the WordNet classification of LEMMATIZED words into higher-level aggregates generated by the 'Zoom OUT/UP' widget (LEMMATIZED, since WordNet only contains lemmatized values).\n   You will be prompted to select these csv files when you tick the checkbox.\n\nIn OUTPUT, the script produces a csv file and an Excel line plot of the aggregate WordNet categories by sentence index.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
@@ -730,7 +767,9 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate
 # change the value of the readMe_message
 
 # GUI_util.select_inputFilename_button.configure(state="disabled")
-readMe_message = "The Python 3 and Java scripts interface with the lexical database WordNet to find word semantically related words.\n\nThe GUI widgets allow you to zoom IN, zoom OUT (or zoom DOWN and UP) in the WordNet database and to display WordNet categories by sentence index. The two IN/DOWN, OUT/UP Java algorithms use the MIT JWI (Java Wordnet Interface) (https://projects.csail.mit.edu/jwi/) to interface with WordNet.\n\nYou will need to download WordNet from https://wordnet.princeton.edu/download/current-version.\n\nWhen zooming IN/DOWN, you basically take a closer look at a term, going down the hierarchy (e.g., 'person' would give a list of words such as 'police', 'woman', ... or anyone who is a member of the group \'person\').\n\nWhen zooming OUT/UP, you find terms'higher-level aggregates (e.g., 'walk', 'run', 'flee'as verbs of a higher-level verb aggregate 'motion')" + webSearch
+readMe_message = "The Python 3 and Java scripts interface with the lexical database WordNet to find word semantically related words.\n\nThe GUI widgets allow you to zoom IN, zoom OUT (or zoom DOWN and UP) in the WordNet database and to display WordNet categories by sentence index. The two IN/DOWN, OUT/UP Java algorithms use the MIT JWI (Java Wordnet Interface) (https://projects.csail.mit.edu/jwi/) to interface with WordNet.\n\nYou will need to download WordNet from https://wordnet.princeton.edu/download/current-version.\n\nWhen zooming IN/DOWN, you basically take a closer look at a term, going down the hierarchy (e.g., 'person' would give a list of words such as 'police', 'woman', ... or anyone who is a member of the group \'person\').\n\nWhen zooming OUT/UP, you find terms'higher-level aggregates (e.g., 'walk', 'run', 'flee'as verbs of a higher-level verb aggregate 'motion')." + webSearch + \
+        "\n\nIn INPUT different algorithms in this GUI will use\n1. no files at all (e.g.,Zoom IN/DOWN);\n2. a csv file (e.g., Zoom OUT/UP);\n3. a single txt file or set of txt files (e.g.,Zoom OUT/UP (classify/aggregate input text document(s) ...)." \
+        "\n\nIn OUTPUT the different algorithms produce\n1. HTML files (e.g., Annotate corpus (using WordNet csv output file from Zoom IN/DOWN));\n2. csv files (all other algorithms)."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
@@ -740,4 +779,20 @@ reminders_util.checkReminder(
         reminders_util.message_English_language_WordNet,
         True)
 
+do_not_repeat_language_warning = False
+
+def activate_NLP_options(*args):
+    global error, package_basics, package, language, language_var, language_list, y_multiplier_integer, do_not_repeat_language_warning
+    # after update no display
+    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var=GUI_util.setup_parsers_annotators(y_multiplier_integer, scriptName)
+    language_list = [language]
+    if language!='English':
+        if language != 'English' and not do_not_repeat_language_warning:
+            mb.showwarning(title='Warning',
+                           message='The WordNet algorithms only work for the English language. Your selected language is ' + language + '.\n\nYou can use the Setup dropdown menu at the bottom of this GUI and select "Setup NLP package and corpus language" option to select a differnt language if have an English-language corpus.')
+        do_not_repeat_language_warning = True
+
+GUI_util.setup_menu.trace('w', activate_NLP_options)
+
+activate_NLP_options()
 GUI_util.window.mainloop()

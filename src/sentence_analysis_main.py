@@ -3,7 +3,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"sentence_analysis_main.py",['tkinter','subprocess','ast'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"sentence_analysis_main.py",['tkinter','subprocess','ast'])==False:
     sys.exit(0)
 
 import os
@@ -40,8 +40,13 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
             return
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     if compute_sentence_length_var:
-        filesToOpen = statistics_txt_util.compute_sentence_length(config_filename, inputFilename,inputDir, outputDir)
+        filesToOpen = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir, config_filename, createCharts, chartPackage )
 
     if visualize_bySentenceIndex_var:
         filesToOpen = IO_files_util.runScript_fromMenu_option(script_to_run, IO_values,
@@ -52,14 +57,15 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     if sentence_complexity_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
-        filesToOpen=statistics_txt_util.compute_sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage)
+        filesToOpen=statistics_txt_util.compute_sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir, config_filename, openOutputFiles,createCharts, chartPackage)
         if filesToOpen==None:
             return
 
     if text_readability_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
-        statistics_txt_util.compute_sentence_text_readability(GUI_util.window,inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage)
+        statistics_txt_util.compute_sentence_text_readability(GUI_util.window,inputFilename, inputDir, outputDir,
+                                                              openOutputFiles,createCharts, chartPackage)
 
     if visualize_sentence_structure_var==True:
         # if IO_libraries_util.check_inputPythonJavaProgramFile('DependenSee.Jar')==False:
@@ -148,8 +154,9 @@ GUI_util.set_window(GUI_size, GUI_label, config_filename,config_input_output_num
 
 window=GUI_util.window
 config_input_output_numeric_options=GUI_util.config_input_output_numeric_options
-config_filename=GUI_util.config_filename
+# config_filename=GUI_util.config_filename
 inputFilename=GUI_util.inputFilename
+
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 

@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"file_search_byWord_main.py",['os','tkinter'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"file_search_byWord_main.py",['os','tkinter'])==False:
     sys.exit(0)
 
 import os
@@ -32,6 +32,7 @@ def run(inputFilename,inputDir, outputDir,
     selectedCsvFile,
     search_by_keyword,
     search_keyword_values,
+    create_subcorpus_var,
     extract_sentences_var,
     extract_sentences_search_words_var_str,
     minus_K_var,
@@ -53,14 +54,15 @@ def run(inputFilename,inputDir, outputDir,
             search_options_list.append('Search within sentence (default)')
 
     if search_by_keyword:
-        filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dictionary,
-                                                  search_by_keyword, search_keyword_values, search_options_list, language,
-                                                  createCharts, chartPackage)
+        # check create_subcorpus_var
+        filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, config_filename, search_by_dictionary,
+                                                  search_by_keyword, search_keyword_values, create_subcorpus_var, search_options_list, language,
+                                                  createCharts, chartPackage, config_filename)
 
     if extract_sentences_var:
-        # TODO must pass and process minus_K_var and plus_K_var
-        file_search_byWord_util.search_extract_sentences(window, inputFilename, inputDir, outputDir,
+        file_search_byWord_util.search_extract_sentences(window, inputFilename, inputDir, outputDir, config_filename,
                                                  extract_sentences_search_words_var_str, search_options_list,
+                                                 minus_K_var, plus_K_var,
                                                  createCharts, chartPackage)
         extract_sentences_search_words_var.set('')
         extract_sentences_search_words_entry.configure(state='disabled')
@@ -81,6 +83,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             selectedCsvFile_var.get(),
                             search_by_keyword_var.get(),
                             keyword_value_var.get(),
+                            create_subcorpus_var.get(),
                             extract_sentences_var.get(),
                             extract_sentences_search_words_var.get(),
                             minus_K_var.get(),
@@ -117,7 +120,7 @@ config_filename = scriptName.replace('main.py', 'config.csv')
 #   input dir
 #   input secondary dir
 #   output dir
-config_input_output_numeric_options=[6,1,0,1]
+config_input_output_numeric_options=[0,1,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -245,7 +248,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
     GUI_IO_util.file_search_byWord_openInputFile_button_pos, y_multiplier_integer,
     openInputFile_button, True, False, True, False, 90, GUI_IO_util.file_search_byWord_openInputFile_button_pos, "Open selected csv dictionary file")
 
-selectedCsvFile = tk.Entry(window,width=GUI_IO_util.widget_width_long,state='disabled',textvariable=selectedCsvFile_var)
+selectedCsvFile = tk.Entry(window,width=GUI_IO_util.file_search_byWord_widget_width,state='disabled',textvariable=selectedCsvFile_var)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_selectedCsvFile_pos,y_multiplier_integer,selectedCsvFile)
 
 search_by_keyword_var.set(0)
@@ -257,13 +260,22 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                     "Tick the checkbox to search for word(s) in your document(s) (e.g, coming out, standing in line, boyfriend)")
 
 keyword_value_var.set('')
-keyword_value = tk.Entry(window,width=GUI_IO_util.widget_width_long,textvariable=keyword_value_var)
-keyword_value.configure(state="disabled")
+keyword_value = tk.Entry(window,width=GUI_IO_util.file_search_byWord_widget_width,textvariable=keyword_value_var)
+# keyword_value.configure(state="disabled")
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
-                    keyword_value, False, False, True, False,
+                    keyword_value, True, False, True, False,
                     90, GUI_IO_util.watch_videos_x_coordinate,
                     "Enter the comma-separated, case-sensitive words/set of words that a sentence must contain in your document(s) (e.g, coming out, standing in line, boyfriend).")
+
+create_subcorpus_var = tk.IntVar()
+create_subcorpus_var.set(0)
+create_subcorpus_checkbox = tk.Checkbutton(window, text='Create subcorpus of files', variable=create_subcorpus_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,1050, y_multiplier_integer,
+                    create_subcorpus_checkbox, False, False, True, False,
+                    90, GUI_IO_util.open_reminders_x_coordinate,
+                    "Tick the checkbox to create a directory for the subcorpus of files containing the search word(s).\nOption currently not available.")
 
 def activate_options():
     extract_sentences_search_words_entry.configure(state='normal')
@@ -279,7 +291,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 extract_sentences_search_words_var.set('')
 extract_sentences_search_words_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
-extract_sentences_search_words_entry.configure(width=GUI_IO_util.widget_width_long, state='disabled')
+extract_sentences_search_words_entry.configure(width=GUI_IO_util.file_search_byWord_widget_width, state='disabled')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
                     extract_sentences_search_words_entry, True, False, True, False,
@@ -290,7 +302,7 @@ minus_K_lb = tk.Label(window, text='-K')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,1050,y_multiplier_integer,minus_K_lb,True)
 
 minus_K_var.set(0)
-minus_K_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
+minus_K_entry = tk.Entry(window, textvariable=minus_K_var) #extract_sentences_search_words_var)
 minus_K_entry.configure(width=3, state='disabled')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
@@ -299,13 +311,13 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
                     "Enter the number of sentences preceding the search sentences to be extracted, for context, together with the search sentences")
 
 plus_K_lb = tk.Label(window, text='+K')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,1120,y_multiplier_integer,plus_K_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,1140,y_multiplier_integer,plus_K_lb,True)
 
 plus_K_var.set(0)
-plus_K_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
+plus_K_entry = tk.Entry(window, textvariable=plus_K_var) #extract_sentences_search_words_var)
 plus_K_entry.configure(width=3, state='disabled')
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window, 1170, y_multiplier_integer,
                     plus_K_entry, False, False, True, False,
                     90, GUI_IO_util.watch_videos_x_coordinate,
                     "Enter the number of sentences following the search sentences to be extracted, for context, together with the search sentences")
@@ -386,7 +398,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, use the dropdown menu to set up the search criteria. Multiple criteria can be selected by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nWhen running the search as case sensitive, a sentence containing the word 'King' will not be selected in output if you search for 'King')\n\nWhen lemmatizing, the scripts would search 'coming out' in all its lemmatized forms: 'coming out', 'come out', 'comes out', 'came out'.\n\nWhen searching 'Within sentence' combinations of words or collocations will be searched and displayed within SENTENCE otherwise within DOCUMENT.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to search input txt file(s) using the values contained in a csv dictionary file.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click to select a csv file containing a list of values to be used as a dictionary for searching the input file(s).\n\nEntries in the file, one per line, can be single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe little square button to the right will allow you to open the selected csv file.\n\nThe csv filename will be displayed in the entry widget to the right.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe widget where you can enter your comma-separated, case-sensitive words/collocations will become available once you select the option. Enter there the comma-separated, case-sensitive words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe widget where you can enter your comma-separated, case-sensitive words/collocations will become available once you select the option. Enter there the comma-separated, case-sensitive words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document. When the checkbox 'Create subcorpus of files' is ticked, the algorithm will export all the txt files that contain the search words to a directory called 'subcorpus_search' inside the input directory. A set of csv files are also exported but to the selected output directory.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words, such as coming out, falling in love).\n\nThe widget where you can enter your comma-separated, case-sensitive words/collocations will become available once you select the option. Enter there the comma-separated, case-sensitive words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nYou can also enter the number of sentences preceeding and following the found sentences to provide context. Again, the widgets will become available when the checkbox is ticked.\n\nIn INPUT, the script expects a single txt file or a directory of txt files.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract_with_searchword.txt and containing, for each input file, all the sentences that have the search word(s) in them;\n2. files ending with _extract_wo_searchword.txt and containing, for each input file, the sentences that do NOT have the search word(s) in them." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open a GUI with more options for an N-grams/Co_occurrences VIEWER similar to Google Ngrams Viewer (https://books.google.com/ngrams) but applied to your own corpus.")
@@ -423,6 +435,14 @@ message = "Some of the algorithms behind this GUI rely on a specific NLP package
           + str(language) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " \
           + str(package_basics) + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
 reminders_util.checkReminder(config_filename, title, message)
+
+state = str(GUI_util.run_button['state'])
+if state == 'disabled':
+    # check to see if there is a GUI-specific config file and set it to the setup_IO_menu_var
+    if os.path.isfile(os.path.join(GUI_IO_util.configPath, config_filename)):
+        GUI_util.setup_IO_menu_var.set('GUI-specific I/O configuration')
+        mb.showwarning(title='Warning',
+                       message="Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
 
 GUI_util.window.mainloop()
 

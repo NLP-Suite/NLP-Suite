@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"narrative-analysis",['os','tkinter','subprocess'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"narrative-analysis",['os','tkinter','subprocess'])==False:
     sys.exit(0)
 
 import os
@@ -36,6 +36,7 @@ def run(inputFilename,inputdirname, outdirname,
         space_WordNet_var,
         space_DBpedia_YAGO_var,
         action_var,
+        action_POS_var,
         action_WordNet_var,
         action_DBpedia_YAGO_var,
         SVO_var,
@@ -56,6 +57,7 @@ def run(inputFilename,inputdirname, outdirname,
         space_WordNet_var==False and \
         space_DBpedia_YAGO_var==False and \
         action_var==False and \
+        action_POS_var==False and \
         action_WordNet_var==False and \
         action_DBpedia_YAGO_var==False and \
         SVO_var==False and \
@@ -69,9 +71,9 @@ def run(inputFilename,inputdirname, outdirname,
     #     call("python parsers_annotators_main.py", shell=True)
 
     if characters_NER_var==True or time_NER_var==True or space_NER_var==True:
-        if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_NER_main.py')==False:
+        if IO_libraries_util.check_inputPythonJavaProgramFile('NER_main.py')==False:
             return
-        call("python Stanford_CoreNLP_NER_main.py", shell=True)
+        call("python NER_main.py", shell=True)
 
     if characters_WordNet_var==True or space_WordNet_var == True or action_WordNet_var == True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('knowledge_graphs_WordNet_main.py')==False:
@@ -88,7 +90,7 @@ def run(inputFilename,inputdirname, outdirname,
             return
         call("python html_annotator_gender_main.py", shell=True)
 
-    if story_plot_var==True:
+    if story_plot_var==True or action_POS_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('parsers_annotators_main.py') == False:
             return
         call("python parsers_annotators_main.py", shell=True)
@@ -129,6 +131,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             space_WordNet_var.get(),
                             space_DBpedia_YAGO_var.get(),
                             action_var.get(),
+                            action_POS_var.get(),
                             action_WordNet_var.get(),
                             action_DBpedia_YAGO_var.get(),
                             SVO_var.get(),
@@ -196,6 +199,7 @@ space_WordNet_var = tk.IntVar()
 space_DBpedia_YAGO_var = tk.IntVar()
 
 action_var = tk.IntVar()
+action_POS_var = tk.IntVar()
 action_WordNet_var = tk.IntVar()
 action_DBpedia_YAGO_var = tk.IntVar()
 
@@ -276,15 +280,20 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 action_lb = tk.Label(window, text='Action: What')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,action_lb)
 
+action_POS_var.set(0)
+action_POS_checkbox = tk.Checkbutton(window, text="Via POS verb tags", variable=action_POS_var, onvalue=1, offvalue=0)
+# action_WordNet_checkbox.config(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,action_POS_checkbox,True)
+
 action_WordNet_var.set(0)
 action_WordNet_checkbox = tk.Checkbutton(window, text="Via WordNet", variable=action_WordNet_var, onvalue=1, offvalue=0)
 # action_WordNet_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,action_WordNet_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,action_WordNet_checkbox,True)
 
 action_DBpedia_YAGO_var.set(0)
 action_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text="Via DBpedia/YAGO", variable=action_DBpedia_YAGO_var, onvalue=1, offvalue=0)
 # action_DBpedia_YAGO_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_2nd_column,y_multiplier_integer,action_DBpedia_YAGO_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,action_DBpedia_YAGO_checkbox)
 
 SVO_var.set(0)
 SVO_checkbox = tk.Checkbutton(window, text="SVOs: Who, What, Whom, When, Where",variable=SVO_var, onvalue=1, offvalue=0)
@@ -334,7 +343,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer+1, "NLP Suite Help","Please, tick the checkbox to analyze the TEMPORAL (story/plot) dimensions of stories, extracting time via Stanford CoreNLP NER normalized time.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick any of the checkboxes to analyze the SPATIAL dimensions of stories via the GIS pipeline, WordNet, and/or the knowledge bases DBpedia/YAGO.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer+1,"NLP Suite Help","Please, tick the checkbox to extract characters by setting.\n\nThe option is not available. Sorry!")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer+1,"NLP Suite Help","Please, tick the checkboxes to extract action via WordNet or the knowledge bases DBpedia/YAGO.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer+1,"NLP Suite Help","Please, tick the checkboxes to extract action via the POS annotator (Part of Speech) with verb tags, WordNet or the knowledge bases DBpedia/YAGO.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes:\n\n  1. to open the specialized GUI to extract SVO triplets (Subject-Verb-Object) and time (When) and location (Where);\n  2. to open the specialized GUI to analyze the shape of stories;\n  3. to open the specialized GUI to analyze narrative elements.")
 
     return y_multiplier_integer

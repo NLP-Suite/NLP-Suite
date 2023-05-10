@@ -3,13 +3,12 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "BERT_util",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "BERT_util",
                                           ['os', 'transformers', 'csv', 'argparse', 'tkinter', 'time', 'stanza',
                                            'summarizer','sacremoses','contextualSpellCheck','sentencepiece','sentence_transformers', 'tensorflow']) == False:
     sys.exit(0)
 
 
-from regex import R
 from transformers import AutoTokenizer, AutoModelForTokenClassification
 from transformers import BertTokenizerFast, EncoderDecoderModel
 from transformers import pipeline
@@ -47,11 +46,11 @@ import word2vec_distances_util
 import IO_internet_util
 
 # Provides NER tags per sentence for every doc and stores in a csv file
-def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts, chartPackage):
+def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mode, createCharts, chartPackage):
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-large-finetuned-conll03-english")
     model = AutoModelForTokenClassification.from_pretrained("xlm-roberta-large-finetuned-conll03-english")
 
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
 
     Ndocs = str(len(inputDocs))
 
@@ -102,14 +101,14 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts
 
 
 # provides summary of text per doc and stores in a csv file
-def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts, chartPackage):
+def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts, chartPackage, configFileName):
 
 
     result_summary_list = []
 
     header = ["Document Name", "Summary", "Document ID", "Document"]
 
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
 
     Ndocs = str(len(inputDocs))
 
@@ -139,9 +138,10 @@ def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, createCha
     return tempOutputFiles
 
 # Creates a list of vectors/word embeddings for input files and subsequently plots them on a 2d graph
-def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, vis_menu_var, dim_menu_var, compute_distances_var, top_words_var, keywords_var, lemmatize_var, remove_stopwords_var):
+def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, vis_menu_var,
+            dim_menu_var, compute_distances_var, top_words_var, keywords_var, lemmatize_var, remove_stopwords_var, configFileName):
     model = SentenceTransformer('sentence-transformers/all-distilroberta-v1')
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
     filesToOpen = []
     Ndocs = str(len(inputDocs))
     header = ["Word", "Vector", "Sentence ID", "Sentence", "Document ID", "Document"]
@@ -311,13 +311,15 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
       # compute distances
     if compute_distances_var:
 
-
-
-        word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts, chartPackage,
+        outputFiles = word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts, chartPackage,
                                    word_vectors,
                                    result_df,
                                    keywords_var,
                                    compute_distances_var, top_words_var, BERT=True)
+        if outputFiles!=None:
+            if len(outputFiles) > 0:
+                filesToOpen.extend(outputFiles)
+
 
         # print(f'\nStarted computing word distances between top {top_words_var} words at {time.asctime( time.localtime(time.time()))}')
         # # find user-selected top most-frequent words
@@ -489,7 +491,7 @@ def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Docu
 
 
 # helper main method for sentiment analysis
-def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPackage='Excel', model_path="cardiffnlp/twitter-xlm-roberta-base-sentiment"):
+def main(inputFilename, inputDir, outputDir, configFileName, mode, createCharts=False, chartPackage='Excel', model_path="cardiffnlp/twitter-xlm-roberta-base-sentiment"):
     # model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
     # model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
 
@@ -514,6 +516,12 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
         print(
             'No input specified. Please, provide either a single file -- file or a directory of files to be analyzed --dir.')
         sys.exit(1)
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='sentiment_BERT',
+                                                       silent=True)
+    if outputDir == '':
+        return
 
     outputFilename = IO_files_util.generate_output_file_name(
         inputFilename, inputDir, outputDir, '.csv', 'roBERTa', '', '', '', '', False, True)
@@ -541,7 +549,11 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
             documentID = 0
             if os.path.isdir(inputDir):
                 directory = os.fsencode(inputDir)
-                for file in os.listdir(directory):
+                inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt',
+                                                      silent=False,
+                                                      configFileName=configFileName)
+
+                for file in inputDocs:
                     filename = os.path.join(inputDir, os.fsdecode(file))
                     if filename.endswith(".txt"):
                         # start_time = time.asctime( time.localtime(time.time()))()
@@ -604,6 +616,8 @@ if __name__ == '__main__':
                         help='a string to hold the INPUT path of the directory of ALL txt files to be processed; use "" if path contains spaces')
     parser.add_argument('--out', type=str, dest='outputDir', default='',
                         help='a string to hold the path of the OUTPUT directory; use "" if path contains spaces')
+    parser.add_argument('--configFileName', type=str, dest='outputDir', default='',
+                        help='a string to hold the path of the configFileName')
     parser.add_argument('--outfile', type=str, dest='outputFilename', default='',
                         help='output file')
 
@@ -613,7 +627,7 @@ if __name__ == '__main__':
 
     # run main
     sys.exit(main(args.inputFilename, args.inputDir,
-                  args.outputDir, args.outputFilename, args.mode))
+                  args.outputDir, args.configFileName, args.outputFilename, args.mode))
 
 # very fast method to split a text file into a list whose elements are each sentence in that file. Found on: https://stackoverflow.com/a/31505798
 # -*- coding: utf-8 -*-

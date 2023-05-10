@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "Ngrams-CoOccurrence_Viewer",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "Ngrams-CoOccurrence_Viewer",
                                 ['subprocess', 'os', 'tkinter', 'datetime','pandas','csv','glob','numpy']) == False:
     sys.exit(0)
 
@@ -25,37 +25,6 @@ import NGrams_CoOccurrences_Viewer_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def processSearchWords(inputStr):
-    word_list = []
-    if inputStr.find("\"") == -1:
-        # no quotation mark
-        word_list += inputStr.split(",")
-    else:
-        # contains quotation mark
-        curWord = ""
-        i = 0
-        while i < len(inputStr):
-            if inputStr[i] == " ":
-                if curWord != "":
-                    word_list.append(curWord)
-                curWord = ""
-            elif inputStr[i] == "\"":
-                endIndex = inputStr.index("\"", i + 1)
-                word_list.append(inputStr[i + 1: endIndex])
-                i = endIndex
-            else:
-                curWord = curWord + inputStr[i]
-            i += 1
-    return word_list
-
-
-def validate(date_text):
-    try:
-        datetime.datetime.strptime(date_text, '%Y-%m-%d')
-    except ValueError:
-        raise ValueError("Incorrect data format, should be YYYY-MM-DD")
-
-
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         n_grams_list,
         n_grams_viewer_var,
@@ -65,7 +34,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         date_options,
         temporal_aggregation_var,
         viewer_options_list):
-    # print(date_options, temporal_aggregation_var, date_format, date_separator_var, date_position_var)
+    # print(date_options, temporal_aggregation_var, date_format, items_separator_var, date_position_var)
     filesToOpen = []
 
     print("language_list",language_list)
@@ -75,12 +44,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     error_filenames = []
     error_flag = False
 
-    # get the date options from filename
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
     else:
         config_filename = scriptName.replace('main.py', 'config.csv')
-    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
+
+    # get the date options from filename
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
@@ -103,7 +73,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 total_file_number = total_file_number + 1
                 try:
                     date_text = ''
-                    date_text = filename.split(date_separator_var)[date_position_var - 1]
+                    date_text = filename.split(items_separator_var)[date_position_var - 1]
                 except: # if a file in the folder has no date it will break the code
                     pass
                 try:
@@ -192,23 +162,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             mb.showwarning(title='Warning',
                            message='No Date options selected. The N-Grams routine requires date metadata (i.e., date information embedded in the document filenames, e.g., The New York Times_12-18-1899).\n\nPlease, tick the Date options checkbox, enter the appropariate date options and try again.')
             return
-        ngram_list = processSearchWords(search_words)
-        ngram_list = ['-checkNGrams'] + ngram_list
-        # cmd.append(ngram_list)
 
-    # startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences start',
-    #                     'Started running N-Grams Word Co-Occurrences Viewer at', True,
-    #                     'VIEWER options: ' + str(viewer_options_list)+'\nSEARCH words: '+search_words,True,'',True)
-    #
     reminders_util.checkReminder(config_filename,
                                  reminders_util.title_options_NGrams,
                                  reminders_util.message_NGrams,
                                  True)
 
     # run VIEWER ------------------------------------------------------------------------------------
-    n_grams_outputFile, co_occurrences_outputFile = NGrams_CoOccurrences_Viewer_util.run(
+    filesToOpen = NGrams_CoOccurrences_Viewer_util.run(
             inputDir,
             outputDir,
+            config_filename,
+            createCharts, chartPackage,
             n_grams_viewer_var,
             CoOcc_Viewer_var,
             search_words,
@@ -218,69 +183,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             temporal_aggregation_var,
             number_of_years,
             date_format_var,
-            date_separator_var,
+            items_separator_var,
             date_position_var,
             viewer_options_list)
-
-    # plot Ngrams
-    if createCharts == True and n_grams_outputFile!='':
-        xlsxFilename = n_grams_outputFile
-        filesToOpen.append(n_grams_outputFile)
-        xAxis = temporal_aggregation_var
-        chartTitle = 'N-Grams Viewer'
-        columns_to_be_plotted_xAxis=[]
-        columns_to_be_plotted_yAxis=[]
-        # it will iterate through i = 0, 1, 2, …., n-1
-        # this assumes the data are in this format: temporal_aggregation, frequency of search-word_1, frequency of search-word_2, ...
-        i = 0
-        j = 0
-        while i < (len(ngram_list)-1):
-            if temporal_aggregation_var=="quarter" or temporal_aggregation_var=="month":
-                if i == 0:
-                    j=j+3
-                columns_to_be_plotted_yAxis.append([0, j])
-            else:
-                columns_to_be_plotted_yAxis.append([0, i + 1])
-            i += 1
-            j += 1
-        hover_label = []
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
-                                                  'n-grams_viewer',
-                                                  chartPackage=chartPackage,
-                                                  chart_type_list=["line"],
-                                                  chart_title=chartTitle, column_xAxis_label_var=xAxis,
-                                                  hover_info_column_list=hover_label)
-        if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
-
-    # plot co-occurrences
-    if createCharts and co_occurrences_outputFile!='':
-        xlsxFilename = co_occurrences_outputFile
-        filesToOpen.append(co_occurrences_outputFile)
-        chartTitle = 'Co-Occurrences Viewer: ' + search_words
-        if date_options == 0:
-            xAxis = 'Document'
-        else:
-            xAxis = temporal_aggregation_var
-        hover_label = []
-        if xAxis == 'Document':
-
-            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, xlsxFilename, outputDir,
-                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['CO-Occurrence'],
-                                                               chartTitle='Frequency Distribution of Co-Occurring Words',
-                                                               count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
-                                                               hover_label=[],
-                                                               outputFileNameType='',
-                                                               column_xAxis_label='Co-occurring word',
-                                                               groupByList=[],
-                                                               plotList=[],
-                                                               chart_title_label='')
-            if chart_outputFilename != None:
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.append(chart_outputFilename)
-
-    # IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams Word Co-Occurrences end',
-    #                     'Finished running N-Grams Word Co-Occurrences Viewer at', True, '', True, startTime,True)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -327,7 +232,7 @@ config_filename = scriptName.replace('main.py', 'config.csv')
 #   input dir
 #   input secondary dir
 #   output dir
-config_input_output_numeric_options=[2,1,0,1]
+config_input_output_numeric_options=[0,1,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 window=GUI_util.window
@@ -350,7 +255,7 @@ CoOcc_Viewer_var = tk.IntVar()
 search_words_var=tk.StringVar()
 
 # date_format_var=tk.StringVar()
-# date_separator_var=tk.StringVar()
+# items_separator_var=tk.StringVar()
 # date_position_var=tk.IntVar()
 
 date_options = tk.IntVar()
@@ -382,7 +287,12 @@ search_words_lb = tk.Label(window, text='Search word(s)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,search_words_lb,True)
 search_words_entry = tk.Entry(window, textvariable=search_words_var)
 search_words_entry.configure(width=GUI_IO_util.widget_width_extra_long)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos,y_multiplier_integer,search_words_entry)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos, y_multiplier_integer,
+                                   search_words_entry,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Enter the comma-separated words/collocations to be searched;\nfor N-grams each item in the list will be plotted separately; for Co-occurrences all items will be plotted together ")
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos,y_multiplier_integer,search_words_entry)
 
 date_options.set(0)
 date_options_checkbox = tk.Checkbutton(window, text='Date options', variable=date_options, onvalue=1, offvalue=0)
@@ -518,7 +428,7 @@ def activate_allOptions():
     else:
         input_label = 'INPUT DIR'
     if n_grams_viewer_var.get() and ('(Date: ' not in GUI_util.IO_setup_var.get()):
-        mb.showwarning(title='Warning',message='The N-grams VIEWER option requires file(s) with a date embedded in the filename.\n\nYour current ' + input_label + ' selection does not show the Date option.\n\nPlease, select a different Input configuration or run the Co-Occurrences VIEWER option instead that does not require a date embedded in filenames.')
+        mb.showwarning(title='Warning',message='The N-grams VIEWER option requires file(s) with a date embedded in the filename.\n\nYour current ' + input_label + ' selection does not show the Date option (THE DATE OPTION IS SET IN THE I/O SETUP GUI; CLICK THE "Setup INPUT/OUTPUT configuration" BUTTON TO OPEN THE GUI).\n\nPlease, select a different Input configuration or run the Co-Occurrences VIEWER option instead that does not require a date embedded in filenames.')
         n_grams_viewer_var.set(0)
     if n_grams_viewer_var.get() or CoOcc_Viewer_var.get():
         search_words_entry.configure(state='normal')
@@ -573,17 +483,29 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer script.\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer script.\n\nYou can run both Viewers at the same time.\n\nThe NGrams part of the algorithm requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872).\n\nFor both viewers, results will be visualized in Excel line plots.\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
+        'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer script.'\
+        '\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer script.'\
+        '\n\nYou can run both Viewers at the same time.'\
+        '\n\nThe NGrams part of the algorithm requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872). '\
+        'YOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXES "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'\
+        '\n\nFor both viewers, results will be visualized in Excel line plots.'\
+        '\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. '\
+        'For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         'Please, enter the comma-separated list of single words or collocations (i.e., sets of words such as coming out, beautiful sunny day) for which you want to know N-Grams/Co-occurrences statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
+        'Please, enter the comma-separated list of single words or collocations (i.e., sets of words such as coming out, beautiful sunny day) for which you want to know N-Grams/Co-occurrences statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences.\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: group of years, year, quarter, month.\n\nPlease, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).\n\nPlease, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).\n\nPlease, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2).\nAvailable date options are: mm-dd-yyyy, dd-mm-yyyy, yyyy-mm-dd, yyyy-dd-mm, yyyy-mm, yyyy. Date options are set in NLP_setup_IO_main.')
+        'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences. ' \
+            'YOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXS "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'\
+            '\n\nPlease, using the dropdown menu, select the level of temporal aggregation you want to apply to your documents: group of years, year, quarter, month.'\
+            '\n\nFor both viewers, results will be visualized in Excel line plots.'\
+            '\n\nFor n-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. '\
+            'For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         'Please, use the dropdown menu to select various options that can be applied to the VIEWER. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nYou can make your searches CASE SENSITIVE.\n\nYou can NORMALIZE results. Only works for N-Grams. Formula: search word frequency / total number of all words e.g: word "nurse" occurs once in year 1892, and year 1892 has a total of 1000 words. Then the normalized frequency will be 1/1000.\n\nYou can SCALE results. Only works for N-Grams. It applies the min-max normalization to frequency of search words. After the min-max normalization is done, each column of data (i.e., each search word) will fall in the same range.\n\nYou can LEMMATIZE words for your searches (e.g., be instead of being, is, was). The routine relies on the Stanford CoreNLP for lemmatizing words.\n\nFinally, you can select to display minimal information or full information.')
+        'Please, use the dropdown menu to select various options that can be applied to the VIEWER. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nYou can make your searches CASE SENSITIVE.\n\nYou can NORMALIZE results. Only works for N-Grams. Formula: search word frequency / total number of all words e.g: word "nurse" occurs once in year 1892, and year 1892 has a total of 1000 words. Then the normalized frequency will be 1/1000.\n\nYou can SCALE results. Only works for N-Grams. It applies the min-max normalization to frequency of search words. After the min-max normalization is done, each column of data (i.e., each search word) will fall in the same range.\n\nYou can LEMMATIZE words for your searches (e.g., be instead of being, is, was). The routine relies on the Stanford CoreNLP for lemmatizing words.\n\nFinally, you can select to display minimal information or full information.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         'Please, click on the button to open the GUI where you can compute n-grams.')
+        'Please, click on the button to open the GUI where you can compute n-grams.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                              'Please, click on the button to open a GUI with more options for word/collocation searches.')
+        'Please, click on the button to open a GUI with more options for word/collocation searches.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 
@@ -593,6 +515,7 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,
 readMe_message="""
 The NGrams_CoOccurrences script allows searches for Ngrams or word co-occurrences, i.e., key words (e.g., “nursery school” (a 2-gram or bigram), “kindergarten” (a 1-gram or unigram) and “child care” (another bigram) that occur in a set of documents.
 \n\nThe NGrams VIEWER requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872). It computes the number of words that appear in documents within a selected time period (e.g., month, year). It works similarly to Google Ngram Viewer except this routine works on documents supplied by the user rather than on the millions of Google books (see https://books.google.com/ngrams/info).
+'\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXS "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'
 \n\nThe routine relies on Stanza for lemmatizing words.
 \n\n   For NGRAMS, the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the FREQUENCY OF DOCUMENTS where searched word(s) appear.
 \n\n   For CO-OCCURRING words, the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear together in the same document, NOT the frequency of the searched word(s) as with NGrams.
@@ -622,5 +545,15 @@ message = "Some of the algorithms behind this GUI rely on a specific NLP package
           + str(language) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " \
           + str(package_basics) + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
 reminders_util.checkReminder(config_filename, title, message)
+
+state = str(GUI_util.run_button['state'])
+if state == 'disabled':
+    error = True
+    # check to see if there is a GUI-specific config file, i.e., a CoNLL table file, and set it to the setup_IO_menu_var
+    if os.path.isfile(os.path.join(GUI_IO_util.configPath, config_filename)):
+        GUI_util.setup_IO_menu_var.set('GUI-specific I/O configuration')
+        mb.showwarning(title='Warning',
+               message="Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
+        error = False
 
 GUI_util.window.mainloop()

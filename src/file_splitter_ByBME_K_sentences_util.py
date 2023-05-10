@@ -4,7 +4,7 @@ from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tok
 import IO_files_util
 import IO_csv_util
 
-def sample_doc_beginning_middle_end(window, config_filename, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, Begin_K_sent, End_K_sent):
+def sample_doc_beginning_middle_end(window, config_filename, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, Begin_K_sent, End_K_sent, configFileName):
     result_first_last = []
     result_middle = []
     result_first_txt = ""
@@ -18,7 +18,7 @@ def sample_doc_beginning_middle_end(window, config_filename, inputFilename,input
     filesToOpen = []
     fin = open('../lib/wordLists/stopwords.txt', 'r')
     stops = set(fin.read().splitlines())
-    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
 
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='BME_txt', silent=True)
 

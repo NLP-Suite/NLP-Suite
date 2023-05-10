@@ -14,7 +14,7 @@ Useful conda & pip commands (prompt)
 	pip commands
 	prompt commands
 
-You can find detailed installation instructions at the NLP Suitte GitHub pages https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite.
+You can find detailed installation instructions at the NLP Suite GitHub pages https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite.
 
 Getting started
 
@@ -72,11 +72,9 @@ The NLP Suite updates the scripts automatically to the lastest release available
 
 	if you are a Mac user, you run a pip command (e.g., pip command spacy) and the NLP Suite after installation still warns you that stacy is not installed, most likely you are running macOS bash instead of zsh.
 
-	Since the release of macOS 10.15 (Catalina) on October 7, 2019, the default macOS shell has been switched from bash to zsh. The NLP Suite has been optimized for zsh not bash. If you encounter errors with the installation of some Python packages (e.g., Stacy), most likely you are running bash. To ensure that you are running zhs open a command line/terminal and type 
+	Since the release of macOS 10.15 (Catalina) on October 7, 2019, the default macOS shell has been switched from bash to zsh. The NLP Suite has been optimized for zsh not bash. If you encounter errors with the installation of some Python packages (e.g., Stacy), most likely you are running bash. To ensure that you are running zhs open terminal and type 
 
 	chsh -s /bin/zsh
-
-	"terminal.integrated.shell.osx": "/bin/zsh",
 
 	conda init zsh
 
@@ -104,9 +102,9 @@ Useful Anaconda & pip commands
 
 		3. Delete an environment
 
-			conda env remove --name NLP Suite
+			conda env remove --name NLP
 
-			  will delete an environment (i.e., NLP Suite) wrongly created or no longer necessary. 
+			  will delete an environment (i.e., NLP) wrongly created or no longer necessary. 
 
 		4. List all environments
 
@@ -191,6 +189,18 @@ Useful Anaconda & pip commands
 
 			where Python
 			
-		will give the list of all the locations where Python is installed
+			will give the list of all the locations where Python is installed
 
+		2. Show the version of Java JDK installed on your machine
+			
+			java -version
+			or
+			java --version
 
+		3. Show the version of Python installed on your machine
+
+			python --version
+			
+		4. delete/remove anaconda
+		
+			rm -rf ~/anaconda

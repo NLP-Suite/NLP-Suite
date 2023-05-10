@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Statistics",['csv','tkinter','os','collections','pandas','numpy','scipy','itertools'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Statistics",['csv','tkinter','os','collections','pandas','numpy','scipy','itertools'])==False:
     sys.exit(0)
 
 import os
@@ -114,7 +114,7 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, cre
             # This method is most useful when you don’t know if your object is a Series or DataFrame,
             #   but you do know it has just a single column.
             #   In that case you can safely call squeeze to ensure you have a Series.
-            df = pd.read_csv(inputFilename, encoding="utf-8", error_bad_lines=False, squeeze = True)
+            df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines='skip', squeeze = True)
         except:
             mb.showwarning(title='Data encoding error', message="The input file\n\n" + inputFilename + "\n\nhas character encoding that breaks the code. The statistical function only works with utf-8 compliant files.\n\nPlease, check your input file encoding and try again!")
             return None
@@ -166,7 +166,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
         return None
     # reading csv file
     try:
-        df = pd.read_csv(inputFilename, encoding="utf-8", error_bad_lines=False, squeeze=True)
+        df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines='skip', squeeze=True)
     except:
         mb.showwarning(title='Data encoding error',
                        message="The input file\n\n" + inputFilename + "\n\nhas character encoding that breaks the code. The statistical function only works with utf-8 compliant files.\n\nPlease, check your input file encoding and try again!")
@@ -229,7 +229,8 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
                                                   hover_info_column_list=hover_label,
                                                   remove_hyperlinks = True)
         if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+            if len(chart_outputFilename) > 0:
+                filesToOpen.append(chart_outputFilename) # only one file is returned as string rather than as list
 
     return filesToOpen
 
@@ -444,7 +445,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
     # group by both group col and select cols and get a row named count to count the number of frequencies
     data = data.groupby(cols).size().to_frame("count")
     data.to_csv(name, encoding='utf-8')
-    data = pd.read_csv(name, encoding='utf-8',error_bad_lines=False)
+    data = pd.read_csv(name, encoding='utf-8',on_bad_lines='skip')
     # transform the data by the select columns
     # Reshape data (produce a “pivot” table) based on column values. Uses unique values from specified index / columns to form axes of the resulting DataFrame.
     data = data.pivot(index = group_col, columns = select_col, values = "count")
@@ -458,7 +459,7 @@ def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputD
     print(name)
     if(graph):
         #TODO: need filename generation and chartTitle generation
-        data = pd.read_csv(name,header=0, encoding='utf-8',error_bad_lines=False)
+        data = pd.read_csv(name,header=0, encoding='utf-8',on_bad_lines='skip')
         cols_to_be_plotted = []
         for i in range(1,len(data.columns)):
             cols_to_be_plotted.append([0,i])
@@ -498,7 +499,7 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
         temp, no_hyperlinks_filename = IO_csv_util.remove_hyperlinks(inputFilename)
     else:
         no_hyperlinks_filename = inputFilename
-    data = pd.read_csv(no_hyperlinks_filename, encoding='utf-8',error_bad_lines=False)
+    data = pd.read_csv(no_hyperlinks_filename, encoding='utf-8',on_bad_lines='skip')
     # data = data.pivot(index = 'Sentence ID', columns = 'Document', values = "Yngve score")
     data = data.pivot(index = index, columns = 'Document', values = values)
     data.to_csv(no_hyperlinks_filename, encoding='utf-8')
@@ -538,15 +539,18 @@ def compute_csv_column_frequencies_with_aggregation(window,inputFilename, inputD
             reader = csv.reader(x.replace('\0', '') for x in infile)
             headers = next(reader)
         header_indices = [i for i, item in enumerate(headers) if item]
-        data = pd.read_csv(inputFilename, usecols=header_indices,encoding='utf-8',error_bad_lines=False)
+        data = pd.read_csv(inputFilename, usecols=header_indices,encoding='utf-8',on_bad_lines='skip')
 
     # remove hyperlink before processing
     data.to_csv(inputFilename,encoding='utf-8', index=False)
     removed_hyperlinks, inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
-    data = pd.read_csv(inputFilename,encoding='utf-8',error_bad_lines=False)
+    data = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
     # TODO check if data is empty exit
+    # fileNameType=fileNameType.replace('/','-')
+    # outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
+    #                 '.csv', 'col-freq_'+fileNameType)
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
-                    '.csv', 'col-freq_'+fileNameType)
+                    '.csv','col-freq')
 
     if len(selected_col) == 0:
         mb.showwarning('Missing field', 'You have not selected the csv field for which to compute frequencies.\n\nPlease, select the field and try again.')

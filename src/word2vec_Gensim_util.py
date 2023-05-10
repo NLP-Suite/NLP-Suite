@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"word2vec_main.py",['os','tkinter', 'pandas', 'gensim', 'stanza', 'itertools', 'numpy', 'string'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"word2vec_main.py",['os','tkinter', 'pandas', 'gensim', 'stanza', 'itertools', 'numpy', 'string'])==False:
     sys.exit(0)
 
 import os
@@ -31,7 +31,7 @@ fin = open('../lib/wordLists/stopwords.txt', 'r')
 stop_words = set(fin.read().splitlines())
 punctuations = set(string.punctuation)
 
-def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
+def run_Gensim_word2vec(inputFilename, inputDir, outputDir, configFileName, openOutputFiles, createCharts, chartPackage,
                         remove_stopwords_var, lemmatize_var,
                         keywords_var,
                         compute_distances_var, top_words_var,
@@ -44,7 +44,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     tail_list = {}
     all_input_docs = {}
     dId = 0
-    numFiles = 1
+    nFile = 1
     filesToOpen = []
     sentences_out = []
 
@@ -80,17 +80,23 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
                 all_input_docs[dId] = text
                 tail_list[dId] = tail
     else:
-        numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
-        if numFiles == 0:
-            mb.showerror(title='Number of files error',
-                        message='The selected input directory does NOT contain any file of txt type.\n\nPlease, select a different directory and try again.')
-        for doc in list(os.listdir(inputDir)):
+        # numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
+        # if numFiles == 0:
+        #     mb.showerror(title='Number of files error',
+        #                 message='The selected input directory does NOT contain any file of txt type.\n\nPlease, select a different directory and try again.')
+        inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False,
+                                                  configFileName=configFileName)
+        nFile = len(inputDocs)
+        if nFile == 0:
+            return filesToOpen
+
+        for doc in inputDocs: # list(os.listdir(inputDir)):
             head, tail = os.path.split(doc)
             if doc.endswith('.txt'):
                 with open(os.path.join(inputDir, doc), 'r', encoding='utf-8', errors='ignore') as file:
                     dId += 1
                     text = file.read()
-                    print('Importing file ' + str(dId) + '/' + str(numFiles) + ' ' + tail)
+                    print('Importing file ' + str(dId) + '/' + str(nFile) + ' ' + tail)
                     document.append(os.path.join(inputDir, doc))
                     all_input_docs[dId] = text
                     tail_list[dId] = tail
@@ -106,7 +112,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
     # process input file(s)
     out_df = pd.DataFrame()
     for doc_idx, txt in enumerate(all_input_docs.items()):
-        print('Processing file ' + str(doc_idx+1) + '/' + str(numFiles) + ' ' + tail_list[doc_idx+1])
+        print('Processing file ' + str(doc_idx+1) + '/' + str(nFile) + ' ' + tail_list[doc_idx+1])
         temp_out_df = pd.DataFrame()
         stanza_doc = stanzaPipeLine(txt[1])
 
@@ -187,7 +193,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, openOutputFiles, cre
         ## visualization
         import word2vec_tsne_plot_util
         outputFiles = word2vec_tsne_plot_util.run_word2vec_plot(inputFilename, inputDir, outputDir,
-                              word_vector_list,
+                              np.asarray(word_vector_list),
                               filtered_words,
                               vis_menu_var, dim_menu_var)
         filesToOpen.extend(outputFiles)

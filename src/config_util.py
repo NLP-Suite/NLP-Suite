@@ -12,7 +12,7 @@
 # import GUI_util
 # import IO_libraries_util
 #
-# if not IO_libraries_util .install_all_packages(GUI_util.window,"config_util",['os','tkinter']):
+# if not IO_libraries_util .install_all_Python_packages(GUI_util.window,"config_util",['os','tkinter']):
 #     sys.exit(0)
 
 import os
@@ -128,37 +128,42 @@ def read_NLP_package_language_config():
     config_filename = GUI_IO_util.configPath + os.sep + 'NLP_default_package_language_config.csv'
     # dataset = pd.read_csv(config_filename, sep='\t')
     error = False
-    try:
-        dataset = pd.read_csv(config_filename)
-        package = dataset.iat[0, 0]
-        parsers = dataset.iat[0, 1].split(',')
-        basics_package = dataset.iat[0, 2]
-        language = dataset.iat[0, 3]
-        encoding_var = dataset.iat[0, 4]
-        export_json_var = int(dataset.iat[0, 5])
-        memory_var = int(dataset.iat[0, 6])
-        limit_document_length_var = int(dataset.iat[0, 7])
-        limit_sentence_length_var = int(dataset.iat[0, 8])
-        # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
-        #   several times in this scripts (search for instance for MAIN NLP PACKAGE and change
-        #   they also need to be changed in one line in NLP_setup_package_language_main.py
-        # package_display_area_value = f"MAIN NLP PACKAGE: {package}, LEMMATIZER PACKAGE: {basics_package}, LANGUAGE(S): {language}"
-    except:
-        # setup default values if config is not available for first tme users
-        package = 'Stanford CoreNLP'
-        parsers = ['Neural Network', 'Probabilistic Context Free Grammar (PCFG)']
-        basics_package = 'Stanza'
-        language = ''
-        encoding_var = 'utf-8'
-        export_json_var = 0
-        memory_var = 4
-        limit_document_length_var = 90000
-        limit_sentence_length_var = 100
-        error = True
-        # error must be set to true to display the next message after the entire GUI has been displayed
-        # mb.showwarning(title='Warning',
-        #                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup button.")
-        # package_display_area_value = ''
+    if not os.path.exists(config_filename):
+        mb.showwarning(title='Warning',
+                       message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup button.")
+        error=True
+    else:
+        try:
+            dataset = pd.read_csv(config_filename)
+            package = dataset.iat[0, 0]
+            parsers = dataset.iat[0, 1].split(',')
+            basics_package = dataset.iat[0, 2]
+            language = dataset.iat[0, 3]
+            encoding_var = dataset.iat[0, 4]
+            export_json_var = int(dataset.iat[0, 5])
+            memory_var = int(dataset.iat[0, 6])
+            limit_document_length_var = int(dataset.iat[0, 7])
+            limit_sentence_length_var = int(dataset.iat[0, 8])
+            # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
+            #   several times in this scripts (search for instance for MAIN NLP PACKAGE and change
+            #   they also need to be changed in one line in NLP_setup_package_language_main.py
+            # package_display_area_value = f"MAIN NLP PACKAGE: {package}, LEMMATIZER PACKAGE: {basics_package}, LANGUAGE(S): {language}"
+        except:
+            # setup default values if config is not available for first tme users
+            package = 'Stanford CoreNLP'
+            parsers = ['Neural Network', 'Probabilistic Context Free Grammar (PCFG)']
+            basics_package = 'Stanza'
+            language = ''
+            encoding_var = 'utf-8'
+            export_json_var = 0
+            memory_var = 4
+            limit_document_length_var = 90000
+            limit_sentence_length_var = 100
+            error = True
+            # error must be set to true to display the next message after the entire GUI has been displayed
+            # mb.showwarning(title='Warning',
+            #                message="The config file 'NLP_default_package_language_config.csv' could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options using the Setup button.")
+            # package_display_area_value = ''
     package_display_area_value = f"MAIN NLP PACKAGE: {package}, LEMMATIZER PACKAGE: {basics_package}, LANGUAGE(S): {language}"
     return error, package, parsers, basics_package, language, package_display_area_value, encoding_var, export_json_var, memory_var, limit_document_length_var, limit_sentence_length_var
 
@@ -236,9 +241,12 @@ def get_template_config_csv_file(config_input_output_numeric_options, config_inp
             if len(config_input_output_alphabetic_options[index]) > 0:
                 sublist=config_input_output_alphabetic_options[index]
                 # date options saved: date format, date characters separator, date position in filename
-                # =4 when date options are available (path + 3 date options), otherwise =1
-                if len(sublist)==4:
-                    IO_configuration.append([configuration_column_label, sublist[0], sublist[1], sublist[2], sublist[3]])
+                # =4 when date options are available (path + sort order + 3 date options), otherwise =1
+                # [configuration_column_label, sublist[0], sublist[1], sublist[2], sublist[3]])
+                IO_configuration.append(
+                    [configuration_column_label, sublist[0], sublist[1], sublist[4], sublist[3], sublist[4]])
+                if len(sublist)==5:
+                    IO_configuration.append([configuration_column_label, sublist[0], sublist[1], sublist[2], sublist[3], sublist[4]])
                 else:
                     IO_configuration.append([configuration_column_label, sublist[0]])
                 config_input_output_alphabetic_options=IO_configuration
@@ -384,7 +392,7 @@ def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_displ
 # config lines are blank, if NOT required by the specific NLP script
 
 # config_input_output_alphabetic_options is a double list with no headers,
-#   with one sublist for each of the four types of IO confiigurations: filename, input main dir, input secondary dir, output dir
+#   with one sublist for each of the four types of IO configurations: filename, input main dir, input secondary dir, output dir
 # each sublist has four items: path, date format, date separator, date position
 # e.g., [['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/The Three Little Pigs.txt', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['C:\\Program Files (x86)\\NLP_backup\\Output', '', '', '']]
 def write_IO_config_file(window, config_filename, config_input_output_numeric_options, config_input_output_alphabetic_options, silent=False):
@@ -402,7 +410,8 @@ def write_IO_config_file(window, config_filename, config_input_output_numeric_op
         with open(config_filename_path, 'w+', newline='') as csv_file:
             writer = csv.writer(csv_file)
             # writer.writerows(temp)
-            header = ['I/O configuration label', 'Path', 'Date format', 'Date separator character(s)', 'Date position']
+            # in the NLP_setup_IO_config there are 6 columns and 4 rows (each row for input file, input dir1, input dir2, output dir)
+            header = ['I/O configuration label', 'Path', 'Sort order', 'Item separator character(s)', 'Date format', 'Date position']
             config_input_output_alphabetic_options.insert(0, header)
             writer.writerows(config_input_output_alphabetic_options)
         csv_file.close()
@@ -416,21 +425,25 @@ def write_IO_config_file(window, config_filename, config_input_output_numeric_op
                                            False)
 
 def get_date_options(config_filename, config_input_output_numeric_options):
+
+    # in the NLP_setup_IO_config there are 6 columns and 4 rows (each row for input file, input dir1, input dir2, output dir):
+    #   I/O configuration label, Path, Sort order, Item separator character(s), Date format, Date position
     config_input_output_alphabetic_options, missingIO = read_config_file(config_filename, config_input_output_numeric_options)
     if len(config_input_output_alphabetic_options)>0:
         index=0
-        extract_date_from_filename_var = 0
-        date_format_var = 'mm/dd/yyyy'
-        date_separator_var = '_'
-        date_position_var = 2
+        # define variable with default values
+        filename_embeds_date_var = 0
+        date_format_var = 'mm/dd/yyyy' # default
+        items_separator_var = '_' # default
+        date_position_var = 2 # default
         while index<2: # check date options for input file and input dir
-            if config_input_output_alphabetic_options[index][2]!='':
-                extract_date_from_filename_var=1
-                date_format_var=config_input_output_alphabetic_options[index][2]
-                date_separator_var=config_input_output_alphabetic_options[index][3]
-                date_position_var=int(config_input_output_alphabetic_options[index][4])
+            if config_input_output_alphabetic_options[index][4]!='':
+                filename_embeds_date_var=1
+                date_format_var=config_input_output_alphabetic_options[index][4]
+                items_separator_var=config_input_output_alphabetic_options[index][3]
+                date_position_var=int(config_input_output_alphabetic_options[index][5])
             index=index+1
-    return extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var
+    return filename_embeds_date_var, date_format_var, items_separator_var, date_position_var
 
 # used in GIS_GUI and GIS_geocode_GUI
 # Google_config: 'Google-geocode-API_config.csv' or 'Google-Maps-API_config.csv'

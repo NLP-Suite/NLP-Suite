@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"annotator_YAGO_util.py",['os','re','tkinter','subprocess','time','pandas','string','SPARQLWrapper','stanza','fuzzywuzzy'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"annotator_YAGO_util.py",['os','re','tkinter','subprocess','time','pandas','string','SPARQLWrapper','stanza','fuzzywuzzy'])==False:
     sys.exit(0)
 
 import os
@@ -44,7 +44,7 @@ Html_Doc = []
 
 
 # This is the main function
-def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls):
+def YAGO_annotate(inputFile, inputDir, outputDir, configFileName, annotationTypes,color1,colorls):
     # this will avoid an SSL certificate error ONLY for a specific url file
     ssl._create_default_https_context = ssl._create_unverified_context
     # this will renew the SSL certificate indefinitely
@@ -69,7 +69,7 @@ def YAGO_annotate(inputFile, inputDir, outputDir, annotationTypes,color1,colorls
 
 
     # loop through every txt file and annotate via request to YAGO
-    files = IO_files_util.getFileList(inputFile, inputDir, '.txt')
+    files = IO_files_util.getFileList(inputFile, inputDir, '.txt', silent=False, configFileName=configFileName)
     nFile = len(files)
     if nFile == 0:
         return

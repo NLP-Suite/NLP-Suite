@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "parsers_annotators_main", ['tkinter', 'subprocess']) == False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "parsers_annotators_main", ['tkinter', 'subprocess']) == False:
     sys.exit(0)
 
 import os
@@ -54,13 +54,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                        message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
         return
 
-    # get the date options from filename
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        temp_config_filename = 'NLP_default_IO_config.csv'
+        config_filename = 'NLP_default_IO_config.csv'
     else:
-        temp_config_filename = scriptName.replace('main.py', 'config.csv')
-    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = \
-        config_util.get_date_options(temp_config_filename, config_input_output_numeric_options)
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
+    # get the date options from filename
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = \
+        config_util.get_date_options(config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
     if parser_var == 0 and CoNLL_table_analyzer_var == 1:
@@ -118,6 +119,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         if IO_libraries_util.check_inputPythonJavaProgramFile(
                                 "Stanford_CoreNLP_coReference_util.py") == False:
                             return
+
+
                         file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename,
                                                                                            inputDir,
                                                                                            outputDir, openOutputFiles,
@@ -140,9 +143,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                                openOutputFiles, createCharts, chartPackage,
                                                                                annotator, False, #'All POS',
                                                                                language, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
-                                                                               extract_date_from_filename_var=extract_date_from_filename_var,
+                                                                               filename_embeds_date_var=filename_embeds_date_var,
                                                                                date_format=date_format_var,
-                                                                               date_separator_var=date_separator_var,
+                                                                               items_separator_var=items_separator_var,
                                                                                date_position_var=date_position_var,
                                                                                single_quote_var = single_quote)
 
@@ -198,14 +201,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         limit_sentence_length_var = 1000
         tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
+                                                    config_filename,
                                                     openOutputFiles,
                                                     createCharts, chartPackage,
                                                     annotator, False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
-                                                    extract_date_from_filename_var=extract_date_from_filename_var,
+                                                    filename_embeds_date_var=filename_embeds_date_var,
                                                     date_format=date_format_var,
-                                                    date_separator_var=date_separator_var,
+                                                    items_separator_var=items_separator_var,
                                                     date_position_var=date_position_var)
 
         if tempOutputFiles == None:
@@ -269,9 +273,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       annotator, False,
                                                       language_list,
                                                       memory_var, document_length_var, limit_sentence_length_var,
-                                                      extract_date_from_filename_var=extract_date_from_filename_var,
+                                                      filename_embeds_date_var=filename_embeds_date_var,
                                                       date_format=date_format_var,
-                                                      date_separator_var=date_separator_var,
+                                                      items_separator_var=items_separator_var,
                                                       date_position_var=date_position_var)
 
         if tempOutputFiles == None:
@@ -292,11 +296,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # open the analyzer having saved the new parser output in config so that it opens the right input file
         config_filename_temp = 'conll_table_analyzer_config.csv'
         config_input_output_numeric_options_temp=[1, 0, 0, 1]
-        # TODO Roby must pass the correct config_input_output_alphabetic_options
-        config_input_output_alphabetic_options = [str(tempOutputFiles[0]), '','',outputDir,date_format_var,date_separator_var,date_position_var]
-        config_util.write_IO_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options_temp, config_input_output_alphabetic_options, True)
+        # config_input_output_alphabetic_options is a double list with no headers
+        #   with one sublist for each of the four types of IO configurations: filename, input main dir, input secondary dir, output dir
+        # each sublist has four items: path, date format, date separator, date position
+        # e.g., [['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/The Three Little Pigs.txt', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['C:\\Program Files (x86)\\NLP_backup\\Output', '', '', '']]
+        config_input_output_alphabetic_options_temp, missingIO = config_util.read_config_file(config_filename_temp, config_input_output_numeric_options_temp)
+        # add the CoNLL table file to the config file 'conll_table_analyzer_config.csv'
+        config_input_output_alphabetic_options_temp[0][1]=filesToOpen[0][0]
+        # add the output directory to the config file 'conll_table_analyzer_config.csv'
+        config_input_output_alphabetic_options_temp[3][1] = outputDir
+        config_util.write_IO_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options_temp, config_input_output_alphabetic_options_temp, True)
 
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(config_filename_temp,
                                      reminders_util.title_options_CoNLL_analyzer,
                                      reminders_util.message_CoNLL_analyzer,
                                      True)
@@ -403,13 +414,13 @@ def open_GUI(param):
     else:
         call('python coreference_main.py',shell=True)
 
-pre_processing_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: open_GUI('preprocess'))
+pre_processing_button = tk.Button(window, width=GUI_IO_util.widget_width_medium, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: open_GUI('preprocess'))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    pre_processing_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
-coreference_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Coreference resolution (Open GUI)',command=lambda: open_GUI('coref'))
+coreference_button = tk.Button(window, width=GUI_IO_util.widget_width_medium, text='Coreference resolution (Open GUI)',command=lambda: open_GUI('coref'))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    coreference_button,
@@ -462,7 +473,7 @@ def activate_SentenceTable(*args):
 CoNLL_table_analyzer_var.set(0)
 CoNLL_table_analyzer_checkbox = tk.Checkbutton(window, text='CoNLL table analyzer', variable=CoNLL_table_analyzer_var,
                                                onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+10, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_lb_pos, y_multiplier_integer,
                                                CoNLL_table_analyzer_checkbox, True)
 CoNLL_table_analyzer_checkbox_msg = tk.Label()
 CoNLL_table_analyzer_checkbox_msg.config(text="Open the CoNLL table analyzer GUI")
@@ -492,15 +503,15 @@ annotators_menu = tk.OptionMenu(window, annotators_menu_var,
         '   POS annotator',
         '   NER (Open GUI)',
         'Special annotators (via BERT, CoreNLP, spaCy, Stanza) -----------------------------------------',
-        '   Coreference PRONOMINAL resolution (via BERT, CoreNLP, spaCy Neural Network)',
-        '   Sentiment analysis (Neural Network)',
-        '   OpenIE - Relation triples extractor (via CoreNLP Neural Network)',
+        '   Coreference PRONOMINAL resolution (via BERT, CoreNLP, spaCy)',
+        '   Sentiment analysis',
+        '   OpenIE - Relation triples extractor (via CoreNLP)',
         '   SVO extraction (via CoreNLP, spaCy, Stanza)',
         '   Word embeddings (Word2Vec) (via BERT, Gensim, spaCy)',
         'More special annotators (CoreNLP only) --------------------------------------------------------',
-        '   Gender annotator (via CoreNLP Neural Network)',
+        '   Gender annotator (via CoreNLP)',
         '   Normalized NER date annotator (via CoreNLP)',
-        '   Quote/dialogue annotator (via CoreNLP Neural Network)')
+        '   Quote/dialogue annotator (via CoreNLP)')
 
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_annotator_pos, y_multiplier_integer,
                                                annotators_menu)
@@ -536,7 +547,7 @@ def activate_annotators_menu(*args):
         if '*' in annotators_menu_var.get() or 'dialogue' in annotators_menu_var.get():
             y_multiplier_integer=y_multiplier_integer_SV1-1
             quote_var.set(0)
-            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_col2_pos,
+            y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_manual_coref_edit_pos,
                                                            y_multiplier_integer,
                                                            quote_checkbox,True)
             quote_checkbox.configure(state='normal')
@@ -594,8 +605,8 @@ TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download 
                'Stanford CoreNLP supported languages':'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
                'CoNLL Table': 'TIPS_NLP_Stanford CoreNLP CoNLL table.pdf',
                'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
-               'Gender annotator':'TIPS_NLP_Gender annotator.pdf',
-               'Quote annotator':'',
+               'Gender annotator':'TIPS_NLP_Stanford CoreNLP gender annotator.pdf',
+               'Quote annotator':'TIPS_NLP_Stanford CoreNLP quote annotator.pdf',
                'Normalized NER date annotator':'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
                'Sentiment analysis':'TIPS_NLP_Sentiment analysis.pdf',
                'Noun Analysis': "IPS_NLP_Noun Analysis.pdf",
@@ -646,7 +657,7 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 def activate_NLP_options(*args):
     global error, parsers, available_parsers, parser_lb, package, package_display_area_value, language, language_list, y_multiplier_integer
-    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = GUI_util.handle_setup_options(y_multiplier_integer, scriptName)
+    error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = GUI_util.setup_parsers_annotators(y_multiplier_integer, scriptName)
     if package != '':
         available_parsers = 'Parsers for ' + package # + '                          '
     else:
@@ -659,14 +670,17 @@ def activate_NLP_options(*args):
         for s in parsers:
             s=s.lstrip() # remove leading blanks since parsers are separated by ,blank
             m.add_command(label=s, command=lambda value=s: parser_menu_var.set(value))
-    parser_lb = tk.Label(window, text=available_parsers)
-    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.parsers_annotators_parser_lb_pos,
-                                                   y_multiplier_integer_SV,
-                                                   parser_lb, True, False, False, False, 90,
-                                                   GUI_IO_util.labels_x_coordinate,
-                                                   "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
-    # parser_lb.config(text=available_parsers)
-    # print("available parsers",available_parsers)
+
+    try:
+        parser_lb.config(text=available_parsers)
+    except NameError:
+        parser_lb = tk.Label(window, text=available_parsers)
+        y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.parsers_annotators_parser_lb_pos,
+                                                       y_multiplier_integer_SV,
+                                                       parser_lb, True, False, False, False, 90,
+                                                       GUI_IO_util.labels_x_coordinate,
+                                                       "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
+
 GUI_util.setup_menu.trace('w', activate_NLP_options)
 activate_NLP_options()
 

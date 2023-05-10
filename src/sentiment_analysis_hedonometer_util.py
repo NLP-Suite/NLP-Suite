@@ -26,7 +26,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"Sentiment Analysis HEDONOMETER",['stanza','json','os','csv','argparse','tkinter','time'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Sentiment Analysis HEDONOMETER",['stanza','json','os','csv','argparse','tkinter','time'])==False:
     sys.exit(0)
 
 import os

@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"file_merger_util",['os','tkinter'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"file_merger_util",['os','tkinter'])==False:
     sys.exit(0)
 
 import os
@@ -21,16 +21,16 @@ import IO_user_interface_util
 
 #The script merges together in a single document several txt documents found in a directory (txt ---> txt)
 #can insert filename or not
-def file_merger(window,inputdirectory,outputdirectory,openOutputFiles, processSubdir=None,saveFilenameInOutput=None,merge_separator=False,startString='<@#',endString='#@>',embedSubdir=None,separator='__', writeRootDirectory=True):
+def file_merger(window,inputdirectory,outputdirectory,openOutputFiles, processSubdir=None,saveFilenameInOutput=None,merge_separator=False,startString='<@#',endString='#@>',embedSubdir=None,separator='__', writeRootDirectory=True, configFileName=''):
     docNum=0
     if processSubdir==None:
         processSubdir = tk.messagebox.askyesnocancel("Process sub-directories", "Do you want to process for files in subdirectories?")
     if processSubdir==None: #cancel
-        return        
+        return
     if processSubdir:
-        tmpList = IO_files_util.getFileList_SubDir('',inputdirectory,'.txt')
+        tmpList = IO_files_util.getFileList_SubDir('',inputdirectory,'.txt', silent=False, configFileName=configFileName)
     else:
-        tmpList = IO_files_util.getFileList('',inputdirectory,'.txt')
+        tmpList = IO_files_util.getFileList('',inputdirectory,'.txt', silent=False, configFileName=configFileName)
     docList = [f for f in tmpList if f[:2] != '~$' and f[-4:] == '.txt']
     numberOfDocs = len(docList)
 

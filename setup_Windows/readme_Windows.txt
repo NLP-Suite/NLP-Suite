@@ -51,11 +51,11 @@ Installing the NLP Suite in three easy steps
 		
 		STEP2 relies on Git.
 
-Installing Git
+		Installing Git
 
-	The Git website will automatically detect whether your machine is 32-bit or 64-bit on the top line Click here to download the latest...
+			The Git website will automatically detect whether your machine is 32-bit or 64-bit on the top line Click here to download the latest...
 
-	STEP2 relies on Git. Please download Git at this link https://git-scm.com/downloads/win (the Git website will automatically detect whether your machine is 32-bit or 64-bit; on the top line Click here to download the latest...). Run the downloaded exe file.
+			STEP2 relies on Git. Please download Git at this link https://git-scm.com/downloads/win (the Git website will automatically detect whether your machine is 32-bit or 64-bit; on the top line Click here to download the latest...). Run the downloaded exe file.
 
 	3. STEP3
 	
@@ -92,14 +92,18 @@ Useful Anaconda & pip commands
 
 			conda create -n NLP -y
 
-			will re-create the NLP environment that you may have accidentally deleted. You will then need to run conda activate NLP and CD to the NLP folder then python -m pip install -r requirements.txt or python3 -m pip install -r requirements.txt to reinstall all packages and be back to where you were before deleting the NLP environment.  
+			will re-create the NLP environment that you may have accidentally deleted. You will then need to run 
+			conda activate NLP 
+			and CD to the NLP current stable src folder (e.g., cd C:\Users\rfranzo\Desktop\NLP-Suite\src)
+			then 
+			python -m pip install -r requirements.txt or python3 -m pip install -r requirements.txt to reinstall all packages and be back to where you were before deleting the NLP environment.  
 
 		3. Delete an environment
 
 			conda deactive
 			conda env remove --name NLP
 
-			  will delete an environment (i.e., NLP Suite) wrongly created or no longer necessary. 
+			  will delete an environment (i.e., NLP) wrongly created or no longer necessary. 
 
 		4. List all environments
 
@@ -198,3 +202,8 @@ Useful Anaconda & pip commands
 			java -version
 			
 			will tell you which Java version you are running
+
+		4. delete/remove anaconda
+		
+			rm -rf ~/anaconda
+			

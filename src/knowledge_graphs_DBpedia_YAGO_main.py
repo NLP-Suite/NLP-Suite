@@ -5,7 +5,7 @@
 import sys
 import GUI_util
 import IO_libraries_util
-if IO_libraries_util.install_all_packages(GUI_util.window,"knowledge_graphs_DBpedia_YAGO_main.py",['os','tkinter','subprocess'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"knowledge_graphs_DBpedia_YAGO_main.py",['os','tkinter','subprocess'])==False:
     sys.exit(0)
 
 import os
@@ -30,8 +30,21 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPa
         ontology_color_list,
         bold_DBpedia_YAGO_var):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
+    if ontology_class_var.get()=='':
+        msg = 'The "Ontology class" widget is empty.\n\nPlease, use the dropdown menu to select an Ontology class and try again.'
+        if 'DBpedia' in knowledge_graphs_var:
+            msg = msg + '\n\nFor DBpedia, select the "Thing" class to tag all classes.'
+        mb.showwarning(title='Warning',
+            message=msg)
+        return
+
     # check file number, if too many file pop the warning.
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=config_filename)
     fileNum = len(inputDocs)
     if fileNum > 10:
         res = mb.askokcancel("File Number Warning",
@@ -68,7 +81,7 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPa
         # for a complete list of annotator types:
         #http://mappings.DBpedia.org/server/ontology/classes/
         filesToOpen = knowledge_graphs_DBpedia_util.DBpedia_annotate(inputFilename, inputDir,
-                                                                     outputDir,0,
+                                                                     outputDir,config_filename, 0,
                                                                      ontology_list, colorlist, confidence_level)
 
     elif 'YAGO' in knowledge_graphs_var:
@@ -77,7 +90,8 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPa
         #http://mappings.DBpedia.org/server/ontology/classes/
         color1='black'
         filesToOpen = knowledge_graphs_YAGO_util.YAGO_annotate(inputFilename, inputDir, outputDir,
-                                                                ontology_list, color1, colorlist)
+                                                               config_filename,
+                                                               ontology_list, color1, colorlist)
 
     else:
         mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options and try again.')

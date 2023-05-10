@@ -5,7 +5,7 @@ import sys
 import IO_libraries_util
 import GUI_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "DB_SQL_main.py", ['os', 'tkinter','pandas','sqlite3'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "DB_SQL_main.py", ['os', 'tkinter','pandas','sqlite3'])==False:
     sys.exit(0)
 
 import os
@@ -49,7 +49,7 @@ def dbFromCSV(inpath, outpath):
         # Replace dashes with underscore, SQLite bug.
         tableName = t.replace("-", "_")
         # Read in fullpath of csv file
-        df = pd.read_csv(inpath + os.sep + t + ".csv", encoding='utf-8', error_bad_lines=False)
+        df = pd.read_csv(inpath + os.sep + t + ".csv", encoding='utf-8', on_bad_lines='skip')
         df.to_sql(name=tableName, con=conn, index=False)
 
     print("Database saved as", dbOutput)

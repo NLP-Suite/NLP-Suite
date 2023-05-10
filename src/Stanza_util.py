@@ -7,7 +7,7 @@ import re
 import warnings
 import tkinter as tk
 
-from tenacity import retry_unless_exception_type
+# from tenacity import retry_unless_exception_type
 
 import IO_files_util
 import IO_csv_util
@@ -71,12 +71,12 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
     # iterate through kwarg items
     extract_date_from_text_var = False
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     for key, value in kwargs.items():
         if key == 'extract_date_from_text_var' and value == True:
             extract_date_from_text_var = True
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
         if key == 'google_earth_var' and value == True:
             google_earth_var = True
         else:
@@ -86,7 +86,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                                             True, '', True, '', False)
 
     #collecting input txt files
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=config_filename)
     nDocs = len(inputDocs)
     if nDocs==0:
         return filesToOpen
@@ -193,7 +193,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         head, tail = os.path.split(doc)
 
         # extract date in file_name
-        if extract_date_from_filename_var:
+        if filename_embeds_date_var:
             global date_str
             date_str = date_in_filename(doc, **kwargs)
         print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
@@ -236,7 +236,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
 
         # extract SVO
         if "SVO" in annotator_params:
-            temp_svo_df = extractSVO(Stanza_output, docID, inputFilename, inputDir, tail, extract_date_from_filename_var) if len(language)==1 and 'multilingual' not in language else extractSVOMultilingual(Stanza_output, docID, inputFilename, inputDir, tail, extract_date_from_filename_var)
+            temp_svo_df = extractSVO(Stanza_output, docID, inputFilename, inputDir, tail, filename_embeds_date_var) if len(language)==1 and 'multilingual' not in language else extractSVOMultilingual(Stanza_output, docID, inputFilename, inputDir, tail, filename_embeds_date_var)
             svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
 
     df.to_csv(outputFilename, index=False, encoding=language_encoding)
@@ -446,13 +446,13 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
 
 # extract SVO from Stanza doc (depparse)
 # input: Stanza Document
-def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_filename_var):
+def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_var):
     # check if the input is a single file or directory
     if inputDir != '':
         inputFilename = inputDir + os.sep + tail
 
     # output: svo_df
-    if extract_date_from_filename_var:
+    if filename_embeds_date_var:
         svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Date'])
     else:
         svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence'])
@@ -516,7 +516,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
 
     # set the S-V-O sequence in order
     # add date from filename
-    if extract_date_from_filename_var:
+    if filename_embeds_date_var:
         svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date']]
         svo_df['Date'] = date_str
     else:
@@ -562,13 +562,13 @@ def extractNER(word, df, idx, column, NER_bool):
     return df, NER_bool
 
 # extract SVO from multilingual doc
-def extractSVOMultilingual(stanza_doc, docID, inputFilename, inputDir, tail, extract_date_from_filename_var):
+def extractSVOMultilingual(stanza_doc, docID, inputFilename, inputDir, tail, filename_embeds_date_var):
     # output dataframe
     out_df = pd.DataFrame()
 
     # stanza doc to dict
     for doc in stanza_doc:
-        temp_svo = extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_filename_var)
+        temp_svo = extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_var)
         out_df = out_df.append(temp_svo)
 
     return out_df
@@ -581,23 +581,23 @@ def excludePOS(df, postag={'NUM', 'PUNCT'}):
 
 # extract date in filename from Stanford_CoreNLP_util
 def date_in_filename(document, **kwargs):
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     date_format = ''
-    date_separator_var = ''
+    items_separator_var = ''
     date_position_var = 0
     date_str = ''
     # process the optional values in kwargs
     for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
         if key == 'date_format':
             date_format = value
-        if key == 'date_separator_var':
-            date_separator_var = value
+        if key == 'items_separator_var':
+            items_separator_var = value
         if key == 'date_position_var':
             date_position_var = value
-    if extract_date_from_filename_var:
-        date, date_str, month, day, year = IO_files_util.getDateFromFileName(document,  date_format, date_separator_var, date_position_var)
+    if filename_embeds_date_var:
+        date, date_str, month, day, year = IO_files_util.getDateFromFileName(document,  date_format, items_separator_var, date_position_var)
     return date_str
 
 # create locations file for GIS

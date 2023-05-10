@@ -2,14 +2,28 @@
 # Written by Yuhang Feng November 2019-April 2020
 # Edited by Roberto Franzosi, Tony May 2022
 
+
 import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"charts_Excel_util",['csv','tkinter','os','collections','openpyxl'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "charts_util",
+                                          ['csv', 'os','collections','openpyxl', 'pandas', 'numpy',  'plotly', 're', 'tkinter']) == False:
     sys.exit(0)
 
-import tkinter as tk
+import plotly
+from plotly.subplots import make_subplots
+plotly.offline.init_notebook_mode(connected=True)
+#import warnings
+#warnings.filterwarnings("ignore")
+
+import numpy as np
+import re
+
+import plotly.express as px
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
 import tkinter.messagebox as mb
 from collections import Counter
 import pandas as pd
@@ -17,11 +31,9 @@ import os
 
 import IO_csv_util
 import IO_user_interface_util
-import charts_Excel_util
 import charts_plotly_util
 import charts_Excel_util
 import statistics_csv_util
-import IO_files_util
 
 # Prepare the data (data_to_be_plotted) to be used in charts_Excel_util.create_excel_chart with the format:
 #   the variable has this format:
@@ -53,10 +65,10 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
         data_to_be_plotted = get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,columns_to_be_plotted,column_yAxis_field_list,dataRange)
     else:
         try:
-            data = pd.read_csv(inputFilename,encoding='utf-8',error_bad_lines=False)
+            data = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
         except:
             try:
-                data = pd.read_csv(inputFilename,encoding='ISO-8859-1', error_bad_lines=False)
+                data = pd.read_csv(inputFilename,encoding='ISO-8859-1', on_bad_lines='skip')
                 IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
                                                    'Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 in reading into pandas the csv file ' + inputFilename)
                 print("Excel-util encountered errors with utf-8 encoding and switched to ISO-8859-1 encoding in reading into pandas the csv file " + inputFilename)
@@ -120,7 +132,10 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     # if we
     headers = IO_csv_util.get_csvfile_headers_pandas(inputFilename)
     if len(headers)==0:
-        mb.showwarning(title='Empty file', message='The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.')
+        IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Empty csv file',
+                                                       'The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.',
+                                                       True, '', True, '', False)
+        # mb.showwarning(title='Empty file', message='The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.')
         print('The file\n\n' + inputFilename + '\n\nis empty. No charts can be produced using this csv file.\n\nPlease, check the file and try again.')
         return filesToOpen
     field_number_xAxis = None
@@ -188,7 +203,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
 
-    print("\n\n\nRecords in inputfile",nRecords, '  ', inputFilename)
+    print("\n\n\nRecords in inputfile (in charts_util)",nRecords, '  ', inputFilename)
 # standard bar chart ------------------------------------------------------------------------------
     if len(columns_to_be_plotted_numeric[0])>0: # compute only if the double list is not empty
         chart_outputFilename = run_all(columns_to_be_plotted_numeric, inputFilename, outputDir,
@@ -719,7 +734,7 @@ def add_missing_IDs(input, outputFilename):
     if isinstance(input, pd.DataFrame):
         df = input
     else:
-        df = pd.read_csv(input, encoding='utf-8', error_bad_lines=False)
+        df = pd.read_csv(input, encoding='utf-8', on_bad_lines='skip')
     # define variables
     start_sentence = 1 # first sentence in loop
     end_sentence = 1 # last sentence in loop
@@ -804,7 +819,7 @@ def add_missing_IDs(input, outputFilename):
 # use instead add_missing_IDs
 
 def complete_sentence_index(file_path):
-    data = pd.read_csv(file_path, encoding='utf-8', error_bad_lines=False)
+    data = pd.read_csv(file_path, encoding='utf-8', on_bad_lines='skip')
     if not 'Sentence ID' in data:
         head, tail = os.path.split(file_path)
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Wrong csv file',
@@ -894,3 +909,275 @@ def complete_sentence_index(file_path):
 #     return sentenceID_pos, docCol_pos, docName_pos, header
 #
 
+
+#Returns a grid of barcharts for each algorithm.
+#Algorithms are horizontally organized based on the order on which they are inputted
+#datalist is list of algorithms
+#var is variable of choice
+#ntopchoices is the n max values
+def multiple_barchart(datalist,outputFilename,var,ntopchoices):
+    tempdatalist=[]
+    for i in datalist:
+        tempdatalist.append(pd.read_csv(i))
+    newDatalist=[]
+    for i in tempdatalist:
+        newDatalist.append(pd.DataFrame(i[var].value_counts()).reset_index().rename(columns={'index':var,var:'Frequency'}).head(ntopchoices))
+    fig=make_subplots(rows=2,cols=int(len(datalist)/2)+len(datalist)%2)
+    cols=1
+    for i in range(0,len(newDatalist)):
+        if i<int(len(datalist)/2)+len(datalist)%2:
+            fig.add_trace(go.Bar(x=newDatalist[i][var],y=newDatalist[i]['Frequency'],name='Algorithm '+str(i+1)),row=1,col=cols)
+            cols=cols+1
+    cols=1
+    for i in range(0,len(newDatalist)):
+        if i>=int(len(datalist)/2)+len(datalist)%2:
+            fig.add_trace(go.Bar(x=newDatalist[i][var],y=newDatalist[i]['Frequency'],name='Algorithm '+str(i+1)),row=2,col=cols)
+            cols=cols+1
+    fig.write_html(outputFilename)
+    return outputFilename
+
+
+#var is the variable of choice to apply the boxplot on
+#bycategory is a boolean that chooses whether we want to split it by category along a categorical variable, determined by the following category argument
+#points is the choice to represent all points of data, the outliers, or none of them, it should be given through a dropdown menu
+#color is another choice of categorical variable to split the data along
+def boxplot(data,outputFilename,var,points,bycategory=None,category=None,color=None):
+    if points=='All points':
+        points='all'
+    elif points=='no points':
+        points = False
+    elif points=='outliers only':
+        points = 'outliers'
+    if color=='':
+        color = None
+
+    if type(data)==str:
+        data=pd.read_csv(data)
+    if bycategory==False:
+        fig=px.box(data,y=var,points=points)
+    else:
+        fig=px.box(data,x=category,y=var,points=points,color=color)
+    fig.write_html(outputFilename)
+    return outputFilename
+
+
+#var1 is the first categorical variable, lengthvar1 is the amount of var 1: should take values of 5 or 10
+#var2 is the second categorical variable, lengthvar2 is the amount of var 2: should take values of 5,10 or 20
+#var3 is the third categorical variable, lengthvar3 is the amount of var 3: should take values of 5,10, 20 or 30
+#All these recommendations are for performance
+#three_way_Sankey is a boolean variable that dictates whether the returned Sankey is 2way or 3way. True for 3 variables, false for 2 variables
+def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,var3=None,lengthvar3=None):
+    if type(data)==str:
+        data=pd.read_csv(data)
+    if type(data[var1][0])!=str and type(data[var2][0])!=str:
+        mb.showwarning("Warning",
+                   "The csv file field(s) selected should be categorical.\n\nYou should select categorical field(s), rather than continuous numeric field(s), and try again.")
+
+    if three_way_Sankey==False:
+
+        data[var1]=data[var1].str.lower()
+        tempframe=pd.DataFrame(data[var1].value_counts().head(lengthvar1)).reset_index()
+        finalframe=data[data[var1].isin(list(set(tempframe['index'])))]
+        tempframe2=pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
+        finalframe=finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
+        finalframe=finalframe.reset_index(drop=True)
+        sourcelist=list(range(0,len(set(finalframe[var1]))))
+        source=[item for item in sourcelist for _ in range(len(set(finalframe[var2])))]
+
+        target1=list(range(0,len(set(finalframe[var2]))))
+        target2 = [x+len(set(finalframe[var1])) for x in target1]
+        target=target2*len(set(finalframe[var1]))
+
+        valuevector=[]
+        for i in sorted(list(set(finalframe[var1]))):
+            tempdata=pd.DataFrame(finalframe[finalframe[var1]==i][var2].value_counts()).reset_index().rename(columns={'index':var2,var2:'Frequency'})
+            for j in sorted(list(set(tempdata[var2]))):
+                if j not in list(tempdata[var2]):
+                    valuevector.append(0)
+                else:
+                    valuevector.append(list(tempdata[tempdata[var2]==j]['Frequency'])[0])
+
+        labelvector=sorted(list(set(finalframe[var1])))+sorted(list(set(finalframe[var2])))
+
+    else:
+        data[var1]=data[var1].str.lower()
+        tempframe=pd.DataFrame(data[var1].value_counts().head(lengthvar1)).reset_index()
+        finalframe=data[data[var1].isin(list(set(tempframe['index'])))]
+        tempframe2=pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
+        finalframe=finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
+        finalframe=finalframe.reset_index(drop=True)
+        source1=list(range(0,len(set(finalframe[var1]))+len(set(finalframe[var2]))))
+        source=[item for item in source1 for _ in range(len(set(finalframe[var2])))]
+        target1=list(range(0,len(set(finalframe[var2]))))
+        target2=[x+len(set(finalframe[var1])) for x in target1]
+        target=target2*len(source1)
+        labelvector=sorted(set(finalframe[var1]))+sorted(set(finalframe[var2]))
+        valuevector=[]
+        for i in sorted(list(set(finalframe[var1]))):
+            tempvec=[]
+            tempframe=finalframe[finalframe[var1]==i]
+            wantedframe=pd.DataFrame(tempframe[var2].value_counts()).reset_index().rename(columns={'index':var2,var2:'Frequency'})
+            for j in sorted(list(set(finalframe[var2]))):
+                if j not in list(wantedframe[var2]):
+                    tempvec.append(0)
+                else:
+                    tempvec.append(list(wantedframe[wantedframe[var2]==j]['Frequency'])[0])
+            tempvec=tempvec+list(np.repeat(0,len(target2)-len(tempvec)))
+            valuevector=valuevector+tempvec
+        for i in sorted(list(set(finalframe[var2]))):
+            tempvec=[]
+            tempframe=finalframe[finalframe[var2]==i]
+            wantedframe=pd.DataFrame(tempframe[var2].value_counts()).reset_index().rename(columns={'index':var2,var2:'Frequency'})
+            tempvec=list(np.repeat(0,len(set(finalframe[var2]))))
+            for j in sorted(list(set(finalframe[var2]))):
+                if j not in list(wantedframe[var2]):
+                    tempvec.append(0)
+                else:
+                    tempvec.append(list(wantedframe[wantedframe[var2] == j]['Frequency'])[0])
+            valuevector=valuevector+tempvec
+    fig=go.Figure(go.Sankey(link=dict(source=source,target=target,value=valuevector),node=dict(label=labelvector,pad=35,thickness=10)))
+    fig.write_html(outputFilename)
+
+    return outputFilename
+
+# created by Samir Kaddoura, November 2022
+
+
+# Function creates a new column that identifies the documents based on a specific interest variable
+# two inputs taken: data is the dataset in question, interest is a vector that the user will have to define, as it changes depending on the corpus
+def separator(data,interest):
+
+    interestvector=[]#empty interest vector
+    id_list=[] #empty id list in which we record every entry in the dataset that contains one of the interest inputs
+
+    for i in range(0,len(data)): #check every entry in dataset
+        for j in range(0,len(interest)): #check every interest vector
+            if re.search('.*'+interest[j]+'[^.]',data['Document'][i]):#if the name of the document contains a word of intersest, we append that word to a vector
+                interestvector.append(interest[j])
+                id_list.append(i)#append the index of the row that contains the interest value
+
+    finaldata=data.loc[id_list,:] #filter dataset by row with interest values
+    finaldata['interest']=interestvector #add interest column
+
+    return finaldata
+
+
+#Returns sunburst piechart. Input a dataframe provided by the NLP suite as data, interest is a vector including interest separation based on separator (as defined above)
+#label is a categorical variable we're interested in
+#first_sentences is the n first sentences
+#last_sentences is the n last sentences
+#half_text is a boolean defining whether to split the text in half or not
+#beginning_and_end is a boolean that dictates if its a two-level or three level sunburster
+def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,beginning_and_end=False,first_sentences=None,last_sentences=None,half_text=None):
+    if type(data)==str:
+        data=pd.read_csv(data)
+    if type(data[label])!=str:
+        mb.showwarning("Warning",
+                   "The csv file field selected should be categorical.\n\nYou should select a categorical field, rather than a continuous numeric field, and try again.")
+
+    #the last 3 arguments are optional. If first_sentences is specified and last_sentences is not or vice versa, we return a message stating they must both be specified or absent at the same time
+    if (first_sentences==None and last_sentences!=None) or (first_sentences!=None and last_sentences==None):
+        return 'both number of first sentences and number of last sentences have to be specified or absent at the same time'
+    else: #Otherwise, we run the Sunburster
+
+        tempdata=separator(data,interest) #Create "interest" variable
+        if beginning_and_end==False:
+            if half_text==True or (first_sentences==None and last_sentences==None): #If half text is true or both number of first sentences and last sentences is absent, we split each text in half and attribute a "beginning" half and "end" half
+
+                ogdata=tempdata[tempdata['Document ID']==1] #take the first document
+
+                ogdata1=ogdata[ogdata['Sentence ID']<=len(ogdata)/2] #split the document by first half
+                oglist1=list(np.repeat('Beginning',len(ogdata1)))
+                ogdata1['Beginning or End']=oglist1 #add list "Beginning" the length of the first half
+
+                ogdata2=ogdata[ogdata['Sentence ID']>len(ogdata)/2] #split the document by first half
+                oglist2=list(np.repeat('End',len(ogdata2)))
+                ogdata2['Beginning or End']=oglist2 #add list "End" the length of the first half
+
+                finaldata=pd.concat([ogdata1,ogdata2]) #merge dataframes
+
+                for i in range(2,max(data['Document ID'])+1): #iterate same process for each document
+                    intermediatedata=tempdata[tempdata['Document ID']==i]
+
+                    intermediatedata1=intermediatedata[intermediatedata['Sentence ID']<=len(intermediatedata)/2]
+                    intermediatelist1=list(np.repeat('Beginning',len(intermediatedata1)))
+                    intermediatedata1['Beginning or End']=intermediatelist1
+
+                    finaldata=pd.concat([finaldata,intermediatedata1])
+
+                    intermediatedata2=intermediatedata[intermediatedata['Sentence ID']>len(intermediatedata)/2]
+                    intermediatelist2=list(np.repeat('End',len(intermediatedata2)))
+                    intermediatedata2['Beginning or End']=intermediatelist2
+
+                    finaldata=pd.concat([finaldata,intermediatedata2])
+
+                fig=px.sunburst(finaldata,path=['interest','Beginning or End',label]) #return sunburster
+
+                # return plotly.offline.plot(fig)
+
+            else:
+                tempdata1=tempdata[tempdata['Sentence ID']<=first_sentences] #all observations with the first n sentences
+
+                list1=list(np.repeat('Beginning',len(tempdata1))) #List repeating 'Beginning'
+
+                for i in range(1,max(data['Document ID'])+1):
+                    intermediatedata1=tempdata[tempdata['Document ID']==i]
+                    intermediatedata2=intermediatedata1[intermediatedata1['Sentence ID']>(len(intermediatedata1)-last_sentences)]
+                    tempdata1=pd.concat([tempdata1,intermediatedata2]).reset_index().drop(columns={'index'}) #all observations with last n sentences
+
+                list2=list(np.repeat('End',len(tempdata1)-len(list1))) #List repeating 'End'
+                finallist=list1+list2 #Create a vector defining if the sentence is at the beginning or the end
+                finaldata=tempdata1
+                finaldata['Beginning or End']=finallist
+
+                fig=px.sunburst(finaldata,path=['interest','Beginning or End',label]) #create sunburst plot
+        else:
+            fig=px.sunburst(tempdata,path=['interest',label])
+        fig.write_html(outputFilename)
+
+        return outputFilename
+
+
+# Function creates a new column that identifies the documents based on a specific interest variable
+#two inputs taken: data is the dataset in question, interest is a vector that the user will have to define, as it changes depending on the corpus
+def separator(data,interest):
+
+    interestvector=[]#empty interest vector
+    id_list=[] #empty id list in which we record every entry in the dataset that contains one of the interest inputs
+
+    for i in range(0,len(data)): #check every entry in dataset
+        for j in range(0,len(interest)): #check every interest vector
+            if re.search('.*'+interest[j]+'[^.]',data['Document'][i]):#if the name of the document contains a word of intersest, we append that word to a vector
+                interestvector.append(interest[j])
+                id_list.append(i)#append the index of the row that contains the interest value
+
+    finaldata=data.loc[id_list] #filter dataset by row with interest values
+    finaldata['interest']=interestvector #add interest column
+
+    return finaldata
+
+
+# This function takes the data, an interest vector defined the same way as in the sunburster function,
+#   a variable of choice (should be categorical) var,
+#   a boolean variable to dictate if the user wants to observe an additional variable with "extra_dimension_average",
+#   the numerical variable of choice average_variable
+
+#The graph shows the frequencies of each group by default depending on the interest vector and the initial variable of choice. If specified, it shows the average of average_variable per group
+def treemaper(data,outputFilename,interest,csv_file_field,extra_dimension_average,average_variable=None):
+    if type(data)==str:#convert data to dataframe
+        data=pd.read_csv(data)
+    if type(data[csv_file_field][0])!=str:
+        mb.showwarning("Warning",
+                   "The csv file field selected should be categorical.\n\nYou should select a categorical field, rather than a continuous numeric field, and try again.")
+    if extra_dimension_average and type(data[average_variable][0])!=np.float64:
+        mb.showwarning("Warning",
+                   "The csv file field selected should be numeric.\n\nYou should select a numeric field, rather than an alphabetic field, and try again.")
+
+    data=separator(data,interest)#use separator function to create interest vector
+
+    if extra_dimension_average==False:#return regular 2 variable graph if false
+        fig=px.treemap(data,path=[px.Constant('Total Frequency'),'interest',csv_file_field])
+    else:#return graph with extra variable if true
+        fig=px.treemap(data,path=[px.Constant('Total Frequency'),'interest',csv_file_field],color=average_variable,color_continuous_scale='RdBu')
+    fig.write_html(outputFilename)
+    return outputFilename

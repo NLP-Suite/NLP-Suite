@@ -2,7 +2,7 @@ from itertools import count
 import sys
 # import GUI_util
 # import IO_libraries_util
-# if not IO_libraries_util.install_all_packages(GUI_util.window,"GUI_IO_util", ['tkinter', 'os']):
+# if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"GUI_IO_util", ['tkinter', 'os']):
 #     sys.exit(0)
 
 import os
@@ -295,13 +295,14 @@ if sys.platform == 'darwin':  # Mac OS
     help_button_x_coordinate = 70
     labels_x_coordinate = 150  # start point of all labels in the second column (first column after ? HELP)
     labels_x_indented_coordinate = 160
+    labels_x_indented_indented_coordinate = 170
     entry_box_x_coordinate = 470 #start point of all labels in the third column (second column after ? HELP); where IO filename, dir, etc. are displayed
 
     widget_width_extra_short = 10
-    widget_width_short = 35
-    widget_width_medium = 70
-    widget_width_long = 90
-    widget_width_extra_long = 100
+    widget_width_short = 30
+    widget_width_medium = 45
+    widget_width_long = 60
+    widget_width_extra_long = 90
 
     add_button_width = 1
     reset_button_width = 3
@@ -330,7 +331,7 @@ if sys.platform == 'darwin':  # Mac OS
     open_TIPS_x_coordinate = 370
     open_reminders_x_coordinate = 570
     open_NLP_package_language_config_button = 650
-    open_setup_software_button = 650
+    open_setup_external_software_button = 650
     open_setup_x_coordinate = 770
     run_button_x_coordinate = 940
     close_button_x_coordinate = 1090
@@ -349,11 +350,11 @@ if sys.platform == 'darwin':  # Mac OS
     memory_pos = 220
     document_length_lb = 510
     document_length_pos = 670
-    sentence_length_lb = 880
-    sentence_length_pos = 1030
+    sentence_length_lb = 680
+    sentence_length_pos = 800
 
 # MAC NLP_setup_IO_main Mac
-    date_format_coordinate = 530
+    date_format_coordinate = 550
     date_char_sep_lb_coordinate = 690
     date_char_sep_coordinate = 825
     date_position_lb_coordinate = 900
@@ -361,7 +362,7 @@ if sys.platform == 'darwin':  # Mac OS
 
 # MAC NLP_setup_external_software_main.py
     missing_software_display_area_width = 55
-    dowload_install = 320
+    download_install = 320
     website_url_placement = 600
 
 # MAC OK
@@ -389,20 +390,14 @@ if sys.platform == 'darwin':  # Mac OS
     GIS_distance_labels_align = 150+370 #TODO changed from labels_x_coordinate+350 to GIS_distance_labels_align
 
 # MAC GIS_main.py
-    geocoder_label_loc = 315
+    label_columns  = 300
+
     csv_file_width=85
     country_bias_width=25
     area_width=40
 
-    country_bias_pos = geocoder_label_loc
-    area_lb = 670
-    area_pos = 720
-    restrict_pos = 1100
-
-    GIS_package_pos = 480
-    GIS_open_GUI = 820
-    GIS_open_API = 250
-    GIS_openAPI_file = 420
+    area_pos = 810
+    restrict_pos = 1200
 
 # MAC SVO_main Mac
     SVO_1st_column = 120
@@ -410,18 +405,18 @@ if sys.platform == 'darwin':  # Mac OS
     open_S_dictionary = 260
     lemmatize_S = 320
     SVO_2nd_column = 520# filter & dictionary options for Verbs
-    open_V_dictionary = 615
-    lemmatize_V = 680
-    SVO_3rd_column = 920 # filter & dictionary options for Objects
-    open_O_dictionary = 1025
-    lemmatize_O = 1090
+    open_V_dictionary = 670
+    lemmatize_V = 730
+    SVO_3rd_column = 940 # filter & dictionary options for Objects; now run_button_x_coordinate
+    open_O_dictionary = 1050
+    lemmatize_O = 1125
 
     SVO_2nd_column_top = 400
     SVO_3rd_column_top = 800
 
-    dictionary_S_width=37
-    dictionary_V_width=37
-    dictionary_O_width=37
+    dictionary_S_width=30
+    dictionary_V_width=30
+    dictionary_O_width=30
 
 # MAC CoNLL_table_analyzer_main
     combobox_position = 210
@@ -563,8 +558,8 @@ if sys.platform == 'darwin':  # Mac OS
     NGrams_Co_occurrences_Viewer_search_words_entry_pos = 300
     NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
     NGrams_Co_occurrences_Viewer_date_options_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = 535#510
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = 625 #600
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = open_reminders_x_coordinate #535#510
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos + 90 # 625 #600
     NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
     NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos
     NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = 594
@@ -572,10 +567,10 @@ if sys.platform == 'darwin':  # Mac OS
 
 # Mac: data_visualization_main
 
-    visualization_csv_field_menu_pos = IO_configuration_menu
+    visualization_csv_field_menu_pos = 260
     visualization_add_button_pos = 983
-    visualization_reset_button_pos = 1038
-    visualization_show_button_pos = 1058
+    visualization_reset_button_pos = 1030
+    visualization_show_button_pos = 1092
 
     visualization_csv_field_dynamic_network_lb_pos = setup_pop_up_text_widget
     visualization_dynamic_network_field_pos = open_setup_x_coordinate  # 740
@@ -586,11 +581,12 @@ if sys.platform == 'darwin':  # Mac OS
     visualization_csv_field2_lb_pos = run_button_x_coordinate # 920
     visualization_csv_field2_menu_pos = visualization_csv_field2_lb_pos + 90 #120#1020
 
+    visualization_K_sent_begin_lb = visualization_csv_field_menu_pos
     visualization_K_sent_begin_pos = visualization_csv_field_menu_pos
     visualization_K_sent_end_lb_pos = visualization_filename_label_lb_pos
     visualization_K_sent_end_pos = visualization_filename_label_pos
     visualization_split_pos = open_setup_x_coordinate
-    visualization_do_not_split_pos = visualization_csv_field2_menu_pos # open_reminders_x_coordinate + 200
+    visualization_do_not_split_pos = visualization_csv_field2_menu_pos # open_reminders_x_coordinate + 400
 
 # Mac: shape_of_stories
 
@@ -610,21 +606,22 @@ if sys.platform == 'darwin':  # Mac OS
 
 # Mac: file_search_byWord
 
+    file_search_byWord_widget_width = 57
     file_search_byWord_selectedCsvFile_pos = 510
     file_search_byWord_add_search_button_pos = setup_IO_brief_coordinate
-    file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate + 35
+    file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate + 40
     file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate + 100
-    file_search_byWord_openInputFile_button_pos = 300
+    file_search_byWord_openInputFile_button_pos = IO_configuration_menu
     file_search_byWord_keyword_value_pos = 510
     file_search_byWord_extract_sentences_search_words_entry_pos = 510
 
     # Mac Word2Vec
-    Word2Vec_vector_size_entry_pos = 270
+    Word2Vec_vector_size_entry_pos = 280
     Word2Vec_window_size_lb_pos = Word2Vec_vector_size_entry_pos
     Word2Vec_window_size_entry_pos= Word2Vec_window_size_lb_pos+260
     Word2Vec_min_count_lb_pos=setup_pop_up_text_widget
     Word2Vec_min_count_entry_pos = Word2Vec_min_count_lb_pos +150
-    Word2Vec_top_words_pos = 930
+    Word2Vec_top_words_pos = 1000
 
 # Mac statistics_csv
 
@@ -668,18 +665,19 @@ if sys.platform == 'darwin':  # Mac OS
     coreference_CoRef_var_menu_pos = 320
 
     # Mac NER
-    NER_NER_packages_menu_pos = 220
-    NER_NER_menu_pos = 220
-    NER_reset_NER_button_pos = 590
-    NER_NER_entry_lb_pos = 660
-    NER_NER_entry_pos = 720
+    NER_NER_packages_menu_pos = 250
+    NER_NER_menu_pos = 250
+    NER_reset_NER_button_pos = 600
+    NER_NER_entry_lb_pos = 720
+    NER_NER_entry_pos = 800
 
 # Mac whats_in_your_corpus_main
     whats_in_your_corpus_corpus_statistics_options_menu_lb_pos = IO_configuration_menu
     whats_in_your_corpus_corpus_statistics_options_menu_pos = IO_configuration_menu+130
     whats_in_your_corpus_corpus_options_menu_lb_pos = 920
-    whats_in_your_corpus_corpus_options_menu_pos = 1000
+    whats_in_your_corpus_corpus_options_menu_pos = 1040
 
+    # no longer user run_button_x_coordinate instead
     whats_in_your_corpus_open_wordclouds_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
     whats_in_your_corpus_topics_Mallet_pos = 560
     whats_in_your_corpus_topics_Gensim_pos = 690
@@ -724,7 +722,8 @@ else: #windows and anything else
     setup_IO_brief_coordinate = 610 # Position of text entry for Input and Output display
     entry_box_x_coordinate = 400 #start point of all labels in the third column (second column after ? HELP)
 
-    # 4 small widgets to the right of top line
+    # 4 small widgets to the right of top line Windows
+    # reference to IO_configuration_menu+
     open_file_button_brief = 760 # the left-most button of the four buttons displayed on the far right of top line of every GUI
     open_inputDir_button_brief = 800
     open_outputDir_button_brief = 840
@@ -738,7 +737,7 @@ else: #windows and anything else
     open_setup_x_coordinate = 750
     open_IO_config_button = 820
     open_NLP_package_language_config_button = 820
-    open_setup_software_button = 820
+    open_setup_external_software_button = 820
     run_button_x_coordinate = 940
     close_button_x_coordinate = 1050
 
@@ -757,19 +756,19 @@ else: #windows and anything else
     memory_pos = 180
     document_length_lb = all_widget_pos
     document_length_pos = 590
-    sentence_length_lb = 880
-    sentence_length_pos = 1010
+    sentence_length_lb = 680
+    sentence_length_pos = 800
 
 # Windows NLP_setup_IO_main
-    date_format_coordinate = 460
+    date_format_coordinate = 530
     date_char_sep_lb_coordinate = 620
     date_char_sep_coordinate = 745
-    date_position_lb_coordinate = 810
-    date_position_coordinate = 880
+    date_position_lb_coordinate = open_setup_x_coordinate # 810
+    date_position_coordinate = open_setup_x_coordinate + 130 # 880
 
 # Windows NLP_setup_external_software_main.py
     missing_software_display_area_width = 85
-    dowload_install = 320
+    download_install = 320
     website_url_placement = 600
 
 # Windows OK
@@ -796,34 +795,27 @@ else: #windows and anything else
 
     open_S_dictionary = 260
     lemmatize_S = 320
-    SVO_2nd_column = 520# filter & dictionary options for Verbs
-    open_V_dictionary = 640
-    lemmatize_V = 700
-    SVO_3rd_column = 920 # filter & dictionary options for Objects
-    open_O_dictionary = 1050
-    lemmatize_O = 1110
+    SVO_2nd_column = 550# filter & dictionary options for Verbs; now open_reminders_x_coordinate
+    open_V_dictionary = 660
+    lemmatize_V = 720
+    SVO_3rd_column = 940 # filter & dictionary options for Objects; now run_button_x_coordinate
+    open_O_dictionary = 1070 # 1050
+    lemmatize_O = 1130
 
     SVO_2nd_column_top = 400
     SVO_3rd_column_top = 800
 
-    dictionary_S_width=55
-    dictionary_V_width=55
-    dictionary_O_width=55
+    dictionary_S_width=45
+    dictionary_V_width=45
+    dictionary_O_width=45
 
 # Windows GIS_main.py
-    geocoder_label_loc = 320
+    label_columns  = 300
     csv_file_width = 130
     country_bias_width = 35
-    area_width = 55
-    country_bias_pos = geocoder_label_loc
-    area_lb = 670
-    area_pos = 720
-    restrict_pos = 1100
-
-    GIS_package_pos = 480
-    GIS_open_GUI = 820
-    GIS_open_API = 250
-    GIS_openAPI_file = 420
+    area_width = 50
+    area_pos = 800
+    restrict_pos = 1150
 
 # Windows CoNLL_table_analyzer_main
     combobox_position = 200
@@ -949,8 +941,8 @@ else: #windows and anything else
     NGrams_Co_occurrences_Viewer_search_words_entry_pos = 260
     NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
     NGrams_Co_occurrences_Viewer_date_options_pos = NGrams_Co_occurrences_Viewer_search_words_entry_pos
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos = 500
-    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = 600
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos =  open_reminders_x_coordinate # 500
+    NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos = open_reminders_x_coordinate + 100
     NGrams_Co_occurrences_Viewer_viewer_options_menu_pos = NGrams_Co_occurrences_Viewer_date_options_pos
     NGrams_Co_occurrences_Viewer_add_viewer_button_pos = NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos  # 500
     NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = NGrams_Co_occurrences_Viewer_add_viewer_button_pos + 40  # 540
@@ -958,7 +950,7 @@ else: #windows and anything else
 
 # Windows: data_visualization_main
 
-    visualization_csv_field_menu_pos = 260 # IO_configuration_menu
+    visualization_csv_field_menu_pos = 280
     visualization_add_button_pos = 1105
     visualization_reset_button_pos = 1140
     visualization_show_button_pos = 1190
@@ -997,16 +989,17 @@ else: #windows and anything else
 
 # Windows: file_search_byWord
 
+    file_search_byWord_widget_width = 100
     file_search_byWord_selectedCsvFile_pos = 430
     file_search_byWord_add_search_button_pos = setup_IO_brief_coordinate
     file_search_byWord_reset_search_button_pos = setup_IO_brief_coordinate+35
     file_search_byWord_show_search_button_pos = setup_IO_brief_coordinate+85
-    file_search_byWord_openInputFile_button_pos = 300
+    file_search_byWord_openInputFile_button_pos = IO_configuration_menu
     file_search_byWord_keyword_value_pos = 430
     file_search_byWord_extract_sentences_search_words_entry_pos = 430
 
 # Windows Word2Vec
-    Word2Vec_vector_size_entry_pos = 250
+    Word2Vec_vector_size_entry_pos = 260
     Word2Vec_window_size_lb_pos = Word2Vec_vector_size_entry_pos
     Word2Vec_window_size_entry_pos= Word2Vec_window_size_lb_pos+220
     Word2Vec_min_count_lb_pos=setup_pop_up_text_widget
@@ -1066,8 +1059,9 @@ else: #windows and anything else
     whats_in_your_corpus_corpus_statistics_options_menu_lb_pos = IO_configuration_menu
     whats_in_your_corpus_corpus_statistics_options_menu_pos = IO_configuration_menu+130
     whats_in_your_corpus_corpus_options_menu_lb_pos = 920
-    whats_in_your_corpus_corpus_options_menu_pos = 1000
+    whats_in_your_corpus_corpus_options_menu_pos = 1040
 
+    # no longer user run_button_x_coordinate instead
     whats_in_your_corpus_open_wordclouds_GUI_pos = whats_in_your_corpus_corpus_options_menu_lb_pos
     whats_in_your_corpus_topics_Mallet_pos = 560
     whats_in_your_corpus_topics_Gensim_pos = 690

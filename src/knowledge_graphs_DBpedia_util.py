@@ -7,7 +7,7 @@ from tracemalloc import start
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "knowledge_graph_DBpedia_util.py",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "knowledge_graph_DBpedia_util.py",
                                           ['os', 'SPARQLWrapper', 'requests', 'urllib', 'ssl', 'shutil']) == False:
     sys.exit(0)
 
@@ -63,7 +63,7 @@ URL_link = []
 Html_link = []
 
 
-def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotationTypes, colors, confidence_level=0.5):
+def DBpedia_annotate(inputFile, inputDir, outputDir, configFileName, openOutputFiles, annotationTypes, colors, confidence_level=0.5):
 
     filesToOpen = []
     annotationOpts = ''
@@ -85,7 +85,7 @@ def DBpedia_annotate(inputFile, inputDir, outputDir, openOutputFiles, annotation
     # stores color options
 
     # loop through every file and annotate via request to DBpedia
-    files = IO_files_util.getFileList(inputFile, inputDir, '.txt')
+    files = IO_files_util.getFileList(inputFile, inputDir, '.txt', silent=False, configFileName=configFileName)
     nFile = len(files)
     if nFile == 0:
         return
@@ -492,7 +492,7 @@ if __name__ == '__main__':
     inputFile = '/Users/gongchen/Emory_NLP/QTM446/POTUS speeches - UCSB-American Presidency Project/ina/ina_adams_3-04-1797.txt'
     outputDir = '/Users/gongchen/Emory_NLP/NLP-Suite/DBpedia_out'
     inputDir = ''
-
+    configFileName=''
 
     ### TEST query ####
     # phrase = "China"
@@ -501,7 +501,7 @@ if __name__ == '__main__':
     # print(type(res))
 
     #########
-    outputfile = DBpedia_annotate(inputFile=inputFile, inputDir=inputDir,openOutputFiles=0, outputDir=outputDir, annotationTypes= annotationTypes, colors=colors)
+    outputfile = DBpedia_annotate(inputFile=inputFile, inputDir=inputDir,outputDir=outputDir, configFileName=configFileName, openOutputFiles=0, annotationTypes= annotationTypes, colors=colors)
     print(outputfile)
 
     # colormap['Place'] = 'red'

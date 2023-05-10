@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if not IO_libraries_util.install_all_packages(GUI_util.window,"html_annotator_gender_dictionary_util",['tkinter','pandas','stanza']):
+if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"html_annotator_gender_dictionary_util",['tkinter','pandas','stanza']):
     sys.exit(0)
 
 import os
@@ -54,9 +54,9 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
     document_length_var = 90000
     limit_sentence_length_var = 100
     extract_date_from_text_var = False
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     date_format = ''
-    date_separator_var = ''
+    items_separator_var = ''
     date_position_var = ''
 
     from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
@@ -70,9 +70,9 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
                                                         document_length=document_length_var,
                                                         sentence_length=limit_sentence_length_var,
                                                         dateExtractedFromFileContent=extract_date_from_text_var,
-                                                        filename_embeds_date_var=extract_date_from_filename_var,
+                                                        filename_embeds_date_var=filename_embeds_date_var,
                                                         date_format=date_format,
-                                                        date_separator_var=date_separator_var,
+                                                        items_separator_var=items_separator_var,
                                                         date_position_var=date_position_var)
 
     if len(tempOutputFiles)==0:
@@ -117,48 +117,65 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
     annotated.to_csv(output_dir, encoding='utf-8')
     return tempOutputFiles
 
-
 def SSA_annotate(year_state_var,firstName_entry_var,outputDir):
-    if year_state_var!= 'Year of birth':
-        # return
-        df1 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_state_year.csv')
-        target1 = df1[df1['Name'] == firstName_entry_var]
+    filesToOpen = []
+    for i in firstName_entry_var.split(','):
+        output = SSA_annotate_help(year_state_var,i,outputDir)
+        filesToOpen.extend(output)
+    return filesToOpen
+
+# return a lst with the filename
+def SSA_annotate_help(year_state_var,firstName_entry_var,outputDir):
+
+    df1 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_state_yearOfBirth.csv')
+    target1 = df1[df1['Name'] == firstName_entry_var]
     df2 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_yearOfBirth.csv')
     target2 = df2[df2['Name'] == firstName_entry_var]
+
+# STATE ---------------------------------------------------------
+
     if year_state_var == 'State':
         output_path = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,
 															  firstName_entry_var)
-        target1 = target1.drop(columns=['Year'])
-        group1 = target1.groupby(['State', 'Gender']).sum()
+        target1 = target1.drop(columns=['Year of Birth'])
+        group1 = target1.groupby(['Gender', 'State']).sum()
         group1.insert(0, 'Name', firstName_entry_var)
+
         group1.reset_index().to_csv(output_path, encoding='utf-8', index=False)
-        return [output_path]
-    elif year_state_var == 'Year':
-        output_path = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,
-															  firstName_entry_var)
-        target1 = target1.drop(columns=['State'])
-        group1 = target1.groupby(['Year', 'Gender']).sum()
-        group1.insert(0, 'Name', firstName_entry_var)
-        group1.reset_index().to_csv(output_path, encoding='utf-8', index=False)
-        return [output_path]
-    elif year_state_var == 'State & Year':
-        output_path = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,
-															  firstName_entry_var)
-        target1.to_csv(output_path, encoding='utf-8', index=False)
-        return [output_path]
+        ###########
+        q2 = pd.read_csv(output_path)
+        q2 = q2[['Name', 'Gender', 'Frequency', 'State']]
+        q2 = q2.sort_values(by=['Frequency'],ascending=False)
+        #print(q2)
+        q2.to_csv(output_path, encoding='utf-8', index=False)
+
+# YEAR OF BIRTH  ---------------------------------------------------------
+
     elif year_state_var == 'Year of birth':
         output_path = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,
 															  firstName_entry_var)
+
         target2.to_csv(output_path, encoding='utf-8', index=False)
-        return [output_path]
-    else:
-        output_path1 = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,
-															   firstName_entry_var,'state_year')
-        output_path2 = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,
-															   firstName_entry_var,'yob')
-        target1.to_csv(output_path1,encoding='utf-8', index=False)
-        target2.to_csv(output_path2,encoding='utf-8', index=False)
-        return [output_path1, output_path2]
+        ###########
+        q2 = pd.read_csv(output_path)
+        q2 = q2[['Name', 'Gender', 'Frequency', 'Year of Birth']]
+        q2 = q2.sort_values(by=['Frequency'],ascending=False)
+        q2.to_csv(output_path, encoding='utf-8', index=False)
+
+# STATE & YEAR OF BIRTH  ---------------------------------------------------------
+
+    elif year_state_var == 'State & Year of birth':
+        output_path = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,
+                                                              firstName_entry_var)
+
+        target1.to_csv(output_path, encoding='utf-8', index=False)
+        ###########
+        q2 = pd.read_csv(output_path)
+        q2 = q2[['Name', 'Gender', 'Frequency', 'Year of Birth', 'State']]
+        q2 = q2.sort_values(by=['Frequency'], ascending=False)
+        q2.to_csv(output_path, encoding='utf-8', index=False)
+
+    return [output_path]
 
 def build_dictionary_yob(source_file_path):
     result = []

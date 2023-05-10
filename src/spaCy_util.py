@@ -2,13 +2,21 @@ import GUI_util
 import IO_libraries_util
 import sys
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"spaCy_util",['os','spacy','tkinter','pandas','warnings','subprocess'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"spaCy_util",['os','spacy','tkinter','pandas','warnings','subprocess'])==False:
     sys.exit(0)
 
-import spacy
+import tkinter.messagebox as mb
+
+# import spacy will trigger tensorflow
+try:
+    import spacy
+except Exception as e:
+    # print(err)
+    mb.showwarning(title='Warning',message='The NLP Suite encountered an error in importing spacy, most likely due to tensorflow.\n\nERROR: ' + str(e))
+    sys.exit(0)
+
 from spacytextblob.spacytextblob import SpacyTextBlob
 import pandas as pd
-import tkinter.messagebox as mb
 import os
 import warnings
 import subprocess
@@ -49,7 +57,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running spaCy ' + str(annotator_params) + ' annotator at',
                                             True, '', True, '', False)
     #collecting input txt files
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt')
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=config_filename)
     nDocs = len(inputDocs)
     if nDocs==0:
         return filesToOpen
@@ -66,16 +74,16 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
 
     # iterate through kwarg items
     extract_date_from_text_var = False
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     google_earth_var = False
     for key, value in kwargs.items():
         if key == 'extract_date_from_text_var' and value == True:
             extract_date_from_text_var = True
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
         if key == 'google_earth_var' and value == True:
             google_earth_var = True
-            
+
     # annotating each input file
     docID = 0
 
@@ -144,7 +152,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
         docID = docID + 1
         head, tail = os.path.split(doc)
         # extract date in file_name
-        if extract_date_from_filename_var:
+        if filename_embeds_date_var:
             global date_str
             date_str = date_in_filename(doc, **kwargs)
         print("Processing file " + str(docID) + "/" + str(nDocs) + ' ' + tail)
@@ -166,7 +174,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
 
         # SVO extraction if selected
         if "SVO" in annotator_params:
-            temp_svo_df = extractSVO(Spacy_output, int(docID), inputFilename, inputDir, tail, extract_date_from_filename_var)
+            temp_svo_df = extractSVO(Spacy_output, int(docID), inputFilename, inputDir, tail, filename_embeds_date_var)
             svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
 
     # save dataframe to csv
@@ -310,13 +318,13 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
 
 # extract and returns SVO from spaCy doc
 # input: spaCy Document
-def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_filename_var):
+def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_var):
     # check if the input is a single file or directory
     if inputDir != '':
         inputFilename = inputDir + os.sep + tail
 
     # output: svo_df
-    if extract_date_from_filename_var:
+    if filename_embeds_date_var:
         svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Date'])
     else:
         svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID'])
@@ -390,7 +398,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, extract_date_from_file
     svo_df = svo_df.drop(empty_verb_idx)
     # set the S-V-O sequence in order
     # add date from filename
-    if extract_date_from_filename_var:
+    if filename_embeds_date_var:
         svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date']]
         svo_df['Date'] = date_str
     else:
@@ -419,23 +427,23 @@ def extractNER(word, df, idx, column, NER_bool, ent_iob):
 
 # extract date in filename from Stanford_CoreNLP_util
 def date_in_filename(document, **kwargs):
-    extract_date_from_filename_var = False
+    filename_embeds_date_var = False
     date_format = ''
-    date_separator_var = ''
+    items_separator_var = ''
     date_position_var = 0
     date_str = ''
     # process the optional values in kwargs
     for key, value in kwargs.items():
-        if key == 'extract_date_from_filename_var' and value == True:
-            extract_date_from_filename_var = True
+        if key == 'filename_embeds_date_var' and value == True:
+            filename_embeds_date_var = True
         if key == 'date_format':
             date_format = value
-        if key == 'date_separator_var':
-            date_separator_var = value
+        if key == 'items_separator_var':
+            items_separator_var = value
         if key == 'date_position_var':
             date_position_var = value
-    if extract_date_from_filename_var:
-        date, date_str, month, day, year = IO_files_util.getDateFromFileName(document, date_format, date_separator_var, date_position_var)
+    if filename_embeds_date_var:
+        date, date_str, month, day, year = IO_files_util.getDateFromFileName(document, date_format, items_separator_var, date_position_var)
     return date_str
 
 # create locations file for GIS

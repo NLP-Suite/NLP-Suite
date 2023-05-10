@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"style_analysis_main.py",['os','csv','tkinter','ntpath','collections','subprocess'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"style_analysis_main.py",['os','csv','tkinter','ntpath','collections','subprocess'])==False:
     sys.exit(0)
 
 import os
@@ -43,10 +43,13 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     language_var = language
     language_list = [language]
 
-    # get the date options from filename
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
-    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = config_util.get_date_options(
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
+    # get the date options from filename
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
@@ -109,7 +112,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         # word n-grams
         if ngrams_word_var or bySentenceIndex_word_var:
             outputFiles = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, ngrams_size, normalize,
+                                                              outputDir, config_filename,
+                                                              ngrams_size, normalize,
                                                               excludePunctuation, 1, 0, openOutputFiles,
                                                               createCharts, chartPackage,
 
@@ -121,7 +125,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         # character n-grams
         if ngrams_character_var or bySentenceIndex_character_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, ngrams_size, normalize,
+                                                              outputDir, config_filename,
+                                                              ngrams_size, normalize,
                                                               excludePunctuation, 0, 0, openOutputFiles,
                                                               createCharts, chartPackage,
                                                               bySentenceIndex_character_var)
@@ -138,12 +143,12 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         if 'stopwords' in corpus_text_options_menu_var:
             stopwords_var=True
         if "*" in corpus_statistics_options_menu_var or 'frequencies' in corpus_statistics_options_menu_var:
-            tempOutputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,inputDir,outputDir,False,createCharts, chartPackage, stopwords_var, lemmatize_var)
+            tempOutputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,inputDir,outputDir,config_filename,False,createCharts, chartPackage, stopwords_var, lemmatize_var)
             if tempOutputFiles!=None:
                 # chart_outputFilename is a list [] must use extend
                 filesToOpen.extend(tempOutputFiles)
         if "Compute sentence length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
-            tempOutputFiles = statistics_txt_util.compute_sentence_length(config_filename, inputFilename, inputDir, outputDir, createCharts, chartPackage)
+            tempOutputFiles = statistics_txt_util.compute_sentence_length(inputFilename, inputDir, outputDir, config_filename, createCharts, chartPackage)
             if tempOutputFiles!=None:
                 filesToOpen.append(tempOutputFiles)
 
@@ -158,13 +163,14 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
             filesToOpen = statistics_txt_util.compute_sentence_complexity(GUI_util.window, inputFilename,
-                                                                     inputDir, outputDir,
+                                                                     inputDir, outputDir, config_filename,
                                                                      openOutputFiles, createCharts, chartPackage)
         if '*' in complexity_readability_analysis_menu_var or 'Text' in complexity_readability_analysis_menu_var:
             if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
             statistics_txt_util.compute_sentence_text_readability(GUI_util.window, inputFilename, inputDir,
-                                                             outputDir, openOutputFiles, createCharts, chartPackage)
+                                                             outputDir, config_filename,
+                                                             openOutputFiles, createCharts, chartPackage)
 
         if complexity_readability_analysis_menu_var=='':
             mb.showwarning('Warning', 'No option has been selected for Complexity/readability analysis.\n\nPlease, select an option from the dropdown menu and try again.')
@@ -190,35 +196,35 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             outputDir_style=outputDir
 
         if '*' in vocabulary_analysis_menu_var or 'Vocabulary (via unigrams)' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
                                                                    openOutputFiles, createCharts, chartPackage,'unigrams')
             if output != None:
                 filesToOpen.append(output)
 
         if '*' in vocabulary_analysis_menu_var or 'Hapax legomena' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
                                                                    openOutputFiles, createCharts, chartPackage,'Hapax legomena')
             if output != None:
                 filesToOpen.append(output)
 
         #Added this option to be able to test the subjectivity/objectivity output (Naman Sahni 10/01/2022)
         if '*' in vocabulary_analysis_menu_var or 'Objectivity/subjectivity (via spaCy)' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
                                                         openOutputFiles, createCharts,
-                                                        chartPackage,'Objectivity/subjectivity (via spaCy')
+                                                        chartPackage,'Objectivity/subjectivity (via spaCy)')
             if output != None:
                 filesToOpen.append(output)
 
         if '*' in vocabulary_analysis_menu_var or 'Repetition: Words' in vocabulary_analysis_menu_var:
             # a reminder about CoNLL table analyzer option is posted in process_words
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
                                                        openOutputFiles, createCharts,
                                                        chartPackage,'Repetition: Words in first K and last K sentences')
             if output != None:
                 filesToOpen.append(output)
 
         if '*' in vocabulary_analysis_menu_var or 'Repetition: Last' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
                                                        openOutputFiles, createCharts,
                                                        chartPackage,'Repetition: Last K words of a sentence/First K words of next sentence')
             if output != None:
@@ -241,39 +247,42 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                 filesToOpen.extend(output)
 
         if '*' in vocabulary_analysis_menu_var or 'capital' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
                                                                    openOutputFiles, createCharts, chartPackage,'capital')
             if output != None:
                 filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Short' in vocabulary_analysis_menu_var:
-            output =statistics_txt_util.process_words(window, config_filename, inputFilename,inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Short')
+            output =statistics_txt_util.process_words(window, config_filename, inputFilename,inputDir, outputDir_style, config_filename,
+                                                      openOutputFiles, createCharts, chartPackage,'Short')
             if output != None:
                 filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Vowel' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Vowel')
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
+                                                       openOutputFiles, createCharts, chartPackage,'Vowel')
             if output != None:
                 filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Punctuation' in vocabulary_analysis_menu_var:
-            output =statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage,'Punctuation')
+            output =statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
+                                                      openOutputFiles, createCharts, chartPackage,'Punctuation')
             if output != None:
                 filesToOpen.extend(output)
 
         if '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
-            output =file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir_style, False, createCharts, chartPackage)
+            output =file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir_style, config_filename, False, createCharts, chartPackage)
             if output != None:
                 filesToOpen.extend(output)
         if '*' == vocabulary_analysis_menu_var or 'Abstract' in vocabulary_analysis_menu_var:
             mode = "both" # mean, median, both (calculates both mean and median)
-            output = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, openOutputFiles, createCharts, chartPackage, processType='')
+            output = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style,  config_filename, openOutputFiles, createCharts, chartPackage, processType='')
             if output != None:
                 filesToOpen.extend(output)
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
-            output =statistics_txt_util.yule(window, inputFilename, inputDir, outputDir)
+            output =statistics_txt_util.yule(window, inputFilename, inputDir, outputDir, config_filename)
             if output != None:
                 # output is a list must use extend
                 filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'detection' in vocabulary_analysis_menu_var:
-                output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style,
+                output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style, config_filename,
                                                                          openOutputFiles, createCharts, chartPackage)
                 if output != None:
                     filesToOpen.extend(output)

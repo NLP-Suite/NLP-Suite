@@ -13,7 +13,9 @@ conda create -n NLP python=3.8 -y
 conda activate NLP
 
 conda install pytorch torchvision cudatoolkit -c pytorch
-FOR /F %k in (src/requirements.txt) DO pip install %k
+foreach ($k in type src/requirements.txt | select-string -Pattern "#" -notMatch) {
+	pip install $k
+}
 
 $WshShell = New-Object -comObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut("$Home\Desktop\NLP_Suite.lnk")

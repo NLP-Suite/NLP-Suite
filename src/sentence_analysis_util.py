@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "sentence_analysis_util",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "sentence_analysis_util",
 										  ['tkinter', 'os', 'collections','stanza']) == False:
 	sys.exit(0)
 
@@ -18,13 +18,14 @@ import IO_files_util
 def Extract(lst):
 	return [item[0] for item in lst]
 
-def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, createCharts, chartPackage, openOutputFiles=True,
+def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, configFileName,
+								  createCharts, chartPackage, openOutputFiles=True,
 								  input_dictionary_file='', chartTitle=''):
 	from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
 	filesToOpen = []
 	DictionaryList = []
-	file_list = IO_files_util.getFileList(inputFilename, inputDir, '.txt')
+	file_list = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
 	nFile = len(file_list)
 	if nFile == 0:
 		return
@@ -41,7 +42,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 	nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(input_dictionary_file)
 
 	if nColumns == 2:
-		dic = pd.read_csv(input_dictionary_file, encoding='utf-8', error_bad_lines=False)
+		dic = pd.read_csv(input_dictionary_file, encoding='utf-8', on_bad_lines='skip')
 		dic_value = dic.iloc[:, 0].tolist()
 		dic_sec_value = dic.iloc[:, 1].tolist()
 		dic = [(dic_value[i], dic_sec_value[i]) for i in range(len(dic_value))]
@@ -82,7 +83,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, cr
 			DictionaryList.insert(0, ['Dict_value', 'Dict_second_value', 'Frequency', 'Sentence ID', 'Sentence',
 									  'Document ID', 'Document'])
 	else:
-		dic = pd.read_csv(input_dictionary_file, encoding='utf-8', error_bad_lines=False)
+		dic = pd.read_csv(input_dictionary_file, encoding='utf-8', on_bad_lines='skip')
 		dic_value = dic.iloc[:, 0].tolist()
 		if chartTitle == '':
 			chartTitle = "Dictionary value"

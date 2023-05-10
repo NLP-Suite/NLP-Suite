@@ -40,6 +40,7 @@ package_var = tk.StringVar()
 package_basics_var = tk.StringVar()
 language_var = tk.StringVar()
 language_list = []
+
 memory_var = tk.IntVar()
 document_length_var = tk.IntVar()
 limit_sentence_length_var = tk.IntVar()
@@ -65,6 +66,7 @@ window.bind("<Escape>", clear)
 def display_available_options():
     global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers, memory_var, document_length_var, limit_sentence_length_var, package_display_area_value
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory, document_length, limit_sentence_length = config_util.read_NLP_package_language_config()
+    package_var.set(package)
     package_basics_var.set(package_basics)
     if language_var.get()!=language:
         language_var.set(language)
@@ -232,7 +234,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                export_json_label, False, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
                                                "Tick the checkbox to export json files for every input file processed\nDepending upon the number of input files processed, the option may considerably affect disk space and processing speed")
-
 # memory options
 memory_var_lb = tk.Label(window, text='Memory ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -241,35 +242,35 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 memory_var = tk.Scale(window, from_=1, to=16, orient=tk.HORIZONTAL)
 memory_var.pack()
 memory_var.set(4)
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.memory_pos,
+# place widget with hover-over info # memory_pos
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate+70,
                                                y_multiplier_integer,
                                                memory_var, True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_coordinate,
+                                               GUI_IO_util.labels_x_indented_coordinate,
                                                "Use the slider widget to adjust the memory (NOT DISK SPACE!) you make available to Stanford CoreNLP\n4 OK for most CoreNLP annotators; coreference may need more memory\nThe memory widget is only available for the Stanford CoreNLP package for parser & annotators")
 
-document_length_var_lb = tk.Label(window, text='Limit document length')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.document_length_lb, y_multiplier_integer,
+document_length_var_lb = tk.Label(window, text='Document length')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                                document_length_var_lb, True)
 
 document_length_var = tk.Scale(window, from_=40000, to=90000, orient=tk.HORIZONTAL)
 document_length_var.pack()
 document_length_var.set(90000)
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.document_length_pos,
+# place widget with hover-over info # document_length_pos
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate+130,
                                                y_multiplier_integer,
                                                document_length_var, True, False, False, False, 90,
                                                GUI_IO_util.labels_x_indented_coordinate,
                                                "Stanford CoreNLP has a limit of 99999 characters for processing input files; the NLP Suite CoreNLP algorithms automatically split and merge larger input files (see TIPS file)\nLowering the document size does not seem to significantly improve the performance of CoreNLP annotators\nThe document length widget is only available for the Stanford CoreNLP package for parser & annotators")
 
-limit_sentence_length_var_lb = tk.Label(window, text='Limit sentence length')
+limit_sentence_length_var_lb = tk.Label(window, text='Sentence length')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.sentence_length_lb, y_multiplier_integer,
                                                limit_sentence_length_var_lb,True)
 
 limit_sentence_length_var = tk.Scale(window, from_=70, to=400, orient=tk.HORIZONTAL)
 limit_sentence_length_var.pack()
 limit_sentence_length_var.set(100)
-# place widget with hover-over info
+# place widget with hover-over info # sentence_length_pos
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.sentence_length_pos,
                                                y_multiplier_integer,
                                                limit_sentence_length_var, False, False, False, False, 90,
@@ -278,11 +279,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.sentence_leng
 def save_NLP_config(parsers):
     encoding = encoding_var.get()
     export_json = export_json_var.get()
-
     memory = memory_var.get()
     document_length = document_length_var.get()
     limit_sentence_length = limit_sentence_length_var.get()
     if not 'CoreNLP' in package_var.get():
+        timeout = 0
         memory = 0
         document_length = 0
         limit_sentence_length = 0
@@ -378,7 +379,7 @@ def close_GUI():
         answer = tk.messagebox.askyesno("Warning", 'You have made changes to the default NLP packages and language.\n\nYou will lose your changes if you CLOSE without saving.\n\nWOULD YOU LIKE TO SAVE THE CHANGES MADE?')
         if answer:
             save_NLP_config(parsers)
-    NLP_setup_update_util.exit_window(window, GUI_util.local_release_version, GUI_util.GitHub_newest_release)
+    NLP_setup_update_util.exit_window()
 
 close_button = tk.Button(window, text='CLOSE', width=10, height=2, command=lambda: close_GUI())
 # place widget with hover-over info
@@ -390,7 +391,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_
                                                "\nThe CLOSE button will also trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
                                                "\nYou must be connected to the internet for the auto update to work.")
 
-videos_lookup = {'Setup NLP package & language options':'https://www.youtube.com/watch?v=-F8C22F_T_E'}
+videos_lookup = {'Setup NLP package & language options':'https://www.youtube.com/watch?v=-F8C22F_T_E&list=PL95lLs07jOtqArcIYzO-FX14T7lkauuab&index=1'}
 videos_options='Setup NLP package & language options'
 
 TIPS_lookup = {'Text encoding (utf-8)': 'TIPS_NLP_Text encoding (utf-8).pdf','Stanford CoreNLP memory issues': 'TIPS_NLP_Stanford CoreNLP memory issues.pdf','Stanford CoreNLP performance & accuracy':'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf'}
@@ -415,7 +416,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                                          "Tick the checkbox to export or not export the Json file(s) in txt format produced by the selected NLP package." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                                         "The performance of different NLP tools (e.g., Stanford CoreNLP) is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default = 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the value when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf." + GUI_IO_util.msg_Esc)
+                                                         "The performance of different NLP tools (e.g., Stanford CoreNLP) is affected by various issues: memory size of your computer, document size, sentence length\n\nPlease, select the memory size Stanford CoreNLP will use. Default memory is 4. Lower this value if CoreNLP runs out of resources.\n   For CoreNLP co-reference resolution you may wish to increase the memory size when processing larger files (compatibly with the memory size of your machine).\n\nLonger documents affect performace. Stanford CoreNLP has a limit of 100,000 characters processed (the NLP Suite limits this to 90,000 as default). If you run into performance issues you may wish to further reduce the document size.\n\nSentence length also affect performance. The Stanford CoreNLP recommendation is to limit sentence length to 70 or 100 words.\n   You may wish to compute the sentence length of your document(s) so that perhaps you can edit the longer sentences.\n\nOn these issues, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf." + GUI_IO_util.msg_Esc)
     return y_multiplier_integer
 
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
@@ -426,12 +427,19 @@ readMe_message = "This Python 3 script provides a front-end GUI (Graphical User 
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, scriptName, False)
 
+display_available_options()
+
 if error:
     mb.showwarning(title='Warning',
                message="The config file " + config_filename + " could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options then click on the CLOSE button to save your options.")
-
-display_available_options()
+    answer = tk.messagebox.askyesno("Warning", 'Do you want to watch the video on how to setup NLP package and language options?')
+    if answer:
+        GUI_util.videos_dropdown_field.set('Setup NLP package & language options')
+        # GUI_util.watch_video(videos_lookup, scriptName)
 
 package_display_area_value_upon_entry = get_str_package_display_area_value()
 
+# to make sure the release version is updated even when users do not click on the CLOSE button
+#   but on the Mac top-left red button or Windows top-right X button
+GUI_util.window.protocol("WM_DELETE_WINDOW", close_GUI)
 GUI_util.window.mainloop()

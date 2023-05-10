@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "coreference_main",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "coreference_main",
                                           ['subprocess', 'os', 'tkinter', 'csv']) == False:
     sys.exit(0)
 
@@ -58,7 +58,8 @@ def run(inputFilename, inputDir, outputDir,
         temp_config_filename = 'NLP_default_IO_config.csv'
     else:
         temp_config_filename = scriptName.replace('main.py', 'config.csv')
-    extract_date_from_filename_var, date_format_var, date_separator_var, date_position_var = \
+
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = \
         config_util.get_date_options(temp_config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
@@ -97,7 +98,7 @@ def run(inputFilename, inputDir, outputDir,
 
         # inputFilename and inputDir are the original txt files to be coreferenced
         # 2 items are returned: filename string and true/False for error
-        files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
+        files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(temp_config_filename, inputFilename, inputDir,
                                        outputCorefedDir,
                                        openOutputFiles, createCharts, chartPackage,
                                        language_var,
@@ -316,30 +317,20 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 continue_manual_Coref_var_checkbox.configure(state='disabled')
 
 
-def activateCoRefOptions(*args):
-
-    if CoRef_var.get() == 1:
-        if input_main_dir_path.get()!='':
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
-                                         reminders_util.message_CoreNLP_coref, True)
-            manual_Coref_checkbox.configure(state='disabled')
-            manual_Coref_var.set(0)
-        else:
-            manual_Coref_checkbox.configure(state='normal')
-            manual_Coref_var.set(1)
-    else:
+def activateCoRefOptions():
+    if GUI_util.input_main_dir_path.get()!='':
+        reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
+                                     reminders_util.message_CoreNLP_coref, True)
         manual_Coref_checkbox.configure(state='disabled')
         manual_Coref_var.set(0)
-CoRef_var.trace('w', activateCoRefOptions)
+    else:
+        manual_Coref_checkbox.configure(state='normal')
 
 def changed_filename(tracedInputFile):
     activateCoRefOptions()
 GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_util.input_main_dir_path.get()))
 # must trace on input_main_dir_path, rather than inputFilename,
 #   because inputFilename is set BEFORE input_main_dir_path in GUI_util and it is not up-to-date
-
-# activateCoRefOptions()
-
 
 # def activateTxtFileOptions(*args):
 #     if corefed_txt_file.get()!='':

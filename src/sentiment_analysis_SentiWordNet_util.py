@@ -22,7 +22,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"sentiment_analysis_SentiWordNet",['nltk','os','csv','argparse','tkinter','time'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"sentiment_analysis_SentiWordNet",['nltk','os','csv','argparse','tkinter','time'])==False:
     sys.exit(0)
 
 import csv
@@ -149,7 +149,7 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
     # csvfile.close()
     return output_file
 
-def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPackage='Excel'):
+def main(inputFilename, inputDir, outputDir, configFileName, mode, createCharts=False, chartPackage='Excel'):
     """
     Runs analyzefile on the appropriate files, provided that the input paths are valid.
     :param inputFilename:
@@ -196,7 +196,13 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
             documentID = 0
             if os.path.isdir(inputDir):
                 directory = os.fsencode(inputDir)
-                for file in os.listdir(directory):
+                inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False,
+                                                      configFileName=configFileName)
+                nFile = len(inputDocs)
+                if nFile == 0:
+                    return
+
+                for file in inputDocs:
                     filename = os.path.join(inputDir, os.fsdecode(file))
                     if filename.endswith(".txt"):
                         start_time = time.time()
@@ -239,6 +245,8 @@ if __name__ == '__main__':
                         help='a string to hold the INPUT path of the directory of ALL txt files to be processed; use "" if path contains spaces')
     parser.add_argument('--out', type=str, dest='outputDir', default='',
                         help='a string to hold the path of the OUTPUT directory; use "" if path contains spaces')
+    parser.add_argument('--configFileName', type=str, dest='configFileName', default='',
+                        help='a string to hold the configFileName')
     parser.add_argument('--outfile', type=str, dest='output_file', default='',
                         help='output file')
 
@@ -247,4 +255,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # run main
-    sys.exit(main(args.inputFilename, args.inputDir, args.outputDir, args.output_file, args.mode))
+    sys.exit(main(args.inputFilename, args.inputDir, args.outputDir, args.config_filename, args.output_file, args.mode))

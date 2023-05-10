@@ -6,7 +6,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"GIS",['os','tkinter','tkcolorpicker','PIL'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"GIS",['os','tkinter','tkcolorpicker','PIL'])==False:
     sys.exit(0)
 
 import os
@@ -50,7 +50,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             icon_var_list, specific_icon_var_list,
             name_var_list, scale_var_list, color_var_list, color_style_var_list,
             description_csv_field_var, bold_var_list, italic_var_list,
-            description_var_list, description_csv_field_var_list):
+            description_var_list, description_csv_field_var_list, heat_map_var):
 
     filesToOpen = []
     inputIsCoNLL = False
@@ -101,10 +101,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                             silent=True)
     if outputDir == '':
         return
-
+    if heat_map_var:
+        mapping_package = 'Google Earth & Google Maps'
+    else:
+        mapping_package = 'Google Earth'
     filesToOpen = GIS_pipeline_util.GIS_pipeline(GUI_util.window,config_filename,
                                        inputFilename, inputDir, outputDir,
-                                       geocoder, 'Google Earth Pro', createCharts, chartPackage,
+                                       geocoder, mapping_package, createCharts, chartPackage,
                                        datePresent,
                                        country_bias,
                                        area_var,
@@ -126,16 +129,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if openOutputFiles == 1:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
 
-# def run(inputFilename, outputDir, openOutputFiles,
-#             encoding_var,
-#             locationColumnName,
-#             date_var, date_format_var,
-#             group_var, group_number_var, group_values_entry_var_list, group_label_entry_var_list,
-#             icon_var_list, specific_icon_var_list,
-#             name_var_list, scale_var_list, color_var_list, color_style_var_list,
-#             description_csv_field_var, bold_var_list, italic_var_list,
-#             description_var_list, description_csv_field_var_list):
-
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
                 GUI_util.output_dir_path.get(),GUI_util.open_csv_output_checkbox.get(),
@@ -148,7 +141,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 icon_var_list, specific_icon_var_list,
                 name_var_list, scale_var_list, color_var_list, color_style_var_list,
                 description_csv_field_var.get(), italic_var_list, bold_var_list,
-                description_var_list, description_csv_field_var_list)
+                description_var_list, description_csv_field_var_list, heat_map_var.get())
 
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
@@ -162,8 +155,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=510, # height at brief display
-                                                 GUI_height_full=550, # height at full display
+                                                 GUI_height_brief=550, # height at brief display
+                                                 GUI_height_full=590, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -301,7 +294,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 
 date_format_var.set('')
 date_format_lb = tk.Label(window, text='Date format ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 250, y_multiplier_integer,
+
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate, y_multiplier_integer,
                                                date_format_lb, True)
 date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy', 'yyyy-mm-dd', 'yyyy-dd-mm',
                                  'yyyy-mm', 'yyyy')
@@ -389,7 +383,7 @@ def add_group_to_list():
         bold_var_list.clear() # append("")
 
         description_var.set(0)
-        description_csv_field_var.clear()
+        description_csv_field_var.set('')
         bold_var.set(1)
         italic_var.set(1)
     else:
@@ -407,20 +401,21 @@ group_lb = tk.Label(window, text='Group ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                group_lb, True)
 group_number = tk.Entry(window, width=3, state='disabled', textvariable=group_number_var)
+
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 50, y_multiplier_integer,
                                                group_number, True)
 
 add_group_button = tk.Button(window, text='+', width=2, height=1, state='disabled', command=lambda: add_group_to_list())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 90, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 100, y_multiplier_integer,
                                                add_group_button, True)
 
 reset_group_button = tk.Button(window, text='Reset', width=5, height=1, state='disabled',
                                command=lambda: reset_all_values())
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 130, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 140, y_multiplier_integer,
                                                reset_group_button, True)
 
 csv_field_forGroups_lb = tk.Label(window, text='Select csv field ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 250, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate, y_multiplier_integer,
                                                csv_field_forGroups_lb, True)
 
 if menu_values != '':
@@ -457,19 +452,19 @@ def groupSelection(*args):
 group_var.trace('w', groupSelection)
 
 group_values_lb = tk.Label(window, text='Enter value(s) ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 500, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 540, y_multiplier_integer,
                                                group_values_lb, True)
 group_values_entry = tk.Entry(window, width=10, textvariable=group_values_entry_var)
 group_values_entry.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 600, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 640, y_multiplier_integer,
                                                group_values_entry, True)
 
 group_lb = tk.Label(window, text='Group label ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 700, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 750, y_multiplier_integer,
                                                group_lb, True)
 group_label_entry = tk.Entry(window, width=10, textvariable=group_label_entry_var)
 group_label_entry.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 800, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 840, y_multiplier_integer,
                                                group_label_entry)
 
 icon_var.set('Pushpins')
@@ -477,7 +472,7 @@ icon_var_list.append('Pushpins')
 icon_lb = tk.Label(window, text='ICON ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer, icon_lb,
                                                True)
-icon_value_lb = tk.Label(window, text='Select icon type ')
+icon_value_lb = tk.Label(window, text='Icon type ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                icon_value_lb, True)
 icon_menu = tk.OptionMenu(window, icon_var, 'Directions', 'Paddles (teardrop)', 'Paddles (square)', 'Pushpins',
@@ -488,16 +483,16 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 
 specific_icon_var.set('red')
 specific_icon_var_list.append('red')
-specific_icon_value_lb = tk.Label(window, text='Select type of ' + str(icon_var.get()))
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 250,
+specific_icon_value_lb = tk.Label(window, text='Icon sub-type') # 'Select type of ' + str(icon_var.get()))
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate,
                                                y_multiplier_integer, specific_icon_value_lb, True)
 icon_menu_values = ['blue', 'green', 'light_blue', 'pink', 'purple', 'red', 'white', 'yellow']
 specific_icon_menu = tk.OptionMenu(window, specific_icon_var, *icon_menu_values)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 500,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 400,
                                                y_multiplier_integer, specific_icon_menu, True)
 
 image_lb = tk.Label(window)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 500, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 650, y_multiplier_integer,
                                                image_lb, False)
 
 y_multiplier_integer_save = y_multiplier_integer - 1
@@ -511,7 +506,7 @@ def display_icon_image(pic_url, y_multiplier_integer_save):
     my_picture = io.BytesIO(my_page.read())
     pil_img = Image.open(my_picture)
     # The (25, 25) is (height, width)
-    pil_img = pil_img.resize((25, 25), Image.ANTIALIAS)
+    pil_img = pil_img.resize((25, 25), Image.Resampling.LANCZOS)
     tk_img = ImageTk.PhotoImage(pil_img)
     image_lb = tk.Label(window, image=tk_img)
     # display only if the Select type of icon has a value
@@ -520,8 +515,7 @@ def display_icon_image(pic_url, y_multiplier_integer_save):
     else:
         image_lb.image = ''
     image_lb.pack(padx=1, pady=1)
-    GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate + 900, y_multiplier_integer_save, image_lb, False)
-
+    GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 650, y_multiplier_integer_save, image_lb, False)
 
 # image_lb.config(state='normal')
 
@@ -587,7 +581,7 @@ specific_icon_var.trace('w', callback=lambda x, y, z: update_specific_icon_menu(
 
 
 def activate_specific_icon(icon_var, specific_icon_value_lb, specific_icon_menu, *args):
-    specific_icon_value_lb.config(text='Select type of ' + str(icon_var.get()))
+    specific_icon_value_lb.config(text='Icon sub-type ') # + str(icon_var.get()))
     specific_icon_var.set('')
     update_specific_icon_menu(icon_var, specific_icon_menu, y_multiplier_integer_save)
 
@@ -627,7 +621,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 color_var.set(0)
 color_var_list.append(0)
 color_checkbox = tk.Checkbutton(window, text='Color ', variable=color_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 250, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate, y_multiplier_integer,
                                                color_checkbox, True)
 
 color_style_var_list.append("")
@@ -770,7 +764,7 @@ def changed_GIS_filename(*args):
     if inputIsCoNLL == True:
         location_var.set('NER')
 inputFilename.trace('w', changed_GIS_filename)
-GUI_util.input_main_dir_path.trace('w', changed_GIS_filename)
+# GUI_util.input_main_dir_path.trace('w', changed_GIS_filename)
 
 # changed_GIS_filename() added at the end after all widgets have been displayed
 
@@ -780,7 +774,7 @@ bold_var_list.append(1)
 bold_var.set(1)
 bold_checkbox = tk.Checkbutton(window, text='Bold ', variable=bold_var, onvalue=1, offvalue=0)
 bold_checkbox.config(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+250, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate, y_multiplier_integer,
                                                bold_checkbox, True)
 
 italic_var.set(1)
@@ -992,6 +986,12 @@ def bold_var_list_update(*args):
 bold_var.trace('w', bold_var_list_update)
 bold_var_list_update()
 
+heat_map_var = tk.IntVar()
+heat_map_var.set(1)
+heat_map_checkbox = tk.Checkbutton(window, text='Heat map (via Google Maps)', variable=heat_map_var, onvalue=1, offvalue=0)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                               heat_map_checkbox, True)
+
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
@@ -1034,31 +1034,42 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, enter various types of information required for the pin DESCRIPTION option. DESCRIPTION contains the information that will be displayed when clicking on a pin.\n\nTHE OPTION IS NOT AVAILABLE WHEN SELECTING A CONLL INPUT CSV FILE. FOR CONLL FILES, THE DESCRIPTION FIELD IS AUTOMATICALLY COMPUTED, DISPLAYING THE LOCATION, THE FILENAME, AND THE SENTENCE WHERE THE LOCATION IS MENTIONED.\n\nSelect the field name from the input csv file whose values will be displayed when clicking on a pin on the map.\n\nTick the bold checkbox if you want to display in BOLD the field name.\n\nTick the italic checkbox if you want to display in ITALIC the field name."+ GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Please, tick ther checkbox if you wish to produce a heat map using Google Maps.\n\n\MUST HAVE a GOOGLE MAPS API KEY."+ GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 # change the value of the readMe_message
-readMe_message = "This Python 3 script relies on the Python Geopy library to geocode locations, i.e., finding a locaton latitude and longitude so that it can be mapped using Google Earth Pro.\n\nYOU MUST DOWNLOAD AND INSTALL THE FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro.\n\nIn INPUT, the script can either take:\n   1. A CoNLL table produced by Stanford CoreNLP parser and use the NER (Named Entity Recognition) values of LOCATION, CITY, STATE-OR-PROVINCE, COUNTRY, values for geocoding;\n   2. a csv file, however created (e.g., CoreNLP NER annotator), containing a list of locations to be geocoded (e.g., Chicago);\n   2. a csv file that contains geocoded location names with latitude and longitude.\n\ncsv files, except for the CoNLL table, must have a column header 'Location' (the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location').\n\nWhen a CoNLL file is used, if the file contains a date, the script can automatically process a wide variety of date formats: day, month, and year in numeric form and in different order, year in 2 or 4 digit form, and month in numeric or alphabetic form and, in the latter case, in 3 or full characters (e.g., Jan or January).\n\nThe current release of the script relies on Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe script prepares the kml file to be displayed in Google Earth Pro.\n\nThe script can also be used to compute geographic distances between locations, in both kilometers and miles, by either geodesic distance or by great circle distance. Distances will be visualized in Excel charts."
+readMe_message = "This Python 3 script relies on the Python Geopy library to geocode locations, i.e., finding a locaton latitude and longitude so that it can be mapped using Google Earth Pro for pin maps and Google Maps for heat maps.\n\nFOR THESE OPTIONS YOU MUST HAVE GOOGLE API KEYS.\n\nYOU MUST DOWNLOAD AND INSTALL THE FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro.\n\nIn INPUT, the script can take:" \
+    "\n   1. A CoNLL table produced by Stanford CoreNLP parser and use the NER (Named Entity Recognition) LOCATION, CITY, STATE-OR-PROVINCE, and COUNTRY values for geocoding;" \
+    "\n   2. a csv file, however created (e.g., CoreNLP NER annotator), containing a list of locations to be geocoded (e.g., Chicago);" \
+    "\n   3. a csv file that contains geocoded location names with latitude and longitude.\n\ncsv files, except for the CoNLL table, must have a column header 'Location' (the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location'), two column headers 'Latitude' and 'Longitude'.\n\nIf a column header 'Date' is present, the field will be used to compute dynamic Google Earth Pro maps.\n\nWhen a CoNLL file is used, if the file contains a date, the script can automatically process a wide variety of date formats: day, month, and year in numeric form and in different order, year in 2 or 4 digit form, and month in numeric or alphabetic form and, in the latter case, in 3 or full characters (e.g., Jan or January).\n\nThe current release of the script relies on Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe script prepares the kml file to be displayed in Google Earth Pro.\n\nThe script can also be used to compute geographic distances between locations, in both kilometers and miles, by either geodesic distance or by great circle distance. Distances will be visualized in Excel charts."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
-# if (GUI_util.input_main_dir_path.get()!='') or (os.path.basename(GUI_util.inputFilename.get())[-4:] != ".csv"):
-#     GUI_util.run_button.configure(state='disabled')
-#     if not errorDisplayed:
-#         mb.showwarning(title='Input file error',
-#                        message='The GIS Google Earth Pro algorithm expects in input a csv type file of locations or of geocoded locations.\n\nThe RUN button is disabled until the expected csv file is seleted in input.\n\nPlease, select a csv input file and try again.')
-#     inputError = True
-# else:
-#     if IO_csv_util.rename_header(inputFilename.get(), "Word", "Location") == False:
-#         GUI_util.run_button.configure(state='disabled')
-#         inputError = True
-#     else:
-#         GUI_util.run_button.configure(state='normal')
-#         menu_values = IO_csv_util.get_csvfile_headers(inputFilename.get())
-#         inputError=False
-
 display_icon_image(pic_url, y_multiplier_integer_save)
 
+state = str(GUI_util.run_button['state'])
+if state == 'disabled':
+    error = True
+    # check to see if there is a GUI-specific config file, i.e., a CoNLL table file, and set it to the setup_IO_menu_var
+    if os.path.isfile(os.path.join(GUI_IO_util.configPath, config_filename)):
+        GUI_util.setup_IO_menu_var.set('GUI-specific I/O configuration')
+        mb.showwarning(title='Warning',
+                       message="Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
+        changed_GIS_filename()
+        error = False
+
+
 GUI_util.window.mainloop()
+
+# 2 IO_configuration_menu + 50 400
+# 4 IO_configuration_menu + 100 480
+# 1 IO_configuration_menu + 140 520
+# IO_configuration_menu + 400 750
+# 1 IO_configuration_menu + 550 850
+# 3 IO_configuration_menu + 650 950
+# 1 IO_configuration_menu + 750 1050
+# 1 IO_configuration_menu + 850 1150

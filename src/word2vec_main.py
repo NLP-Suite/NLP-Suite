@@ -2,7 +2,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window,"word2vec_main.py",['os','tkinter', 'gensim', 'spacy'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"word2vec_main.py",['os','tkinter', 'gensim', 'spacy'])==False:
     sys.exit(0)
 
 import os
@@ -16,16 +16,21 @@ import IO_files_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartPackage,
-        remove_stopwords_var, lemmatize_var,
+        remove_stopwords_var, lemmatize_var, WSI_var,
         BERT_var, Gensim_var, compute_distances_var, top_words_var,
         sg_menu_var, vector_size_var, window_var, min_count_var,
         vis_menu_var, dim_menu_var, keywords_var):
 
-    if not BERT_var and not Gensim_var:
+    if not BERT_var and not Gensim_var and not WSI_var:
         mb.showwarning(title='Warning',message='No option has been selected.\n\nPlease select the Word2Vec package you wish to use (BERT and/or Gensim) and try again.')
         return
 
     filesToOpen = []
+
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
 
     if not 'Do not' in vis_menu_var:
         result = mb.askyesno('Visualization via t-SNE',
@@ -37,14 +42,31 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
     label=''
     if BERT_var:
         label='Word2Vec_BERT'
-    else:
+    if Gensim_var:
         label='Word2Vec_Gensim'
-    Word2Vec_Dir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label=label,
-                                                            silent=True)
+    if WSI_var:
+        label = 'WSI'
+    Word2Vec_Dir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label=label, silent=True)
     if Word2Vec_Dir == '':
         return
 
     ## if statements for any requirements
+    if WSI_var:
+
+        #placeholder for reminders etc.
+
+        import WSI_util, WSI_viz, WSI_keyterms
+
+        docs, vocabs, paths = WSI_util.get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=WSI_keywords_var.get(),
+                                                fileType='.txt', configFileName=config_filename)
+        k_range = (k_means_min_var.get(), k_means_max_var.get())
+        WSI_util.get_centroids(docs, vocabs, paths, k_range)
+        WSI_util.match_embeddings(docs, vocabs, paths)
+        s_paths = WSI_util.get_cluster_sentences(docs, paths)
+        v_paths = WSI_viz.pie_charts(docs, paths)
+        n = int(ngrams_menu_var.get().split('-')[0])
+        k_paths = WSI_keyterms.get_keyterms(docs, paths, topn=top_keywords_var.get(), ngram_range=(1, n))
+        filesToOpen = s_paths + v_paths + k_paths
 
     if BERT_var:
         reminders_util.checkReminder(config_filename,
@@ -53,7 +75,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
                                      True)
         import BERT_util
         BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, Word2Vec_Dir, openOutputFiles, createCharts,
-                                                   chartPackage, vis_menu_var, dim_menu_var, compute_distances_var, top_words_var, keywords_var, lemmatize_var, remove_stopwords_var)
+                                                   chartPackage, vis_menu_var, dim_menu_var, compute_distances_var,
+                                                     top_words_var, keywords_var, lemmatize_var, remove_stopwords_var, config_filename)
         filesToOpen.append(BERT_output)
 
     if Gensim_var:
@@ -65,11 +88,12 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
             mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of case-sensitive keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
             return
         import word2vec_Gensim_util
-        filesToOpen = word2vec_Gensim_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir,openOutputFiles, createCharts, chartPackage,
+        filesToOpen = word2vec_Gensim_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir, config_filename, openOutputFiles, createCharts, chartPackage,
                                  remove_stopwords_var, lemmatize_var,
                                  keywords_var,
                                  compute_distances_var, top_words_var,
-                                 sg_menu_var, vector_size_var, window_var, min_count_var, vis_menu_var, dim_menu_var)
+                                 sg_menu_var, vector_size_var, window_var, min_count_var,
+                                 vis_menu_var, dim_menu_var)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, Word2Vec_Dir)
@@ -83,6 +107,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.charts_package_options_widget.get(),
                                 remove_stopwords_var.get(),
                                 lemmatize_var.get(),
+                                WSI_var.get(),
                                 BERT_var.get(),
                                 Gensim_var.get(),
                                 compute_distances_var.get(),
@@ -104,8 +129,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=600, # height at brief display
-                             GUI_height_full=680, # height at full display
+                             GUI_height_brief=680, # height at brief display
+                             GUI_height_full=760, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -142,24 +167,25 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 remove_stopwords_var=tk.IntVar()
 lemmatize_var=tk.IntVar()
 
-BERT_var=tk.IntVar()
-Gensim_var=tk.IntVar()
-compute_distances_var=tk.IntVar()
-top_words_var=tk.IntVar()
+WSI_var = tk.IntVar()
+BERT_var = tk.IntVar()
+Gensim_var = tk.IntVar()
+compute_distances_var = tk.IntVar()
+top_words_var = tk.IntVar()
 
-sg_menu_var=tk.StringVar()
-vector_size_var=tk.IntVar()
-window_var=tk.IntVar()
-min_count_var=tk.IntVar()
-vis_menu_var=tk.StringVar()
-dim_menu_var=tk.StringVar()
-keywords_var=tk.StringVar()
+sg_menu_var = tk.StringVar()
+vector_size_var = tk.IntVar()
+window_var = tk.IntVar()
+min_count_var = tk.IntVar()
+vis_menu_var = tk.StringVar()
+dim_menu_var = tk.StringVar()
+keywords_var = tk.StringVar()
 
 def clear(e):
     remove_stopwords_var.set(1)
     lemmatize_var.set(1)
-    vis_menu_var.set('Do not plot word vectors')
-    dim_menu_var.set('')
+    vis_menu_var.set('Plot word vectors')
+    dim_menu_var.set('2D')
     sg_menu_var.set('Skip-Gram')
     vector_size_var.set(100)
     window_var.set(5)
@@ -182,7 +208,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 vis_var_lb = tk.Label(window,text='Select visualization option')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,vis_var_lb,True)
-vis_menu_var.set('Do not plot word vectors')
+vis_menu_var.set('Plot word vectors')
 vis_menu = tk.OptionMenu(window,vis_menu_var, 'Do not plot word vectors', 'Plot word vectors')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
@@ -192,7 +218,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
     "The visualizaton of an n-dimensional space in a 2 or 3 dimensional space is\n1. computationally very demanding (depending upon the number of words)\n2. somewhat misleading (you are better off looking at cosine similarities).")
 
 #### 2D or 3D plot
-dim_menu_var.set('')
+dim_menu_var.set('2D')
 dim_menu = tk.OptionMenu(window,dim_menu_var, '2D', '3D')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget,y_multiplier_integer,dim_menu)
 
@@ -204,6 +230,93 @@ def activate_plot_options(*args):
         dim_menu_var.set('')
         dim_menu.configure(state='disabled')
 vis_menu_var.trace('w',activate_plot_options)
+
+## option for WSI via BERT
+#@@@
+WSI_var.set(0)
+WSI_checkbox = tk.Checkbutton(window, text='Word sense induction (via BERT (English language model))', variable=WSI_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,WSI_checkbox,True)
+
+k_means_min_var = tk.Scale(window, from_=2, to=9, orient=tk.HORIZONTAL)
+k_means_min_var.pack()
+k_means_min_var.set(4)
+# place widget with hover-over info # memory_pos
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate,
+                                               y_multiplier_integer,
+                                               k_means_min_var, True, False, False, False, 90,
+                                               GUI_IO_util.open_reminders_x_coordinate,
+                                               "Use the slider widget to set the K-means MINIMUM value you wish to use for word sense induction")
+
+k_means_max_var = tk.Scale(window, from_=3, to=15, orient=tk.HORIZONTAL)
+k_means_max_var.pack()
+k_means_max_var.set(6)
+# place widget with hover-over info # memory_pos
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate-40,
+                                               y_multiplier_integer,
+                                               k_means_max_var, True, False, False, False, 90,
+                                               GUI_IO_util.open_reminders_x_coordinate,
+                                               "Use the slider widget to set the K-means MAXIMUM value you wish to use for word sense induction")
+
+ngrams_lb = tk.Label(window,text='N-grams')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate-55,y_multiplier_integer,ngrams_lb,True)
+ngrams_menu_var = tk.StringVar()
+ngrams_menu_var.set('1-grams')
+ngrams_menu = tk.OptionMenu(window,ngrams_menu_var, '1-grams (unigrams)','2-grams (bigrams)','3-grams (trigrams)','4-grams (quadgrams)')
+# place widget with hover-over info # memory_pos
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate+25,
+                                               y_multiplier_integer,
+                                               ngrams_menu, True, False, False, False, 90,
+                                               GUI_IO_util.open_TIPS_x_coordinate,
+                                               "Use the dropdown menu to select the N-grams to be used in computing the highest scoring N-grams to return as cluster key terms ")
+
+top_keywords_var = tk.Scale(window, from_=5, to=20, orient=tk.HORIZONTAL)
+top_keywords_var.pack()
+top_keywords_var.set(10)
+# place widget with hover-over info # memory_pos
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+50,
+                                               y_multiplier_integer,
+                                               top_keywords_var, False, False, False, False, 90,
+                                               GUI_IO_util.run_button_x_coordinate,
+                                               "Maximum number of keywords to be returned ")
+
+WSI_keywords_var = tk.StringVar()
+WSI_keywords_var.set('')
+WSI_keywords_lb = tk.Label(window, text='Keywords (WSI)')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,WSI_keywords_lb,True)
+
+WSIdictionary_file_var=tk.StringVar() # dictionary file used to annotate
+def get_dictionary_file(window,title,fileType):
+    #WSIdictionary_var.set('')
+    filePath = tk.filedialog.askopenfilename(title = title, initialdir =GUI_IO_util.namesGender_libPath, filetypes = fileType)
+    if len(filePath)>0:
+        # WSIdictionary_file.config(state='normal')
+        WSI_keywords_var.set(filePath)
+
+WSIdictionary_button=tk.Button(window, text='Select dictionary file ',command=lambda: get_dictionary_file(window,'Select INPUT dictionary file', [("dictionary files", "*.csv")]))
+# WSIdictionary_button.config(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate + 100, y_multiplier_integer,
+                                   WSIdictionary_button,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "The lib/nameGender subdirectory contains several US names files (Carnegie Mellon list, US Social Security list, US census, NLTK)\nBut... you can also selected a file of names of your own chosing")
+
+#setup a button to open Windows Explorer on the selected input directory
+openInputFile_button  = tk.Button(window, width=3, text='', command=lambda: IO_files_util.openFile(window, WSI_keywords_var.get()))
+# openInputFile_button.configure(state='disabled')
+# the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info
+# the two x-coordinate and x-coordinate_hover_over must have the same values
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+    GUI_IO_util.labels_x_indented_coordinate + 250, y_multiplier_integer,
+    openInputFile_button, True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate + 250, "Open csv dictionary file")
+
+WSI_keywords_entry = tk.Entry(window, textvariable=WSI_keywords_var)
+WSI_keywords_entry.configure(state='normal',width=GUI_IO_util.widget_width_extra_long)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+100,
+    y_multiplier_integer,
+    WSI_keywords_entry,
+    False, False, False, False, 90, GUI_IO_util.IO_configuration_menu,
+    "Enter the comma-separated, case-sensitive words to be used to compute word sense induction")
 
 ## option for BERT
 BERT_var.set(0)
@@ -284,20 +397,30 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration
     "Enter the comma-separated, case-sensitive words to be used to visualize Euclidean distances and cosine similarity between selected words.\nCosine similarity will always be computed for the top selected n words whether the checkbox 'Compute word distances' is ticked or not.")
 
 def activate_all_options():
+    WSI_checkbox.configure(state='normal')
     BERT_checkbox.configure(state='normal')
     Gensim_checkbox.configure(state='normal')
     sg_menu.configure(state='normal')
     vector_size_entry.configure(state='normal')
     window_size_entry.configure(state='normal')
     min_count_entry.configure(state='normal')
+    if WSI_var.get():
+        Gensim_checkbox.configure(state='disabled')
+        BERT_checkbox.configure(state='disabled')
+        sg_menu.configure(state='disabled')
+        vector_size_entry.configure(state='disabled')
+        window_size_entry.configure(state='disabled')
+        min_count_entry.configure(state='disabled')
     if BERT_var.get():
         Gensim_checkbox.configure(state='disabled')
+        WSI_checkbox.configure(state='disabled')
         sg_menu.configure(state='disabled')
         vector_size_entry.configure(state='disabled')
         window_size_entry.configure(state='disabled')
         min_count_entry.configure(state='disabled')
     if Gensim_var.get():
         BERT_checkbox.configure(state='disabled')
+        WSI_checkbox.configure(state='disabled')
         sg_menu.configure(state='normal')
         vector_size_entry.configure(state='normal')
         window_size_entry.configure(state='normal')
@@ -308,11 +431,12 @@ videos_options='No videos available'
 
 TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf",
                "Word embeddings with BERT": "TIPS_NLP_BERT word embeddings.pdf",
+               "Word Sense Induction (via BERT & K-means)": "TIPS_NLP_Word Sense Induction.pdf",
                "Word2Vec with Gensim":"TIPS_NLP_Word2Vec.pdf",
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
 
-TIPS_options = 'Lemmas & stopwords', 'Word embeddings with BERT', 'Word2Vec with Gensim', 'csv files - Problems & solutions', 'Statistical measures'
+TIPS_options = 'Lemmas & stopwords', 'Word embeddings with BERT', 'Word Sense Induction (via BERT & K-means)', 'Word2Vec with Gensim', 'csv files - Problems & solutions', 'Statistical measures'
 
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     if not IO_setup_display_brief:
@@ -334,6 +458,12 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Please, using the dropdown menus, select the types of preferred display.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
+                                  "Please, tick the checkbox to run word sense induction via BERT.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
+                                  "NLP Suite Help",
+                                  "Please, select the csv dictionary file containing the words or enter the comma-separated words to be use to compute word sense induction via BERT.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                   "NLP Suite Help",
                                   "Please, tick the checkbox to run word embeddings via BERT.")

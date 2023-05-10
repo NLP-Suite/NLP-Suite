@@ -25,7 +25,26 @@ if test -f $HOME/anaconda/bin/activate; then
     exit 0
 fi
 
-curl -o anaconda.sh https://repo.anaconda.com/archive/Anaconda3-2021.05-MacOSX-x86_64.sh
+
+if test -f $HOME/opt/anaconda3/bin/activate; then
+    source $HOME/optanaconda/bin/activate
+    conda init/
+    conda init zsh
+    exit 0
+fi
+
+echo "I am detecting the version of the system.... which is"
+echo $(uname -m)
+processor=$(uname -m)
+
+if [[ "$processor" == "arm64" ]]; then
+    echo "I have detected your program is in M1, M2, M1 Pro or M2 Pro. If it is WRONG, please CTRL+C."
+    curl -o anaconda.sh https://repo.anaconda.com/archive/Anaconda3-2022.10-MacOSX-arm64.sh
+else
+    echo "I have detected your program is in INTEL. If it is WRONG, please CTRL+C."
+    curl -o anaconda.sh https://repo.anaconda.com/archive/Anaconda3-2022.10-MacOSX-x86_64.pkg
+fi
+
 bash anaconda.sh -b -y -p $HOME/anaconda
 source $HOME/anaconda/bin/activate
 conda init

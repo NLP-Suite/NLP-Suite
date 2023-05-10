@@ -4,13 +4,14 @@ import sys
 import IO_libraries_util
 import GUI_util
 
-if IO_libraries_util.install_all_packages(GUI_util.window, "NLP_welcome_main",
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "NLP_welcome_main",
                                           ['os', 'tkinter', 'itertools', 'PIL', 'subprocess']) == False:
     sys.exit(0)
 
 import os
 import tkinter as tk
 from itertools import cycle
+
 # https://pillow.readthedocs.io/en/3.0.x/handbook/tutorial.html
 # https://pillow.readthedocs.io/en/stable/installation.html
 # Pillow and PIL cannot co-exist in the same environment. Before installing Pillow, please uninstall PIL.
@@ -66,7 +67,7 @@ def run_NLP():
 def close_NLP():
     global local_release_version, GitHub_release_version
     # NLP_setup_update_util.exit_window(window, '', 'NLP_welcome_main', [0,0,0,0], [], local_release_version, GitHub_release_version)
-    NLP_setup_update_util.exit_window(window, local_release_version, GitHub_release_version)
+    NLP_setup_update_util.exit_window()
 
 def watch_video(video_button):
     # videos_lookup = {'Setup external software': 'https://www.youtube.com/watch?v=K8jUe_pKPPQ'}
@@ -79,6 +80,16 @@ def watch_video(video_button):
     webbrowser.open('https://www.youtube.com/watch?v=K8jUe_pKPPQ')
     # GUI_util.watch_video(videos_lookup,scriptName)
     # videos_util.get_video(videos_options, videos_lookup)
+
+def open_TIPS():
+    import sys
+    import subprocess
+    TIPS_file='TIPS_NLP_Questions & answers.pdf'
+    if os.path.isfile(os.path.join(GUI_IO_util.TIPSPath, TIPS_file)):
+        if sys.platform in ['win32', 'cygwin', 'win64']:
+            subprocess.Popen([GUI_IO_util.TIPSPath + os.sep + TIPS_file], shell=True)
+        else:
+            call(['open', GUI_IO_util.TIPSPath + os.sep + TIPS_file])
 
 images = []
 
@@ -98,7 +109,7 @@ def make_images(canvas_width, canvas_height):
                     GUI_IO_util.image_libPath + os.sep + "visual11.jpg",
                     GUI_IO_util.image_libPath + os.sep + "visual12.jpg"]
     # can use im.width, im.height in resize
-    # .resize((450, 250), Image.ANTIALIAS)
+    # .resize((450, 250), Image.Resampling.LANCZOS)
     image_list = image_1_list + image_2_list + image_3_list
     photos_list = []
     for image in image_list:
@@ -110,7 +121,7 @@ def make_images(canvas_width, canvas_height):
         if canvas_width < image_width:
             image_height = image_height * canvas_width / image_width
             image_width = canvas_width
-        image_obj = Image.open(image).resize((int(image_width), int(image_height)), Image.ANTIALIAS)
+        image_obj = Image.open(image).resize((int(image_width), int(image_height)), Image.Resampling.LANCZOS)
         images.append(image_obj)
         photo_image = ImageTk.PhotoImage(image_obj)
         photos_list.append(photo_image)
@@ -169,8 +180,7 @@ def display_bottom_line_buttons():
 
     TIPS_button = tk.Button(window, text='Open TIPS file', width=15, height=1, foreground="red",
                              font=("Arial", 12, "italic"),
-                             command=lambda: watch_video(TIPS_button))
-    TIPS_button.configure(state='disabled')
+                             command=lambda: open_TIPS())
     TIPS_button.grid(row=9, column=1, columnspan=3, sticky=(tk.N,tk.W),padx=30)
 
     video_button = tk.Button(window, text='Watch video', width=15, height=1, foreground="red",
