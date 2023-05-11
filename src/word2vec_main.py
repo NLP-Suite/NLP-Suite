@@ -426,8 +426,8 @@ def activate_all_options():
         window_size_entry.configure(state='normal')
         min_count_entry.configure(state='normal')
 #
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
+videos_lookup = {'Word2Vec':'https://www.youtube.com/watch?v=Yjj50_l9sd8'}
+videos_options='Word2Vec'
 
 TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf",
                "Word embeddings with BERT": "TIPS_NLP_BERT word embeddings.pdf",

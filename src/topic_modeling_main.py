@@ -85,8 +85,8 @@ def run(inputDir, outputDir, openOutputFiles,createCharts,chartPackage, num_topi
         filesToOpen = topic_modeling_mallet_util.run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                                                      optimize_intervals_var, num_topics)
     if Gensim_var:
-        filesToOpen = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, num_topics,
-                                          remove_stopwords_var, lemmatize_var, nounsOnly_var, Gensim_MALLET_var, openOutputFiles,createCharts, chartPackage)
+        filesToOpen = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, config_filename, num_topics,
+                                          remove_stopwords_var, lemmatize_var, nounsOnly_var, Gensim_MALLET_var, openOutputFiles, createCharts, chartPackage)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

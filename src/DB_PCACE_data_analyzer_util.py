@@ -123,8 +123,8 @@ def give_Simplex_text_date_number(simplex_type, data_SimplexText, data_SimplexDa
                     num = list_simplex_data[i]
                     if num.is_integer():
                         list_simplex_data[i] = int(num)
-
-    return list_simplex_data.sort()
+    list_simplex_data.sort()
+    return list_simplex_data
 
 def find_complex_in_document(name, inputDir, outputDir):
     setup_Complex = os.path.join(inputDir, 'setup_Complex.xlsx')
@@ -828,7 +828,7 @@ def process_simplex(setup_Simplex, data_Simplex, data_SimplexText, data_xref_Sim
 # give the semantic triplet with simplex
 # return: dataframe: Semantic triplet data id, S data id, S Type, S Simplex, V data id, V Simplex, O data id, O Type, O Simplex
 # p.s. Type = Individual / Orgaization / Collective actor
-def semantic_triplet_simplex(setup_Complex, setup_Simplex, setup_xref_Complex_Complex, data_xref_Complex_Complex, data_Complex, data_Simplex, data_SimplexText, data_xref_Simplex_Complex, data_xref_Complex_Document, data_xref_VComment):
+def semantic_triplet_simplex(setup_Complex, setup_Simplex, setup_xref_Complex_Complex, data_xref_Complex_Complex, data_Complex, data_Simplex, data_SimplexText, data_xref_Simplex_Complex, data_xref_Complex_Document, data_xref_VComment, utility_Security):
     triplet = semantic_triplet_complex(setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex, data_Complex)
     s = participant_simplex('Participant-S', data_Simplex, data_SimplexText, setup_Complex, setup_Simplex, data_Complex, data_xref_Simplex_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
     s = s.rename(columns = {'Value':'Subject (S)', 'Type':'S Type'})
@@ -841,6 +841,7 @@ def semantic_triplet_simplex(setup_Complex, setup_Simplex, setup_xref_Complex_Co
     simplex_version = pd.merge(simplex_version, o, how = 'left', left_on = 'O', right_on = 'Participant-O')
     simplex_version = simplex_version.loc[:, ['Semantic Triplet', 'S', 'S Type', 'Subject (S)', 'V', 'Value', 'O', 'O Type', 'Object (O)']]
     simplex_version = simplex_version.rename(columns = {'Value':'Verb (V)'})
+    simplex_version = simplex_version.rename(columns = {'S':'S ID','V':'V ID', 'O':'O ID'})
 
     # add 'Macro Event' and 'Event' data id
 
@@ -880,6 +881,13 @@ def semantic_triplet_simplex(setup_Complex, setup_Simplex, setup_xref_Complex_Co
     simplex_version = pd.merge(macro_event_event_semantic_triplet, simplex_version, how='left',
                                left_on='Semantic Triplet', right_on='Semantic Triplet')
 
+    data_complex_macro_event = data_Complex[['ID_data_complex','Identifier']]
+    data_complex_macro_event = data_complex_macro_event.rename(
+        columns={'ID_data_complex': 'Macro Event', 'Identifier': 'Macro Event Identifier'})
+    simplex_version = pd.merge(simplex_version, data_complex_macro_event, how = 'left', left_on = 'Macro Event', right_on = 'Macro Event')
+    macro_event_identifier = simplex_version.pop('Macro Event Identifier')
+    simplex_version.insert(1, 'Macro Event Identifier', macro_event_identifier)
+
     # S5: add document information
     # ref: complex id for semantic triplet
     data_xref_Complex_Document_modified = data_xref_Complex_Document[['Complex','Document']]
@@ -888,9 +896,23 @@ def semantic_triplet_simplex(setup_Complex, setup_Simplex, setup_xref_Complex_Co
 
     # S6: add VComment
     # ref: complex id for semantic triplet
-    data_xref_VComment_modified = data_xref_VComment[['Complex','Comment','VerifierID']]
+    data_xref_VComment_modified = data_xref_VComment[['Complex','Comment','UserID','VerifierID']]
     simplex_version = pd.merge(simplex_version, data_xref_VComment_modified, how = 'left', left_on = 'Macro Event', right_on = 'Complex')
     simplex_version = simplex_version.drop('Complex', axis = 1)
+
+    utility_Security = utility_Security[['ID', 'UserName']]
+    utility_Security_user = utility_Security.rename(columns={'ID': 'UserID'})
+    simplex_version = pd.merge(simplex_version, utility_Security_user, how = 'left', left_on = 'UserID', right_on = 'UserID')
+    user_name = simplex_version.pop('UserName')
+    userID_idx = simplex_version.columns.get_loc('UserID')
+    simplex_version.insert(userID_idx + 1, 'UserName', user_name)
+    utility_Security_verifier = utility_Security.rename(columns={'ID': 'VerifierID', 'UserName':'VerifierName'})
+    simplex_version = pd.merge(simplex_version, utility_Security_verifier, how = 'left', left_on = 'VerifierID', right_on = 'VerifierID')
+    verifier_name = simplex_version.pop('VerifierName')
+    verifierID_idx = simplex_version.columns.get_loc('VerifierID')
+    simplex_version.insert(verifierID_idx + 1, 'VerifierName', verifier_name)
+
+    simplex_version = simplex_version.rename(columns = {'Macro Event':'Macro Event ID','Event':'Event ID', 'Semantic Triplet':'Semantic Triplet ID', 'Document':'Document ID'})
 
     return simplex_version
 
@@ -899,7 +921,7 @@ def semantic_triplet_simplex(setup_Complex, setup_Simplex, setup_xref_Complex_Co
 # give the semantic triplet with simplex
 # return: dataframe: Semantic triplet data id, S data id, S Type, S Simplex, V data id, V Simplex, O data id, O Type, O Simplex
 # p.s. Type = Individual / Orgaization / Collective actor
-def semantic_triplet_simplex_main(inputDir, outputDir):
+def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id):
     setup_Complex=os.path.join(inputDir,'setup_Complex.xlsx')
     if os.path.isfile(setup_Complex):
         setup_Complex_df = pd.DataFrame(pd.read_excel(setup_Complex))
@@ -947,7 +969,21 @@ def semantic_triplet_simplex_main(inputDir, outputDir):
     if os.path.isfile(data_xref_VComment):
         data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
 
-    simplex_version = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df)
+    utility_Security=os.path.join(inputDir,'utility_Security.xlsx')
+    if os.path.isfile(utility_Security):
+        utility_Security_df = pd.DataFrame(pd.read_excel(utility_Security))
+    else:
+        mb.showwarning(title='Warning',
+                       message='The table "utility_Security" is missing.\n\nPlease, make sure to export this table from PC-ACE data backened and try again.')
+        return
+
+    simplex_version = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df, utility_Security_df)
+
+    if macro_event_id != '':
+        macro_event_id = int(macro_event_id.split()[0])
+        simplex_version = simplex_version[simplex_version['Macro Event ID'] == macro_event_id]
+
+    simplex_version = simplex_version.sort_values(['Macro Event ID', 'Event ID', 'Semantic Triplet ID'], ascending=[True, True, True])
 
     triplet_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'triplet (SVO)')
     simplex_version.to_csv(triplet_file_name, encoding='utf-8', index=False)
@@ -988,7 +1024,7 @@ def find_time_simplex(setup_Simplex, data_Simplex, data_SimplexText, setup_Compl
 
 
 # give the semantic triplet (SVO) with time
-def semantic_triplet_time(inputDir, outputDir):
+def semantic_triplet_time(inputDir, outputDir, macro_event_id):
     setup_Complex=os.path.join(inputDir,'setup_Complex.xlsx')
     if os.path.isfile(setup_Complex):
         setup_Complex_df = pd.DataFrame(pd.read_excel(setup_Complex))
@@ -1036,26 +1072,45 @@ def semantic_triplet_time(inputDir, outputDir):
     if os.path.isfile(data_xref_VComment):
         data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
 
+    utility_Security=os.path.join(inputDir,'utility_Security.xlsx')
+    if os.path.isfile(utility_Security):
+        utility_Security_df = pd.DataFrame(pd.read_excel(utility_Security))
+    else:
+        mb.showwarning(title='Warning',
+                       message='The table "utility_Security" is missing.\n\nPlease, make sure to export this table from PC-ACE data backened and try again.')
+        return
 
-    triplet = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df)
+    triplet = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df, utility_Security_df)
     # triplet has document information in it
     time = find_time_simplex(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df)
 
-    triplet_with_time = pd.merge(triplet, time, how = 'left', left_on = 'V', right_on = 'Process')
+    triplet_with_time = pd.merge(triplet, time, how = 'left', left_on = 'V ID', right_on = 'Process')
     triplet_with_time = triplet_with_time.drop('Process', axis = 1)
-    triplet_with_time = triplet_with_time.rename(columns = {'Indefinite time of day':'Time', 'Time':'Time Simplex'})
+    triplet_with_time = triplet_with_time.rename(columns = {'Indefinite time of day':'Time ID', 'Time':'Time Simplex'})
 
     # move Document column to the last position of the dataframe
-    document_id = triplet_with_time.pop('Document')
-    triplet_with_time.insert(len(triplet_with_time.columns), 'Document', document_id)
+    document_id = triplet_with_time.pop('Document ID')
+    triplet_with_time.insert(len(triplet_with_time.columns), 'Document ID', document_id)
 
     # move Comment column to the last position of the dataframe
     comment = triplet_with_time.pop('Comment')
     triplet_with_time.insert(len(triplet_with_time.columns), 'Comment', comment)
 
     # move VerifierID column to the last position of the dataframe
+    UserID = triplet_with_time.pop('UserID')
+    triplet_with_time.insert(len(triplet_with_time.columns), 'UserID', UserID)
+    user_name = triplet_with_time.pop('UserName')
+    triplet_with_time.insert(len(triplet_with_time.columns), 'UserName', user_name)
     VerifierID = triplet_with_time.pop('VerifierID')
     triplet_with_time.insert(len(triplet_with_time.columns), 'VerifierID', VerifierID)
+    verifier_name = triplet_with_time.pop('VerifierName')
+    triplet_with_time.insert(len(triplet_with_time.columns), 'VerifierName', verifier_name)
+
+    if macro_event_id != '':
+        macro_event_id = int(macro_event_id.split()[0])
+        triplet_with_time = triplet_with_time[triplet_with_time['Macro Event ID'] == macro_event_id]
+
+    triplet_with_time = triplet_with_time.sort_values(['Macro Event ID', 'Event ID', 'Semantic Triplet ID'], ascending=[True, True, True])
 
     triplet_with_time_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'triplet (SVO) with time')
@@ -1134,44 +1189,51 @@ def find_space_simplex_event(setup_Simplex, data_Simplex, data_SimplexText, setu
 
 
 # give semantic triplet with space
-def semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, data_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df):
-    triplet = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df)
-    # triplet has document information in it
+def semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, data_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df, utility_Security_df):
+    triplet = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df, utility_Security_df)
+    # triplet has document and VComment information in it
 
     space1 = find_space_simplex(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df)
-    triplet_with_space1 = pd.merge(triplet, space1, how = 'left', left_on = 'V', right_on = 'Process')
+    triplet_with_space1 = pd.merge(triplet, space1, how = 'left', left_on = 'V ID', right_on = 'Process')
     triplet_with_space1 = triplet_with_space1.drop('Process', axis = 1)
     triplet_with_space1 = triplet_with_space1.rename(columns = {'Type of territory':'Space', 'Space':'Space Simplex'})
-    triplet_with_space1 = triplet_with_space1[['V', 'Space', 'Space Simplex']]
+    triplet_with_space1 = triplet_with_space1[['V ID', 'Space', 'Space Simplex']]
     triplet_with_space1 = triplet_with_space1.dropna(subset = ['Space'])
 
     space2 = find_space_simplex_event(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df)
-    triplet_with_space2 = pd.merge(triplet, space2, how = 'left', left_on = 'Semantic Triplet', right_on = 'Semantic Triplet')
+    triplet_with_space2 = pd.merge(triplet, space2, how = 'left', left_on = 'Semantic Triplet ID', right_on = 'Semantic Triplet')
+    triplet_with_space2 = triplet_with_space2.drop('Semantic Triplet', axis = 1)
     triplet_with_space2 = triplet_with_space2.rename(columns = {'Type of territory':'Space', 'Space':'Space Simplex'})
-    triplet_with_space2 = triplet_with_space2[['V', 'Space', 'Space Simplex']]
+    triplet_with_space2 = triplet_with_space2[['V ID', 'Space', 'Space Simplex']]
     triplet_with_space2 = triplet_with_space2.dropna(subset = ['Space'])
 
     triplet_with_space = pd.concat([triplet_with_space1, triplet_with_space2])
-    triplet_with_space = pd.merge(triplet, triplet_with_space, how = 'left', left_on = 'V', right_on = 'V')
+    triplet_with_space = pd.merge(triplet, triplet_with_space, how = 'left', left_on = 'V ID', right_on = 'V ID')
+    triplet_with_space = triplet_with_space.rename(columns = {'Space':'Space ID'})
 
     # move Document column to the last position of the dataframe
-    document_id = triplet_with_space.pop('Document')
-    triplet_with_space.insert(len(triplet_with_space.columns), 'Document', document_id)
+    document_id = triplet_with_space.pop('Document ID')
+    triplet_with_space.insert(len(triplet_with_space.columns), 'Document ID', document_id)
 
     # move Comment column to the last position of the dataframe
     comment = triplet_with_space.pop('Comment')
     triplet_with_space.insert(len(triplet_with_space.columns), 'Comment', comment)
 
-    # move VerifierID column to the last position of the dataframe
+    UserID = triplet_with_space.pop('UserID')
+    triplet_with_space.insert(len(triplet_with_space.columns), 'UserID', UserID)
+    user_name = triplet_with_space.pop('UserName')
+    triplet_with_space.insert(len(triplet_with_space.columns), 'UserName', user_name)
     VerifierID = triplet_with_space.pop('VerifierID')
     triplet_with_space.insert(len(triplet_with_space.columns), 'VerifierID', VerifierID)
+    verifier_name = triplet_with_space.pop('VerifierName')
+    triplet_with_space.insert(len(triplet_with_space.columns), 'VerifierName', verifier_name)
 
     return triplet_with_space
 
 
 # prepare the function for the use in main
 # give semantic triplet with space
-def semantic_triplet_space_main(inputDir, outputDir):
+def semantic_triplet_space_main(inputDir, outputDir, macro_event_id):
     setup_Complex=os.path.join(inputDir,'setup_Complex.xlsx')
     if os.path.isfile(setup_Complex):
         setup_Complex_df = pd.DataFrame(pd.read_excel(setup_Complex))
@@ -1219,8 +1281,21 @@ def semantic_triplet_space_main(inputDir, outputDir):
     if os.path.isfile(data_xref_VComment):
         data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
 
+    utility_Security=os.path.join(inputDir,'utility_Security.xlsx')
+    if os.path.isfile(utility_Security):
+        utility_Security_df = pd.DataFrame(pd.read_excel(utility_Security))
+    else:
+        mb.showwarning(title='Warning',
+                       message='The table "utility_Security" is missing.\n\nPlease, make sure to export this table from PC-ACE data backened and try again.')
+        return
 
-    triplet_with_space = semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, data_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df)
+    triplet_with_space = semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, data_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df, utility_Security_df)
+
+    if macro_event_id != '':
+        macro_event_id = int(macro_event_id.split()[0])
+        triplet_with_space = triplet_with_space[triplet_with_space['Macro Event ID'] == macro_event_id]
+
+    triplet_with_space = triplet_with_space.sort_values(['Macro Event ID', 'Event ID', 'Semantic Triplet ID'], ascending=[True, True, True])
 
     triplet_with_space_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'triplet (SVO) with space')
@@ -1230,7 +1305,7 @@ def semantic_triplet_space_main(inputDir, outputDir):
 
 
 # give semantic triplet with time and space
-def semantic_triplet_time_space(inputDir, outputDir):
+def semantic_triplet_time_space(inputDir, outputDir, macro_event_id):
     setup_Complex=os.path.join(inputDir,'setup_Complex.xlsx')
     if os.path.isfile(setup_Complex):
         setup_Complex_df = pd.DataFrame(pd.read_excel(setup_Complex))
@@ -1278,26 +1353,45 @@ def semantic_triplet_time_space(inputDir, outputDir):
     if os.path.isfile(data_xref_VComment):
         data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
 
+    utility_Security=os.path.join(inputDir,'utility_Security.xlsx')
+    if os.path.isfile(utility_Security):
+        utility_Security_df = pd.DataFrame(pd.read_excel(utility_Security))
+    else:
+        mb.showwarning(title='Warning',
+                       message='The table "utility_Security" is missing.\n\nPlease, make sure to export this table from PC-ACE data backened and try again.')
+        return
 
     # triplet = semantic_triplet_simplex(setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df)
 
-    triplet_with_space = semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, data_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df)
+    triplet_with_space = semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, data_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df, utility_Security_df)
     time = find_time_simplex(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_xref_Simplex_Complex_df)
-    triplet_with_time_space = pd.merge(triplet_with_space, time, how = 'left', left_on = 'V', right_on = 'Process')
+    triplet_with_time_space = pd.merge(triplet_with_space, time, how = 'left', left_on = 'V ID', right_on = 'Process')
     triplet_with_time_space = triplet_with_time_space.drop('Process', axis = 1)
-    triplet_with_time_space = triplet_with_time_space.rename(columns = {'Indefinite time of day':'Time', 'Time':'Time Simplex'})
+    triplet_with_time_space = triplet_with_time_space.rename(columns = {'Indefinite time of day':'Time ID', 'Time':'Time Simplex'})
 
     # move Document column to the last position of the dataframe
-    document_id = triplet_with_time_space.pop('Document')
-    triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'Document', document_id)
+    document_id = triplet_with_time_space.pop('Document ID')
+    triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'Document ID', document_id)
 
     # move Comment column to the last position of the dataframe
     comment = triplet_with_time_space.pop('Comment')
     triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'Comment', comment)
 
     # move VerifierID column to the last position of the dataframe
+    UserID = triplet_with_time_space.pop('UserID')
+    triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'UserID', UserID)
+    user_name = triplet_with_time_space.pop('UserName')
+    triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'UserName', user_name)
     VerifierID = triplet_with_time_space.pop('VerifierID')
     triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'VerifierID', VerifierID)
+    verifier_name = triplet_with_time_space.pop('VerifierName')
+    triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'VerifierName', verifier_name)
+
+    if macro_event_id != '':
+        macro_event_id = int(macro_event_id.split()[0])
+        triplet_with_time_space = triplet_with_time_space[triplet_with_time_space['Macro Event ID'] == macro_event_id]
+
+    triplet_with_time_space = triplet_with_time_space.sort_values(['Macro Event ID', 'Event ID', 'Semantic Triplet ID'], ascending=[True, True, True])
 
     triplet_with_space_time_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'triplet (SVO) with space and time')
@@ -1362,6 +1456,14 @@ def individual_characteristics(inputDir, outputDir):
     data_xref_VComment=os.path.join(inputDir,'data_xref_VComment.xlsx')
     if os.path.isfile(data_xref_VComment):
         data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
+
+    utility_Security=os.path.join(inputDir,'utility_Security.xlsx')
+    if os.path.isfile(utility_Security):
+        utility_Security_df = pd.DataFrame(pd.read_excel(utility_Security))
+    else:
+        mb.showwarning(title='Warning',
+                       message='The table "utility_Security" is missing.\n\nPlease, make sure to export this table from PC-ACE data backened and try again.')
+        return
 
 
     # build table for complex
@@ -1513,17 +1615,32 @@ def individual_characteristics(inputDir, outputDir):
         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':name, 'Value':name+' Simplex'})
         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
 
+    table_simplex.rename(columns=lambda x: x + " ID" if "Simplex" not in x else x, inplace=True)
+
     # add document information
-    # ref: complex id for individual
+    # ref: complex id for semantic triplet
     data_xref_Complex_Document_modified = data_xref_Complex_Document_df[['Complex','Document']]
-    table_simplex = pd.merge(table_simplex, data_xref_Complex_Document_modified, how = 'left', left_on = 'Individual', right_on = 'Complex')
+    table_simplex = pd.merge(table_simplex, data_xref_Complex_Document_modified, how = 'left', left_on = 'Individual ID', right_on = 'Complex')
+    table_simplex = table_simplex.drop('Complex', axis = 1)
+    table_simplex = table_simplex.rename(columns={'Document':'Document ID'})
+
+    # add VComment
+    # ref: complex id for semantic triplet
+    data_xref_VComment_modified = data_xref_VComment_df[['Complex','Comment','UserID','VerifierID']]
+    table_simplex = pd.merge(table_simplex, data_xref_VComment_modified, how = 'left', left_on = 'Individual ID', right_on = 'Complex')
     table_simplex = table_simplex.drop('Complex', axis = 1)
 
-    # add comment information
-    # ref: complex id for individual
-    data_xref_VComment_modified = data_xref_VComment_df[['Complex','Comment','VerifierID']]
-    table_simplex = pd.merge(table_simplex, data_xref_VComment_modified, how = 'left', left_on = 'Individual', right_on = 'Complex')
-    table_simplex = table_simplex.drop('Complex', axis = 1)
+    utility_Security_df = utility_Security_df[['ID', 'UserName']]
+    utility_Security_user = utility_Security_df.rename(columns={'ID': 'UserID'})
+    table_simplex = pd.merge(table_simplex, utility_Security_user, how = 'left', left_on = 'UserID', right_on = 'UserID')
+    user_name = table_simplex.pop('UserName')
+    userID_idx = table_simplex.columns.get_loc('UserID')
+    table_simplex.insert(userID_idx + 1, 'UserName', user_name)
+    utility_Security_verifier = utility_Security_df.rename(columns={'ID': 'VerifierID', 'UserName':'VerifierName'})
+    table_simplex = pd.merge(table_simplex, utility_Security_verifier, how = 'left', left_on = 'VerifierID', right_on = 'VerifierID')
+    verifier_name = table_simplex.pop('VerifierName')
+    verifierID_idx = table_simplex.columns.get_loc('VerifierID')
+    table_simplex.insert(verifierID_idx + 1, 'VerifierName', verifier_name)
 
     individual_characteristics_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'individual characteristics')
@@ -1589,6 +1706,14 @@ def collective_actor_characteristics(inputDir, outputDir):
     data_xref_VComment=os.path.join(inputDir,'data_xref_VComment.xlsx')
     if os.path.isfile(data_xref_VComment):
         data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
+
+    utility_Security=os.path.join(inputDir,'utility_Security.xlsx')
+    if os.path.isfile(utility_Security):
+        utility_Security_df = pd.DataFrame(pd.read_excel(utility_Security))
+    else:
+        mb.showwarning(title='Warning',
+                       message='The table "utility_Security" is missing.\n\nPlease, make sure to export this table from PC-ACE data backened and try again.')
+        return
 
 
     # build table for complex
@@ -1758,17 +1883,32 @@ def collective_actor_characteristics(inputDir, outputDir):
         table_simplex = table_simplex.rename(columns = {'ID_data_simplex':name, 'Value':name+' Simplex'})
         table_simplex = table_simplex.drop('ID_setup_simplex', axis = 1)
 
+    table_simplex.rename(columns=lambda x: x + " ID" if "Simplex" not in x else x, inplace=True)
+
     # add document information
-    # ref: complex id for Collective actor
+    # ref: complex id for semantic triplet
     data_xref_Complex_Document_modified = data_xref_Complex_Document_df[['Complex','Document']]
-    table_simplex = pd.merge(table_simplex, data_xref_Complex_Document_modified, how = 'left', left_on = 'Collective actor', right_on = 'Complex')
+    table_simplex = pd.merge(table_simplex, data_xref_Complex_Document_modified, how = 'left', left_on = 'Collective actor ID', right_on = 'Complex')
+    table_simplex = table_simplex.drop('Complex', axis = 1)
+    table_simplex = table_simplex.rename(columns={'Document':'Document ID'})
+
+    # add VComment
+    # ref: complex id for semantic triplet
+    data_xref_VComment_modified = data_xref_VComment_df[['Complex','Comment','UserID','VerifierID']]
+    table_simplex = pd.merge(table_simplex, data_xref_VComment_modified, how = 'left', left_on = 'Collective actor ID', right_on = 'Complex')
     table_simplex = table_simplex.drop('Complex', axis = 1)
 
-    # add comment information
-    # ref: complex id for individual
-    data_xref_VComment_modified = data_xref_VComment_df[['Complex','Comment','VerifierID']]
-    table_simplex = pd.merge(table_simplex, data_xref_VComment_modified, how = 'left', left_on = 'Collective actor', right_on = 'Complex')
-    table_simplex = table_simplex.drop('Complex', axis = 1)
+    utility_Security_df = utility_Security_df[['ID', 'UserName']]
+    utility_Security_user = utility_Security_df.rename(columns={'ID': 'UserID'})
+    table_simplex = pd.merge(table_simplex, utility_Security_user, how = 'left', left_on = 'UserID', right_on = 'UserID')
+    user_name = table_simplex.pop('UserName')
+    userID_idx = table_simplex.columns.get_loc('UserID')
+    table_simplex.insert(userID_idx + 1, 'UserName', user_name)
+    utility_Security_verifier = utility_Security_df.rename(columns={'ID': 'VerifierID', 'UserName':'VerifierName'})
+    table_simplex = pd.merge(table_simplex, utility_Security_verifier, how = 'left', left_on = 'VerifierID', right_on = 'VerifierID')
+    verifier_name = table_simplex.pop('VerifierName')
+    verifierID_idx = table_simplex.columns.get_loc('VerifierID')
+    table_simplex.insert(verifierID_idx + 1, 'VerifierName', verifier_name)
 
     collective_actor_characteristics_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'collective actor characteristics')
@@ -1777,7 +1917,7 @@ def collective_actor_characteristics(inputDir, outputDir):
     return collective_actor_characteristics_file_name
 
 
-def organization_characteristics(setup_Simplex, data_Simplex, data_SimplexText, data_SimplexNumber, data_Complex, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex, setup_xref_Simplex_Complex, data_xref_Simplex_Complex, data_xref_Complex_Document_df):
+def organization_characteristics(setup_Simplex, data_Simplex, data_SimplexText, data_SimplexNumber, data_Complex, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex, setup_xref_Simplex_Complex, data_xref_Simplex_Complex, data_xref_Complex_Document_df, data_xref_VComment_df, utility_Security_df):
     # organization
     id_complex = find_setup_id(['Organization'], setup_Complex).iat[0, 0]
     table = data_Complex[data_Complex['ID_setup_complex'].isin([id_complex])]
@@ -2043,11 +2183,32 @@ def organization_characteristics(setup_Simplex, data_Simplex, data_SimplexText, 
         organization_table = organization_table.rename(columns = {'ID_data_simplex':name, 'Value':name+' Simplex'})
         organization_table = organization_table.drop('ID_setup_simplex', axis = 1)
 
+    organization_table.rename(columns=lambda x: x + " ID" if "Simplex" not in x else x, inplace=True)
+
     # add document information
-    # ref: complex id for Organization
+    # ref: complex id for semantic triplet
     data_xref_Complex_Document_modified = data_xref_Complex_Document_df[['Complex','Document']]
-    organization_table = pd.merge(organization_table, data_xref_Complex_Document_modified, how = 'left', left_on = 'Organization', right_on = 'Complex')
+    organization_table = pd.merge(organization_table, data_xref_Complex_Document_modified, how = 'left', left_on = 'Organization ID', right_on = 'Complex')
     organization_table = organization_table.drop('Complex', axis = 1)
+    organization_table = organization_table.rename(columns={'Document':'Document ID'})
+
+    # add VComment
+    # ref: complex id for semantic triplet
+    data_xref_VComment_modified = data_xref_VComment_df[['Complex','Comment','UserID','VerifierID']]
+    organization_table = pd.merge(organization_table, data_xref_VComment_modified, how = 'left', left_on = 'Organization ID', right_on = 'Complex')
+    organization_table = organization_table.drop('Complex', axis = 1)
+
+    utility_Security_df = utility_Security_df[['ID', 'UserName']]
+    utility_Security_user = utility_Security_df.rename(columns={'ID': 'UserID'})
+    organization_table = pd.merge(organization_table, utility_Security_user, how = 'left', left_on = 'UserID', right_on = 'UserID')
+    user_name = organization_table.pop('UserName')
+    userID_idx = organization_table.columns.get_loc('UserID')
+    organization_table.insert(userID_idx + 1, 'UserName', user_name)
+    utility_Security_verifier = utility_Security_df.rename(columns={'ID': 'VerifierID', 'UserName':'VerifierName'})
+    organization_table = pd.merge(organization_table, utility_Security_verifier, how = 'left', left_on = 'VerifierID', right_on = 'VerifierID')
+    verifier_name = organization_table.pop('VerifierName')
+    verifierID_idx = organization_table.columns.get_loc('VerifierID')
+    organization_table.insert(verifierID_idx + 1, 'VerifierName', verifier_name)
 
     return organization_table
 
@@ -2105,7 +2266,19 @@ def organization_characteristics_main(inputDir, outputDir):
     if os.path.isfile(data_xref_Complex_Document):
         data_xref_Complex_Document_df = pd.DataFrame(pd.read_excel(data_xref_Complex_Document))
 
-    table_simplex = organization_characteristics(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, data_SimplexNumber_df, data_Complex_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, setup_xref_Simplex_Complex_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df)
+    data_xref_VComment=os.path.join(inputDir,'data_xref_VComment.xlsx')
+    if os.path.isfile(data_xref_VComment):
+        data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
+
+    utility_Security=os.path.join(inputDir,'utility_Security.xlsx')
+    if os.path.isfile(utility_Security):
+        utility_Security_df = pd.DataFrame(pd.read_excel(utility_Security))
+    else:
+        mb.showwarning(title='Warning',
+                       message='The table "utility_Security" is missing.\n\nPlease, make sure to export this table from PC-ACE data backened and try again.')
+        return
+
+    table_simplex = organization_characteristics(setup_Simplex_df, data_Simplex_df, data_SimplexText_df, data_SimplexNumber_df, data_Complex_df, setup_Complex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, setup_xref_Simplex_Complex_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df, utility_Security_df)
 
     organization_characteristics_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                        'organization characteristics')
@@ -2748,7 +2921,6 @@ def individual_simplex_info_main(simplex, inputDir, outputDir):
 
 
 def build_macro_event_dropdown_menu(inputDir):
-    # inputDir=GUI_util.input_main_dir_path.get()
     downdown_menu_list = []
     has_files = True
 
@@ -2775,62 +2947,3 @@ def build_macro_event_dropdown_menu(inputDir):
         downdown_menu_list = macro_event_identifier.apply(lambda x: f"{x['ID_data_complex']} - {x['Identifier']}", axis=1).tolist()
 
     return downdown_menu_list
-
-def semantic_triplet_simplex_main(macro_event_id, inputDir, outputDir):
-    setup_Complex=os.path.join(inputDir,'setup_Complex.xlsx')
-    if os.path.isfile(setup_Complex):
-        setup_Complex_df = pd.DataFrame(pd.read_excel(setup_Complex))
-        setup_Complex_df = setup_Complex_df.rename(columns = {'ID':'ID_setup_complex'})
-
-    setup_Simplex=os.path.join(inputDir,'setup_Simplex.xlsx')
-    if os.path.isfile(setup_Simplex):
-        setup_Simplex_df = pd.DataFrame(pd.read_excel(setup_Simplex))
-        setup_Simplex_df = setup_Simplex_df.rename(columns = {'ID':'ID_setup_simplex'})
-
-    setup_xref_Complex_Complex=os.path.join(inputDir,'setup_xref_Complex-Complex.xlsx')
-    if os.path.isfile(setup_xref_Complex_Complex):
-        setup_xref_Complex_Complex_df = pd.DataFrame(pd.read_excel(setup_xref_Complex_Complex))
-        setup_xref_Complex_Complex_df = setup_xref_Complex_Complex_df.rename(columns = {'ID':'ID_setup_xref_complex-complex'})
-
-    data_xref_Complex_Complex=os.path.join(inputDir,'data_xref_Complex-Complex.xlsx')
-    if os.path.isfile(data_xref_Complex_Complex):
-        data_xref_Complex_Complex_df = pd.DataFrame(pd.read_excel(data_xref_Complex_Complex))
-        data_xref_Complex_Complex_df = data_xref_Complex_Complex_df.rename(columns = {'ID':'ID_data_xref_complex-complex', 'HigherComplex':'ID_data_complex', 'xrefID':'ID_setup_xref_complex_complex', 'LowerComplex':'ID_data_complex.1'})
-
-    data_Complex=os.path.join(inputDir,'data_Complex.xlsx')
-    if os.path.isfile(data_Complex):
-        data_Complex_df = pd.DataFrame(pd.read_excel(data_Complex))
-        data_Complex_df = data_Complex_df.rename(columns = {"ID":"ID_data_complex", "ComplexType":"ID_setup_complex"})
-
-    data_Simplex=os.path.join(inputDir,'data_Simplex.xlsx')
-    if os.path.isfile(data_Simplex):
-        data_Simplex_df = pd.DataFrame(pd.read_excel(data_Simplex))
-        data_Simplex_df = data_Simplex_df.rename(columns = {"ID":"ID_data_simplex", "SimplexType":"ID_setup_simplex", "refValue":"ID_data_date_number_text"})
-
-    data_SimplexText=os.path.join(inputDir,'data_SimplexText.xlsx')
-    if os.path.isfile(data_SimplexText):
-        data_SimplexText_df = pd.DataFrame(pd.read_excel(data_SimplexText))
-
-    data_xref_Simplex_Complex = os.path.join(inputDir, 'data_xref_Simplex-Complex.xlsx')
-    if os.path.isfile(data_xref_Simplex_Complex):
-        data_xref_Simplex_Complex_df = pd.DataFrame(pd.read_excel(data_xref_Simplex_Complex))
-        data_xref_Simplex_Complex_df = data_xref_Simplex_Complex_df.rename(columns = {'ID':'ID_data_xref_simplex-complex', 'xrefID':'ID_setup_xref_simplex_complex', 'Simplex':'ID_data_simplex', 'Complex':'ID_data_complex'})
-
-    data_xref_Complex_Document=os.path.join(inputDir,'data_xref_Complex-Document.xlsx')
-    if os.path.isfile(data_xref_Complex_Document):
-        data_xref_Complex_Document_df = pd.DataFrame(pd.read_excel(data_xref_Complex_Document))
-
-    data_xref_VComment=os.path.join(inputDir,'data_xref_VComment.xlsx')
-    if os.path.isfile(data_xref_VComment):
-        data_xref_VComment_df = pd.DataFrame(pd.read_excel(data_xref_VComment))
-
-    simplex_version = semantic_triplet_simplex(setup_Complex_df, setup_Simplex_df, setup_xref_Complex_Complex_df, data_xref_Complex_Complex_df, data_Complex_df, data_Simplex_df, data_SimplexText_df, data_xref_Simplex_Complex_df, data_xref_Complex_Document_df, data_xref_VComment_df)
-
-    macro_event_id = int(macro_event_id.split()[0])
-
-    simplex_version_specific = simplex_version[simplex_version['Macro Event'] == macro_event_id]
-
-    triplet_file_name = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'triplet (SVO)')
-    simplex_version_specific.to_csv(triplet_file_name, encoding='utf-8', index=False)
-
-    return triplet_file_name

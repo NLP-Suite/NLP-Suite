@@ -529,7 +529,7 @@ def openYouTube(video_url):
         mb.showwarning(title='Warning',
                    message='The YouTube video ' + video_url + ' could not be found in the NLP Suite YouTube channel.\n\nPlease, warn the NLP Suite developers.')
 
-videos_lookup = {'Setup the NLP Suite':'https://www.youtube.com/watch?v=W56SU9oAbpc&list=PL95lLs07jOtqArcIYzO-FX14T7lkauuab&index=2'}
+videos_lookup = {'Setup the NLP Suite':'https://www.youtube.com/watch?v=W56SU9oAbpc'}
 videos_options = 'Setup the NLP Suite'
 
 TIPS_lookup = {'NLP Suite: Package description': 'TIPS_NLP_NLP Suite Package description.pdf',

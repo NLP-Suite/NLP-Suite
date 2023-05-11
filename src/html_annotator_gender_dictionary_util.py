@@ -126,7 +126,6 @@ def SSA_annotate(year_state_var,firstName_entry_var,outputDir):
 
 # return a lst with the filename
 def SSA_annotate_help(year_state_var,firstName_entry_var,outputDir):
-
     df1 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_state_yearOfBirth.csv')
     target1 = df1[df1['Name'] == firstName_entry_var]
     df2 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_yearOfBirth.csv')
@@ -137,7 +136,7 @@ def SSA_annotate_help(year_state_var,firstName_entry_var,outputDir):
     if year_state_var == 'State':
         output_path = IO_files_util.generate_output_file_name('', '', outputDir, '.csv', year_state_var,
 															  firstName_entry_var)
-        target1 = target1.drop(columns=['Year of Birth'])
+        target1 = target1.drop(columns=['Year of birth'])
         group1 = target1.groupby(['Gender', 'State']).sum()
         group1.insert(0, 'Name', firstName_entry_var)
 
@@ -158,7 +157,7 @@ def SSA_annotate_help(year_state_var,firstName_entry_var,outputDir):
         target2.to_csv(output_path, encoding='utf-8', index=False)
         ###########
         q2 = pd.read_csv(output_path)
-        q2 = q2[['Name', 'Gender', 'Frequency', 'Year of Birth']]
+        q2 = q2[['Name', 'Gender', 'Frequency', 'Year of birth']]
         q2 = q2.sort_values(by=['Frequency'],ascending=False)
         q2.to_csv(output_path, encoding='utf-8', index=False)
 
@@ -171,7 +170,7 @@ def SSA_annotate_help(year_state_var,firstName_entry_var,outputDir):
         target1.to_csv(output_path, encoding='utf-8', index=False)
         ###########
         q2 = pd.read_csv(output_path)
-        q2 = q2[['Name', 'Gender', 'Frequency', 'Year of Birth', 'State']]
+        q2 = q2[['Name', 'Gender', 'Frequency', 'Year of birth', 'State']]
         q2 = q2.sort_values(by=['Frequency'], ascending=False)
         q2.to_csv(output_path, encoding='utf-8', index=False)
 
@@ -194,7 +193,7 @@ def build_dictionary_yob(source_file_path):
                     temp_list.append(yob)
                     result.append(temp_list)
     source_name = source_file_path.split('/')[-1]
-    df = pd.DataFrame(result, columns=['Name', 'Gender', 'Frequency', 'YearOfBirth'])
+    df = pd.DataFrame(result, columns=['Name', 'Gender', 'Frequency', 'Year of birth'])
     if os.path.exists('../lib/namesGender/SS_yearOfBirth.csv'):
         os.remove('../lib/namesGender/SS_yearOfBirth.csv')
     df.to_csv('../lib/namesGender'+os.sep+'SS_yearOfBirth.csv', encoding='utf-8', index=False)

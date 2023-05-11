@@ -457,8 +457,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
+videos_lookup = {'N grams Co Occurrences VIEWER':'https://www.youtube.com/watch?v=67YejULroIo'}
+videos_options='N grams Co Occurrences VIEWER'
 
 TIPS_lookup = {'N-Grams (word & character)':"TIPS_NLP_Ngram (word & character).pdf",
                'Google Ngram Viewer':'TIPS_NLP_Ngram Google Ngram Viewer.pdf',

@@ -477,12 +477,12 @@ if sys.platform == 'darwin':  # Mac OS
 # Mac: html_annotator_gender_main.py
 
     html_annotator_gender_annotator_dictionary_file_width = 60
-    html_annotator_gender_select_dictionary_file_button = 385
+    html_annotator_gender_select_dictionary_file_button = 380
     html_annotator_gender_select_dictionary_file_annotator = 460
     html_annotator_gender_SS_folder_width = 65
     html_annotator_gender_by_type_dropdown = 575
     html_annotator_gender_firstName_entry_lb_pos = 660
-    html_annotator_gender_firstName_entry_pos = 790
+    html_annotator_gender_firstName_entry_pos = 760 # 790
     html_annotator_gender_select_SS_folder = 1070
 
 # Mac: html_annotator_main.py
@@ -876,12 +876,12 @@ else: #windows and anything else
 
 # Windows: html_annotator_gender_main.py
     html_annotator_gender_annotator_dictionary_file_width = 100
-    html_annotator_gender_select_dictionary_file_button = 310
+    html_annotator_gender_select_dictionary_file_button = 305
     html_annotator_gender_select_dictionary_file_annotator = 370
     html_annotator_gender_SS_folder_width = 110
     html_annotator_gender_by_type_dropdown = 470
     html_annotator_gender_firstName_entry_lb_pos = 660
-    html_annotator_gender_firstName_entry_pos = 790
+    html_annotator_gender_firstName_entry_pos = 770 # 790
     html_annotator_gender_select_SS_folder = 1070
 
 # Windows: html_annotator_main.py

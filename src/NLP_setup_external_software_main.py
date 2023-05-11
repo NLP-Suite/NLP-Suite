@@ -307,7 +307,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_
                                                "\nThe CLOSE button will also trigger the automatic update of the NLP Suite pulling the latest release from GitHub. The new release will be displayed next time you open your local NLP Suite."
                                                "\nYou must be connected to the internet for the auto update to work.")
 
-videos_lookup = {'Setup external software':'https://www.youtube.com/watch?v=K8jUe_pKPPQ&list=PL95lLs07jOtqArcIYzO-FX14T7lkauuab&index=4'}
+videos_lookup = {'Setup external software':'https://www.youtube.com/watch?v=K8jUe_pKPPQ'}
 videos_options='Setup external software'
 
 TIPS_lookup = {'Stanford CoreNLP download install run':'TIPS_NLP_Stanford CoreNLP download install run.pdf',
