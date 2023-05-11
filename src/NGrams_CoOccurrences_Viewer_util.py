@@ -563,8 +563,10 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
             for word, yearDict in ngram_results.items():
                 df = pd.DataFrame(columns=[word, temporal_aggregation])
                 for year, freqDict in yearDict.items():
-                    df = df.append({word: freqDict["Frequency"], temporal_aggregation: year}, ignore_index=True)
+                    # df = df.append({word: freqDict["Frequency"], temporal_aggregation: year}, ignore_index=True)
+                    df.loc[len(df)] = [freqDict['Frequency'], year]
                 dfList.append(df)
+                # dfList = pd.concat([dfList, df])
             newdfCur = dfList[0].copy()  # let newdfCur be the first df in the dfList
             newdf = newdfCur.copy()
             for i in range(1, len(dfList)):  # one by one join next search word's dataframe with the current dataframe

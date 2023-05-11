@@ -655,8 +655,8 @@ def display_reminder(*args):
         return
 GIS_package2_var.trace('w', display_reminder)
 
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
+videos_lookup = {'GIS: From texts to maps':'https://www.youtube.com/watch?v=kIgXoxa6Az0'}
+videos_options='GIS: From texts to maps'
 
 TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',

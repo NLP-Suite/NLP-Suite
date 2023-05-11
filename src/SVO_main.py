@@ -1039,8 +1039,8 @@ package_var.trace('w', activateFilters)
 
 activateFilters()
 
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
+videos_lookup = {'SVO':'https://www.youtube.com/watch?v=QsMD6Kqpjas'}
+videos_options='SVO'
 
 TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',

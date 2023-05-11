@@ -390,8 +390,8 @@ def clear_NER_list(coming_from_add, coming_from_reset):
 
 activate_NER_Options(coming_from_add, coming_from_reset)
 
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
+videos_lookup = {'NER extractor':'https://www.youtube.com/watch?v=QyvzjYp5D6s'}
+videos_options='NER extractor'
 
 TIPS_lookup = {'Stanford CoreNLP supported languages':'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
                'Stanford CoreNLP performance & accuracy':'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf',

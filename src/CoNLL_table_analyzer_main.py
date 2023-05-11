@@ -546,8 +546,8 @@ def activate_all_options():
 
 activate_all_options()
 
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
+videos_lookup = {'CoNLL Table Analyzer':'https://www.youtube.com/watch?v=I-knso52gbM'}
+videos_options='CoNLL Table Analyzer'
 
 TIPS_lookup = {'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
