@@ -30,11 +30,6 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPa
         ontology_color_list,
         bold_DBpedia_YAGO_var):
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
-
     if ontology_class_var.get()=='':
         msg = 'The "Ontology class" widget is empty.\n\nPlease, use the dropdown menu to select an Ontology class and try again.'
         if 'DBpedia' in knowledge_graphs_var:
@@ -102,7 +97,7 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPa
             if knowledge_graphs_var:
                 print("\n" + knowledge_graphs_var + " exited with error")
             return
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 #def run(inputFilename,input_main_dir_path,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
@@ -139,7 +134,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for HTML Annotating Documents Using the Knowledge Graphs (KG) DBpedia & YAGO'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -594,7 +592,7 @@ def activate_DBpedia_YAGO_Options(y_multiplier_integerSV,confidence_level_lb,con
     if 'DBpedia' in knowledge_graphs_var.get() or 'YAGO' in knowledge_graphs_var.get():
         # display the reminder only once in the same GUI or the trace will display it many times
         if firstTime==False:
-            reminders_util.checkReminder(config_filename,
+            reminders_util.checkReminder(scriptName,
                                          reminders_util.title_options_DBpedia_YAGO,
                                          reminders_util.message_DBpedia_YAGO,
                                          True)

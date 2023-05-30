@@ -111,16 +111,17 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
     if errorFound:
         return filesToOpen
 
+    head, scriptName = os.path.split(os.path.basename(__file__))
     if language_var=='' and language_var!='English':
         reminders_util.checkReminder(
-            config_filename,
+            scriptName,
             reminders_util.title_options_English_language_WordNet,
             reminders_util.message_English_language_WordNet,
             True)
         return filesToOpen
     if noun_verb == 'VERB':
         reminders_util.checkReminder(
-            config_filename,
+            scriptName,
             reminders_util.title_options_WordNet_verb_aggregation,
             reminders_util.message_WordNet_verb_aggregation,
             True)

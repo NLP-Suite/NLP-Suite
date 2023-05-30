@@ -125,7 +125,8 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS pipeline at',
                                                    True, '', True, '', False)
 
-    reminders_util.checkReminder(config_filename,
+    head, scriptName = os.path.split(os.path.basename(__file__))
+    reminders_util.checkReminder(scriptName,
                                  reminders_util.title_options_GIS_timing,
                                  reminders_util.message_GIS_timing,
                                  True)
@@ -201,11 +202,20 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                                                                               geoName, locationColumnName, '', '',
                                                                               False,
                                                                               True)
+    #@@@
+    # must be the same name as set in GIS_geocode_util
+    # locationsNotFoundoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
+    #                                                                           'GIS',
+    #                                                                           geoName, 'not_found',
+    #                                                                           locationColumnName, '',
+    #                                                                           False, True)
     locationsNotFoundoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
                                                                               'GIS',
-                                                                              geoName, 'Not-Found',
+                                                                              geoName, '',
                                                                               locationColumnName, '',
                                                                               False, True)
+    locationsNotFoundoutputFilename=locationsNotFoundoutputFilename.replace('LOCATIONS','LOCATIONS_not-found')
+
     geocodedLocationsOutputFilename=inputFilename
 
     # RF
@@ -253,19 +263,24 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                 chartTitle = 'Frequency of Locations'
             else:
                 chartTitle = 'Frequency of Locations Found by ' + geocoder
+
+            #@@@
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
                                                                chartTitle=chartTitle,
                                                                # count_var = 1 for columns of alphabetic values
                                                                count_var=1, hover_label=[],
-                                                               outputFileNameType='found',  # 'NER_tag_bar',
+                                                               outputFileNameType='', #'found',  # 'NER_tag_bar',
                                                                column_xAxis_label='Locations',
                                                                groupByList=[],
                                                                plotList=[],
                                                                chart_title_label='')
+
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
+                    os.rename(chart_outputFilename[0], chart_outputFilename[0].replace('LOCATIONS','LOCATIONS_found'))
+                    chart_outputFilename[0]=chart_outputFilename[0].replace('LOCATIONS','LOCATIONS_found')
                     filesToOpen.extend(chart_outputFilename)
 
     # RF
@@ -275,23 +290,29 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
             if nRecordsNotFound>0:
                 filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
                 if createCharts:
+                    #@@@
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
                                                                            outputDir,
                                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
                                                                            chartTitle='Frequency of Locations not Found by ' + geocoder,
                                                                            # count_var = 1 for columns of alphabetic values
                                                                            count_var=1, hover_label=[],
-                                                                           outputFileNameType='not-found',  # 'NER_tag_bar',
+                                                                           outputFileNameType='', #'not-found',  # 'NER_tag_bar',
                                                                            column_xAxis_label='Locations',
                                                                            groupByList=[],
                                                                            plotList=[],
                                                                            chart_title_label='')
                     if chart_outputFilename != None:
                         if len(chart_outputFilename) > 0:
+                            os.rename(chart_outputFilename[0],
+                                      chart_outputFilename[0].replace('LOCATIONS', 'LOCATIONS_not-found'))
+                            chart_outputFilename[0] = chart_outputFilename[0].replace('LOCATIONS', 'LOCATIONS_not-found')
                             filesToOpen.extend(chart_outputFilename)
 
                 # save to csv file and run visualization
-                outputFilename= IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv','found-notFound')
+                # outputFilename= IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv','found-notFound')
+                outputFilename= IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv')
+                outputFilename = outputFilename.replace('LOCATIONS','LOCATIONS_found-notFound')
                 with open(outputFilename, "w", newline="", encoding='utf-8', errors='ignore') as csvFile:
                     writer = csv.writer(csvFile)
                     writer.writerow(

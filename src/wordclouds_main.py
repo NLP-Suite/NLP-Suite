@@ -35,11 +35,6 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
         prepare_image_var,selectedImage, use_contour_only,
         differentColumns_differentColors, csvField_color_list, openOutputFiles, doNotCreateIntermediateFiles):
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
-
     # get the NLP package and language options
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
@@ -151,7 +146,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Word Clouds'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -252,7 +250,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 
 def warnUser(*args):
     if prefer_horizontal_var.get()==True:
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_python_wordclouds_horizontal,
+        reminders_util.checkReminder(scriptName, reminders_util.title_options_python_wordclouds_horizontal,
                                      reminders_util.message_python_wordclouds_horizontal, True)
 prefer_horizontal_var.trace('w',warnUser)
 
@@ -682,7 +680,7 @@ title = ["NLP setup options"]
 message = "Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " \
           + str(language) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " \
           + str(package_basics) + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
-reminders_util.checkReminder(config_filename, title, message)
+reminders_util.checkReminder(scriptName, title, message)
 
 import wordclouds_util
 font_list = wordclouds_util.get_font_list()

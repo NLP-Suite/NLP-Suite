@@ -41,11 +41,6 @@ def run(inputFilename,inputDir,outputDir,
     filesToOpen = []  # Store all files that are to be opened once finished
 
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
-
     # get the NLP package and language options
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
@@ -117,19 +112,22 @@ def run(inputFilename,inputDir,outputDir,
         return
     #ANEW _______________________________________________________
     if anew_var==1 and (mean_var or median_var):
-        if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'EnglishShortenedANEW.csv', 'sentiment_analysis_ANEW')==False:
-            return
-        if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_ANEW_util.py')==False:
-            return
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running ANEW Sentiment Analysis at',
-                                                     True, '', True, '', False)
+        if language=='English':
+            if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'EnglishShortenedANEW.csv', 'sentiment_analysis_ANEW')==False:
+                return
+            if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_ANEW_util.py')==False:
+                return
+            startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running ANEW Sentiment Analysis at',
+                                                         True, '', True, '', False)
 
-        outputFiles=sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
+            outputFiles=sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
-        if len(outputFiles)>0:
-            filesToOpen.append(outputFiles)
+            if len(outputFiles)>0:
+                filesToOpen.append(outputFiles)
 
-        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running ANEW Sentiment Analysis at', True, '', True, startTime)
+            IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running ANEW Sentiment Analysis at', True, '', True, startTime)
+        else:
+            IO_user_interface_util.timed_alert(GUI_util.window,4000,'Warning','The ANEW algorithm is available only for the English language.\n\nYour currently selected language is '+language+'.\n\nYou can change the language using the Setup dropdownmenu at the bottom of this GUI and selecting "Setup NLP package and corpus language."')
 
 # BERT ---------------------------------------------------------
 
@@ -139,7 +137,7 @@ def run(inputFilename,inputDir,outputDir,
             model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
         else:
             model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
-        tempOutputFiles = BERT_util.main(inputFilename, inputDir, outputDir, config_filename, mode, createCharts, chartPackage, model_path)
+        tempOutputFiles = BERT_util.sentiment_main(inputFilename, inputDir, outputDir, config_filename, mode, createCharts, chartPackage, model_path)
         if tempOutputFiles == None:
             return
         if len(tempOutputFiles) > 0:
@@ -160,7 +158,7 @@ def run(inputFilename,inputDir,outputDir,
         limit_sentence_length_var = 1000
         import spaCy_util
         tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
-                                                    outputDir, config_filename,
+                                                    outputDir,
                                                     openOutputFiles,
                                                     createCharts, chartPackage,
                                                     annotator, False,
@@ -171,12 +169,10 @@ def run(inputFilename,inputDir,outputDir,
                                                     items_separator_var='',
                                                     date_position_var=0)
 
-        if tempOutputFiles == None:
-            return
-
-        if len(tempOutputFiles) > 0:
-            filesToOpen.extend(tempOutputFiles)
-            outputFilename = tempOutputFiles[0]
+        if tempOutputFiles != None:
+            if len(tempOutputFiles) > 0:
+                filesToOpen.extend(tempOutputFiles)
+                outputFilename = tempOutputFiles[0]
 
 # Stanford CORENLP  _______________________________________________________
 
@@ -225,12 +221,10 @@ def run(inputFilename,inputDir,outputDir,
                                                       items_separator_var='',
                                                       date_position_var=0)
 
-        if tempOutputFiles == None:
-            return
-
-        if len(tempOutputFiles) > 0:
-            filesToOpen.extend(tempOutputFiles)
-            outputFilename = tempOutputFiles[0]
+        if tempOutputFiles != None:
+            if len(tempOutputFiles) > 0:
+                filesToOpen.extend(tempOutputFiles)
+                outputFilename = tempOutputFiles[0]
 
 # shape of stories ------------------------------------------------------------------------
 
@@ -255,7 +249,7 @@ def run(inputFilename,inputDir,outputDir,
         # config_input_output_alphabetic_options = [['', outputFilename, '','',outputDir]]
         config_util.write_IO_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options, config_input_output_alphabetic_options_temp, True)
 
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_shape_of_stories,
                                      reminders_util.message_shape_of_stories,
                                      True)
@@ -268,50 +262,59 @@ def run(inputFilename,inputDir,outputDir,
             return
         if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_hedonometer_util.py')==False:
             return
+        if language=='English':
 
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running HEDONOMETER Sentiment Analysis at',
-                                                     True, '', True, '', False)
+            startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running HEDONOMETER Sentiment Analysis at',
+                                                         True, '', True, '', False)
 
-        outputFiles = sentiment_analysis_hedonometer_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
+            outputFiles = sentiment_analysis_hedonometer_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
-        if SA_algorithm_var!='*' and len(outputFiles)>0:
-            filesToOpen.append(outputFiles)
+            if SA_algorithm_var!='*' and len(outputFiles)>0:
+                filesToOpen.append(outputFiles)
 
-        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running HEDONOMETER Sentiment Analysis at', True, '', True, startTime)
+            IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running HEDONOMETER Sentiment Analysis at', True, '', True, startTime)
+        else:
+            IO_user_interface_util.timed_alert(GUI_util.window,4000,'Warning','The HEDONOMETER algorithm is available only for the English language.\n\nYour currently selected language is '+language+'.\n\nYou can change the language using the Setup dropdownmenu at the bottom of this GUI and selecting "Setup NLP package and corpus language."')
 
 #SentiWordNet _______________________________________________________
 
     if SA_algorithm_var=='*' or SentiWordNet_var==1 and (mean_var or median_var):
-        if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_SentiWordNet_util.py')==False:
-            return
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running SentiWordNet Sentiment Analysis at',
-                                                     True, '', True, '', False)
+        if language=='English':
+            if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_SentiWordNet_util.py')==False:
+                return
+            startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running SentiWordNet Sentiment Analysis at',
+                                                         True, '', True, '', False)
 
-        outputFiles = sentiment_analysis_SentiWordNet_util.main(inputFilename, inputDir, outputDir, config_filename, mode, createCharts, chartPackage)
+            outputFiles = sentiment_analysis_SentiWordNet_util.main(inputFilename, inputDir, outputDir, config_filename, mode, createCharts, chartPackage)
 
-        if SA_algorithm_var!='*' and len(outputFiles)>0:
-            filesToOpen.append(outputFiles)
+            if SA_algorithm_var!='*' and len(outputFiles)>0:
+                filesToOpen.append(outputFiles)
 
-        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running SentiWordNet Sentiment Analysis at', True, '', True, startTime)
+            IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running SentiWordNet Sentiment Analysis at', True, '', True, startTime)
+        else:
+            IO_user_interface_util.timed_alert(GUI_util.window,4000,'Warning','The SentiWordNet algorithm is available only for the English language.\n\nYour currently selected language is '+language+'.\n\nYou can change the language using the Setup dropdownmenu at the bottom of this GUI and selecting "Setup NLP package and corpus language."')
 
 #VADER _______________________________________________________
 
     if SA_algorithm_var=='*' or vader_var==1 and (mean_var or median_var):
-        if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'vader_lexicon.txt', 'sentiment_analysis_VADER_util.py')==False:
-            return
-        if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_VADER_util.py')==False:
-            return
-        startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running VADER Sentiment Analysis at',
-                                                     True, '', True, '', False)
-        outputFiles = sentiment_analysis_VADER_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
+        if language=='English':
+            if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'vader_lexicon.txt', 'sentiment_analysis_VADER_util.py')==False:
+                return
+            if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_VADER_util.py')==False:
+                return
+            startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running VADER Sentiment Analysis at',
+                                                         True, '', True, '', False)
+            outputFiles = sentiment_analysis_VADER_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
-        if len(outputFiles)>0:
-            filesToOpen.append(outputFiles)
+            if len(outputFiles)>0:
+                filesToOpen.append(outputFiles)
 
-        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running VADER Sentiment Analysis at', True, '', True, startTime)
+            IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running VADER Sentiment Analysis at', True, '', True, startTime)
+        else:
+            IO_user_interface_util.timed_alert(GUI_util.window,4000,'Warning','The VADER algorithm is available only for the English language.\n\nYour currently selected language is '+language+'.\n\nYou can change the language using the Setup dropdownmenu at the bottom of this GUI and selecting "Setup NLP package and corpus language."')
 
     if len(filesToOpen)>0:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -343,7 +346,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Sentiment Analysis'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -401,22 +407,22 @@ def display_reminder(*args):
         mb.showwarning('Warning',"The selected option is only a spacer. Please, select one of the indented sentiment analysis options and try again.")
         return
     if 'Stanford CoreNLP' in SA_algorithm_var.get():
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_SA_CoreNLP_system_requirements,
                                      reminders_util.message_SA_CoreNLP_system_requirements,
                                      True)
     elif 'VADER' in SA_algorithm_var.get():
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_SA_VADER,
                                      reminders_util.message_SA_VADER,
                                      True)
         if mean_var.get() or median_var.get()==True:
-            reminders_util.checkReminder(config_filename,
+            reminders_util.checkReminder(scriptName,
                                          reminders_util.title_options_VADER_MeanMedian,
                                          reminders_util.message_VADER_MeanMedian,
                                          True)
     elif 'SentiWordNet' in SA_algorithm_var.get():
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                     reminders_util.title_options_SA_SentiWordNet,
                                     reminders_util.message_SA_SentiWordNet,
                                     True)
@@ -538,6 +544,6 @@ title = ["NLP setup options"]
 message = "Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " \
           + str(language) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " \
           + str(package_basics) + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
-reminders_util.checkReminder(config_filename, title, message)
+reminders_util.checkReminder(scriptName, title, message)
 
 GUI_util.window.mainloop()

@@ -44,7 +44,7 @@ def run(window, inputFilename, inputDir, outputDir, selectedFile,
         return
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
     # sample_corpus_util.sample_corpus_by_document_id(selectedFile, inputDir, outputDir)
 
@@ -70,7 +70,7 @@ GUI_util.run_button.configure(command=run_script_command)
 GUI_label='Graphical User Interface (GUI) for Sampling a Corpus of Files'
 head, scriptName = os.path.split(os.path.basename(__file__))
 IO_setup_display_brief=True
-config_filename = scriptName.replace('main.py', 'config.csv')
+config_filename = scriptName.replace('_main.py', '_config.csv')
 
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),

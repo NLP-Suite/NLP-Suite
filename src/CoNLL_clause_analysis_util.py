@@ -163,9 +163,9 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
                                                         hover_info_column_list=[],
                                                         count_var=count_var,
                                                         complete_sid=False)  # TODO to be changed
+        # run_all returns a string; must use append
         if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+            filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running CLAUSE ANALYSES at', True, '', True, startTime, True)
     return filesToOpen

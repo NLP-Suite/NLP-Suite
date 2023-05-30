@@ -94,7 +94,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
                 mb.showwarning(title='Warning', message='There are too many output files (' + str(nFile) + ') to be opened automatically.\n\nPlease, do not forget to check the HTML files in your selected output directory.')
                 return
             else:
-                IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+                IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 #def run(inputFilename,input_main_dir_path,outputDir, dictionary_var, annotator_dictionary, DBpedia_var, annotator_extractor, openOutputFiles):
@@ -134,7 +134,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Annotating Documents in HTML Format'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

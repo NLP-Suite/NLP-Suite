@@ -207,7 +207,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                            True, '', True, startTime, False)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
@@ -241,7 +241,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label = 'Graphical User Interface (GUI) for CoNLL Table Analyzer'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -500,7 +503,7 @@ def activate_all_options():
         sentence_table_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoreNLP_nn_parser,
                                      reminders_util.message_CoreNLP_nn_parser,
                                      True)

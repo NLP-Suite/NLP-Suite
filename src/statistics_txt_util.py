@@ -392,7 +392,8 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
                     writer.writerow(
                         [len(tokens), sentenceID, sentence, fileID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
         csvOut.close()
-        reminder_status = reminders_util.checkReminder(configFileName,
+        head, scriptName = os.path.split(os.path.basename(__file__))
+        reminder_status = reminders_util.checkReminder(scriptName,
                                                        reminders_util.title_options_TIPS_file,
                                                        reminders_util.message_TIPS_file,
                                                        True)
@@ -428,7 +429,8 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
     Ndocs = str(len(inputDocs))
     if Ndocs==0:
         return
-    reminders_util.checkReminder(configFileName, reminders_util.title_options_line_length,
+    head, scriptName = os.path.split(os.path.basename(__file__))
+    reminders_util.checkReminder(scriptName, reminders_util.title_options_line_length,
                                  reminders_util.message_line_length, True)
     fieldnames=[
         'Line length (in characters)',
@@ -866,7 +868,8 @@ def print_results(window, words, class_word_list, header, inputFilename, outputD
 
 
 # called by sentence_analysis_main and style_analysis_main
-def process_words(window, config_filename, inputFilename,inputDir,outputDir, configFileName, openOutputFiles, createCharts, chartPackage, processType='', excludeStopWords=True,word_length=3):
+def process_words(window, configFileName, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
+    processType='', language='English', excludeStopWords=True,word_length=3):
     filesToOpen=[]
     documentID = 0
     multiple_punctuation=0
@@ -922,7 +925,7 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, con
         excludePunctuation = True
         wordgram = True
         bySentenceID = False
-        tempOutputFiles = compute_character_word_ngrams(window, inputFilename, inputDir, outputDir, config_filename,
+        tempOutputFiles = compute_character_word_ngrams(window, inputFilename, inputDir, outputDir, configFileName,
                                                         ngramsNumber,
                                                         normalize, excludePunctuation,
                                                         wordgram, frequency,
@@ -933,16 +936,19 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, con
 
     #For the user input of K sentences or words to be analyzed
     if 'Repetition: Words' in processType or 'Repetition: Last' in processType:
-        reminder_status = reminders_util.checkReminder(config_filename,
-                                                       reminders_util.title_options_only_CoreNLP_CoNLL_repetition_finder,
-                                                       reminders_util.message_only_CoreNLP_CoNLL_repetition_finder,
-                                                       True)
-
-        if 'Repetition: Last' in processType:
-
+        if '*' in processType:
+            k_str = '4' # when processing all style algorithms, set the k_str not to stop the process
+        else:
+            k_str = ''
+            # do not activate the reminder when processing ALL style options
+            head, scriptName = os.path.split(os.path.basename(__file__))
+            reminder_status = reminders_util.checkReminder(scriptName,
+                                                           reminders_util.title_options_only_CoreNLP_CoNLL_repetition_finder,
+                                                           reminders_util.message_only_CoreNLP_CoNLL_repetition_finder)
+        if 'Repetition: Last' in processType and k_str == '':
             k_str, useless = GUI_IO_util.enter_value_widget("Enter the number of words, K, to be analyzed (Repetition finder)", 'K',
                                                            1, '', '', '')
-        else:
+        elif 'Repetition: Words' in processType and k_str == '':
             k_str, useless = GUI_IO_util.enter_value_widget("Enter the number of sentences, K, to be analyzed (Repetition finder)", 'K',
                                                            1, '', '', '')
         if k_str=='':
@@ -993,6 +999,10 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, con
 
 # SUBJECTIVITY/OBJECTIVITY PER SENTENCE---------------------------------------------------------------------------------------------
             if "Objectivity/subjectivity" in processType:
+                # import spaCy_util
+                # annotator_available = spaCy_util.check_spaCy_annotator_availability(['Objectivity/subjectivity'], language, silent=False)
+                # if not annotator_available:
+                #     return
                 nlp = spacy.load('en_core_web_sm')
                 nlp.add_pipe('spacytextblob')
 
@@ -1092,8 +1102,8 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, con
                         header = ["First/Last Sentence", "K Value", "Word", "Word ID", "Sentence ID", "Sentence",
                                   "Document ID", "Document"]
                         select_col = ['Word']
-                        fileLabel = 'K_Sentences'
-                        fileLabel_byDocID = 'Rep_Words_First_Last_K_Sentences_byDoc'
+                        fileLabel = str(k) + '_K_Sentences'
+                        fileLabel_byDocID = 'Rep_Words_First_Last_' +str(k) + '_K_Sentences_byDoc'
                         columns_to_be_plotted_yAxis = ['Word']
                         chart_title_label = f'Frequency of repeated words in first and last K ({k}) sentences'
                         chart_title_byDocID = f'Frequency of repeated words in first and last K ({k}) sentences by Document'
@@ -1109,12 +1119,12 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, con
                             word_list_temp.append(["Last", k, wrd, wrdID + 1, sentenceID, s, documentID,
                                                    IO_csv_util.dressFilenameForCSVHyperlink(doc)])
                             rep_words_last.append(wrd)
-            # print(rep_words_first)
-            # print(rep_words_last)
+                    # print(rep_words_first)
+                    # print(rep_words_last)
 
-            if "Repetition: Words" in processType:
-                word_list.extend([sublist for sublist in word_list_temp if
-                                  sublist[2] in rep_words_first and sublist[2] in rep_words_last])
+                if "Repetition: Words" in processType:
+                    word_list.extend([sublist for sublist in word_list_temp if
+                                      sublist[2] in rep_words_first and sublist[2] in rep_words_last])
 
                 # REPEATED WORDS END OF SENTENCE/BEGINNING NEXT SENTENCE  --------------------------------------------------------------------------
                 if 'Repetition: Last' in processType:
@@ -1127,12 +1137,12 @@ def process_words(window, config_filename, inputFilename,inputDir,outputDir, con
                                   "Document ID", "Document"]
                         select_col = ['Word']
                         # fileLabel = 'Last K words of a sentence and first K words of next sentence'
-                        fileLabel = 'K words'
-                        fileLabel_byDocID = 'Last/First_k_words_byDoc'
+                        fileLabel = str(k) + '_K words'
+                        fileLabel_byDocID = 'Last/First_'+str(k) + '_k_words_byDoc'
                         columns_to_be_plotted_yAxis = ['Word']
-                        chart_title_label = 'Frequency of Last K words of a sentence and first K words of next sentence'
-                        chart_title_byDocID = 'Frequency of Last K words of a sentence and first K words of next sentence by Document'
-                        chart_title_bySentID = 'Frequency of Last K words of a sentence and first K words of next sentence by Sentence Index'
+                        chart_title_label = 'Frequency of Last K ('+str(k) +') words of a sentence and first K words of next sentence'
+                        chart_title_byDocID = 'Frequency of Last K ('+str(k) +') words of a sentence and first K words of next sentence by Document'
+                        chart_title_bySentID = 'Frequency of Last K ('+str(k) +') words of a sentence and first K words of next sentence by Sentence Index'
                         column_xAxis_label = 'Words'
                         if sentenceID == 1:
                             if wrdID + 1 > len(words_with_stop) - k:

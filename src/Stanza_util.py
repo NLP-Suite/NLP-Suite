@@ -27,8 +27,10 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 from tkinter import *
 # lang_dict = dict(constants_util.languages)
 
+# https://stanfordnlp.github.io/stanza/available_models.html
 # language_var.set('English')
 # language_list.append('English')
+# LIST OF LANGUAGES AVAILABLE IN STANZA
 def list_all_languages():
     import json
     import stanza.resources.common
@@ -40,21 +42,66 @@ def list_all_languages():
     langs_full = sorted([dict(constants_util.languages)[x] for x in languages])
     return langs_full
 
-# langs = list_all_languages()
-# langs_full = sorted([lang_dict[x] for x in langs])
+def open_Stanza_website(message, lang_list):
+    url='https://stanfordnlp.github.io/stanza/available_models.html'
+    Stanza_web = '\n\nLanguage and annotator options for Stanza are listed at the Stanza website\n\n' + url
+    website_name = 'Stanza website'
+    message_title = 'Stanza website'
+    message = message + Stanza_web + '\n\nWould you like to open the Stanza website for annotator availability for the various languages supported by Stanza?'
+    import IO_libraries_util
+    IO_libraries_util.open_url(website_name, url, ask_to_open=True, message_title=message_title, message=message)
 
-# language_menu = ttk.Combobox(window, width = 70, textvariable = language_var)
-# language_menu['values'] = langs_full
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+100,
-#                                                y_multiplier_integer, language_menu,True)
+def get_language_list(language):
+    if len(language) == 1 and language[0] != 'multilingual':
+        lang = ''
+    short_lang_list = []
+    long_lang_list = []
+    # short_lang is the abbreviated language, e.g., la
+    # long_lang is the long language, e.g., Latin
+    for short_lang, long_lang in lang_dict.items():
+        if long_lang == language[0]:
+            short_lang_list.append(short_lang)
+            long_lang_list.append(long_lang)
+            break
+    return short_lang_list, long_lang_list
+
+# https://stanfordnlp.github.io/stanza/available_models.html
+def check_Stanza_available_languages(language):
+    available_language = False
+    lang_list=[]
+    # language_list available in Stanza as long names: English, Chinese, ...
+    language_list = list_all_languages()
+    for short, long in constants_util.languages:
+        if long == language[0]:
+            if long in language_list:
+                available_language = True
+                lang_list.append(short)
+                break
+    available_language = True
+    if not available_language:
+        open_Stanza_website(str(lang_list) + ' language is not available for NLP processing in Stanza.', lang_list)
+    return available_language
+
+# check if allowed combinations of annotator and language is available in Stanza
+def check_Stanza_annotator_availability(annotator_params, short_lang, long_lang, silent=False):
+    annotator_available = True
+    for annotator in annotator_params:
+        if (short_lang not in available_NER and annotator == 'NER') \
+                or (short_lang not in available_ud and annotator == 'depparse') \
+                or (short_lang not in available_sentiment and annotator == 'sentiment'):
+            if not silent:
+                open_Stanza_website('Stanza does not currently support the ' + annotator + ' annotator for ' + long_lang + '.' + \
+                                    '\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the "Setup NLP package and corpus language" to open the GUI where you can change the language option.', [long_lang])
+            annotator_available = False
+    return annotator_available
 
 # Stanza annotate functions
-def Stanza_annotate(config_filename, inputFilename, inputDir,
+def Stanza_annotate(configFilename, inputFilename, inputDir,
                     outputDir,
                     openOutputFiles, createCharts, chartPackage,
                     annotator_params,
                     DoCleanXML,
-                    language,
+                    language, # a list
                     memory_var,
                     document_length=90000,
                     sentence_length=1000,
@@ -69,6 +116,10 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                      "The language list is empty.\n\nPlease, select a language and try again.")
         return filesToOpen
 
+    available_language = check_Stanza_available_languages(language)
+    if not available_language:
+        return filesToOpen
+
     # iterate through kwarg items
     extract_date_from_text_var = False
     filename_embeds_date_var = False
@@ -81,11 +132,8 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
         if (key == 'google_earth_var' and value == True):
             google_earth_var = True
 
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running Stanza ' + str(annotator_params) + ' annotator at',
-                                            True, '', True, '', False)
-
     #collecting input txt files
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=config_filename)
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFilename)
     nDocs = len(inputDocs)
     if nDocs==0:
         return filesToOpen
@@ -106,39 +154,17 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
     # record the time consumption before annotating text in each file
     processing_doc = ''
 
-    # check if selected language is one.
+    short_lang_list, long_lang_list = get_language_list(language)
+    short_lang=short_lang_list[0]
+    long_lang=long_lang_list[0]
+    # check if selected language is only one and NOT multilingual
     if len(language) == 1 and language[0] != 'multilingual':
-        lang = ''
-        lang_list = []
-        for k,v in lang_dict.items():
-            if v == language[0]:
-                lang = k
-                lang_list.append(lang)
-                break
-        # check if allowed combinations of annotator and language is available in Stanza
-        NER_available = False
-        for annotator in annotator_params:
-            if (lang not in available_NER and annotator=='NER') \
-                or (lang not in available_ud and annotator=='depparse')\
-                    or (lang not in available_sentiment and annotator=='sentiment'):
-                mb.showerror("Warning",
-                            "Stanza does not currently support the " + annotator + " annotator for " + language[0] + ".\n\nPlease, select a different annotator or a different language.")
-                return filesToOpen
-            else:
-                if (lang not in available_NER and annotator == 'SVO'):
-                    NER_available = False
-                else:
-                    NER_available=True
-            # routine = routine_option.get(annotator)
-            # elif lang == ""
-            # output_format = output_format_option.get(annotator)
 
         # test if the selected language model is already downloaded, if not, download
         # IMPORTANT: no need to manually download language package after Stanza v1.4.0,
         #            if Stanza gives error for downloading, check the current version of Stanza
-        nlp = stanza.Pipeline(lang=lang, processors='tokenize', verbose=False)
+        nlp = stanza.Pipeline(short_lang, processors='tokenize', verbose=False)
 
-        # if nlp is None:
         if "Lemma"  in annotator_params:
             annotator = 'Lemma'
             processors='tokenize,lemma,pos'
@@ -149,10 +175,11 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             annotator = 'POS'
             processors='tokenize,pos'
         elif "depparse" in annotator_params or "SVO" in annotator_params:
-            if lang not in available_NER:
+            if short_lang not in available_NER:
                 processors = 'tokenize,mwt,pos,lemma,depparse'  # add NER when parser option selected
             else:
                 processors='tokenize,mwt,pos,ner,lemma,depparse' # add NER when parser option selected
+            annotator = 'depparse'
             if "SVO" in annotator_params:
                 annotator = 'SVO'
                 annotator_params = "DepRel_SVO"
@@ -160,13 +187,25 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             annotator = 'sentiment'
             processors='tokenize,sentiment'
 
-        # create the appropriate subdirectory to better organize output files
-        # outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-        #                                                    label=annotator+'_Stanza_'+tail,
-        #                                                    silent=False)
-        outputDir = create_output_directory(inputFilename, inputDir, outputDir, annotator)
+        annotator_available = check_Stanza_annotator_availability([annotator],short_lang, long_lang)
+        if not annotator_available:
+            return
 
-        nlp = stanza.Pipeline(lang=lang, processors=processors, verbose=False)
+        startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                       'Started running Stanza ' + str(
+                                                           annotator_params) + ' annotator at',
+                                                       True, '', True, '', False)
+
+        if 'SVO' in annotator:
+            NER_available = check_Stanza_annotator_availability(['NER'], short_lang, long_lang, silent=True)
+        # create the appropriate subdirectory to better organize output files
+        if annotator=='depparse':
+            file_label='parser (dep)'
+        else:
+            file_label=annotator
+        outputDir = create_output_directory(inputFilename, inputDir, outputDir, file_label)
+
+        nlp = stanza.Pipeline(lang=short_lang, processors=processors, verbose=False)
 
     # if only 'multilingual' is selected
     elif len(language) == 1 and language[0] == 'multilingual':
@@ -194,7 +233,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                                                                 'CoNLL_Stanza')
     else:
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                annotator+'_Stanza')
+                                                                file_label+'_Stanza')
 
     for doc in inputDocs:
         docID = docID + 1
@@ -239,7 +278,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
                             "Stanza encountered an error trying to download the selected language pack " + str(language))
                 return
 
-        temp_df = convertStanzaDoctoDf(Stanza_output, inputFilename, inputDir, tail, docID, annotator_params, lang_list)
+        temp_df = convertStanzaDoctoDf(Stanza_output, inputFilename, inputDir, tail, docID, annotator_params, short_lang)
         df = pd.concat([df, temp_df], ignore_index=True, axis=0)
 
         # extract SVO
@@ -298,7 +337,7 @@ def Stanza_annotate(config_filename, inputFilename, inputDir,
             if not file_df.empty:
                 outputFilename = filesToVisualize[j]
                 chart_outputFilename = parsers_annotators_visualization_util.parsers_annotators_visualization(
-                    config_filename, inputFilename, inputDir, outputDir,
+                    configFilename, inputFilename, inputDir, outputDir,
                     outputFilename, annotator_params, kwargs, createCharts,
                     chartPackage)
                 if chart_outputFilename!=None:
@@ -377,10 +416,10 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         # rename the columns created by Stanza
         out_df = out_df.rename(
             columns = {
-                'id':'ID',
+                # 'id':'ID',
                 'text':'Form',
                 'lemma':'Lemma',
-                'upos':'POStag',
+                'upos':'POS',
                 'head':'Head',
                 'deprel':'DepRel',
                 'ner':'NER',
@@ -398,10 +437,11 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         sidx = 1
         max_idx = len(out_df)-1
         for row in out_df.iterrows():
-            if i != 0 and row[1]['ID'] == 1 :
-                sidx+=1
+            # if i != 0 and row[1]['ID'] == 1 :
+            if i != 0 and row[1]['id'] == 1:
+                    sidx+=1
 
-            out_df.at[i, 'Record ID'] = row[1]['ID']
+            # out_df.at[i, 'Record ID'] = row[1]['ID']
             out_df.at[i, 'Sentence ID'] = sidx
             if "NER" in annotator_params:
                 curr_ner = out_df.at[i, 'NER']
@@ -443,16 +483,21 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
                 out_df.at[idx, 'Language'] = lang_dict[temp_lang]
 
     if "Lemma"  in annotator_params:
-        out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+        # out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+        out_df = out_df[['Form', 'Lemma', 'POS', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "NER" in annotator_params:
-        out_df = out_df[['ID', 'Form', 'NER', 'Multi-Word Expression','Record ID', 'Sentence ID', 'Document ID', 'Document']]
+        # out_df = out_df[['ID', 'Form', 'NER', 'Multi-Word Expression','Record ID', 'Sentence ID', 'Document ID', 'Document']]
+        out_df = out_df[['Form', 'NER', 'Multi-Word Expression','Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "All POS" in annotator_params:
-        out_df = out_df[['ID', 'Form', 'POStag', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+        # out_df = out_df[['ID', 'Form', 'POStag', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+        out_df = out_df[['Form', 'POS', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "depparse" in annotator_params or "SVO" in annotator_params:
         if language not in available_NER:
-            out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            # out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            out_df = out_df[['Form', 'Lemma', 'POS', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
         else:
-            out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            # out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            out_df = out_df[['Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "sentiment" in annotator_params:
         out_df = out_df[['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
     return out_df
@@ -475,7 +520,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
 
     # object and subject constants
     OBJECT_DEPS = {"obj", "iobj", "dobj", "dative", "attr", "oprd"}
-    SUBJECT_DEPS = {"nsubj", "nsubj:pass", "csubj", "agent", "expl"}
+    SUBJECT_DEPS = {"nsubj", "nsubj:pass", "csubj", "agent"} #, "expl"}
     # NER tags dictionary for location, person and time
     NER_LOCATION = {"S-GPE", "B-GPE", "I-GPE", "E-GPE", "S-LOC", "B-LOC", "I-LOC", "E-LOC"}
     NER_PERSON = {"S-PERSON", "B-PERSON", "I-PERSON", "E-PERSON"}
@@ -485,20 +530,27 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
     c = 0
     for sentence in doc.sentences:
         sent_dict = sentence.to_dict()
+        S_found = False
+        V_found = False
+        O_found = True
         for w,word in enumerate(sentence.words):
-            tmp_head = sentence.words[word.head-1].deprel if word.head > 0 else "root"
-            if word.deprel in SUBJECT_DEPS or tmp_head in SUBJECT_DEPS:
+            # tmp_head = sentence.words[word.head-1].deprel if word.head > 0 else "root"
+            # if (word.deprel in SUBJECT_DEPS or tmp_head in SUBJECT_DEPS) and (SVO_found):
+            if (word.deprel in SUBJECT_DEPS) and (O_found):
                 svo_df.at[c, 'Subject (S)'] = word.text
-                SVO_found = True
+                S_found = True
+                O_found = False
             if word.pos=='VERB':
-                svo_df.at[c, 'Verb (V)'] = word.text
-                SVO_found = True
-            if word.deprel in OBJECT_DEPS or tmp_head in OBJECT_DEPS:
-                svo_df.at[c, 'Object (O)'] = word.text
-                SVO_found = True
+                if S_found:
+                    svo_df.at[c, 'Verb (V)'] = word.text
+                    V_found = True
+            # if word.deprel in OBJECT_DEPS or tmp_head in OBJECT_DEPS:
+            if word.deprel in OBJECT_DEPS:
+                if S_found:
+                    svo_df.at[c, 'Object (O)'] = word.text
+                    O_found = True
             # extract NER values
-            # if (SVO_found is True or NER_found is True) and language in available_NER:
-            if (SVO_found is True or NER_found) and NER_available:
+            if (SVO_found or NER_found) and NER_available:
                 token = sent_dict[w]
                 if token['ner'] in NER_LOCATION:
                     svo_df, NER_found = extractNER(token, svo_df, c, 'Location', NER_found)
@@ -506,12 +558,14 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
                     svo_df, NER_found = extractNER(token, svo_df, c, 'Person', NER_found)
                 elif token['ner'] in NER_TIME:
                     svo_df, NER_found = extractNER(token, svo_df, c, 'Time', NER_found)
-        # check if SVO is found, then add Sentence ID
-        if SVO_found:
-            svo_df.at[c, 'Sentence'] =  sentence.text
-            svo_df.at[c, 'Sentence ID'] =  c+1
-            SVO_found = False
-        c+=1
+            # check if SVO is found, then add Sentence ID
+            if S_found and V_found and O_found:
+                svo_df.at[c, 'Sentence'] =  sentence.text
+                svo_df.at[c, 'Sentence ID'] =  c+1
+                S_found = False
+                V_found = False
+                O_found = False
+                c+=1
 
     # csv output columns
     svo_df['Document ID'] = docID
@@ -590,7 +644,7 @@ def extractSVOMultilingual(stanza_doc, docID, inputFilename, inputDir, tail, fil
 # input: Stanza DF
 def excludePOS(df, postag={'NUM', 'PUNCT'}):
     for p in postag:
-        df = df[df["POStag"].str.contains(p)==False]
+        df = df[df["POS"].str.contains(p)==False]
     return df
 
 # extract date in filename from Stanford_CoreNLP_util
@@ -616,7 +670,7 @@ def date_in_filename(document, **kwargs):
 
 # create locations file for GIS
 def visualize_GIS_maps_Stanza(svo_df):
-    loc_df = pd.DataFrame(columns=['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+    loc_df = pd.DataFrame(columns=['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
     for _,row in svo_df.iterrows():
         if isinstance(row['Location'], str):
             loc_list = row['Location'].split(';')
@@ -742,3 +796,135 @@ available_NER = [
     "uk",
     "vi",
     ]
+
+NER_dict = {
+    "fr": [
+        "LOC",
+        "MISC",
+        "ORG",
+        "PER"
+    ],
+    "en": [
+        "CARDINAL",
+        "DATE",
+        "EVENT",
+        "FAC",
+        "GPE",
+        "LANGUAGE",
+        "LAW",
+        "LOC",
+        "MONEY",
+        "NORP",
+        "ORDINAL",
+        "ORG",
+        "PERCENT",
+        "PERSON",
+        "PRODUCT",
+        "QUANTITY",
+        "TIME",
+        "WORK_OF_ART"
+    ],
+    "zh-hans": [
+        "CARDINAL",
+        "DATE",
+        "EVENT",
+        "FAC",
+        "GPE",
+        "LANGUAGE",
+        "LAW",
+        "LOC",
+        "MONEY",
+        "NORP",
+        "ORDINAL",
+        "ORG",
+        "PERCENT",
+        "PERSON",
+        "PRODUCT",
+        "QUANTITY",
+        "TIME",
+        "WORK_OF_ART"
+    ],
+    "ru": [
+        "LOC",
+        "MISC",
+        "ORG",
+        "PER"
+    ],
+    "uk": [
+        "LOC",
+        "MISC",
+        "ORG",
+        "PERS"
+    ],
+    "ar": [
+        "LOC",
+        "MISC",
+        "ORG",
+        "PER"
+    ],
+    "hu": [
+        "LOC",
+        "MISC",
+        "ORG",
+        "PER"
+    ],
+    "af": [
+        "LOC",
+        "MISC",
+        "ORG",
+        "PERS"
+    ],
+    "bg": [
+        "EVT",
+        "LOC",
+        "ORG",
+        "PER",
+        "PRO"
+    ],
+    "fi": [
+        "DATE",
+        "EVENT",
+        "LOC",
+        "ORG",
+        "PER",
+        "PRO"
+    ],
+    "my": [
+        "LOC",
+        "NE",
+        "NUM",
+        "ORG",
+        "PNAME",
+        "RACE",
+        "TIME"
+    ],
+    "it": [
+        "LOC",
+        "ORG",
+        "PER"
+    ],
+    "de": [
+        "LOC",
+        "MISC",
+        "ORG",
+        "PER"
+    ],
+    "nl": [
+        "LOC",
+        "MISC",
+        "ORG",
+        "PER"
+    ],
+    "vi": [
+        "LOCATION",
+        "MISCELLANEOUS",
+        "ORGANIZATION",
+        "PERSON"
+    ],
+    "es": [
+        "LOC",
+        "MISC",
+        "ORG",
+        "PER"
+    ]
+}

@@ -1,5 +1,5 @@
-Routine,Title,Message,Event,Status
-*,NLP Suite reminders,Several NLP Suite scripts will fire up reminders for the user. You can turn them off once you are familiar with a script. You can always turn any reminder back ON (or OFF for that matter) if you select the reminders dropdown menu at the bottom of each GUI and then select a specific reminder (if reminders are available for that GUI).,Yes,OFF
+Routine,Title,Message,Status
+*,NLP Suite reminders,Several NLP Suite scripts will fire up reminders for the user. You can turn them off once you are familiar with a script. You can always turn any reminder back ON (or OFF for that matter) if you select the reminders dropdown menu at the bottom of each GUI and then select a specific reminder (if reminders are available for that GUI).,OFF
 *,Input/Output configurations,"Most GUIs in the NLP Suite provide two types of Input/Output (I/O) configurations that specify your selection for your input file or directory (these are MUTUALLY EXCLUSIVE. YOU CAN ONLY HAVE ONE OR THE OTHER BUT NOT BOTH) and output directory:
 
   Default I/O configuration
@@ -7,8 +7,143 @@ Routine,Title,Message,Event,Status
 
 The Default I/O configuration applies to ALL GUIs in the NLP Suite. This is an ideal option if you work exclusively, or mostly, with the same input file(s) regardless of GUI (i.e., NLP algorithms); you would not need to select these options for every GUI.
 
-If you occasionally need to run a script using a different set of I/O options, setup theGUI-specific I/O configuration. This will not affect your I/O selections for all GUIs and will only apply to a specific GUI if you chose the menu optionGUI-specific I/O configuration.",No,OFF
-NLP_default_IO,NLP Suite architecture & filenames,"The Python scripts in the NLP Suite have filenames that clearly identify the Suite architecture.
+If you occasionally need to run a script using a different set of I/O options, setup theGUI-specific I/O configuration. This will not affect your I/O selections for all GUIs and will only apply to a specific GUI if you chose the menu optionGUI-specific I/O configuration.",OFF
+SVO,SVO output,"The SVO pipeline will create in output an SVO subdirectory inside the main output directory.
+
+Depending upon the options you select it will also create different subdirectories (e.g., GIS, WordNet) inside the SVO subdirectory. Contrary to this, the creference resolution option will create a subdirectory inside the main output directory rather than the SVO subdirectory, since coreferenced files can then be used as input to any NLP algorithms.
+
+Depending upon the options you select, the SVO pipeline will produce different types of files: cvf files, wordcloud image, Google Earth Pro map, and Gephi network graph.
+
+While cvf and png files are easy to read, less so are Google Earth Pro kml files and, particularly, Gephi gexf files.
+
+PLEASE, read the Gephi TIPS file before you run the SVO pipeline.",OFF
+SVO,SVO default visualization options,"The SVO algorithms use default settings for visualizing results in Python Wordclouds and Google Earth Pro. If you want to customize the visualization options, please, use the Wordclouds GUI and the GIS Google Earth GUI with the csv files produced by SVO in input.",OFF
+GIS,GIS default visualization options,"The Google Earth Pro visualization options in the GIS GUI are set by default. If you want to customize Google Earth Pro, please, use the GIS Google Earth GUI with the list of locations or of geocoded locations produced by the GIS pipeline as csv files.",OFF
+GIS,GIS default GUI options,"The options available on the GUI have been automatically set for you depending upon the type of input file selected: txt or csv.
+
+With a TXT file, NER extraction via Stanford CoreNLP must be first performed.
+
+With a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.",OFF
+GIS,Google Maps API,"If the heatmap produced by Google Maps is displayed correctly for a split second and then displays ""Oops! Something went wrong"" you probably:
+
+   1. pasted incorrectly into the API key popup widget the Google API key;
+   2. you may not have entered billing information when applying for an API key; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale;
+   3. you may not have enabled the Maps JavaScript API (and if you use Google for geocoding, you also need to enable the Geocoding API).
+
+Please, check the API key, your billing information, and the API enabled and try again.
+
+PLEASE, read the TIPS_NLP_Google API Key.pdf for help.",OFF
+*,csv files,"If csv ouput files open displaying weird characters in a Windows OS (e.g., a€), most likely the cause is due to non utf-8 compliant input text. Apostrophes and quotes are the typical culprits, but also other punctuation characters.
+
+Please, run the tool to check documents for utf-8 compliance and, if necessary, run the tool for automatic apostrophe and quote conversion from non utf-8 to utf-8.
+
+To learm more on utf-8 compliance, read the TIPS on utf-8 compliance.",OFF
+SVO,SVO with corpus data,"You have selected to work with a set of txt files in a directory (your corpus).
+
+Beware that SVO extraction with Stanford CoreNLP is computationally demanding. Furthermore, depending upon the options you choose (manual coreference editing, GIS maps), it may require manual input on each input file processed.
+
+Depending upon corpus size, manual coreference is also not possible, due to memory requirements.",OFF
+SVO,WordNet VERB aggregation,"CAVEAT!
+
+For VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.
+
+The WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts.",OFF
+SVO,SVO Someone?,"The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., ""A beautiful car was bought""), a subject is automatically added as Someone?.",OFF
+SVO,No SVO records extracted,"The SVO algorithms have not extracted any SVOs. If you have selected to filter Subject and/or Verb, the filtering algorithms may have excluded available records.
+
+You may want to untick either/both checkboxes and try again.",OFF
+SVO,CoreNLP gender annotator,The gender annotator is only available for the Stanford CoreNLP package and the English language.,ON
+SVO,CoreNLP quote/speaker annotator,The quote/speaker annotator is only available for the Stanford CoreNLP package and the English language.,ON
+SVO,GIS geocoder,"After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.",OFF
+SVO,GIS timing,"Beware that geocoding some 30,000 locations via Nominatim and preparing the KML file for map visualization in Goodgle Earth Pro takes approximately 15 minutes on a standard laptop.",OFF
+SVO,CoreNLP SVO timing,"Beware that the CoreNLP SVO algorithms on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 20 minutes on a standard laptop.",OFF
+SVO,spaCy annotators,"Contrary to Stanford CoreNLP and Stanza, spaCy does not process specific annotators (e.g., POS, NER). Regardless of selected annotator, spaCy will also process the corpus with its full parser.",OFF
+style_analysis,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
+
+Your selected corpus language is English.
+Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
+
+You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",OFF
+style_analysis,K sentences repetition finder in CoNLL table,"In the CoNLL table analyzer GUI there is another K-sentences repetition finder algorithm. It provides data based based on the CoNLL table POS tags on counts and proportions of nouns, verbs, adjectives, and proper nouns in the first and last K sentences of a document.",OFF
+file-spell-checker,Language detection,"Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.
+
+Please, arm yourself with patience, depending upon the number and size of documents processed.
+
+Stanza, contrary to the other algorithms, does not compute the probability of language detection.",OFF
+sentiment_analysis,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
+
+Your selected corpus language is English.
+Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
+
+You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",OFF
+sentiment_analysis,Stanford CoreNLP Sentiment Analysis system requirements,"The Stanford CoreNLP Sentiment Analysis tool requires two components.
+
+1. A copy of the FREEWARE Stanford CoreNLP suite installed on your machine. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.
+
+2. CoreNLP, in turn, requires to have the FREEWARE Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/",OFF
+file_checker_converter_cleaner,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
+
+Your selected corpus language is English.
+Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
+
+You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",OFF
+NLP_setup_IO,Input/Output options,"The two widgets for INPUT FILE and INPUT DIRECTORY are mutually exclusive. You can select one OR the other but not both. Click on either button to make your selection.
+
+To change an already selected option from FILE to DIRECTORY or from DIRECTORY to FILE, simply click on the button you want to select, make your selection, and the I/O configuration will automatically update.",OFF
+NLP_setup_IO,Date options,"Some of the algorithms in the NLP Suite (e.g., GIS models and network models) can build dynamic models (i.e., models that vary with tiime) when time/date is known.
+
+Tick the checkbox, if the filenames in the selected INPUT option embed a date (e.g., The New York Times_12-19-1899), the NLP Suite can use that metadata information to build dynamic models. If that is the case, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).
+
+Please, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).
+
+Please, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2)",OFF
+NGrams_CoOccurrences_Viewer,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
+
+Your selected corpus language is English.
+Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
+
+You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",ON
+CoNLL_table_analyzer,Clause tags with CoreNLP neural network parser,The CoreNLP neural network parser does not produce clause tags in output. The column 'Clause Tag' in the output csv CoNLL table would contain all blank values.,OFF
+CoNLL_verb_analysis,CoNLL table - Verb modality,"The categories of Verb modality (Obligation, Will/would, Can/may) computed from the CoNLL table are NOT mutually exclusive. The same verb may appear in several categories.",OFF
+coreference,Stanford CoreNLP coreference,"The coreference algorithms in this GUI are based exclusively on Stanford CoreNLP coref annotator.
+
+Watch this space for an extension to spaCy of coreference resolution (Stanza relies on Stanford CoreNLP coreference annotator).",OFF
+whats_in_your_corpus,What is in your corpus - Topic modeling,"The topic modeling option requires in input a set of txt documents, rather than a single txt file. The topic modeling option is disabled for single documents.",OFF
+topic_modeling,Topic modelling: Number of topics,"You are running the topic modelling algorithm with the default value of 20 topics.
+
+YOU ARE STRONGLY ADVISED to run the algorithm repeatedly with different number of topics (e.g., 50, 40 30, 20, 10). You should then select the number of topics that gives you the best set of topics with no or minimum word overlap across topics. When running Gensim, the topic circles displayed in the Intertopic Distance Map (via multidimensional scaling) should be scattered throughout the four quadrants and should not be overlapping.",OFF
+whats_in_your_corpus,What is in your corpus - GIS redundant options,"You are running simultaneously two options that are redundant: ""References to geographical locations (CoreNLP NER)"" under ""What else is in your document(s)?"" and ""GIS (Geographic Information System) pipeline"".
+
+The GIS option has the advantage that it extracts locations via CoreNLP NER annotator and maps them via Google Earth Pro and Google Maps. But... you need to install these freeware software options.",OFF
+file_spell_checker,Language detection,"Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.
+
+Please, arm yourself with patience, depending upon the number and size of documents processed.
+
+Stanza, contrary to the other algorithms, does not compute the probability of language detection.",OFF
+GIS_pipeline,GIS timing,"Beware that geocoding some 30,000 locations via Nominatim and preparing the KML file for map visualization in Goodgle Earth Pro takes approximately 15 minutes on a standard laptop.",OFF
+GIS_Google_Maps,Google Maps API,"If the heatmap produced by Google Maps is displayed correctly for a split second and then displays ""Oops! Something went wrong"" you probably:
+
+   1. pasted incorrectly into the API key popup widget the Google API key;
+   2. you may not have entered billing information when applying for an API key; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale;
+   3. you may not have enabled the Maps JavaScript API (and if you use Google for geocoding, you also need to enable the Geocoding API).
+
+Please, check the API key, your billing information, and the API enabled and try again.
+
+PLEASE, read the TIPS_NLP_Google API Key.pdf for help.",OFF
+NER,spaCy annotators,"Contrary to Stanford CoreNLP and Stanza, spaCy does not process specific annotators (e.g., POS, NER). Regardless of selected annotator, spaCy will also process the corpus with its full parser.",OFF
+spaCy,spaCy annotators,"Contrary to Stanford CoreNLP and Stanza, spaCy does not process specific annotators (e.g., POS, NER). Regardless of selected annotator, spaCy will also process the corpus with its full parser.",OFF
+parsers_annotators_visualization,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags.",ON
+NER,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags.",OFF
+Stanford_CoreNLP,CoreNLP sentence length,"The length of the current sentence exceeds 100 words. The average sentence length in modern English is 20 words.
+
+More to the point, Stanford CoreNLP's performance deteriorates with sentences with more that 70/100 words.
+
+You should run the algorithm that extracts all sentences from a corpus and computes sentence length. This will allow you to either edit the sentence manually or perhaps run the algorithm that will add full stops (.) to sentences without end-of-sentence markers (too many sentences of this kind, one after the other, can create unduly long sentences).
+
+On Stanford CoreNLP and memory and performance issues and what to do about them, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.
+
+If you are processing files in a directory, other files may similarly need to be split and the message display may become annoying.",OFF
+NLP_menu,NLP Suite architecture & filenames,"The Python scripts in the NLP Suite have filenames that clearly identify the Suite architecture.
 
 The filename suffix designates two different types of files: _main and _util.
 
@@ -20,155 +155,21 @@ ALL SCRIPTS SUFFIXED BY _main CAN BE RUN INDIPENDENTLY OF THE NLP SUITE. Thus on
 Python knowledge_graphs_main.py
 and it will fire up the annotator GUI independently of NLP_main.py.
 
-The filename prefix cluster together scripts used for the same purpose. Thus annotator identifies all files dealing with html annotation.",Yes,OFF
-SVO,SVO output,"The SVO pipeline will create in output an SVO subdirectory inside the main output directory.
+The filename prefix cluster together scripts used for the same purpose. Thus annotator identifies all files dealing with html annotation.",ON
+Stanford_CoreNLP,CoreNLP NER annotator timing,"Beware that the CoreNLP NER annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 50 minutes on a standard laptop.",OFF
+Stanford_CoreNLP,CoreNLP POS/NER max sentence length,"The CoreNLP POS/NER annotators set a maximum sentence length for processing.
 
-Depending upon the options you select it will also create different subdirectories (e.g., GIS, WordNet) inside the SVO subdirectory. Contrary to this, the creference resolution option will create a subdirectory inside the main output directory rather than the SVO subdirectory, since coreferenced files can then be used as input to any NLP algorithms.
-
-Depending upon the options you select, the SVO pipeline will produce different types of files: cvf files, wordcloud image, Google Earth Pro map, and Gephi network graph.
-
-While cvf and png files are easy to read, less so are Google Earth Pro kml files and, particularly, Gephi gexf files.
-
-PLEASE, read the Gephi TIPS file before you run the SVO pipeline.",Yes,OFF
-SVO,SVO default visualization options,"The SVO algorithms use default settings for visualizing results in Python Wordclouds and Google Earth Pro. If you want to customize the visualization options, please, use the Wordclouds GUI and the GIS Google Earth GUI with the csv files produced by SVO in input.",Yes,OFF
-GIS,GIS default visualization options,"The Google Earth Pro visualization options in the GIS GUI are set by default. If you want to customize Google Earth Pro, please, use the GIS Google Earth GUI with the list of locations or of geocoded locations produced by the GIS pipeline as csv files.",Yes,OFF
-GIS,GIS default GUI options,"The options available on the GUI have been automatically set for you depending upon the type of input file selected: txt or csv.
-
-With a TXT file, NER extraction via Stanford CoreNLP must be first performed.
-
-With a CSV file, the script checks whether the file is a CoNLL table, a geocoded file containing latitude and longitude values, or a file containing a list of locations that need to be geocoded.",No,OFF
-NLP_default_IO,Input/Output options,"The two widgets for INPUT FILE and INPUT DIRECTORY are mutually exclusive. You can select one OR the other but not both. Click on either button to make your selection.
-
-To change an already selected option from FILE to DIRECTORY or from DIRECTORY to FILE, simply click on the button you want to select, make your selection, and the I/O configuration will automatically update.",No,OFF
-NLP_default_IO,Date options,"Some of the algorithms in the NLP Suite (e.g., GIS models and network models) can build dynamic models (i.e., models that vary with tiime) when time/date is known.
-
-Tick the checkbox, if the filenames in the selected INPUT option embed a date (e.g., The New York Times_12-19-1899), the NLP Suite can use that metadata information to build dynamic models. If that is the case, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).
-
-Please, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).
-
-Please, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2)",No,OFF
-NLP_default_IO,CoreNLP NER annotator timing,"Beware that the CoreNLP NER annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 50 minutes on a standard laptop.",Yes,OFF
-NLP_default_IO,CoreNLP POS/NER max sentence length,"The CoreNLP POS/NER annotators set a maximum sentence length for processing.
-
-Sentences longer than your selected max length will be cut and some POS/NER tags in those long sentences may be lost.",Yes,OFF
-NLP_default_IO,CoreNLP sentence length,"The length of the current sentence exceeds 100 words. The average sentence length in modern English is 20 words.
-
-More to the point, Stanford CoreNLP's performance deteriorates with sentences with more that 70/100 words.
-
-You should run the algorithm that extracts all sentences from a corpus and computes sentence length. This will allow you to either edit the sentence manually or perhaps run the algorithm that will add full stops (.) to sentences without end-of-sentence markers (too many sentences of this kind, one after the other, can create unduly long sentences).
-
-On Stanford CoreNLP and memory and performance issues and what to do about them, please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.
-
-If you are processing files in a directory, other files may similarly need to be split and the message display may become annoying.",Yes,ON
-NLP_default_IO,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags.",Yes,ON
-NLP_default_IO,GIS timing,"Beware that geocoding some 30,000 locations via Nominatim and preparing the KML file for map visualization in Goodgle Earth Pro takes approximately 15 minutes on a standard laptop.",Yes,OFF
-GIS,Google Maps API,"If the heatmap produced by Google Maps is displayed correctly for a split second and then displays ""Oops! Something went wrong"" you probably:
-
-   1. pasted incorrectly into the API key popup widget the Google API key;
-   2. you may not have entered billing information when applying for an API key; billing information is required although it is VERY unlikely you will be charged since you are not producing maps on a massive scale;
-   3. you may not have enabled the Maps JavaScript API (and if you use Google for geocoding, you also need to enable the Geocoding API).
-
-Please, check the API key, your billing information, and the API enabled and try again.
-
-PLEASE, read the TIPS_NLP_Google API Key.pdf for help.",Yes,OFF
-*,csv files,"If csv ouput files open displaying weird characters in a Windows OS (e.g., a€), most likely the cause is due to non utf-8 compliant input text. Apostrophes and quotes are the typical culprits, but also other punctuation characters.
-
-Please, run the tool to check documents for utf-8 compliance and, if necessary, run the tool for automatic apostrophe and quote conversion from non utf-8 to utf-8.
-
-To learm more on utf-8 compliance, read the TIPS on utf-8 compliance.",Yes,OFF
-NGrams_CoOccurrences_Viewer,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
-
-Your selected corpus language is Latin.
-Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
-
-You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",No,OFF
-NLP_default_IO,subprocess.call(cmd) error,"subprocess.call(cmd) error
-
-If the VIEWER you are running exits with an error code about a file not found, most likely your selected INPUT & OUTPUT directory options are too long for Windows to handle.
-
-You may need to move your input and output folders so as to have a shorter path (e.g., desktop).",Yes,OFF
-parsers_annotators,Input/Output options,"The two widgets for INPUT FILE and INPUT DIRECTORY are mutually exclusive. You can select one OR the other but not both. Click on either button to make your selection.
-
-To change an already selected option from FILE to DIRECTORY or from DIRECTORY to FILE, simply click on the button you want to select, make your selection, and the I/O configuration will automatically update.",No,OFF
-parsers_annotators,Date options,"Some of the algorithms in the NLP Suite (e.g., GIS models and network models) can build dynamic models (i.e., models that vary with tiime) when time/date is known.
-
-Tick the checkbox, if the filenames in the selected INPUT option embed a date (e.g., The New York Times_12-19-1899), the NLP Suite can use that metadata information to build dynamic models. If that is the case, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).
-
-Please, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).
-
-Please, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2)",No,OFF
-SVO,SVO with corpus data,"You have selected to work with a set of txt files in a directory (your corpus).
-
-Beware that SVO extraction with Stanford CoreNLP is computationally demanding. Furthermore, depending upon the options you choose (manual coreference editing, GIS maps), it may require manual input on each input file processed.
-
-Depending upon corpus size, manual coreference is also not possible, due to memory requirements.",Yes,OFF
-SVO,Input/Output options,"The two widgets for INPUT FILE and INPUT DIRECTORY are mutually exclusive. You can select one OR the other but not both. Click on either button to make your selection.
-
-To change an already selected option from FILE to DIRECTORY or from DIRECTORY to FILE, simply click on the button you want to select, make your selection, and the I/O configuration will automatically update.",No,OFF
-SVO,Date options,"Some of the algorithms in the NLP Suite (e.g., GIS models and network models) can build dynamic models (i.e., models that vary with tiime) when time/date is known.
-
-Tick the checkbox, if the filenames in the selected INPUT option embed a date (e.g., The New York Times_12-19-1899), the NLP Suite can use that metadata information to build dynamic models. If that is the case, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).
-
-Please, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).
-
-Please, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2)",No,OFF
-SVO,WordNet VERB aggregation,"CAVEAT!
+Sentences longer than your selected max length will be cut and some POS/NER tags in those long sentences may be lost.",OFF
+topic_modeling,English language & Gensim topic modeling,Gensim topic modeling is only available for texts in the English language.,ON
+knowledge_graphs_WordNet,WordNet VERB aggregation,"CAVEAT!
 
 For VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.
 
-The WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts.",Yes,OFF
-SVO,SVO Someone?,"The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., ""A beautiful car was bought""), a subject is automatically added as Someone?.",Yes,OFF
-SVO,No SVO records extracted,"The SVO algorithms have not extracted any SVOs. If you have selected to filter Subject and/or Verb, the filtering algorithms may have excluded available records.
+The WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts.",OFF
+Stanford_CoreNLP,CoreNLP neural network parser timing,"Beware that the CoreNLP neural network parser algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 40 minutes on a standard laptop.",OFF
+Stanford_CoreNLP,Clause tags with CoreNLP neural network parser,The CoreNLP neural network parser does not produce clause tags in output. The column 'Clause Tag' in the output csv CoNLL table would contain all blank values.,OFF
+parsers_annotators,CoreNLP NER tags,"The CoNLL table produced by the CoreNLP parser has a record for each token in the document(s) processed.
 
-You may want to untick either/both checkboxes and try again.",Yes,OFF
-DB_PCACE_data_analyzer,Input/Output options,"The two widgets for INPUT FILE and INPUT DIRECTORY are mutually exclusive. You can select one OR the other but not both. Click on either button to make your selection.
+If you are planning to produce frequency distributions of NER tags directly from the CoNLL table, you need to remember that tags such as 'Date' or 'City' may be grossly overestimated. For instance, in the expression 'the day before Christmas' each word 'the,' 'day,' 'before,' 'Christmas' will be tagged as NER date. The same is true for NER CITY tags such as 'New York City.'
 
-To change an already selected option from FILE to DIRECTORY or from DIRECTORY to FILE, simply click on the button you want to select, make your selection, and the I/O configuration will automatically update.",No,OFF
-DB_PCACE_data_analyzer,Date options,"Some of the algorithms in the NLP Suite (e.g., GIS models and network models) can build dynamic models (i.e., models that vary with tiime) when time/date is known.
-
-Tick the checkbox, if the filenames in the selected INPUT option embed a date (e.g., The New York Times_12-19-1899), the NLP Suite can use that metadata information to build dynamic models. If that is the case, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).
-
-Please, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).
-
-Please, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2)",No,OFF
-SVO,CoreNLP gender annotator,The gender annotator is only available for the Stanford CoreNLP package and the English language.,Yes,ON
-NLP_default_IO,WordNet VERB aggregation,"CAVEAT!
-
-For VERBS, the aggregated 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies.
-
-The WordNet_UP function will automatically compute VERB frequencies with/without auxiliaries and display both Excel charts.",Yes,OFF
-NLP_default_IO,SVO Someone?,"The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., ""A beautiful car was bought""), a subject is automatically added as Someone?.",Yes,OFF
-SVO,CoreNLP quote/speaker annotator,The quote/speaker annotator is only available for the Stanford CoreNLP package and the English language.,Yes,ON
-NLP_default_IO,No SVO records extracted,"The SVO algorithms have not extracted any SVOs. If you have selected to filter Subject and/or Verb, the filtering algorithms may have excluded available records.
-
-You may want to untick either/both checkboxes and try again.",Yes,OFF
-NLP_default_IO,GIS geocoder,"After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.",Yes,OFF
-NLP_default_IO,spaCy annotators,"Contrary to Stanford CoreNLP and Stanza, spaCy does not process specific annotators (e.g., POS, NER). Regardless of selected annotator, spaCy will also process the corpus with its full parser.",Yes,OFF
-SVO,GIS geocoder,"After the geocoding and mapping is done, please, check carefully the results. If you are geocoding locations such as Athens or Rome in Georgia, most likely they will be geocoded in Greece and Italy. If you specify the United States as the country bias, the geocoder may select Rome, New York, or Indiana, or Illinois, rather than Georgia. To make sure the geocoded Rome is in Georgia, you may need to edit the geocoded csv file, adding Georgia as the state, e.g., Rome, Georgia.",Yes,OFF
-SVO,GIS timing,"Beware that geocoding some 30,000 locations via Nominatim and preparing the KML file for map visualization in Goodgle Earth Pro takes approximately 15 minutes on a standard laptop.",Yes,OFF
-SVO,CoreNLP SVO timing,"Beware that the CoreNLP SVO algorithms on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 20 minutes on a standard laptop.",Yes,OFF
-SVO,spaCy annotators,"Contrary to Stanford CoreNLP and Stanza, spaCy does not process specific annotators (e.g., POS, NER). Regardless of selected annotator, spaCy will also process the corpus with its full parser.",Yes,OFF
-NLP_default_IO,CoreNLP SVO timing,"Beware that the CoreNLP SVO algorithms on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 20 minutes on a standard laptop.",Yes,OFF
-style_analysis,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
-
-Your selected corpus language is Latin.
-Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
-
-You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",No,OFF
-style_analysis,Input/Output options,"The two widgets for INPUT FILE and INPUT DIRECTORY are mutually exclusive. You can select one OR the other but not both. Click on either button to make your selection.
-
-To change an already selected option from FILE to DIRECTORY or from DIRECTORY to FILE, simply click on the button you want to select, make your selection, and the I/O configuration will automatically update.",No,OFF
-style_analysis,Date options,"Some of the algorithms in the NLP Suite (e.g., GIS models and network models) can build dynamic models (i.e., models that vary with tiime) when time/date is known.
-
-Tick the checkbox, if the filenames in the selected INPUT option embed a date (e.g., The New York Times_12-19-1899), the NLP Suite can use that metadata information to build dynamic models. If that is the case, using the dropdown menu, select the date format of the date embedded in the filename (default mm-dd-yyyy).
-
-Please, enter the character used to separate the date field embedded in the filenames from the other fields (e.g., _ in the filename The New York Times_12-23-1992) (default _).
-
-Please, using the dropdown menu, select the position of the date field in the filename (e.g., 2 in the filename The New York Times_12-23-1992; 4 in the filename The New York Times_1_3_12-23-1992 where perhaps fields 2 and 3 refer respectively to the page and column numbers) (default 2)",No,OFF
-style_analysis,K sentences repetition finder in CoNLL table,"In the CoNLL table analyzer GUI there is another K-sentences repetition finder algorithm. It provides data based based on the CoNLL table POS tags on counts and proportions of nouns, verbs, adjectives, and proper nouns in the first and last K sentences of a document.",Yes,OFF
-file-spell-checker,Language detection,"Language detection algorithms are very slow. The NLP Suite runs three different types of algorithms: LANGDETECT, SPACY, and LANGID.
-
-Please, arm yourself with patience, depending upon the number and size of documents processed.
-
-Stanza, contrary to the other algorithms, does not compute the probability of language detection.",Yes,OFF
-NLP_default_IO,K sentences repetition finder in CoNLL table,"In the CoNLL table analyzer GUI there is another K-sentences repetition finder algorithm. It provides data based based on the CoNLL table POS tags on counts and proportions of nouns, verbs, adjectives, and proper nouns in the first and last K sentences of a document.",Yes,OFF
+A better way to obtain frequency distributions of NER values is to run the NER annotators from the 'Stanford_CoreNLP_NER_main.py.'",OFF

@@ -294,7 +294,7 @@ def run(inputDir, input_secondary_dir_path, outputDir, openOutputFiles, createCh
     elif Levenshtein_var == True:
         Levenshtein()
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
@@ -338,7 +338,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label = 'Graphical User Interface (GUI) for Various Tools for Social Science Research'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -519,7 +522,7 @@ def activate_fileName_wellFormedness(*args):
         intruder_checkbox.configure(state="normal")
         plagiarist_checkbox.configure(state="normal")
     else:
-        reminders_util.checkReminder(config_filename, ["Filename checker"], '', True)
+        reminders_util.checkReminder(scriptName, ["Filename checker"], '', True)
         fileName_embeds_date_checkbox.configure(state="normal")
         NER_checkbox.configure(state="disabled")
         NER_var.set(0)
@@ -682,7 +685,7 @@ def activate_filenameEmbedsDate(*args):
         fileName_embeds_date_checkbox.configure(state="disabled")
         fileName_embeds_date.set(0)
     else:
-        reminders_util.checkReminder(config_filename, ["Plagiarist"], '', True)
+        reminders_util.checkReminder(scriptName, ["Plagiarist"], '', True)
         similarityIndex_Plagiarist_menu.configure(state="normal")
         check_filename_checkbox.configure(state='disabled')
         character_checkbox.configure(state="disabled")

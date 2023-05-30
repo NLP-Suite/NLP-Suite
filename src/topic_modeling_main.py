@@ -72,7 +72,7 @@ def run(inputDir, outputDir, openOutputFiles,createCharts,chartPackage, num_topi
         return
 
     if num_topics==20:
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_topic_modelling_number_of_topics,
+        reminders_util.checkReminder(scriptName, reminders_util.title_options_topic_modelling_number_of_topics,
                                      reminders_util.message_topic_modelling_number_of_topics, True)
 
     # create a subdirectory of the output directory
@@ -89,7 +89,7 @@ def run(inputDir, outputDir, openOutputFiles,createCharts,chartPackage, num_topi
                                           remove_stopwords_var, lemmatize_var, nounsOnly_var, Gensim_MALLET_var, openOutputFiles, createCharts, chartPackage)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
@@ -122,7 +122,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label = 'Graphical User Interface (GUI) for Topic Modeling with MALLET and Gensim'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -219,12 +222,12 @@ if current_process().name == 'MainProcess':
 
     def Mallet_reminder(*args):
         if Gensim_MALLET_var.get():
-            routine_options = reminders_util.getReminders_list(config_filename)
-            reminders_util.checkReminder(config_filename,
+            routine_options = reminders_util.getReminders_list(scriptName)
+            reminders_util.checkReminder(scriptName,
                                          reminders_util.title_options_gensim_release,
                                          reminders_util.message_gensim_release,
                                          True)
-            routine_options = reminders_util.getReminders_list(config_filename)
+            routine_options = reminders_util.getReminders_list(scriptName)
     Gensim_MALLET_var.trace('w',Mallet_reminder)
 
     def activate_options():
@@ -303,7 +306,7 @@ if current_process().name == 'MainProcess':
     GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
     reminders_util.checkReminder(
-        config_filename,
+        scriptName,
         reminders_util.title_options_English_language_Gensim,
         reminders_util.message_English_language_Gensim,
         True)

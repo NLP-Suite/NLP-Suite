@@ -54,11 +54,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                        message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
         return
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
-
     # get the date options from filename
     filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = \
         config_util.get_date_options(config_filename, config_input_output_numeric_options)
@@ -152,7 +147,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 if len(tempOutputFiles)>0:
                     filesToOpen.append(tempOutputFiles)
                     if 'parser' in annotator:
-                        reminders_util.checkReminder(config_filename,
+                        reminders_util.checkReminder(scriptName,
                                                      reminders_util.title_options_CoreNLP_NER_tags,
                                                      reminders_util.message_CoreNLP_NER_tags,
                                                      True)
@@ -199,12 +194,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         document_length_var = 1
         limit_sentence_length_var = 1000
-        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
-                                                    outputDir,
-                                                    config_filename,
-                                                    openOutputFiles,
-                                                    createCharts, chartPackage,
-                                                    annotator, False,
+
+        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir, outputDir,
+                                                    openOutputFiles, createCharts, chartPackage,
+                                                    [annotator], False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
                                                     filename_embeds_date_var=filename_embeds_date_var,
@@ -218,7 +211,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if len(tempOutputFiles) > 0:
             filesToOpen.append(tempOutputFiles)
             if 'parser' in annotator:
-                reminders_util.checkReminder(config_filename,
+                reminders_util.checkReminder(scriptName,
                                              reminders_util.title_options_CoreNLP_NER_tags,
                                              reminders_util.message_CoreNLP_NER_tags,
                                              True)
@@ -284,7 +277,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if len(tempOutputFiles) > 0:
             filesToOpen.append(tempOutputFiles)
             if 'parser' in annotator:
-                reminders_util.checkReminder(config_filename,
+                reminders_util.checkReminder(scriptName,
                                              reminders_util.title_options_CoreNLP_NER_tags,
                                              reminders_util.message_CoreNLP_NER_tags,
                                              True)
@@ -307,7 +300,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         config_input_output_alphabetic_options_temp[3][1] = outputDir
         config_util.write_IO_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options_temp, config_input_output_alphabetic_options_temp, True)
 
-        reminders_util.checkReminder(config_filename_temp,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoNLL_analyzer,
                                      reminders_util.message_CoNLL_analyzer,
                                      True)
@@ -315,7 +308,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         call("python CoNLL_table_analyzer_main.py", shell=True)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 
@@ -363,7 +356,10 @@ GUI_label = 'Graphical User Interface (GUI) for NLP parsers & annotators'
 #   output dir
 config_input_output_numeric_options=[2,1,0,1]
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('main.py', 'config.csv')
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -455,39 +451,34 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.parsers_annot
                                                GUI_IO_util.labels_x_coordinate,
                                                "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
 
-def activate_SentenceTable(*args):
-    global parser_menu
-    if parser_var.get() == 0:
-        parser_menu_var.set('')
-        # parser_menu.configure(width=50, state='disabled')
-        parser_menu.configure(state='disabled')
-        # compute_sentence_var.set(0)
-        CoNLL_table_analyzer_var.set(0)
-    else:
-        parser_menu_var.set('Probabilistic Context Free Grammar (PCFG)')
-        # parser_menu.configure(width=50, state='normal')
-        parser_menu.configure(state='normal')
-        # compute_sentence_var.set(1)
-        CoNLL_table_analyzer_var.set(1)
-
 CoNLL_table_analyzer_var.set(0)
 CoNLL_table_analyzer_checkbox = tk.Checkbutton(window, text='CoNLL table analyzer', variable=CoNLL_table_analyzer_var,
-                                               onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_lb_pos, y_multiplier_integer,
-                                               CoNLL_table_analyzer_checkbox, True)
+                                               onvalue=1, offvalue=0, command=lambda: check_CoNLL_table())
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                               CoNLL_table_analyzer_checkbox, True, False, False, False, 90,
+                                               GUI_IO_util.labels_x_coordinate,
+                                               "The CoNLL table analyzer is currently only available for CoNLL tables generated by Stanford CoreNLP")
+
 CoNLL_table_analyzer_checkbox_msg = tk.Label()
 CoNLL_table_analyzer_checkbox_msg.config(text="Open the CoNLL table analyzer GUI")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_open_CoNLL_pos, y_multiplier_integer,
                                                CoNLL_table_analyzer_checkbox_msg)
 
-def check_CoNLL_table(*args):
-    if CoNLL_table_analyzer_var.get() == 1:
-        CoNLL_table_analyzer_checkbox_msg.config(text="Open CoNLL table analyzer GUI")
-    else:
-        CoNLL_table_analyzer_checkbox_msg.config(text="Do NOT open CoNLL table analyzer GUI")
-CoNLL_table_analyzer_var.trace('w', check_CoNLL_table)
-
-check_CoNLL_table()
+# def activate_SentenceTable(*args):
+#     global parser_menu
+#     if parser_var.get() == 0:
+#         parser_menu_var.set('')
+#         # parser_menu.configure(width=50, state='disabled')
+#         parser_menu.configure(state='disabled')
+#         # compute_sentence_var.set(0)
+#         CoNLL_table_analyzer_var.set(0)
+#     else:
+#         parser_menu_var.set('Probabilistic Context Free Grammar (PCFG)')
+#         # parser_menu.configure(width=50, state='normal')
+#         parser_menu.configure(state='normal')
+#         # compute_sentence_var.set(1)
+#         CoNLL_table_analyzer_var.set(1)
 
 Annotators_checkbox = tk.Checkbutton(window, text='Annotators', variable=annotators_var,
                                              onvalue=1, offvalue=0)
@@ -637,7 +628,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, click on the 'Coreference resolution' button to open the GUI where you will be able to perform coreference resolution of your input document(s).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to use the CoreNLP parser to obtain a CoNLL table (CoNLL U format).\n\nThe CoNLL table is the basis of many of the NLP analyses: noun & verb analysis, function words, clause analysis, query CoNLL.\n\nYou have a choice between two types of papers:\n   1. the recommended default Probabilistic Context Free Grammar (PCFG) parser;\n   2. a Neural-network dependency parser.\n\nThe neural network approach is more accurate but much slower.\n\nIn output the scripts produce a CoNLL table with the following 9 fields: ID, FORM, LEMMA, POSTAG, NER (23 classes), HEAD, DEPREL, DEPS, CLAUSAL TAGS (the neural-network parser does not produce clausal tags).\n\nThe following fields will be automatically added to the standard 9 fields of a CoNLL table (CoNLL U format): RECORD NUMBER, DOCUMENT ID, SENTENCE ID, DOCUMENT (INPUT filename), DATE (if the filename embeds a date).\n\nIf you suspect that CoreNLP may have given faulty results for some sentences, you can test those sentences directly on the Stanford CoreNLP website at https://corenlp.run")
+                                  "Please, tick the checkbox if you wish to use the Stanford CoreNLP parser to obtain a CoNLL table (CoNLL U format).\n\nThe CoNLL table is the basis of many of the NLP analyses: noun & verb analysis, function words, clause analysis, query CoNLL.\n\nYou have a choice between two types of papers:\n   1. the recommended default Probabilistic Context Free Grammar (PCFG) parser;\n   2. a Neural-network dependency parser.\n\nThe neural network approach is more accurate but much slower.\n\nIn output the scripts produce a CoNLL table with the following 9 fields: ID, FORM, LEMMA, POSTAG, NER (23 classes), HEAD, DEPREL, DEPS, CLAUSAL TAGS (the neural-network parser does not produce clausal tags).\n\nThe following fields will be automatically added to the standard 9 fields of a CoNLL table (CoNLL U format): RECORD NUMBER, DOCUMENT ID, SENTENCE ID, DOCUMENT (INPUT filename), DATE (if the filename embeds a date).\n\nIf you suspect that CoreNLP may have given faulty results for some sentences, you can test those sentences directly on the Stanford CoreNLP website at https://corenlp.run")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick/untick the checkbox if you want to open (or not) the CoNLL table analyzer GUI to analyze the CoreNLP parser results contained in the CoNLL table.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -662,6 +653,14 @@ def activate_NLP_options(*args):
         available_parsers = 'Parsers for ' + package # + '                          '
     else:
         available_parsers = 'Parsers'
+    if not 'CoreNLP' in package:
+        CoNLL_table_analyzer_checkbox.configure(state='disabled')
+    else:
+        if CoNLL_table_analyzer_var.get() == 1:
+            CoNLL_table_analyzer_checkbox_msg.config(text="Open CoNLL table analyzer GUI")
+        else:
+            CoNLL_table_analyzer_checkbox_msg.config(text="Do NOT open CoNLL table analyzer GUI")
+
     if package_display_area_value_new != package_display_area_value:
         language_list = [language]
         parser_menu_var.set(parsers[0])
@@ -690,5 +689,6 @@ if error:
     call("python NLP_setup_package_language_main.py", shell=True)
     # this will display the correct hover-over info after the python call, in case options were changed
     error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+
 
 GUI_util.window.mainloop()

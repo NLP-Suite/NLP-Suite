@@ -86,7 +86,7 @@ def run_senna(inputFilename=None, inputDir=None, outputDir=None, openOutputFiles
     try:
         max_length = max([len(row) for row in formatted_table])
     except ValueError:
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_non_utf8,
+        reminders_util.checkReminder(scriptName, reminders_util.title_options_non_utf8,
                                      reminders_util.message_options_non_utf8, True)
         return []
 

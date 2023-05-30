@@ -77,11 +77,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     language_var = language
     language_list = [language]
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
-
     # get the date options from filename
     filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
@@ -113,6 +108,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     # Coref_Option = Coref_Option.lower()
 
+    annotator = ['SVO']
     isFile = True
     inputFileBase = ""
     inputDirBase = ""
@@ -206,13 +202,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         outputSVOFilterDir = outputSVODir + os.sep + 'SVO-filtered'
 
     if google_earth_var:
-        # Google_Earth_Pro_dir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir(
-        #     'SVO_main',
-        #     'Google Earth Pro',
-        #     silent=False, only_check_missing=True)
-        # if Google_Earth_Pro_dir == None or Google_Earth_Pro_dir == '':
-        #     return
-
         # create a GIS subdirectory of the output directory
         outputGISDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
                                                               label='GIS',
@@ -242,11 +231,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir + os.sep + 'quote', '.csv',
                                                                        'SVO_CoreNLP_quote')
 
-        params = ['SVO']
+        annotator = ['SVO']
         if gender_var:
-            params.append("gender")
+            annotator.append("gender")
         if quote_var:
-            params.append("quote")
+            annotator.append("quote")
 
         # annotator_params are different from gender_var and quote_var
         # annotator_params will run the annotator for SVO and run the gender and quote placing results inside the SVO output folder
@@ -256,7 +245,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                    outputSVODir, openOutputFiles,
                                    createCharts,
                                    chartPackage,
-                                   params, False,
+                                   annotator, False,
                                    language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                    extract_date_from_text_var=extract_date_from_text_var,
                                    filename_embeds_date_var=filename_embeds_date_var,
@@ -441,13 +430,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         filesToOpen.extend(output)
 
         else:
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_no_SVO_records,
+            reminders_util.checkReminder(scriptName, reminders_util.title_options_no_SVO_records,
                                          reminders_util.message_no_SVO_records, True)
 
         # filesToOpen.extend(tempOutputFiles)
         # svo_result_list.append(tempOutputFiles[0])
 
-    reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_someone,
+    reminders_util.checkReminder(scriptName, reminders_util.title_options_SVO_someone,
                                  reminders_util.message_SVO_someone, True)
     # the SVO script can take in input a csv SVO file previously computed (in which case the filename will contain SVO_): inputFilename
     # results currently produced are in svo_result_list
@@ -543,11 +532,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if google_earth_var:
             # SENNA locations are not really geocodable locations
             if (package_var=='SENNA') and os.path.isfile(location_filename):
-                reminders_util.checkReminder(config_filename, reminders_util.title_options_GIS_OpenIE_SENNA,
+                reminders_util.checkReminder(scriptName, reminders_util.title_options_GIS_OpenIE_SENNA,
                                              reminders_util.message_GIS_OpenIE_SENNA, True)
             else:
                 if (package_var != 'SENNA') and os.path.isfile(location_filename):
-                    reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
+                    reminders_util.checkReminder(scriptName, reminders_util.title_options_geocoder,
                                                  reminders_util.message_geocoder, True)
                     # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
                     date_present = (extract_date_from_text_var == True) or (filename_embeds_date_var == True)
@@ -653,7 +642,10 @@ GUI_label = 'Graphical User Interface (GUI) for Subject-Verb-Object (SVO) Extrac
 #   output dir
 config_input_output_numeric_options=[6,1,0,1]
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('main.py', 'config.csv')
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -770,7 +762,7 @@ def activateCoRefOptions(*args):
     if coref_var.get() == 1:
         # CoRef_menu.configure(state='normal')
         if input_main_dir_path.get()!='':
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
+            reminders_util.checkReminder(scriptName, reminders_util.title_options_CoreNLP_coref,
                                          reminders_util.message_CoreNLP_coref, True)
             manual_coref_var.set(0)
             manual_coref_checkbox.configure(state='disabled')
@@ -944,7 +936,7 @@ openInputFile_objects_button = tk.Button(window, width=GUI_IO_util.open_file_dir
                                          command=lambda: IO_files_util.openFile(window, object_filePath))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_O_dictionary, y_multiplier_integer,
                                                openInputFile_objects_button,
-                                               False, False, True, False, 90, GUI_IO_util.open_O_dictionary, "Open csv file containing OBJECT filters")
+                                               False, False, True, False, 90, GUI_IO_util.run_button_x_coordinate, "Open csv file containing OBJECT filters")
 
 # subjects_dict_path_var.set(os.path.join(GUI_IO_util.wordLists_libPath, 'social-actor-list.csv'))
 subjects_dict_path_var.set('social-actor-list.csv')
@@ -1027,9 +1019,30 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                    "When filtering subjects/verbs/objects, wordclouds will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO-filtered subdirectories\n" 
                                    "When lemmatizing, wordclouds will also be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
 
-google_earth_var.set(1)
+def check_NER(first_time=False):
+    NER_available=True
+    if package_var.get()=='Stanza':
+        short_lang_list, long_lang_list=Stanza_util.get_language_list([language])
+        short_lang=short_lang_list[0]
+        long_lang=long_lang_list[0]
+        NER_available = Stanza_util.check_Stanza_annotator_availability(['NER'], short_lang, long_lang, silent=True)
+    # in spaCy all annotators ara always available
+    # if package_var.get() == 'spaCy':
+    #     import spaCy_util
+    #     NER_available = spaCy_util.check_spaCy_annotator_availability(['NER'], [language], silent=True)
+    if not NER_available:
+        google_earth_var.set(0)
+        if not first_time:
+            mb.showwarning(title='Warning',message='The visualization of locations in Google Earth Pro and Google Maps requires the NER annotator.' \
+                            '\n\nThe NER annotator is not available for ' + package_var.get() + ' and the ' + str(language) + ' language.' \
+                            '\n\nLocations cannot be extracted from your input document(s) and visualized as maps.')
+    else:
+        if first_time:
+            google_earth_var.set(1)
+
+google_earth_var.set(0)
 google_earth_checkbox = tk.Checkbutton(window, text='Visualize Where (via Google Earth Pro & Google Maps)',
-                                       variable=google_earth_var, onvalue=1, offvalue=0)
+                                       variable=google_earth_var, onvalue=1, offvalue=0, command=lambda: check_NER())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
                                    google_earth_checkbox,
@@ -1169,15 +1182,15 @@ readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName, False, package_display_area_value)
 
 def warnUser(*args):
-    reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_default,
+    reminders_util.checkReminder(scriptName, reminders_util.title_options_SVO_default,
                                  reminders_util.message_SVO_default, True)
     if GUI_util.input_main_dir_path.get() != '':
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_corpus,
+        reminders_util.checkReminder(scriptName, reminders_util.title_options_SVO_corpus,
                                      reminders_util.message_SVO_corpus, True)
 GUI_util.input_main_dir_path.trace('w', warnUser)
 
 # outside trace since it is not dependent on corpus type
-reminders_util.checkReminder(config_filename, reminders_util.title_options_SVO_output,
+reminders_util.checkReminder(scriptName, reminders_util.title_options_SVO_output,
                              reminders_util.message_SVO_output, True)
 
 warnUser()
@@ -1220,6 +1233,8 @@ if error:
 
 # this will display the correct hover-over info after the python call, in case options were changed
 error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+
+check_NER(True)
 
 # GUI_util.window.focus_force()
 

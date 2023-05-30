@@ -52,6 +52,10 @@ import reminders_util
 import parsers_annotators_visualization_util
 import charts_util
 
+url = 'https://stanfordnlp.github.io/CoreNLP/human-languages.html'
+CoreNLP_web = '\n\nLanguage and annotator options for Stanford CoreNLP are listed at the Stanford CoreNLP website\n\n' + url
+
+
 # when multiple annotators are selected (e.g., quote, gender, normalized-date)
 #   output must go to the appropriate subdirectory
 # the function creates the subdirectory for a given annotator
@@ -80,62 +84,72 @@ def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
                                                                silent=True)
     return outputDir, outputJsonDir
 
-def check_CoreNLP_language(config_filename,annotator,language):
+def check_CoreNLP_available_languages(language):
+    available_language = True
+    if not language in available_languages:
+        available_language = False
+        website_name = 'CoreNLP website'
+        message_title = 'CoreNLP website'
+        message = language+" is not available in Stanford CoreNLP." \
+                "\n\nAvailable languages are: Arabic, Chinese, English, French, German, Hungarian, Italian, Spanish. \n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the 'Setup NLP package and corpus language' to open the GUI where you can change the language option." \
+                + CoreNLP_web + "\n\nWould you like to open the Stanford CoreNLP website for annotator availability for the various languages supported by CoreNLP?"
+        IO_libraries_util.open_url(website_name, url, ask_to_open=True, message_title=message_title, message=message)
+    return available_language
+def check_CoreNLP_annotator_availability(config_filename, annotator, language):
     not_available = False
-    url = 'https://stanfordnlp.github.io/CoreNLP/human-languages.html'
-    CoreNLP_web='\n\nLanguage and annotator options for Stanford CoreNLP are listed at the Stanford CoreNLP website ' + url
-    if "lemma" in annotator.lower():
+    if "lemma" in annotator:
         if language != 'English':
             mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
                            message='The Stanford CoreNLP LEMMA annotator is only available for English.'+CoreNLP_web)
             not_available = True
-    elif "normalized" in annotator.lower():
+    elif "normalized" in annotator:
         if language != 'English':
             mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
                            message='The Stanford CoreNLP NORMALIZED NER annotator is only available for English.'+CoreNLP_web)
             not_available = True
-    elif "gender" in annotator.lower():
+    elif "gender" in annotator:
         if language != 'English':
             mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
                            message='The Stanford CoreNLP GENDER annotator is only available for English.'+CoreNLP_web)
             not_available = True
-    elif "quote" in annotator.lower():
+    elif "quote" in annotator:
         if language != 'English':
             mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
                            message='The Stanford CoreNLP QUOTE annotator is only available for English.'+CoreNLP_web)
             not_available = True
-    elif "OpenIE" in annotator.lower():
+    elif "OpenIE" in annotator:
         if language != 'English':
             mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
                            message='The Stanford CoreNLP OPENIE annotator is only available for English.'+CoreNLP_web)
             not_available = True
-    elif "sentiment" in annotator.lower():
+    elif "sentiment" in annotator:
         if language != 'English' and language != 'Chinese':
             mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
                            message='The Stanford CoreNLP SENTIMENTT ANALYSIS annotator is only available for Chinese and English.' + CoreNLP_web)
             not_available = True
-    elif "coreference" in annotator.lower():
+    elif "coreference" in annotator:
         if language != 'English' and language != 'Chinese':
             mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
                            message='The Stanford CoreNLP COREFERENCE RESOLUTION annotator is only available for Chinese and English.' + CoreNLP_web)
             not_available = True
-    elif "PCFG" in annotator.lower():
+    elif "PCFG" in annotator:
         if language == 'English' or language == 'German':
             mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
                            message='The Stanford CoreNLP PCFG PARSER is not available for German and Hungarian.'+CoreNLP_web)
             not_available = True
-    elif "neural network" in annotator.lower(): #parser
+    elif "neural network" in annotator: #parser
         if language == 'Arabic' or language == 'Hungarian':
             mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
                            message='The Stanford CoreNLP NEURAL NETWORK PARSER is not available for Arabic and Hungarian.'+CoreNLP_web)
             not_available = True
-    elif "SVO" in annotator.lower(): #parser
+    elif "SVO" in annotator: #parser
         if language == 'Arabic' or language == 'Hungarian':
             mb.showwarning(title=str(annotator).upper() + ' annotator availability for ' + language,
                            message='The Stanford CoreNLP SVO annotator is not available for Arabic and Hungarian.'+CoreNLP_web)
             not_available = True
     if not_available:
-        reminder_status = reminders_util.checkReminder(config_filename,
+        head, scriptName = os.path.split(os.path.basename(__file__))
+        reminder_status = reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoreNLP_website,
                                      reminders_util.message_CoreNLP_website,
                                      True)
@@ -194,6 +208,16 @@ def CoreNLP_annotate(config_filename,inputFilename,
     speed_assessment_format = ['Document ID', 'Document','Time', 'Tokens to Annotate', 'Params', 'Number of Params']#the column titles of the csv output of speed assessment
     # start_time = time.time()#start time
     filesToOpen = []
+
+    available_language = check_CoreNLP_available_languages(language)
+    if not available_language:
+        return filesToOpen
+
+    # check if selected language is available in CoreNLP
+    annotator_available = check_CoreNLP_annotator_availability(config_filename, annotator_params, language)
+    if not annotator_available:
+        return filesToOpen
+
     # check that the CoreNLPdir has been setup
     CoreNLPdir, existing_software_config = IO_libraries_util.external_software_install('Stanford_CoreNLP_util',
                                                                                          'Stanford CoreNLP',
@@ -312,8 +336,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'Sentence': ['Sentence ID', 'Sentence','Sentence Length (Number of Tokens)','Number of Intra-Sentence Punctuation Symbols (),;-', 'Document ID', 'Document'],
         'Lemma': ["ID", "Form", "Lemma", "Record ID", "Sentence ID", "Document ID", "Document"],
         'POS':[['Verbs'],['Nouns']],
-        'All POS':["ID", "Form", "POStag", "Record ID", "Sentence ID", "Document ID", "Document"],
-        'NER': ['Word', 'NER Tag', 'tokenBegin', 'tokenEnd', 'Sentence ID', 'Sentence', 'Document ID','Document'],
+        'All POS':["ID", "Form", "POS", "Record ID", "Sentence ID", "Document ID", "Document"],
+        'NER': ['Word', 'NER', 'tokenBegin', 'tokenEnd', 'Sentence ID', 'Sentence', 'Document ID','Document'],
         # TODO NER with date for dynamic GIS; modified below
         # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
@@ -329,64 +353,67 @@ def CoreNLP_annotate(config_filename,inputFilename,
                    'Normalized date', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         # Chen
         # added Deps column
-        'parser (pcfg)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
+        'parser (pcfg)':["ID", "Form", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"],
         # neural network parser does not contain clause tags
-        'parser (nn)':["ID", "Form", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
+        'parser (nn)':["ID", "Form", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document"]
     }
 
     if not isinstance(annotator_params,list):
         annotator_params = [annotator_params]
     outputDirSV=outputDir
+
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Stanford CoreNLP ' + str(annotator_params) + ' annotator at', True)
+
+    head, scriptName = os.path.split(os.path.basename(__file__))
 
     # display the timing of various algorithms
     if 'coref' in str(annotator_params):
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoreNLP_coref_timing,
                                      reminders_util.message_CoreNLP_coref_timing,
                                      True)
     if 'SVO' in str(annotator_params) and 'gender' in str(annotator_params) and 'quote' in str(annotator_params):
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoreNLP_SVO_gender_quote_timing,
                                      reminders_util.message_CoreNLP_SVO_gender_quote_timing,
                                      True)
     if 'SVO' in str(annotator_params) and not 'gender' in str(annotator_params) and not 'quote' in str(annotator_params):
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoreNLP_SVO_timing,
                                      reminders_util.message_CoreNLP_SVO_timing,
                                      True)
     if 'gender' in str(annotator_params) and not 'SVO' in str(annotator_params) :
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoreNLP_gender_timing,
                                      reminders_util.message_CoreNLP_gender_timing,
                                      True)
     if 'quote' in str(annotator_params) and not 'SVO' in str(annotator_params):
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoreNLP_quote_timing,
                                      reminders_util.message_CoreNLP_quote_timing,
                                      True)
     if 'parser (nn)' in str(annotator_params):
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoreNLP_nn_parser_timing,
                                      reminders_util.message_CoreNLP_nn_parser_timing,
                                      True)
     if 'parser (pcfg)' in str(annotator_params):
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoreNLP_PCFG_parser_timing,
                                      reminders_util.message_CoreNLP_PCFG_parser_timing,
                                      True)
     if 'All POS' in str(annotator_params):
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoreNLP_POS_timing,
                                      reminders_util.message_CoreNLP_POS_timing,
                                      True)
     if 'NER' in str(annotator_params):
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoreNLP_NER_timing,
                                      reminders_util.message_CoreNLP_NER_timing,
                                      True)
     if 'normalized-date' in str(annotator_params):
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_CoreNLP_normalized_date_timing,
                                      reminders_util.message_CoreNLP_normalized_date_timing,
                                      True)
@@ -420,8 +447,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
     corefed_pronouns = 0#pronouns that are corefed
     Json_question_already_asked = False
     for annotator in annotator_params:
+        # if not check_CoreNLP_annotator_availability(config_filename, annotator, language):
+        #     continue
         if 'coref' in annotator and not 'coref' in SVO_annotators:
-            reminders_util.checkReminder(config_filename,
+            reminders_util.checkReminder(scriptName,
                                          reminders_util.title_options_CoreNLP_coref_timing,
                                          reminders_util.message_CoreNLP_coref_timing,
                                          True)
@@ -430,8 +459,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
             SVO_annotators.append('quote')
         if 'gender' in annotator and not 'gender' in SVO_annotators:
             SVO_annotators.append('gender')
-        if not check_CoreNLP_language(config_filename, annotator, language):
-            continue
         if "gender" in annotator or "quote" in annotator or "coref" in annotator or "SVO" in annotator or "OpenIE" in annotator or ("parser" in annotator and "nn" in annotator):
             print("Using neural network model")
             neural_network = True
@@ -545,7 +572,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     time.sleep(5)
 
     if 'POS' in str(annotator_params) or 'NER' in str(annotator_params):
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
             reminders_util.title_options_CoreNLP_POS_NER_maxlen,
             reminders_util.message_CoreNLP_POS_NER_maxlen,
             True)
@@ -553,13 +580,13 @@ def CoreNLP_annotate(config_filename,inputFilename,
     # CLAUSAL TAGS (the neural-network parser does not produce clausal tags)
 
     if 'parser (nn)' in str(annotator_params):
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
             reminders_util.title_options_CoreNLP_nn_parser,
             reminders_util.message_CoreNLP_nn_parser,
             True)
 
     if 'quote' in str(annotator_params):
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
             reminders_util.title_options_CoreNLP_quote_annotator,
             reminders_util.message_CoreNLP_quote_annotator,
             True)
@@ -608,7 +635,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 print("   Processing split file " + str(split_docID) + "/" + str(nSplitDocs) + ' ' + tail_split)
             text = open(doc_split, 'r', encoding=language_encoding, errors='ignore').read().replace("\n", " ")
             if "%" in text:
-                reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_percent,
+                reminders_util.checkReminder(scriptName, reminders_util.title_options_CoreNLP_percent,
                                              reminders_util.message_CoreNLP_percent, True)
                 text=text.replace("%","percent")
             # nlp = StanfordCoreNLP('http://localhost:9000')
@@ -875,6 +902,28 @@ def CoreNLP_annotate(config_filename,inputFilename,
 
     return filesToOpen
 
+CoreNLP_available_lang = ['Arabic, Chinese, English, French, German, Hungarian, Italian, Spanish']
+
+# https://stanfordnlp.github.io/CoreNLP/human-languages.html
+# POS all languages
+# lemma English only
+# NER NOT available for Arabic
+# constituency parsing NOT available for German
+# dependency parsing NOT available for Arabic, and Hungarian
+# sentiment analysis available for English
+# mention detection available for Chinese, English
+# coreference resolution available for Chinese, English
+# OpenIE available for English
+# def check_CoreNLP_annotator_availability(annotator_params, language, silent=False):
+#     if language not in CoreNLP_available_lang:
+#         if not silent:
+#             mb.showerror("Warning",
+#                          "Stanford CoreNLP does not currently support the " + str(
+#                              annotator_params) + " annotator for " + language + ".\n\nPlease, select a different annotator or a different language.\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the 'Setup NLP package and corpus language' to open the GUI where you can change the language option.")
+#         annotator_available = False
+#     else:
+#         annotator_available = True
+#     return annotator_available
 
 def language_models(CoreNLPdir, language: str):
     if language == 'English':
@@ -894,6 +943,7 @@ def language_models(CoreNLPdir, language: str):
             return
         pcfg_model = 'edu/stanford/nlp/models/srparser/' + language.lower() + 'SR.beam.ser.gz'
         nn_model = 'edu/stanford/nlp/models/parser/nndep/UD_' + language  +'.gz'
+
     result = {}
     result['pcfg'] = pcfg_model
     result['nn'] = nn_model
@@ -914,7 +964,8 @@ def check_sentence_length(sentence_length, sentenceID, config_filename):
             order = "rd"
 
         print("   Warning: The", str(sentenceID) + order, "sentence has " + str(sentence_length) + " words, more than the 100 max recommended by CoreNLP for best performance.")
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_sentence_length,
+        head, scriptName = os.path.split(os.path.basename(__file__))
+        reminders_util.checkReminder(scriptName, reminders_util.title_options_CoreNLP_sentence_length,
                                      reminders_util.message_CoreNLP_sentence_length, True)
 
 
@@ -1726,7 +1777,7 @@ def process_json_postag(config_filename,documentID, document, sentenceID, json, 
 # https://wolfgarbe.medium.com/the-average-word-length-in-english-language-is-4-7-35750344870f)
 # return True, which means the two strings are very similar
 def process_json_all_postag(config_filename,documentID, document, sentenceID, recordID, json, **kwargs):
-    print("   Processing Json output file for All Postags")
+    print("   Processing Json output file for All POS tags")
     filename_embeds_date_var = False
     for key, value in kwargs.items():
         if key == 'filename_embeds_date_var' and value == True:
@@ -1834,7 +1885,7 @@ def process_json_deprel(config_filename,documentID, document, sentenceID, record
 
 # processes both lemma and POS
 def process_json_single_annotation(config_filename, documentID, document, sentenceID, recordID, annotation, json, **kwargs):
-    print("   Processing Json output file for All Postags and Lemma")
+    print("   Processing Json output file for All POS tags and Lemma")
     filename_embeds_date_var = False
     for key, value in kwargs.items():
         if key == 'filename_embeds_date_var' and value == True:
@@ -2015,10 +2066,10 @@ def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
             else:
                 to_write.append(
                     [locs[0], locs[1], sent[0], sent[1], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
-    columns = ["Location", "NER Tag", "Sentence ID", "Sentence", "Document ID", "Document"]
+    columns = ["Location", "NER", "Sentence ID", "Sentence", "Document ID", "Document"]
     if ("extract_date_from_text_var" in kwargs and kwargs["extract_date_from_text_var"] == True) \
         or ("filename_embeds_date_var" in kwargs and kwargs["filename_embeds_date_var"] == True):
-        columns = ["Location", "NER Tag", "Sentence ID", "Sentence", "Document ID", "Document", "Date"]
+        columns = ["Location", "NER", "Sentence ID", "Sentence", "Document ID", "Document", "Date"]
 
     df = pd.DataFrame(to_write, columns=columns)
     outputFilename= kwargs["location_filename"]
@@ -2077,7 +2128,8 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
     pronouns_count["I"] = pronouns_count.pop("i")
     if total_count > 0:
         if option != "coref table":
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_pronouns,
+            head, scriptName = os.path.split(os.path.basename(__file__))
+            reminders_util.checkReminder(scriptName, reminders_util.title_options_CoreNLP_pronouns,
                                          reminders_util.message_CoreNLP_pronouns, True)
             return return_files
         else:
@@ -2117,3 +2169,85 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
                     if len(chart_outputFilename) > 0:
                         return_files.extend(chart_outputFilename)
     return return_files
+
+available_languages = [
+    "Arabic",
+    "Chinese",
+    "English",
+    "French",
+    "German",
+    "Hungarian",
+    "Italian",
+    "Spanish",
+    ]
+
+available_coreference = [
+    # "Arabic",
+    "Chinese",
+    "English",
+    # "French",
+    # "German",
+    # "Hungarian",
+    # "Italian",
+    # "Spanish",
+    ]
+
+available_lemma = [
+    # "Arabic",
+    # "Chinese",
+    "English",
+    # "French",
+    # "German",
+    # "Hungarian",
+    # "Italian",
+    # "Spanish",
+    ]
+
+available_NER = [
+    #"Arabic",
+    "Chinese",
+    "English",
+    "French",
+    "German",
+    "Hungarian",
+    "Italian",
+    "Spanish",
+    ]
+
+available_parsing_dep = [
+    # "Arabic",
+    "Chinese",
+    "English",
+    "French",
+    "German",
+    # "Hungarian",
+    "Italian",
+    "Spanish",
+    ]
+
+available_parsing_const = [
+    "Arabic",
+    "Chinese",
+    "English",
+    "French",
+    # "German",
+    "Hungarian",
+    "Italian",
+    "Spanish",
+    ]
+
+available_sentiment = [
+    # "Arabic",
+    # "Chinese",
+    "English",
+    # "French",
+    # "German",
+    # "Hungarian",
+    # "Italian",
+    # "Spanish",
+    ]
+
+NER_list = ['PERSON', 'ORGANIZATION', 'MISC', 'MONEY', 'NUMBER', 'ORDINAL',
+                    'PERCENT', 'DATE', 'TIME', 'DURATION', 'SET', 'EMAIL', 'URL', 'CITY',
+                    'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', 'NATIONALITY', 'RELIGION', 'TITLE', 'IDEOLOGY', 'CRIMINAL_CHARGE',
+                    'CAUSE_OF_DEATH']

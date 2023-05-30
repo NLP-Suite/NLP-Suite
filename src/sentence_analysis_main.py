@@ -43,7 +43,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
     else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
+        config_filename = scriptName.replace('_main.py', '_config.csv')
 
     if compute_sentence_length_var:
         filesToOpen = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir, config_filename, createCharts, chartPackage )
@@ -90,7 +90,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     if openOutputFiles == 1:
         if filesToOpen == None:
             return
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -135,7 +135,7 @@ GUI_size = str(GUI_width) + 'x' + str(GUI_height)
 
 GUI_label='Graphical User Interface (GUI) for Sentence Analysis'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

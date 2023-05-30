@@ -42,11 +42,6 @@ import file_checker_util as utf
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
         hierarchical_clustering, SVD, NMF, best_topic_estimation):
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
-
     global nSAscoreFiles
     nSAscoreFiles = 0
     filesToOpen = []
@@ -89,7 +84,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     #     GUI_util.output_dir_path.set(outputDir)
     #     title_options_shape_of_stories = ['Output directory']
     #     message_shape_of_stories = 'The output directory was changed to:\n\n'+str(outputDir)
-    #     reminders_util.checkReminder(config_filename,
+    #     reminders_util.checkReminder(scriptName,
     #                                  title_options_shape_of_stories,
     #                                  message_shape_of_stories,
     #                                  True)
@@ -116,7 +111,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         # run appropriate sentiment analysis method as indicated by sentimentAnalysisMethod
         # if 'CoreNLP' in sentimentAnalysisMethod:
-        #     reminders_util.checkReminder(config_filename,
+        #     reminders_util.checkReminder(scriptName,
         #                                  reminders_util.title_options_shape_of_stories_CoreNLP,
         #                                  reminders_util.message_shape_of_stories_CoreNLP,
         #                                  True)
@@ -142,7 +137,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment"  # multilingual model
             else:
                 model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"  # English language model
-            tempOutputFiles = BERT_util.main(inputFilename, inputDir, outputDir, config_filename, '', createCharts, chartPackage, model_path)
+            tempOutputFiles = BERT_util.sentiment_main(inputFilename, inputDir, outputDir, config_filename, '', createCharts, chartPackage, model_path)
             if tempOutputFiles == None:
                 return
             if len(tempOutputFiles) > 0:
@@ -357,7 +352,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         'Finished running Shape of Stories at', True, '', True, startTime)
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
@@ -398,7 +393,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label = 'Graphical User Interface (GUI) for "Shape of Stories" Extraction and Visualization Pipeline'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -437,7 +435,8 @@ NMF_var=tk.IntVar()
 best_topic_estimation_var=tk.IntVar()
 
 sentiment_analysis_var.set(0)
-sentiment_analysis_checkbox = tk.Checkbutton(window, text='Sentiment Analysis', variable=sentiment_analysis_var, onvalue=1, offvalue=0)
+sentiment_analysis_checkbox = tk.Checkbutton(window, text='Sentiment Analysis', variable=sentiment_analysis_var,
+                        onvalue=1, offvalue=0, command=lambda: check_IO_requirements(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get()))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,sentiment_analysis_checkbox,True)
 
 sentiment_analysis_lb = tk.Label(window,text='Select the Sentiment Analysis algorithm')
@@ -509,9 +508,9 @@ def check_IO_requirements(inputFilename, inputDir):
     untick_txt_options = "or untick the checkboxes 'Sentiment Analysis' and/or 'Compute & visualize corpus statistics'"
     untick_csv_options = "or untick the checkboxes 'Hierarchical Clustering' and/or 'Singular Value Decomposition' and/or 'Non-Negative Matrix Factorization' and/or 'Best topic estimation'"
 
-    get_txt_dir = "\n\nPlease, use the IO widget \'Select INPUT/OUTPUT configuration\' to select the appropriate directory containing txt files (" + untick_txt_options + ") and try again."
-    get_csv_dir = "\n\nPlease, use the IO widget \'Select INPUT/OUTPUT configuration\' to select the appropriate directory containing a LARGE set of csv files of sentiment scores (or select an input csv file of sentiment scores for a LARGE set of documents or untick the checkboxes 'Hierarchical Clustering' and/or 'Singular Value Decomposition' and/or 'Non-Negative Matrix Factorization' and/or 'Best topic estimation') and try again."
-    get_csv_file = "\n\nPlease, use the IO widget \'Select INPUT/OUTPUT configuration\' to select the appropriate csv file containing sentiment scores for a LARGE set of documents (or an appropriate directory containing a LARGE set of csv files of sentiment scores (" + untick_csv_options + ") and try again."
+    get_txt_dir = "\n\nThe RUN button is disabled until the expected I/O information is entered.\n\nPlease, use the IO widget \'Select INPUT/OUTPUT configuration\' to select the appropriate directory containing txt files (" + untick_txt_options + ") and try again."
+    get_csv_dir = "\n\nThe RUN button is disabled until the expected I/O information is entered.\n\nPlease, use the IO widget \'Select INPUT/OUTPUT configuration\' to select the appropriate directory containing a LARGE set of csv files of sentiment scores (or select an input csv file of sentiment scores for a LARGE set of documents or untick the checkboxes 'Hierarchical Clustering' and/or 'Singular Value Decomposition' and/or 'Non-Negative Matrix Factorization' and/or 'Best topic estimation') and try again."
+    get_csv_file = "\n\nThe RUN button is disabled until the expected I/O information is entered.\n\nPlease, use the IO widget \'Select INPUT/OUTPUT configuration\' to select the appropriate csv file containing sentiment scores for a LARGE set of documents (or an appropriate directory containing a LARGE set of csv files of sentiment scores (" + untick_csv_options + ") and try again."
 
     txt_fileErr = txt_dir_required + get_txt_dir
     txt_DirErr = txt_dir_required + "\n\nThe selected input directory\n\n" + inputDir + "\n\ndoes not contain any txt files." + get_txt_dir
@@ -628,7 +627,7 @@ def check_IO_requirements(inputFilename, inputDir):
             Error = True
             return Error
         if sentiment_analysis_var.get() == True:
-            reminders_util.checkReminder(config_filename,
+            reminders_util.checkReminder(scriptName,
                                          reminders_util.title_options_SA_CoreNLP_system_requirements,
                                          reminders_util.message_SA_CoreNLP_system_requirements,
                                          True)
@@ -680,7 +679,7 @@ TIPS_options='Shape of stories','Sentiment analysis','Data reduction algorithms:
 
 def display_reminder(*args):
     if best_topic_estimation_var.get():
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_shape_of_stories_best_topic,
                                      reminders_util.message_shape_of_stories_best_topic,
                                      True)

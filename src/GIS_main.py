@@ -61,12 +61,6 @@ def run(inputFilename,
                        message="The default NLP package and language has not been setup.\n\nPlease, click on the Setup NLP button and try again.")
         return
 
-    # config_filename=''
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
-
     # get the date options from filename
     filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
@@ -118,7 +112,7 @@ def run(inputFilename,
                                                                                   locationColumnName, '',
                                                                                   False, True)
 
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
+        reminders_util.checkReminder(scriptName, reminders_util.title_options_geocoder,
                                      reminders_util.message_geocoder, True)
 
         locationFiles = []
@@ -260,7 +254,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for GIS (Geographic Information System) Pipeline from Text to Map'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -325,10 +322,10 @@ def check_csv_file_headers(csv_file):
     inputIsCoNLL, inputIsGeocoded, withHeader, headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(
         csv_file_var.get())
     if inputIsCoNLL:
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_Google_Earth_CoNLL,
+        reminders_util.checkReminder(scriptName, reminders_util.title_options_Google_Earth_CoNLL,
                                      reminders_util.message_Google_Earth_CoNLL, True)
 
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_input_csv_file,
+        reminders_util.checkReminder(scriptName, reminders_util.title_options_input_csv_file,
                                      reminders_util.message_input_csv_file, True)
         location_menu_var.set('NER')
         location_menu='NER'
@@ -646,12 +643,12 @@ GIS_package_var.trace('w',activate_Google_API_Google_Maps)
 
 def display_reminder(*args):
     if GIS_package2_var.get():
-        # routine_options = reminders_util.getReminders_list(config_filename)
-        reminders_util.checkReminder(config_filename,
+        routine_options = reminders_util.getReminders_list(scriptName)
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_Google_Earth,
                                      reminders_util.message_Google_Earth,
                                      True)
-        routine_options = reminders_util.getReminders_list(config_filename)
+        routine_options = reminders_util.getReminders_list(scriptName)
         return
 GIS_package2_var.trace('w', display_reminder)
 
@@ -704,15 +701,15 @@ readMe_message="This Python 3 script allows users to go from text to map in thre
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
-reminders_util.checkReminder(config_filename, reminders_util.title_options_GIS_default,
+reminders_util.checkReminder(scriptName, reminders_util.title_options_GIS_default,
                              reminders_util.message_GIS_default, True)
 
 # routine_options = reminders_util.getReminders_list(config_filename)
-result = reminders_util.checkReminder(config_filename,
+result = reminders_util.checkReminder(scriptName,
                               reminders_util.title_options_GIS_GUI,
                               reminders_util.message_GIS_GUI)
 if result!=None:
-    routine_options = reminders_util.getReminders_list(config_filename)
+    routine_options = reminders_util.getReminders_list(scriptName)
 
 activate_Google_API_geocode()
 activate_Google_API_Google_Maps()

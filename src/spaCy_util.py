@@ -33,13 +33,37 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 # list available languages of spaCy
 def list_all_languages():
-    languages = ['ca', 'zh', 'hr', 'da', 'nl', 'en', 'fi', 'fr', 'de', 'el', 'it', 'ja', 'ko', 'lt', 'mk', 'xx', 'nb', 'pl', 'pt', 'ro', 'ru', 'es', 'sv', 'uk']
-    languages = sorted(languages)
+    # listed at the bottom of this script
+    languages = sorted(spacy_available_lang)
     langs_full = sorted([dict(constants_util.languages)[x] for x in languages])
     return langs_full
 
+def open_spaCy_website(message, lang_list):
+    url='https://spacy.io/usage/models'
+    Stanza_web = '\n\nLanguage and annotator options for spaCy are listed at the spaCy website\n\n' + url
+    website_name = 'spaCy website'
+    message_title = 'spaCy website'
+    message = message + Stanza_web + '\n\nWould you like to open the spaCy website for annotator availability for the various languages supported by spaCy?'
+    import IO_libraries_util
+    IO_libraries_util.open_url(website_name, url, ask_to_open=True, message_title=message_title, message=message)
+
+def check_spaCy_available_languages(language):
+    available_language = False
+    lang_list=[]
+    not_available_lang_list=[]
+    language_list = list_all_languages() # language_list available in spaCy as long names: English, Chinese, ...
+    for short, long in constants_util.languages:
+        if long == language[0]:
+            if long in language_list:
+                available_language = True
+                lang_list.append(short)
+                break
+    if not available_language:
+        open_spaCy_website('The ' + str(language[0]) + ' language is not available for NLP processing in spaCy.', lang_list)
+    return available_language, lang_list
+
 # spaCy annotate functions
-def spaCy_annotate(config_filename, inputFilename, inputDir,
+def spaCy_annotate(configFilename, inputFilename, inputDir,
                     outputDir,
                     openOutputFiles, createCharts, chartPackage,
                     annotator_params,
@@ -54,10 +78,19 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
     # instantiate variables for input/output handling settings
     language_encoding='utf-8'
     filesToOpen = []
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running spaCy ' + str(annotator_params) + ' annotator at',
+
+    if not isinstance(language,list):
+        language=[language]
+    available_language, lang_list = check_spaCy_available_languages(language)
+    if not available_language:
+        return filesToOpen
+    else:
+        lang=lang_list[0]
+
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start', 'Started running spaCy ' + str(annotator_params[0]) + ' annotator at',
                                             True, '', True, '', False)
     #collecting input txt files
-    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=config_filename)
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFilename)
     nDocs = len(inputDocs)
     if nDocs==0:
         return filesToOpen
@@ -68,8 +101,8 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
         tempfile=inputDir
     head, tail = os.path.split(tempfile)
     tail=tail.replace('.txt','')
-
-    reminders_util.checkReminder(config_filename, reminders_util.title_options_spaCy_parameters,
+    head, scriptName = os.path.split(os.path.basename(__file__))
+    reminders_util.checkReminder(scriptName, reminders_util.title_options_spaCy_parameters,
                                  reminders_util.message_spaCy_parameters, True)
 
     # iterate through kwarg items
@@ -102,19 +135,6 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
 
     # create the appropriate subdirectory to better organize output files                                               silent=False)
     outputDir = create_output_directory(inputFilename, inputDir, outputDir, annotator)
-
-    # check if selected language is one.
-    lang = ''
-    lang_list = []
-    for k,v in lang_dict.items():
-        if v == language:
-            lang = k
-            lang_list.append(lang)
-            break
-    # check if selected language is available in spaCy
-    if lang not in spacy_available_lang:
-        mb.showerror("Warning",
-                    "spaCy does not currently support the " + annotator_params + " annotator for " + language + ".\n\nPlease, select a different annotator or a different language.")
 
     # set up spaCy pipeline
     # download selected spaCy language models
@@ -168,33 +188,31 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
                         "spaCy encountered an error trying to download the language pack " + str(language) + "\n\nTry manually selecting the appropriate language rather than multilingual.")
             return
 
-        # convert Doc to DataFrame
-        temp_df = convertSpacyDoctoDf(Spacy_output, inputFilename, inputDir, tail, int(docID), annotator_params, lang_list)
-        df = pd.concat([df, temp_df], ignore_index=True, axis=0)
+        if 'NER' in str(annotator_params) or 'parse' in str(annotator_params) or 'sentiment' in str(annotator_params):
+            # convert Doc to DataFrame
+            temp_df = convertSpacyDoctoDf(Spacy_output, inputFilename, inputDir, tail, int(docID), annotator_params, lang_list)
+            df = pd.concat([df, temp_df], ignore_index=True, axis=0)
+            # save dataframe to csv
+            df.to_csv(outputFilename, index=False, encoding=language_encoding)
+            filesToOpen.append(outputFilename)
 
         # SVO extraction if selected
         if "SVO" in annotator_params:
             temp_svo_df = extractSVO(Spacy_output, int(docID), inputFilename, inputDir, tail, filename_embeds_date_var)
             svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
 
-    # save dataframe to csv
-    df.to_csv(outputFilename, index=False, encoding=language_encoding)
-    filesToOpen.append(outputFilename)
-
-    # save SVO dataframe
-    if "SVO" in annotator_params:
-        svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
-        filesToOpen.append(svo_df_outputFilename)
-
-        # create locations file if GIS visualization is selected
-        if google_earth_var is True:
-            loc_df = visualize_GIS_maps_spaCy(svo_df)
-            loc_df_outputFilename = kwargs["location_filename"]
-            loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
-            filesToOpen.append(loc_df_outputFilename)
+            # create locations file if GIS visualization is selected
+            if google_earth_var is True:
+                loc_df = visualize_GIS_maps_spaCy(svo_df)
+                loc_df_outputFilename = kwargs["location_filename"]
+                loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
+                filesToOpen.append(loc_df_outputFilename)
+            # save dataframe to csv
+            svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
+            filesToOpen.append(svo_df_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                       'Finished running spaCy ' + str(annotator_params) + ' annotator at',
+                                       'Finished running spaCy ' + str(annotator_params[0]) + ' annotator at',
                                        True,'',True, startTime)
 
     filesToVisualize=filesToOpen
@@ -205,7 +223,7 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
             if not file_df.empty:
                 outputFilename = filesToVisualize[j]
                 chart_outputFilename = parsers_annotators_visualization_util.parsers_annotators_visualization(
-                    config_filename, inputFilename, inputDir, outputDir,
+                    configFilename, inputFilename, inputDir, outputDir,
                     outputFilename, annotator_params, kwargs, createCharts,
                     chartPackage)
                 if chart_outputFilename!=None:
@@ -213,6 +231,57 @@ def spaCy_annotate(config_filename, inputFilename, inputDir,
                         filesToOpen.extend(chart_outputFilename)
 
     return filesToOpen
+
+
+def get_mwe(out_df):
+    # enter Record and Sentence IDs
+    i = 0
+    sidx = 1
+    max_idx = len(out_df) - 1
+    for row in out_df.iterrows():
+        # if i != 0 and row[1]['is_sent_start'] == True:
+        #     sidx+=1
+        # # out_df.at[i, 'Record ID'] = int(row[1]['id'])
+        # out_df.at[i, 'Sentence ID'] = int(sidx)
+
+        # process IOB tags for Multi-Word Expression column
+        mwe = out_df.at[i, 'Multi-Word Expression']
+        if mwe == 'B':
+            tmp = mwe
+            tmp_idx = i
+            # find the last index of this MWE
+            while tmp != 'O' and tmp_idx < max_idx:
+                tmp = out_df.at[tmp_idx, 'Multi-Word Expression']
+                tmp_idx += 1
+            # if the tag of the next token is B or if it's a single tag with one B, MWE is itself
+            if i == max_idx and out_df.at[i, 'Multi-Word Expression'] == 'B':
+                out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']
+                # out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Word']
+            elif tmp_idx == i + 2 or (i <= max_idx and out_df.at[i + 1, 'Multi-Word Expression'] == 'B'):
+                out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']
+                # out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Word']
+            else:
+                # iterate reversely from the last tag to the first tag, and update the MWE
+                for j in reversed(range(i, tmp_idx - 1)):
+                    if j == tmp_idx - 2:
+                        out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j, 'Form']
+                        # out_df.at[j, 'Multi-Word Expression'] = out_df.at[j - 1, 'Word'] + ' ' + out_df.at[j, 'Word']
+                    elif out_df.at[j, 'Multi-Word Expression'] == 'B':
+                        out_df.at[j, 'Multi-Word Expression'] = out_df.at[j + 1, 'Multi-Word Expression']
+                        # when finally reach the first tag (B), update existing MWE with complete MWE
+                        for k in reversed(range(i, tmp_idx - 1)):
+                            if k == i:
+                                out_df.at[k, 'Multi-Word Expression'] = out_df.at[j, 'Multi-Word Expression']
+                            else:
+                                out_df.at[k, 'Multi-Word Expression'] = 'O'
+                    elif out_df.at[j, 'Multi-Word Expression'] == 'I':
+                        out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j+1 , 'Multi-Word Expression']
+                        # out_df.at[j, 'Multi-Word Expression'] = out_df.at[j - 1, 'Word'] + ' ' + out_df.at[
+                        #     j + 1, 'Multi-Word Expression']
+        i += 1
+    # drop 'is_sent_start' column
+    out_df = out_df.drop(columns=['is_sent_start'])
+    return out_df
 
 # Convert spaCy doc to pandas dataframe
 def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotator_params, language):
@@ -224,95 +293,71 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
     if inputDir != '':
         inputFilename = inputDir + os.sep + tail
 
-    if "sentiment" in annotator_params:
+    if "sentiment" in str(annotator_params):
         c = 0
         for sent in spacy_doc.sents:
             out_df.at[c, 'Sentiment score'] = round(sent._.blob.polarity,2)
             out_df.at[c, 'Sentiment label'] = 'positive' if out_df.at[c, 'Sentiment score'] > 0 else 'negative' if out_df.at[c, 'Sentiment score'] < 0 else 'neutral'
             out_df.at[c, 'Sentence ID'] = int(c+1)
             out_df.at[c, 'Sentence'] = sent.text
+            out_df.at[c, 'Document ID'] = int(docID)
+            out_df.at[c, 'Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
             c+=1
-        out_df['Document ID'] = int(docID)
-        out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
-    else:
+        out_df = out_df[[
+            'Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
+
+    if "NER" in str(annotator_params):
         out_df = pd.DataFrame()
+        rec_ID = 0
+        sent_ID = 1
+        for sent in spacy_doc.sents:
+            for i, token in enumerate(sent):
+                out_df.at[rec_ID,'Form'] = token.text
+                out_df.at[rec_ID, 'NER'] = token.ent_type_
+                # add necessary columns after the loop
+                out_df.at[rec_ID, 'Sentence ID'] = sent_ID
+                out_df.at[rec_ID, 'Sentence'] = sent.text
+                out_df['Document ID'] = docID
+                out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
+                rec_ID+=1
+            sent_ID+=1
+        # out_df = out_df[['ID', 'Form', 'NER', 'Multi-Word Expression','Record ID', 'Sentence ID', 'Document ID', 'Document']]
+        out_df = out_df[['Form', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
 
-        for i, token in enumerate(spacy_doc):
-            out_df.at[i, 'ID'] = int(token.i + 1)
-            out_df.at[i,'Form'] = token.text
-            out_df.at[i,'Lemma'] = token.lemma_
-            out_df.at[i,'POStag'] = token.pos_
-            out_df.at[i,'Head'] = token.head.i # add Head index
-            out_df.at[i,'DepRel'] = token.dep_
-            out_df.at[i, 'is_sent_start'] = token.is_sent_start
-            if hasattr(token, 'ent_type_'): # check if NER is annotated for each token
-                out_df.at[i,'NER'] = token.ent_type_
-                out_df.at[i,'Multi-Word Expression'] = token.ent_iob_ # add IOB tag of NERs to process later
+    if "parse" in str(annotator_params):
 
-        # add necessary columns after the loop
-        out_df['Record ID'] = None
-        out_df['Sentence ID'] = None
-        out_df['Document ID'] = docID
-        out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
+        out_df = pd.DataFrame()
+        rec_ID = 0
+        for i, sent in enumerate(spacy_doc.sents):
+            sent_ID = 1
+            for j, token in enumerate(sent):
+                out_df.at[rec_ID, 'ID'] = int(j)
+                out_df.at[rec_ID,'Form'] = token.text
+                out_df.at[rec_ID,'Lemma'] = token.lemma_
+                out_df.at[rec_ID,'POS'] = token.pos_
+                out_df.at[rec_ID,'Head'] = token.head.i # add Head index
+                out_df.at[rec_ID,'DepRel'] = token.dep_
+                out_df.at[rec_ID, 'is_sent_start'] = token.is_sent_start
+                # if hasattr(token, 'ent_type_'): # check if NER is annotated for each token
+                out_df.at[rec_ID,'NER'] = token.ent_type_
+                out_df.at[rec_ID,'Multi-Word Expression'] = token.ent_iob_ # add IOB tag of NERs to process later
 
-        # get sentence sentiment
-        # if "sentiment" in annotator_params:
-        #     sentence_sentiment = [round(sent._.blob.polarity,2) for sent in spacy_doc.sents]
+                # add necessary columns after the loop
+                out_df.at[rec_ID, 'Sentence ID'] = i+1
+                out_df.at[rec_ID, 'Sentence'] = sent.text
+                out_df.at[rec_ID, 'Document ID'] = docID
+                out_df.at[rec_ID, 'Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
+                rec_ID += 1
+            sent_ID += 1
 
-        # enter Record and Sentence IDs
-        i = 0
-        sidx = 1
-        max_idx = len(out_df)-1
-        for row in out_df.iterrows():
-            if i != 0 and row[1]['is_sent_start'] == True:
-                sidx+=1
-            # if "sentiment" in annotator_params:
-            #     out_df.at[i, 'Sentiment score'] = sentence_sentiment[sidx-1]
-            out_df.at[i, 'Record ID'] = int(row[1]['ID'])
-            out_df.at[i, 'Sentence ID'] = int(sidx)
-
-            # process IOB tags for Multi-Word Expression column
-            mwe = out_df.at[i, 'Multi-Word Expression']
-            if mwe == 'B':
-                tmp = mwe
-                tmp_idx = i
-                # find the last index of this MWE
-                while tmp!='O' and tmp_idx < max_idx:
-                    tmp = out_df.at[tmp_idx, 'Multi-Word Expression']
-                    tmp_idx+=1
-                # if the tag of the next token is B or if it's a single tag with one B, MWE is itself
-                if i==max_idx and out_df.at[i, 'Multi-Word Expression']=='B':
-                    out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']
-                elif tmp_idx==i+2 or (i<=max_idx and out_df.at[i+1, 'Multi-Word Expression']=='B'):
-                    out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']
-                else:
-                    # iterate reversely from the last tag to the first tag, and update the MWE
-                    for j in reversed(range(i, tmp_idx-1)):
-                        if j==tmp_idx-2:
-                            out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j, 'Form']
-                        elif out_df.at[j, 'Multi-Word Expression'] == 'B':
-                            out_df.at[j, 'Multi-Word Expression'] = out_df.at[j+1, 'Multi-Word Expression']
-                            # when finally reach the first tag (B), update existing MWE with complete MWE
-                            for k in reversed(range(i, tmp_idx-1)):
-                                if k==i:
-                                    out_df.at[k, 'Multi-Word Expression'] = out_df.at[j, 'Multi-Word Expression']
-                                else:
-                                    out_df.at[k, 'Multi-Word Expression'] = 'O'
-                        elif out_df.at[j, 'Multi-Word Expression'] == 'I':
-                            out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j+1 , 'Multi-Word Expression']
-            i+=1
-
-        # drop 'is_sent_start' column
-        out_df = out_df.drop(columns=['is_sent_start'])
+            out_df = get_mwe(out_df)
 
         # extract list of identified token language
-        tmp_lang_lst = [lang_dict[token.lang_] for token in spacy_doc]
-        out_df['Language'] = tmp_lang_lst
-
-    if "sentiment" in annotator_params:
-        out_df = out_df[['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
-    else:
-        out_df = out_df[['ID', 'Form', 'Lemma', 'POStag', 'NER', 'Multi-Word Expression', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+        # tmp_lang_lst = [lang_dict[token.lang_] for token in spacy_doc]
+        # out_df['Language'] = tmp_lang_lst
+        out_df = out_df[
+            ['ID', 'Form', 'Lemma', 'POS', 'NER', 'Multi-Word Expression', 'Head', 'DepRel', 'Sentence ID', 'Sentence',
+             'Document ID', 'Document']]
 
     return out_df
 
@@ -500,6 +545,26 @@ spacy_available_lang = [
     "ru",
     "es",
     "sv",
-    "",
-    "",
+    "uk",
 ]
+
+NER_dict = [
+    "PERSON", # - People, including fictional.
+    "NORP", # - Nationalities or religious or political groups.
+    "FAC", # - Buildings, airports, highways, bridges, etc.
+    "ORG", # - Companies, agencies, institutions, etc.
+    "GPE", # - Countries, cities, states.
+    "LOC", # - Non-GPE locations, mountain ranges, bodies of water.
+    "PRODUCT", # - Objects, vehicles, foods, etc. (Not services.)
+    "EVENT", # - Named hurricanes, battles, wars, sports events, etc.
+    "WORK_OF_ART", # - Titles of books, songs, etc.
+    "LAW", # - Named documents made into laws.
+    "LANGUAGE", # - Any named language.
+    "DATE", # - Absolute or relative dates or periods.
+    "TIME", # - Times smaller than a day.
+    "PERCENT", # - Percentage, including "%".
+    "MONEY", # - Monetary values, including unit.
+    "QUANTITY", # - Measurements, as of weight or distance.
+    "ORDINAL", # - "first", "second", etc.
+    "CARDINAL", # - Numerals that do not fall under another type.]}
+    ]

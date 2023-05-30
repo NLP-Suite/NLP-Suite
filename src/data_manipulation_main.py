@@ -95,7 +95,7 @@ def run(inputFilename,
 
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
@@ -127,6 +127,7 @@ if __name__ == '__main__':
                                                      increment=1)  # to be added for full display
 
     GUI_label = 'Graphical User Interface (GUI) for csv Data Manipulation'
+    head, scriptName = os.path.split(os.path.basename(__file__))
     config_filename = 'data-manager_config.csv'
     # The 4 values of config_option refer to:
     #   input file
@@ -550,7 +551,7 @@ if __name__ == '__main__':
 
     # after clicking on the merge checkbox
     def merge_reminder1():
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_data_manager_merge,
                                      reminders_util.message_data_manager_merge1,
                                      True)
@@ -776,7 +777,7 @@ if __name__ == '__main__':
         if not merge_var.get():
             return
         if select_csv_field_merge_var.get()!='':
-            reminders_util.checkReminder(config_filename,
+            reminders_util.checkReminder(scriptName,
                                          reminders_util.title_options_data_manager_merge,
                                          reminders_util.message_data_manager_merge2,
                                          True)
@@ -797,12 +798,12 @@ if __name__ == '__main__':
         if not merge_var.get():
             return
         if file_number_var.get()>1:
-            reminders_util.checkReminder(config_filename,
+            reminders_util.checkReminder(scriptName,
                                          reminders_util.title_options_data_manager_merge,
                                          reminders_util.message_data_manager_merge7,
                                          True)
         else:
-            reminders_util.checkReminder(config_filename,
+            reminders_util.checkReminder(scriptName,
                                          reminders_util.title_options_data_manager_merge,
                                          reminders_util.message_data_manager_merge4,
                                          True)
@@ -813,7 +814,7 @@ if __name__ == '__main__':
     def merge_reminder_plus():
         if not merge_var.get():
             return
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_data_manager_merge,
                                      reminders_util.message_data_manager_merge3,
                                      True)
@@ -834,7 +835,7 @@ if __name__ == '__main__':
             #
             # changed_filename(selectedCsvFile_var.get())
 
-            reminders_util.checkReminder(config_filename,
+            reminders_util.checkReminder(scriptName,
                                          reminders_util.title_options_data_manager_merge,
                                          reminders_util.message_data_manager_merge5,
                                          True)
@@ -1261,7 +1262,7 @@ if __name__ == '__main__':
     # change the value of the readMe_message
     readMe_message = "The Python 3 scripts provide several ways of handling data from csv files.\n\nIn INPUT, the script takes one or more csv files depending upon the selected operation.\n\nIn OUTPUT, the script creates a new csv file.\n\nThe following operation are possible.\n\n   1. MERGE different csv files using one or more overlapping common field(s) as a way to JOIN the files together;\n   2. CONCATENATE into a single field the values of different fields from one csv file;\n   3. APPEND the content of different fields from one csv file after the content of a selected target field;\n   4. EXTRACT fields from one csv file, perhaps by specific field values (the equivalent of an SQL WHERE clause);\n   4. DROP dulicate rows from one csv file."
     readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
-    GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,'data_manipulation_main.py',True)
+    GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName,True)
 
     mb.showwarning(title='Warning',
                    message="The csv Data manipulation GUI is currently under redesign. It is not usable.\n\nSorry!\n\nCheck back soon.")

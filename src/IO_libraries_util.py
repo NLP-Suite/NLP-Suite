@@ -439,7 +439,8 @@ def open_url(website_name, url, ask_to_open = False, message_title='', message='
         return False
     # check if a reminder needs to be displayed
     if reminder_title != '':
-        reminders_util.checkReminder(config_filename, reminder_title,
+
+        reminders_util.checkReminder(scriptName, reminder_title,
                                      reminder_message, True)
     # check if the question to open the website is asked
     if ask_to_open:

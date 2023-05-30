@@ -27,11 +27,6 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
 
     filesToOpen = []
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
-
     if not 'Do not' in vis_menu_var:
         result = mb.askyesno('Visualization via t-SNE',
                              'You have selected to run Word2Vec with the t-SNE visualization option. Depending upon the total number of words in your corpus, this option is computationally VERY demanding (it can take many hours on a standard laptop, particularly with BERT). Compressing an n-dimensional space into a a 2D or 3D graph can also be somewhat misleading (cosine similarities provide a better alternative).\n\nAre you sure you want to continue?')
@@ -69,7 +64,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
         filesToOpen = s_paths + v_paths + k_paths
 
     if BERT_var:
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_BERT_Word2Vec_timing,
                                      reminders_util.message_BERT_Word2Vec_timing,
                                      True)
@@ -80,7 +75,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
         filesToOpen.append(BERT_output)
 
     if Gensim_var:
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_Gensim_Word2Vec_timing,
                                      reminders_util.message_Gensim_Word2Vec_timing,
                                      True)
@@ -96,7 +91,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
                                  vis_menu_var, dim_menu_var)
 
     if openOutputFiles==True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, Word2Vec_Dir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, Word2Vec_Dir, scriptName)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -137,7 +132,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Word2Vec with Gensim'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -507,13 +505,13 @@ readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
 reminders_util.checkReminder(
-    config_filename,
+    scriptName,
     reminders_util.title_options_Word2Vec,
     reminders_util.message_Word2Vec,
     True)
 
 reminders_util.checkReminder(
-    config_filename,
+    scriptName,
     reminders_util.title_options_Word2Vec_eucledian_distance,
     reminders_util.message_Word2Vec_eucledian_distance,
     True)

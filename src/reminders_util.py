@@ -145,9 +145,6 @@ message_CoreNLP_coref = "The Stanford CoreNLP coref annotator with a corpus of f
 title_options_only_CoreNLP_coref = ['Stanford CoreNLP coreference']
 message_only_CoreNLP_coref = "The coreference algorithms in this GUI are based exclusively on Stanford CoreNLP coref annotator.\n\nWatch this space for an extension to spaCy of coreference resolution (Stanza relies on Stanford CoreNLP coreference annotator)."
 
-title_options_only_CoreNLP_NER = ['Stanford CoreNLP NER']
-message_only_CoreNLP_NER = "The NER algorithms in this GUI are based exclusively on Stanford CoreNLP NER annotator.\n\nWatch this space for an extension to spaCy and Stanza of the NER algorithms behind this GUI (the spaCy and Stanza parsers and NER annotators, however, do prooduce NER tags)."
-
 title_options_only_CoreNLP_CoNLL_analyzer = ['CoNLL table analyzer']
 message_only_CoreNLP_CoNLL_analyzer = "The CoNLL table analyzer algorithms in this GUI are based exclusively on Stanford CoreNLP parser.\n\nWatch this space for an extension to spaCy and Stanza of the NER algorithms behind this GUI."
 
@@ -213,6 +210,9 @@ message_line_length = 'Line length only makes sense for poetry or song lyrics (o
 
 title_options_non_utf8 = ['file not utf-8 compliant']
 message_non_utf8 = 'The file contains non-utf-8 compliant characters. The file cannot be processed. Please, run he utf-8 file check to get a csv sting of all non-utf-8 compliantt characters.'
+
+title_csv_files = ['csv files']
+message_weird_characters = 'If csv ouput files open displaying weird characters in a Windows OS (e.g., a€), most likely the cause is due to non utf-8 compliant input text. Apostrophes and quotes are the typical culprits, but also other punctuation characters.\n\nPlease, run the tool to check documents for utf-8 compliance and, if necessary, run the tool for automatic apostrophe and quote conversion from non utf-8 to utf-8.\n\nTo learm more on utf-8 compliance, read the TIPS on utf-8 compliance.'
 
 title_options_Plagiarist = ['Plagiarist']
 message_Plagiarist = "The 'plagiarist' script, based on Lucene, can process files with embedded dates.\n\nIf the filenames in the input directory embed dates, please tick the checkbox 'Filename embeds date' above."
@@ -372,12 +372,25 @@ def create_remindersFile() -> None:
         with open(remindersFile, "a", newline='', encoding='utf-8',
                   errors='ignore') as reminders:  # write a new row in the reminder csv file
             writer = csv.writer(reminders)
-            writer.writerow(['Routine', 'Title', 'Message', 'Event', 'Status'])
+            # writer.writerow(['Routine', 'Title', 'Message', 'Event', 'Status'])
+            writer.writerow(['Routine', 'Title', 'Message', 'Status'])
             reminders.close()
+
+def get_routine_from_scriptName(scriptName):
+    if '_main.py' in scriptName:
+        routine = scriptName.replace('_main.py','')
+    elif '_util.py' in scriptName:
+        routine = scriptName.replace('_util.py', '')
+    elif '*' in scriptName:
+        routine = '*' # * denotes messages that apply to ALL scripts
+    else:
+        routine = scriptName # passed already as routine, e.g., in parsers_annotators_visualization
+    return routine
 
 # config_filename is the first column in reminders.csv
 #   it refers to the general Python script that calls the reminder
-#   The routine field contains the name used by the reminder script to visualize the correct reminder; it is the name of the config filename trimmed of _config.csv (e.g., GIS for GIS_config.csv, GIS-Google-Earth for GIS-Google-Earth_config.csv).
+#   The routine field contains the name used by the reminder script to visualize the correct reminder;
+#   it is the name of the scriptName trimmed of _main.py or _util.py (e.g., GIS for GIS_main.py, GIS-Google-Earth for GIS-Google-Earth_main.py).
 #   When the Routine field contains a * the reminder will be displayed in ALL GUIs
 
 # title is the second column in reminders.csv
@@ -385,13 +398,10 @@ def create_remindersFile() -> None:
 # message is typically stored in the reminders.csv files
 #   For reminders that require a current value (e.g., date and time stamp)
 #   the message is passed (an example is found in GUI_frontEnd in GUI_IO_util.py)
-# triggered_by_GUI_event is passed when triggered by an event in the GUI (a checkbox ticked, a file opened)
-#   (e.g., in shape_of_stories_GUI)
-def getReminders_list(config_filename,silent=False):
-    # if '_config.csv' in config_filename:
-    routine=config_filename[:-len('_config.csv')]
-    # else:
-    #     routine = config_filename
+# routine is the sriptName without _main.py or _util.py
+def getReminders_list(scriptName,silent=False):
+    routine = get_routine_from_scriptName(scriptName)
+
     title_options=[]
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
     try:
@@ -400,7 +410,7 @@ def getReminders_list(config_filename,silent=False):
         if silent == False:
             mb.showwarning(title='Reminders file generated', message="The reminders.csv file saved in the reminders subdirectory was not found. If this is your first time running NLP Suite, do not worry. A default reminders.csv has been automatically generated for you.")
         create_remindersFile()
-        return getReminders_list(config_filename, silent)
+        return getReminders_list(scriptName, silent)
     except Exception as e:
         if silent==False:
             message = 'Error encountered: ' + str(e) + ".\n\nError encountered with the checkReminder function in reminders_util.\n\nPlease, let the NLP Suite development team know the problem so it can be fixed."
@@ -422,9 +432,13 @@ def getReminders_list(config_filename,silent=False):
 # the functions gets the list of reminders for any given GUI (i.e., routine)
 
 # when displaying messages the message field is '' since the actual message is not known until the csv file is read
-def displayReminder(df,row_num,title, message, event, currentStatus, question, seeMsgAgain=False) -> object:
+# def displayReminder(df,row_num, title, message, event, currentStatus, question, seeMsgAgain=False) -> object:
+def displayReminder(df, row_num, title, message, currentStatus, question, seeMsgAgain=False) -> object:
 
     try:
+        title_options_SVO_system_requirements = ['SVO system requirements']
+        message_SVO_system_requirements = 'The extraction and visualization of SVOs requires several software components.\n\n1. The extraction of SVOs requires the Stanford CoreNLP set of NLP tools. You can download the FREEWARE Stanford CoreNLP at https://stanfordnlp.github.io/CoreNLP/download.html.\n\n2. CoreNLP requires to have the Java installed. You can download and install the FREEWARE JAVA at https://www.java.com/en/download/\n\n3. The visualization of the SVO output as GIS maps and network graphs further requires the installation of the FREEWARE software Gephi and Google Earth Pro.\n\n3a. You can download and install the FREEWARE GEPHI at https://gephi.org/users/download/\n\n3b. You can download and install the FREEWARE GOOGLE EARTH PRO at https://www.google.com/earth/versions/#download-pro'
+        message = title.replace('title_options_','message_')
         message = df.at[row_num, "Message"].replace("\\n", os.linesep)
     except:
         pass
@@ -450,26 +464,21 @@ def displayReminder(df,row_num,title, message, event, currentStatus, question, s
         else:
             status=currentStatus
     if currentStatus!=status:
-        saveReminder(df,row_num, message, event, status)
+        # saveReminder(df,row_num, message, event, status)
+        saveReminder(df,row_num, message, status)
 
 # routine is a string
 # title_options is a list [] of all Routine values
 # * in the Routine column are used for reminders that apply to any GUI
 # set silent to True if you just want to check the status of the reminder ON or OFF without asking the question
-def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_event=False, silent=False):
-
-    # * denotes messages that apply to ALL scripts
+def checkReminder(scriptName, title_options=[], message='', triggered_by_GUI_event=False, silent=False):
+    routine = get_routine_from_scriptName(scriptName)
     status=''
-    if config_filename=='*':
-        routine='*'
-    else:
-        routine = config_filename.replace('_config.csv', '')
-        # routine = config_filename[:-len('_config.csv')]
-    if title_options==None:
-        title_options = getReminders_list(config_filename)
+    if title_options==[]: # None:
+        title_options = getReminders_list(scriptName)
     else:
         if len(title_options)==0:
-            title_options = getReminders_list(config_filename)
+            title_options = getReminders_list(scriptName)
             if len(title_options)==0: # ill formed reminders
                 return None
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
@@ -477,7 +486,7 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
         df = pd.read_csv(remindersFile)
     except FileNotFoundError:
         create_remindersFile()
-        return checkReminder(config_filename, title_options, message, triggered_by_GUI_event)
+        return checkReminder(scriptName, title_options, message, triggered_by_GUI_event)
     except Exception as e:
         if not silent:
             message = 'Error encountered: ' + str(e) + ".\n\nError encountered with the checkReminder function in reminders_util.\n\nPlease, let the NLP Suite development team know the problem so it can be fixed."
@@ -498,40 +507,47 @@ def checkReminder(config_filename,title_options=[],message='', triggered_by_GUI_
                 # message_csv = df1.at[row_num, "Message"]
                 # if message != '' and message != message_csv:
                 #     message = df1.at[row_num, "Message"]
-                event = df1.at[row_num, "Event"]
+                # event = df1.at[row_num, "Event"]
                 status = df1.at[row_num, "Status"]
                 # save any status changes or messages in reminders.csv file different from the Python reminder message in this scrit
                 #   always update the reminder message in reminders.csv file if we changed the message programmatically
                 message_csv = df1.at[row_num, "Message"].replace("\\n", os.linesep)
                 if message != '' and message != message_csv:
                     # must save the new message
-                    saveReminder(df, row_num, message, event, status)
-                if triggered_by_GUI_event == False and event=='Yes':
-                    silent = True
-                else:
-                    silent = False
+                    # saveReminder(df, row_num, message, event, status)
+                    saveReminder(df, row_num, message, status)
+                #@@@ 5/21
+                # if triggered_by_GUI_event == False and event=='Yes':
+                #     silent = True
+                # else:
+                #     silent = False
                 if status == "Yes" or status == "ON": # 'Yes' the old way of saving reminders
                     if silent == False:
                         # must pass the entire dataframe and not the sub-dataframe dt1
-                        displayReminder(df, row_num, title, message, event, status,
+                        # displayReminder(df, row_num, title, message, event, status,
+                        #                 "\n\nDo you want to see this message again?", True)
+                        displayReminder(df, row_num, title, message, status,
                                         "\n\nDo you want to see this message again?", True)
             else: # the reminder option does not exist and must be inserted and then displayed
-                if triggered_by_GUI_event == True:
-                    event='Yes'
-                else:
-                    event = 'No'
-                insertReminder(routine, title, message, event, "Yes")
+                #@@@ 5/21
+                # if triggered_by_GUI_event == True:
+                #     event='Yes'
+                # else:
+                #     event = 'No'
+                # insertReminder(routine, title, message, event, "Yes")
+                insertReminder(routine, title, message, "Yes")
                 # after inserting the new reminder return to check whether you want to see the reminder again
                 if silent == False:
                     # title_options is the value you originally came in with (i.e., [title]) and that was inserted
-                    checkReminder(config_filename, title_options, message,
-                                  triggered_by_GUI_event)
+                    #@@@ 5/21
+                    # checkReminder(scriptName, title_options, message, triggered_by_GUI_event)
+                    checkReminder(scriptName, title_options, message)
     return status # returns Yes for ON or No for OFF
 
 # called from a GUI when a reminder is selected from the reminder dropdown menu
 # title is a string, the reminders option selected in the GUI dropdown menu
-def resetReminder(config_filename,title):
-    routine = config_filename[:-len('_config.csv')]
+def resetReminder(scriptName,title):
+    routine = get_routine_from_scriptName(scriptName)
     if title != "Open reminders":
         if title == 'No Reminders available':
             mb.showwarning(title='Reminders warning', message="There are no reminders available for this script.")
@@ -559,30 +575,34 @@ def resetReminder(config_filename,title):
             mb.showwarning(title='Reminders file error',
                            message="The reminders.csv file saved in the reminders subdirectory does not contain the reminder '" + title + "'.\n\nPlease, let the NLP Suite development team know the problem so it can be fixed.")
             return
-
         message = df.at[row_num, "Message"]
-        event = df.at[row_num, "Event"]
+        # event = df.at[row_num, "Event"]
         status = df.at[row_num, "Status"]
         if status == "No" or status == "OFF":  # 'No' the old way of saving reminders
             question = '\n\nNow this reminder is turned OFF. Do you want to turn it ON?'
         else:
             question = '\n\nNow this reminder is turned ON. Do you want to turn it OFF?'
-        displayReminder(df, row_num, title, message, event, status, question, False)
+        # displayReminder(df, row_num, title, message, event, status, question, False)
+        displayReminder(df, row_num, title, message, status, question, False)
 
 
 # update do_not_show_message.csv so that we don't show the message box again
 # status: "Yes"/"No" old way of saving reminders; now ON/OFF
-def saveReminder(df,row_num, message, event, status):
+# def saveReminder(df,row_num, message, event, status):
+def saveReminder(df, row_num, message, status):
+
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
     df.at[row_num, "Message"] = message # change it to yes or no
-    df.at[row_num, "Event"] = event # change it to yes or no
+    # df.at[row_num, "Event"] = event # change it to yes or no
     df.at[row_num, "Status"] = status # change it to yes or no
     df.to_csv(remindersFile, encoding='utf-8', index=False, header=True)
 
-def insertReminder(routine,title, message, event, status):
+# def insertReminder(routine,title, message, event, status):
+def insertReminder(routine, title, message, status):
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
     with open(remindersFile, "a",newline = '', encoding='utf-8',errors='ignore') as reminders:#write a new row in the reminder csv file
         writer = csv.writer(reminders)
-        writer.writerow([routine, title, message, event, status])
+        # writer.writerow([routine, title, message, event, status])
+        writer.writerow([routine, title, message, status])
         reminders.close()
 

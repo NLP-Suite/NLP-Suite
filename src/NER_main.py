@@ -23,16 +23,10 @@ import Stanza_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-# def run(CoreNLPdir,inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPackage,encoding_var,memory_var,extract_date_from_text_var,filename_embeds_date_var,date_format,items_separator_var,date_position_var,NER_list,NER_split_prefix_values_entry_var,NER_split_suffix_values_entry_var,NER_sentence_var):
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, config_filename,
         NER_package, NER_list):
 
     filesToOpen = []  # Store all files that are to be opened once finished
-
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
 
     # get the NLP package and language options
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
@@ -53,20 +47,24 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         mb.showwarning(title='No NER tag selected', message='No NER tag has been selected.\n\nPlease, select an NER tag and try again.')
         return
 
-    if language_var == 'Arabic':
-        mb.showwarning(title='Language',
-                       message='The Stanford CoreNLP NER annotator is not available for Arabic.')
-        return
-
-    if 'BERT' in NER_package:
+    if '*' in NER_package or 'BERT' in NER_package:
+        if language!='English':
+            mb.showwarning(title='Warning', message='NER in BERT is only available for the English language. Your currently selected language is ' + language + '.' \
+            "\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the 'Setup NLP package and corpus language' to open the GUI where you can change the language option.")
+            return
         import BERT_util
+        NER_list = BERT_util.NER_dict
+        NER_entry_var.set(NER_list['NERs'])
         tempOutputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, config_filename, '', createCharts, chartPackage)
-        if tempOutputFiles != '':
-            filesToOpen.append(tempOutputFiles)
+        if tempOutputFiles != None:
+            if len(tempOutputFiles) > 0:
+                filesToOpen.extend(tempOutputFiles) # append since a string is returned
 
-    if 'spaCy' in NER_package:
+    if '*' in NER_package or 'spaCy' in NER_package:
         document_length_var = 1
         limit_sentence_length_var = 1000
+        NER_list = spaCy_util.NER_dict
+        NER_entry_var.set(NER_list)
         tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
                                                     openOutputFiles,
@@ -74,37 +72,19 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                     'NER', False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
+                                                    NERs=NER_list,
                                                     filename_embeds_date_var=filename_embeds_date_var,
                                                     date_format=date_format_var,
                                                     items_separator_var=items_separator_var,
                                                     date_position_var=date_position_var)
 
-        if tempOutputFiles == None:
-            return
-        else:
-            filesToOpen.append(tempOutputFiles)
+        if tempOutputFiles != None:
+            if len(tempOutputFiles) > 0:
+                filesToOpen.extend(tempOutputFiles)
 
-    if 'Stanza' in NER_package:
-        document_length_var = 1
-        limit_sentence_length_var = 1000
-        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
-                                                      outputDir,
-                                                      openOutputFiles,
-                                                      createCharts, chartPackage,
-                                                      'NER', False,
-                                                      language_list,
-                                                      memory_var, document_length_var, limit_sentence_length_var,
-                                                      filename_embeds_date_var=filename_embeds_date_var,
-                                                      date_format=date_format_var,
-                                                      items_separator_var=items_separator_var,
-                                                      date_position_var=date_position_var)
-
-        if tempOutputFiles == None:
-            return
-        else:
-            filesToOpen.append(tempOutputFiles)
-
-    if 'CoreNLP' in NER_package:
+    if '*' in NER_package or 'CoreNLP' in NER_package:
+        if '*' in NER_package:
+            NER_list=Stanford_CoreNLP_util.NER_list
         tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                             openOutputFiles, createCharts, chartPackage,
                                                             'NER',
@@ -121,28 +101,41 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                             items_separator_var=items_separator_var,
                                                             date_position_var=date_position_var)
 
-        if len(tempOutputFiles)>0:
-            filesToOpen.append(tempOutputFiles)
+        if tempOutputFiles!=None:
+            if len(tempOutputFiles)>0:
+                filesToOpen.extend(tempOutputFiles)
 
-    # TODO Excel charts; the basic bar charts are carried out in the _annotator_util
+    if '*' in NER_package or 'Stanza' in NER_package:
+        document_length_var = 1
+        limit_sentence_length_var = 1000
 
-    # # TODO date
-    # if extract_date_from_text_var or filename_embeds_date_var:
-    # 	df = pd.DataFrame(data, columns=['Word', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date'])
-    # else:
-    # 	df = pd.DataFrame(data, columns=['Word', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
-    # if NER_sentence_var == 1:
-    # 	df = charts_Excel_util.add_missing_IDs(df)
+        NER_list = get_NER_list('Stanza',language)
+        NER_entry_var.set(NER_list)
 
-    # if inputDir!='':
-    # 	outputFilename = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'NER_extractor_dir')
-    # else:
-    # 	outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NER_extractor')
-    # df.to_csv(outputFilename,index=False)
-    # filesToOpen.append(outputFilename)
+        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+                                                      outputDir,
+                                                      openOutputFiles,
+                                                      createCharts, chartPackage,
+                                                      'NER', False,
+                                                      language_list,
+                                                      memory_var, document_length_var, limit_sentence_length_var,
+                                                      filename_embeds_date_var=filename_embeds_date_var,
+                                                      NERs=NER_list,
+                                                      date_format=date_format_var,
+                                                      items_separator_var=items_separator_var,
+                                                      date_position_var=date_position_var)
+
+        if tempOutputFiles!= None:
+            if len(tempOutputFiles) > 0:
+                filesToOpen.extend(tempOutputFiles) # extends since a list [] is returned
 
     if openOutputFiles==True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+
+    if '*' in NER_package:
+        NER_list = []
+        NER_tag_var.set(' ')
+        NER_entry_var.set(NER_list)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(
@@ -186,7 +179,10 @@ GUI_label='Graphical User Interface (GUI) for NER (Named Entity Recognition) Ext
 config_input_output_numeric_options=[2,1,0,1]
 
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('main.py', 'config.csv')
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -225,7 +221,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 NER_packages_var = tk.StringVar()
 NER_packages_var.set('BERT (English language model)')
 # IBM https://ibm.github.io/zshot/ "pip install zshot"
-NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'BERT (English language model)','IBM','spaCy','Stanford CoreNLP','Stanza')
+NER_packages_menu = tk.OptionMenu(window,NER_packages_var,'*', 'BERT (English language model)','IBM','spaCy','Stanford CoreNLP','Stanza')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_packages_menu_pos, y_multiplier_integer,
                     NER_packages_menu, False, False, True, False,
@@ -266,7 +262,12 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_entry_lb
 
 NER_entry = tk.Entry(window,width=GUI_IO_util.widget_width_medium,textvariable=NER_entry_var)
 NER_entry.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_entry_pos,y_multiplier_integer,NER_entry)
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_entry_pos, y_multiplier_integer,
+                    NER_entry, False, False, True, False,
+                    90, GUI_IO_util.open_reminders_x_coordinate,
+                    "The widget, always disabled, displays all the NER tags available for the selected package")
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NER_NER_entry_pos,y_multiplier_integer,NER_entry)
 
 def clear(e):
     clear_NER_list(coming_from_add=False,coming_from_reset=True)
@@ -280,7 +281,8 @@ def add_NER_tag(coming_from_add, coming_from_reset):
     #     window.focus_force()
     #     return
 
-    if not 'CoreNLP' in NER_packages_var.get():
+    if 'Stanza' in NER_packages_var.get():
+        # NER_list
         return
     reset_NER_button.configure(state='normal')
     if coming_from_reset:
@@ -291,10 +293,7 @@ def add_NER_tag(coming_from_add, coming_from_reset):
     if coming_from_add:
         add_NER_button.configure(state='normal')
     if 'All NER tags' in NER_tag_var.get(): # == '--- All NER tags':
-        NER_list = ['PERSON', 'ORGANIZATION', 'MISC', 'MONEY', 'NUMBER', 'ORDINAL',
-                    'PERCENT', 'DATE', 'TIME', 'DURATION', 'SET', 'EMAIL', 'URL', 'CITY',
-                    'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION', 'NATIONALITY', 'RELIGION', 'TITLE', 'IDEOLOGY', 'CRIMINAL_CHARGE',
-                    'CAUSE_OF_DEATH']
+        NER_list = NER_list
         NER_entry_var.set('PERSON, ORGANIZATION, MISC, MONEY, NUMBER, ORDINAL, PERCENT, DATE, TIME, DURATION, SET, EMAIL, URL, CITY,STATE_OR_PROVINCE, COUNTRY, LOCATION, NATIONALITY, RELIGION, TITLE, IDEOLOGY, CRIMINAL_CHARGE,CAUSE_OF_DEATH')
     elif NER_tag_var.get() == '--- All quantitative expressions':
         NER_list = ['NUMBER', 'ORDINAL', 'PERCENT']
@@ -313,6 +312,7 @@ def add_NER_tag(coming_from_add, coming_from_reset):
         NER_tag_var.set(' ')
         window.focus_force()
         return
+    # --- is used for CoreNLP for NER subsets (e.g., --- All spatial expressions)
     if NER_tag_var.get() in NER_list and not('---' in NER_tag_var.get()):
         mb.showwarning(title='Warning', message='The NER tag "'+ NER_tag_var.get() + '" is already in your selection list: '+ str(NER_entry_var.get()) + '.\n\nPlease, select another NER tag.')
         window.focus_force()
@@ -355,11 +355,39 @@ NER_tag_var.trace ('w',lambda x,y,z: add_NER_tag(coming_from_add, coming_from_re
 
 add_NER_tag(coming_from_add, coming_from_reset)
 
+
+def get_NER_list(package, language):
+    NER_list=[]
+    if 'Stanza' in package:
+        import constants_util
+        for short, long in constants_util.languages:
+            if long == language:
+                break
+        try:
+            NER_list = Stanza_util.NER_dict[short]
+        except:
+            # check that NER is available first
+            if Stanza_util.check_Stanza_annotator_availability(['NER'], short, long, silent=False):
+                # then check for specific NER tags for the selected language
+                import IO_user_interface_util
+                IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Warning',
+                                                   'There are no ad-hoc NER tags for the ' + language + ' language in Stanza.\n\nPlease, check NER output for ' + language + '-specific NER tags.')
+    return NER_list
+
+# get the NLP package and language options
+error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+language_var = language
+language_list = [language]
+
 def activate_NER_Options(coming_from_add, coming_from_reset):
     add_NER_button.configure(state="disabled")
     reset_NER_button.configure(state='disabled')
     NER_menu.configure(state='disabled')
-    if 'CoreNLP' in NER_packages_var.get():
+    if 'BERT' in NER_packages_var.get():
+        import BERT_util
+        NER_list = BERT_util.NER_dict
+        NER_entry_var.set(NER_list['NERs'])
+    elif 'CoreNLP' in NER_packages_var.get():
         NER_menu.configure(state='normal')
         reset_NER_button.configure(state='normal')
         if coming_from_reset:
@@ -367,14 +395,18 @@ def activate_NER_Options(coming_from_add, coming_from_reset):
         else:
             if not coming_from_add:
                 NER_tag_var.set('All NER tags')  # --- All NER tags
+    elif 'spaCy' in NER_packages_var.get():
+        NER_list = spaCy_util.NER_dict
+        NER_entry_var.set(NER_list)
+    elif 'Stanza' in NER_packages_var.get():
+        NER_list = get_NER_list(package,language)
+        NER_entry_var.set(NER_list)
     else:
-        NER_menu.configure(state='disabled')
-        reset_NER_button.configure(state='disabled')
-        NER_tag_var.set(' ')
-        NER_entry_var.set(' ')
-    if 'IBM' in NER_packages_var.get():
-        mb.showwarning("Option not available",
-                       "The selected " + NER_packages_var.get() + " option is not available yet.\n\nSorry! Please, check back soon...")
+        NER_list=[]
+        NER_entry_var.set(NER_list)
+        if 'IBM' in NER_packages_var.get():
+            mb.showwarning("Option not available",
+                           "The selected " + NER_packages_var.get() + " option is not available yet.\n\nSorry! Please, check back soon...")
 NER_packages_var.trace('w',lambda x,y,z: activate_NER_Options(coming_from_add, coming_from_reset))
 
 # activate_NER_Options(coming_from_add, coming_from_reset)
@@ -397,12 +429,10 @@ TIPS_lookup = {'Stanford CoreNLP supported languages':'TIPS_NLP_Stanford CoreNLP
                'Stanford CoreNLP performance & accuracy':'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf',
                'Stanford CoreNLP memory issues': 'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
                'NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf',
-               'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
-               'POSTAG (Part of Speech Tags)':'TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf',
+               'NER tags across packages':'TIPS_NLP_NER tags across packages.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
-TIPS_options='Stanford CoreNLP supported languages','Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues','NER (Named Entity Recognition)','CoNLL Table','POSTAG (Part of Speech Tags)','csv files - Problems & solutions','Statistical measures'
-
+TIPS_options='NER (Named Entity Recognition)','NER tags across packages','csv files - Problems & solutions','Statistical measures','Stanford CoreNLP supported languages','Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -425,13 +455,13 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
-readMe_message="This Python 3 script will extract NER tags from either tetxt file(s) using the Stanford CoreNLP NER annotator.\n\nIn INPUT the algorith expects a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the algorithm exports a csv file of extracted NER values and 2 Excel bar charts (if the checkbox 'Automatically compute Excel chart(s)' is not ticked off)."
+readMe_message="This Python 3 script will extract NER tags from either tetxt file(s) using different packages for NER  annotation: BERT, spaCy, Stanford CoreNLP, Stanza.\n\nIn INPUT the algorith expects a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the algorithm exports a csv file of extracted NER values and several bar charts (if the checkbox 'Create chart(s)' is not ticked off)."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
-reminders_util.checkReminder(config_filename, reminders_util.title_options_only_CoreNLP_NER,
-                             reminders_util.message_only_CoreNLP_NER, True)
-
+# reminders are based on the script name
+# reminders_util.checkReminder(scriptName, reminders_util.NER_frequencies,
+#                              reminders_util.message_NER_frequencies, True)
 
 GUI_util.window.mainloop()
 

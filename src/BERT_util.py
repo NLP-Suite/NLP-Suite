@@ -1,4 +1,5 @@
 # import statements
+# BERT is available as a multilingual model in 102 languages
 import sys
 import GUI_util
 import IO_libraries_util
@@ -55,7 +56,19 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mo
     Ndocs = str(len(inputDocs))
 
     result = []
+    filesToOpen = []
 
+    if not IO_internet_util.check_internet_availability_warning("BERT_util.py (Function BERT NER)"):
+        return
+
+    startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
+                                                   'Started running BERT for NER annotators at',
+                                                   True, '', True)
+
+    # create output subdirectory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                       label='NER_BERT',
+                                                       silent=True)
 
     documentID = 0
     for doc in inputDocs:
@@ -89,15 +102,23 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mo
     IO_error = IO_csv_util.list_to_csv(window, result, outputFilename)
 
     if not IO_error:
-        # chart_outputFilename = parsers_annotators_visualization_util.parsers_annotators_visualization(
-        #     config_filename, inputFilename, inputDir, outputDir,
-        #     outputFilename, annotator_params, kwargs, createCharts,
-        #     chartPackage)
-        # if chart_outputFilename != None:
-        #     if len(chart_outputFilename) > 0:
-        #         filesToOpen.extend(chart_outputFilename)
+        filesToOpen.append(outputFilename)
+        import parsers_annotators_visualization_util
+        kwargs = NER_dict
+        chart_outputFilename = parsers_annotators_visualization_util.parsers_annotators_visualization(
+            configFileName, inputFilename, inputDir, outputDir,
+            outputFilename, ['NER'], kwargs, createCharts,
+            chartPackage)
+        if chart_outputFilename != None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
-        return outputFilename
+        IO_user_interface_util.timed_alert(window, 2000, 'Analysis end',
+                                           'Finished running BERT NER annotator at',
+                                           True, '', True,
+                                           startTime, True)
+
+        return filesToOpen
 
 
 # provides summary of text per doc and stores in a csv file
@@ -491,7 +512,7 @@ def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Docu
 
 
 # helper main method for sentiment analysis
-def main(inputFilename, inputDir, outputDir, configFileName, mode, createCharts=False, chartPackage='Excel', model_path="cardiffnlp/twitter-xlm-roberta-base-sentiment"):
+def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode, createCharts=False, chartPackage='Excel', model_path="cardiffnlp/twitter-xlm-roberta-base-sentiment"):
     # model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
     # model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
 
@@ -670,3 +691,15 @@ def split_into_sentences(text):
     sentences = [s.strip() for s in sentences]
     return sentences
 
+
+NER_dict = {'NERs': [
+    "geo",  # for geographical entity
+    "org",  # for organization entity
+    "per",  # for person entity
+    "gpe",  # for geopolitical entity
+    "tim",  # for time indicator entity
+    "art",  # for artifact entity
+    "eve",  # for event entity
+    "nat",  # for natural phenomenon entity
+    "O",  # is assigned if a word doesn’t belong to any entity.
+]}

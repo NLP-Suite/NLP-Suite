@@ -89,7 +89,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     geocoder='Nominatim'
     encodingValue='utf-8'
 
-    reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
+    reminders_util.checkReminder(scriptName, reminders_util.title_options_geocoder,
                                  reminders_util.message_geocoder, True)
 
     country_bias = ''
@@ -127,7 +127,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # # always open the kml file
     # IO_files_util.open_kmlFile(kmloutputFilename)
     if openOutputFiles == 1:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
@@ -163,7 +163,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Geocoding, Preparing kml File, and Visualizing Maps in Google Earth Pro'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -693,7 +696,7 @@ def changed_GIS_filename(*args):
 
     inputIsCoNLL = CoNLL_util.check_CoNLL(inputFilename.get(), True)
     if inputIsCoNLL == True:
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_Google_Earth_CoNLL,
+        reminders_util.checkReminder(scriptName, reminders_util.title_options_Google_Earth_CoNLL,
                                          reminders_util.message_Google_Earth_CoNLL, True)
 
         # location_var.set('NER') #moved at the end or it gets reset below

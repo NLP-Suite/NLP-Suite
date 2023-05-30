@@ -88,7 +88,7 @@ GUI_size = str(GUI_width) + 'x' + str(GUI_height)
 
 GUI_label='Graphical User Interface (GUI) for File Merger'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

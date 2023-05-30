@@ -334,7 +334,8 @@ def run(config_filename,inputFilename, inputDir, outputDir, openOutputFiles, cre
         return
 
     if inputDir!='':
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
+        head, scriptName = os.path.split(os.path.basename(__file__))
+        reminders_util.checkReminder(scriptName, reminders_util.title_options_CoreNLP_coref,
                                      reminders_util.message_CoreNLP_coref, True)
 
     corefed_files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,

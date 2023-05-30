@@ -151,7 +151,7 @@ GUI_size = GUI_width + 'x550'
 
 GUI_label='Graphical User Interface (GUI) for Narrative Analysis'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+config_filename = scriptName.replace('_main.py', '_config.csv')
 increment = 0
 
 # The 4 values of config_option refer to:

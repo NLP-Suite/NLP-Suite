@@ -636,10 +636,7 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
     if openOutputFiles == True:  # now the approach is to open all files at the end, so this extra check is redundant "and runningAll==False:""
         # should display a reminder about csv files with weird characters most likely dues to non utf-8 apostrophes and quotes
         #   but... this reminder does not have a specific config, so... perhaps *?
-        reminders_util.checkReminder('*',
-                                     ['csv files'],
-                                     'If csv ouput files open displaying weird characters in a Windows OS (e.g., a€), most likely the cause is due to non utf-8 compliant input text. Apostrophes and quotes are the typical culprits, but also other punctuation characters.\n\nPlease, run the tool to check documents for utf-8 compliance and, if necessary, run the tool for automatic apostrophe and quote conversion from non utf-8 to utf-8.\n\nTo learm more on utf-8 compliance, read the TIPS on utf-8 compliance.',
-                                     True)
+        reminders_util.checkReminder('*', reminders_util.title_csv_files, reminders_util.message_weird_characters, True)
         routine_options = reminders_util.getReminders_list('*')
         IO_user_interface_util.timed_alert(window, 2000, 'Warning',
                     'Opening ' + str(len(filesToOpen)) + ' output ' + singularPlural + '... Please wait...', False,'',True,'',True)

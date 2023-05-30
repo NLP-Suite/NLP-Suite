@@ -44,11 +44,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     error_filenames = []
     error_flag = False
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
-
     # get the date options from filename
     filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
@@ -95,7 +90,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                str(date_position_var) + '.\n\nClick OK to open a csv file with a list of files with erroneous dates. Check carefully, both date format and date position. Any erroneous file will need to be fixed or removed from the input directory before processing. You may also simply need to select a different date format and/or date position.')
         filesToOpen.append(error_output)
         if openOutputFiles == True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
         return
 
 
@@ -163,7 +158,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                            message='No Date options selected. The N-Grams routine requires date metadata (i.e., date information embedded in the document filenames, e.g., The New York Times_12-18-1899).\n\nPlease, tick the Date options checkbox, enter the appropariate date options and try again.')
             return
 
-    reminders_util.checkReminder(config_filename,
+    reminders_util.checkReminder(scriptName,
                                  reminders_util.title_options_NGrams,
                                  reminders_util.message_NGrams,
                                  True)
@@ -188,7 +183,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             viewer_options_list)
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
@@ -219,7 +214,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label = 'Graphical User Interface (GUI) for N-Grams and Word Co-Occurrences Viewer'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -544,7 +542,7 @@ title = ["NLP setup options"]
 message = "Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " \
           + str(language) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " \
           + str(package_basics) + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
-reminders_util.checkReminder(config_filename, title, message)
+reminders_util.checkReminder(scriptName, title, message)
 
 state = str(GUI_util.run_button['state'])
 if state == 'disabled':

@@ -179,9 +179,9 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                      count_var=count_var,
                                      complete_sid=False)  # TODO to be changed
 
+        # run_all returns a string; must use append
         if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+            filesToOpen.append(chart_outputFilename)
 
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, noun_deprel_stats_file_name, outputDir,
 														 outputFileLabel='Nouns_DEPREL',
@@ -193,9 +193,9 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 														 count_var=count_var,
                                                          complete_sid=False)  # TODO to be changed
 
+        # run_all returns a string; must use append
         if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+            filesToOpen.append(chart_outputFilename)
 
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, noun_ner_stats_file_name, outputDir,
                                      outputFileLabel='Nouns_NER',
@@ -207,9 +207,9 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                      count_var=count_var,
                                      complete_sid=False)  # TODO to be changed
 
+        # run_all returns a string; must use append
         if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+            filesToOpen.append(chart_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running NOUN ANALYSES at', True, '', True, startTime, True)
 

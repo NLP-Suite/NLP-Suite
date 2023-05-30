@@ -680,7 +680,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_
 # change the value of the readMe_message
 readMe_message = "This Python 3 script provides a front-end GUI (Graphical User Interface) for setting up the Input/Output information necessary to run the NLP-Suite scripts, namely the INPUT files to be used - a single file or a set of files in a directory - and the OUTPUT directory where the files produced by the NLP Suite scripts will be saved - txt, csv, html, kml, jpg.\n\nThe selected I/O configuration will be saved in config files in the config subdirectory. The NLP_default_IO_config.csv file will be used for all NLP Suite scripts unless a different configuraton is selected for a specific script by selecting the 'Alternative I/O configuation'. When opening the GUI with the option 'Alternative I/O configuation' a configuration file will be saved under the config subdirectory with the specific name of the calling script (e.g., Stanford-CoreNLP_config.csv).\n\nIf the filenames in your corpus embed a date (e.g., The New York Times_12-19-1899), some NLP Suite algorithms (e.g., Gephi network models, GIS models, n-grams viewer) can use that metadata information to build dynamic models.\n\nWhen clicking the CLOSE button, the script will give the option to save the currently selected configuration IF different from the previously saved configuration."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, False, 'NLP_setup_IO_main')
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, False, scriptName)
 
 if err_msg!="":
     mb.showwarning(title='Warning', message=err_msg)
@@ -693,18 +693,16 @@ if missingIO or err_msg!='':
         GUI_util.videos_dropdown_field.set('Setup Input/Output (I/O) options')
         # GUI_util.watch_video(videos_lookup, scriptName)
 
-result = reminders_util.checkReminder(config_filename,
+# reminders are based on the script name
+reminders_util.checkReminder(scriptName,
                               reminders_util.title_options_IO_setup,
-                              reminders_util.message_IO_setup)
-if result!=None:
-    routine_options = reminders_util.getReminders_list(config_filename)
-
-result = reminders_util.checkReminder(config_filename,
+                              reminders_util.message_IO_setup, True)
+result = reminders_util.checkReminder(scriptName,
                               reminders_util.title_options_IO_setup_date_options,
-                              reminders_util.message_IO_setup_date_options)
+                              reminders_util.message_IO_setup_date_options, True)
+# routine_options = reminders_util.getReminders_list(scriptName)
 
 IO_configuration_upon_entry = get_IO_options_str()
-
 
 try:
     # print("config_input_output_alphabetic_options",config_input_output_alphabetic_options)
@@ -716,6 +714,7 @@ try:
 except:
     mb.showwarning(title='Warning', message='The config file is an old file without the new "Sort order" field.\n\nPlease, select the appropriate values for the "Filename embeds multiple items" and "Filename embeds date" and save any changes when clicking on CLOSE.')
     Error = True
+
 
 # to make sure the release version is updated even when users do not click on the CLOSE button
 #   but on the Mac top-left red button or Windows top-right X button

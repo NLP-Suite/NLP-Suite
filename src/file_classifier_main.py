@@ -59,7 +59,7 @@ def run(input_main_dir_path, input_secondary_dir_path, outputDir,
             filesToOpen.append(outputFiles)
 
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the File Classifier at', True, '', True, startTime)
 
@@ -94,7 +94,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for File Classifier'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

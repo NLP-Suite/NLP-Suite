@@ -23,7 +23,7 @@ import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPackage,
+def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPackage,
     ngrams_analysis_var,
     ngrams_menu_var,
     ngrams_options_menu_var,
@@ -42,11 +42,6 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
     language_var = language
     language_list = [language]
-
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
 
     # get the date options from filename
     filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
@@ -196,37 +191,55 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             outputDir_style=outputDir
 
         if '*' in vocabulary_analysis_menu_var or 'Vocabulary (via unigrams)' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
-                                                                   openOutputFiles, createCharts, chartPackage,'unigrams')
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+                                                                   openOutputFiles, createCharts, chartPackage,'unigrams',language)
             if output != None:
                 filesToOpen.append(output)
 
         if '*' in vocabulary_analysis_menu_var or 'Hapax legomena' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
-                                                                   openOutputFiles, createCharts, chartPackage,'Hapax legomena')
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+                                                                   openOutputFiles, createCharts, chartPackage,'Hapax legomena', language)
             if output != None:
                 filesToOpen.append(output)
 
         #Added this option to be able to test the subjectivity/objectivity output (Naman Sahni 10/01/2022)
         if '*' in vocabulary_analysis_menu_var or 'Objectivity/subjectivity (via spaCy)' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
-                                                        openOutputFiles, createCharts,
-                                                        chartPackage,'Objectivity/subjectivity (via spaCy)')
-            if output != None:
-                filesToOpen.append(output)
+            if '*' in vocabulary_analysis_menu_var:
+                silent=True
+            else:
+                silent=False
+            import spaCy_util
+            annotator_available = spaCy_util.check_spaCy_annotator_availability(['Objectivity/subjectivity'], language,
+                                                                                silent)
+            if annotator_available:
+                output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+                                                            openOutputFiles, createCharts,
+                                                            chartPackage,'Objectivity/subjectivity (via spaCy)', language)
+                if output != None:
+                    filesToOpen.append(output)
 
         if '*' in vocabulary_analysis_menu_var or 'Repetition: Words' in vocabulary_analysis_menu_var:
+            if '*' in vocabulary_analysis_menu_var:
+                # this will force a deafault setting of k_str = '4' to avoid stopping all algorithms
+                process='*Repetition: Words in first K and last K sentences'
+            else:
+                process = 'Repetition: Words in first K and last K sentences'
             # a reminder about CoNLL table analyzer option is posted in process_words
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                        openOutputFiles, createCharts,
-                                                       chartPackage,'Repetition: Words in first K and last K sentences')
+                                                       chartPackage,process,language)
             if output != None:
                 filesToOpen.append(output)
 
         if '*' in vocabulary_analysis_menu_var or 'Repetition: Last' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
+            if '*' in vocabulary_analysis_menu_var:
+                # this will force a deafault setting of k_str = '4' to avoid stopping all algorithms
+                process='*Repetition: Last K words of a sentence/First K words of next sentence'
+            else:
+                process = 'Repetition: Last K words of a sentence/First K words of next sentence'
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                        openOutputFiles, createCharts,
-                                                       chartPackage,'Repetition: Last K words of a sentence/First K words of next sentence')
+                                                       chartPackage, process, language)
             if output != None:
                 filesToOpen.append(output)
 
@@ -247,22 +260,22 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
                 filesToOpen.extend(output)
 
         if '*' in vocabulary_analysis_menu_var or 'capital' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'capital')
             if output != None:
                 filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Short' in vocabulary_analysis_menu_var:
-            output =statistics_txt_util.process_words(window, config_filename, inputFilename,inputDir, outputDir_style, config_filename,
+            output =statistics_txt_util.process_words(window, config_filename, inputFilename,inputDir, outputDir_style,
                                                       openOutputFiles, createCharts, chartPackage,'Short')
             if output != None:
                 filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Vowel' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
+            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                        openOutputFiles, createCharts, chartPackage,'Vowel')
             if output != None:
                 filesToOpen.extend(output)
         if '*' in vocabulary_analysis_menu_var or 'Punctuation' in vocabulary_analysis_menu_var:
-            output =statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style, config_filename,
+            output =statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                       openOutputFiles, createCharts, chartPackage,'Punctuation')
             if output != None:
                 filesToOpen.extend(output)
@@ -272,10 +285,15 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             if output != None:
                 filesToOpen.extend(output)
         if '*' == vocabulary_analysis_menu_var or 'Abstract' in vocabulary_analysis_menu_var:
-            mode = "both" # mean, median, both (calculates both mean and median)
-            output = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style,  config_filename, openOutputFiles, createCharts, chartPackage, processType='')
-            if output != None:
-                filesToOpen.extend(output)
+            if language == 'English':
+                mode = "both" # mean, median, both (calculates both mean and median)
+                output = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, config_filename, openOutputFiles, createCharts, chartPackage, processType='')
+                if output != None:
+                    filesToOpen.extend(output)
+            else:
+                if not '*' == vocabulary_analysis_menu_var:
+                    mb.showwarning(title='Warning', message='The Abstract/concrete vocabulary algorithm is only available for the English language.')
+
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
             output =statistics_txt_util.yule(window, inputFilename, inputDir, outputDir, config_filename)
             if output != None:
@@ -296,7 +314,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
 
     openOutputFiles=openOutputFilesSV
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir_style)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir_style, scriptName)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
@@ -334,7 +352,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for Style Analysis'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -694,7 +715,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                 '\n\nN-grams can be computed for character and word values. Use the dropdown menu to select the desired option.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word n-grams between 1 and 3.\n\nWhen n-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         'Please, tick the \'Complex\\readability analysis\' checkbox if you wish to analyze the complexity or readability of sentences and documents.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Sentence complexity to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure. The Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\n   2. Text readability to compute various measures of text readability.\n 12 readability score requires HIGHSCHOOL education;\n 16 readability score requires COLLEGE education;\n 18 readability score requires MASTER education;\n 24 readability score requires DOCTORAL education;\n >24 readability score requires POSTDOC education.')
+                                                         'Please, tick the \'Complexlexity\readability analysis\' checkbox if you wish to analyze the complexity or readability of sentences and documents.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Sentence complexity to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure. The Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\nTHE SENTENCE COMPLEXITY ALGORITHM IS BASED ON STANZA.\n\n   2. Text readability to compute various measures of text readability.\n 12 readability score requires HIGHSCHOOL education;\n 16 readability score requires COLLEGE education;\n 18 readability score requires MASTER education;\n 24 readability score requires DOCTORAL education;\n >24 readability score requires POSTDOC education.\n\nTHE TEXT READABILITY ALGORITHM IS BASED ON TEXSTAT.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, tick the \'Vocabulary analysis\' checkbox if you wish to analyze the vocabulary used in your corpus.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Abstract/concrete vocabulary, The script uses the concreteness ratings by Brysbaert, Warriner, Kuperman, Concreteness Ratings for 40 Thousand Generally Known English Word Lemmas, Behavioral Research (2014) 46:904–911.\nMean/median Concreteness values are calculated for each sentence on a 5-point scale going from abstract (0) to concrete (5).\n\n   2. Vocabulary richness (word type/token ratio or Yule’s K). C.U. Yule. 1944. The statistical study of literary vocabulary. Cambridge: Cambridge University Press.\n\n   3. Short words to compute the number of short words (<4 characters) and list them.\n\n   4. Vowel words to compute the number of words that start with a vowel (vowel words) and list them.\n\n   5. Unusual, or misspelled, words (via NLTK).\n\n   6. Language detection. Language detection is carried out via LANGDETECT, LANGID, SPACY. Languages are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages (check here for the list https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes).\nAll language detection algorithms, except for Stanza, export the probability of detection of a specific detected language.')
     # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the \'N-grams analysis\' checkbox if you wish to compute various types of n-grams.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Characters\n   2. Words\n   3. Hapax legomena (once-occurring words)\n   4. DEPREL\n   5. POSTAG\n   6. NER.')
@@ -728,7 +749,7 @@ title = ["NLP setup options"]
 message = "Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " \
           + str(language) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " \
           + str(package_basics) + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
-reminders_util.checkReminder(config_filename, title, message)
+reminders_util.checkReminder(scriptName, title, message)
 
 GUI_util.window.mainloop()
 

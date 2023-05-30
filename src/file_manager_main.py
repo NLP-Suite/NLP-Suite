@@ -366,7 +366,7 @@ def run(inputDir, outputDir,
             mb.showwarning(title='File manager', message=str(i) + ' files ' + msg + operation + '.')
             filesToOpen=[]
             filesToOpen.append(os.path.join(outputDir,outputFilename))
-            IO_files_util.OpenOutputFiles(GUI_util.window, True, filesToOpen, outputDir)
+            IO_files_util.OpenOutputFiles(GUI_util.window, True, filesToOpen, outputDir, scriptName)
     else:
         mb.showwarning(title='File manager', message='No files ' + msg + operation + '.\n\nPlease, check the following information:\n  1. INPUT files directory;\n  2. selected file type (if you ticked the By file type option);\n  3. Include subdirectory option.')
 
@@ -429,7 +429,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for File Manager (by Filename)'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

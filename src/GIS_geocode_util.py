@@ -264,18 +264,26 @@ def geocode(window,locations, inputFilename, outputDir,
 												 True, '', True,'',True)
 	# if geocoder=='Nominatim':
 	# 	config_filename='GIS-geocode_config.csv'
-	# 	reminders_util.checkReminder(config_filename,["GIS Nominatim geocoder"],'',True)
+	# 	reminders_util.checkReminder(scriptName,["GIS Nominatim geocoder"],'',True)
 
 	geoName = 'geo-' + str(geocoder[:3])
 	geocodedLocationsOutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
 																			  geoName, locationColumnName, '', '', False,
 																			  True)
+	# locationsNotFoundoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
+	# 																		  geoName, 'Not-Found', locationColumnName, '',
+	# 																		  False, True)
 	locationsNotFoundoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
-																			  geoName, 'Not-Found', locationColumnName, '',
+																			  geoName, '', locationColumnName, '',
 																			  False, True)
+	locationsNotFoundoutputFilename = locationsNotFoundoutputFilename.replace('LOCATIONS', 'LOCATIONS_not-found')
+	# locationsNotFoundNonDistinctoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
+	# 																		geoName, 'Not-Found-Non-Distinct', locationColumnName, '',
+	# 																		False, True)
 	locationsNotFoundNonDistinctoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
-																			geoName, 'Not-Found-Non-Distinct', locationColumnName, '',
+																			geoName, '', locationColumnName, '',
 																			False, True)
+	locationsNotFoundNonDistinctoutputFilename = locationsNotFoundNonDistinctoutputFilename.replace('LOCATIONS', 'LOCATIONS_Not-Found-Non-Distinct')
 	# TODO MINO GIS create kml record
 	kmloutputFilename = geocodedLocationsOutputFilename.replace('.csv', '.kml')
 

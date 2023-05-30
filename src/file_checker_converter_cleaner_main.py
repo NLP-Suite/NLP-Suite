@@ -41,7 +41,7 @@ def run(inputFilename,inputDir, outputDir,
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
     else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
+        config_filename = scriptName.replace('_main.py', '_config.csv')
 
     if (check_tools=='') and (convert_tools=='') and (clean_tools==""):
         mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select one of the available options and try again.')
@@ -92,7 +92,7 @@ def run(inputFilename,inputDir, outputDir,
             filesToOpen.append(outputFile)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
     # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
     #                                        'Started running ' + menu_option + ' at', True,
@@ -134,7 +134,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for File Content Checker & File Type Converter & File Content Cleaner'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -351,7 +351,7 @@ title = ["NLP setup options"]
 message = "Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.\n\nYour selected corpus language is " \
           + str(language) + ".\nYour selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is " \
           + str(package_basics) + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
-reminders_util.checkReminder(config_filename, title, message)
+reminders_util.checkReminder(scriptName, title, message)
 
 GUI_util.window.mainloop()
 

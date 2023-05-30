@@ -576,7 +576,7 @@ def openConfigFile(setup_IO_menu_var, scriptName, config_filename):
     if 'Default' in setup_IO_menu_var:  # GUI_util.GUI_util.setup_IO_menu_var.get()
         temp_config_filename = 'NLP_default_IO_config.csv'
     else:
-        temp_config_filename = scriptName.replace('main.py', 'config.csv')
+        temp_config_filename = scriptName.replace('_main.py', '_config.csv')
     IO_files_util.openFile(window, GUI_IO_util.configPath + os.sep + temp_config_filename)
     # IO_files_util.openFile(window, GUI_IO_util.configPath + os.sep + config_filename)
     time.sleep(10) # wait 10 seconds to give enough time to save any changes to the csv config file
@@ -1175,16 +1175,14 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     reminders_util.checkReminder('*',
                                  reminders_util.title_options_NLP_Suite_reminders,
-                                 reminders_util.message_NLP_Suite_reminders,
-                                 True)
+                                 reminders_util.message_NLP_Suite_reminders)
 
-    routine = config_filename[:-len('_config.csv')]
     ### TODO Roby edited
     # get the list of titles available for a given GUI
     # if 'NLP_menu_main' in scriptName or 'Default' in setup_IO_menu_var.get():
     if 'NLP_menu_main' in scriptName:
         config_filename = 'NLP_default_IO_config.csv'
-    reminder_options = reminders_util.getReminders_list(config_filename, True)
+    reminder_options = reminders_util.getReminders_list(scriptName, True)
     # None returned for a faulty reminders.csv
     reminders_error = False
     if reminder_options==None:
@@ -1216,7 +1214,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     def trace_reminders_dropdown(*args):
         if len(reminder_options)>0:
-            reminders_util.resetReminder(config_filename,reminders_dropdown_field.get())
+            reminders_util.resetReminder(scriptName,reminders_dropdown_field.get())
     reminders_dropdown_field.trace('w', trace_reminders_dropdown)
 
     # do not lay Setup widget in NLP_menu_main and in NLP_setup_package_language_main
@@ -1297,8 +1295,6 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                              config_input_output_numeric_options, scriptName, silent)
             if err_msg != '':
                 mb.showwarning(title='Warning', message=err_msg)
-        #
-        # return err_msg
 
     # avoid tracing again since tracing is already done at the bottom of those scripts
     if scriptName!='SVO_main.py' and scriptName!='parsers_annotators_main.py':
@@ -1315,16 +1311,16 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
     # this will now display the error message
     if reminders_error==True:
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.reminder_options_GUIfrontend,
                                      message)
 
-    # routine_options = reminders_util.getReminders_list(config_filename)
+    title_options = reminders_util.getReminders_list(scriptName)
     result = reminders_util.checkReminder('*',
                                           reminders_util.title_options_IO_configuration,
                                           reminders_util.message_IO_configuration)
     if result != None:
-        routine_options = reminders_util.getReminders_list(temp_config_filename)
+        title_options = reminders_util.getReminders_list(scriptName)
 
     setup_IO_menu_var.trace("w", changed_setup_IO_config)
     err_msg=changed_setup_IO_config()

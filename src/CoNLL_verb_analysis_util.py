@@ -183,9 +183,10 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 												   column_xAxis_label_var='Verb voice',
 												   hover_info_column_list=[],
 												   count_var=count_var)
+		# run_all returns a string; must use append
 		if chart_outputFilename != None:
 			if len(chart_outputFilename) > 0:
-				filesToOpen.extend(chart_outputFilename)
+				filesToOpen.append(chart_outputFilename)
 
 	return filesToOpen
 
@@ -252,7 +253,9 @@ def verb_modality_data_preparation(data):
 
 def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles,
 						createCharts, chartPackage):
-	reminders_util.checkReminder(config_filename,
+	import os
+	head, scriptName = os.path.split(os.path.basename(__file__))
+	reminders_util.checkReminder(scriptName,
 								 reminders_util.title_options_CoNLL_table_verb_modality,
 								 reminders_util.message_CoNLL_table_verb_modality,
 								 True)
@@ -282,9 +285,10 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 												   hover_info_column_list=[],
 												   count_var=count_var,
 												   complete_sid=False)  # TODO to be changed
+		# run_all returns a string; must use append
 		if chart_outputFilename != None:
 			if len(chart_outputFilename) > 0:
-				filesToOpen.extend(chart_outputFilename)
+				filesToOpen.append(chart_outputFilename)
 
 	return filesToOpen
 
@@ -391,9 +395,11 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 														 hover_info_column_list=[],
 														 count_var=count_var,
 												   		 complete_sid=False)  # TODO to be changed
+
+		# run_all returns a string; must use append
 		if chart_outputFilename != None:
 			if len(chart_outputFilename) > 0:
-				filesToOpen.extend(chart_outputFilename)
+				filesToOpen.append(chart_outputFilename)
 
 		# # temporary headers added, not sure why the verb_voice_list doesn't have headers
 		# df = pd.read_csv(verb_file_name, header=None, encoding='utf-8', on_bad_lines='skip')

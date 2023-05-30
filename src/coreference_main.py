@@ -57,7 +57,7 @@ def run(inputFilename, inputDir, outputDir,
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         temp_config_filename = 'NLP_default_IO_config.csv'
     else:
-        temp_config_filename = scriptName.replace('main.py', 'config.csv')
+        temp_config_filename = scriptName.replace('_main.py', '_config.csv')
 
     filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = \
         config_util.get_date_options(temp_config_filename, config_input_output_numeric_options)
@@ -141,7 +141,7 @@ def run(inputFilename, inputDir, outputDir,
             error = Stanford_CoreNLP_coreference_util.manualCoref(inputFilename, corefed_txt_file, corefed_txt_file)
 
     if openOutputFiles == True and len(filesToOpen) > 0:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputCorefedDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputCorefedDir, scriptName)
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),
@@ -172,8 +172,12 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              increment=2)  # to be added for full display
 
 GUI_label = 'Graphical User Interface (GUI) for Coreference PRONOMINAL Resolution (via CoreNLP) and Manual Editing'
-config_filename = 'coref_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('_main.py', '_config.csv')
+
 # The 4 values of config_option refer to:
 #   input file
         # 1 for CoNLL file
@@ -319,7 +323,7 @@ continue_manual_Coref_var_checkbox.configure(state='disabled')
 
 def activateCoRefOptions():
     if GUI_util.input_main_dir_path.get()!='':
-        reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
+        reminders_util.checkReminder(scriptName, reminders_util.title_options_CoreNLP_coref,
                                      reminders_util.message_CoreNLP_coref, True)
         manual_Coref_checkbox.configure(state='disabled')
         manual_Coref_var.set(0)
@@ -392,12 +396,12 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate
 # change the value of the readMe_message
 readMe_message = "This set of Python 3 scripts implement different options to carry out coreference resolution.\n\nStanford CoreNLP uses a neural network approach to coreference resolution for four different types of PRONOUNS:\n   nominative: I, you, he/she, it, we, they;\n   possessive: my, mine, our(s), his/her(s), their, its, yours;\n   objective: me, you, him, her, it, them;\n   reflexive: myself, yourself, himself, herself, oneself, itself, ourselves, yourselves, themselves.\n\nFor Stanford CoreNLP the NLP Suite implements only PRONOMINAL coreference but NOT NOMINAL.\n\nIn INPUT the scripts expect either a single txt file or a set of txt files in a directory.\n\nIn OUTPUT, the scripts will produce a coreferenced txt file. If manual edit is selected, the script will also display a split-screen file for manual editing. On the left-hand side, pronouns cross-referenced by CoreNLP are tagged in YELLOW; pronouns NOT cross-referenced by CoreNLP are tagged in BLUE. On the right-hand side, pronouns cross-referenced by CoreNLP are tagged in RED, with the pronouns replaced by the referenced nouns.\n\nThe user can edit any unresolved or wrongly resolved pronominal cases directly on the right panel, as if it were any text editor and then save the changes."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
-GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,'coreference_main')
+GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName)
 
 if input_main_dir_path.get()!='':
-    reminders_util.checkReminder(config_filename, reminders_util.title_options_CoreNLP_coref,
+    reminders_util.checkReminder(scriptName, reminders_util.title_options_CoreNLP_coref,
                                  reminders_util.message_CoreNLP_coref, True)
-reminders_util.checkReminder(config_filename, reminders_util.title_options_only_CoreNLP_coref,
+reminders_util.checkReminder(scriptName, reminders_util.title_options_only_CoreNLP_coref,
                              reminders_util.message_only_CoreNLP_coref, True)
 
 activateCoRefOptions()

@@ -90,11 +90,6 @@ def run(inputFilename,inputDir, outputDir,
     language_var = language
     language_list = [language]
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('main.py', 'config.csv')
-
     # get the date options from filename
     filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
@@ -118,7 +113,7 @@ def run(inputFilename,inputDir, outputDir,
             return
 
     if (what_else_var and ('*' in what_else_menu_var or 'locations' in what_else_menu_var)) and (GIS_var and open_GIS_GUI_var == False):
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
             reminders_util.title_options_GIS_redundancy,
             reminders_util.message_GIS_redundancy,
             True)
@@ -303,19 +298,19 @@ def run(inputFilename,inputDir, outputDir,
         if topics_Gensim_var==True:
             if IO_libraries_util.check_inputPythonJavaProgramFile('topic_modeling_gensim_util.py')==False:
                 return
-            routine_options = reminders_util.getReminders_list(config_filename)
-            reminders_util.checkReminder(config_filename,
+            routine_options = reminders_util.getReminders_list(scriptName)
+            reminders_util.checkReminder(scriptName,
                                          reminders_util.title_options_topic_modeling_gensim,
                                          reminders_util.message_topic_modeling_gensim,
                                          True)
-            routine_options = reminders_util.getReminders_list(config_filename)
+            routine_options = reminders_util.getReminders_list(scriptName)
 
             if open_tm_GUI_var == True:
                 call("python topic_modeling_main.py", shell=True)
             else:
                 if language_var != 'English':
                     reminders_util.checkReminder(
-                        config_filename,
+                        scriptName,
                         reminders_util.title_options_English_language_Gensim,
                         reminders_util.message_English_language_Gensim,
                         True)
@@ -332,7 +327,7 @@ def run(inputFilename,inputDir, outputDir,
             else:
                 if language_var != 'English':
                     reminders_util.checkReminder(
-                        config_filename,
+                        scriptName,
                         reminders_util.title_options_English_language_MALLET,
                         reminders_util.message_English_language_MALLET,
                         True)
@@ -397,7 +392,7 @@ def run(inputFilename,inputDir, outputDir,
             if nouns_var or verbs_var or what_else_menu_var == '*':
                 if language_var != 'English':
                     reminders_util.checkReminder(
-                        config_filename,
+                        scriptName,
                         reminders_util.title_options_English_language_WordNet,
                         reminders_util.message_English_language_WordNet,
                         True)
@@ -630,7 +625,7 @@ def run(inputFilename,inputDir, outputDir,
 
     openOutputFiles=openOutputFilesSV
     if openOutputFiles == True:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -649,7 +644,10 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for a Sweeping View of Your Corpus (Single/Multiple Document(s)) - A Pipeline'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -789,7 +787,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 def changed_filename(*args):
     if inputFilename.get()!='':
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_topic_modeling,
                                      reminders_util.message_topic_modeling,
                                      True)

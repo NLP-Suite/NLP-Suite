@@ -62,10 +62,10 @@ def create_js(window, outputFilename, locations, geocoder, latLongList):
     for item in latLongList:
         gmaps_str = ''.join(["new google.maps.LatLng(",str(item[0]),", ",str(item[1]),"),"])
         gmaps_list.append(gmaps_str)
-        # gmaps_list geocoded values
+        # gmaps_list geocoded values`
     create_google_heatmap(window, outputFilename, gmaps_list)
-    config_filename = 'GIS_config.csv'
-    reminders_util.checkReminder(config_filename,
+    head, scriptName = os.path.split(os.path.basename(__file__))
+    reminders_util.checkReminder(scriptName,
                             reminders_util.title_options_Google_API,
                             reminders_util.message_Google_API,
                             True)

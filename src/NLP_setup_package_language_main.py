@@ -27,8 +27,11 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                                                  increment=1)  # to be added for full display
 
 GUI_label = 'Graphical User Interface (GUI) for setting up the default NLP packages and the language of your corpus'
-config_filename = 'NLP_default_package_language_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('main.py', 'config.csv')
 
 config_input_output_numeric_options=[0,0,0,0]
 
@@ -129,7 +132,7 @@ def changed_NLP_package_set_parsers(*args):
     if package_var.get()=='Stanford CoreNLP':
         available_parsers = ['Neural Network', 'Probabilistic Context Free Grammar (PCFG)']
     if package_var.get() == 'Stanza':
-        available_parsers = ['Constituency parser', 'Dependency parser']
+        available_parsers = ['Dependency parser','Constituency parser']
 
     parsers_lb = tk.Label(window, text='Available parsers for ' + package_var.get()+'                      ')
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
@@ -299,7 +302,7 @@ def save_NLP_config(parsers):
 def activate_language_var():
     # Disable the + after clicking on it and enable the class menu
     if language_menu.get()=='English' and package_var.get()=='Stanza':
-        reminders_util.checkReminder(config_filename,
+        reminders_util.checkReminder(scriptName,
                                      reminders_util.title_options_Stanza_languages,
                                      reminders_util.message_Stanza_languages,
                                      True)

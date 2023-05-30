@@ -605,21 +605,21 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 if platform == 'darwin':
     window.update()
 
-temp_config_filename = config_filename # 'NLP_menu_config.csv'
-routine_options = reminders_util.getReminders_list(temp_config_filename)
+# temp_config_filename = config_filename # 'NLP_menu_config.csv'
+routine_options = reminders_util.getReminders_list(scriptName)
 
-reminders_util.checkReminder(temp_config_filename,
+reminders_util.checkReminder(scriptName,
                              reminders_util.title_options_NLP_Suite_architecture,
                              reminders_util.message_NLP_Suite_architecture,
                              True)
-routine_options = reminders_util.getReminders_list(temp_config_filename)
+routine_options = reminders_util.getReminders_list(scriptName)
 
 if sys.platform == 'darwin':
-    reminders_util.checkReminder(temp_config_filename,
+    reminders_util.checkReminder(scriptName,
                                  reminders_util.title_options_TensorFlow,
                                  reminders_util.message_TensorFlow,
                                  True)
-    routine_options = reminders_util.getReminders_list(temp_config_filename)
+    routine_options = reminders_util.getReminders_list(scriptName)
 
 # check for missing I/O configuration options
 setup_IO_checkbox()
@@ -628,11 +628,11 @@ setup_IO_checkbox()
 missing_external_software = setup_external_programs_checkbox()
 
 if missing_external_software!='':
-    reminders_util.checkReminder(temp_config_filename,
+    reminders_util.checkReminder(scriptName,
                                  reminders_util.title_options_missing_external_software_NLP_main_GUI,
                                  reminders_util.message_missing_external_software_NLP_main_GUI,
                                  True)
-    routine_options = reminders_util.getReminders_list(temp_config_filename)
+    routine_options = reminders_util.getReminders_list(scriptName)
 
 if not setup_IO_OK_checkbox_var.get() or not setup_parsers_annotators_OK_checkbox_var.get() or not setup_external_software_OK_checkbox_var.get():
     answer = tk.messagebox.askyesno("Warning", 'Some (or all) of the required three setup options:\n'

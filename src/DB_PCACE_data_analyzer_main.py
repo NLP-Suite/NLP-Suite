@@ -133,7 +133,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
         if google_earth_var and (setup_simplex=='City name' or setup_simplex=='County') and SELECTED_simplex_objects_frequencies_var:
             extract_date_from_text_var = 0
             filename_embeds_date_var = 0
-            reminders_util.checkReminder(config_filename, reminders_util.title_options_geocoder,
+            reminders_util.checkReminder(scriptName, reminders_util.title_options_geocoder,
                                          reminders_util.message_geocoder, True)
             # locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
             date_present = (extract_date_from_text_var == True) or (filename_embeds_date_var == True)
@@ -189,7 +189,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
                 filesToOpen.append(outputFile)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(
@@ -237,7 +237,7 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 GUI_label='Graphical User Interface (GUI) for PC-ACE Tables Analyzer (via Pandas)'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main.py', 'config.csv')
+config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

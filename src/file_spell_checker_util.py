@@ -803,8 +803,8 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
                   'Document ID',
                   'Document']
 
-    config_filename = 'file-spell-checker_config.csv'
-    reminders_util.checkReminder(config_filename,
+    head, scriptName = os.path.split(os.path.basename(__file__))
+    reminders_util.checkReminder(scriptName,
                                  reminders_util.title_options_language_detection,
                                  reminders_util.message_language_detection,
                                  True)
