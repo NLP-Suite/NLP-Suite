@@ -13,7 +13,7 @@ Useful conda & pip commands (prompt)
 	pip commands
 	prompt commands
 	
-You can find detailed installation instructions at the NLP Suitte GitHub pages https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite.
+You can find detailed installation instructions at the NLP Suite GitHub pages https://github.com/NLP-Suite/NLP-Suite/wiki/Install-the-NLP-Suite.
 
 Getting started
 
@@ -55,7 +55,7 @@ Installing the NLP Suite in three easy steps
 
 			The Git website will automatically detect whether your machine is 32-bit or 64-bit on the top line Click here to download the latest...
 
-			STEP2 relies on Git. Please download Git at this link https://git-scm.com/downloads/win (the Git website will automatically detect whether your machine is 32-bit or 64-bit; on the top line Click here to download the latest...). Run the downloaded exe file.
+			STEP2 relies on Git. Please download Git at this link https://git-scm.com/downloads (the Git website will automatically detect whether your machine is 32-bit or 64-bit; on the top line Click here to download the latest...). Run the downloaded exe file.
 
 	3. STEP3
 	
