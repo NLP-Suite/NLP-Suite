@@ -1,0 +1,5 @@
+I/O configuration label,Path,Sort order,Item separator character(s),Date format,Date position
+Input csv filename with path,C:/Program Files (x86)/NLP_backup/Output/CoNLL/NLP_CoreNLP_The Three Little Pigs_nn_CoNLL.csv,,,,
+Input files directory,,,,,
+Input files secondary directory,,,,,
+Output files directory,C:/Program Files (x86)/NLP_backup/Output,,,,

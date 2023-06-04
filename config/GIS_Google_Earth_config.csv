@@ -1,0 +1,5 @@
+I/O configuration label,Path,Date format,Date separator character(s),Date position
+Input csv filename with path,C:/Users/rfranzo/Desktop/NLP_SVO_CoreNLP_LOCATIONS_Dir_Grimm_Edwardes_stories_sections.csv,,,0
+Input files directory,,,,0
+Input files secondary directory,,,,0
+Output files directory,C:/Program Files (x86)/NLP_backup/Output,,,0
