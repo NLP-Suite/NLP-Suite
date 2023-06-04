@@ -538,7 +538,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                 try:
                     # this assumes that the input csv file is a CoNLL table
                     df = pd.read_csv(doc, encoding='utf-8',on_bad_lines='skip')
-                    postags_ = df['POStag']
+                    postags_ = df['POS']
                     forms_ = df['Form']
                     lemmas_ = df['Lemma']
 
@@ -571,7 +571,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                             textToProcess = textToProcess + ' ' + words_[j]
                 except:
                     mb.showwarning(title='Not a CoNLL table',
-                                   message=doc + " is not a CoNLL table.\n\nPlease, select in input a proper csv CoNLL file with Form, Lemma, and POStag columns and try again.")
+                                   message=doc + " is not a CoNLL table.\n\nPlease, select in input a proper csv CoNLL file with Form, Lemma, and POS columns and try again.")
                     return
         elif doc[-4:]=='.txt':
             with open(doc, 'r', encoding='utf-8', errors='ignore') as myfile:

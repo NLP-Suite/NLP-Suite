@@ -18,7 +18,7 @@ import statistics_csv_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPackage,
-        all_csv_stats,csv_field_stats,
+        all_csv_stats,csv_field_freq,
         csv_list,hover_over_list, groupBy_list, script_to_run):
 
     filesToOpen=[]
@@ -29,34 +29,41 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
     #     mb.showwarning(title='Input error', message='The selected option - ' + script_to_run + ' - requires a directory in input.\n\nPlease, select a directory and try again.')
     #     return
 
-    if inputFilename!='' and (all_csv_stats or csv_field_stats):
+    if inputFilename!='' and (all_csv_stats or csv_field_freq):
         if inputFilename[-4:]!='.csv':
             mb.showwarning(title='Input error', message='The selected option - ' + script_to_run + ' - requires an input file of type csv.\n\nPlease, select a csv input file and try again.')
             return
 
-    if all_csv_stats or csv_field_stats:
+    if all_csv_stats or csv_field_freq:
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_csv_util.py')==False:
             return
-        if csv_field_stats and len(csv_list) == 0:
+        if csv_field_freq and len(csv_list) == 0:
             mb.showwarning(title='Warning', message='You have selected to compute the frequency of a csv file field but no field has been selected.\n\nPlease, select a csv file field and try again.')
             return
-    elif all_csv_stats:
+
+    if all_csv_stats:
+        # tempOutputFiles=statistics_csv_util.compute_csv_column_statistics(window,inputFilename,outputDir,
+        #                         groupBy_list, [], '', createCharts, chartPackage)
+
         tempOutputFiles=statistics_csv_util.compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,openOutputFiles,createCharts, chartPackage)
         if tempOutputFiles != None:
             filesToOpen.append(tempOutputFiles)
-    elif csv_field_stats:
+
+    if csv_field_freq:
         if len(csv_list) == 0:
             mb.showwarning(title='Warning', message='You have selected to compute the frequency of a csv file field but no field has been selected.\n\nPlease, select a csv file field and try again.')
             return
-        tempOutputFiles=statistics_csv_util.compute_csv_column_frequencies_with_aggregation(window,
+        chart_outputFilename=statistics_csv_util.compute_csv_column_frequencies(window,
                                                            inputFilename,
                                                            None,
                                                            outputDir,
                                                            openOutputFiles, createCharts, chartPackage,
                                                            csv_list,hover_over_list,groupBy_list,
-                                                           'CSV')
-        if tempOutputFiles != None:
-            filesToOpen.append(tempOutputFiles)
+                                                           False,
+                                                           'CSV','line',False)
+        if chart_outputFilename != None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.extend(chart_outputFilename)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -71,7 +78,7 @@ run_script_command=lambda: run(
                 GUI_util.create_chart_output_checkbox.get(),
                 GUI_util.charts_package_options_widget.get(),
                 all_csv_stats_var.get(),
-                csv_field_stats_var.get(),
+                csv_field_freq_var.get(),
                 csv_list,
                 hover_over_list,
                 groupBy_list,
@@ -110,7 +117,7 @@ else:
 #   input dir
 #   input secondary dir
 #   output dir
-config_input_output_numeric_options=[6,1,0,1]
+config_input_output_numeric_options=[3,0,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -128,7 +135,7 @@ hover_over_list = []
 groupBy_list = []
 
 all_csv_stats_var = tk.IntVar()
-csv_field_stats_var = tk.IntVar()
+csv_field_freq_var = tk.IntVar()
 csv_field_var = tk.StringVar()
 csv_hover_over_field_var = tk.StringVar()
 csv_groupBy_field_var = tk.StringVar()
@@ -155,7 +162,7 @@ def clear(e):
     # corpus_statistics_options_menu_var.set('*')
     # corpus_text_options_menu_var.set('')
     all_csv_stats_var.set(0)
-    csv_field_stats_var.set(0)
+    csv_field_freq_var.set(0)
     # n_grams_menu_var.set('Word')
     # reset_n_grams_list()
     reset_csv_list()
@@ -253,31 +260,51 @@ all_csv_field_checkbox = tk.Checkbutton(window, text='Compute statistics on all 
                                         variable=all_csv_stats_var, onvalue=1, offvalue=0,
                                         command=lambda: get_script_to_run(
                                             'Compute statistics on all csv-file fields (numeric fields only)'))
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               all_csv_field_checkbox)
+                                   all_csv_field_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Tick the checkbox then the RUN button to compute basic statistics for all the NUMERIC fields in the input csv file"
+                                   "\nCount, Mean, Mode, Median, Standard deviation, Minimum, Maximum, Skewness, Kurtosis, 25% quantile, 50% quantile; 75% quantile")
 
-csv_field_stats_var.set(0)
-csv_field_checkbox = tk.Checkbutton(window, text='Compute frequencies of specific csv-file field',
-                                    variable=csv_field_stats_var, onvalue=1, offvalue=0,
-                                    command=lambda: get_script_to_run('Compute frequencies of specific csv-file field'))
+csv_field_freq_var.set(0)
+csv_field_checkbox = tk.Checkbutton(window, text='Compute frequencies of selected csv-file field',
+                                    variable=csv_field_freq_var, onvalue=1, offvalue=0,
+                                    command=lambda: get_script_to_run('Compute frequencies of selected csv-file field'))
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               csv_field_checkbox, True)
+                                   csv_field_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Tick the checkbox to compute the frequency of a selected csv field"
+                                   "\nONLY ONE FIELD CAN BE SELECTED (although multiple group-by and hover-over fields can be selected)")
 
 menu_values = ['']
 
 reset_csv_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_csv_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_reset_csv_button_pos,y_multiplier_integer,reset_csv_button,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_reset_csv_button_pos, y_multiplier_integer,
+                                   reset_csv_button,
+                                   True, False, True, False, 90, GUI_IO_util.statistics_csv_reset_csv_button_pos,
+                                   "Click the 'Reset' button to clear all selected csv field, group-by field and hover-over field, and start fresh")
 
 show_csv_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_csv_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_show_csv_button_pos,y_multiplier_integer,show_csv_button,True)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_show_csv_button_pos, y_multiplier_integer,
+                                   show_csv_button,
+                                   True, False, True, False, 90, GUI_IO_util.statistics_csv_show_csv_button_pos,
+                                   "Click the 'Show' button to display the currrently selected csv field, group-by field and hover-over field")
 
 csv_field_lb = tk.Label(window, text='csv field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_field_lb_pos, y_multiplier_integer,
                                                csv_field_lb, True)
 
 csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_field_menu_pos, y_multiplier_integer,
-                                               csv_field_menu)
+                                   csv_field_menu,
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Use the dropdown menu to select the csv file field to be used to compute frequencies"
+                                   "\nONLY ONE FIELD CAN BE SELECTED (although multiple group-by and hover-over fields can be selected)")
 
 def reset_csv_list():
     csv_list.clear()
@@ -322,31 +349,45 @@ def activate_hover_over_field_menu():
 # add extra group_by field
 add_field3_button = tk.Button(window, text='+', width=2, height=1, state='disabled',
                               command=lambda: activate_groupBy_field_menu())
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               add_field3_button, True)
+                                   add_field3_button,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "Click the + button, when available, to add another group-by field to aggregate the data")
 
 csv_groupBy_field_lb = tk.Label(window, text='Group-by field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_groupBy_field_lb_pos, y_multiplier_integer,
                                                csv_groupBy_field_lb, True)
 
 csv_groupBy_field_menu = tk.OptionMenu(window, csv_groupBy_field_var, *menu_values)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_groupBy_field_menu_pos, y_multiplier_integer,
-                                               csv_groupBy_field_menu, True)
+                                   csv_groupBy_field_menu,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Use the dropdown menu to select the csv file field to be used to group the selected csv file field"
+                                   "\nMULTIPLE GROUP-BY FIELDS CAN BE SELECTED")
 
 # add extra hover_over field
 add_field2_button = tk.Button(window, text='+', width=2, height=1, state='disabled',
                               command=lambda: activate_hover_over_field_menu())
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_add_field2_button_pos, y_multiplier_integer,
-                                               add_field2_button, True)
+                                   add_field2_button,
+                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   "Click the + button, when available, to add another hover-over field")
 
 csv_hover_over_field_lb = tk.Label(window, text='Hover-over field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_hover_over_field_lb_pos, y_multiplier_integer,
                                                csv_hover_over_field_lb, True)
 
 csv_hover_over_field_menu = tk.OptionMenu(window, csv_hover_over_field_var, *menu_values)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_csv_hover_over_field_menu_pos, y_multiplier_integer,
-                                               csv_hover_over_field_menu)
-
+                                   csv_hover_over_field_menu,
+                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   "Use the dropdown menu to select the csv file field to be used to display hover-over information"
+                                   "\nMULTIPLE HOVER-OVER FIELDS CAN BE SELECTED"
+                                   "\nTHE OPTION IS AVAILABLE FOR EXCEL CHARTS ONLY" )
 
 # groupBy_list=[]
 def activate_plus2(*args):
@@ -385,7 +426,7 @@ def activate_plus3(*args):
 csv_groupBy_field_var.trace('w', activate_plus3)
 
 
-def activate_allOptions(menu_values, from_csv_field_stats_var=False):
+def activate_allOptions(menu_values, from_csv_field_freq_var=False):
     if inputFilename.get()[-4:] == '.txt':
         # corpus_statistics_checkbox.configure(state='normal')
         all_csv_field_checkbox.configure(state='disabled')
@@ -422,8 +463,8 @@ def activate_allOptions(menu_values, from_csv_field_stats_var=False):
         # n_grams_menu.configure(state='disabled')
         # n_grams_options_menu.configure(state='disabled')
 
-    if csv_field_stats_var.get() == 1:
-        if from_csv_field_stats_var == True:
+    if csv_field_freq_var.get() == 1:
+        if from_csv_field_freq_var == True:
             if menu_values == ['']:  # first time through
                 changed_filename()
         # corpus_statistics_checkbox.configure(state='disabled')
@@ -457,7 +498,7 @@ def activate_allOptions(menu_values, from_csv_field_stats_var=False):
 
 # corpus_statistics_var.trace('w', lambda x, y, z: activate_allOptions(menu_values))
 all_csv_stats_var.trace('w', lambda x, y, z: activate_allOptions(menu_values))
-csv_field_stats_var.trace('w', lambda x, y, z: activate_allOptions(menu_values, True))
+csv_field_freq_var.trace('w', lambda x, y, z: activate_allOptions(menu_values, True))
 # n_grams_var.trace('w', lambda x, y, z: activate_allOptions(menu_values))
 
 activate_allOptions(menu_values)
@@ -469,7 +510,7 @@ def changed_filename(*args):
     global menu_values
     if inputFilename.get()[-4:] == '.csv':
         # continue only if the input file is csv
-        menu_values = IO_csv_util.get_csvfile_headers(inputFilename.get(), True)
+        menu_values = IO_csv_util.get_csvfile_headers(inputFilename.get())
         m = csv_field_menu["menu"]
         m1 = csv_hover_over_field_menu["menu"]
         m2 = csv_groupBy_field_menu["menu"]
@@ -533,6 +574,16 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 changed_filename()
 inputFilename.trace('w', changed_filename)
+
+state = str(GUI_util.run_button['state'])
+if state == 'disabled':
+    error = True
+    # check to see if there is a GUI-specific config file, i.e., a CoNLL table file, and set it to the setup_IO_menu_var
+    if os.path.isfile(os.path.join(GUI_IO_util.configPath, config_filename)):
+        GUI_util.setup_IO_menu_var.set('GUI-specific I/O configuration')
+        mb.showwarning(title='Warning',
+               message="Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
+        error = False
 
 GUI_util.window.mainloop()
 

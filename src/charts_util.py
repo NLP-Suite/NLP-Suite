@@ -85,6 +85,260 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
     return data_to_be_plotted
 
 
+# bar chart aggregated by group  -----------------------------------------------------------------
+#         plotList = ['Frequency']
+# plot the words contained in each groupBy field values (e.g, the word 'Rome' in POS tag PPN)
+# must first run compute_csv_column_frequencies_with_aggregation
+# columns_to_be_plotted_yAxis=['Form']
+def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage, filesToOpen,
+                            columns_to_be_plotted_byGroup, groupByList,
+                            columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis):
+
+    pivot=False
+    groupByList.append('Form')
+    groupByList.append('Document ID')
+    groupByList.append('Document')
+    # in visualize_chart_byGroup
+    temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
+                                                              inputFilename,
+                                                              None, outputDir,
+                                                              False,
+                                                              createCharts,
+                                                              chartPackage,
+                                                              # selected_col=columns_to_be_plotted_numeric,
+                                                              selected_col=columns_to_be_plotted_yAxis,
+                                                              hover_col=[],
+                                                              group_col=groupByList,
+                                                              complete_sid=False,
+                                                              fileNameType=
+                                                              columns_to_be_plotted_yAxis[
+                                                                  0],
+                                                              chartType='',
+                                                              pivot=pivot)
+    new_inputFilename = temp_outputFilename[0]
+
+    # temp_outputFilename[0] is the frequency filename (with no hyperlinks)
+    count_var = 0
+    remove_hyperlinks = False  # already removed in compute frequencies
+    headers = IO_csv_util.get_csvfile_headers_pandas(new_inputFilename)
+
+    # 0 is the groupBy field with no-hyperlinks (e.g., NER)
+    # 1 is the column plotted (e.g., Form)
+    # 2 is the Document ID
+    # 3 is the Document
+    # 4 is Frequency
+    # sel_column_name = IO_csv_util.get_headerValue_from_columnNumber(headers, 1)
+    columns_to_be_plotted_byGroup = [[1, 4, 0, 2, 3]] # will give different bars for each value
+    outputFileLabel='by_' + str(groupByList[0])
+    chartTitle='Frequency Distribution of Words by ' + str(groupByList[0]) + ' Tag'
+    hover_label=[]
+    column_yAxis_label = 'Frequencies'
+    if chartPackage == "Excel":
+        column_name = IO_csv_util.get_headerValue_from_columnNumber(headers, 1)
+        number_column_entries = len(IO_csv_util.get_csv_field_values(new_inputFilename, column_name))
+        # in visualize_chart_byGroup
+        chart_outputFilename = run_all(columns_to_be_plotted_byGroup, new_inputFilename, outputDir,
+                                                  outputFileLabel=outputFileLabel, # outputFileNameType + 'byDoc', #outputFileLabel,
+                                                  chartPackage=chartPackage,
+                                                  chart_type_list=['bar'],
+                                                  chart_title=chartTitle,
+                                                  column_xAxis_label_var='',
+                                                  column_yAxis_label_var=column_yAxis_label,
+                                                  hover_info_column_list=hover_label,
+                                                  # count_var is set in the calling function
+                                                  #     0 for numeric fields;
+                                                  #     1 for non-numeric fields
+                                                  count_var=count_var,
+                                                  remove_hyperlinks=remove_hyperlinks)
+        if chart_outputFilename!=None:
+            if len(chart_outputFilename) > 0:
+                filesToOpen.append(chart_outputFilename)
+    return filesToOpen
+
+def visualize_chart_byDoc(inputFilename, outputDir, outputFileNameType, createCharts, chartPackage, filesToOpen,
+                        columns_to_be_plotted_byDoc, columns_to_be_plotted_yAxis,
+                        count_var, pivot, chartTitle,hover_label):
+    column_yAxis_label = 'Frequencies'
+    remove_hyperlinks = True
+    # by DOCUMENT counting the qualitative values ---------------------------------------------------------------------------
+    if count_var == 1:  # for alphabetic fields that need to be counted for display in a chart
+        # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted to be used
+        # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POS'], outputDir, chartTitle, graph=False,
+        #                              complete_sid=False,  chartPackage='Excel')
+
+        # TODO TONY the compute_csv_column_frequencies_with_aggregation should export the distinct values of a column
+        #   in separate columns so that they will be plotted with different colors as separate series
+
+        # in visualize_chart_byDoc
+        temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(
+            GUI_util.window,
+            inputFilename, None, outputDir,
+            False, createCharts, chartPackage,
+            # selected_col=columns_to_be_plotted_numeric,
+            selected_col=columns_to_be_plotted_yAxis,
+            hover_col=[],
+            group_col=['Document ID', 'Document'],
+            complete_sid=False,
+            fileNameType=columns_to_be_plotted_yAxis[0], chartType='', pivot=pivot)
+        new_inputFilename = temp_outputFilename[0]
+        # temp_outputFilename[0] is the frequency filename (with no hyperlinks)
+        remove_hyperlinks = False  # already removed in compute frequencies
+        # 2,3 are the Document and Frequency columns in temp_outputFilename
+        # columns_to_be_plotted_byDoc = [[2,3]] # document 2, first item; frequencies 3 second item
+        # columns_to_be_plotted_byDoc = [[1,2],[1,3]]
+        # pivot = True
+
+        headers = IO_csv_util.get_csvfile_headers_pandas(new_inputFilename)
+
+        if pivot == True:
+            columns_to_be_plotted_byDoc_len = len(columns_to_be_plotted_byDoc[0])
+            columns_to_be_plotted_byDoc = []
+            for i in range(columns_to_be_plotted_byDoc_len, len(headers)):
+                columns_to_be_plotted_byDoc.append([columns_to_be_plotted_byDoc_len - 1, i])
+        else:
+            # 1 is the Document with no-hyperlinks,
+            # 2 is the column plotted (e.g., Gender) in temp_outputFilename
+            # 3 is Frequency,
+            # TODO TONY we should ask the same type of question for columns that are already in quantitative form if we want to compute a single MEAN value
+            sel_column_name = IO_csv_util.get_headerValue_from_columnNumber(headers, 2)
+            # 1 is the Document with no-hyperlinks,
+            # 2 is the column plotted (e.g., Gender) in temp_outputFilename
+            # 3 is Frequency,
+            columns_to_be_plotted_byDoc = [[1, 3, 2]]  # will give different bars for each value
+            # TODO temporarily disconnected until we figure out a way to not repeat this questions several times
+            # if chartPackage == "Excel":
+                # column_name = IO_csv_util.get_headerValue_from_columnNumber(headers, 1)
+                # number_column_entries = len(
+                #     IO_csv_util.get_csv_field_values(new_inputFilename, column_name))
+                # if number_column_entries > 1:
+                #     answer = tk.messagebox.askyesno("Warning", "For the chart of '" + sel_column_name + "' by document, do you want to:\n\n  (Y) sum the values across all " + str(number_column_entries) + " '" + column_name + "';\n  (N) use all " + str(number_column_entries) + " distinct column values.")
+                #     if answer:
+                #         # [[1, 3]] will give one bar for each doc, the sum of all values in selected_column to be plotted
+                #         columns_to_be_plotted_byDoc = [[1, 3]]
+                #     else:
+                #         # [[1, 3, 2]] will give different bars for each value
+                #         # Document, Field to be plotted (e.g., POS), Sentence ID
+                #         columns_to_be_plotted_byDoc = [[1, 3, 2]]
+                # reset the original value to be used in charts by sentence index
+
+    # by DOCUMENT NOT counting; quantitative values ---------------------------------------------------------------------------
+    else:
+        new_inputFilename = inputFilename
+
+    if outputFileNameType != '':
+        outputFileLabel = 'byDoc_' + outputFileNameType
+    else:
+        outputFileLabel = 'byDoc'
+
+    # TODO Tony when plotting bar charts in Plotly with documents in the X-axis we need to remove the path and just keep the tail
+    #   or the display is too messy; it works like that in Excel
+
+    # in visualize_chart_byDoc
+    chart_outputFilename = run_all(columns_to_be_plotted_byDoc, new_inputFilename, outputDir,
+                                   outputFileLabel=outputFileLabel,
+                                   # outputFileNameType + 'byDoc', #outputFileLabel,
+                                   chartPackage=chartPackage,
+                                   chart_type_list=['bar'],
+                                   chart_title=chartTitle + ' by Document',
+                                   column_xAxis_label_var='',
+                                   column_yAxis_label_var=column_yAxis_label,
+                                   hover_info_column_list=hover_label,
+                                   # count_var is set in the calling function
+                                   #     0 for numeric fields;
+                                   #     1 for non-numeric fields
+                                   count_var=0,
+                                   remove_hyperlinks=remove_hyperlinks)
+    if chart_outputFilename != None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.append(chart_outputFilename)
+    return filesToOpen
+
+def visualize_chart_bySent(inputFilename, outputDir, createCharts, chartPackage, filesToOpen, n_documents,
+                              columns_to_be_plotted_byDoc, columns_to_be_plotted_yAxis, count_var, pivot):
+
+    # TODO temporary to measure process time
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                   'Started running Excel bySent at',
+                                                   True, '', True, '', True)
+    # inputFilename = data_pivot(inputFilename, 'Sentence ID', 'Yngve score')
+    # columns_to_be_plotted_bySent = [[columns_to_be_plotted_bySent[0][0]]]
+    if count_var == 1:  # for alphabetic fields that need to be counted for display in a chart
+        temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(
+            GUI_util.window,
+            inputFilename,
+            None, outputDir,
+            False,
+            createCharts,
+            chartPackage,
+            selected_col=columns_to_be_plotted_numeric,
+            hover_col=[],
+            group_col=[['Document ID', 'Document', 'Sentence ID']],
+            complete_sid=True,
+            fileNameType='CSV',
+            chartType='',
+            pivot=pivot)
+        inputFilename = temp_outputFilename[0]
+        if pivot:
+            inputFilename = statistics_csv_util.csv_data_pivot(temp_outputFilename[0], 'Sentence ID',
+                                                               'Gender', no_hyperlinks=True)
+        else:
+            # Using the output from statistics_csv_util.compute_csv_column_frequencies
+            #   Document, Frequency, Sentence ID, Field to be plotted (e.g., POS)
+            # columns_to_be_plotted_bySent = [[1, 4, 2, 3]]
+            columns_to_be_plotted_bySent = [[2, 4]]
+    else:  # numeric values of field(s) to be plotted
+        columns_to_be_plotted_bySent = []
+        if n_documents > 1:
+            for i in range(0, len(columns_to_be_plotted_numeric)):
+                # For multiple series, by document & sentence IDs any combinations of Document, Frequency, Sentence ID, Field to be plotted
+                #       does not work
+                # Only the following works:
+                #   YES [[Document, Column 1 to be plotted], [Document, Column 2 to be plotted], ...]
+                # NO [[Document, Column 1 to be plotted, Sentence ID], [Document, Column 2 to be plotted, Sentence ID], ...]
+                #   sentence IDs are repeated on X-axis rather than Docs
+                # NO [[Document, Sentence ID, Column 1 to be plotted], [Document, Sentence ID, Column 2 to be plotted], ...]
+                #   frequencies or scores on X-axis
+                # NO [[Document, Column 1 to be plotted, Column 2 to be plotted, Sentence ID]]
+                #   only one series plotted with Docs on X-axis
+                columns_to_be_plotted_bySent.append([docCol + 1, columns_to_be_plotted_numeric[i][0]])
+        else:
+            # Sentence ID, Frequency
+            columns_to_be_plotted_bySent.append([sentCol, columns_to_be_plotted_numeric[i][0]])
+
+    if n_documents > 1:
+        chartTitle = chartTitle + ' by Document & Sentence Index'
+        xAxis_label = ''
+    else:
+        chartTitle = chartTitle + ' by Sentence Index'
+        xAxis_label = 'Sentence index'
+
+    if outputFileNameType != '':
+        outputFileLabel = 'bySent_' + outputFileNameType
+    else:
+        outputFileLabel = 'bySent'
+
+    chart_outputFilename = run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
+                                   outputFileLabel=outputFileLabel,
+                                   chartPackage=chartPackage,
+                                   chart_type_list=['line'],
+                                   chart_title=chartTitle,
+                                   column_xAxis_label_var=xAxis_label,
+                                   column_yAxis_label_var=column_yAxis_label,
+                                   hover_info_column_list=hover_label,
+                                   count_var=0,  # always 0 when plotting by sentence index
+                                   complete_sid=True,
+                                   remove_hyperlinks=True)
+
+    if chart_outputFilename != None:
+        if len(chart_outputFilename) > 0:
+            filesToOpen.append(chart_outputFilename)
+
+    # TODO temporary to measure process time
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                       'Finished running Excel bySent at',
+                                       True, '', True, startTime, True)
+
+
 # TODO columns_to_be_plotted comes in a single list to be exported to run_all as double list
 # columns_to_be_plotted, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc
 #   all double lists [[]]
@@ -97,7 +351,6 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
 #   groupByList is typically the list ['Document ID', 'Document']
 #   plotList is the list of fields that want to be plotted
 #   chart_title_label is used as part of the chart_title when plotting the fields statistics
-
 # X-axis
 
 def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
@@ -192,9 +445,6 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         #         x_axis_labels.append("Bin-" + str(j))
         #     print("Bins",pd.cut(column_data, bins, labels=x_axis_labels))
 
-    # TODO depends on how many documents we have
-    if byDoc:
-        n_documents = IO_csv_util.GetMaxValueInCSVField(inputFilename,'visualize_charts_util','Document ID')
     # when pivoting data
     # columns_to_be_plotted_bySent = []
     # for i in range(1, n_documents):
@@ -204,6 +454,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
 
     print("\n\n\nRecords in inputfile (in charts_util)",nRecords, '  ', inputFilename)
+
 # standard bar chart ------------------------------------------------------------------------------
     if len(columns_to_be_plotted_numeric[0])>0: # compute only if the double list is not empty
         chart_outputFilename = run_all(columns_to_be_plotted_numeric, inputFilename, outputDir,
@@ -221,215 +472,66 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
             if len(chart_outputFilename) > 0:
                 filesToOpen.append(chart_outputFilename)
         else:
-            # no point continuing to process more Excel charts if an error was encountered and None was returned
-            #   typically because of too many rows for Excel to handle
+            # no point continuing to process more charts if an error was encountered and None was returned
+            #   typically because of too many rows for Excel to handle, when Excel is used
             return
 
-# bar charts by DOCUMENT ------------------------------------------------------------------------
-        # columns_to_be_plotted_byDoc is a double list [[][]] with
-        #   select-columns in the first list
-        #   group by columns in the second list
-        #   e.g., [[2],[5,6]] or [[2, 3],[5,6, 8]]
-        # document value are the first item in the list [[3,2]] i.e. 3
-        #   plot values are the second item in the list [[3,2]] i.e. 2
-        #  count_var should be
-        #   FALSE (0) for numeric fields;
-        #   TRUE (1) for alphabetic fields
+# bar chart aggregated by group  -----------------------------------------------------------------
+#   avoid plotting by ['Document ID', 'Document'] as groupBy; done in chart byDoc
+    if len(groupByList) > 0 and groupByList != ['Document ID', 'Document']:
+        columns_to_be_plotted_byGroup=[]
+        for header in groupByList:
+            groupCol = IO_csv_util.get_columnNumber_from_headerValue(headers, header, inputFilename)
+            columns_to_be_plotted_byGroup.append([groupCol, field_number_yAxis])
+        chart_outputFilename=visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage, filesToOpen,
+                              columns_to_be_plotted_byGroup, groupByList, columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis)
+
+        if chart_outputFilename!=None:
+            chart_outputFilenameSV=chart_outputFilename
+            if len(chart_outputFilename) > 0:
+                filesToOpen.append(chart_outputFilename)
 
 # by DOCUMENT
-        if byDoc:
-            remove_hyperlinks=True
-            if n_documents > 0:
-# by DOCUMENT counting the qualitative values ---------------------------------------------------------------------------
-                if count_var==1: # for alphabetic fields that need to be counted for display in a chart
-                    # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted to be used
-                    # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POStag'], outputDir, chartTitle, graph=False,
-                    #                              complete_sid=False,  chartPackage='Excel')
-
-                    # TODO TONY the compute_csv_column_frequencies_with_aggregation should export the distinct values of a column
-                    #   in separate columns so that they will be plotted with different colors as separate series
-
-                    temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
-                                                                    inputFilename, None, outputDir,
-                                                                    False, createCharts, chartPackage,
-                                                                    # selected_col=columns_to_be_plotted_numeric,
-                                                                    selected_col=columns_to_be_plotted_yAxis,
-                                                                    hover_col=[],
-                                                                    group_col=['Document ID','Document'],
-                                                                    complete_sid=False,
-                                                                    fileNameType=columns_to_be_plotted_yAxis[0], chartType='',pivot = pivot)
-                    new_inputFilename=temp_outputFilename[0]
-                    # temp_outputFilename[0] is the frequency filename (with no hyperlinks)
-                    count_var=0
-                    remove_hyperlinks = False # already removed in compute frequencies
-                    # 2,3 are the Document and Frequency columns in temp_outputFilename
-                    #columns_to_be_plotted_byDoc = [[2,3]] # document 2, first item; frequencies 3 second item
-                    #columns_to_be_plotted_byDoc = [[1,2],[1,3]]
-                    # pivot = True
-
-                    headers = IO_csv_util.get_csvfile_headers_pandas(new_inputFilename)
-
-                    if pivot==True:
-                        columns_to_be_plotted_byDoc_len = len(columns_to_be_plotted_byDoc[0])
-                        columns_to_be_plotted_byDoc = []
-                        for i in range(columns_to_be_plotted_byDoc_len,len(headers)):
-                            columns_to_be_plotted_byDoc.append([columns_to_be_plotted_byDoc_len-1,i])
-                    else:
-                        # 1 is the Document with no-hyperlinks,
-                        # 2 is the column plotted (e.g., Gender) in temp_outputFilename
-                        # 3 is Frequency,
-                        # TODO TONY we should ask the same type of question for columns that are already in quantitative form if we want to compute a single MEAN value
-                        sel_column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,2)
-                        # columns_to_be_plotted_byDoc = [[0, 2]] # will give one bar
-                        if n_documents == 1:
-                            columns_to_be_plotted_byDoc = [[2, 3]]  # will give different bars for each value
-                        else:
-                            columns_to_be_plotted_byDoc = [[1, 3, 2]] # will give different bars for each value
-                        # columns_to_be_plotted_byDoc = [[0, 1, 2]] # No!!!!!!!!!!!
-                        if chartPackage=="Excel":
-                            column_name = IO_csv_util.get_headerValue_from_columnNumber(headers,1)
-                            number_column_entries = len(IO_csv_util.get_csv_field_values(new_inputFilename, column_name))
-                            # TODO temporarily disconnected until we figure out a way to not repeat this questions several times
-                            # if number_column_entries > 1:
-                            #     answer = tk.messagebox.askyesno("Warning", "For the chart of '" + sel_column_name + "' by document, do you want to:\n\n  (Y) sum the values across all " + str(number_column_entries) + " '" + column_name + "';\n  (N) use all " + str(number_column_entries) + " distinct column values.")
-                            #     if answer:
-                            #         # [[1, 3]] will give one bar for each doc, the sum of all values in selected_column to be plotted
-                            #         columns_to_be_plotted_byDoc = [[1, 3]]
-                            #     else:
-                            #         # [[1, 3, 2]] will give different bars for each value
-                            #         # Document, Field to be plotted (e.g., POStag), Sentence ID
-                            #         columns_to_be_plotted_byDoc = [[1, 3, 2]]
-                    # reset the original value to be used in charts by sentence index
-# by DOCUMENT NOT counting; quantitative values ---------------------------------------------------------------------------
-                else:
-                    new_inputFilename=inputFilename
-                if outputFileNameType != '':
-                    outputFileLabel = 'byDoc_' + outputFileNameType
-                else:
-                    outputFileLabel = 'byDoc'
-
-                # TODO Tony when plotting bar charts in Plotly with documents in the X-axis we need to remove the path and just keep the tail
-                #   or the display is too messy; it works like that in Excel
-
-                chart_outputFilename = run_all(columns_to_be_plotted_byDoc, new_inputFilename, outputDir,
-                                                          outputFileLabel=outputFileLabel, # outputFileNameType + 'byDoc', #outputFileLabel,
-                                                          chartPackage=chartPackage,
-                                                          chart_type_list=['bar'],
-                                                          chart_title=chartTitle + ' by Document',
-                                                          column_xAxis_label_var='',
-                                                          column_yAxis_label_var=column_yAxis_label,
-                                                          hover_info_column_list=hover_label,
-                                                          # count_var is set in the calling function
-                                                          #     0 for numeric fields;
-                                                          #     1 for non-numeric fields
-                                                          count_var=count_var,
-                                                          remove_hyperlinks=remove_hyperlinks)
-                if chart_outputFilename!=None:
-                    if len(chart_outputFilename) > 0:
-                        filesToOpen.append(chart_outputFilename)
+    if byDoc:
+        # TODO depends on how many documents we have;
+        #   no point charting one document since these charts would be the same as no document
+        n_documents = IO_csv_util.GetMaxValueInCSVField(inputFilename, 'visualize_charts_util', 'Document ID')
+        if n_documents>1:
+            chart_outputFilename=visualize_chart_byDoc(inputFilename, outputDir, outputFileNameType,
+                                            createCharts, chartPackage, filesToOpen,
+                                            columns_to_be_plotted_byDoc, columns_to_be_plotted_yAxis,
+                                            count_var, pivot, chartTitle,hover_label)
+        if chart_outputFilename!=None:
+            chart_outputFilenameSV=chart_outputFilename
+            if len(chart_outputFilename) > 0:
+                filesToOpen.append(chart_outputFilename)
 
 # line plots by SENTENCE index -----------------------------------------------------------------------
-        # sentence index value are the first item in the list [[7,2]] i.e. 7
-        #   plot values are the second item in the list [[7,2]] i.e. 2
-        count_var = count_var_SV
-        # not all csv output contain the Sentence ID (e.g., line length function)
-        # TODO Samir; to test the add_missing_IDs you must change bySent=False to bySent=True
-        bySent=False
-        if bySent:
-            # TODO temporary to measure process time
-            startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                           'Started running Excel bySent at',
-                                                           True, '', True, '', True)
-            # inputFilename = data_pivot(inputFilename, 'Sentence ID', 'Yngve score')
-            # columns_to_be_plotted_bySent = [[columns_to_be_plotted_bySent[0][0]]]
-            if count_var == 1:  # for alphabetic fields that need to be counted for display in a chart
-                temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
-                                                          inputFilename,
-                                                          None, outputDir,
-                                                          False,
-                                                          createCharts,
-                                                          chartPackage,
-                                                          selected_col=columns_to_be_plotted_numeric,
-                                                          hover_col=[],
-                                                          group_col=[['Document ID', 'Document', 'Sentence ID']],
-                                                          complete_sid=True,
-                                                          fileNameType='CSV',
-                                                          chartType='',
-                                                          pivot=pivot)
-                inputFilename=temp_outputFilename[0]
-                if pivot:
-                    inputFilename = statistics_csv_util.csv_data_pivot(temp_outputFilename[0], 'Sentence ID', 'Gender', no_hyperlinks=True)
-                else:
-                    # Using the output from statistics_csv_util.compute_csv_column_frequencies_with_aggregation
-                    #   Document, Frequency, Sentence ID, Field to be plotted (e.g., POStag)
-                    # columns_to_be_plotted_bySent = [[1, 4, 2, 3]]
-                    columns_to_be_plotted_bySent = [[2, 4]]
-            else: # numeric values of field(s) to be plotted
-                columns_to_be_plotted_bySent = []
-                if n_documents > 1:
-                    for i in range(0, len(columns_to_be_plotted_numeric)):
-                        # For multiple series, by document & sentence IDs any combinations of Document, Frequency, Sentence ID, Field to be plotted
-                        #       does not work
-                        # Only the following works:
-                        #   YES [[Document, Column 1 to be plotted], [Document, Column 2 to be plotted], ...]
-                        # NO [[Document, Column 1 to be plotted, Sentence ID], [Document, Column 2 to be plotted, Sentence ID], ...]
-                        #   sentence IDs are repeated on X-axis rather than Docs
-                        # NO [[Document, Sentence ID, Column 1 to be plotted], [Document, Sentence ID, Column 2 to be plotted], ...]
-                        #   frequencies or scores on X-axis
-                        # NO [[Document, Column 1 to be plotted, Column 2 to be plotted, Sentence ID]]
-                        #   only one series plotted with Docs on X-axis
-                        columns_to_be_plotted_bySent.append([docCol + 1, columns_to_be_plotted_numeric[i][0]])
-                else:
-                    # Sentence ID, Frequency
-                    columns_to_be_plotted_bySent.append([sentCol, columns_to_be_plotted_numeric[i][0]])
-
-            if n_documents > 1:
-                chartTitle = chartTitle + ' by Document & Sentence Index'
-                xAxis_label = ''
-            else:
-                chartTitle = chartTitle + ' by Sentence Index'
-                xAxis_label='Sentence index'
-
-            if outputFileNameType != '':
-                outputFileLabel = 'bySent_' + outputFileNameType
-            else:
-                outputFileLabel = 'bySent'
-
-            chart_outputFilename = run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
-                                                      outputFileLabel=outputFileLabel,
-                                                      chartPackage=chartPackage,
-                                                      chart_type_list=['line'],
-                                                      chart_title=chartTitle,
-                                                      column_xAxis_label_var=xAxis_label,
-                                                      column_yAxis_label_var=column_yAxis_label,
-                                                      hover_info_column_list=hover_label,
-                                                      count_var=0, # always 0 when plotting by sentence index
-                                                      complete_sid=True,
-                                                      remove_hyperlinks=True)
-
-            if chart_outputFilename!=None:
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.append(chart_outputFilename)
-
-            # TODO temporary to measure process time
-            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                               'Finished running Excel bySent at',
-                                               True, '', True, startTime, True)
+# sentence index value are the first item in the list [[7,2]] i.e. 7
+#   plot values are the second item in the list [[7,2]] i.e. 2
+    count_var = count_var_SV
+    # not all csv output contain the Sentence ID (e.g., line length function)
+    # TODO Samir; to test the add_missing_IDs you must change bySent=False to bySent=True
+    bySent = False
+    if bySent:
+        fileToOpen=visualize_chart_bySent(inputFilename, outputDir, createCharts, chartPackage, filesToOpen, n_documents, columns_to_be_plotted_byDoc, columns_to_be_plotted_yAxis, count_var, pivot)
 
 # compute field STATISTICS (mean, median, skeweness, kurtosis...)--------------------------------------------------------------
         # TODO THE FIELD MUST CONTAIN NUMERIC VALUES
         # plotList (a list []) contains the columns headers to be used to compute their stats
-        if len(groupByList)>0: # compute only if list is not empty
-            if count_var==1:
+        if len(groupByList) > 0:  # compute only if list is not empty
+            if count_var == 1:
                 temp_inputFilename = temp_outputFilename[0]
             else:
                 temp_inputFilename = inputFilename
             if plotList == []:
                 plotList = ['Frequency']
-            tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, temp_inputFilename, outputDir,
-                                                                               outputFileNameType, groupByList, plotList, chart_title_label,
-                                                                               createCharts,
-                                                                               chartPackage)
+            tempOutputfile = statistics_csv_util.compute_csv_column_statistics(GUI_util.window, temp_inputFilename,
+                                                       outputDir,
+                                                       outputFileNameType, groupByList,
+                                                       plotList, chart_title_label,
+                                                       createCharts,
+                                                       chartPackage)
 
             if tempOutputfile != None:
                 # tempOutputfile is a list must use extend and not append
@@ -447,6 +549,10 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 #   the first number refers to the x-axis value and the second to the y-axis value
 # when count_var=1 the second number gets counted (non numeric values MUST be counted)
 # the complete sid need to be tested as na would be filled with 0
+# if you need to aggregate fields displaying results grouped by a specific field (e.g., words by NER tag, NER tag by Document ID),
+#   you need to run first statistics_csv_util.compute_csv_column_frequencies_with_aggregationgroupBy and then run_all
+#   Examples of this can be found in parsers_annotators_visualization in parsers_annotators_visualization
+#   and in visualize_chart in charts_util
 def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             chartPackage, chart_type_list,chart_title, column_xAxis_label_var,
             hover_info_column_list=[],

@@ -172,7 +172,8 @@ def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, lang
             break # exit loop
         except IOError as e:
             # mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
-            mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\n"+str(e))
+            mb.showwarning(title='Output file error', message="Could not write the file " +
+                                outputFilename + "\n\n"+str(e) + "\n\nCLOSE THE FILE TO EXIT LOOP...")
             if not "Permission" in str(e):
                 outputFilename = ''
                 break  # exit loop; the error is not due to file being open

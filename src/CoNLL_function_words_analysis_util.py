@@ -76,7 +76,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
                               language_encoding='utf-8')
         # filesToOpen.append(function_words_stats_file_name)
 
-          # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+          # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
           #     "PRONOUNS"])
 
         if createCharts==True:
@@ -129,7 +129,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
                               language_encoding='utf-8')
 
-          # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+          # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
           #     "PREPOSITIONS"])
 
         if createCharts==True:
@@ -177,7 +177,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
         # output files
         article_list,article_stats,article_data =  stats_articles_output(data,data_divided_sents)
         article_list = article_data
-          # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+          # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
           #     "ARTICLES"])
 
         # convert list to dataframe
@@ -230,7 +230,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
         df = pd.DataFrame(conjunction_stats)
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
                               language_encoding='utf-8')
-        # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+        # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
           #     "CONJUNCTIONS"])
 
         if createCharts==True:
@@ -279,7 +279,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
             return filesToOpen
         auxiliary_list,auxiliary_stats,auxiliary_data =  stats_auxiliaries_output(data,data_divided_sents)
         auxiliary_list = auxiliary_data
-          # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+          # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
           #     "AUXILIARIES"])
 
         # convert list to dataframe

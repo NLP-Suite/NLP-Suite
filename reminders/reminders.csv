@@ -173,3 +173,11 @@ parsers_annotators,CoreNLP NER tags,"The CoNLL table produced by the CoreNLP par
 If you are planning to produce frequency distributions of NER tags directly from the CoNLL table, you need to remember that tags such as 'Date' or 'City' may be grossly overestimated. For instance, in the expression 'the day before Christmas' each word 'the,' 'day,' 'before,' 'Christmas' will be tagged as NER date. The same is true for NER CITY tags such as 'New York City.'
 
 A better way to obtain frequency distributions of NER values is to run the NER annotators from the 'Stanford_CoreNLP_NER_main.py.'",OFF
+knowledge_graphs_WordNet_config.csv,English language & WordNet,WordNet is only available for texts in the English language.,OFF
+*,Excel Charts,"The Excel chart to be displayed has hover-over effects (i.e., when you hover the mouse over chart points some information will be displayed).
+
+First, hover-over charts are based on Excel macros. You need to enable macros in Excel to view the chart (read the TIPS file on how to do this).
+
+Second, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.
+
+Third, if the chart is displayed but the bars of a bar chart, for instance, have the same height, contrary to expectations, click on Data then on Chart to display the chart properly.",OFF

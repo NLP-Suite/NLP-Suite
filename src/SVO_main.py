@@ -1206,7 +1206,7 @@ def activate_NLP_options(*args):
     if language!='English':
         if language != 'English' and not do_not_repeat_language_warning:
             mb.showwarning(title='Warning',
-                           message='The current SVO extraction algorithm is rule based, dependent upon specific POStag values developed for the English language.'
+                           message='The current SVO extraction algorithm is rule based, dependent upon specific POS values developed for the English language.'
                                    '\n\nChinese, for instance, has different sets of Part-Of-Speech tags and SVO results would be unreliable. Use with caution for languages other than English.')
         do_not_repeat_language_warning = True
 

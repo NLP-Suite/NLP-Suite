@@ -86,7 +86,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             # import GUI_util
             # columns_to_be_plotted_yAxis=['NER']
             # pivot=False
-            # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies_with_aggregation(GUI_util.window,
+            # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
             #                                                           outputFilename,
             #                                                           None, outputDir,
             #                                                           False,

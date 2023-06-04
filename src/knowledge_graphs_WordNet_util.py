@@ -263,29 +263,30 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
         return
     # set up the double list conll from the conll data
     try:
-        connl = connl[['Form', 'Lemma', 'POStag', 'Sentence ID', 'Document ID', 'Document']]
+        connl = connl[['Form', 'Lemma', 'POS', 'Sentence ID', 'Document ID', 'Document']]
     except:
         mb.showwarning("Warning",
-                       "The file \n\n" + ConnlTable + "\n\ndoes not appear to be a CoNLL table with expected column names: Form,Lemma,Postag, SentenceID, DocumentID, Document.\n\nPlease, select the right input file and try again.")
+                       "The file \n\n" + ConnlTable + "\n\ndoes not appear to be a CoNLL table with expected column names: Form,Lemma,POS, SentenceID, DocumentID, Document.\n\nPlease, select the right input file and try again.")
         return
     # filter the list by noun or verb
-    connl = connl[connl['Postag'].isin(checklist)]
+    connl = connl[connl['POS'].isin(checklist)]
     # eliminate any duplicate value in Word (Form))
-    dict = dict.drop_duplicates().rename(columns={'Word': 'Lemma', 'WordNet Category': 'Category'})
+    # Term is exported by the WordNet java script and cannot be modifiied
+    dict = dict.drop_duplicates().rename(columns={'Term': 'Lemma', 'WordNet Category': 'Category'})
     # ?
     connl = connl.merge(dict, how='left', on='Lemma')
     # the CoNLL table value is not found in the dictionary Word value
     connl.fillna('Not in INPUT dictionary for ' + noun_verb, inplace=True)
     # add the WordNet category to the conll list
-    connl = connl[['Form', 'Lemma', 'POStag', 'Category', 'Sentence ID', 'Document ID', 'Document']]
+    connl = connl[['Form', 'Lemma', 'POS', 'Category', 'Sentence ID', 'Document ID', 'Document']]
     # put headers on conll list
-    connl.columns = ['Form', 'Lemma', 'POStag', 'Category', 'Sentence ID', 'Document ID', 'Document']
+    connl.columns = ['Form', 'Lemma', 'POS', 'Category', 'Sentence ID', 'Document ID', 'Document']
 
     Row_list = []
     # Iterate over each row
     for index, rows in connl.iterrows():
         # Create list for the current row
-        my_list = [rows.word, rows.lemma, rows.postag, rows.Category, rows.SentenceID, rows.DocumentID, rows.Document]
+        my_list = [rows.Form, rows.Lemma, rows.POS, rows.Category, rows['Sentence ID'], rows['Document ID'], rows.Document]
         # append the list to the final list
         Row_list.append(my_list)
     for index, row in enumerate(Row_list):
@@ -297,7 +298,7 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
                 for i in range(Row_list[index + 1][4] - 1, Row_list[index][4], -1):
                     Row_list.insert(index + 1, ['', '', '', '', i, Row_list[index][5], Row_list[index][6]])
     df = pd.DataFrame(Row_list,
-                      index=['Form', 'Lemma', 'POStag', 'WordNet Category', 'Sentence ID', 'Document ID', 'Document'])
+                      index=['Form', 'Lemma', 'POS', 'WordNet Category', 'Sentence ID', 'Document ID', 'Document'])
     outputFilename = charts_util.add_missing_IDs(df,outputFilename)
 
     if createCharts:

@@ -404,7 +404,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 		# # temporary headers added, not sure why the verb_voice_list doesn't have headers
 		# df = pd.read_csv(verb_file_name, header=None, encoding='utf-8', on_bad_lines='skip')
 		# df.to_csv(verb_file_name,
-		# 		  header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+		# 		  header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
 		# 			  "Verb Tense"])
 		#
 	return filesToOpen

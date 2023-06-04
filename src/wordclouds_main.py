@@ -99,7 +99,7 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
         import wordclouds_util
         if not IO_internet_util.check_internet_availability_warning("wordclouds_main.py"):
             return
-        if differentPOS_differentColor or differentColumns_differentColors: # should not process stopwords when useing a csv file in input or POStag values
+        if differentPOS_differentColor or differentColumns_differentColors: # should not process stopwords when useing a csv file in input or POS values
             exclude_stopwords = True
         wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, config_filename,  selectedImage,
                                 use_contour_only, prefer_horizontal, font,
@@ -340,9 +340,9 @@ differentPOS_differentColor_checkbox.config(text="Different colors by POS tags")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_color_by_POS_tags, y_multiplier_integer,
                                    differentPOS_differentColor_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "Tick the checkbox to process in different colors words by their POStag value: nouns, verbs, adjectives, and adverbs."
-                                   "untick to NOT process words in different colors by their POStag value.\n"
-                                   "POStag values are computed by Stanza."
+                                   "Tick the checkbox to process in different colors words by their POS value: nouns, verbs, adjectives, and adverbs."
+                                   "untick to NOT process words in different colors by their POS value.\n"
+                                   "POS values are computed by Stanza."
                                    "\nRED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, and GREY for ADVERBS.")
 
 menu_values=''

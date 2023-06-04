@@ -1085,7 +1085,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        "The selection of specific chart types is still under development.\nCharts are currently automatically visualized as bar or line charts.")
 
         # if not 'data_manipulation_main.py' in scriptName and not not 'data_visualization_main.py' in scriptName :
-        data_tools_options = ['Data manipulation', 'Data visualization', 'Corpus sampling']
+        data_tools_options = ['Corpus sampling', 'Data manipulation', 'Data statistics', 'Data visualization']
         data_tools_options_widget.set('Data tools')
         data_tools_menu_lb = tk.OptionMenu(window, data_tools_options_widget, *data_tools_options)
         # place widget with hover-over info
@@ -1098,7 +1098,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         def run_data_tool(*args):
             if not 'data_manipulation_main.py' in scriptName and 'manipulation' in data_tools_options_widget.get():
                 call("python data_manipulation_main.py", shell=True)
-        # Corpus sampling
+            if not 'statistics_csv_main.py' in scriptName and 'statistics' in data_tools_options_widget.get():
+                call("python statistics_csv_main.py", shell=True)
             if not 'data_visualization_main.py' in scriptName and 'visualization' in data_tools_options_widget.get():
                 call("python data_visualization_main.py", shell=True)
             if not 'sample_corpus_main.py' in scriptName and 'sampling' in data_tools_options_widget.get():

@@ -143,18 +143,18 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_va
             ksentences_last = doc_conll.loc[(doc_conll["Sentence ID"] > max(doc_conll['Sentence ID']) - End_K_sent_var)]
 
         #ksentences = ksentences_first + ksentences_last
-        word_count_first = len(ksentences_first['POStag']) - ksentences_first['DepRel'].value_counts()["punct"]
+        word_count_first = len(ksentences_first['POS']) - ksentences_first['DepRel'].value_counts()["punct"]
         verb_count_first = 0
         noun_count_first = 0
         adj_count_first = 0
         pp_count_first = 0#proper nouns
 
-        word_count_last = len(ksentences_last['POStag']) - ksentences_last['DepRel'].value_counts()["punct"]
+        word_count_last = len(ksentences_last['POS']) - ksentences_last['DepRel'].value_counts()["punct"]
         verb_count_last = 0
         noun_count_last = 0
         adj_count_last = 0
         pp_count_last = 0#proper nouns
-        for pos in ksentences_first['POStag']:
+        for pos in ksentences_first['POS']:
             if "NN" in pos: # nouns
                 noun_count_first +=1
                 if "NNP" in pos: # proper nouns
@@ -169,7 +169,7 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_va
             DOC = doc # as doc is in CoNLL table, doc already as the hyperlink
             break
 
-        for pos in ksentences_last['POStag']:
+        for pos in ksentences_last['POS']:
             if "NN" in pos: # nouns
                 noun_count_last +=1
                 if "NNP" in pos: # proper nouns

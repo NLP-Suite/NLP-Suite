@@ -88,7 +88,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
 
         filesToOpen = html_annotator_dictionary_util.dictionary_annotate(inputFilename, inputDir, outputDir,
                                                                     config_filename,
-                                                                    csv_file, 'Term', csvValue_color_list,
+                                                                    csv_file, 'Word', csvValue_color_list,
                                                                     bold_var, tagAnnotations, '.txt','WordNet_'+noun_verb)
 
     if extract_proper_nouns==1 or extract_improper_nouns==1:
@@ -100,9 +100,9 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
             return
         check_column=0
         if extract_proper_nouns:
-            filesToOpen=knowledge_graphs_WordNet_util.get_case_initial_row(csv_file, outputDir,'Term', True)
+            filesToOpen=knowledge_graphs_WordNet_util.get_case_initial_row(csv_file, outputDir,'Word', True)
         if extract_improper_nouns:
-            filesToOpen=knowledge_graphs_WordNet_util.get_case_initial_row(csv_file, outputDir,'Term', False)
+            filesToOpen=knowledge_graphs_WordNet_util.get_case_initial_row(csv_file, outputDir,'Word', False)
 
     if aggregate_lemmatized_var==True:
 
@@ -276,11 +276,11 @@ extract_proper_nouns_var = tk.IntVar()
 extract_improper_nouns_var = tk.IntVar()
 csv_file_var= tk.StringVar()
 
-def get_csv_file(window,title,fileType,annotate):
+def get_csv_file(window,title,fileType,displayFile):
     #csv_file_var.set('')
     initialFolder = os.path.dirname(os.path.abspath(__file__))
     filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
-    if len(filePath)>0:
+    if len(filePath)>0 and displayFile:
         csv_file_var.set(filePath)
     return filePath
 
@@ -312,7 +312,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_co
 
 disaggregate_var.set(0)
 disaggregate_checkbox = tk.Checkbutton(window, text='Zoom IN/DOWN to find related words', variable=disaggregate_var,
-                                    onvalue=1, offvalue=0)
+                                    onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                              disaggregate_checkbox,
@@ -383,8 +383,6 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_
                                              90, GUI_IO_util.labels_x_coordinate,
                                              "Enter the comma-separated synset(s) you want to use to search the WordNet lexical database for NOUN or VERB. Particularly useful for searching lower-level synsets (e.g., 'ethnic group' instead of 'person').\n" \
                                              "The use of this widget is mutually exclusive with the widget 'Top-level synset'. You can use one or the other.")
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos, y_multiplier_integer,
-#                                                keyWord_entry, True)
 
 OK_button = tk.Button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled', command=lambda: accept_WordNet_list())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_OK_button_pos, y_multiplier_integer,
@@ -436,66 +434,90 @@ keyWord_var.trace('w', add_wordNet_keyword)
 keyWord_entry_var.trace('w', add_wordNet_keyword)
 
 annotate_file_var.set(0)
-annotate_file_checkbox = tk.Checkbutton(window, text='Annotate corpus (using WordNet csv output file from Zoom IN/DOWN)', variable=annotate_file_var, onvalue=1, offvalue=0)
+annotate_file_checkbox = tk.Checkbutton(window, text='Annotate corpus (using WordNet csv output file from Zoom IN/DOWN)', variable=annotate_file_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get(), True))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,annotate_file_checkbox)
 
 extract_proper_nouns_var.set(0)
 extract_proper_nouns_checkbox = tk.Checkbutton(window, text='Extract WordNet PROPER nouns  (using WordNet csv output file from Zoom IN/DOWN)',
-                                               variable=extract_proper_nouns_var, onvalue=1, offvalue=0)
+                                               variable=extract_proper_nouns_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get()))
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                extract_proper_nouns_checkbox, True)
 extract_proper_nouns_checkbox.config(text="Extract PROPER nouns  (using WordNet csv output file from Zoom IN/DOWN)")
 
 extract_improper_nouns_var.set(0)
 extract_improper_nouns_checkbox = tk.Checkbutton(window, text='Extract WordNet IMPROPER nouns  (using WordNet csv output file from Zoom IN/DOWN)',
-                                                 variable=extract_improper_nouns_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_extract_improper_nouns_pos, y_multiplier_integer,
+                                                 variable=extract_improper_nouns_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get()))
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos, y_multiplier_integer,
                                                extract_improper_nouns_checkbox)
 extract_improper_nouns_checkbox.config(text="Extract IMPROPER nouns  (using WordNet csv output file from Zoom IN/DOWN)")
 
 aggregate_lemmatized_var.set(0)
 aggregate_lemmatized_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP (classify/aggregate lemmatized words in csv file)', variable=aggregate_lemmatized_var,
-                                   onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               aggregate_lemmatized_checkbox)
+                                   onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get()))
+# #select next the csv file containing in the first column the LEMMATIZED words (noun or verb, since WordNet only contains lemmatized values) for which you need to find their aggregate (e.g., the verb walk as motion).\n\nPlease, select next the INPUT csv file to be used.')
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                             aggregate_lemmatized_checkbox,
+                                             False, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "Tick the checkbox to select a csv file containing in the first column LEMMATIZED words (noun or verb, since WordNet only contains lemmatized values)" \
+                                             "\nLemmatized values will be used to find their WordNet aggregate value (e.g., the verb 'walk' as 'motion')")
 
 extract_nouns_verbs_from_CoNLL_var.set(0)
 extract_nouns_verbs_from_CoNLL_checkbox = tk.Checkbutton(window, text='Extract nouns & verbs from CoNLL table (for Zoom OUT/UP)',
-                                              variable=extract_nouns_verbs_from_CoNLL_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               extract_nouns_verbs_from_CoNLL_checkbox)
+                                              variable=extract_nouns_verbs_from_CoNLL_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get()))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                             extract_nouns_verbs_from_CoNLL_checkbox,
+                                             False, False, True, False,
+                                             90, GUI_IO_util.labels_x_indented_coordinate,
+                                             "Tick the checkbox to extract the lemma values of nouns and verbs in a CoNLL table (lemmatized noun or verb, since WordNet only contains lemmatized values)" \
+                                             "\nLemmatized values will be used to find their WordNet aggregate value (e.g., the verb 'walk' as 'motion')")
 
 aggregate_POS_var.set(0)
 aggregate_POS_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP (classify/aggregate input text document(s) by CoreNLP NOUN & VERB POS tags and WordNet NOUN & VERB synsets)', variable=aggregate_POS_var,
-                                    onvalue=1, offvalue=0)
+                                    onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                              aggregate_POS_checkbox,
                                              False, False, True, False,
                                              90, GUI_IO_util.labels_x_coordinate,
-                                             "Tick the checkbox to run the algorithm that extracts NOUN and VERB POS tags and then aggregate these values into WordNet top-level synsets.\n"
-                                             "In OUTPUT the algorithm produces a csv file of POS tags with their WordNet top-level synset (e.g., go as movement)")
+                                             "Tick the checkbox to run the Stanford CoreNLP algorithm that extracts NOUN and VERB POS tags and then aggregate these values into WordNet top-level synsets."
+                                             "\nIn INPUT the algorithm expects a single txt file or a set of txt files." 
+                                             "\nIn OUTPUT the algorithm produces a csv file of POS tags with their WordNet top-level synset (e.g., go as movement).")
 
 aggregate_bySentenceID_var.set(0)
 # aggregate_bySentenceID_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP by Sentence Index',
 #                                                 variable=aggregate_bySentenceID_var, onvalue=1, offvalue=0,
 #                                                 command=lambda: getDictFile())
 aggregate_bySentenceID_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP by Sentence ID',
-                                                variable=aggregate_bySentenceID_var, onvalue=1, offvalue=0)
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               aggregate_bySentenceID_checkbox, True)
+                                                variable=aggregate_bySentenceID_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get()))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                             aggregate_bySentenceID_checkbox,
+                                             True, False, True, False,
+                                             90, GUI_IO_util.labels_x_coordinate,
+                                             "Tick the checkbox to run the algorithm that uses 1. lemmatized NOUN and VERB POS tags from a CoNLL table and 2. WordNet top-level synsets to visualize their occurrence in a text by sentence index."
+                                             "\nIn INPUT the algorithm expects 1. a CoNLL table and 2. a dctionary file of WordNet aggregated top-level synsets, created by the 'ZOOM IN/DOWN' widget above." 
+                                             "\nIn OUTPUT the algorithm produces a csv file and a line plot by sentence index.")
 
 dict_WordNet_filename_lb = tk.Label(window, text='csv file of WordNet classified/aggregated words')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_dict_WordNet_filename_lb_pos, y_multiplier_integer,
                     dict_WordNet_filename_lb, True, False, True, False,
                     90, GUI_IO_util.WordNet_dict_WordNet_filename_lb_pos,
-                    "The csv file is obtained by running the ZOOM OUT/UP checkbox wiknowledge_graphs_WordNet_maindget, above")
+                    "The csv file is obtained by running the 'ZOOM OUT/UP (classify/aggregate lemmatized words in csv file)' widget above")
 
-dict_WordNet_filename = tk.Entry(window, width=GUI_IO_util.WordNet_dict_WordNet_filename_width, textvariable=dict_WordNet_filename_var)
+# WordNet_keyWord_entry_width
+# dict_WordNet_filename = tk.Entry(window, width=GUI_IO_util.WordNet_dict_WordNet_filename_width, textvariable=dict_WordNet_filename_var)
+dict_WordNet_filename = tk.Entry(window, width=GUI_IO_util.WordNet_keyWord_entry_width, textvariable=dict_WordNet_filename_var)
 dict_WordNet_filename.configure(state="disabled")
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_dict_WordNet_filename_pos, y_multiplier_integer,
-                                               dict_WordNet_filename)
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos, y_multiplier_integer,
+                                               dict_WordNet_filename, True)
+
+open_csv_file_button = tk.Button(window, width=GUI_IO_util.OK_button_width, height=1, state='disabled', command=lambda: accept_WordNet_list())
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_OK_button_pos, y_multiplier_integer,
+                                               open_csv_file_button)
 
 asked = False
 
@@ -585,7 +607,7 @@ def activate_allOptions(noun_verb, fromaggregate=False):
             mb.showwarning("csv WordNet dictionary",
                            "Please, select next the csv WordNet dictionary file (either verbose or simple) generated by the ZOOM IN/DOWN algorithm then click on the RUN button.")
             filePath = get_csv_file(window, 'Select INPUT csv dictionary file', [("dictionary files", "*.csv")],
-                                           False)
+                                           True)
             if filePath == '':
                 return
     # else:
@@ -598,8 +620,8 @@ def activate_allOptions(noun_verb, fromaggregate=False):
                 # mb.showwarning(title='csv WordNet dictionary',
                 #                message="This is a reminder that you are searching WordNet for " + noun_verb_menu_var.get() + ".\n\nPlease, use the IO widget 'Select INPUT file' at the top of the GUI to select the csv file containing LEMMATIZED " + noun_verb_menu_var.get() + " values to be aggregated.\n\nThis file MUST contain LEMMATIZED " + noun_verb_menu_var.get() + " values, since WordNet only contains lemmatized values. If this is not the case, select a different NOUN/VERB option, and/or a different input file option.")
                 mb.showwarning(title='Warning',
-                               message='Please, select next the csv file with the LEMMATIZED words (noun or verb, since WordNet only contains lemmatized values) for which you need to find their aggregate (e.g., the verb walk as motion).\n\nPlease, select next the INPUT csv file to be used.')
-                filePath =get_csv_file(window, 'Select INPUT csv dictionary file', [("dictionary files", "*.csv")], False)
+                               message='Please, select next the csv file containing in the first column the LEMMATIZED words (noun or verb, since WordNet only contains lemmatized values) for which you need to find their aggregate (e.g., the verb walk as motion).\n\nPlease, select next the INPUT csv file to be used.')
+                filePath =get_csv_file(window, 'Select INPUT csv file', [("csv files", "*.csv")], True)
                 if filePath == '':
                     return
         csv_file_button.config(state='normal')
@@ -625,9 +647,9 @@ def activate_allOptions(noun_verb, fromaggregate=False):
         if csv_file_var.get() == '' and asked==False:
             asked=True
             mb.showwarning("csv CoNLL table",
-                           "Please, select next the csv CoNLL table from which you want to extract nouns and verbs then click on the RUN button.")
+                           "Please, select next the csv CoNLL table from which you want to extract lemmatized nouns and verbs then click on the RUN button.")
             filePath = get_csv_file(window, 'Select INPUT csv CoNLL file', [("CoNLL files", "*.csv")],
-                                           False)
+                                           True)
             if filePath == '':
                 return
     # else:
@@ -652,13 +674,17 @@ def activate_allOptions(noun_verb, fromaggregate=False):
         extract_improper_nouns_checkbox.configure(state='disabled')
         extract_nouns_verbs_from_CoNLL_checkbox.configure(state='disabled')
         aggregate_POS_checkbox.configure(state='disabled')
+        mb.showwarning(title="Warning",
+                       message="The Zoom OUT/UP by Sentence Index option requires in input 2 csv files:\n  1. a csv CoNLL file to get the sentence index;\n  2. a csv dictionary file containing the WordNet classification of LEMMATIZED words into top-level aggregates (synsets) and for which you want to see where in the text they are used (you will be prompted next to select this csv file; the file will have been generated by widget 'Zoom OUT/UP to top-level aggregates/synsets'). \n\nAs a reminder, you are searching in the CoNLL table for " + noun_verb_menu_var.get() + ". The selected dictionary file of WordNet aggregated words must also contain " + noun_verb_menu_var.get() + " values - values to be found in the input CoNLL file " + inputFilename.get() + "\n\nIf this is not the case, select a different NOUN/VERB option, and/or different input/output file options.")
         if csv_file_var.get() == '' and asked==False:
             asked=True
-            mb.showwarning(title="Warning",
-                           message="The Zoom OUT/UP by Sentence Index option requires in input 2 csv files:\n  1. a csv CoNLL file to get the sentence index;\n  2. a csv dictionary file containing the WordNet classification of LEMMATIZED words into higher-level aggregates and for which you want to see where in the text they are used (you will be prompted next to select this csv file; the file will have been generated by widget 'Zoom OUT/UP to higher-level aggregates'). \n\nAs a reminder, you are searching in the CoNLL table for " + noun_verb_menu_var.get() + ". The selected dictionary file of WordNet aggregated words must also contain " + noun_verb_menu_var.get() + " values - values to be found in the input CoNLL file " + inputFilename.get() + "\n\nIf this is not the case, select a different NOUN/VERB option, and/or different input/output file options.")
+            mb.showwarning("csv CoNLL table",
+                           "Please, select next the csv CoNLL table from which you want to extract lemmatized nouns and verbs then click on the RUN button.")
+            filePath = get_csv_file(window, 'Select INPUT csv CoNLL file', [("CoNLL files", "*.csv")],
+                                           True)
 
-            filePath = get_csv_file(window, 'Select INPUT csv file of words classified/aggregated into WordNet synsets', [("csv files", "*.csv")],
-                                           False)
+            # filePath = get_csv_file(window, 'Select INPUT csv file of words classified/aggregated into WordNet synsets', [("csv files", "*.csv")],
+            #                                False)
             if filePath == '':
                 return
             mb.showwarning("csv WordNet dictionary",
@@ -674,16 +700,6 @@ def activate_allOptions(noun_verb, fromaggregate=False):
                 aggregate_bySentenceID_var.set(0)
         else:
             asked = False
-
-disaggregate_var.trace('w', lambda x, y, z: activate_allOptions(noun_verb_menu_var.get()))
-keyWord_entry_var.trace('w', lambda x, y, z: activate_allOptions(noun_verb_menu_var.get()))
-annotate_file_var.trace('w', lambda x, y, z: activate_allOptions(noun_verb_menu_var.get(), True))
-extract_proper_nouns_var.trace('w', lambda x, y, z: activate_allOptions(noun_verb_menu_var.get()))
-extract_improper_nouns_var.trace('w', lambda x, y, z: activate_allOptions(noun_verb_menu_var.get()))
-aggregate_lemmatized_var.trace('w', lambda x, y, z: activate_allOptions(noun_verb_menu_var.get()))
-extract_nouns_verbs_from_CoNLL_var.trace('w', lambda x, y, z: activate_allOptions(noun_verb_menu_var.get()))
-aggregate_POS_var.trace('w', lambda x, y, z: activate_allOptions(noun_verb_menu_var.get()))
-aggregate_bySentenceID_var.trace('w', lambda x, y, z: activate_allOptions(noun_verb_menu_var.get()))
 
 activate_allOptions(noun_verb_menu_var.get())
 
@@ -748,17 +764,17 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "You can enter one or more, comma separated, terms into the 'YOUR keyword(s)'field, ignoring the pre-selected keywords. This option is particularly helpful if you want to restrict your search at a lower level, e.g. 'ethnic group' instead of 'person' to obtain a much shorter list of terms.\n\nPress OK when finished entering YOUR own values." + webSearch)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to annotate your input document(s) using a dictionary csv file generated by the \'Zoom IN\DOWN\' algorithm. Thus, you can extract all \'PERSON\' items from WordNet and annotate your corpus by those values.\n\nIn INPUT the algorithm expects\n   1. either a single txt file or a directory of txt files to be annotated (txt file(s) are selected in the Setup INPUT/OUTPUT configuration widget);\n   2. a csv dictionary file generated by the ZOOM IN/DOWN widget and containing with the WordNet tags that will be used to annotate the text. You will be prompted to select the csv file when you tick the checkbox.\n\nIn OUTPUT the algorithm produces an html file annotated according to the values found in the input csv dictionary file." + webSearch)
+                                  "Please, tick the checkbox if you wish to annotate your input document(s) using a dictionary csv file generated by the \'Zoom IN\DOWN\' algorithm. Thus, you can extract all \'PERSON\' items from WordNet and annotate your corpus by those values.\n\nIn INPUT the algorithm expects\n   1. either a single txt file or a directory of txt files to be annotated (txt file(s) are selected in the Setup INPUT/OUTPUT configuration widget);\n   2. a csv dictionary file generated by the ZOOM IN/DOWN widget and containing with the WordNet tags that will be used to annotate the text.\n\n   You will be prompted to select the csv file when you tick the checkbox.\n\nIn OUTPUT the algorithm produces an html file annotated according to the values found in the input csv dictionary file." + webSearch)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to extract proper or improper nouns from a NOUN ZOOM IN/DOWN list. Nouns are classified as proper or improper depending on whether the first character is upper or lower case.\n\nIn INPUT the algorithm expects a csv file of NOUNs generated by the ZOOM IN/DOWN algorithm (whether simple or verbose). You will be prompted to select the csv file when you tick the checkbox.\n\nIn OUTPUT, the algorithm saves a csv file with only either proper or improper nouns, as identified by a first letter upper/lower case.\n\nThe first column of the dictionary file, whether simple or verbose, will always be used for extracting values.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run the Python 3 script 'Zoom OUT/UP'.\n\nThe script uses the WordNet lexicon database to aggregate LEMMATIZED NOUNS and VERBS (LEMMATIZED, since WordNet only contains lemmatized values) listed in a csv file (e.g., run, flee, walk, ... aggregated as verbs of motion).\n\nYou can aggregate any list of LEMMATIZED nouns and verbs however obtained. Most likely, you will want to aggregate LEMMATIZED nouns and verbs from the CoNLL table computed via Stanford_CoreNLP.py script. NOUNS WOULD HAVE POSTAG VALUES NN* AND VERBS VB*. Tick the checkbox 'Extract nouns & verbs from CoNLL' to extract the lists.\n\nThe OUT/UP Java algorithm uses the MIT JWI (Java Wordnet Interface) (https://projects.csail.mit.edu/jwi/) to interface with WordNet.\n\nThe algorithm uses both ypernymy and holonymy to go UP the hierarchy.\n\nHypernym is the generic term used to designate a whole class of specific instances. Y is a hypernym of X if X is a (kind of) Y.\n\nHolonym is the name of the whole of which the meronym names a part. Y is a holonym of X if X is a part of Y.\n\nIn INPUT, the script expects a csv file where the first column contains a list of LEMMATIZED NOUNS or VERBS to be aggregated (the column headerr does not matter). You will be prompted to select the csv file when you tick the checkbox. Tick the checkbox 'Extract nouns & verbs from CoNLL' to extract the lists.\n\nNotice that you can process either a LEMMATIZED NOUN list or a LEMMATIZED VERB list at a time. You cannot process both at the same time.\n\nIn OUTPUT the script will create a csv file that contains the aggregate values of the various nouns and verbs.\n\nCAVEAT: For VERBS, the 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies." + webSearch)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to run a Python 3 script to extract all LEMMATIZED nouns and verbs from a CoNLL table (LEMMATIZED, since WordNet only contains lemmatized values) - nouns and verbs to be used by the 'Zoom OUT/UP' algorithm to aggregate nouns and verbs into WorNet categories.\n\nFor convenience, the script will also export the original words for nouns and verbs as found in FORM.\n\nIn INPUT, the script expects 2 csv files:\n  1. a csv CoNLL file;\n  2. a csv dictionary file containing the WordNet classification of LEMMATIZED words into higher-level aggregates (LEMMATIZED, since WordNet only contains lemmatized values). This file is generated by the 'Zoom OUT/UP' widget.\n   You will be prompted to select these csv files when you tick the checkbox.\n\nIn OUTPUT, the script produces a csv file and an Excel line plot of the aggregate WordNet categories by sentence index.")
+                                  "Please, tick the checkbox if you wish to run a Python 3 script to extract all LEMMATIZED nouns and verbs from a CoNLL table (LEMMATIZED, since WordNet only contains lemmatized values) - nouns and verbs to be used by the 'Zoom OUT/UP' algorithm to aggregate nouns and verbs into WorNet categories.\n\nFor convenience, the script will also export the original words for nouns and verbs as found in FORM.\n\nIn INPUT, the script expects 2 csv files:\n  1. a csv CoNLL file;\n  2. a csv dictionary file containing the WordNet classification of LEMMATIZED words into higher-level aggregates (LEMMATIZED, since WordNet only contains lemmatized values). This file is generated by the 'Zoom OUT/UP' widget.\n\n   You will be prompted to select these csv files when you tick the checkbox.\n\nIn OUTPUT, the script produces a csv file and an Excel line plot of the aggregate WordNet categories by sentence index.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to classify your document(s) by the main NOUN & VERB WordNet synsets.\n\nThe algorithm uses the Stanford CoreNLP POS (Part of Speech) annotator to extract Nouns and Verbs to be then classified via WordNet.\n\nIn INPUT the algorithm expects either a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithm produces a csv file of nouns and verbs classified by WordNet top synsets.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to run the Python 3 script 'Zoom OUT/UP by Sentence Index' to provide a csv file and an Excel line plot of the aggregate WordNet categories by sentence index for more in-grained linguistic analyses.\n\nIn INPUT, the algorithm expects 2 csv files:\n  1. a csv CoNLL file;\n  2. a csv dictionary file containing the WordNet classification of LEMMATIZED words into higher-level aggregates generated by the 'Zoom OUT/UP' widget (LEMMATIZED, since WordNet only contains lemmatized values).\n   You will be prompted to select these csv files when you tick the checkbox.\n\nIn OUTPUT, the script produces a csv file and an Excel line plot of the aggregate WordNet categories by sentence index.")
+                                  "Please, tick the checkbox if you wish to run the Python 3 script 'Zoom OUT/UP by Sentence Index' to provide a csv file and an Excel line plot of the aggregate WordNet categories by sentence index for more in-grained linguistic analyses.\n\nIn INPUT, the algorithm expects 2 csv files:\n  1. a csv CoNLL file (you can select this file using the 'Select INPUT/OUTPUT configuration' widget or the 'Select INPUT CSV file' widget);\n  2. a csv dictionary file containing the WordNet classification of LEMMATIZED words into higher-level aggregates generated by the 'Zoom OUT/UP' widget (LEMMATIZED, since WordNet only contains lemmatized values) (you will be prompted to select this csv file when you tick the checkbox).\n\nIn OUTPUT, the script produces a csv file and an Excel line plot of the aggregate WordNet categories by sentence index.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

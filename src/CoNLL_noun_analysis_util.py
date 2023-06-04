@@ -144,7 +144,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
     IO_csv_util.df_to_csv(GUI_util.window, df, noun_postag_stats_file_name, headers=None, index=False,
                           language_encoding='utf-8')
 
-    # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+    # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
     #       "Noun POS Tags"])
 
     # DepRel
@@ -159,7 +159,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
     IO_csv_util.df_to_csv(GUI_util.window, df, noun_ner_stats_file_name, headers=None, index=False,
                           language_encoding='utf-8')
 
-    # header=["ID", "FORM", "Lemma", "POStag", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
+    # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
     #   "Noun DEPREL Tags"])
 
     if createCharts == True:

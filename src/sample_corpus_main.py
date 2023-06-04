@@ -7,6 +7,7 @@ import tkinter as tk
 import os
 import tkinter.messagebox as mb
 
+import config_util
 import IO_files_util
 import GUI_IO_util
 
@@ -22,6 +23,10 @@ def run(window, inputFilename, inputDir, outputDir, selectedFile,
             keywords_inDocument):
 
     outputDir = os.path.join(inputDir, 'subcorpus_search')
+
+    # get the date options from filename
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
+        config_filename, config_input_output_numeric_options)
 
     if sample_by_keywords_inFilename:
         if keywords_inFilename=='':
@@ -74,8 +79,8 @@ config_filename = scriptName.replace('_main.py', '_config.csv')
 
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=460, # height at brief display
-                             GUI_height_full=540, # height at full display
+                             GUI_height_brief=420, # height at brief display
+                             GUI_height_full=500, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2) # to be added for full display
@@ -105,7 +110,10 @@ selectedFile_var = tk.StringVar()
 
 def clear(e):
     selectedFile_var.set('')
+    date_menu_var.set('')
+    comparator_var.set('')
     date_value_var.set('')
+    date_value=''
     keywords_inFilename_var.set('')
     keywords_inDocument_var.set('')
 
@@ -155,13 +163,13 @@ openFile_button = tk.Button(window, width=3, text='',
 x_coordinate_hover_over = GUI_IO_util.labels_x_indented_coordinate+500
 
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate, y_multiplier_integer,
                                                openFile_button, True, False, True, False, 90, GUI_IO_util.setup_pop_up_text_widget, "Open selected csv file")
 
 selectedFile_var.set('')
-selectedFile=tk.Entry(window, width=GUI_IO_util.widget_width_long,textvariable=selectedFile_var)
+selectedFile=tk.Entry(window, width=GUI_IO_util.widget_width_medium,textvariable=selectedFile_var)
 selectedFile.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate, y_multiplier_integer,selectedFile)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate+80, y_multiplier_integer,selectedFile)
 
 sample_by_date_var = tk.IntVar()
 sample_by_date_checkbox = tk.Checkbutton(window, text='Sample files by date in filename', variable=sample_by_date_var,
@@ -170,70 +178,71 @@ sample_by_date_checkbox = tk.Checkbutton(window, text='Sample files by date in f
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    sample_by_date_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox if you wish to sample your corpus by dates embedded in the filename")
+                                   "Tick the checkbox if you wish to sample your corpus by dates embedded in the filename"
+                                   "\nThe date options (format, item separator, and position in filename; e.g., New York Time_4_12-21-1982) are set in the Setup INPUT/OUTPUT configuration")
 
-date_format_lb = tk.Label(window,text='Format ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,y_multiplier_integer, date_format_lb, True)
-
-date_format_var = tk.StringVar()
-date_format_var.set('mm-dd-yyyy')
-date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                               GUI_IO_util.date_format_coordinate,
-                                               y_multiplier_integer,
-                                               date_format_menu,
-                                               True, False, False, False, 90,
-                                               GUI_IO_util.date_format_coordinate,
-                                               'Select the date type embedded in your filename')
-
-items_separator_var = tk.StringVar()
-items_separator_var.set('_')
-date_separator_lb = tk.Label(window, text='Character separator ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_char_sep_lb_coordinate,
-                                               y_multiplier_integer, date_separator_lb, True)
-
-date_separator = tk.Entry(window, textvariable=items_separator_var, width=3)
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                               GUI_IO_util.open_setup_x_coordinate,
-                                               y_multiplier_integer,
-                                               date_separator,
-                                               True, False, False, False, 90,
-                                               GUI_IO_util.open_TIPS_x_coordinate,
-                                               'Enter the character that separate items embedded in filename (default _)\nIn New York Time_01-15-1999_4_3, _ is the character separating the 3 items embedded in filename: newspaper name, date, page number, column number')
-
-date_position_menu_lb = tk.Label(window, text='Position ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_position_lb_coordinate,
-                                               y_multiplier_integer, date_position_menu_lb, True)
-
-date_position_var = tk.StringVar()
-date_position_var.set(2)
-date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                               GUI_IO_util.date_position_coordinate,
-                                               y_multiplier_integer,
-                                               date_position_menu,
-                                               False, False, False, False, 90,
-                                               GUI_IO_util.open_reminders_x_coordinate,
-                                               'Select the date position in the filename, starting with 1 if the date is the first item in the filename\nIn New York Time_01-15-1999_4_3, 2 is the date position as the second embedded item')
+# date_format_lb = tk.Label(window,text='Format ')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,y_multiplier_integer, date_format_lb, True)
+#
+# date_format_var = tk.StringVar()
+# date_format_var.set('mm-dd-yyyy')
+# date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,
+#                                                GUI_IO_util.date_format_coordinate,
+#                                                y_multiplier_integer,
+#                                                date_format_menu,
+#                                                True, False, False, False, 90,
+#                                                GUI_IO_util.date_format_coordinate,
+#                                                'Select the date type embedded in your filename')
+#
+# items_separator_var = tk.StringVar()
+# items_separator_var.set('_')
+# date_separator_lb = tk.Label(window, text='Character separator ')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_char_sep_lb_coordinate,
+#                                                y_multiplier_integer, date_separator_lb, True)
+#
+# date_separator = tk.Entry(window, textvariable=items_separator_var, width=3)
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,
+#                                                GUI_IO_util.open_setup_x_coordinate,
+#                                                y_multiplier_integer,
+#                                                date_separator,
+#                                                True, False, False, False, 90,
+#                                                GUI_IO_util.open_TIPS_x_coordinate,
+#                                                'Enter the character that separate items embedded in filename (default _)\nIn New York Time_01-15-1999_4_3, _ is the character separating the 3 items embedded in filename: newspaper name, date, page number, column number')
+#
+# date_position_menu_lb = tk.Label(window, text='Position ')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.date_position_lb_coordinate,
+#                                                y_multiplier_integer, date_position_menu_lb, True)
+#
+# date_position_var = tk.StringVar()
+# date_position_var.set(2)
+# date_position_menu = tk.OptionMenu(window,date_position_var,1,2,3,4,5)
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,
+#                                                GUI_IO_util.date_position_coordinate,
+#                                                y_multiplier_integer,
+#                                                date_position_menu,
+#                                                False, False, False, False, 90,
+#                                                GUI_IO_util.open_reminders_x_coordinate,
+#                                                'Select the date position in the filename, starting with 1 if the date is the first item in the filename\nIn New York Time_01-15-1999_4_3, 2 is the date position as the second embedded item')
 
 where_lb = tk.Label(window, text='WHERE clause')
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                where_lb, True)
 
-date_value_var = tk.StringVar()
+date_menu_var = tk.StringVar()
 date_values = ['Entire date', 'month', 'day', 'year']
 
-date_menu = tk.OptionMenu(window, date_value_var, *date_values)  # , command=lambda:extractSelection()
+date_menu = tk.OptionMenu(window, date_menu_var, *date_values)  # , command=lambda:extractSelection()
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                               GUI_IO_util.labels_x_indented_coordinate + 200,
+                                               GUI_IO_util.IO_configuration_menu + 100,
                                                y_multiplier_integer,
                                                date_menu,
                                                True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_indented_coordinate + 200,
+                                               GUI_IO_util.IO_configuration_menu + 100,
                                                'Select the date value to be used for filtering files by date')
 
 comparator_var = tk.StringVar()
@@ -243,30 +252,30 @@ comp_menu_values = ['<>', '=', '>', '>=', '<', '<=']
 comparator_menu = tk.OptionMenu(window, comparator_var, *comp_menu_values)  # , command=lambda:extractSelection()
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                               GUI_IO_util.labels_x_indented_coordinate + 400,
+                                               GUI_IO_util.setup_IO_brief_coordinate,
                                                y_multiplier_integer,
                                                comparator_menu,
                                                True, False, False, False, 90,
-                                               GUI_IO_util.labels_x_indented_coordinate + 400,
+                                               GUI_IO_util.IO_configuration_menu + 200,
                                                'Select the comparator operator to be used in filtering files by date')
 
 date_value_var = tk.StringVar()
 date_value_var.set('')
-date_value = tk.Entry(window,width=GUI_IO_util.widget_width_short,textvariable=date_value_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.date_char_sep_lb_coordinate, y_multiplier_integer,
+date_value = tk.Entry(window,width=GUI_IO_util.widget_width_medium,textvariable=date_value_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_coordinate+80, y_multiplier_integer,
                     date_value, False, False, True, False,
                     90, GUI_IO_util.date_char_sep_lb_coordinate,
                     "Enter the date value to be used in filtering files by date (e.g., 1995, 12-11-1898)")
-def check_dateFields(*args):
-    if sample_by_date_var.get() == 1:
-        date_format_menu.config(state="normal")
-        date_separator.config(state='normal')
-        date_position_menu.config(state='normal')
-    else:
-        date_format_menu.config(state="disabled")
-        date_separator.config(state='disabled')
-        date_position_menu.config(state="disabled")
-sample_by_date_var.trace('w',check_dateFields)
+# def check_dateFields(*args):
+#     if sample_by_date_var.get() == 1:
+#         date_format_menu.config(state="normal")
+#         date_separator.config(state='normal')
+#         date_position_menu.config(state='normal')
+#     else:
+#         date_format_menu.config(state="disabled")
+#         date_separator.config(state='disabled')
+#         date_position_menu.config(state="disabled")
+# sample_by_date_var.trace('w',check_dateFields)
 
 sample_by_keywords_inFilename_var = tk.IntVar()
 sample_by_keywords_inFilename_checkbox = tk.Checkbutton(window, text='Sample files by string in filename', variable=sample_by_keywords_inFilename_var,
@@ -314,9 +323,9 @@ def activate_all_options():
     openFile_button.configure(state="disabled")
     selectedFile.configure(state="disabled")
 
-    date_format_menu.configure(state="disabled")
-    date_separator.configure(state="disabled")
-    date_position_menu.configure(state="disabled")
+    # date_format_menu.configure(state="disabled")
+    # date_separator.configure(state="disabled")
+    # date_position_menu.configure(state="disabled")
     date_menu.configure(state="disabled")
     comparator_menu.configure(state="disabled")
     date_value.configure(state="disabled")
@@ -340,9 +349,9 @@ def activate_all_options():
         keywords_inDocument_var.set('')
 
     elif sample_by_date_var.get():
-        date_format_menu.configure(state="normal")
-        date_separator.configure(state="normal")
-        date_position_menu.configure(state="normal")
+        # date_format_menu.configure(state="normal")
+        # date_separator.configure(state="normal")
+        # date_position_menu.configure(state="normal")
         date_menu.configure(state="normal")
         comparator_menu.configure(state="normal")
         date_value.configure(state="normal")
@@ -405,9 +414,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                   "Please, tick the checkbox to sample your corpus by copying the files listed under 'Document' in a csv file.\nAfter clicking the button you will be prompted to select the input scv file. After selecting the csv file, you can clisk on the little button to open the file for inspection.\n\nIn INPUT the function expects:\n   1. a directory containing the files to be sampled; the directory is selected above in the INPUT/OUTPUT configuration;\n   2. a csv file containing a list of documents under the header 'Document' that will be used to sample; this csv file can be generated in a number of ways, e.g., using the 'Data manipulation' GUI with the option to 'Extract field(s) from csv file' in a file generated by any of the NLP Suite scripts.\n\nIn OUTPUT the function will copy the sampled files to a sub-folder of the input folder.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, tick the checkbox to sample your corpus by dates embedded in the filename.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, enter the varoius options for filtering your corpus by date.")
+                                  "Please, tick the checkbox to sample your corpus by dates embedded in the filename. Once available, enter the various options for filtering your corpus by date (format, date separator character(s), date position in filename (e.g., in the filename New York Time_4_12-21-1982, the date position is 3, the date separator character _, and the date format is mm-dd-yyyy) .\n\nThe date options are set by clicking the 'Setup INPUT/OUTPUT configuration' button at the top of this GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                   "Please, tick the checkbox to sample your corpus by a specific string in the filename of the input documents." \
                                   "\n\nIn INPUT the scripts expect a set of txt files in a directory." \
@@ -425,6 +432,10 @@ y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,
 readMe_message="The GUI allows you to access various functions for sampling your corpus."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
+
+# get the date options from filename
+filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
+    config_filename, config_input_output_numeric_options)
 
 GUI_util.window.mainloop()
 
