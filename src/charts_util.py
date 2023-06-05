@@ -95,26 +95,22 @@ def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage
                             columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis):
 
     pivot=False
-    groupByList.append('Form')
-    groupByList.append('Document ID')
-    groupByList.append('Document')
-    # in visualize_chart_byGroup
     temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
-                                                              inputFilename,
-                                                              None, outputDir,
-                                                              False,
-                                                              createCharts,
-                                                              chartPackage,
-                                                              # selected_col=columns_to_be_plotted_numeric,
-                                                              selected_col=columns_to_be_plotted_yAxis,
-                                                              hover_col=[],
-                                                              group_col=groupByList,
-                                                              complete_sid=False,
-                                                              fileNameType=
-                                                              columns_to_be_plotted_yAxis[
-                                                                  0],
-                                                              chartType='',
-                                                              pivot=pivot)
+                                                  inputFilename,
+                                                  None, outputDir,
+                                                  False,
+                                                  createCharts,
+                                                  chartPackage,
+                                                  # selected_col=columns_to_be_plotted_numeric,
+                                                  selected_col=columns_to_be_plotted_yAxis,
+                                                  hover_col=[],
+                                                  group_col=groupByList,
+                                                  complete_sid=False,
+                                                  fileNameType=
+                                                  columns_to_be_plotted_yAxis[
+                                                      0],
+                                                  chartType='',
+                                                  pivot=pivot)
     new_inputFilename = temp_outputFilename[0]
 
     # temp_outputFilename[0] is the frequency filename (with no hyperlinks)
@@ -482,6 +478,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         columns_to_be_plotted_byGroup=[]
         for header in groupByList:
             groupCol = IO_csv_util.get_columnNumber_from_headerValue(headers, header, inputFilename)
+            # [POS, Form]
             columns_to_be_plotted_byGroup.append([groupCol, field_number_yAxis])
         chart_outputFilename=visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage, filesToOpen,
                               columns_to_be_plotted_byGroup, groupByList, columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis)
@@ -496,15 +493,33 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         # TODO depends on how many documents we have;
         #   no point charting one document since these charts would be the same as no document
         n_documents = IO_csv_util.GetMaxValueInCSVField(inputFilename, 'visualize_charts_util', 'Document ID')
+
         if n_documents>1:
-            chart_outputFilename=visualize_chart_byDoc(inputFilename, outputDir, outputFileNameType,
-                                            createCharts, chartPackage, filesToOpen,
-                                            columns_to_be_plotted_byDoc, columns_to_be_plotted_yAxis,
-                                            count_var, pivot, chartTitle,hover_label)
-        if chart_outputFilename!=None:
-            chart_outputFilenameSV=chart_outputFilename
-            if len(chart_outputFilename) > 0:
-                filesToOpen.append(chart_outputFilename)
+            groupByList = ['Document ID','Document']
+            column_yAxis_label = 'Frequencies'
+            columns_to_be_plotted_byGroup = []
+            for header in groupByList:
+                groupCol = IO_csv_util.get_columnNumber_from_headerValue(headers, header, inputFilename)
+                columns_to_be_plotted_byGroup.append([groupCol, field_number_yAxis])
+            chart_outputFilename = visualize_chart_byGroup(inputFilename, outputDir,
+                                       createCharts, chartPackage,
+                                       filesToOpen,
+                                       columns_to_be_plotted_byGroup, groupByList,
+                                       columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis)
+
+            if chart_outputFilename != None:
+                chart_outputFilenameSV = chart_outputFilename
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.append(chart_outputFilename)
+
+        #     chart_outputFilename=visualize_chart_byDoc(inputFilename, outputDir, outputFileNameType,
+        #                                     createCharts, chartPackage, filesToOpen,
+        #                                     columns_to_be_plotted_byDoc, columns_to_be_plotted_yAxis,
+        #                                     count_var, pivot, chartTitle,hover_label)
+        # if chart_outputFilename!=None:
+        #     chart_outputFilenameSV=chart_outputFilename
+        #     if len(chart_outputFilename) > 0:
+        #         filesToOpen.append(chart_outputFilename)
 
 # line plots by SENTENCE index -----------------------------------------------------------------------
 # sentence index value are the first item in the list [[7,2]] i.e. 7
@@ -611,7 +626,8 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             return
     else:
         chart_title = chart_title
-        chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window, data_to_be_plotted, inputFilename, outputDir,
+        chart_outputFilename = charts_Excel_util.create_excel_chart(GUI_util.window, data_to_be_plotted,
+                                                  inputFilename, outputDir,
                                                   outputFileLabel, chart_title, chart_type_list,
                                                   column_xAxis_label_var, column_yAxis_label_var,
                                                   hover_info_column_list,

@@ -369,7 +369,6 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 
-
 def clear(e):
     # package.set('Stanford CoreNLP')
     # language.set("English")

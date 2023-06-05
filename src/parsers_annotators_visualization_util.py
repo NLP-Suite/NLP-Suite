@@ -41,17 +41,17 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 # generate visualization output ----------------------------------------------------------------
 # All POS ________________________________________________________________
 
-    elif 'All POS' in str(annotator_params) and 'All POS' in outputFilename:
+    elif 'POS' in str(annotator_params) and 'POS' in outputFilename:
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['POS'],
+                                                           columns_to_be_plotted_yAxis=['Form'],
                                                            chartTitle='Frequency Distribution of POS Tag Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='POS', #'POS_bar',
                                                            column_xAxis_label='POS tag values',
-                                                           groupByList=['Document ID', 'Document'],
+                                                           groupByList=['POS'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='POS Tag Values')
         if chart_outputFilename!=None:
@@ -75,7 +75,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                count_var=1, hover_label=[],
                                outputFileNameType='NER-tag', #'NER_tag_bar',
                                column_xAxis_label='NER tag',
-                               groupByList=['Document ID','Document'],
+                               groupByList=['Form','NER'],
                                plotList=['Frequency'],
                                chart_title_label='NER tag')
             if chart_outputFilename != None:

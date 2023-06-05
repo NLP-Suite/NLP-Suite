@@ -454,12 +454,13 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 
 # aggregation by group_col NO hover over ----------------------------------------
     elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
-        # group_list = group_col
+        columns_to_be_plotted = []
         group_list = group_col_SV.copy()
         data1 = []
         data2 = []
         data_final = []
         for col in selected_col:
+
             # selected_col, hover_col, group_col are single lists with the column headers
             #   selected_col=['POS'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
             # the aggregation can deal with column items passed as integer (from visualization_chart) or
@@ -486,13 +487,17 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             #     i = i+1
             # for col in selected_col:
             group_list.append(col)
-            if len(data1) == 0:
-                data1 = data.groupby(group_list).size().reset_index(name='Frequency_' + str(col))
-                form_to_lemma = data[selected_col].drop_duplicates()
-                data_final = pd.merge(form_to_lemma, data1, on=col)
-            else:
-                data2 = data.groupby(group_list).size().reset_index(name='Frequency_' + str(col))
-                data_final = pd.merge(data_final, data2, on=col)
+
+            # if len(data1) == 0:
+            data1 = data.groupby(group_list).size().reset_index(name='Frequency_' + str(col))
+            form_to_lemma = data[selected_col].drop_duplicates()
+            data_final = pd.merge(form_to_lemma, data1, on=col)
+            columns_to_be_plotted=[[0, 2],[1, 2]]
+            # else:
+            #     data2 = data.groupby(group_list).size().reset_index(name='Frequency_' + str(col))
+            #     data_final = pd.merge(data_final, data2, on=col)
+            #     columns_to_be_plotted.extend([2, 3])
+            group_list = group_col_SV.copy()
 
         # added TONY1
         # pivot=True
@@ -507,7 +512,11 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         data_final.to_csv(outputFilename,encoding='utf-8', index=False)
         filesToOpen.append(outputFilename)
         hover_over_header = []
-        columns_to_be_plotted = [[1, 2]]
+        chartType='bar'
+
+        # get_columnNumber_from_headerValue(headers, header_value, inputFilename)
+        # columns_to_be_plotted = [[1, 2]]
+        # columns_to_be_plotted = [[0,4],[1,7]]
         # columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=get_columns_to_be_plotted(outputFilename,col)
 
 # aggregation by group_col & hover over -----------------------------------------------

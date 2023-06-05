@@ -1,2 +1,2 @@
 Parser & annotators,Parsers,Basic functions (tokenizer/lemmatizer),Corpus language,Language encoding,Export Json,CoreNLP memory,CoreNLP document length,CoreNLP sentence-length limit
-spaCy,Dependency parser,Stanza,English,utf-8,0.0,0.0,0.0,0.0
+Stanza,"Dependency parser, Constituency parser",Stanza,English,utf-8,0.0,0.0,0.0,0.0

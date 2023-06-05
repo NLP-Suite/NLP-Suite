@@ -155,7 +155,7 @@ ALL SCRIPTS SUFFIXED BY _main CAN BE RUN INDIPENDENTLY OF THE NLP SUITE. Thus on
 Python knowledge_graphs_main.py
 and it will fire up the annotator GUI independently of NLP_main.py.
 
-The filename prefix cluster together scripts used for the same purpose. Thus annotator identifies all files dealing with html annotation.",ON
+The filename prefix cluster together scripts used for the same purpose. Thus annotator identifies all files dealing with html annotation.",OFF
 Stanford_CoreNLP,CoreNLP NER annotator timing,"Beware that the CoreNLP NER annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 50 minutes on a standard laptop.",OFF
 Stanford_CoreNLP,CoreNLP POS/NER max sentence length,"The CoreNLP POS/NER annotators set a maximum sentence length for processing.
 
