@@ -240,7 +240,7 @@ def run(inputFilename,inputDir,outputDir,
         #   with one sublist for each of the four types of IO configurations: filename, input main dir, input secondary dir, output dir
         # each sublist has four items: path, date format, date separator, date position
         # e.g., [['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/The Three Little Pigs.txt', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['C:\\Program Files (x86)\\NLP_backup\\Output', '', '', '']]
-        config_input_output_alphabetic_options_temp, missingIO = config_util.read_config_file(config_filename_temp, config_input_output_numeric_options_temp)
+        config_input_output_alphabetic_options_temp, missingIO, config_file_exists = config_util.read_config_file(config_filename_temp, config_input_output_numeric_options_temp)
         # add the sentiment csv file to the config file 'shape_of_stories_config.csv'
         config_input_output_alphabetic_options_temp[0][1]=outputFilename
         # add the output directory to the config file 'shape_of_stories_config.csv'

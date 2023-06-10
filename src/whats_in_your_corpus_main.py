@@ -1017,7 +1017,7 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
     config_filename = 'NLP_default_IO_config.csv'
-filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(config_filename, config_input_output_numeric_options)
+filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(config_filename, config_input_output_numeric_options)
 extract_date_from_text_var=0
 
 GUI_util.window.mainloop()

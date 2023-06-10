@@ -121,7 +121,7 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, False,'')
 # initial folders are setup in IO_files_util
 
 # config_input_output_alphabetic_options, config_input_output_full_options, missingIO = config_util.read_config_file(config_filename, config_input_output_numeric_options)
-config_input_output_alphabetic_options, missingIO = config_util.read_config_file(config_filename, config_input_output_numeric_options)
+config_input_output_alphabetic_options, missingIO, config_file_exists = config_util.read_config_file(config_filename, config_input_output_numeric_options)
 # set existing GUI options
 
 # TODO Must relay the widget here to display hover-over information, although the widget has been laid in GUI_util
@@ -498,13 +498,14 @@ def get_IO_options_str():
             IO_options_str = "''" + ', ' + "''" + ', ' + "''" + ', ' + "0"
     else:
         # sort order, character separator, date format, date item position
-        IO_options_str = "''" + ', ' +  "''" + ', ' + "''" + ', ' + "0"
+        IO_options_str = "''" + ', ' + "''" + ', ' + "''" + ', ' + "0"
 
     IO_options_str = IO_options_str + ', ' + GUI_util.inputFilename.get() + ', ' + GUI_util.input_main_dir_path.get() + ', ' + GUI_util.input_secondary_dir_path.get() + ', ' + GUI_util.output_dir_path.get()
     return IO_options_str
 
 def get_IO_options_list():
 
+    #@@@RF
     # config_input_output_alphabetic_options is a double list, each sublist of 4 items
     #   (path + 3 date items [[],[],...])
     # e.g., [['', '', '', ''], ['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/newspaperArticles', 'mm/dd/yyyy', '_', '4'], ['', '', '', ''], ['C:/Program Files (x86)/NLP_backup/Output', '', '', '']]

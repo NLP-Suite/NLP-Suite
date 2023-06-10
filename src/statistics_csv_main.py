@@ -53,6 +53,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
         if len(csv_list) == 0:
             mb.showwarning(title='Warning', message='You have selected to compute the frequency of a csv file field but no field has been selected.\n\nPlease, select a csv file field and try again.')
             return
+        chart_title='Frequency Distribution of TEMPORARY TITLE!!!'
         chart_outputFilename=statistics_csv_util.compute_csv_column_frequencies(window,
                                                            inputFilename,
                                                            None,
@@ -60,6 +61,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
                                                            openOutputFiles, createCharts, chartPackage,
                                                            csv_list,hover_over_list,groupBy_list,
                                                            False,
+                                                           chart_title=chart_title,
                                                            'CSV','line',False)
         if chart_outputFilename != None:
             if len(chart_outputFilename) > 0:

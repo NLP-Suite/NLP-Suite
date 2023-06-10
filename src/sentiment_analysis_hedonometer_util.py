@@ -283,7 +283,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                   chartTitle='Frequency of Hedonometer Sentiment Scores',
+                                                   chart_title='Frequency of Hedonometer Sentiment Scores',
                                                    count_var=0, hover_label=[],
                                                    outputFileNameType='Hedo',  # 'line_bar',
                                                    column_xAxis_label='Sentiment score',

@@ -47,16 +47,16 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
     yAxis = 'Geodesic distance in miles'
     xAxis = ''
     if baselineLocation=='':
-        chartTitle = 'Geodesic distance in miles'
+        chart_title = 'Geodesic distance in miles'
     else:
-        chartTitle = 'Geodesic distance in miles from ' + baselineLocation
+        chart_title = 'Geodesic distance in miles from ' + baselineLocation
     columns_to_be_plotted_xAxis=[]
     columns_to_be_plotted_yAxis=[[3,6]]
     chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                               '',
                                               chartPackage=chartPackage,
                                               chart_type_list=["bar"],
-                                              chart_title=chartTitle,
+                                              chart_title=chart_title,
                                               column_xAxis_label_var=xAxis,
                                               hover_info_column_list=[],
                                               count_var = 0,
@@ -76,16 +76,16 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
     yAxis = 'Great circle distance in miles'
     xAxis = ''
     if baselineLocation=='':
-        chartTitle = 'Great circle distance in miles'
+        chart_title = 'Great circle distance in miles'
     else:
-        chartTitle = 'Great circle distance in miles from ' + baselineLocation
+        chart_title = 'Great circle distance in miles from ' + baselineLocation
     columns_to_be_plotted_xAxis=[]
     columns_to_be_plotted_yAxis=[[3,8]]
     chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                               '',
                                               chartPackage=chartPackage,
                                               chart_type_list=["bar"],
-                                              chart_title=chartTitle,
+                                              chart_title=chart_title,
                                               column_xAxis_label_var=xAxis,
                                               hover_info_column_list=[],
                                               count_var = 0,

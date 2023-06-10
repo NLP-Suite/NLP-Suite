@@ -221,7 +221,7 @@ def main(inputFilename, inputDir, outputDir, configFileName, mode, createCharts=
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment score'],
-                                                   chartTitle='Frequency of SentiWordNet Sentiment Scores',
+                                                   chart_title='Frequency of SentiWordNet Sentiment Scores',
                                                    count_var=0, hover_label=[],
                                                    outputFileNameType='SentiWordNet',  # 'line_bar',
                                                    column_xAxis_label='Sentiment score',

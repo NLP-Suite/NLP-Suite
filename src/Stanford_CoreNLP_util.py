@@ -2157,7 +2157,7 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
                 chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                                   chartTitle='Coreferenced Pronouns',
+                                                                   chart_title='Coreferenced Pronouns',
                                                                    # count_var = 1 for columns of alphabetic values
                                                                    count_var=0, hover_label=[],
                                                                    outputFileNameType='', #'pronouns_bar',

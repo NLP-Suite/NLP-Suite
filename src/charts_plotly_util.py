@@ -24,7 +24,7 @@ import IO_csv_util
 ## the static_flag is used to indicate whether the chart is static or not
 
 # def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptType,
-#                        chartTitle,
+#                        chart_title,
 #                        chart_type_list,
 #                        column_xAxis_label='',
 #                        column_yAxis_label='',
@@ -34,7 +34,7 @@ import IO_csv_util
 #                        second_y_var=0,
 #                        second_yAxis_label=''):
 # match the excel chart format
-def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_to_plot,
+def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols_to_plot,
                         column_xAxis_label='',
                         column_yAxis_label='',
                         remove_hyperlinks=True,
@@ -62,26 +62,26 @@ def create_plotly_chart(inputFilename,outputDir,chartTitle,chart_type_list,cols_
         y_cols = headers[cols_to_plot[j][1]]
         if i == 'bar':
             if len(chart_type_list) < len(cols_to_plot):
-                fig = plot_multi_bar_chart_px(data, chartTitle, cols_to_plot)
-                file_list.append(save_chart(fig,outputDir,chartTitle,static_flag,column_xAxis_label,column_yAxis_label))
+                fig = plot_multi_bar_chart_px(data, chart_title, cols_to_plot)
+                file_list.append(save_chart(fig,outputDir,chart_title,static_flag,column_xAxis_label,column_yAxis_label))
                 break
             else:
-                fig = plot_bar_chart_px(x_cols,inputFilename,chartTitle,y_cols)
+                fig = plot_bar_chart_px(x_cols,inputFilename,chart_title,y_cols)
         elif i == 'pie':
-            fig = plot_pie_chart_px(x_cols,inputFilename,chartTitle,y_cols)
+            fig = plot_pie_chart_px(x_cols,inputFilename,chart_title,y_cols)
         #elif(i == 'scatter' or i == 'radar'):
         elif i == 'scatter':
-            fig = plot_scatter_chart_px(x_cols,y_cols,inputFilename,chartTitle)
+            fig = plot_scatter_chart_px(x_cols,y_cols,inputFilename,chart_title)
         elif i == 'radar':
-            fig = plot_radar_chart_px(x_cols,y_cols,inputFilename,chartTitle)
+            fig = plot_radar_chart_px(x_cols,y_cols,inputFilename,chart_title)
         elif i == 'line':
-            #plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, series_label_list = NULL)
-            fig = plot_multi_line_chart_w_slider_px(inputFilename,chartTitle,cols_to_plot)
-            file_list.append(save_chart(fig,outputDir,chartTitle,static_flag,column_xAxis_label,column_yAxis_label))
+            #plot_multi_line_chart_w_slider_px(fileName, chart_title, col_to_be_ploted, series_label_list = NULL)
+            fig = plot_multi_line_chart_w_slider_px(inputFilename,chart_title,cols_to_plot)
+            file_list.append(save_chart(fig,outputDir,chart_title,static_flag,column_xAxis_label,column_yAxis_label))
             break
         else:
             print('Chart type not supported '+i+'! Skipped and continue with next chart.')
-        file_list.append(save_chart(fig,outputDir,chartTitle,static_flag,column_xAxis_label,column_yAxis_label))
+        file_list.append(save_chart(fig,outputDir,chart_title,static_flag,column_xAxis_label,column_yAxis_label))
     #remove the temporary file
     if remove_hyperlinks:
         os.remove(inputFilename)
@@ -109,20 +109,20 @@ def get_frequencies(data, variable):
 #helper function for saving the chart
 #set up the output directory path
 #support both static and dynamic chart
-def save_chart(fig, outputDir, chartTitle, static_flag, x_label = '', y_label = ''):
+def save_chart(fig, outputDir, chart_title, static_flag, x_label = '', y_label = ''):
     #fig.show()
     if x_label != '':
         fig.update_layout(xaxis_title=x_label)
     if y_label != '':
         fig.update_layout(yaxis_title=y_label)
     if static_flag:
-        savepath = os.path.join(outputDir, chartTitle + '.png')
+        savepath = os.path.join(outputDir, chart_title + '.png')
         fig.write_image(savepath)
     else:
         # if the chat title has double lines, keep only the last line
-        if "\n" in chartTitle:
-            chartTitle=chartTitle.split("\n")[1]
-        savepath = os.path.join(outputDir, chartTitle + '.html')
+        if "\n" in chart_title:
+            chart_title=chart_title.split("\n")[1]
+        savepath = os.path.join(outputDir, chart_title + '.html')
         fig.write_html(savepath)
     return savepath
 
@@ -134,7 +134,7 @@ def save_chart(fig, outputDir, chartTitle, static_flag, x_label = '', y_label = 
 #duplicates allowed, would add up the counts
 #Users are expected to provide the x label and their hights.
 #If not call the get_frequencies function to get the frequencies of the categorical variables in x_label column
-def plot_bar_chart_px(x_label, fileName, chartTitle, height = ''):
+def plot_bar_chart_px(x_label, fileName, chart_title, height = ''):
     data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
     if height == '':
         height = x_label+"_count"
@@ -143,7 +143,7 @@ def plot_bar_chart_px(x_label, fileName, chartTitle, height = ''):
     # to ensure the bar doesn't look to wide if x label's length is not enough
     if len(data[x_label]) < 5:
         fig.update_traces(width=0.2)
-    fig.update_layout(title=chartTitle, title_x=0.5)
+    fig.update_layout(title=chart_title, title_x=0.5)
     return fig
 
 #plot pie chart with plotly
@@ -152,13 +152,13 @@ def plot_bar_chart_px(x_label, fileName, chartTitle, height = ''):
 #height indicates the column name of y axis from the data
 #the output file would be a html file with hover over effect names by the chart title
 #duplicates allowed, would add up the counts
-def plot_pie_chart_px(x_label, fileName, chartTitle, height = ''):
+def plot_pie_chart_px(x_label, fileName, chart_title, height = ''):
     data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
     if height == '':
         height = x_label+"_count"
         data = get_frequencies(data, x_label)
     fig = px.pie(data, values=height, names=x_label)
-    fig.update_layout(title=chartTitle, title_x=0.5)
+    fig.update_layout(title=chart_title, title_x=0.5)
     return fig
 
 #plot scatter chart with plotly
@@ -166,10 +166,10 @@ def plot_pie_chart_px(x_label, fileName, chartTitle, height = ''):
 #x_label indicates the column name of x axis from the data    COULD BE A DISCRETE VARIABLE
 #y_label indicates the column name of y axis from the data    COULD BE A DISCRETE VARIABLE
 #the output file would be a html file with hover over effect names by the chart title
-def plot_scatter_chart_px(x_label, y_label, fileName, chartTitle):
+def plot_scatter_chart_px(x_label, y_label, fileName, chart_title):
     data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
     fig = px.scatter(data, x=x_label, y=y_label)
-    fig.update_layout(title=chartTitle, title_x=0.5)
+    fig.update_layout(title=chart_title, title_x=0.5)
     return fig
 
 #plot scatter chart with plotly
@@ -178,7 +178,7 @@ def plot_scatter_chart_px(x_label, y_label, fileName, chartTitle):
 #r_label indicates the column name of the value of the feature from the data    CANNOT BE A DISCRETE VARIABLE
 #the output file would be a html file with hover over effect names by the chart title
 #null value will cause an unclosed shape. This function default removes all rows contaning null values
-def plot_radar_chart_px(theta_label, fileName, chartTitle, r_label = None):
+def plot_radar_chart_px(theta_label, fileName, chart_title, r_label = None):
     data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
     if r_label is None:
         r_label = theta_label+"_count"
@@ -186,24 +186,24 @@ def plot_radar_chart_px(theta_label, fileName, chartTitle, r_label = None):
     data = data.dropna(subset = [theta_label, r_label])
     fig = px.line_polar(data, r=r_label, theta=theta_label, line_close=True)
     fig.update_traces(fill='toself')
-    fig.update_layout(title=chartTitle, title_x=0.5)
+    fig.update_layout(title=chart_title, title_x=0.5)
     return fig
 
 #plot multi bar chart (data should be already preprocessed)
 # cols_to_plot just like Excel is a double list eg [[1,2],[1,3]]
 # no need to call prepare data to be plotted first, all subplots shared the same x axis
-def plot_multi_bar_chart_px(data, chartTitle, cols_to_plot):
+def plot_multi_bar_chart_px(data, chart_title, cols_to_plot):
     fig = go.Figure()
     headers = data.columns.values.tolist()
     for col in cols_to_plot:
         fig.add_trace(go.Bar(x=data[headers[col[0]]], y=data[headers[col[1]]], name=headers[col[0]]))
-    fig.update_layout(title=chartTitle, title_x=0.5)
+    fig.update_layout(title=chart_title, title_x=0.5)
     if len(cols_to_plot) < 5:
         fig.update_traces(width=0.2)
     return fig
 
 #plot multi line chart
-def plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, series_label_list = None):
+def plot_multi_line_chart_w_slider_px(fileName, chart_title, col_to_be_ploted, series_label_list = None):
     data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
     data.fillna(0, inplace=True)
     figs = make_subplots()
@@ -220,7 +220,7 @@ def plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, se
             y = data[col_name[col_to_be_ploted[i][1]]],
             name = series_label)
         figs.add_trace(trace)
-    figs.update_layout(title=chartTitle, title_x=0.5)
+    figs.update_layout(title=chart_title, title_x=0.5)
     # allow for sliders
     figs.update_layout(
         xaxis=dict(
@@ -234,7 +234,7 @@ def plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, se
             ),
         )
     )
-    #save_chart(figs, outputDir, chartTitle, False)
+    #save_chart(figs, outputDir, chart_title, False)
     return figs
 #=======================================================================================================================
 # debug use
@@ -243,14 +243,14 @@ def plot_multi_line_chart_w_slider_px(fileName, chartTitle, col_to_be_ploted, se
 #     x_label = 'char'
 #     height = 'count'
 #     hover_label = 'count'
-#     chartTitle = 'test chart'
+#     chart_title = 'test chart'
 #     fileName =  'C:/Users/Tony Chen/Desktop/NLP_working/Test OutputNLP_NVA_conll_eng_Noun_POSTAG_list_frequencies.csv'
 #     outputDir = 'C:/Users/Tony Chen/Desktop/NLP_working'
 
-#     #plot_bar_chart(x_label, height, fileName, outputDir, chartTitle, hover_label)
+#     #plot_bar_chart(x_label, height, fileName, outputDir, chart_title, hover_label)
 
-#     #plot_radar_chart_px(x_label, height, fileName, outputDir, chartTitle)
-#     plot_multi_line_chart_w_slider_px(fileName,outputDir,chartTitle)
+#     #plot_radar_chart_px(x_label, height, fileName, outputDir, chart_title)
+#     plot_multi_line_chart_w_slider_px(fileName,outputDir,chart_title)
 
 # if __name__ == "__main__":
 #     main()

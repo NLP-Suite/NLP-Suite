@@ -260,15 +260,15 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         filesToOpen.append(geocodedLocationsOutputFilename)
         if createCharts:
             if geocoder=='':
-                chartTitle = 'Frequency of Locations'
+                chart_title = 'Frequency of Locations'
             else:
-                chartTitle = 'Frequency of Locations Found by ' + geocoder
+                chart_title = 'Frequency of Locations Found by ' + geocoder
 
             #@@@
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
-                                                               chartTitle=chartTitle,
+                                                               chart_title=chart_title,
                                                                # count_var = 1 for columns of alphabetic values
                                                                count_var=1, hover_label=[],
                                                                outputFileNameType='', #'found',  # 'NER_tag_bar',
@@ -294,7 +294,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                     chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
                                                                            outputDir,
                                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
-                                                                           chartTitle='Frequency of Locations not Found by ' + geocoder,
+                                                                           chart_title='Frequency of Locations not Found by ' + geocoder,
                                                                            # count_var = 1 for columns of alphabetic values
                                                                            count_var=1, hover_label=[],
                                                                            outputFileNameType='', #'not-found',  # 'NER_tag_bar',
@@ -325,7 +325,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                 chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                                   chartTitle='Number of DISTINCT Locations Found and not Found by Geocoder',
+                                                                   chart_title='Number of DISTINCT Locations Found and not Found by Geocoder',
                                                                    # count_var = 1 for columns of alphabetic values
                                                                    count_var=0, hover_label=[],
                                                                    outputFileNameType='',

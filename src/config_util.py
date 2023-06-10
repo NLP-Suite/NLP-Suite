@@ -224,6 +224,8 @@ def save_NLP_package_language_config(window, currently_selected_options,
 #   with one sublist for each of the four types of IO confiigurations: filename, input main dir, input secondary dir, output dir
 # each sublist has four items: path, date format, date separator, date position
 # e.g., [['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/The Three Little Pigs.txt', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['C:\\Program Files (x86)\\NLP_backup\\Output', '', '', '']]
+# 5 fields: label/path + sort order + 3 date items (Item separator character(s), Date format, Date position)
+#@@@RF also added sort order
 def get_template_config_csv_file(config_input_output_numeric_options, config_input_output_alphabetic_options):
     IO_configuration =[]
     fileType=getFiletype(config_input_output_numeric_options) # different types of input files
@@ -240,8 +242,9 @@ def get_template_config_csv_file(config_input_output_numeric_options, config_inp
         if len(config_input_output_alphabetic_options)>0:
             if len(config_input_output_alphabetic_options[index]) > 0:
                 sublist=config_input_output_alphabetic_options[index]
+                # 5 fields: label/path + sort order + 3 date items
                 # date options saved: date format, date characters separator, date position in filename
-                # =4 when date options are available (path + sort order + 3 date options), otherwise =1
+                # =5 when date options are available (path + sort order + 3 date options), otherwise =1
                 # [configuration_column_label, sublist[0], sublist[1], sublist[2], sublist[3]])
                 IO_configuration.append(
                     [configuration_column_label, sublist[0], sublist[1], sublist[4], sublist[3], sublist[4]])
@@ -251,7 +254,9 @@ def get_template_config_csv_file(config_input_output_numeric_options, config_inp
                     IO_configuration.append([configuration_column_label, sublist[0]])
                 config_input_output_alphabetic_options=IO_configuration
         else:
-            IO_configuration.append([IO_configuration_label[index], '', '', '', 0])  # label + path + 3 date items
+            #@@@RF
+            # 5 fields: label/path + sort order + 3 date items (Item separator character(s), Date format, Date position)
+            IO_configuration.append([IO_configuration_label[index], '', '', '', 0])
     return IO_configuration
 
 
@@ -261,12 +266,15 @@ def get_template_config_csv_file(config_input_output_numeric_options, config_inp
 # [['Input txt filename with path', '', '', '', '0'], ['Input files directory', 'C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/newspaperArticles (Date: mm-dd-yyyy _ 2)', 'mm-dd-yyyy', '_', '4'], ['Input files secondary directory', '', '', '', '0'], ['Output files directory', 'C:\\Program Files (x86)\\NLP_backup\\Output', '', '', '0']]
 # config_option_csv contains 5 columns for each of four rows of input filename, directory, secondary directory, output directory
 #   Oct 2022 added 3 more columns for date options of either fileName or Input Dir: date format, character separator, date position
+#   Jan 2023 added sort order
+# 5 fields: label/path + sort order + 3 date items
 
 def read_config_file(config_filename, config_input_output_numeric_options):
     config_input_output_alphabetic_options = []
     configFilePath = os.path.join(GUI_IO_util.configPath, config_filename)
     # check that the config file exists
     if os.path.isfile(configFilePath) == True:
+        config_file_exists=True
         csv_file = open(configFilePath, 'r', newline='')
         config_input_output_alphabetic_options = list(csv.reader(csv_file, delimiter=','))
         config_input_output_alphabetic_options.pop(0) # skip header
@@ -292,11 +300,13 @@ def read_config_file(config_filename, config_input_output_numeric_options):
             # read_config_file(config_filename, config_input_output_numeric_options)
         csv_file.close()
     else:
+        config_file_exists=False
         config_input_output_alphabetic_options = list()
         # setup an empty double list config_input_output_alphabetic_options, WITHOUT header
+        # @@@RF also added sort order
         config_input_output_alphabetic_options=get_template_config_csv_file(config_input_output_numeric_options,config_input_output_alphabetic_options)
     missingIO=get_missing_IO_values(config_input_output_numeric_options, config_input_output_alphabetic_options)
-    return config_input_output_alphabetic_options, missingIO
+    return config_input_output_alphabetic_options, missingIO, config_file_exists
 
 # called by read_config_file above
 def get_missing_IO_values(config_input_output_numeric_options, config_input_output_alphabetic_options):
@@ -427,8 +437,9 @@ def write_IO_config_file(window, config_filename, config_input_output_numeric_op
 def get_date_options(config_filename, config_input_output_numeric_options):
 
     # in the NLP_setup_IO_config there are 6 columns and 4 rows (each row for input file, input dir1, input dir2, output dir):
-    #   I/O configuration label, Path, Sort order, Item separator character(s), Date format, Date position
-    config_input_output_alphabetic_options, missingIO = read_config_file(config_filename, config_input_output_numeric_options)
+    # 5 fields: label/path + sort order + 3 date items (Item separator character(s), Date format, Date position)
+    #@@@RF
+    config_input_output_alphabetic_options, missingIO, config_file_exists = read_config_file(config_filename, config_input_output_numeric_options)
     if len(config_input_output_alphabetic_options)>0:
         index=0
         # define variable with default values
@@ -437,13 +448,16 @@ def get_date_options(config_filename, config_input_output_numeric_options):
         items_separator_var = '_' # default
         date_position_var = 2 # default
         while index<2: # check date options for input file and input dir
-            if config_input_output_alphabetic_options[index][4]!='':
+            # date options saved: date format, date characters separator, date position in filename
+            # =4 when date options are available (path + sort order + 3 date options), otherwise =1
+            # @@@RF
+            if config_input_output_alphabetic_options[index][4] != '':  # check date format field
                 filename_embeds_date_var=1
-                date_format_var=config_input_output_alphabetic_options[index][4]
-                items_separator_var=config_input_output_alphabetic_options[index][3]
-                date_position_var=int(config_input_output_alphabetic_options[index][5])
+                date_format_var = config_input_output_alphabetic_options[index][4]
+                items_separator_var = config_input_output_alphabetic_options[index][3]
+                date_position_var = int(config_input_output_alphabetic_options[index][5])
             index=index+1
-    return filename_embeds_date_var, date_format_var, items_separator_var, date_position_var
+    return filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists
 
 # used in GIS_GUI and GIS_geocode_GUI
 # Google_config: 'Google-geocode-API_config.csv' or 'Google-Maps-API_config.csv'

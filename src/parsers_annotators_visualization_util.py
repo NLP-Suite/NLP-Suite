@@ -25,7 +25,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Form','Lemma'],
-                                                           chartTitle='Frequency Distribution of Form & Lemma Values',
+                                                           chart_title='Frequency Distribution of Form & Lemma Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='form-lemma', #'POS_bar',
@@ -46,7 +46,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Form'],
-                                                           chartTitle='Frequency Distribution of POS Tag Values',
+                                                           chart_title='Frequency Distribution of POS Tag Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='POS', #'POS_bar',
@@ -65,19 +65,36 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
         reminders_util.checkReminder(scriptName, reminders_util.NER_frequencies,
                                      reminders_util.message_NER_frequencies)
         if IO_csv_util.get_csvfile_headers(outputFilename, False)[1] == "NER":
-            # plot NER tag (e.g, LOCATION)
+            # plot NER tag (e.g, LOCATION), standard bar and by Doc
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                outputDir,
                                columns_to_be_plotted_xAxis=[],
                                columns_to_be_plotted_yAxis=['NER'],
-                               chartTitle='Frequency Distribution of NER Tags',
+                               chart_title='Frequency Distribution of NER Tags',
                                # count_var = 1 for columns of alphabetic values
                                count_var=1, hover_label=[],
                                outputFileNameType='NER-tag', #'NER_tag_bar',
-                               column_xAxis_label='NER tag',
-                               groupByList=['Form','NER'],
+                               column_xAxis_label='NER tags',
+                               groupByList=['Document ID', 'Document'],
                                plotList=['Frequency'],
-                               chart_title_label='NER tag')
+                               chart_title_label='NER')
+            if chart_outputFilename != None:
+                if len(chart_outputFilename) > 0:
+                    filesToOpen.extend(chart_outputFilename)
+
+            # plot Form values by NER tag (e.g, Atlanta in LOCATION)
+            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                               outputDir,
+                               columns_to_be_plotted_xAxis=[],
+                               columns_to_be_plotted_yAxis=['Form'],
+                               chart_title='Frequency Distribution of Form Values by NER Tags',
+                               # count_var = 1 for columns of alphabetic values
+                               count_var=1, hover_label=[],
+                               outputFileNameType='FormByNER', #'NER_tag_bar',
+                               column_xAxis_label='NER tags',
+                               groupByList=['NER'],
+                               plotList=['Frequency'],
+                               chart_title_label='NER')
             if chart_outputFilename != None:
                 if len(chart_outputFilename) > 0:
                     filesToOpen.extend(chart_outputFilename)
@@ -126,7 +143,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             #     columns_to_be_plotted_byDoc = [[1, 3, 2]]  # will give different bars for each value
             # # columns_to_be_plotted_byDoc = [[0, 1, 2]] # No!!!!!!!!!!!
             # outputFileLabel='temp'
-            # chartTitle='merdata'
+            # chart_title='merdata'
             # hover_label=[]
             # column_yAxis_label = 'Frequencies'
             # if chartPackage == "Excel":
@@ -136,7 +153,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             #                                               outputFileLabel=outputFileLabel, # outputFileNameType + 'byDoc', #outputFileLabel,
             #                                               chartPackage=chartPackage,
             #                                               chart_type_list=['bar'],
-            #                                               chart_title=chartTitle + ' by Document',
+            #                                               chart_title=chart_title + ' by Document',
             #                                               column_xAxis_label_var='',
             #                                               column_yAxis_label_var=column_yAxis_label,
             #                                               hover_info_column_list=hover_label,
@@ -152,13 +169,13 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             # # plot the words contained in each NER tag (e.g, the word 'Rome' in NER tag LOCATION)
             # hover_label = []
             # columns_to_be_plotted = [[1, 0, 1]]
-            # chartTitle = 'Frequency Distribution of words'
+            # chart_title = 'Frequency Distribution of words'
             # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
             #                                outputFileLabel='byNER_',
             #                                # outputFileNameType + 'byDoc', #outputFileLabel,
             #                                chartPackage=chartPackage,
             #                                chart_type_list=['bar'],
-            #                                chart_title=chartTitle + ' by NER',
+            #                                chart_title=chart_title + ' by NER',
             #                                column_xAxis_label_var='',
             #                                column_yAxis_label_var='Frequency',
             #                                hover_info_column_list=hover_label,
@@ -177,7 +194,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             #                            outputDir,
             #                            columns_to_be_plotted_xAxis=[], #['NER'],
             #                            columns_to_be_plotted_yAxis=['Word'],
-            #                            chartTitle='Frequency Distribution of Words by NER Tag', # + ner_tags,
+            #                            chart_title='Frequency Distribution of Words by NER Tag', # + ner_tags,
             #                            # count_var = 1 for columns of alphabetic values
             #                            count_var=1, hover_label=[],
             #                            outputFileNameType='NER-word', #'NER_word_bar',
@@ -201,7 +218,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Date expression'],
-                                                           chartTitle='Frequency Distribution of Date Expressions',
+                                                           chart_title='Frequency Distribution of Date Expressions',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='date-express', #'NER_info_bar',
@@ -218,7 +235,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Normalized date'],
-                                                           chartTitle='Frequency Distribution of Normalized Dates',
+                                                           chart_title='Frequency Distribution of Normalized Dates',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='date', #'NER_date_bar',
@@ -235,7 +252,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Date type'],
-                                                           chartTitle='Frequency Distribution of Date Types',
+                                                           chart_title='Frequency Distribution of Date Types',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='date-types', #'NER_info_bar',
@@ -255,7 +272,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Gender'],
-                                                           chartTitle='Frequency Distribution of Gender Values',
+                                                           chart_title='Frequency Distribution of Gender Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='gender-values', #'gender_bar',
@@ -271,7 +288,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Word'],
-                                                           chartTitle='Frequency Distribution of Gendered Words',
+                                                           chart_title='Frequency Distribution of Gendered Words',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='gender-words', #'gender_bar',
@@ -301,7 +318,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Form','Lemma'],
-                                                           chartTitle='Frequency Distribution of FORM & LEMMA Values',
+                                                           chart_title='Frequency Distribution of FORM & LEMMA Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='form-lemma',
@@ -321,7 +338,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Speakers'],
-                                                           chartTitle='Frequency Distribution of Speakers\n(CoreNLP Quote Annotator)',
+                                                           chart_title='Frequency Distribution of Speakers\n(CoreNLP Quote Annotator)',
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='quote', #'quote_bar',
                                                            column_xAxis_label='Speakers',
@@ -338,7 +355,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['POS'],
-                                                           chartTitle='Frequency Distribution of POS (Part of Speech) Tags',
+                                                           chart_title='Frequency Distribution of POS (Part of Speech) Tags',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='POS',
@@ -358,7 +375,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['NER'],
-                                                           chartTitle='Frequency Distribution of NER (Named Entity Recognition) Tags',
+                                                           chart_title='Frequency Distribution of NER (Named Entity Recognition) Tags',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='NER',
@@ -378,7 +395,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['DepRel'],
-                                                           chartTitle='Frequency Distribution of DEP Rel (Dependency Relations) Values',
+                                                           chart_title='Frequency Distribution of DEP Rel (Dependency Relations) Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='DEPRel',
@@ -399,7 +416,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[],
                                                                columns_to_be_plotted_yAxis=['Sentiment score'], # sentiment score
-                                                               chartTitle='Frequency Distribution of Sentiment Scores',
+                                                               chart_title='Frequency Distribution of Sentiment Scores',
                                                                count_var=0, hover_label=[],
                                                                outputFileNameType='score', #'senti_bar',
                                                                column_xAxis_label='Sentiment score',
@@ -415,7 +432,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[],
                                                                columns_to_be_plotted_yAxis=['Sentiment label'],
-                                                               chartTitle='Frequency Distribution of Sentiment Labels',
+                                                               chart_title='Frequency Distribution of Sentiment Labels',
                                                                count_var=1, hover_label=[],
                                                                outputFileNameType='label', #'senti_bar',
                                                                column_xAxis_label='Sentiment label',
@@ -447,7 +464,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputSVOUnFilterDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Subject (S)'],
-                                                           chartTitle='Frequency Distribution of Subjects (unlemmatized, unfiltered)',
+                                                           chart_title='Frequency Distribution of Subjects (unlemmatized, unfiltered)',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='S-form', #'S_bar',
@@ -464,7 +481,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputSVOUnFilterDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Verb (V)'],
-                                                           chartTitle='Frequency Distribution of Verbs (unlemmatized, unfiltered)',
+                                                           chart_title='Frequency Distribution of Verbs (unlemmatized, unfiltered)',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='V-form', #'V_bar',
@@ -481,7 +498,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputSVOUnFilterDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Object (O)'],
-                                                           chartTitle='Frequency Distribution of Objects (unlemmatized, unfiltered)',
+                                                           chart_title='Frequency Distribution of Objects (unlemmatized, unfiltered)',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='O-form', #'O_bar',
@@ -516,7 +533,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[],
                                                                columns_to_be_plotted_yAxis=['Pronoun'],
-                                                               chartTitle='Frequency Distribution of Pronouns (Antecedents)',
+                                                               chart_title='Frequency Distribution of Pronouns (Antecedents)',
                                                                # count_var = 1 for columns of alphabetic values
                                                                count_var=1, hover_label=[],
                                                                outputFileNameType='pronouns',  # 'O_bar',
@@ -532,7 +549,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[],
                                                                columns_to_be_plotted_yAxis=['Referent'],
-                                                               chartTitle='Frequency Distribution of Coreferences (Referents)',
+                                                               chart_title='Frequency Distribution of Coreferences (Referents)',
                                                                # count_var = 1 for columns of alphabetic values
                                                                count_var=1, hover_label=[],
                                                                outputFileNameType='referents',  # 'O_bar',

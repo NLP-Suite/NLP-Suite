@@ -114,12 +114,12 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCha
 
     # if createCharts==True:
     #     # TODO need to create bar and line charts
-    #     chartTitle='HTML extractor'
+    #     chart_title='HTML extractor'
     #     columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[2,2]
     #     hover_label=['']
     #     chartType='bar'
     #     fileNameType='html_extr'
-    #     chart_outputFilename_1 = charts_util.run_all(columns_to_be_plotted, csvFile, outputDir, csvFile, chart_type_list=[chartType], chart_title=chartTitle, column_xAxis_label_var='', column_yAxis_label_var='Frequencies', outputExtension = '.xlsm', label1=fileNameType,label2=chartType,label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
+    #     chart_outputFilename_1 = charts_util.run_all(columns_to_be_plotted, csvFile, outputDir, csvFile, chart_type_list=[chartType], chart_title=chart_title, column_xAxis_label_var='', column_yAxis_label_var='Frequencies', outputExtension = '.xlsm', label1=fileNameType,label2=chartType,label3='chart',label4='',label5='', useTime=False,disable_suffix=True,  count_var=1, column_yAxis_field_list = [], reverse_column_position_for_series_label=False , series_label_list=[], second_y_var=0, second_yAxis_label='', hover_info_column_list=hover_label)
     #     if chart_outputFilename_1 != "":
     #         filesToOpen.append(chart_outputFilename_1)
 

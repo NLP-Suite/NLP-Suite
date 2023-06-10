@@ -309,7 +309,7 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
 # enable complete_sid to make sentence index continuous
 # enable graph to make a multiline graph
 # the input should be saved to a csv file first
-# def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chartTitle,
+# def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chart_title,
 #         graph = True, complete_sid = True, series_label = None, chartPackage = 'Excel'):
 #     cols = group_col + select_col
 #     if 'Excel' in chartPackage:
@@ -352,7 +352,7 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
 #         charts_util.add_missing_IDs(name, name)
 #     print(name)
 #     if(graph):
-#         #TODO: need filename generation and chartTitle generation
+#         #TODO: need filename generation and chart_title generation
 #         data = pd.read_csv(name,header=0, encoding='utf-8',on_bad_lines='skip')
 #         cols_to_be_plotted = []
 #         for i in range(1,len(data.columns)):
@@ -360,12 +360,12 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
 #         if series_label is None:
 #             Excel_outputFilename = charts_util.run_all(cols_to_be_plotted, name, outputDir,
 #                                                        "frequency_multi-line_chart", chart_type_list=["line"],
-#                                                        chart_title=chartTitle,
+#                                                        chart_title=chart_title,
 #                                                        column_xAxis_label_var="Sentence ID", chartPackage=chartPackage)
 #         else:
 #             Excel_outputFilename = charts_util.run_all(cols_to_be_plotted, name, outputDir,
 #                                                        "frequency_multi-line_chart", chart_type_list=["line"],
-#                                                        chart_title=chartTitle,
+#                                                        chart_title=chart_title,
 #                                                        column_xAxis_label_var="Sentence ID", series_label_list=series_label,
 #                                                        chartPackage=chartPackage)
 #     return Excel_outputFilename
@@ -383,8 +383,8 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
 #   selected_col=['POS'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
 def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputDir,
             openOutputFiles,createCharts,chartPackage,
-            selected_col, hover_col, group_col, complete_sid = True,
-            fileNameType='CSV',chartType='line',pivot=True):
+            selected_col, hover_col, group_col, complete_sid,
+            chart_title, fileNameType='CSV',chartType='line',pivot=True):
 
     name = outputDir + os.sep + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
 
@@ -487,12 +487,18 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             #     i = i+1
             # for col in selected_col:
             group_list.append(col)
-
-            # if len(data1) == 0:
-            data1 = data.groupby(group_list).size().reset_index(name='Frequency_' + str(col))
-            form_to_lemma = data[selected_col].drop_duplicates()
-            data_final = pd.merge(form_to_lemma, data1, on=col)
-            columns_to_be_plotted=[[0, 2],[1, 2]]
+            # counts = data.groupby(list(args)).size()
+            # Convert the multi-level index to columns
+            # counts = counts.reset_index(name='Counts')
+            data = data.groupby(group_list).size().reset_index(name='Frequency_' + str(col))
+            # form_to_lemma = data[selected_col].drop_duplicates()
+            # data_final = pd.merge(form_to_lemma, data1, on=col)
+            # SIMON should get the col of frequency in data_final
+            if 'Document' in str(group_list):
+                columns_to_be_plotted = [[0, 2, 3]]  # will give different bars for each value
+                # columns_to_be_plotted = [[0, 3], [1, 3]]
+            else:
+                columns_to_be_plotted=[[0, 2],[1, 2]]
             # else:
             #     data2 = data.groupby(group_list).size().reset_index(name='Frequency_' + str(col))
             #     data_final = pd.merge(data_final, data2, on=col)
@@ -509,11 +515,11 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             # TODO Samir
             print("Completing sentence index...")
             charts_util.add_missing_IDs(outputFilename, outputFilename)
-        data_final.to_csv(outputFilename,encoding='utf-8', index=False)
+        data.to_csv(outputFilename,encoding='utf-8', index=False)
         filesToOpen.append(outputFilename)
         hover_over_header = []
         chartType='bar'
-
+        # chart_title = 'Frequency Distribution of ' + col + ' Values by ' + str(group_col),
         # get_columnNumber_from_headerValue(headers, header_value, inputFilename)
         # columns_to_be_plotted = [[1, 2]]
         # columns_to_be_plotted = [[0,4],[1,7]]
@@ -552,12 +558,14 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         columns_to_be_plotted = [[1, 2]]
         hover_over_header = [hover_over_header + '_y']
 
+# plot the data
+
     if createCharts:
         chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                               outputFileLabel=fileNameType,
                                               chartPackage=chartPackage,
                                               chart_type_list=[chartType],
-                                              chart_title='Frequency Distribution of ' + col + ' Values',
+                                              chart_title=chart_title,
                                               column_xAxis_label_var=col,
                                               hover_info_column_list=hover_over_header)
         if chart_outputFilename != None:

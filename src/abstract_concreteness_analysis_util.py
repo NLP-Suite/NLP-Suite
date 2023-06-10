@@ -227,7 +227,7 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 	chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
 													   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Concreteness (Mean score)'],
 													   # columns_to_be_plotted_bySent= [[10, 7, 0]],
-													   chartTitle='Frequency Distribution of Abstract/Concrete Scores',
+													   chart_title='Frequency Distribution of Abstract/Concrete Scores',
 													   count_var=0, # 0 for numeric field
 													   hover_label=[],
 													   outputFileNameType='',

@@ -96,7 +96,7 @@ def get_hover_column_numbers(withHeader_var, headers, hover_info_column_list):
 #   two series: [[['Name1','Frequency'], ['A', 7]], [['Name2','Frequency'], ['B', 4]]]
 #   three series: [[['Name1','Frequency'], ['A', 7]], [['Name2','Frequency'], ['B', 4]], [['Name3','Frequency'], ['C', 9]]]
 #   more series: ..........
-#chartTitle is the name of the sheet
+#chart_title is the name of the sheet
 # the title_series is displayed to the right of the chart as the title of the series
 #num_label number of bars, for instance, that will be displayed in a bar chart
 #second_y_var is a boolean that tells the function whether a second y axis is needed
@@ -111,7 +111,7 @@ def get_hover_column_numbers(withHeader_var, headers, hover_info_column_list):
 
 # returns None if an error is encountered
 def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptType,
-                       chartTitle,
+                       chart_title,
                        chart_type_list,
                        column_xAxis_label='',
                        column_yAxis_label='',
@@ -333,7 +333,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                     # fill out Hover-over data (Labels) sheet
                     ws2.cell(row=j + 1, column=i + 1).value = hover_data[j][0]
         names = []
-        names.append(chartTitle)
+        names.append(chart_title)
         names.append(column_yAxis_label)
         names.append(column_xAxis_label+insertLines)
         for i in range(3):
@@ -437,7 +437,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 else:
                     chartName.add_data(data,titles_from_data=False)
                     chartName.set_categories(hover_over_values)
-                chartName.title = chartTitle
+                chartName.title = chart_title
                 if chart_type_list[0]=="line" or chart_type_list[0]=="bar" or chart_type_list[0]=="bubble" or chart_type_list[0]=="scatter":
                     # https://stackoverflow.com/questions/35010050/setting-x-axis-label-to-bottom-in-openpyxl
                     chartName.x_axis.tickLblPos = "low"

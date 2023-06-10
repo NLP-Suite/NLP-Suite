@@ -55,7 +55,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         return
 
     # get the date options from filename
-    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = \
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = \
         config_util.get_date_options(config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
@@ -293,7 +293,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         #   with one sublist for each of the four types of IO configurations: filename, input main dir, input secondary dir, output dir
         # each sublist has four items: path, date format, date separator, date position
         # e.g., [['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/The Three Little Pigs.txt', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['C:\\Program Files (x86)\\NLP_backup\\Output', '', '', '']]
-        config_input_output_alphabetic_options_temp, missingIO = config_util.read_config_file(config_filename_temp, config_input_output_numeric_options_temp)
+        config_input_output_alphabetic_options_temp, missingIO, config_file_exists = config_util.read_config_file(config_filename_temp, config_input_output_numeric_options_temp)
         # add the CoNLL table file to the config file 'conll_table_analyzer_config.csv'
         config_input_output_alphabetic_options_temp[0][1]=filesToOpen[0][0]
         # add the output directory to the config file 'conll_table_analyzer_config.csv'
@@ -333,14 +333,6 @@ GUI_util.run_button.configure(command=run_script_command)
 
 # the GUIs are all setup to run with a brief I/O display or full display (with filename, inputDir, outputDir)
 #   just change the next statement to True or False IO_setup_display_brief=True
-IO_setup_display_brief=True
-GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
-                             GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=440, # height at brief display
-                             GUI_height_full=520, # height at full display
-                             y_multiplier_integer=GUI_util.y_multiplier_integer,
-                             y_multiplier_integer_add=2, # to be added for full display
-                             increment=2)  # to be added for full display
 
 GUI_label = 'Graphical User Interface (GUI) for NLP parsers & annotators'
 # The 4 values of config_option refer to:
@@ -356,16 +348,29 @@ GUI_label = 'Graphical User Interface (GUI) for NLP parsers & annotators'
 #   output dir
 config_input_output_numeric_options=[2,1,0,1]
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('main.py', 'config.csv')
 
+IO_setup_display_brief=True
+GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
+                             GUI_width=GUI_IO_util.get_GUI_width(3),
+                             GUI_height_brief=440, # height at brief display
+                             GUI_height_full=520, # height at full display
+                             y_multiplier_integer=GUI_util.y_multiplier_integer,
+                             y_multiplier_integer_add=2, # to be added for full display
+                             increment=2)  # to be added for full display
+
+config_filename=''
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
 window = GUI_util.window
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
+
+if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+    config_filename = 'NLP_default_IO_config.csv'
+else:
+    config_filename = scriptName.replace('main.py', 'config.csv')
+
+
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
 

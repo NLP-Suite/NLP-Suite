@@ -59,7 +59,7 @@ def run(inputFilename, inputDir, outputDir,
     else:
         temp_config_filename = scriptName.replace('_main.py', '_config.csv')
 
-    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = \
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = \
         config_util.get_date_options(temp_config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 

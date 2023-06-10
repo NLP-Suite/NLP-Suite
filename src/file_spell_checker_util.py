@@ -121,7 +121,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Misspelled-unusual word'],
-                                                   chartTitle='Frequency of Misspelled-Unusual Words',
+                                                   chart_title='Frequency of Misspelled-Unusual Words',
                                                    count_var=1, hover_label=[],
                                                    outputFileNameType='',  # 'line_bar',
                                                    column_xAxis_label='Word',
@@ -180,7 +180,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
 
         chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Typo?'],
-                                                           chartTitle='Frequency of Potential Typos',
+                                                           chart_title='Frequency of Potential Typos',
                                                            count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                            hover_label=[],
                                                            outputFileNameType='Leven_spell',
@@ -487,7 +487,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
 
             chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFileName_simple, outputDir,
                                                                columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Typo?'],
-                                                               chartTitle='Frequency of Potential Typos',
+                                                               chart_title='Frequency of Potential Typos',
                                                                count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                                hover_label=[],
                                                                outputFileNameType='Leven_spell',

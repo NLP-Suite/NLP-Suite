@@ -102,7 +102,7 @@ NGrams_CoOccurrences_Viewer,NLP setup options,"Some of the algorithms behind thi
 Your selected corpus language is English.
 Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
 
-You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",ON
+You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",OFF
 CoNLL_table_analyzer,Clause tags with CoreNLP neural network parser,The CoreNLP neural network parser does not produce clause tags in output. The column 'Clause Tag' in the output csv CoNLL table would contain all blank values.,OFF
 CoNLL_verb_analysis,CoNLL table - Verb modality,"The categories of Verb modality (Obligation, Will/would, Can/may) computed from the CoNLL table are NOT mutually exclusive. The same verb may appear in several categories.",OFF
 coreference,Stanford CoreNLP coreference,"The coreference algorithms in this GUI are based exclusively on Stanford CoreNLP coref annotator.
@@ -181,3 +181,19 @@ First, hover-over charts are based on Excel macros. You need to enable macros in
 Second, if the Excel chart has nothing in it or chart titles are not displayed, you need to hover the mouse over the chart area to display the chart properly. That is how hover-over charts work.
 
 Third, if the chart is displayed but the bars of a bar chart, for instance, have the same height, contrary to expectations, click on Data then on Chart to display the chart properly.",OFF
+SVO,Stanford CoreNLP coref merged files,"The Stanford CoreNLP coref annotator with a corpus of files in a directory in input will create a merged corefed file (with filenames embedded in <@# #@>) in output.
+
+Manual coreference resolution will not be available; depending upon the number of files merged, bringing the files into memory for manual editing may exceed memory capacity. You can always
+   1. manually edit the merged file anyway using the 'coreference_main' GUI;
+   2. split the merged file and then edit the individual coreferenced files, again, using the 'coreference_main' GUI.",OFF
+Stanford_CoreNLP,CoreNLP SVO timing,"Beware that the CoreNLP SVO algorithms on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 1 hour and 20 minutes on a standard laptop.",OFF
+Stanford_CoreNLP,CoreNLP SVO + gender + quote timing,"Beware that the CoreNLP SVO + gender + quote algorithms on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 4 hours on a standard laptop.",ON
+Stanford_CoreNLP,CoreNLP quote annotator,"The CoreNLP quote annotator works with double quotes as default "" rather than with single quotes '. If your document(s) use single quotes for dialogue, make sure to tick the checkbox 'Include single quotes'. The Stanford CoreNLP annotator will then process BOTH single AND double quotes, otherwise single quotes for dialogues would be missed (e.g., The user said: 'This NLP Suite sucks.').",ON
+file_splitter_ByLength,CoreNLP split files,"Stanford CoreNLP has a limit of 100,000 characters maximum text size.
+
+The input file was automatically split into chunks smaller than 100K characters size, fed to Stanford CoreNLP and the output recomposed into a single file.
+
+Split files are created in a sub-folder named ""split_files"" inside the directory where the input txt files are located, regardless of the choice of output directory.
+
+If you are processing files in a directory, other files may similarly need to be split and the message display may become annoying.",OFF
+Stanford_CoreNLP,% sign in file,"The file contains % sign. This will break Stanford CoreNLP annotators. The % sign was temporarily replaced with ""percent"" for processing. But... you should run the script ""Convert non-ASCII apostrophes & quotes and % to percent"" to change the sign permanently.",OFF

@@ -80,7 +80,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
         # chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFile,
         #                                                    outputDir,
         #                                                    columns_to_be_plotted_xAxis=[columns_to_be_plotted_xAxis], columns_to_be_plotted_yAxis=['Frequency'],
-        #                                                    chartTitle='Frequency Distribution of Simplex Object\n' + str(simplex_data),
+        #                                                    chart_title='Frequency Distribution of Simplex Object\n' + str(simplex_data),
         #                                                    # count_var = 1 for columns of alphabetic values
         #                                                    count_var=1, hover_label=[],
         #                                                    outputFileNameType=str(simplex_data), #'gender_bar',

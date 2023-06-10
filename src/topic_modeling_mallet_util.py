@@ -270,7 +270,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
             columns_to_be_plotted_yAxis.append([1, i])
 
         hover_label=[]
-        chartTitle = 'Mallet Topics (Topic Contribution to Document)'
+        chart_title = 'Mallet Topics (Topic Contribution to Document)'
         xAxis = 'Document'
         yAxis = 'Topic weight in document'
 
@@ -278,7 +278,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                                                   'Mallet_TM',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
-                                                  chart_title=chartTitle,
+                                                  chart_title=chart_title,
                                                   column_xAxis_label_var=xAxis,
                                                   hover_info_column_list=hover_label,
                                                   count_var=0,
@@ -291,7 +291,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0, 1]]
         hover_label=[2]
-        chartTitle = 'Mallet Topics (Topic Weight by Topic)'
+        chart_title = 'Mallet Topics (Topic Weight by Topic)'
         xAxis = 'Topic #'
         yAxis = 'Topic weight'
 
@@ -299,7 +299,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                                                   'Mallet_TM',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
-                                                  chart_title=chartTitle,
+                                                  chart_title=chart_title,
                                                   column_xAxis_label_var=xAxis,
                                                   hover_info_column_list=hover_label,
                                                   count_var=0,

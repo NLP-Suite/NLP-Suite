@@ -320,7 +320,7 @@ def setup_IO_checkbox():
     # state = str(GUI_util.run_button['state'])
     # if state != 'disabled':
 
-    config_input_output_alphabetic_options, missingIO = config_util.read_config_file(config_filename, config_input_output_numeric_options)
+    config_input_output_alphabetic_options, missingIO, config_file_exists = config_util.read_config_file(config_filename, config_input_output_numeric_options)
 
     if missingIO=='':
         setup_IO_OK_checkbox_var.set(1)

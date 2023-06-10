@@ -445,7 +445,7 @@ def run(inputDir="relative_path_here",
             xlsxFilename = NgramsFileName
             filesToOpen.append(NgramsFileName)
             xAxis = temporal_aggregation
-            chartTitle = 'N-Grams Viewer'
+            chart_title = 'N-Grams Viewer'
             columns_to_be_plotted_xAxis = []
             columns_to_be_plotted_yAxis = []
             # it will iterate through i = 0, 1, 2, …., n-1
@@ -458,7 +458,7 @@ def run(inputDir="relative_path_here",
                                                        'n-grams_viewer',
                                                        chartPackage=chartPackage,
                                                        chart_type_list=["line"],
-                                                       chart_title=chartTitle, column_xAxis_label_var=xAxis,
+                                                       chart_title=chart_title, column_xAxis_label_var=xAxis,
                                                        hover_info_column_list=hover_label)
             if chart_outputFilename != None:
                 filesToOpen.append(chart_outputFilename)  # chart_outputFilename is a string, must use append
@@ -474,7 +474,7 @@ def run(inputDir="relative_path_here",
             filesToOpen.append(coOccFileName)
             if temp_fileName!='':
                 filesToOpen.append(temp_fileName)
-            chartTitle = 'Co-Occurrences Viewer: ' + search_wordsLists
+            chart_title = 'Co-Occurrences Viewer: ' + search_wordsLists
             if dateOption == 0:
                 xAxis = 'Document'
             else:
@@ -487,7 +487,7 @@ def run(inputDir="relative_path_here",
                                            # outputFileNameType + 'byDoc', #outputFileLabel,
                                            chartPackage=chartPackage,
                                            chart_type_list=['bar'],
-                                           chart_title=chartTitle + ' by Document',
+                                           chart_title=chart_title + ' by Document',
                                            column_xAxis_label_var='',
                                            column_yAxis_label_var='Frequency',
                                            hover_info_column_list=hover_label,
@@ -500,16 +500,16 @@ def run(inputDir="relative_path_here",
                 if len(chart_outputFilename) > 0:
                     filesToOpen.append(chart_outputFilename)
 
-            chartTitle = 'Co-occurrence Viewer'
+            chart_title = 'Co-occurrence Viewer'
             columns_to_be_plotted_yAxis = process_date(search_wordsLists, temporal_aggregation)
             hover_label = []
-            chartTitle = 'Frequency Distribution of Co-Occurring Words'
+            chart_title = 'Frequency Distribution of Co-Occurring Words'
             chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                                        'co-occ_viewer',
                                                        chartPackage=chartPackage,
                                                        chart_type_list=["bar"],
                                                        count_var=1,
-                                                       chart_title=chartTitle,
+                                                       chart_title=chart_title,
                                                        column_xAxis_label_var='Word list: ' + search_wordsLists,
                                                        hover_info_column_list=hover_label)
             if chart_outputFilename != None:
