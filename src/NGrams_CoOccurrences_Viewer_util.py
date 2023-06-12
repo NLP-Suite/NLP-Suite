@@ -454,18 +454,19 @@ def run(inputDir="relative_path_here",
             j = 0
             columns_to_be_plotted_yAxis = process_date(search_wordsLists, temporal_aggregation)
             hover_label = []
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
+            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                                        'n-grams_viewer',
                                                        chartPackage=chartPackage,
                                                        chart_type_list=["line"],
                                                        chart_title=chart_title, column_xAxis_label_var=xAxis,
                                                        hover_info_column_list=hover_label)
-            if chart_outputFilename != None:
-                filesToOpen.append(chart_outputFilename)  # chart_outputFilename is a string, must use append
-                # if len(chart_outputFilename) > 0:
-                #     filesToOpen.extend(chart_outputFilename)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
-# plot co-occurrences -----------------------------------------------------------------------------
+    # plot co-occurrences -----------------------------------------------------------------------------
 
     if CoOcc_Viewer:
         if createCharts and coOccFileName != '':
@@ -482,7 +483,7 @@ def run(inputDir="relative_path_here",
             hover_label = []
             columns_to_be_plotted_byDoc = [[1, 2, 0]]
             freq_file = aggregate_YES_NO(xlsxFilename, ["Co-Occurrence"])
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted_byDoc, freq_file, outputDir,
+            outputFiles = charts_util.run_all(columns_to_be_plotted_byDoc, freq_file, outputDir,
                                            outputFileLabel='byDoc_',
                                            # outputFileNameType + 'byDoc', #outputFileLabel,
                                            chartPackage=chartPackage,
@@ -496,15 +497,17 @@ def run(inputDir="relative_path_here",
                                            #     1 for non-numeric fields
                                            count_var=0,
                                            remove_hyperlinks=True)
-            if chart_outputFilename != None:
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.append(chart_outputFilename)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
             chart_title = 'Co-occurrence Viewer'
             columns_to_be_plotted_yAxis = process_date(search_wordsLists, temporal_aggregation)
             hover_label = []
             chart_title = 'Frequency Distribution of Co-Occurring Words'
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
+            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                                        'co-occ_viewer',
                                                        chartPackage=chartPackage,
                                                        chart_type_list=["bar"],
@@ -512,8 +515,11 @@ def run(inputDir="relative_path_here",
                                                        chart_title=chart_title,
                                                        column_xAxis_label_var='Word list: ' + search_wordsLists,
                                                        hover_info_column_list=hover_label)
-            if chart_outputFilename != None:
-                filesToOpen.append(chart_outputFilename)  # chart_outputFilename is a string, must use append
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Words/Characters N-Grams VIEWER at', True, '', True, startTime, False)

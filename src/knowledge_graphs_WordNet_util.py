@@ -187,7 +187,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         outputFilenameCSV2_new = outputFilenameCSV2
     filesToOpen.append(outputFilenameCSV2_new)
 
-    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilenameCSV1_new, outputDir,
+    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilenameCSV1_new, outputDir,
                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['WordNet Category'],
                                                        chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb,
                                                        count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
@@ -197,9 +197,11 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
                                                        groupByList=[],
                                                        plotList=[],
                                                        chart_title_label='')
-    if chart_outputFilename != None:
-        if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
+    if outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
     if noun_verb == 'VERB':
         operation_results_text_list=[]
@@ -215,7 +217,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         # outputFilenameCSV3_new = data_manipulation_util.export_csv_to_csv_txt(outputFilenameCSV3_new, operation_results_text_list,'.csv',[0,1])
         outputFilenameCSV3_new = data_manipulation_util.export_csv_to_csv_txt(outputDir,operation_results_text_list,'.csv',[0,1])
 
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilenameCSV3_new,
+        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilenameCSV3_new,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['WordNet Category'],
                                                            chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb + ' (No Auxiliaries)',
@@ -226,9 +228,11 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
                                                            groupByList=[],
                                                            plotList=[],
                                                            chart_title_label='')
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
         if outputFilenameCSV3_new != "":
             os.remove(outputFilenameCSV3_new)

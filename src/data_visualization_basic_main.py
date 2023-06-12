@@ -28,7 +28,7 @@ def run(inputFilename, outputDir, openOutputFiles,
 
     filesToOpen = []
 
-    chart_outputFilename = ''
+    outputFiles = ''
 
     if csv_field_var == '':
         mb.showwarning(title='Warning',

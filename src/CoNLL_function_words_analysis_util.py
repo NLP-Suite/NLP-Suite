@@ -83,7 +83,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
             count_var=0
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
+            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_pron',
                                                             chartPackage=chartPackage,
                                                             chart_type_list=['bar'],
@@ -94,8 +94,11 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
                                                             complete_sid=False)  # TODO to be changed
 
             # run_all returns a string; must use append
-            if chart_outputFilename != None:
-                filesToOpen.append(chart_outputFilename)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
     # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running PRONOUN Analysis at', True, '', True, startTime, True)
     return filesToOpen
@@ -136,7 +139,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
             count_var=0
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
+            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_prep',
                                                             chartPackage=chartPackage,
                                                             chart_type_list=['bar'],
@@ -147,8 +150,11 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
                                                             complete_sid=False)  # TODO to be changed
 
             # run_all returns a string; must use append
-            if chart_outputFilename != None:
-                filesToOpen.append(chart_outputFilename)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
     return filesToOpen
 
@@ -189,7 +195,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
             count_var=0
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
+            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_article',
                                                             chartPackage=chartPackage,
                                                             chart_type_list=['bar'],
@@ -199,8 +205,11 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
                                                             count_var=count_var,
                                                             complete_sid=False)  # TODO to be changed
             # run_all returns a string; must use append
-            if chart_outputFilename != None:
-                filesToOpen.append(chart_outputFilename)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
     return filesToOpen
 
 def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutputFiles,createCharts, chartPackage):
@@ -237,7 +246,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
             count_var=0
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
+            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_conjunction',
                                                             chartPackage=chartPackage,
                                                             chart_type_list=['bar'],
@@ -248,12 +257,15 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
                                                             complete_sid=False)  # TODO to be changed
 
             # run_all returns a string; must use append
-            if chart_outputFilename != None:
-                filesToOpen.append(chart_outputFilename)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
             # function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, outputDir, '.xlsx', 'FW', 'Conjunctions', 'stats_pie_chart')
             # filesToOpen.append(function_words_stats_file_name)
-            # chart_outputFilename =charts_Excel_util.create_excel_chart(GUI_util.window,[conjunction_stats],function_words_stats_file_name,"Conjunction Analysis",["pie"])
+            # outputFiles =charts_Excel_util.create_excel_chart(GUI_util.window,[conjunction_stats],function_words_stats_file_name,"Conjunction Analysis",["pie"])
 
     return filesToOpen
 
@@ -291,7 +303,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
             count_var=0
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
+            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_auxiliary',
                                                             chartPackage=chartPackage,
                                                             chart_type_list=['bar'],
@@ -302,8 +314,11 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
                                                             complete_sid=False)  # TODO to be changed
 
             # run_all returns a string; must use append
-            if chart_outputFilename != None:
-                filesToOpen.append(chart_outputFilename)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
             return filesToOpen
 

@@ -219,7 +219,7 @@ def main(inputFilename, inputDir, outputDir, configFileName, mode, createCharts=
     if createCharts == True:
         # sentiWordNet computes a single sentiment score; does not compute separate mean and median values
 
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment score'],
                                                    chart_title='Frequency of SentiWordNet Sentiment Scores',
                                                    count_var=0, hover_label=[],
@@ -230,9 +230,11 @@ def main(inputFilename, inputDir, outputDir, configFileName, mode, createCharts=
                                                    plotList=['Sentiment score'],
                                                    chart_title_label='Measures of SentiWordNet Sentiment Scores')
 
-        if chart_outputFilename != None:
-            if len(chart_outputFilename)> 0:
-                filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     return filesToOpen
 

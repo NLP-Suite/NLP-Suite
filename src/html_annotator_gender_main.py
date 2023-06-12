@@ -106,10 +106,12 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
             mb.showwarning(title='Warning', message="The plot option requires both 'By year/state' value and first name(s) in the 'Enter firt name(s)' widget.\n\nPlease, enter the required information and try again.")
             return
         else:
-            output = html_annotator_gender_dictionary_util.SSA_annotate(year_state_var,firstName_entry_var,outputDir)
-            if output!=None:
-                # output=output[0]
-                filesToOpen.append(output)
+            outputFiles = html_annotator_gender_dictionary_util.SSA_annotate(year_state_var,firstName_entry_var,outputDir)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
     if openOutputFiles==True:
         nFile=len(filesToOpen)

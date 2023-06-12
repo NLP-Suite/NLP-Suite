@@ -868,13 +868,15 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 # when multiple annotators are selected (e.g., quote, gender, normalized-date)
                 #   charts output must go to the appropriate subdirectory
                 outputDir_chosen = os.path.dirname(outputFilename)
-                chart_outputFilename = parsers_annotators_visualization_util.parsers_annotators_visualization(
+                outputFiles = parsers_annotators_visualization_util.parsers_annotators_visualization(
                     config_filename, inputFilename, inputDir, outputDir_chosen,
                     outputFilename, annotator_params, kwargs, createCharts,
                     chartPackage)
-                if chart_outputFilename!=None:
-                    if len(chart_outputFilename) > 0:
-                        filesToOpen.extend(chart_outputFilename)
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
     CoreNLP_nlp.kill()
     # print("Length of Files to Open after visualization: ", len(filesToOpen))
@@ -2154,7 +2156,7 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
             if createCharts:
                 columns_to_be_plotted_xAxis=[]
                 columns_to_be_plotted_yAxis=["Number of Pronouns", "Number of Coreferenced Pronouns", "Pronouns Coreference Rate"]
-                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
                                                                    chart_title='Coreferenced Pronouns',
@@ -2165,9 +2167,11 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
                                                                    groupByList=[],
                                                                    plotList=[],
                                                                    chart_title_label='')
-                if chart_outputFilename != None:
-                    if len(chart_outputFilename) > 0:
-                        return_files.extend(chart_outputFilename)
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
     return return_files
 
 available_languages = [

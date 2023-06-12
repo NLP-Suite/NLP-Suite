@@ -235,7 +235,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
         # columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Mean', 'Mode', 'Skewness', 'Kurtosis'] # document field comes first [2
         # hover_label=['Document']
         hover_label=[]
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, outputFilename, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, outputFilename, outputDir,
                                                   outputFileLabel='',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
@@ -245,14 +245,16 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
                                                   column_yAxis_label_var=column_name_to_be_plotted,
                                                   hover_info_column_list=hover_label,
                                                   remove_hyperlinks = True)
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.append(chart_outputFilename) # only one file is returned as string rather than as list
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     return filesToOpen
 
 
-# The function will provide several statistical measure for a csv field valuues: 'Count', 'Mean', 'Mode', 'Median', 'Standard deviation', 'Minimum', 'Maximum',
+# The function will provide several statistical measure for a csv field values: 'Count', 'Mean', 'Mode', 'Median', 'Standard deviation', 'Minimum', 'Maximum',
 #   csv field values MUST be NUMERIC!
 #   'Skewness', 'Kurtosis', '25% quantile', '50% quantile', '75% quantile'
 #   it will provide statistics both ungrouped and grouped by Document ID
@@ -270,8 +272,7 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, outputFileName
     if len(groupByList)>0:
         temp_outputfile=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,outputFileNameLabel,groupByList,plotList,chart_title_label,createCharts,chartPackage)
         if not (temp_outputfile is None):
-            # append because temp_outputfile is a list
-            filesToOpen = temp_outputfile #.append(temp_outputfile)
+            filesToOpen = temp_outputfile
     return filesToOpen
 
 
@@ -456,9 +457,6 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
     elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
         columns_to_be_plotted = []
         group_list = group_col_SV.copy()
-        data1 = []
-        data2 = []
-        data_final = []
         for col in selected_col:
 
             # selected_col, hover_col, group_col are single lists with the column headers
@@ -491,25 +489,19 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             # Convert the multi-level index to columns
             # counts = counts.reset_index(name='Counts')
             data = data.groupby(group_list).size().reset_index(name='Frequency_' + str(col))
-            # form_to_lemma = data[selected_col].drop_duplicates()
-            # data_final = pd.merge(form_to_lemma, data1, on=col)
             # SIMON should get the col of frequency in data_final
             if 'Document' in str(group_list):
                 columns_to_be_plotted = [[0, 2, 3]]  # will give different bars for each value
                 # columns_to_be_plotted = [[0, 3], [1, 3]]
             else:
                 columns_to_be_plotted=[[0, 2],[1, 2]]
-            # else:
-            #     data2 = data.groupby(group_list).size().reset_index(name='Frequency_' + str(col))
-            #     data_final = pd.merge(data_final, data2, on=col)
-            #     columns_to_be_plotted.extend([2, 3])
             group_list = group_col_SV.copy()
 
         # added TONY1
         # pivot=True
         if pivot==True:
-            data_final = data_final.pivot(index = group_column_names[1:], columns = group_column_names[0], values = "Frequency")
-            data_final.fillna(0, inplace=True)
+            data = data.pivot(index = group_column_names[1:], columns = group_column_names[0], values = "Frequency")
+            data.fillna(0, inplace=True)
             #data.reset_index("Document")
         if (complete_sid):
             # TODO Samir
@@ -554,22 +546,25 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         data['Hover_over: ' + hover_header+'_y'] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1)
         data.drop(hover_col, axis=1, inplace=True)
         data.to_csv(outputFilename, encoding='utf-8', index=False)
-        filesToOpen.append(outputFilename)
+        filesToOpen.extend(outputFilename)
         columns_to_be_plotted = [[1, 2]]
         hover_over_header = [hover_over_header + '_y']
 
-# plot the data
+# plot the data from compute_csv_column_frequencies
 
     if createCharts:
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                               outputFileLabel=fileNameType,
                                               chartPackage=chartPackage,
                                               chart_type_list=[chartType],
                                               chart_title=chart_title,
                                               column_xAxis_label_var=col,
                                               hover_info_column_list=hover_over_header)
-        if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     # we can now remove the no_hyperlinks file (i.e., inputFilename), since the frequency file has been computed
     if removed_hyperlinks:

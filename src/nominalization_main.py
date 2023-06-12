@@ -363,7 +363,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 columns_to_be_plotted_xAxis=[]
                 columns_to_be_plotted_yAxis=[[0, 1]]
 
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+                outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                                  outputFileLabel='NOM_verb',
                                                                  chartPackage=chartPackage,
                                                                  chart_type_list=['bar'],
@@ -371,9 +371,11 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                                                                  column_xAxis_label_var='column_xAxis_label',
                                                                  hover_info_column_list=[],
                                                                  count_var=0)
-                if chart_outputFilename != None:
-                    if len(chart_outputFilename) > 0:
-                        filesToOpen.extend(chart_outputFilename)
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
                 # chart_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window, [counter_nominalized_list], outputFilename_dir_nominalized_frequencies,
                 #                             outputDir,'NOM_verb',
@@ -387,7 +389,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 columns_to_be_plotted_xAxis=[]
                 columns_to_be_plotted_yAxis=[[0, 1]]
 
-                chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+                outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                                  outputFileLabel='NOM_noun',
                                                                  chartPackage=chartPackage,
                                                                  chart_type_list=['bar'],
@@ -399,8 +401,11 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
                 # chart_outputFilename=charts_Excel_util.create_excel_chart(GUI_util.window, [counter_noun_list], outputFilename_dir_noun_frequencies,
                 #                             outputDir,'NOM_noun',
                 #                             "Nouns", ["bar"])
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Nominalization at', True, '', True, startTime)
 

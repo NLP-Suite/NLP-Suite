@@ -395,7 +395,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
             columns_to_be_plotted_yAxis=['Sentiment score (Median)', 'Arousal score (Median)', 'Dominance score (Median)']
             # hover_label = ['Sentence', 'Sentence', 'Sentence']
 
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
                                                    chart_title='Frequency of ANEW Sentiment Scores',
                                                    count_var=0, hover_label=[],
@@ -406,9 +406,11 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                                                    plotList=columns_to_be_plotted_yAxis,
                                                    chart_title_label='Measures of ANEW Sentiment Scores')
 
-        if chart_outputFilename != None:
-            if len(chart_outputFilename)> 0:
-                filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     # endTime = time.localtime()
     # print("Finished running ANEW at " + str(endTime[3]) + ':' + str(endTime[4]))

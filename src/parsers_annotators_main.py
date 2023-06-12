@@ -274,8 +274,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if tempOutputFiles == None:
             return
 
-        if len(tempOutputFiles) > 0:
+        if isinstance(tempOutputFiles, str):
             filesToOpen.append(tempOutputFiles)
+        else:
+            filesToOpen.extend(tempOutputFiles)
             if 'parser' in annotator:
                 reminders_util.checkReminder(scriptName,
                                              reminders_util.title_options_CoreNLP_NER_tags,

@@ -191,16 +191,18 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0, 1]]
         hover_label = ['List of Documents in Category']
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel='SSR_plagiar',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   chart_title='Frequency of Plagiarism by Classes of % Duplication',
                                                   column_xAxis_label_var='Classes of percentage duplication',
                                                   hover_info_column_list=hover_label)
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
         # Plot Lucene_classes_time_freq.csv line plot (temporal plot); outputFilenameCSV_2
         if fileName_embeds_date:
@@ -210,16 +212,18 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0, 1], [0, 2], [0, 3]]
             hover_label = ['', '', '']
-            chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                       outputFileLabel='SSR_plagiar',
                                                       chartPackage=chartPackage,
                                                       chart_type_list=["line"],
                                                       chart_title='Frequency of Plagiarism by Year',
                                                       column_xAxis_label_var='Year',
                                                       hover_info_column_list=hover_label)
-            if chart_outputFilename != None:
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
         # No plot for Lucene_document_classes_freq.csv
         #   because it could potentially have thousands of documents
@@ -231,16 +235,18 @@ def plagiarist(inputDir, outputDir, open_csv_output_checkbox, createCharts,
         columns_to_be_plotted_yAxis=[[0, 1],[0, 2],[0, 3]]
         hover_label = ['']
         inputFilename = outputFilenameCSV_4
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel='SSR_plagiar',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   chart_title='Frequency of Plagiarism by Document Name & Classes',
                                                   column_xAxis_label_var='',
                                                   hover_info_column_list=hover_label)
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running PLAGIARIST at', True, '', True, startTime)
 

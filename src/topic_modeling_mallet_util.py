@@ -274,7 +274,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         xAxis = 'Document'
         yAxis = 'Topic weight in document'
 
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, Composition_FileName, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, Composition_FileName, outputDir,
                                                   'Mallet_TM',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
@@ -284,9 +284,11 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                                                   count_var=0,
                                                   column_yAxis_label_var=yAxis)
 
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.append(chart_outputFilename)  # a string is returned, rather than a list; must use append
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0, 1]]
@@ -295,7 +297,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         xAxis = 'Topic #'
         yAxis = 'Topic weight'
 
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, Keys_FileName, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, Keys_FileName, outputDir,
                                                   'Mallet_TM',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
@@ -305,9 +307,11 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
                                                   count_var=0,
                                                   column_yAxis_label_var=yAxis)
 
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.append(chart_outputFilename) # a string is returned, rather than a list; must use append
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

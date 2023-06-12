@@ -175,7 +175,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0, 1]]
 		count_var = 0
-		chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
+		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
 												   outputFileLabel='verb_stats',
 												   chartPackage=chartPackage,
 												   chart_type_list=['bar'],
@@ -184,9 +184,11 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 												   hover_info_column_list=[],
 												   count_var=count_var)
 		# run_all returns a string; must use append
-		if chart_outputFilename != None:
-			if len(chart_outputFilename) > 0:
-				filesToOpen.append(chart_outputFilename)
+		if outputFiles!=None:
+			if isinstance(outputFiles, str):
+				filesToOpen.append(outputFiles)
+			else:
+				filesToOpen.extend(outputFiles)
 
 	return filesToOpen
 
@@ -276,7 +278,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0, 1]]
 		count_var = 0
-		chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
+		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
 												   outputFileLabel='verb_mod',
 												   chartPackage=chartPackage,
 												   chart_type_list=['bar'],
@@ -286,9 +288,11 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 												   count_var=count_var,
 												   complete_sid=False)  # TODO to be changed
 		# run_all returns a string; must use append
-		if chart_outputFilename != None:
-			if len(chart_outputFilename) > 0:
-				filesToOpen.append(chart_outputFilename)
+		if outputFiles!=None:
+			if isinstance(outputFiles, str):
+				filesToOpen.append(outputFiles)
+			else:
+				filesToOpen.extend(outputFiles)
 
 	return filesToOpen
 
@@ -386,7 +390,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0,1]]
 		count_var=0
-		chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
+		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
 														 outputFileLabel='verb_tense',
 														 chartPackage=chartPackage,
 														 chart_type_list=['bar'],
@@ -397,11 +401,13 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 												   		 complete_sid=False)  # TODO to be changed
 
 		# run_all returns a string; must use append
-		if chart_outputFilename != None:
-			if len(chart_outputFilename) > 0:
-				filesToOpen.append(chart_outputFilename)
+		if outputFiles!=None:
+			if isinstance(outputFiles, str):
+				filesToOpen.append(outputFiles)
+			else:
+				filesToOpen.extend(outputFiles)
 
-		# # temporary headers added, not sure why the verb_voice_list doesn't have headers
+	# # temporary headers added, not sure why the verb_voice_list doesn't have headers
 		# df = pd.read_csv(verb_file_name, header=None, encoding='utf-8', on_bad_lines='skip')
 		# df.to_csv(verb_file_name,
 		# 		  header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",

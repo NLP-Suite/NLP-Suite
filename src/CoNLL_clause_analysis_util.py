@@ -154,7 +154,7 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0,1]]
         count_var=0
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, clausal_analysis_stats_file_name, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, clausal_analysis_stats_file_name, outputDir,
                                                         outputFileLabel='clausal_stats',
                                                         chartPackage=chartPackage,
                                                         chart_type_list=['bar'],
@@ -163,9 +163,11 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
                                                         hover_info_column_list=[],
                                                         count_var=count_var,
                                                         complete_sid=False)  # TODO to be changed
-        # run_all returns a string; must use append
-        if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running CLAUSE ANALYSES at', True, '', True, startTime, True)
     return filesToOpen

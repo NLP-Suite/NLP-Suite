@@ -77,7 +77,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
             filesToOpen.append(outputFile)
         # headers=IO_csv_util.get_csvfile_headers(outputFile)
         # columns_to_be_plotted_xAxis=IO_csv_util.get_headerValue_from_columnNumber(headers,column_number=0)
-        # chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFile,
+        # outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFile,
         #                                                    outputDir,
         #                                                    columns_to_be_plotted_xAxis=[columns_to_be_plotted_xAxis], columns_to_be_plotted_yAxis=['Frequency'],
         #                                                    chart_title='Frequency Distribution of Simplex Object\n' + str(simplex_data),
@@ -88,7 +88,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
         #                                                    groupByList=[],
         #                                                    plotList=[],
         #                                                    chart_title_label='')
-        # if chart_outputFilename!=None:
+        # if outputFiles!=None:
         #     if len(chart_outputFilename) > 0:
         #         filesToOpen.extend(chart_outputFilename)
 

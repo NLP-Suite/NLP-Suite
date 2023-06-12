@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 # from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 import os
@@ -242,7 +243,7 @@ def visualize_SVOs(fileName, outputDir, createCharts, chartPackage, filesToOpen,
     elif 'filter' in fileName:
         label = 'filtered'
         label1 = 'filter'
-    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, fileName,
+    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, fileName,
                                                        outputDir,
                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Subject (S)'],
                                                        chart_title='Frequency Distribution of Subjects (' + label + ')',
@@ -253,11 +254,13 @@ def visualize_SVOs(fileName, outputDir, createCharts, chartPackage, filesToOpen,
                                                        plotList=['Frequency'],
                                                        chart_title_label='Subjects (' + label + ')')
 
-    if openFiles and chart_outputFilename != None:
-        if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
+    if openFiles and outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
-    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, fileName,
+    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, fileName,
                                                        outputDir,
                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Verb (V)'],
                                                        chart_title='Frequency Distribution of Verbs (' + label + ')',
@@ -267,11 +270,13 @@ def visualize_SVOs(fileName, outputDir, createCharts, chartPackage, filesToOpen,
                                                        groupByList=['Document ID', 'Document'],
                                                        plotList=['Frequency'],
                                                        chart_title_label='Verbs (' + label + ')')
-    if openFiles and chart_outputFilename != None:
-        if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
+    if openFiles and outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
-    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, fileName,
+    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, fileName,
                                                        outputDir,
                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Object (O)'],
                                                        chart_title='Frequency Distribution of Objects (' + label + ')',
@@ -282,13 +287,151 @@ def visualize_SVOs(fileName, outputDir, createCharts, chartPackage, filesToOpen,
                                                        plotList=['Frequency'],
                                                        chart_title_label='Objects (' + label + ')')
 
-    if openFiles and chart_outputFilename != None:
-        if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
+    if openFiles and outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
     return filesToOpen
 
-def lemmatize_filter_svo(window,svo_file_name, filter_s, filter_v, filter_o, filter_s_fileName, filter_v_fileName, filter_o_fileName,
+def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, filter_s_fileName, filter_v_fileName, filter_o_fileName,
+               lemmatize_s, lemmatize_v, lemmatize_o, outputSVODir, createCharts=True, chartPackage='Excel'):
+    filesToOpen = []
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+
+    startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
+                                                   'Started running the lemma/filter algorithm for Subject-Verb-Object (SVO) at',
+                                                   True, '', True)
+
+    df = pd.read_csv(svo_file_name, encoding='utf-8',on_bad_lines='skip')
+    df = df.replace(np.nan, '', regex=True)  # replace NaNs with empty strings
+    num_rows = df.shape[0]
+    if lemmatize_s or lemmatize_v or lemmatize_o:
+        head, tail = os.path.split(outputSVODir)
+        # create an SVO-lemma subdirectory of the main output directory
+        outputSVOLemmaDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO-lemma',
+                                                                    silent=True)
+        if outputSVOLemmaDir == '':
+            return
+
+        # create the lemma dict
+        if filter_s or filter_v or filter_o:
+            head, tail = os.path.split(outputSVODir)
+            outputSVOFilterDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO-filtered',
+                                                                        silent=True)
+            if outputSVOFilterDir == '':
+                return
+
+
+    # Creating filtered sets
+    s_filtered_set = set(open(filter_s_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_s else set()
+    v_filtered_set = set(open(filter_v_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_v else set()
+    o_filtered_set = set(open(filter_o_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_o else set()
+
+    # Create DataFrames for lemmatized and filtered SVOs
+    lemmatized_svo = df.copy()
+    filtered_svo = df.copy()
+
+    for idx, row in df.iterrows():
+        if lemmatize_s:
+            row['Subject (S)'] = lemmatize_stanza(stanzaPipeLine(row['Subject (S)']))
+        if lemmatize_v:
+            row['Verb (V)'] = lemmatize_stanza(stanzaPipeLine(row['Verb (V)']))
+        if lemmatize_o:
+            row['Object (O)'] = lemmatize_stanza(stanzaPipeLine(row['Object (O)']))
+
+        # Assign lemmatized rows back to the lemmatized_svo DataFrame
+        lemmatized_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
+            ['Subject (S)', 'Verb (V)', 'Object (O)']]
+
+        if ((filter_s and row['Subject (S)'] not in s_filtered_set) or
+                (filter_v and row['Verb (V)'] not in v_filtered_set) or
+                (filter_o and row['Object (O)'] not in o_filtered_set)):
+            # Drop rows from filtered_svo DataFrame that do not meet the filter condition
+            filtered_svo.drop(idx, inplace=True)
+        else:
+            filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
+            ['Subject (S)', 'Verb (V)', 'Object (O)']]
+    print(lemmatized_svo,filtered_svo)
+    # Continue with your code, now working with filtered and lemmatized DataFrames
+
+    # filtering for WordNet social actors/actions requires lemmatizing
+    nRecords_lemma = 0
+    nRecords_filter = 0
+    if lemmatize_s or lemmatize_v or lemmatize_o:
+        head, tail = os.path.split(svo_file_name)
+        tail = tail.replace('NLP_SVO_', 'NLP_SVO_lemma_')
+        svo_lemma_file_name = os.path.join(outputSVODir, tail)
+        filesToOpen.append(svo_lemma_file_name)
+        # save lemmatized file
+        lemmatized_svo.to_csv(svo_lemma_file_name, encoding='utf-8', index=False)
+        nRecords_lemma, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_lemma_file_name)
+
+        # filtering for WordNet social actors/actions requires lemmatizing
+        if filter_s or filter_v or filter_o:
+            if filter_s and filter_v and filter_o:
+                label='SVO_'
+            elif filter_s and filter_v:
+                label='SV_'
+            elif filter_s and filter_o:
+                label='SO_'
+            elif filter_s:
+                label = 'S_'
+            elif filter_v and filter_o:
+                label='VO_'
+            elif filter_v:
+                label='V_'
+            elif filter_o:
+                label='O_'
+
+            # # create a subdirectory of the output SVO directory for filtered SVOs
+            # # filtered SVOs are stored in the WordNet directory
+            # outputWNDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+            #                                                      label='WordNet',
+            #                                                      silent=True)
+            outputDir, tail = os.path.split(svo_lemma_file_name)
+            tail = tail.replace('NLP_SVO_lemma_', 'NLP_SVO_filter_'+ label)
+            # svo_filtered_file_name = os.path.join(outputWNDir, tail)
+            svo_filter_file_name = os.path.join(outputSVODir, tail)
+            # save filtered file
+            filesToOpen.append(svo_filter_file_name)
+            # pd.DataFrame.from_dict(lemmatized_filtered_svo, orient='index').to_csv(svo_filter_file_name, encoding='utf-8',
+            #                                                               index=False)
+            # save filtered file
+            filtered_svo.to_csv(svo_filter_file_name, encoding='utf-8',
+                                                                          index=False)
+
+            # if filter_s or filter_v or filter_o:
+            # pd.DataFrame.from_dict(filtered_svo, orient='index').to_csv(svo_filter_file_name, encoding='utf-8', index=False)
+
+            nRecords_filter, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_filter_file_name)
+            filtered_records = num_rows - nRecords_filter
+            IO_user_interface_util.timed_alert(window,6000,'Filtered records', 'The filter algorithms have filtered out ' + str(filtered_records) + \
+                ' records.\n\nNumber of original SVO records: ' + str(num_rows) + '\nNumber of filtered SVO records: ' + str(nRecords_filter))
+        # else:
+        #     svo_filter_file_name=''
+        #     nRecords = 0
+
+    else:
+        svo_lemma_file_name= ''
+        svo_filtered_file_name = ''
+        # nRecords = 0
+
+    IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running the lemma/filter algorithm for Subject-Verb-Object (SVO) at', True, '', True,
+                                       startTime, True)
+
+    if nRecords_lemma > 1 or nRecords_filter >1:
+        openFiles = False # way too many files to open; but this can be changed at any time
+        if lemmatize_s or lemmatize_v or lemmatize_o:
+            filesToOpen = visualize_SVOs(svo_lemma_file_name, outputSVOLemmaDir, createCharts, chartPackage, filesToOpen, openFiles)
+        if filter_s or filter_v or filter_o:
+            filesToOpen = visualize_SVOs(svo_filter_file_name, outputSVOFilterDir, createCharts, chartPackage, filesToOpen, openFiles)
+
+    return filesToOpen
+
+
+def lemmatize_filter_svo_old(window,svo_file_name, filter_s, filter_v, filter_o, filter_s_fileName, filter_v_fileName, filter_o_fileName,
                lemmatize_s, lemmatize_v, lemmatize_o, outputSVODir, createCharts=True, chartPackage='Excel'):
     """
     Filters a svo csv file based on the dictionaries given, and replaces the original output csv file
@@ -352,7 +495,7 @@ def lemmatize_filter_svo(window,svo_file_name, filter_s, filter_v, filter_o, fil
                 o_filtered_set = open(filter_o_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')
                 o_filtered_set = set(o_filtered_set)
 
-    # update LEMMATIZED dict and FILTERED dict
+# update LEMMATIZED dict and FILTERED dict
     for i in range(num_rows): # num_rows in the unfiltered SVO
         deleted = False
         if not pd.isna(unfiltered_svo[i]['Subject (S)']):
@@ -397,7 +540,7 @@ def lemmatize_filter_svo(window,svo_file_name, filter_s, filter_v, filter_o, fil
                     #     lemmatized_filtered_svo[i]['Object (O)'] = lemmatize_stanza(stanzaPipeLine(filtered_svo[i]['Object (O)']))
                     if not deleted and lemmatize_o and filtered_svo!={}:
                         filtered_svo[i]['Object (O)'] = lemmatize_stanza(stanzaPipeLine(filtered_svo[i]['Object (O)']))
-
+    print(filter_s,filter_v,filtered_svo)
 
     # filtering for WordNet social actors/actions requires lemmatizing
     nRecords_lemma = 0
@@ -478,7 +621,7 @@ def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackag
     filesToOpen = []
 
     # Date expressions are in the form yesterday, tomorrow morning, the day before Christmas
-    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                         outputDir,
                                                         columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date expression'],
                                                         chart_title='Frequency Distribution of Date Expressions',
@@ -489,12 +632,14 @@ def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackag
                                                         groupByList=['Document ID','Document'],
                                                         plotList=['Frequency'],
                                                         chart_title_label='Date Expressions')
-    if chart_outputFilename!=None:
-        if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
+    if outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
     # normalized dates are in the form PAST_REF, NEXT_IMMEDIATE P1D, ...
-    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                         outputDir,
                                                         columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Normalized date'],
                                                         chart_title='Frequency Distribution of Normalized Dates',
@@ -505,12 +650,14 @@ def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackag
                                                         groupByList=['Document ID','Document'],
                                                         plotList=['Frequency'],
                                                         chart_title_label='Normalized Dates')
-    if chart_outputFilename!=None:
-        if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
+    if outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
     # Date types are in the form PAST, PRESENT, OTHER
-    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                         outputDir,
                                                         columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date type'],
                                                         chart_title='Frequency Distribution of Date Types',
@@ -521,9 +668,11 @@ def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackag
                                                         groupByList=['Document ID','Document'],
                                                         plotList=['Frequency'],
                                                         chart_title_label='Date Types')
-    if chart_outputFilename!=None:
-        if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
+    if outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
     return filesToOpen
 

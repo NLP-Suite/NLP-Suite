@@ -70,7 +70,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
     else:
         output_label = ''
 
-    chart_outputFilename = ''
+    outputFiles = ''
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
                                                              '.html', output_label)
 
@@ -89,7 +89,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 mb.showwarning("Warning",
                                "You must select three csv fields to be used in the computation of the network graph, in the order of node, edge, node (e.g., Subject, Verb, Object).\n\nIf you wish to create a dynamic network graph you can select a fourth field to be used as the dynamic index (e.g., Sentence ID).")
                 return
-            chart_outputFilename = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
+            outputFiles = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
 
 # Sankey  --------------------------------------------------------------------------------
 
@@ -106,7 +106,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 three_way_Sankey = None
                 var3=None
                 Sankey_limit3_var=None
-            chart_outputFilename = charts_util.Sankey(inputFilename, outputFilename,
+            outputFiles = charts_util.Sankey(inputFilename, outputFilename,
                                 csv_file_field_list[0], Sankey_limit1_var, csv_file_field_list[1], Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
             # Function takes a csv file as data input,
 
@@ -173,7 +173,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             #     temp_interest.append(interest[i].lstrip())
             # # label is a string that has the header field in the csv file to be used for display
             # label=csv_field2_var
-            chart_outputFilename = charts_util.Sunburster(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
+            outputFiles = charts_util.Sunburster(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
                                             do_not_split_var, int_K_sent_begin_var, int_K_sent_end_var, split_var)
 
 # Categorical data: treemap --------------------------------------------------------------------------------
@@ -185,7 +185,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             return
         import RF_charts_treemaper_util
         #def treemaper(data,outputFilename,interest,var,extra_dimension_average,average_variable=None):
-        chart_outputFilename = charts_util.treemaper(inputFilename, outputFilename,
+        outputFiles = charts_util.treemaper(inputFilename, outputFilename,
                                                                temp_interest, label, use_numerical_variable_var.get(),csv_field2_var)
 
 # time_mapper --------------------------------------------------------------------------------
@@ -204,10 +204,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         elif time_var=='Yearly':
             yearly=True
 
-        chart_outputFilename = charts_util.timeline(inputFilename, outputFilename, csv_field3_var, date_format_var, cumulative_var, monthly, yearly)
+        outputFiles = charts_util.timeline(inputFilename, outputFilename, csv_field3_var, date_format_var, cumulative_var, monthly, yearly)
 
-    if chart_outputFilename != '':
-        filesToOpen.append(chart_outputFilename)
+    if outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
     if openOutputFiles and len(filesToOpen) > 0:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)

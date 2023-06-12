@@ -119,7 +119,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
              if result==False:
                  pass
 
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Misspelled-unusual word'],
                                                    chart_title='Frequency of Misspelled-Unusual Words',
                                                    count_var=1, hover_label=[],
@@ -129,9 +129,11 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
                                                    plotList=['Misspelled-Unusual Words Statistics'],
                                                    chart_title_label='')
 
-        if chart_outputFilename != None:
-            if len(chart_outputFilename)> 0:
-                filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -178,7 +180,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
         filesToOpen.append(outputFileName_complete)
 
 
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, inputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, inputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Typo?'],
                                                            chart_title='Frequency of Potential Typos',
                                                            count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
@@ -188,9 +190,11 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
                                                            groupByList=[],
                                                            plotList=[],
                                                            chart_title_label='')
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
         if openOutputFiles == True:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -485,7 +489,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity end',
                                                'Finished running Word similarity at', True, '', True, startTime, True)
 
-            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFileName_simple, outputDir,
+            outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFileName_simple, outputDir,
                                                                columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Typo?'],
                                                                chart_title='Frequency of Potential Typos',
                                                                count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
@@ -495,9 +499,11 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                                groupByList=[],
                                                                plotList=[],
                                                                chart_title_label='')
-            if chart_outputFilename != None:
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
@@ -955,7 +961,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
         chart_title='Frequency of Languages Detected by LANGDETECT, LANGID, spaCy, and Stanza'
         hover_label=[]
         inputFilename = outputFilenameCSV
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel='_bar_chart',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
@@ -963,9 +969,11 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
                                                   column_xAxis_label_var='Language',
                                                   hover_info_column_list=hover_label,
                                                   count_var=1)
-        if chartPackage=='Excel' and chart_outputFilename!='' and chart_outputFilename!=None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+        if chartPackage=='Excel' and outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     # if openOutputFiles:
     #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
