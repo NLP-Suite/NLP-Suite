@@ -65,10 +65,9 @@ GUI_size = str(GUI_width) + 'x' + str(GUI_height)
 GUI_label='Graphical User Interface (GUI) for a suite of tools of Natural Language Processing (NLP) & Data Visualization'
 # there is currently NO way to setup a specific I/O config for the NLP_menu_main; it can only have the default setup
 # config_filename='NLP_config.csv'
-head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('main_menu.py', 'config.csv')
 # overwrite the standard way of setting up config_filename, since NLP_menu_main saves to default_config
 config_filename = 'NLP_default_IO_config.csv'
+head, scriptName = os.path.split(os.path.basename(__file__))
 
 # The 4 values of config_option refer to:
 #   input file

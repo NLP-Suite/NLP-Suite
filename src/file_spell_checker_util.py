@@ -18,7 +18,7 @@ if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"spell_chec
 import os
 from tkinter import filedialog
 # from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-import nltk
+# import nltk
 import pandas
 import pandas as pd
 from stanfordcorenlp import StanfordCoreNLP # python wrapper for Stanford CoreNLP
@@ -68,6 +68,8 @@ def lemmatizing(word):#edited by Claude Hu 08/2020
 
 # https://www.nltk.org/book/ch02.html
 def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, openOutputFiles, createCharts=True, chartPackage='Excel'):
+    import nltk
+    nltk.download('words')
     filesToOpen=[]
     unusual=[]
     container=[]

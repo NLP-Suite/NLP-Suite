@@ -339,7 +339,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'All POS':["ID", "Form", "POS", "Record ID", "Sentence ID", "Document ID", "Document"],
         'NER': ['Word', 'NER', 'tokenBegin', 'tokenEnd', 'Sentence ID', 'Sentence', 'Document ID','Document'],
         # TODO NER with date for dynamic GIS; modified below
-        # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
+        # 'NER': ['Word', 'NER', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
         'sentiment': ['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         'quote': ['Speakers', 'Number of Quotes', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
@@ -2055,7 +2055,7 @@ def get_csv_column_unique_val_list(inputFilename, col):
 
 
 def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
-    # columns: Location, NER Tag, Sentence ID, Sentence, Document ID, Document
+    # columns: Location, NER, Sentence ID, Sentence, Document ID, Document
     to_write = []
     for sent in locations:
         for locs in sent[2]:

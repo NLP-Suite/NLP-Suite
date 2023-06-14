@@ -61,6 +61,11 @@ def run(inputDir, outputDir, openOutputFiles,createCharts,chartPackage, num_topi
         Gensim_var,
         remove_stopwords_var, lemmatize_var, nounsOnly_var, Gensim_MALLET_var):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     filesToOpen = []
 
     if MALLET_var:
@@ -121,11 +126,9 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              increment=1)  # to be added for full display
 
 GUI_label = 'Graphical User Interface (GUI) for Topic Modeling with MALLET and Gensim'
+config_filename = 'NLP_default_IO_config.csv'
+
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

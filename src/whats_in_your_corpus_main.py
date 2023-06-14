@@ -80,6 +80,11 @@ def run(inputFilename,inputDir, outputDir,
         SVO_var,
         open_SVO_GUI_var):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('_main.py', '_config.csv')
+
     filesToOpen=[]
     openOutputFilesSV=openOutputFiles
     openOutputFiles=False # to make sure files are only opened at the end of this multi-tool script
@@ -91,7 +96,7 @@ def run(inputFilename,inputDir, outputDir,
     language_list = [language]
 
     # get the date options from filename
-    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
@@ -643,11 +648,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              increment=1)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for a Sweeping View of Your Corpus (Single/Multiple Document(s)) - A Pipeline'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

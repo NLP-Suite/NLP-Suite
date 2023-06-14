@@ -49,6 +49,11 @@ def run(inputFilename,
         GIS_package_var,
         GIS_package2_var):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('_main.py', '_config.csv')
+
     filesToOpen = []
     locationColumnName=''
 
@@ -161,12 +166,12 @@ def run(inputFilename,
         #     return
         df = pd.read_csv(locationFiles[0], encoding='utf-8', on_bad_lines='skip').rename(columns={"Word": "Location"})
         location_menu_var.set('Location')
-        # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
+        # 'NER': ['Word', 'NER', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID', 'Document'],
 
         # Clean dataframe, remove any 'DATE' or non-location rows
         del_list = []
         for index, row in df.iterrows():
-            if df['NER Tag'][index] not in ['COUNTRY','STATE_OR_PROVINCE','CITY','LOCATION']:
+            if df['NER'][index] not in ['COUNTRY','STATE_OR_PROVINCE','CITY','LOCATION']:
                 del_list.append(index)
         df = df.drop(del_list)
         df.to_csv(NER_outputFilename, encoding='utf-8', index=False)
@@ -253,11 +258,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                                                  increment=2)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for GIS (Geographic Information System) Pipeline from Text to Map'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

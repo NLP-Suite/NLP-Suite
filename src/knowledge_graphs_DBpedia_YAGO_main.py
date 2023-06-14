@@ -30,6 +30,11 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPa
         ontology_color_list,
         bold_DBpedia_YAGO_var):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     if ontology_class_var.get()=='':
         msg = 'The "Ontology class" widget is empty.\n\nPlease, use the dropdown menu to select an Ontology class and try again.'
         if 'DBpedia' in knowledge_graphs_var:
@@ -133,11 +138,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                                                  increment=2) # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for HTML Annotating Documents Using the Knowledge Graphs (KG) DBpedia & YAGO'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

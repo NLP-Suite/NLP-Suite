@@ -199,3 +199,9 @@ If you are processing files in a directory, other files may similarly need to be
 Stanford_CoreNLP,% sign in file,"The file contains % sign. This will break Stanford CoreNLP annotators. The % sign was temporarily replaced with ""percent"" for processing. But... you should run the script ""Convert non-ASCII apostrophes & quotes and % to percent"" to change the sign permanently.",OFF
 NLP_default_IO,DepRel tags frequency,"punct (punctuation) and det (determiner/article) are likely to be the most frequent DepRel tags in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete in the Data worksheet of the Excel chart file the rows containing the 'punct' and 'det' tags to have a better view of all other tags.",OFF
 NLP_default_IO,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags.",OFF
+statistics_txt,Open TIPS file,"You will be asked next if you want to open a TIPS file for help.
+
+If you do not want to be asked again to open the TIPS file, just hit 'No' below.",OFF
+statistics_txt,Line length,"Line length only makes sense for poetry or song lyrics (or perhaps for newspaper articles to gauge the importance of the article by the column width).
+
+For your typical document line length depends on the vaguaries of typesetting and sentence length may provide a better measure of style.",OFF

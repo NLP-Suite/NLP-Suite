@@ -266,6 +266,12 @@ def run(inputDir, input_secondary_dir_path, outputDir, openOutputFiles, createCh
         check_filename_var, character_var, character_home_var, missing_character_var, NER_var, intruder_var,
         similarityIndex_Intruder_var, ancestor_var, nouns_verbs,
         plagiarist_var, similarityIndex_Plagiarist_var, Levenshtein_var):
+
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('_main.py', '_config.csv')
+
     global filesToOpen
     filesToOpen = []
     # check that the CoreNLPdir has been setup
@@ -343,11 +349,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              increment=2)  # to be added for full display
 
 GUI_label = 'Graphical User Interface (GUI) for Various Tools for Social Science Research'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

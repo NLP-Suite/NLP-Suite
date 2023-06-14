@@ -26,6 +26,11 @@ def run(inputFilename,
         append_var, concatenate_var, drop_var, extract_var, merge_var,
         output_to_csv_var, openOutputFiles, outputDir):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('_main.py', '_config.csv')
+
     filesToOpen = []  # Store all files that are to be opened once finished
 
     # data_files = [file for file in data_manipulation_util.select_csv(filePath)]  # dataframes
@@ -127,8 +132,8 @@ if __name__ == '__main__':
                                                      increment=1)  # to be added for full display
 
     GUI_label = 'Graphical User Interface (GUI) for csv Data Manipulation'
+    config_filename = 'NLP_default_IO_config.csv'
     head, scriptName = os.path.split(os.path.basename(__file__))
-    config_filename = 'data-manager_config.csv'
     # The 4 values of config_option refer to:
     #   input file
             # 1 for CoNLL file

@@ -160,13 +160,13 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 				if datePresent == True:
 					try:
 						#NER Tag may not be present when an expernal input csv file of locations is passed
-						locList.append([row[locationColumnNumber], row[dateColumnNumber], row['NER Tag']])
+						locList.append([row[locationColumnNumber], row[dateColumnNumber], row['NER']])
 					except:
 						locList.append([row[locationColumnNumber], row[dateColumnNumber]])
 				else:
 					# the code would break if no NER Tag is passed (e.g., from DB_PC-ACE)
 					try:
-						locList.append([row[locationColumnNumber],[index],[0], row['NER Tag']])
+						locList.append([row[locationColumnNumber],[index],[0], row['NER']])
 					except:
 						locList.append([row[locationColumnNumber], [index], [0]])
 

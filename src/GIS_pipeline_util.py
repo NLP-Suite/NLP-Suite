@@ -245,10 +245,10 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         filesToOpen.append(outputCsvLocationsOnly)
         if datePresent == True:
             # always use the location_var variable passed by algorithms to make sure locations are then matched
-            locations.insert(0, ['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document',  'Date'])
+            locations.insert(0, ['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document',  'Date'])
         else:
             # always use the location_var variable passed by algorithms to make sure locations are then matched
-            locations.insert(0, ['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+            locations.insert(0, ['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
         IO_csv_util.list_to_csv(window, locations, outputCsvLocationsOnly)
 
     # the plot of locations frequencies is done in the CoreNLP_annotator_util

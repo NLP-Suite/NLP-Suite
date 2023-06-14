@@ -458,7 +458,6 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         columns_to_be_plotted = []
         group_list = group_col_SV.copy()
         for col in selected_col:
-
             # selected_col, hover_col, group_col are single lists with the column headers
             #   selected_col=['POS'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
             # the aggregation can deal with column items passed as integer (from visualization_chart) or

@@ -33,6 +33,11 @@ import reminders_util
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         searchedCoNLLField, searchField_kw, postag, deprel, co_postag, co_deprel, Begin_K_sent_var, End_K_sent_var):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     global recordID_position, documentId_position, data, all_CoNLL_records
     recordID_position = 9 # NEW CoNLL_U
     documentId_position = 11 # NEW CoNLL_U
@@ -240,11 +245,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                                                  increment=1)  # to be added for full display
 
 GUI_label = 'Graphical User Interface (GUI) for CoNLL Table Analyzer'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

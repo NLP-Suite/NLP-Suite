@@ -1100,7 +1100,6 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
                 continue
             if row[col1] not in graph.nodes:
                 if spellCol != "":
-                    print("GEPHI spellCol row[spellCol] + 1 ", int(float(float(row[spellCol])))+1)
                     node = Node(graph,row[col1],row[col1],
                                 r = random.randint(0,255),g = random.randint(0,255),b = random.randint(0,255),
                                 size = "50",

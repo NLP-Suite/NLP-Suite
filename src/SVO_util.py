@@ -353,7 +353,7 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
         else:
             filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
             ['Subject (S)', 'Verb (V)', 'Object (O)']]
-    print(lemmatized_svo,filtered_svo)
+    # print(lemmatized_svo,filtered_svo)
     # Continue with your code, now working with filtered and lemmatized DataFrames
 
     # filtering for WordNet social actors/actions requires lemmatizing
@@ -540,7 +540,7 @@ def lemmatize_filter_svo_old(window,svo_file_name, filter_s, filter_v, filter_o,
                     #     lemmatized_filtered_svo[i]['Object (O)'] = lemmatize_stanza(stanzaPipeLine(filtered_svo[i]['Object (O)']))
                     if not deleted and lemmatize_o and filtered_svo!={}:
                         filtered_svo[i]['Object (O)'] = lemmatize_stanza(stanzaPipeLine(filtered_svo[i]['Object (O)']))
-    print(filter_s,filter_v,filtered_svo)
+    # print(filter_s,filter_v,filtered_svo)
 
     # filtering for WordNet social actors/actions requires lemmatizing
     nRecords_lemma = 0

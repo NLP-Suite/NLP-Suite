@@ -60,7 +60,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         wordcloud_var,
         google_earth_var):
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration' or GUI_util.setup_IO_menu_var.get() == '':
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
     else:
         config_filename = scriptName.replace('main.py', 'config.csv')
@@ -679,20 +679,19 @@ GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_nu
 
 # location of this src python file
 scriptPath = GUI_IO_util.scriptPath
-# one folder UP, the NLP folder
 NLPPath = GUI_IO_util.NLPPath
-# subdirectory of script directory where config files are saved
-# libPath = GUI_IO_util.libPath +os.sep+'wordLists'
 
 window = GUI_util.window
+
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
+
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
+
 
 subject_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
 verb_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-action-list.csv'
 object_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
-
-GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 
 def clear(e):

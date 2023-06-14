@@ -36,6 +36,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
     vocabulary_analysis_menu_var,
     gender_guesser_var):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('_main.py', '_config.csv')
+
     filesToOpen = []  # Store all files that are to be opened once finished
 
     # get the NLP package and language options
@@ -114,8 +119,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
 
                                                               bySentenceIndex_word_var)
             if outputFiles!=None:
-                if len(outputFiles) > 0:
+                if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
         # character n-grams
         if ngrams_character_var or bySentenceIndex_character_var:
@@ -199,16 +206,22 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
             outputDir_style=outputDir
 
         if '*' in vocabulary_analysis_menu_var or 'Vocabulary (via unigrams)' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+            outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'unigrams',language)
-            if output != None:
-                filesToOpen.append(output)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
         if '*' in vocabulary_analysis_menu_var or 'Hapax legomena' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+            outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'Hapax legomena', language)
-            if output != None:
-                filesToOpen.append(output)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
         #Added this option to be able to test the subjectivity/objectivity output (Naman Sahni 10/01/2022)
         if '*' in vocabulary_analysis_menu_var or 'Objectivity/subjectivity (via spaCy)' in vocabulary_analysis_menu_var:
@@ -217,14 +230,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
             else:
                 silent=False
             import spaCy_util
-            annotator_available = spaCy_util.check_spaCy_annotator_availability(['Objectivity/subjectivity'], language,
-                                                                                silent)
+            # annotator_available = spaCy_util.check_spaCy_annotator_availability(['Objectivity/subjectivity'], language,
+            #                                                                     silent)
+            annotator_available=True
             if annotator_available:
-                output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+                outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                             openOutputFiles, createCharts,
                                                             chartPackage,'Objectivity/subjectivity (via spaCy)', language)
-                if output != None:
-                    filesToOpen.append(output)
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
         if '*' in vocabulary_analysis_menu_var or 'Repetition: Words' in vocabulary_analysis_menu_var:
             if '*' in vocabulary_analysis_menu_var:
@@ -233,11 +250,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
             else:
                 process = 'Repetition: Words in first K and last K sentences'
             # a reminder about CoNLL table analyzer option is posted in process_words
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+            outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                        openOutputFiles, createCharts,
                                                        chartPackage,process,language)
-            if output != None:
-                filesToOpen.append(output)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
         if '*' in vocabulary_analysis_menu_var or 'Repetition: Last' in vocabulary_analysis_menu_var:
             if '*' in vocabulary_analysis_menu_var:
@@ -245,11 +265,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
                 process='*Repetition: Last K words of a sentence/First K words of next sentence'
             else:
                 process = 'Repetition: Last K words of a sentence/First K words of next sentence'
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+            outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                        openOutputFiles, createCharts,
                                                        chartPackage, process, language)
-            if output != None:
-                filesToOpen.append(output)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
         if '*' in vocabulary_analysis_menu_var or 'Stanza' in vocabulary_analysis_menu_var:
             annotator = 'Lemma'
@@ -257,61 +280,92 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
             memory_var = 8
             document_length_var = 1
             limit_sentence_length_var = 1000
-            output = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+            outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                           outputDir,
                                                           openOutputFiles,
                                                           createCharts, chartPackage,
                                                           annotator, False,
                                                           language_list,
                                                           memory_var, document_length_var, limit_sentence_length_var)
-            if output != None:
-                filesToOpen.extend(output)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
         if '*' in vocabulary_analysis_menu_var or 'capital' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+            outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                                    openOutputFiles, createCharts, chartPackage,'capital')
-            if output != None:
-                filesToOpen.extend(output)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
         if '*' in vocabulary_analysis_menu_var or 'Short' in vocabulary_analysis_menu_var:
-            output =statistics_txt_util.process_words(window, config_filename, inputFilename,inputDir, outputDir_style,
+            outputFiles =statistics_txt_util.process_words(window, config_filename, inputFilename,inputDir, outputDir_style,
                                                       openOutputFiles, createCharts, chartPackage,'Short')
-            if output != None:
-                filesToOpen.extend(output)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
         if '*' in vocabulary_analysis_menu_var or 'Vowel' in vocabulary_analysis_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+            outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                        openOutputFiles, createCharts, chartPackage,'Vowel')
-            if output != None:
-                filesToOpen.extend(output)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
         if '*' in vocabulary_analysis_menu_var or 'Punctuation' in vocabulary_analysis_menu_var:
-            output =statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
+            outputFiles =statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
                                                       openOutputFiles, createCharts, chartPackage,'Punctuation')
-            if output != None:
-                filesToOpen.extend(output)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
         if '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
-            output =file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir_style, config_filename, False, createCharts, chartPackage)
-            if output != None:
-                filesToOpen.extend(output)
+            outputFiles =file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir_style, config_filename, False, createCharts, chartPackage)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
         if '*' == vocabulary_analysis_menu_var or 'Abstract' in vocabulary_analysis_menu_var:
             if language == 'English':
                 mode = "both" # mean, median, both (calculates both mean and median)
-                output = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, config_filename, openOutputFiles, createCharts, chartPackage, processType='')
-                if output != None:
-                    filesToOpen.extend(output)
+                outputFiles = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, config_filename, openOutputFiles, createCharts, chartPackage, processType='')
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
             else:
                 if not '*' == vocabulary_analysis_menu_var:
                     mb.showwarning(title='Warning', message='The Abstract/concrete vocabulary algorithm is only available for the English language.')
 
         if '*' == vocabulary_analysis_menu_var or 'Yule' in vocabulary_analysis_menu_var:
-            output =statistics_txt_util.yule(window, inputFilename, inputDir, outputDir, config_filename)
-            if output != None:
-                # output is a list must use extend
-                filesToOpen.extend(output)
+            outputFiles =statistics_txt_util.yule(window, inputFilename, inputDir, outputDir, config_filename)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
         if '*' in vocabulary_analysis_menu_var or 'detection' in vocabulary_analysis_menu_var:
-                output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style, config_filename,
+                outputFiles = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style, config_filename,
                                                                          openOutputFiles, createCharts, chartPackage)
-                if output != None:
-                    filesToOpen.extend(output)
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
     if gender_guesser_var==True:
         mb.showwarning('Warning',
@@ -359,11 +413,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              increment=1)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for Style Analysis'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

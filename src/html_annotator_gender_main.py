@@ -28,12 +28,13 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
         CoreNLP_gender_annotator_var, CoreNLP_download_gender_file_var, CoreNLP_upload_gender_file_var,
         annotator_dictionary_var, annotator_dictionary_file_var,personal_pronouns_var,plot_var, year_state_var, firstName_entry_var, new_SS_folders):
 
-    filesToOpen=[]
 
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
     else:
         config_filename = scriptName.replace('_main.py', '_config.csv')
+
+    filesToOpen=[]
 
     # get the NLP package and language options
     error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
@@ -158,8 +159,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
 
 
 GUI_label='Graphical User Interface (GUI) for Annotating First Names & Pronouns in Documents for Gender (Male/Female)'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

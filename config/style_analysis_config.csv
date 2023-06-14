@@ -1,5 +1,5 @@
 I/O configuration label,Path,Sort order,Item separator character(s),Date format,Date position
-Input filename with path,C:/Users/rfranzo/Desktop/CORPUS DATA/CORPUS Genoa Notary/Giovanni scriba 3 docs.txt,,,,
-Input files directory,,,,,
+Input filename with path,,,,,
+Input files directory,C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/newspaperArticles (Date: mm-dd-yyyy _ 4),,_,mm-dd-yyyy,4
 Input files secondary directory,,,,,
-Output files directory,C:/Program Files (x86)/NLP_backup/Output,,,,
+Output files directory,C:/Users/rfranzo/Documents/NLP output,,,,

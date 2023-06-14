@@ -37,6 +37,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         single_quote,
         CoNLL_table_analyzer_var, annotators_var, annotators_menu_var):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     filesToOpen = []
     outputCoNLLfilePath = ''
 
@@ -349,6 +354,7 @@ GUI_label = 'Graphical User Interface (GUI) for NLP parsers & annotators'
 #   input secondary dir
 #   output dir
 config_input_output_numeric_options=[2,1,0,1]
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
 
 IO_setup_display_brief=True
@@ -360,18 +366,11 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
 
-config_filename=''
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
 window = GUI_util.window
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
-
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('main.py', 'config.csv')
-
 
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
