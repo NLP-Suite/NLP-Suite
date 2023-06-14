@@ -488,8 +488,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annota
 
 Annotators_checkbox = tk.Checkbutton(window, text='Annotators', variable=annotators_var,
                                              onvalue=1, offvalue=0)
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               Annotators_checkbox, True)
+                                   Annotators_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   'Click on the "Annotators" checkbox and then use the dropdown menu to select the type of annotator to run (e.g., POS, gender, sentiment)')
 
 annotators_menu_var.set("")
 annotators_menu_var.set("")
@@ -510,8 +513,11 @@ annotators_menu = tk.OptionMenu(window, annotators_menu_var,
         '   Normalized NER date annotator (via CoreNLP)',
         '   Quote/dialogue annotator (via CoreNLP)')
 
+# place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_annotator_pos, y_multiplier_integer,
-                                               annotators_menu)
+                                   annotators_menu,
+                                   False, False, True, False, 90, GUI_IO_util.watch_videos_x_coordinate,
+                                   'Click on the "Annotators" checkbox to select the type of annotator to run (e.g., POS, gender, sentiment)')
 
 y_multiplier_integer_SV1=y_multiplier_integer
 

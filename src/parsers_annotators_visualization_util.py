@@ -156,11 +156,11 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Form'],
-                                                           chart_title='Frequency Distribution of Form Values by DepRel (Dependency Relations) Values',
+                                                           chart_title='Frequency Distribution of Form Values', # by DepRel (Dependency Relations) Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='DepRel',
-                                                           column_xAxis_label='DepRel values',
+                                                           column_xAxis_label='Form values',
                                                            groupByList=['DepRel'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='DepRel')

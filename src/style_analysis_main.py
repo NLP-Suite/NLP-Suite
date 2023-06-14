@@ -138,20 +138,28 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
         if 'stopwords' in corpus_text_options_menu_var:
             stopwords_var=True
         if "*" in corpus_statistics_options_menu_var or 'frequencies' in corpus_statistics_options_menu_var:
-            tempOutputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,inputDir,outputDir,config_filename,False,createCharts, chartPackage, stopwords_var, lemmatize_var)
-            if tempOutputFiles!=None:
-                # chart_outputFilename is a list [] must use extend
-                filesToOpen.extend(tempOutputFiles)
+            outputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,inputDir,outputDir,config_filename,False,createCharts, chartPackage, stopwords_var, lemmatize_var)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
         if "Compute sentence length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
-            tempOutputFiles = statistics_txt_util.compute_sentence_length(inputFilename, inputDir, outputDir, config_filename, createCharts, chartPackage)
-            if tempOutputFiles!=None:
-                filesToOpen.append(tempOutputFiles)
+            outputFiles = statistics_txt_util.compute_sentence_length(inputFilename, inputDir, outputDir, config_filename, createCharts, chartPackage)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
         if "Compute line length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
-            tempOutputFiles=statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir,
+            outputFiles=statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir,
                                                           False, createCharts, chartPackage)
-            if tempOutputFiles!=None:
-                filesToOpen.append(tempOutputFiles)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
     if complexity_readability_analysis_var == True:
         if '*' in complexity_readability_analysis_menu_var or 'Sentence' in complexity_readability_analysis_menu_var:

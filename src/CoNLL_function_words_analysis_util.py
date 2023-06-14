@@ -433,29 +433,29 @@ def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openO
 
     outputFiles = article_stats(inputFilename, outputDir, data, data_divided_sents,
                                                                    openOutputFiles, createCharts, chartPackage)
-    if outputFiles != None:
+    if outputFiles!=None:
         filesToOpen.extend(outputFiles)
 
     outputFiles = auxiliary_stats(inputFilename, outputDir, data, data_divided_sents,
                                                                      openOutputFiles, createCharts, chartPackage)
-    if outputFiles != None:
+    if outputFiles!=None:
         filesToOpen.extend(outputFiles)
 
     outputFiles = conjunction_stats(inputFilename, outputDir, data,
                                                                        data_divided_sents, openOutputFiles,
                                                                        createCharts, chartPackage)
-    if outputFiles != None:
+    if outputFiles!=None:
         filesToOpen.extend(outputFiles)
 
     outputFiles = preposition_stats(inputFilename, outputDir, data,
                                                                        data_divided_sents, openOutputFiles,
                                                                        createCharts, chartPackage)
-    if outputFiles != None:
+    if outputFiles!=None:
         filesToOpen.extend(outputFiles)
 
     outputFiles = pronoun_stats(inputFilename, outputDir, data, data_divided_sents,
                                                                    openOutputFiles, createCharts, chartPackage)
-    if outputFiles != None:
+    if outputFiles!=None:
         filesToOpen.extend(outputFiles)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running FUNCTION WORDS ANALYSES at', True, '', True, startTime, True)

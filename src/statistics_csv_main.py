@@ -45,9 +45,12 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
         # tempOutputFiles=statistics_csv_util.compute_csv_column_statistics(window,inputFilename,outputDir,
         #                         groupBy_list, [], '', createCharts, chartPackage)
 
-        tempOutputFiles=statistics_csv_util.compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,openOutputFiles,createCharts, chartPackage)
-        if tempOutputFiles != None:
-            filesToOpen.append(tempOutputFiles)
+        outputFiles=statistics_csv_util.compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,openOutputFiles,createCharts, chartPackage)
+        if outputFiles:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if csv_field_freq:
         if len(csv_list) == 0:

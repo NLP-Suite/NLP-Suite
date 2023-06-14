@@ -256,7 +256,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # annotator_params will run the annotator for SVO and run the gender and quote placing results inside the SVO output folder
         # gender_var and quote_var are used in CoreNLP_annotate to add gender and quote columns to the SVO csv output file
         # they can be passed independently, but it is useful to have both arguments
-        tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                    outputSVODir, openOutputFiles,
                                    createCharts,
                                    chartPackage,
@@ -272,10 +272,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                    gender_var = gender_var, gender_filename = gender_filename, gender_filename_html = gender_filename_html,
                                    quote_var = quote_var, quote_filename = quote_filename)
 
-        if len(tempOutputFiles)!=0:
-            SVO_filename=tempOutputFiles[0]
-            filesToOpen.extend(tempOutputFiles)
-            svo_result_list.append(tempOutputFiles[0])
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                SVO_filename = outputFiles
+                svo_result_list.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+                SVO_filename=outputFiles[0]
+                svo_result_list.append(outputFiles[0])
 
             # TODO MINO: create normalize_date subdir and outputs
             outputNormalizedDateDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
@@ -294,7 +299,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                            message='The Stanford CoreNLP OpenIE annotator is only available for English.')
             return
 
-        tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputSVODir, openOutputFiles,
                                                                            createCharts,
                                                                            chartPackage,
@@ -308,10 +313,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                            date_position_var=date_position_var,
                                                                            google_earth_var = google_earth_var,
                                                                            location_filename = location_filename)
-        if len(tempOutputFiles)!=0:
-            SVO_filename=tempOutputFiles[0]
-            filesToOpen.extend(tempOutputFiles)
-            svo_result_list.append(tempOutputFiles[0])
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+            SVO_filename = outputFiles
+            svo_result_list.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
+            SVO_filename = outputFiles[0]
+            svo_result_list.append(outputFiles[0])
 
 # removed from the options; way way too slow and with far better options now in spaCy and Stanza
 # SENNA _____________________________________________________
@@ -335,7 +344,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         document_length_var = 1
         limit_sentence_length_var = 1000
         annotator = 'SVO'
-        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputSVODir,
                                                     openOutputFiles,
                                                     createCharts, chartPackage,
@@ -349,11 +358,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                     google_earth_var=google_earth_var,
                                                     location_filename=location_filename)
 
-        if tempOutputFiles != None:
-            filesToOpen.extend(tempOutputFiles)
-            # the SVO output file is in tempOutputFiles[1] tempOutputFiles[0] contains the CoNLL parser output
-            SVO_filename = tempOutputFiles[1]
-            svo_result_list.append(tempOutputFiles[1])
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                SVO_filename = outputFiles
+                svo_result_list.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+                SVO_filename=outputFiles[1]
+                svo_result_list.append(outputFiles[1])
+            # the SVO output file is in outputFiles[1] outputFiles[0] contains the CoNLL parser output
 
 # Stanza _____________________________________________________
 
@@ -361,7 +375,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         document_length_var = 1
         limit_sentence_length_var = 1000
         annotator = ['SVO']
-        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputSVODir,
                                                       openOutputFiles,
                                                       createCharts, chartPackage,
@@ -375,11 +389,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       google_earth_var=google_earth_var,
                                                       location_filename=location_filename)
 
-        if tempOutputFiles != None:
-            filesToOpen.extend(tempOutputFiles)
-            # the SVO output file is in tempOutputFiles[1] tempOutputFiles[0] contains the CoNLL parser output
-            SVO_filename = tempOutputFiles[1]
-            svo_result_list.append(tempOutputFiles[1])
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                SVO_filename = outputFiles
+                svo_result_list.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+                # the SVO output file is in outputFiles[1] outputFiles[0] contains the CoNLL parser output
+                SVO_filename = outputFiles[1]
+                svo_result_list.append(outputFiles[1])
 
 # -------------------------------------------------------------------------------------------------------------------------------------
 # Lemmatizing and Filtering SVO for all packages
@@ -410,7 +429,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         # WordNet is only available for English
         if language_var=='English' and (lemmatize_subjects or lemmatize_verbs or lemmatize_objects):
-            # tempOutputFiles[0] is the filename with lemmatized SVO values
+            # outputFiles[0] is the filename with lemmatized SVO values
             # we want to aggregate with WordNet the verbs in column 'V'
             # check that SVO output file contains records
             nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(SVO_lemmatized_filename,
@@ -447,9 +466,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         else:
             reminders_util.checkReminder(scriptName, reminders_util.title_options_no_SVO_records,
                                          reminders_util.message_no_SVO_records, True)
-
-        # filesToOpen.extend(tempOutputFiles)
-        # svo_result_list.append(tempOutputFiles[0])
 
     reminders_util.checkReminder(scriptName, reminders_util.title_options_SVO_someone,
                                  reminders_util.message_SVO_someone, True)

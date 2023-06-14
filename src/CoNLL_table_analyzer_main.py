@@ -86,21 +86,21 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                   data,
                                                                   all_CoNLL_records,
                                                                   openOutputFiles, createCharts, chartPackage)
-            if outputFiles != None:
+            if outputFiles!=None:
                 filesToOpen.extend(outputFiles)
 
         if all_analyses.get() =='*' or all_analyses.get() =='Noun analysis':
             import CoNLL_noun_analysis_util
             outputFiles = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, all_CoNLL_records,
                                                               openOutputFiles, createCharts, chartPackage)
-            if outputFiles != None:
+            if outputFiles!=None:
                 filesToOpen.extend(outputFiles)
         if all_analyses.get() =='*' or all_analyses.get() =='Verb analysis':
             import CoNLL_verb_analysis_util
             outputFiles = CoNLL_verb_analysis_util.verb_stats(config_filename, inputFilename, outputDir, data, all_CoNLL_records,
                                                               openOutputFiles, createCharts, chartPackage)
 
-            if outputFiles != None:
+            if outputFiles!=None:
                 filesToOpen.extend(outputFiles)
 
         if all_analyses.get() =='*' or all_analyses.get() =='Function (junk/stop) words analysis':
@@ -108,7 +108,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             outputFiles = CoNLL_function_words_analysis_util.function_words_stats(inputFilename, outputDir, data,
                                                                                   all_CoNLL_records, openOutputFiles,
                                                                                   createCharts, chartPackage)
-            if outputFiles != None:
+            if outputFiles!=None:
                 filesToOpen.extend(outputFiles)
 
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
@@ -199,7 +199,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                        'Started running the CoNLL table K-sentences analyzer at',
                                                        True, '', True, '', False)
         temp_outputDir, outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_var, End_K_sent_var)
-        if outputFiles != None:
+        if outputFiles!=None:
             outputDir = temp_outputDir
             filesToOpen.extend(outputFiles)
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',

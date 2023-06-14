@@ -582,7 +582,7 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
                                     'Searched Token/Word',
                                     'POS Tag of Searched Token/Word',
                                     'Co-occurring Token/Word', 'Sentence ID')
-    if outputFiles != None:
+    if outputFiles!=None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)
         else:

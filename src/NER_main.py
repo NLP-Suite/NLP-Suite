@@ -55,17 +55,19 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         import BERT_util
         NER_list = BERT_util.NER_dict
         NER_entry_var.set(NER_list['NERs'])
-        tempOutputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, config_filename, '', createCharts, chartPackage)
-        if tempOutputFiles != None:
-            if len(tempOutputFiles) > 0:
-                filesToOpen.extend(tempOutputFiles) # append since a string is returned
+        outputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, config_filename, '', createCharts, chartPackage)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if '*' in NER_package or 'spaCy' in NER_package:
         document_length_var = 1
         limit_sentence_length_var = 1000
         NER_list = spaCy_util.NER_dict
         NER_entry_var.set(NER_list)
-        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
+        oputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
                                                     openOutputFiles,
                                                     createCharts, chartPackage,
@@ -78,14 +80,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                     items_separator_var=items_separator_var,
                                                     date_position_var=date_position_var)
 
-        if tempOutputFiles != None:
-            if len(tempOutputFiles) > 0:
-                filesToOpen.extend(tempOutputFiles)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if '*' in NER_package or 'CoreNLP' in NER_package:
         if '*' in NER_package:
             NER_list=Stanford_CoreNLP_util.NER_list
-        tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
+        outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                             openOutputFiles, createCharts, chartPackage,
                                                             'NER',
                                                             language=language_var,
@@ -101,9 +105,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                             items_separator_var=items_separator_var,
                                                             date_position_var=date_position_var)
 
-        if tempOutputFiles!=None:
-            if len(tempOutputFiles)>0:
-                filesToOpen.extend(tempOutputFiles)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if '*' in NER_package or 'Stanza' in NER_package:
         document_length_var = 1
@@ -112,7 +118,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         NER_list = get_NER_list('Stanza',language)
         NER_entry_var.set(NER_list)
 
-        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputDir,
                                                       openOutputFiles,
                                                       createCharts, chartPackage,
@@ -125,9 +131,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       items_separator_var=items_separator_var,
                                                       date_position_var=date_position_var)
 
-        if tempOutputFiles!= None:
-            if len(tempOutputFiles) > 0:
-                filesToOpen.extend(tempOutputFiles) # extends since a list [] is returned
+        if outputFiles!= None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)

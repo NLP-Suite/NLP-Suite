@@ -179,10 +179,11 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
                 processors = 'tokenize,mwt,pos,lemma,depparse'  # add NER when parser option selected
             else:
                 processors='tokenize,mwt,pos,ner,lemma,depparse' # add NER when parser option selected
-            annotator = 'depparse'
             if "SVO" in annotator_params:
                 annotator = 'SVO'
-                annotator_params = "DepRel_SVO"
+            else:
+                annotator = 'depparse'
+                # annotator_params = "DepRel_SVO"
         elif "sentiment" in annotator_params:
             annotator = 'sentiment'
             processors='tokenize,sentiment'

@@ -137,12 +137,16 @@ def run(inputFilename,inputDir,outputDir,
             model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
         else:
             model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
-        tempOutputFiles = BERT_util.sentiment_main(inputFilename, inputDir, outputDir, config_filename, mode, createCharts, chartPackage, model_path)
-        if tempOutputFiles == None:
+        outputFiles = BERT_util.sentiment_main(inputFilename, inputDir, outputDir, config_filename, mode, createCharts, chartPackage, model_path)
+        if outputFiles == None:
             return
-        if len(tempOutputFiles) > 0:
-            filesToOpen.extend(tempOutputFiles)
-            outputFilename = tempOutputFiles[0]
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+            outputFilename = outputFiles
+        else:
+            filesToOpen.extend(outputFiles)
+            outputFilename = outputFiles[0]
+
     # spaCy  _______________________________________________________
 
     if SA_algorithm_var == '*' or spaCy_var == 1 and (mean_var or median_var):
@@ -157,7 +161,7 @@ def run(inputFilename,inputDir,outputDir,
         document_length_var = 1
         limit_sentence_length_var = 1000
         import spaCy_util
-        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
                                                     openOutputFiles,
                                                     createCharts, chartPackage,
@@ -169,10 +173,13 @@ def run(inputFilename,inputDir,outputDir,
                                                     items_separator_var='',
                                                     date_position_var=0)
 
-        if tempOutputFiles != None:
-            if len(tempOutputFiles) > 0:
-                filesToOpen.extend(tempOutputFiles)
-                outputFilename = tempOutputFiles[0]
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                outputFilename = outputFiles
+            else:
+                filesToOpen.extend(outputFiles)
+                outputFilename = outputFiles[0]
 
 # Stanford CORENLP  _______________________________________________________
 
@@ -189,13 +196,18 @@ def run(inputFilename,inputDir,outputDir,
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
             return
         import Stanford_CoreNLP_util
-        outputFilename = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                           outputDir, openOutputFiles, createCharts, chartPackage,'sentiment', False,
                                                                           language_var, export_json_var,
                                                                           memory_var)
         # outputFilename=outputFilename[0] # annotators return a list and not a string
-        if SA_algorithm_var!='*' and len(outputFilename)>0:
-            filesToOpen.extend(outputFilename)
+        if SA_algorithm_var!='*' and outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                outputFilename = outputFiles
+            else:
+                filesToOpen.extend(outputFiles)
+                outputFilename = outputFiles[0]
 
 # Stanza  _______________________________________________________
 
@@ -209,7 +221,7 @@ def run(inputFilename,inputDir,outputDir,
         document_length_var = 1
         limit_sentence_length_var = 1000
         import Stanza_util
-        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputDir,
                                                       openOutputFiles,
                                                       createCharts, chartPackage,
@@ -221,10 +233,13 @@ def run(inputFilename,inputDir,outputDir,
                                                       items_separator_var='',
                                                       date_position_var=0)
 
-        if tempOutputFiles != None:
-            if len(tempOutputFiles) > 0:
-                filesToOpen.extend(tempOutputFiles)
-                outputFilename = tempOutputFiles[0]
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                outputFilename = outputFiles
+            else:
+                filesToOpen.extend(outputFiles)
+                outputFilename = outputFiles[0]
 
 # shape of stories ------------------------------------------------------------------------
 
