@@ -1013,6 +1013,10 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
 
 # SUBJECTIVITY/OBJECTIVITY PER SENTENCE---------------------------------------------------------------------------------------------
             if "Objectivity/subjectivity" in processType:
+                # import spaCy_util
+                # annotator_available = spaCy_util.check_spaCy_annotator_availability(['Objectivity/subjectivity'], language, silent=False)
+                # if not annotator_available:
+                #     return
                 nlp = spacy.load('en_core_web_sm')
                 nlp.add_pipe('spacytextblob')
 

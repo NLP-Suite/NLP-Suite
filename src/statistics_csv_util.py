@@ -453,36 +453,43 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             data.to_csv(outputFilename,encoding='utf-8', index=False)
             filesToOpen.append(outputFilename)
 
+# PREVIOUS CODE
+
+        # aggregation by group_col NO hover over ----------------------------------------
+        # for col in selected_col:
+        #     # selected_col, hover_col, group_col are single lists with the column headers
+        #     #   selected_col=['POStag'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
+        #     # the aggregation can deal with column items passed as integer (from visualization_chart) or
+        #     #   alphabetic values (from statistics_NLP_main)
+        #     group_column_names=[]
+        #     # create a single list
+        #     temp_group_column_names = group_col + selected_col
+        #     # test for list of lists [[],[]]
+        #     if any(isinstance(el, list) for el in temp_group_column_names):
+        #         # flatten the list of lists to a single list
+        #         temp_group_column_names = [x for xs in temp_group_column_names for x in xs]
+        #     i = 0
+        #     while i<len(temp_group_column_names):
+        #         t = temp_group_column_names[i]
+        #         header = t
+        #         # check that t is not already in the list group_column_names
+        #         if isinstance(t, (int, float)):
+        #             header = IO_csv_util.get_headerValue_from_columnNumber(headers, t)
+        #             if group_column_names.count(header) == 0:
+        #                 group_column_names.append(header)
+        #         else:
+        #             if group_column_names.count(header) == 0:
+        #                 group_column_names.append(header)
+        #         i = i+1
+        #     if len(group_column_names)==0:
+        #         group_column_names=temp_group_column_names
+        #     data = data.groupby(group_column_names).size().reset_index(name='Frequency')
+
 # aggregation by group_col NO hover over ----------------------------------------
     elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
         columns_to_be_plotted = []
         group_list = group_col_SV.copy()
         for col in selected_col:
-            # selected_col, hover_col, group_col are single lists with the column headers
-            #   selected_col=['POS'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
-            # the aggregation can deal with column items passed as integer (from visualization_chart) or
-            #   alphabetic values (from statistics_NLP_main)
-            # group_column_names=[]
-            # create a single list
-            # temp_group_column_names = group_col + selected_col
-            # test for list of lists [[],[]]
-            # if any(isinstance(el, list) for el in temp_group_column_names):
-            #     # flatten the list of lists to a single list
-            #     temp_group_column_names = [x for xs in temp_group_column_names for x in xs]
-            # i = 0
-            # while i<len(temp_group_column_names):
-            #     t = temp_group_column_names[i]
-            #     header = t
-            #     # check that t is not already in the list group_column_names
-            #     if isinstance(t, (int, float)):
-            #         header = IO_csv_util.get_headerValue_from_columnNumber(headers, t)
-            #         if group_column_names.count(header) == 0:
-            #             group_column_names.append(header)
-            #     else:
-            #         if group_column_names.count(header) == 0:
-            #             group_column_names.append(header)
-            #     i = i+1
-            # for col in selected_col:
             group_list.append(col)
             # counts = data.groupby(list(args)).size()
             # Convert the multi-level index to columns
