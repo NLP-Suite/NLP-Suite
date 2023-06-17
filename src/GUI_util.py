@@ -377,9 +377,9 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename, config_input
     run_button_state, err_msg = activateRunButton(config_filename,IO_setup_display_brief,scriptName, missingIO, silent)
     if run_button_state=="disabled":
         if setup_IO_menu_var.get():
-            err_msg=err_msg + "The RUN button is disabled until the expected I/O information is entered.\n\nClick on the 'Setup INPUT/OUTPUT configuration' button on top of this GUI to enter the required information. This, however, will affect all GUIs in the NLP Suite. You may wish to select the 'GUI-specific I/O configuration' instead of the current 'Default I/O configuration'."
+            err_msg=err_msg + "The RUN button is disabled until the expected I/O information is entered.\n\nFor your convenience the script will open the NLP_setup_IO_main GUI where you can setup the I/O configuration.\n\nAt anytime, you can also click on the 'Setup INPUT/OUTPUT configuration' button on top of this GUI to enter the required information. This, however, will affect all GUIs in the NLP Suite. You may wish to select the 'GUI-specific I/O configuration' instead of the current 'Default I/O configuration'."
         else:
-            err_msg=err_msg + "The RUN button is disabled until the expected I/O information is entered.\n\nClick on the 'Setup INPUT/OUTPUT configuration' button on top of this GUI to enter the required information."
+            err_msg=err_msg + "The RUN button is disabled until the expected I/O information is entered.\n\nFor your convenience the script will open the NLP_setup_IO_main GUI where you can setup the I/O configuration.\n\nAt anytime, you can also click on the 'Setup INPUT/OUTPUT configuration' button on top of this GUI to enter the required information."
     return err_msg
 
 def get_file_type(config_input_output_numeric_options):
@@ -1057,6 +1057,10 @@ def changed_setup_IO_config(scriptName, IO_setup_display_brief, silent=False):
                                    config_input_output_numeric_options, scriptName, silent)
         if err_msg != '':
             mb.showwarning(title='Warning', message=err_msg)
+            call("python NLP_setup_IO_main.py --config_option " + str(config_input_output_numeric_options).replace('[',
+                                                                                                                   '"').replace(
+                ']', '"')
+                 + " --config_filename " + config_filename, shell=True)
 
 def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
                videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName='', silent=False, package_display_area_value=''):

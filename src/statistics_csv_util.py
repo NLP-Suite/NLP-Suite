@@ -221,7 +221,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
     df_group.to_csv(outputFilename, encoding='utf-8')
     filesToOpen.append(outputFilename)
 
-    if createCharts==True:
+    if createCharts:
         column_name_to_be_plotted=headers_stats[1] # Mean
         column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[2] # Mode
         column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[7] # Skewness
@@ -235,6 +235,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
         # columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Mean', 'Mode', 'Skewness', 'Kurtosis'] # document field comes first [2
         # hover_label=['Document']
         hover_label=[]
+        #@@@
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, outputFilename, outputDir,
                                                   outputFileLabel='',
                                                   chartPackage=chartPackage,
@@ -270,9 +271,12 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, outputFileName
     # if temp_outputfile!='':
     #     filesToOpen.append(temp_outputfile)
     if len(groupByList)>0:
-        temp_outputfile=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,outputFileNameLabel,groupByList,plotList,chart_title_label,createCharts,chartPackage)
-        if not (temp_outputfile is None):
-            filesToOpen = temp_outputfile
+        outputFiles=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,outputFileNameLabel,groupByList,plotList,chart_title_label,createCharts,chartPackage)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
     return filesToOpen
 
 
@@ -497,10 +501,10 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             data = data.groupby(group_list).size().reset_index(name='Frequency_' + str(col))
             # SIMON should get the col of frequency in data_final
             if 'Document' in str(group_list):
-                columns_to_be_plotted = [[0, 2, 3]]  # will give different bars for each value
+                columns_to_be_plotted = [[0, 2], [1, 2]]  # will give different bars for each value
                 # columns_to_be_plotted = [[0, 3], [1, 3]]
             else:
-                columns_to_be_plotted=[[0, 2],[1, 2]]
+                columns_to_be_plotted=[[1, 2]]
             group_list = group_col_SV.copy()
 
         # added TONY1
@@ -559,12 +563,13 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 # plot the data from compute_csv_column_frequencies
 
     if createCharts:
+        column_xAxis_label_var=''
         outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                               outputFileLabel=fileNameType,
                                               chartPackage=chartPackage,
                                               chart_type_list=[chartType],
                                               chart_title=chart_title,
-                                              column_xAxis_label_var=col,
+                                              column_xAxis_label_var=column_xAxis_label_var,
                                               hover_info_column_list=hover_over_header)
         if outputFiles!=None:
             if isinstance(outputFiles, str):

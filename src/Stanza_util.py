@@ -336,6 +336,8 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
         if filesToVisualize[j][-4:] == ".csv":
             file_df = pd.read_csv(filesToVisualize[j])
             if not file_df.empty:
+                # inputFilename is the original file
+                # outputFilename is the csv file containing the fields to be visualized
                 outputFilename = filesToVisualize[j]
                 outputFiles = parsers_annotators_visualization_util.parsers_annotators_visualization(
                     configFilename, inputFilename, inputDir, outputDir,

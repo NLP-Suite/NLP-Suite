@@ -96,16 +96,17 @@ def make_output_subdirectory(inputFilename, inputDir, outputDir, label, silent=T
             shutil.rmtree(outputSubDir)
         except Exception as e:
             mb.showwarning(title='Directory error',
-                           message="Could not create the directory " + outputSubDir + "\n\n" + str(e))
+                           message="Could not create the directory " + outputSubDir + "\n\n" + str(e) + "\n\nPlease, CLOSE THE FILE then click OK to continue...")
             outputSubDir = ''
     try:
         # chmod() changes the mode of path to the passed numeric mode
         os.chmod(Path(outputSubDir).parent.absolute(), 0o755)
         os.mkdir(outputSubDir, 0o755)
     except Exception as e:
-        mb.showwarning(title='Directory error',
-                       message="Could not create the directory " + outputSubDir + "\n\n" + str(e))
-        print("error: ", e.__doc__)
+        if outputSubDir != '':
+            mb.showwarning(title='Directory error',
+                           message="Could not create the directory " + outputSubDir + "\n\n" + str(e) + "\n\nPlease, CLOSE THE FILE and try again.")
+            print("error: ", e.__doc__)
         # createDir = False
         outputSubDir=''
 

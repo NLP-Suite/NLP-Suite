@@ -1,5 +1,5 @@
 I/O configuration label,Path,Sort order,Item separator character(s),Date format,Date position
 Input filename with path,,,,,
-Input files directory,C:/Users/rfranzo/Desktop/Test CGWR (Date: yyyy _ 1),,_,yyyy,1
+Input files directory,C:/Users/rfranzo/Documents/My Publications/My Papers/IN PROGRESS/NLP/CGWR Chinese Government Work Reports/Data FINAL/Final corpus new (Date: yyyy _ 1),1,_,yyyy,1
 Input files secondary directory,,,,,
 Output files directory,C:/Users/rfranzo/Documents/NLP output,,,,

@@ -363,7 +363,7 @@ def visualize_chart_bySent(inputFilename, outputDir, createCharts, chartPackage,
 def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                     columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
                     chart_title, count_var, hover_label, outputFileNameType, column_xAxis_label,
-                    groupByList,plotList, chart_title_label, column_yAxis_label='Frequencies', pivot = False):
+                    groupByList, plotList, chart_title_label, column_yAxis_label='Frequencies', pivot = False):
     filesToOpen=[]
     columns_to_be_plotted_numeric=[]
     columns_to_be_plotted_byDoc=[]
@@ -402,9 +402,11 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     if len(columns_to_be_plotted_xAxis) == 1:
         field_number_xAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_xAxis[0],
                                                                           inputFilename)
-    if "Document ID" in headers:
-        docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document ID', inputFilename)
-        docCol = docCol +1 # we need to visualize the doc filename
+
+    # if "Document ID" in headers:
+    if "Document" in str(groupByList):
+        docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)
+        # docCol = docCol +1 # we need to visualize the doc filename
         byDoc = True
     else:
         byDoc = False
@@ -502,7 +504,9 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                        createCharts, chartPackage,
                                        filesToOpen,
                                        columns_to_be_plotted_byGroup, groupByList,
-                                       chart_title, columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis)
+                                       chart_title,
+                                       columns_to_be_plotted_xAxis,
+                                       columns_to_be_plotted_yAxis)
 
             if outputFiles!=None:
                 chart_outputFilenameSV = outputFiles
@@ -559,7 +563,6 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                    chartPackage)
 
         if outputFiles!=None:
-            # tempOutputfile is a list must use extend and not append
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
@@ -574,7 +577,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 #   if the column is the same (e.g., sentence), this must be repeated as many times as there are series
 
 # columns_to_be_plotted is a double list of 2 items for each list [[0, 1], [0, 2], [0, 3]] where
-#   the first number refers to the x-axis value and the second to the y-axis value
+#   the first number refers to the x-axis value and the second to the y-axis value (i.e., a frequency field)
 # when count_var=1 the second number gets counted (non numeric values MUST be counted)
 # the complete sid need to be tested as na would be filled with 0
 # if you need to aggregate fields displaying results grouped by a specific field (e.g., words by NER tag, NER tag by Document ID),

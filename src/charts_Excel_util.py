@@ -398,7 +398,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             if chart_type_list[0]=="line" or chart_type_list[0]=="bar" or chart_type_list[0]=="bubble" or chart_type_list[0]=="scatter":
 
                 if len(column_xAxis_label)>0:
-                    chartName.x_axis.title = column_xAxis_label+insertLines
+                    chartName.x_axis.title = str(column_xAxis_label)+insertLines
                 # else:
                 #     chartName.x_axis.title = " X_AXIS"
 
