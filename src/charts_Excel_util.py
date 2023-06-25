@@ -395,6 +395,13 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             elif chart_type_list[0]=="scatter":
                 chartName = ScatterChart()
 
+            # Excel allows to group a series value by another series values (e.g., Form or Lemma values by POS or NER tags)
+            #   two x-axis labels will be created
+            #   https://www.extendoffice.com/documents/excel/2715-excel-chart-group-axis-labels.html
+            # but the only way to do this in openpyxl is by plotting TWO separate series,
+            #   e.g., a bar chart for Form  or Lemma values and a bar or line chart for POS tags
+            #   https://openpyxl.readthedocs.io/en/latest/charts/secondary.html
+
             if chart_type_list[0]=="line" or chart_type_list[0]=="bar" or chart_type_list[0]=="bubble" or chart_type_list[0]=="scatter":
 
                 if len(column_xAxis_label)>0:

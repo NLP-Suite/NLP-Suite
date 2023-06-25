@@ -134,7 +134,7 @@ if config_input_output_numeric_options[0]!=0:
     # config_input_output_alphabetic_options[0][1] != '':  # input filename
     label = ''
     list_item = 0
-    if config_input_output_alphabetic_options[0][4]!='': # and not 'Date: ' in config_input_output_alphabetic_options[0][1]:
+    if config_input_output_alphabetic_options[0][4]!='' and not 'Date: ' in config_input_output_alphabetic_options[0][1]:
         # the index for config_input_output_numeric_options starts at 0 with I/O configuration label
         # [0][4] [0][3] and [0][5] contain date format, item character separator, and date position
         try:
@@ -150,6 +150,7 @@ if config_input_output_numeric_options[0]!=0:
 
     inputFile_lb = tk.Label(window, textvariable=GUI_util.inputFilename)
 
+    date_hover_over_label = ''
     date_hover_over_label = ''
     if '  (Date: ' in label:
         filename_embeds_multiple_items_var.set(1)
@@ -239,8 +240,11 @@ def activate_fields(*args):
     else:
         # date_checkbox.config(state='disabled')
         item_separator.config(state='disabled')
+        items_separator_var.set('_')
         sort_order.config(state='disabled')
+        sort_order_var.set('1, 2, 3, ...')
         # filename_embeds_date_var.set(0)
+
     if filename_embeds_date_var.get():
         if (not filename_embeds_multiple_items_var.get()):
             mb.showwarning(title='Warning', message='You have selected the option of a date embedded in filename(s) but you have not ticked the checkbox "Filename embeds multiple itmes" and the "Separator" character(s).\n\nUnless your filenames are in the format 1981.txt, 1982.txt,... or 12-21-1995.txt, 12-22-1995.txt, ... with the date field as the only item in the filenames, you should tick the checkbox "Filename embeds multiple itmes" and the select the "Separator" character(s), otherwse the default "_" character separator will be used.')
@@ -331,7 +335,7 @@ sort_order_lb = tk.Label(window, text='Sort order ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, # date_position_lb_coordinate
                                                y_multiplier_integer, sort_order_lb, True)
 
-set_default_options()
+# set_default_options()
 
 sort_order = tk.Entry(window, textvariable=sort_order_var, width=10)
 # place widget with hover-over info
@@ -345,6 +349,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                 '\nDefault order is alphabetical. When sorting by one item (e.g., a date in item position 3), enter 3 and the rest will be added automatically.'
                                                 '\nClick on the ?HELP button for more information.')
 
+set_default_options()
 
 # date_checkbox = tk.Checkbutton(window, text='Filename embeds date', state='disabled', variable=filename_embeds_date_var, onvalue=1, offvalue=0)
 date_checkbox = tk.Checkbutton(window, text='Filename embeds date', variable=filename_embeds_date_var, onvalue=1, offvalue=0, command=lambda: activate_fields())
@@ -364,7 +369,7 @@ date_format_lb = tk.Label(window,text='Date format ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,
                                                y_multiplier_integer, date_format_lb, True)
 
-set_default_options()
+# set_default_options()
 
 date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
 # place widget with hover-over info
@@ -375,6 +380,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                True, False, False, False, 90,
                                                GUI_IO_util.date_format_coordinate,
                                                'Select the date type embedded in your filename')
+
+set_default_options()
 
 date_position_menu_lb = tk.Label(window, text='Date item position ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, #date_position_lb_coordinate
@@ -387,7 +394,7 @@ try:
     if config_input_output_alphabetic_options[list_item][5] != '' and config_input_output_alphabetic_options[list_item][5] != '0':
         date_position_var.set(config_input_output_alphabetic_options[list_item][5])
 except:
-    IO_configuration_current = ['', '', '', '']
+    current_IO_configuration_str = ['', '', '', '']
     # config_input_output_alphabetic_options[list_item].append(config_input_output_alphabetic_options[list_item][4])
 # if config_input_output_alphabetic_options[list_item][5]!='':
 #     date_position_var.set(config_input_output_alphabetic_options[list_item][5])
@@ -520,6 +527,7 @@ y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate
 
 
 def changed_filename(tracedInputFile):
+    # print('IN CHANGE FILENAME')
     filename_embeds_multiple_items_var.set(0)
     filename_embeds_date_var.set(0)
     sort_order_var.set('1, 2, 3, ...')  # default value
@@ -533,8 +541,10 @@ def changed_filename(tracedInputFile):
     # else:
     #     error = False
     activate_fields()
-GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_util.input_main_dir_path.get()))
+# must trace on input_main_dir_path, rather than inputFilename,
+#   because inputFilename is set BEFORE input_main_dir_path in GUI_util and it is not up-to-date
+# GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
 # the string is built when entering the GUI and when hitting CLOSE to check whether any changes have been made
 #   warning the user
@@ -554,7 +564,7 @@ def get_IO_options_str():
     IO_options_str = IO_options_str + ', ' + input_output_options
     return IO_options_str
 
-def get_IO_options_list():
+def get_IO_options_list(saving=False):
 
     # config_input_output_alphabetic_options is a double list, each sublist of 4 items
     #   (path + 3 date items [[],[],...])
@@ -585,7 +595,7 @@ def get_IO_options_list():
         # character separator, date format, date position
         input_item_date = ['', '', '']
 
-# input file
+# input file -------------------------------------------------------------------------
 
     inputFilename_list = []
     inputFilename_list.append(fileType)
@@ -593,13 +603,14 @@ def get_IO_options_list():
         fileName_no_date = IO_files_util.open_file_removing_date_from_filename(window, GUI_util.inputFilename.get(),
                                                                                False)
         GUI_util.inputFilename.set(fileName_no_date)
-    # enter data in path field of config file
+
+    # enter date in path field of config file
     if GUI_util.inputFilename.get()!='':
-        GUI_util.inputFilename.set(GUI_util.inputFilename.get() + date_label)
-        inputFilename_list.append(GUI_util.inputFilename.get() + date_label)
+        strValue = GUI_util.inputFilename.get().split(' (Date', 6)[0]
+        GUI_util.inputFilename.set(strValue + date_label)
+        inputFilename_list.append(strValue + date_label)
     else:
         inputFilename_list.append('')
-
 
     if not '...' in sort_order_var.get():
         if GUI_util.inputFilename.get()!='':
@@ -615,7 +626,7 @@ def get_IO_options_list():
         # character separator, date format, date position
         inputFilename_list.extend(['', '', ''])
 
-# input main dir
+# input main dir -------------------------------------------------------------------------
 
     # main_dir_path
     inputDir_list = []
@@ -626,13 +637,16 @@ def get_IO_options_list():
                                                                                       False)
         GUI_util.input_main_dir_path.set(directory_no_date)
 
-    # enter data in path field of config file
+    # enter date in path field of config file
     if GUI_util.input_main_dir_path.get()!='':
-        GUI_util.input_main_dir_path.set(GUI_util.input_main_dir_path.get() + date_label)
-        inputDir_list.append(GUI_util.input_main_dir_path.get() + date_label)
+        strValue = GUI_util.input_main_dir_path.get().split(' (Date', 6)[0]
+        # print('strValue',strValue)
+        GUI_util.input_main_dir_path.set(strValue + date_label)
+        inputDir_list.append(strValue + date_label)
     else:
         inputDir_list.append('')
 
+    # print('sort_order_var.get()', sort_order_var.get())
     if not '...' in sort_order_var.get():
         if GUI_util.input_main_dir_path.get()!='':
             inputDir_list.append(sort_order_var.get())
@@ -640,6 +654,7 @@ def get_IO_options_list():
             inputDir_list.append('') # append sort order
     else:
         inputDir_list.append('') # append sort order
+    # print('inputDir_list 1 -------',inputDir_list)
 
     if GUI_util.input_main_dir_path.get() != '':
         inputDir_list.extend(input_item_date)
@@ -660,6 +675,7 @@ def get_IO_options_list():
         inputDir2_list.append(GUI_util.input_secondary_dir_path.get())
     else:
         inputDir2_list.append('')
+
     if not '...' in sort_order_var.get():
         if GUI_util.input_secondary_dir_path.get()!='':
             inputDir2_list.append(sort_order_var.get())
@@ -690,21 +706,26 @@ def get_IO_options_list():
     current_config_input_output_alphabetic_options.append(inputDir2_list)
     current_config_input_output_alphabetic_options.append(outputDir_list)
 
+    # print('inputDir_list',inputDir_list)
+
     return current_config_input_output_alphabetic_options
 
 
 def save_config(config_input_output_alphabetic_options):
-    current_config_input_output_alphabetic_options=get_IO_options_list()
+    # print('SAVE sort_order_var.get()', sort_order_var.get())
+    current_config_input_output_alphabetic_options=get_IO_options_list(True)
+    # print('SAVE current_config_input_output_alphabetic_options',current_config_input_output_alphabetic_options)
 
     config_util.write_IO_config_file(window, config_filename, config_input_output_numeric_options,
                                      current_config_input_output_alphabetic_options, silent=False)
 
 def close_GUI(IO_configuration_upon_entry):
+    # print('CLOSE config_input_output_alphabetic_options',config_input_output_alphabetic_options)
     missing_input = False
     missing_output = False
     global Error
     msg=''
-    IO_configuration_current=get_IO_options_str()
+    current_IO_configuration_str=get_IO_options_str()
     if GUI_util.inputFilename.get()=='' and GUI_util.input_main_dir_path.get()=='':
         missing_input = True
     if GUI_util.output_dir_path.get()=='':
@@ -724,7 +745,7 @@ def close_GUI(IO_configuration_upon_entry):
     if Error: # old config file without sort order; save automatically
         save_config(config_input_output_alphabetic_options)
     else:
-        if IO_configuration_upon_entry!=IO_configuration_current:
+        if IO_configuration_upon_entry!=current_IO_configuration_str:
             answer = tk.messagebox.askyesno("Warning", 'You have made changes to the default IO setup.\n\nYou will lose your changes if you CLOSE without saving.\n\nWOULD YOU LIKE TO SAVE THE CHANGES MADE?')
             if answer:
                 save_config(config_input_output_alphabetic_options)

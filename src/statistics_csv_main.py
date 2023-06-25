@@ -70,7 +70,8 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
                                                            csv_list,hover_over_list,groupBy_list,
                                                            False,
                                                            chart_title=chart_title,
-                                                           'CSV','line',False)
+                                                           fileNameType='CSV',chartType='line',pivot=False)
+
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)

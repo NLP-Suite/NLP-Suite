@@ -1,5 +1,5 @@
 I/O configuration label,Path,Sort order,Item separator character(s),Date format,Date position
 Input txt filename with path,,,,,
-Input files directory,,,,,
+Input files directory,C:/Users/rfranzo/Desktop/Test CGWR,,,,
 Input files secondary directory,,,,,
-Output files directory,,,,,
+Output files directory,C:/Users/rfranzo/Documents/NLP output,,,,

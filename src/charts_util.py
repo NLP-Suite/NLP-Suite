@@ -97,7 +97,7 @@ def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage
     pivot=False
     filesToOpen=[]
 
-    # compute_csv_column_frequencies produces plots
+    # the function compute_csv_column_frequencies produces plots
     outputFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
                                                   inputFilename, None, outputDir, False,
                                                   createCharts, chartPackage,
@@ -416,6 +416,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     else:
         bySent = False
 
+    # in visualize_chart
     for i in range(0,len(columns_to_be_plotted_yAxis)):
         # get numeric value of header, necessary for run_all
         field_number_yAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_yAxis[i], inputFilename)

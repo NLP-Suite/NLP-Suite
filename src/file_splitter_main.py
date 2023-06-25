@@ -727,8 +727,6 @@ activate_allOptions()
 
 def changed_filename(*args):
     getDocLength()
-
-
 GUI_util.inputFilename.trace('w', changed_filename)
 
 changed_filename()

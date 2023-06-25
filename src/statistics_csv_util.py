@@ -397,7 +397,6 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
     container = []
     hover_over_header = []
     removed_hyperlinks = False
-    group_col_SV = group_col.copy()
 
     if inputDataFrame is not None:
         if len(inputDataFrame)!=0:
@@ -425,7 +424,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         if 'Document' in group_col:
             file_label = file_label + 'byDoc'
         else:
-            file_label = file_label + group_col[0] # add only the first element
+            file_label = file_label + 'by'+group_col[0] # add only the first element
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
                     '.csv', file_label + '_col-freq')
 
@@ -459,53 +458,100 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 
 # PREVIOUS CODE
 
-        # aggregation by group_col NO hover over ----------------------------------------
+    # aggregation by group_col NO hover over ----------------------------------------
+    elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
+        columns_to_be_plotted = []
+
+
+        # selected_col, hover_col, group_col are single lists with the column headers
+        #   selected_col=['POStag'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
+        # the aggregation can deal with column items passed as integer (from visualization_chart) or
+        #   alphabetic values (from statistics_NLP_main)
+        group_column_names=[]
+        # # create a single list
+        # temp_group_column_names = group_col + selected_col
+        # # test for list of lists [[],[]]
+        # if any(isinstance(el, list) for el in temp_group_column_names):
+        #     # flatten the list of lists to a single list
+        #     temp_group_column_names = [x for xs in temp_group_column_names for x in xs]
+        # i = 0
+        # while i<len(temp_group_column_names):
+        #     t = temp_group_column_names[i]
+        #     header = t
+        #     # check that t is not already in the list group_column_names
+        #     if isinstance(t, (int, float)):
+        #         header = IO_csv_util.get_headerValue_from_columnNumber(headers, t)
+        #         if group_column_names.count(header) == 0:
+        #             group_column_names.append(header)
+        #     else:
+        #         if group_column_names.count(header) == 0:
+        #             group_column_names.append(header)
+        #     i = i+1
+        # if len(group_column_names)==0:
+        #     group_column_names=temp_group_column_names
+        # for col in group_column_names:
+        #     data = data.groupby(col).size().reset_index(name='Frequency')
+        # print()
+
+# aggregation by group_col NO hover over ----------------------------------------
+#     elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
+#         columns_to_be_plotted = []
+
+
         # for col in selected_col:
         #     # selected_col, hover_col, group_col are single lists with the column headers
         #     #   selected_col=['POStag'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
         #     # the aggregation can deal with column items passed as integer (from visualization_chart) or
         #     #   alphabetic values (from statistics_NLP_main)
-        #     group_column_names=[]
-        #     # create a single list
-        #     temp_group_column_names = group_col + selected_col
-        #     # test for list of lists [[],[]]
-        #     if any(isinstance(el, list) for el in temp_group_column_names):
-        #         # flatten the list of lists to a single list
-        #         temp_group_column_names = [x for xs in temp_group_column_names for x in xs]
-        #     i = 0
-        #     while i<len(temp_group_column_names):
-        #         t = temp_group_column_names[i]
-        #         header = t
-        #         # check that t is not already in the list group_column_names
-        #         if isinstance(t, (int, float)):
-        #             header = IO_csv_util.get_headerValue_from_columnNumber(headers, t)
-        #             if group_column_names.count(header) == 0:
-        #                 group_column_names.append(header)
-        #         else:
-        #             if group_column_names.count(header) == 0:
-        #                 group_column_names.append(header)
-        #         i = i+1
-        #     if len(group_column_names)==0:
-        #         group_column_names=temp_group_column_names
-        #     data = data.groupby(group_column_names).size().reset_index(name='Frequency')
-
-# aggregation by group_col NO hover over ----------------------------------------
-    elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
-        columns_to_be_plotted = []
-        group_list = group_col_SV.copy()
-        for col in selected_col:
-            group_list.append(col)
-            # counts = data.groupby(list(args)).size()
-            # Convert the multi-level index to columns
-            # counts = counts.reset_index(name='Counts')
-            data = data.groupby(group_list).size().reset_index(name='Frequency_' + str(col))
-            # SIMON should get the col of frequency in data_final
-            if 'Document' in str(group_list):
-                columns_to_be_plotted = [[0, 2], [1, 2]]  # will give different bars for each value
-                # columns_to_be_plotted = [[0, 3], [1, 3]]
+        group_col_SV = group_col.copy()
+        group_column_names=[]
+        # create a single list
+        temp_group_column_names = group_col + selected_col
+        # test for list of lists [[],[]]
+        if any(isinstance(el, list) for el in temp_group_column_names):
+            # flatten the list of lists to a single list
+            temp_group_column_names = [x for xs in temp_group_column_names for x in xs]
+        i = 0
+        while i<len(temp_group_column_names):
+            t = temp_group_column_names[i]
+            header = t
+            # check that t is not already in the list group_column_names
+            if isinstance(t, (int, float)):
+                header = IO_csv_util.get_headerValue_from_columnNumber(headers, t)
+                if group_column_names.count(header) == 0:
+                    group_column_names.append(header)
             else:
-                columns_to_be_plotted=[[1, 2]]
-            group_list = group_col_SV.copy()
+                if group_column_names.count(header) == 0:
+                    group_column_names.append(header)
+            i = i+1
+        if len(group_column_names)==0:
+            group_column_names=temp_group_column_names
+        # #     data = data.groupby(group_column_names).size().reset_index(name='Frequency')
+
+        group_col_SV = group_col.copy()
+        group_list = group_col_SV.copy()
+        for col in group_column_names:
+            if not col in group_list:
+                group_list.append(col)
+            data = data.groupby(group_list).size().reset_index(name='Frequency_' + str(col))
+            group_list = group_column_names_SV.copy()
+
+            # Excel allows to group a series value by another series values (e.g., Form or Lemma values by POS or NER tags)
+            #   two x-axis labels will be created
+            #   https://www.extendoffice.com/documents/excel/2715-excel-chart-group-axis-labels.html
+            # but the only way to do this in openpyxl is by plotting TWO separate series,
+            #   e.g., a bar chart for Form  or Lemma values and a bar or line chart for POS tags
+            #   https://openpyxl.readthedocs.io/en/latest/charts/secondary.html
+
+            # SIMON should get the col of frequency in data_final
+            #group_list = group_col_SV.copy()
+
+
+        if 'Document' in str(group_column_names):
+            columns_to_be_plotted = [[0, 2], [1, 2]]  # will give different bars for each value
+            # columns_to_be_plotted = [[0, 3], [1, 3]]
+        else:
+            columns_to_be_plotted=[[1, 2]]
 
         # added TONY1
         # pivot=True
