@@ -528,6 +528,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             group_column_names=temp_group_column_names
         # #     data = data.groupby(group_column_names).size().reset_index(name='Frequency')
 
+        group_column_names_SV = group_column_names.copy()
         group_col_SV = group_col.copy()
         group_list = group_col_SV.copy()
         for col in group_column_names:

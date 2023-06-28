@@ -402,31 +402,46 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
     list_queried = []
     deprel_list_queried = []
     # record is a list of all the CoNLL table records for a given sentence
-    for record in CoNLL_records:
-        if len(record)==0:
+    for sentence_record in CoNLL_records:
+        if len(sentence_record)==0:
             continue
         # obtain the full sentence
+        # left strip punctuation (remove blank BEFORE) !,.:;?@`/)
+        remove_blank_left = ",.:;!?@`/)}]"
+        # right strip punctuation (remove blank AFTER) "#$%'(/<=>[\\]^_`{|}~"
+        # string.punctuation "!"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~"
+        remove_blank_right = "\"#$%&'*+-/<=@[\\^_`({["
+        # left out |
         whole_sent = ""
-        for token in record:
-            # avoid having a blank before punctuation "president ."
-            if token[compare_term] in string.punctuation:
-                whole_sent = whole_sent.rstrip()
-            whole_sent += token[compare_term] + " "
+        # record is a double list, one list for each sentence
+        # token is a list for each sentence
+        for token in sentence_record:
+            # the sentence should always consist of FORM values, i.e., compare_term=1
+            if token[compare_term] in remove_blank_left:
+                whole_sent = whole_sent.rstrip() + token[1] + " "
+            elif token[compare_term] in remove_blank_right:
+                whole_sent = whole_sent.lstrip() + token[1]
+            else:
+                # the sentence should always consist of FORM values, i.e., compare_term=1
+                whole_sent += token[1] + " "
         whole_sent = whole_sent.strip()
         # record is a list of all the CoNLL table records for a given sentence
-        list_word_indices = search_in_sentence(form_of_token, record, _field_, _tok_postag_, _tok_deprel_)
+        list_word_indices = search_in_sentence(form_of_token, sentence_record, _field_, _tok_postag_, _tok_deprel_)
         for node in list_word_indices:
             co_token_ID = node[0]
             is_head = node[1]
             keyword = node[2]
             searched_token_ID = keyword[0]
-            row = record[int(co_token_ID) - 1]
+            row = sentence_record[int(co_token_ID) - 1]
             tok_form = row[compare_term]
             tok_postag = row[3]
             tok_deprel = row[6]
             tok_Sentence_ID = row[10]
             tok_Document_ID = row[11]
-            tok_Document = row[12]
+            if not 'hyperlink' in row[12]:
+                tok_Document = IO_csv_util.dressFilenameForCSVHyperlink(row[12])
+            else:
+                tok_Document = row[12]
             token_id = str(tok_Document_ID)[:-2] + str("-" + tok_Sentence_ID)
             searched_keyword = keyword[compare_term]
             list_queried.append((searched_keyword, searched_token_ID, keyword[3], keyword[6], tok_form, co_token_ID, tok_postag,
@@ -454,7 +469,7 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
 
     # outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv',
     #                                                            '', srcField_kw, _field_)
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv')
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv','search')
 
     # convert list to dataframe and save
     df = pd.DataFrame(deprel_list_queried)
@@ -483,7 +498,7 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
                                                            outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                                                            chart_title="Frequency Distribution of ' + _tok_postag_ + ' POS Tag of Searched Token/Word",
-                                                           outputFileNameType='search',
+                                                           outputFileNameType='',
                                                            column_xAxis_label=_tok_postag_ + ' POS Tag for the word "' + form_of_token + '"',
                                                            count_var=count_var,
                                                            hover_label=[],
@@ -503,7 +518,7 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
                                                                outputFilename, outputDir,
                                                                columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                                                                chart_title="Frequency Distribution of " + _tok_deprel_ + " DepRel of Searched Token/Word",
-                                                               outputFileNameType='search',
+                                                               outputFileNameType='',
                                                                column_xAxis_label=_tok_deprel_ + ' DepRel Tag for the word "' + form_of_token + '"',
                                                                count_var=count_var,
                                                                hover_label=[],
@@ -523,7 +538,7 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
                                                            outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                                                            chart_title="Frequency Distribution of Co-occurring " + related_token_POSTAG + " words/tokens",
-                                                           outputFileNameType='search',
+                                                           outputFileNameType='',
                                                            column_xAxis_label=related_token_POSTAG  + ' Co-occurring words for the word "' + form_of_token + '"',
                                                            count_var=count_var,
                                                            hover_label=[],
@@ -575,18 +590,18 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
             else:
                 filesToOpen.extend(outputFiles)
 
-    # Gephi network graphs _________________________________________________
+        # Gephi network graphs _________________________________________________
 
-    fileBase = os.path.basename(outputFilename)[0:-4]
-    outputFiles = Gephi_util.create_gexf(GUI_util.window, fileBase, outputDir, outputFilename,
-                                    'Searched Token/Word',
-                                    'POS Tag of Searched Token/Word',
-                                    'Co-occurring Token/Word', 'Sentence ID')
-    if outputFiles!=None:
-        if isinstance(outputFiles, str):
-            filesToOpen.append(outputFiles)
-        else:
-            filesToOpen.extend(outputFiles)
+        fileBase = os.path.basename(outputFilename)[0:-4]
+        outputFiles = Gephi_util.create_gexf(GUI_util.window, fileBase, outputDir, outputFilename,
+                                        'Searched Token/Word',
+                                        'POS Tag of Searched Token/Word',
+                                        'Co-occurring Token/Word', 'Sentence ID')
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     return outputDir, filesToOpen
 

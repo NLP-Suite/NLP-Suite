@@ -615,18 +615,19 @@ scriptName=os.path.basename(__file__)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName,True)
 
-# if GUI_util.input_main_dir_path.get()!='' or (os.path.basename(GUI_util.inputFilename.get())[-4:] != ".csv"):
-#     GUI_util.run_button.configure(state='disabled')
-#     mb.showwarning(title='Input file',
-#                    message="The CoNLL Table Analyzer scripts require in input a csv CoNLL table created by the Stanford CoreNLP parser (not the spaCy and Stanza parsers).\n\nAll options and RUN button are disabled until the expected CoNLL file is seleted in input.\n\nPlease, select in input a CoNLL file created by the Stanford CoreNLP parser.")
-#     error = True
-#     activate_all_options()
-# else:
-#     GUI_util.run_button.configure(state='normal')
-#     if inputFilename.get()!='':
-#         if not CoNLL_util.check_CoNLL(inputFilename.get()):
-#             error = True
-#             activate_all_options()
+if GUI_util.input_main_dir_path.get()!='' or (os.path.basename(GUI_util.inputFilename.get())[-4:] != ".csv"):
+    GUI_util.run_button.configure(state='disabled')
+    mb.showwarning(title='Input file',
+                   message="The CoNLL Table Analyzer scripts require in input a csv CoNLL table created by the Stanford CoreNLP parser (not the spaCy and Stanza parsers).\n\nAll options and RUN button are disabled until the expected CoNLL file is seleted in input.\n\nPlease, select in input a CoNLL file created by the Stanford CoreNLP parser.")
+    error = True
+    activate_all_options()
+else:
+    GUI_util.run_button.configure(state='normal')
+    if inputFilename.get()!='':
+        if not CoNLL_util.check_CoNLL(inputFilename.get()):
+            error = True
+            activate_all_options()
+
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
 state = str(GUI_util.run_button['state'])
