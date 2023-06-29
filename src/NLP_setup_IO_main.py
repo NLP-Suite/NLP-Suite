@@ -283,6 +283,7 @@ def get_list_item():
     if str(config_input_output_alphabetic_options[2][1])!='': # input secondary dir
         list_item = 2
     return list_item
+
 def set_default_options():
     list_item = get_list_item()
     if list_item==None:
@@ -335,8 +336,6 @@ sort_order_lb = tk.Label(window, text='Sort order ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, # date_position_lb_coordinate
                                                y_multiplier_integer, sort_order_lb, True)
 
-# set_default_options()
-
 sort_order = tk.Entry(window, textvariable=sort_order_var, width=10)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -369,7 +368,6 @@ date_format_lb = tk.Label(window,text='Date format ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,
                                                y_multiplier_integer, date_format_lb, True)
 
-# set_default_options()
 
 date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
 # place widget with hover-over info
@@ -381,7 +379,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                GUI_IO_util.date_format_coordinate,
                                                'Select the date type embedded in your filename')
 
-set_default_options()
+# set_default_options()
 
 date_position_menu_lb = tk.Label(window, text='Date item position ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, #date_position_lb_coordinate
@@ -526,25 +524,23 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
 y_multiplier_integer = help_buttons(window, GUI_IO_util.help_button_x_coordinate, 0)
 
 
-def changed_filename(tracedInputFile):
-    # print('IN CHANGE FILENAME')
-    filename_embeds_multiple_items_var.set(0)
-    filename_embeds_date_var.set(0)
-    sort_order_var.set('1, 2, 3, ...')  # default value
-    get_IO_options_str()
-    get_IO_options_list()
-    # global error
-    # if tracedInputFile[-4:] != '.csv':
-    #     mb.showerror(title='Input file error',
-    #                  message="The Data manipulation functions expect in input a csv file.\n\nPlease, select a csv file for your Default orGUI-specific I/O configuration and try again.\n\nThe RUN button is disabled until the required Input/Output option is entered.")
-    #     error = True
-    # else:
-    #     error = False
+def changed_filename(tracedInputFile, tracedInputDir):
+    if tracedInputDir != '':
+        if tracedInputDir!=config_input_output_alphabetic_options[1][1]:
+            filename_embeds_multiple_items_var.set(0)
+            filename_embeds_date_var.set(0)
+
+    if tracedInputFile != '':
+        if tracedInputFile != config_input_output_alphabetic_options[0][1]:
+            filename_embeds_multiple_items_var.set(0)
+            filename_embeds_date_var.set(0)
+
     activate_fields()
-GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_util.input_main_dir_path.get()))
+
+GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get()))
 # must trace on input_main_dir_path, rather than inputFilename,
 #   because inputFilename is set BEFORE input_main_dir_path in GUI_util and it is not up-to-date
-# GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
+GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get()))
 
 # the string is built when entering the GUI and when hitting CLOSE to check whether any changes have been made
 #   warning the user
@@ -566,16 +562,18 @@ def get_IO_options_str():
 
 def get_IO_options_list(saving=False):
 
-    # config_input_output_alphabetic_options is a double list, each sublist of 4 items
-    #   (path + 3 date items [[],[],...])
+    # config_input_output_alphabetic_options is a double list, each sublist of 6 items:
+    #   label, path, sort order, + 3 date items [[],[],...]
     # e.g., [['', '', '', ''], ['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/newspaperArticles', 'mm/dd/yyyy', '_', '4'], ['', '', '', ''], ['C:/Program Files (x86)/NLP_backup/Output', '', '', '']]
 
-    # build current options config_input_output_alphabetic_options, a list of 4 items: path + 3 date items
+    # build current options config_input_output_alphabetic_options, a list of 6 items:
+    #   label, path, sort order, + 3 date items [[],[],...]
 
     # config_util.get_template_config_csv_file(config_input_output_numeric_options, config_input_output_alphabetic_options)
 
     # different types of input files
     # the index for config_input_output_alphabetic_options starts at 0 with I/O configuration label
+    #   e.g., fileType='Input csv CoNLL filename with path'
     fileType = config_util.getFiletype(config_input_output_numeric_options)
 
 # check date
@@ -607,11 +605,14 @@ def get_IO_options_list(saving=False):
     # enter date in path field of config file
     if GUI_util.inputFilename.get()!='':
         strValue = GUI_util.inputFilename.get().split(' (Date', 6)[0]
-        GUI_util.inputFilename.set(strValue + date_label)
+        # will trigger trace
+        if not saving:
+            GUI_util.inputFilename.set(strValue + date_label)
         inputFilename_list.append(strValue + date_label)
     else:
         inputFilename_list.append('')
 
+    # append sort order
     if not '...' in sort_order_var.get():
         if GUI_util.inputFilename.get()!='':
             inputFilename_list.append(sort_order_var.get())
@@ -620,6 +621,7 @@ def get_IO_options_list(saving=False):
     else:
         inputFilename_list.append('') # append sort order
 
+    # append date items
     if GUI_util.inputFilename.get() != '':
         inputFilename_list.extend(input_item_date)
     else:
@@ -628,7 +630,6 @@ def get_IO_options_list(saving=False):
 
 # input main dir -------------------------------------------------------------------------
 
-    # main_dir_path
     inputDir_list = []
     inputDir_list.append('Input files directory')
     if not filename_embeds_date_var.get():
@@ -640,13 +641,14 @@ def get_IO_options_list(saving=False):
     # enter date in path field of config file
     if GUI_util.input_main_dir_path.get()!='':
         strValue = GUI_util.input_main_dir_path.get().split(' (Date', 6)[0]
-        # print('strValue',strValue)
-        GUI_util.input_main_dir_path.set(strValue + date_label)
+        # will trigger trace
+        if not saving:
+            GUI_util.input_main_dir_path.set(strValue + date_label)
         inputDir_list.append(strValue + date_label)
     else:
         inputDir_list.append('')
 
-    # print('sort_order_var.get()', sort_order_var.get())
+    # append sort order
     if not '...' in sort_order_var.get():
         if GUI_util.input_main_dir_path.get()!='':
             inputDir_list.append(sort_order_var.get())
@@ -654,8 +656,8 @@ def get_IO_options_list(saving=False):
             inputDir_list.append('') # append sort order
     else:
         inputDir_list.append('') # append sort order
-    # print('inputDir_list 1 -------',inputDir_list)
 
+    # append date items
     if GUI_util.input_main_dir_path.get() != '':
         inputDir_list.extend(input_item_date)
     else:
@@ -706,26 +708,21 @@ def get_IO_options_list(saving=False):
     current_config_input_output_alphabetic_options.append(inputDir2_list)
     current_config_input_output_alphabetic_options.append(outputDir_list)
 
-    # print('inputDir_list',inputDir_list)
-
     return current_config_input_output_alphabetic_options
 
 
 def save_config(config_input_output_alphabetic_options):
-    # print('SAVE sort_order_var.get()', sort_order_var.get())
     current_config_input_output_alphabetic_options=get_IO_options_list(True)
-    # print('SAVE current_config_input_output_alphabetic_options',current_config_input_output_alphabetic_options)
-
     config_util.write_IO_config_file(window, config_filename, config_input_output_numeric_options,
                                      current_config_input_output_alphabetic_options, silent=False)
 
 def close_GUI(IO_configuration_upon_entry):
-    # print('CLOSE config_input_output_alphabetic_options',config_input_output_alphabetic_options)
     missing_input = False
     missing_output = False
     global Error
     msg=''
     current_IO_configuration_str=get_IO_options_str()
+
     if GUI_util.inputFilename.get()=='' and GUI_util.input_main_dir_path.get()=='':
         missing_input = True
     if GUI_util.output_dir_path.get()=='':
@@ -799,7 +796,6 @@ if os.path.isfile(os.path.join(GUI_IO_util.configPath,config_filename)):
     except:
         mb.showwarning(title='Warning', message='The config file is an old file without the new "Sort order" field.\n\nPlease, select the appropriate values for the "Filename embeds multiple items" and "Filename embeds date" and save any changes when clicking on CLOSE.')
         Error = True
-
 
 # to make sure the release version is updated even when users do not click on the CLOSE button
 #   but on the Mac top-left red button or Windows top-right X button

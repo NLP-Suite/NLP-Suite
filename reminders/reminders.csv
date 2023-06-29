@@ -211,3 +211,5 @@ Your selected corpus language is English.
 Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
 
 You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",OFF
+Stanford_CoreNLP,CoreNLP POS annotator timing,"Beware that the CoreNLP POS annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 2 minutes on a standard laptop.",OFF
+file_splitter_ByLength,Output directory of split files,"This is a reminder that all file splitter scripts save the split files inside a subdirectory by the name of split_files of the directory where the input txt files are located, regardless of the choice of output directory.",OFF
