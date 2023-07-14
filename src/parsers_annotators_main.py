@@ -149,13 +149,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                                date_position_var=date_position_var,
                                                                                single_quote_var = single_quote)
 
-                if len(tempOutputFiles)>0:
+                if tempOutputFiles == None:
+                    return
+                if 'parser' in annotator:
+                    reminders_util.checkReminder(scriptName,
+                                                 reminders_util.title_options_CoreNLP_NER_tags,
+                                                 reminders_util.message_CoreNLP_NER_tags,
+                                                 True)
+                if isinstance(tempOutputFiles, str):
                     filesToOpen.append(tempOutputFiles)
-                    if 'parser' in annotator:
-                        reminders_util.checkReminder(scriptName,
-                                                     reminders_util.title_options_CoreNLP_NER_tags,
-                                                     reminders_util.message_CoreNLP_NER_tags,
-                                                     True)
+                else:
+                    filesToOpen.extend(tempOutputFiles)
 
 # spaCy ---------------------------------------------------------------------------
     if package == 'spaCy':
@@ -212,14 +216,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if tempOutputFiles == None:
             return
-
-        if len(tempOutputFiles) > 0:
+        if 'parser' in annotator:
+            reminders_util.checkReminder(scriptName,
+                                         reminders_util.title_options_CoreNLP_NER_tags,
+                                         reminders_util.message_CoreNLP_NER_tags,
+                                         True)
+        if isinstance(tempOutputFiles, str):
             filesToOpen.append(tempOutputFiles)
-            if 'parser' in annotator:
-                reminders_util.checkReminder(scriptName,
-                                             reminders_util.title_options_CoreNLP_NER_tags,
-                                             reminders_util.message_CoreNLP_NER_tags,
-                                             True)
+        else:
+            filesToOpen.extend(tempOutputFiles)
 
 # Stanza ---------------------------------------------------------------------------
 
@@ -278,7 +283,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if tempOutputFiles == None:
             return
-
         if isinstance(tempOutputFiles, str):
             filesToOpen.append(tempOutputFiles)
         else:

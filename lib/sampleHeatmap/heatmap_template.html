@@ -93,7 +93,19 @@ function changeGradient() {
 }
 
 function changeRadius() {
-  heatmap.set("radius", heatmap.get("radius") ? null : 20);
+    var currentRadius = heatmap.get("radius");
+    var maxRadius=50;
+    if (currentRadius == null) {
+        // If the current radius is null, set it to the initial value, e.g., 5
+        heatmap.set("radius", 5);
+    } else if (currentRadius < maxRadius) {
+        // If the current radius is less than the maximum, increment it by 5
+        heatmap.set("radius", currentRadius + 5);
+    } else {
+        // If the current radius is already at the maximum, alert the user and step down by 5
+        alert("Maximum radius reached. Reducing radius...");
+        heatmap.set("radius", 5);
+    }
 }
 
 function changeOpacity() {

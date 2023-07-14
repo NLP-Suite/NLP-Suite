@@ -460,38 +460,6 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 
     # aggregation by group_col NO hover over ----------------------------------------
     elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
-        columns_to_be_plotted = []
-
-
-        # selected_col, hover_col, group_col are single lists with the column headers
-        #   selected_col=['POStag'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
-        # the aggregation can deal with column items passed as integer (from visualization_chart) or
-        #   alphabetic values (from statistics_NLP_main)
-        group_column_names=[]
-        # # create a single list
-        # temp_group_column_names = group_col + selected_col
-        # # test for list of lists [[],[]]
-        # if any(isinstance(el, list) for el in temp_group_column_names):
-        #     # flatten the list of lists to a single list
-        #     temp_group_column_names = [x for xs in temp_group_column_names for x in xs]
-        # i = 0
-        # while i<len(temp_group_column_names):
-        #     t = temp_group_column_names[i]
-        #     header = t
-        #     # check that t is not already in the list group_column_names
-        #     if isinstance(t, (int, float)):
-        #         header = IO_csv_util.get_headerValue_from_columnNumber(headers, t)
-        #         if group_column_names.count(header) == 0:
-        #             group_column_names.append(header)
-        #     else:
-        #         if group_column_names.count(header) == 0:
-        #             group_column_names.append(header)
-        #     i = i+1
-        # if len(group_column_names)==0:
-        #     group_column_names=temp_group_column_names
-        # for col in group_column_names:
-        #     data = data.groupby(col).size().reset_index(name='Frequency')
-        # print()
 
 # aggregation by group_col NO hover over ----------------------------------------
 #     elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
@@ -530,29 +498,74 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 
         group_column_names_SV = group_column_names.copy()
         group_col_SV = group_col.copy()
-        group_list = group_col_SV.copy()
-        for col in group_column_names:
-            if not col in group_list:
-                group_list.append(col)
-            data = data.groupby(group_list).size().reset_index(name='Frequency_' + str(col))
-            group_list = group_column_names_SV.copy()
 
-            # Excel allows to group a series value by another series values (e.g., Form or Lemma values by POS or NER tags)
-            #   two x-axis labels will be created
-            #   https://www.extendoffice.com/documents/excel/2715-excel-chart-group-axis-labels.html
-            # but the only way to do this in openpyxl is by plotting TWO separate series,
-            #   e.g., a bar chart for Form  or Lemma values and a bar or line chart for POS tags
-            #   https://openpyxl.readthedocs.io/en/latest/charts/secondary.html
+        group_list = group_col.copy()
+        data_final = pd.DataFrame()
 
-            # SIMON should get the col of frequency in data_final
-            #group_list = group_col_SV.copy()
+        def multi_level_grouping_and_frequency(data, selected_cols, group_col):
+            # Calculate the first selected column (Lemma) frequency within each group
+            grouped = data.groupby(group_col + selected_cols).size().reset_index(name='Frequency')
 
+            # Step 2: Separate into two dataframes for frequencies.
+            freq_0 = grouped.groupby(group_col + [selected_cols[0]])['Frequency'].sum().reset_index(
+                name=f'Frequency_{selected_cols[0]}')
+            freq_1 = grouped.groupby(group_col + [selected_cols[1]])['Frequency'].sum().reset_index(
+                name=f'Frequency_{selected_cols[1]}')
 
-        if 'Document' in str(group_column_names):
-            columns_to_be_plotted = [[0, 2], [1, 2]]  # will give different bars for each value
-            # columns_to_be_plotted = [[0, 3], [1, 3]]
+            # Step 3: Merge these dataframes back together.
+            result = pd.merge(grouped, freq_0, on=group_col + [selected_cols[0]], how='left')
+            result = pd.merge(result, freq_1, on=group_col + [selected_cols[1]], how='left')
+
+            # Rearrange columns to desired order
+            result = result[group_col + [selected_cols[0], f'Frequency_{selected_cols[0]}', selected_cols[1],
+                                         f'Frequency_{selected_cols[1]}']]
+
+            return result
+
+        def double_level_grouping_and_frequency(data,selected_col,group_col):
+            # Calculate the counts for each column
+            group_col_count = data[group_col[0]].value_counts().reset_index()
+            group_col_count.columns = [group_col[0], f'Frequency_{group_col[0]}']
+
+            selected_col_count = data.groupby(group_col)[selected_col[0]].value_counts().reset_index(
+                name=f'Frequency_{selected_col[0]}')
+
+            # Merge the counts back into the original dataframe
+            data_final = pd.merge(group_col_count, selected_col_count, how='inner', on=group_col[0])
+
+            data_final = data_final.drop_duplicates()  # Remove potential duplicate rows
+
+            return data_final
+        print(selected_col,group_col)
+        if len(selected_col) >=2:
+            data_final = multi_level_grouping_and_frequency(data,selected_col,group_col)
         else:
-            columns_to_be_plotted=[[1, 2]]
+            data_final = double_level_grouping_and_frequency(data,selected_col,group_col)
+            # Calculate the counts for each column
+
+
+        # Pivot the dataframe if you want to change the layout
+        # If you want to keep it as it is, you can comment these lines out.
+        #data_final = data_final.pivot(index=group_col, columns=selected_col, values="Frequency")
+        data_final.fillna(0, inplace=True)
+        data = data_final
+        # Excel allows to group a series value by another series values (e.g., Form or Lemma values by POS or NER tags)
+        #   two x-axis labels will be created
+        #   https://www.extendoffice.com/documents/excel/2715-excel-chart-group-axis-labels.html
+        # but the only way to do this in openpyxl is by plotting TWO separate series,
+        #   e.g., a bar chart for Form or Lemma values and a bar or line chart for POS tags
+        #   https://openpyxl.readthedocs.io/en/latest/charts/secondary.html
+
+        # SIMON should get the col of frequency in data_final
+        #group_list = group_col_SV.copy()
+
+
+        columns_to_be_plotted = [[0, 1], [2, 3]]  # will give different bars for each value
+        # if 'Document' in str(group_column_names):
+        #     columns_to_be_plotted = [[0, 2], [1, 2]]  # will give different bars for each value
+        #     # columns_to_be_plotted = [[0, 3], [1, 3]]
+        # else:
+        #     columns_to_be_plotted=[[1, 2]]
 
         # added TONY1
         # pivot=True

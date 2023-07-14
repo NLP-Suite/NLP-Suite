@@ -477,8 +477,16 @@ extract_fromCoNLL = tk.Button(window, text='Extract other fields/data from CoNLL
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
     y_multiplier_integer,
     extract_fromCoNLL,
-    False, False, False, False, 90, GUI_IO_util.read_button_x_coordinate,
+    True, False, False, False, 90, GUI_IO_util.read_button_x_coordinate,
     "Click on the button to open the Data manipulation GUI where you can use the function 'Extract field(s) from csv file' with several options for complex data queries of csv files (in this case, a CoNLL table).")
+
+compute_Ngrams = tk.Button(window, text='Compute Ngrams (Open GUI)', command = lambda: call("python style_analysis_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
+    y_multiplier_integer,
+    compute_Ngrams,
+    False, False, False, False, 90, GUI_IO_util.read_button_x_coordinate,
+    "Click on the button to open the Style analysis GUI where you can compute Ngrams, with various options for excluding puntuations, determinants/articles, stopwords.")
 
 all_analyses_checkbox.configure(state='normal')
 searchToken_checkbox.configure(state='normal')

@@ -1,2 +1,2 @@
 Parser & annotators,Parsers,Basic functions (tokenizer/lemmatizer),Corpus language,Language encoding,Export Json,CoreNLP memory,CoreNLP document length,CoreNLP sentence-length limit
-Stanford CoreNLP,"Neural Network, Probabilistic Context Free Grammar (PCFG)",Stanza,English,utf-8,0.0,4.0,90000.0,100.0
+Stanford CoreNLP,"Neural Network, Probabilistic Context Free Grammar (PCFG)",Stanza,English,utf-8,1.0,4.0,90000.0,100.0
