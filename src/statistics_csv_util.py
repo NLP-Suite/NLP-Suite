@@ -245,7 +245,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
                                                   column_xAxis_label_var='', #Document
                                                   column_yAxis_label_var=column_name_to_be_plotted,
                                                   hover_info_column_list=hover_label,
-                                                  remove_hyperlinks = True)
+                                                  remove_hyperlinks=True)
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -508,6 +508,8 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                 chart_title = chart_title + ' by Document'
             columns_to_be_plotted = [[0, 2], [3, 4]]  # will give different bars for each value
         else:
+            if group_col[0]!='':
+                chart_title = chart_title + ' by ' + str(group_col[0])
             columns_to_be_plotted = [[0, 1], [2, 3]]  # will give different bars for each value
 
         def multi_level_grouping_and_frequency(data, selected_cols, group_col):
