@@ -66,14 +66,14 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Form'],
-                                                           chart_title='Frequency Distribution of Form Values by Part of Speech (POS) Tags',
+                                                           chart_title='Frequency Distribution of Form Values', # by Part of Speech (POS) Tags
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
-                                                           outputFileNameType='POS', #'POS_bar',
-                                                           column_xAxis_label='POS tag values',
+                                                           outputFileNameType='Form', #'POS_bar',
+                                                           column_xAxis_label='Form values',
                                                            groupByList=['POS'],
                                                            plotList=['Frequency'],
-                                                           chart_title_label='POS Tag Values')
+                                                           chart_title_label='Form Values')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)

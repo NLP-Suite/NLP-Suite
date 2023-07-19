@@ -516,7 +516,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                 else:
                     filesToOpen.extend(outputFiles)
 
-    # bar chart aggregated by group  -----------------------------------------------------------------
+    # bar chart aggregated by group  (e.g., form values by POS tags) -----------------------------------------------------------------
     #   avoid plotting by ['Document ID', 'Document'] as groupBy; done in chart byDoc
     if len(groupByList) > 0 and groupByList != ['Document ID', 'Document']:
         columns_to_be_plotted_byGroup = []
