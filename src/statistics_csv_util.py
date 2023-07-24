@@ -20,7 +20,6 @@ import IO_files_util
 import IO_csv_util
 import charts_util
 import GUI_IO_util
-import charts_Excel_util
 import IO_user_interface_util
 
 #column_to_be_counted is the column number (starting 0 in data_list for which a count is required)
@@ -390,7 +389,6 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             openOutputFiles,createCharts,chartPackage,
             selected_col, hover_col, group_col, complete_sid,
             chart_title, fileNameType='CSV',chartType='line',pivot=True):
-
     name = outputDir + os.sep + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
 
     filesToOpen = []
@@ -406,6 +404,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             reader = csv.reader(x.replace('\0', '') for x in infile)
             headers = next(reader)
         header_indices = [i for i, item in enumerate(headers) if item]
+        import pandas as pd
         data = pd.read_csv(inputFilename, usecols=header_indices,encoding='utf-8',on_bad_lines='skip')
 
     # remove hyperlink before processing
@@ -535,8 +534,10 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 
             # Rearrange columns to desired order
             if 'Document' in group_col:
-                result = result[group_col + ['Document ID', selected_cols[0], f'Frequency_{selected_cols[0]}', selected_cols[1],
-                                             f'Frequency_{selected_cols[1]}', 'Frequency']]
+                # result = result[group_col + ['Document ID', selected_cols[0], f'Frequency_{selected_cols[0]}', selected_cols[1],
+                #                              f'Frequency_{selected_cols[1]}', 'Frequency']]
+                result = result[group_col + ['Document ID', 'Frequency', selected_cols[0], f'Frequency_{selected_cols[0]}', selected_cols[1],
+                                             f'Frequency_{selected_cols[1]}']]
             else:
                 result = result[group_col + [selected_cols[0], f'Frequency_{selected_cols[0]}', selected_cols[1],
                                              f'Frequency_{selected_cols[1]}', 'Frequency']]
@@ -582,7 +583,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             data_final = double_level_grouping_and_frequency(data,selected_col,group_col)
             # Calculate the counts for each column
 
-
+        print(inputFilename,columns_to_be_plotted)
         # Pivot the dataframe if you want to change the layout
         # If you want to keep it as it is, you can comment these lines out.
         #data_final = data_final.pivot(index=group_col, columns=selected_col, values="Frequency")
@@ -660,22 +661,50 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         hover_over_header = [hover_over_header + '_y']
 
 # plot the data from compute_csv_column_frequencies
+    def do_special_lemma_form_by_Doc(data, outputDir):
+        return
+
+    df = data
 
     if createCharts:
-        column_xAxis_label_var=''
-        outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+        if selected_col == ['Form', 'Lemma'] and group_col == ['Document']:
+            document_ids = data['Document ID'].unique()
+
+            # Loop through each unique Document ID
+            for id in document_ids:
+                # Filter rows with the current Document ID
+                filtered_df = df[df['Document ID'] == id]
+
+                # SIMON should NOT create a new csv file for each document; this may produce hundreds of files
+                # Write the filtered data to a new csv file
+                filename = outputDir + os.sep+ str(id) + ".csv"
+                filtered_df.to_csv(filename, index=False)
+                # document, form, lemma with their respective frequencies
+                columns_to_be_plotted = [[0,2],[3,4],[5,6]]
+                outputFilename =filename
+                column_xAxis_label_var = ''
+                outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                                                  outputFileLabel=fileNameType,
+                                                  chartPackage=chartPackage,
+                                                  chart_type_list=[chartType],
+                                                  chart_title=chart_title,
+                                                  column_xAxis_label_var=column_xAxis_label_var,
+                                                  hover_info_column_list=hover_over_header)
+
+        else:
+            column_xAxis_label_var = ''
+            outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                               outputFileLabel=fileNameType,
                                               chartPackage=chartPackage,
                                               chart_type_list=[chartType],
                                               chart_title=chart_title,
                                               column_xAxis_label_var=column_xAxis_label_var,
                                               hover_info_column_list=hover_over_header)
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
-
     # we can now remove the no_hyperlinks file (i.e., inputFilename), since the frequency file has been computed
     if removed_hyperlinks:
         os.remove(inputFilename)

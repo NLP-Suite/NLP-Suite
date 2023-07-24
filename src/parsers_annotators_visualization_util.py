@@ -111,14 +111,14 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                outputDir,
                                columns_to_be_plotted_xAxis=[],
                                columns_to_be_plotted_yAxis=['Form'],
-                               chart_title='Frequency Distribution of Form Values by NER Tags',
+                               chart_title='Frequency Distribution of Form Values',
                                # count_var = 1 for columns of alphabetic values
                                count_var=1, hover_label=[],
-                               outputFileNameType='FormByNER', #'NER_tag_bar',
-                               column_xAxis_label='NER tags',
+                               outputFileNameType='Form', #'NER_tag_bar',
+                               column_xAxis_label='Form values',
                                groupByList=['NER'],
                                plotList=['Frequency'],
-                               chart_title_label='NER')
+                               chart_title_label='Form')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)

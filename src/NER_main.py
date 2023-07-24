@@ -92,8 +92,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 filesToOpen.extend(outputFiles)
 
     if '*' in NER_package or 'CoreNLP' in NER_package:
-        if '*' in NER_package:
-            NER_list=Stanford_CoreNLP_util.NER_list
+        NER_list = NER_entry_var.get() #Stanford_CoreNLP_util.NER_list
         outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                             openOutputFiles, createCharts, chartPackage,
                                                             'NER',
@@ -322,12 +321,16 @@ def add_NER_tag(coming_from_add, coming_from_reset):
         NER_tag_var.set(' ')
         window.focus_force()
         return
-    # --- is used for CoreNLP for NER subsets (e.g., --- All spatial expressions)
-    if NER_tag_var.get() in NER_list and not('---' in NER_tag_var.get()):
-        mb.showwarning(title='Warning', message='The NER tag "'+ NER_tag_var.get() + '" is already in your selection list: '+ str(NER_entry_var.get()) + '.\n\nPlease, select another NER tag.')
-        window.focus_force()
-        return
+    # NER_tag_var is set everywhere to ' ' as opposed to ''
+    if NER_tag_var.get()!=' ':
+        # --- is used for CoreNLP for NER subsets (e.g., --- All spatial expressions)
+        if NER_tag_var.get() in NER_entry_var.get() and not('---' in NER_tag_var.get()):
+            mb.showwarning(title='Warning', message='The NER tag "'+ NER_tag_var.get() + '" is already in your selection NER list: '+ str(NER_entry_var.get()) + '.\n\nPlease, select another NER tag.')
+            window.focus_force()
+            return
+
     if NER_tag_var.get().strip():
+    # if NER_entry_var.get().strip():
         # NER_split_values_prefix_entry.configure(state="normal")
         # NER_split_values_suffix_entry.configure(state="normal")
         if not('---' in NER_tag_var.get()):
