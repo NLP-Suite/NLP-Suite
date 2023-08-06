@@ -1341,6 +1341,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
         return
 
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
+
     nFile = len(files)
     if nFile == 0:
         return

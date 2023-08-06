@@ -502,14 +502,17 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         data_final = pd.DataFrame()
 
 
-        if group_col[0] == 'Document':
+        # you can pass Document ID and Document (e.g., in NLTK unusual words), Document (e.g., annotator POS)
+        if group_col[0] == 'Document ID' or group_col[0] == 'Document':
             if not 'by Document' in chart_title:
                 chart_title = chart_title + ' by Document'
-            columns_to_be_plotted = [[0, 2], [3, 4]]  # will give different bars for each value
+            # will give different bars for document [0, and its frequency and for selected_col[0] and its frequency
+            columns_to_be_plotted = [[0, 2], [3, 4]]
         else:
             if group_col[0]!='':
                 chart_title = chart_title + ' by ' + str(group_col[0])
-            columns_to_be_plotted = [[0, 1], [2, 3]]  # will give different bars for each value
+            # will give different bars for document [0, and its frequency and for selected_col[0] and its frequency
+            columns_to_be_plotted = [[0, 1], [2, 3]]
 
         def multi_level_grouping_and_frequency(data, selected_cols, group_col):
             # Calculate the first selected column (Lemma) frequency within each group
@@ -552,11 +555,13 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             selected_col_count = data.groupby(group_col)[selected_col[0]].value_counts().reset_index(
                 name=f'Frequency_{selected_col[0]}')
 
-            if group_col[0] == 'Document':
+            # you can pass Document ID and Document (e.g., in NLTK unusual words), Document (e.g., annotator POS)
+            if 'Document' in group_col[0]:
                 # Create a dictionary to map each document to its index starting from 1
                 document_id_map = {document: i + 1 for i, document in enumerate(group_col_count[group_col[0]].unique())}
 
                 # Add the 'Document ID' column to the dataframe
+                # SIMON Document ID should always be the first item, before Document
                 group_col_count['Document ID'] = group_col_count[group_col[0]].map(document_id_map)
 
             # Merge the counts back into the original dataframe
@@ -565,11 +570,16 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             data_final = data_final.drop_duplicates()  # Remove potential duplicate rows
 
             # Rearrange columns to desired order
-            if group_col[0] == 'Document':
+            if group_col[0] == 'Document ID' and group_col[1] == 'Document':
                 # data_final = data_final[[group_col[0], 'Document ID', selected_col[0], f'Frequency_{group_col[0]}', f'Frequency_{selected_col[0]}']]
-                data_final = data_final[[group_col[0], 'Document ID', f'Frequency_{group_col[0]}', selected_col[0], f'Frequency_{selected_col[0]}']]
-                columns_to_be_plotted = [[0, 2], [3, 4]]  # will give different bars for each value
-            else:
+                data_final = data_final[[group_col[0], str(group_col[0]), f'Frequency_{group_col[0]}', selected_col[1], f'Frequency_{selected_col[1]}']]
+                columns_to_be_plotted = [[0, 2], [3, 4]]
+            if ('Document' in group_col[0]) and (not 'Document' in group_col[1]):
+                # data_final = data_final[[group_col[0], 'Document ID', selected_col[0], f'Frequency_{group_col[0]}', f'Frequency_{selected_col[0]}']]
+                data_final = data_final[[group_col[0], str(group_col[0]), f'Frequency_{group_col[0]}']]
+                # will give different bars for document [0, and its frequency and for selected_col[0] and its frequency
+                columns_to_be_plotted = [[0, 2], [3, 4]]
+            if (not 'Document' in group_col[0]) and (not 'Document' in group_col[1]):
                 # data_final = data_final[[group_col[0], selected_col[0], f'Frequency_{group_col[0]}', f'Frequency_{selected_col[0]}']]
                 data_final = data_final[[group_col[0], f'Frequency_{group_col[0]}', selected_col[0], f'Frequency_{selected_col[0]}']]
                 columns_to_be_plotted = [[0, 1], [2, 3]]  # will give different bars for each value
@@ -582,6 +592,15 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         else:
             data_final = double_level_grouping_and_frequency(data,selected_col,group_col)
             # Calculate the counts for each column
+
+        # Beyond line 594 where your data_final is determined, you insert these:
+        if 'Document ID' in data_final.columns and 'Document' in data_final.columns:
+            # Create a list of all other columns except 'Document ID' and 'Document'
+            other_cols = [col for col in data_final.columns if col not in ['Document ID', 'Document']]
+
+            # Reorder the dataframe
+            data_final = data_final[['Document ID', 'Document'] + other_cols]
+        # This ensures you have enforced the order. Easily you can generalize it to enforce the order of other columns simply by tweaking the
 
         print(inputFilename,columns_to_be_plotted)
         # Pivot the dataframe if you want to change the layout

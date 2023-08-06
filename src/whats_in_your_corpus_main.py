@@ -109,11 +109,11 @@ def run(inputFilename,inputDir, outputDir,
     if (utf8_var==False and \
         ASCII_var == False and \
         corpus_statistics_var==False and \
-        ((wordclouds_var == False) and (wordclouds_var == True and open_wordclouds_GUI_var==False)) and \
-        ((topics_var==False) and (topics_var==True and topics_Mallet_var==False and topics_Gensim_var==False and open_tm_GUI_var==False)) and \
+        ((wordclouds_var == False) or (wordclouds_var == True and open_wordclouds_GUI_var==False)) and \
+        ((topics_var==False) or (topics_var==True and topics_Mallet_var==False and topics_Gensim_var==False and open_tm_GUI_var==False)) and \
         what_else_var==False and \
-        ((GIS_var == False) and (GIS_var == True and open_GIS_GUI_var == False)) and \
-        ((SVO_var == False) and (SVO_var == True and open_SVO_GUI_var == False))):
+        ((GIS_var == False) or (GIS_var == True and open_GIS_GUI_var == False)) and \
+        ((SVO_var == False) or (SVO_var == True and open_SVO_GUI_var == False))):
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
             return
 
@@ -129,7 +129,7 @@ def run(inputFilename,inputDir, outputDir,
         return
 
     if utf8_var==True:
-        file_checker_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
+        file_checker_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles,True)
 
     if ASCII_var==True:
         result=file_cleaner_util.convert_quotes(GUI_util.window,inputFilename, inputDir, outputDir, config_filename)
@@ -733,8 +733,14 @@ ASCII_var.set(1)
 ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent', variable=ASCII_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,ASCII_checkbox)
 
+def activate_linguistic_features_options():
+    if corpus_statistics_var.get():
+        corpus_statistics_options_menu.configure(state='normal')
+    else:
+        corpus_statistics_options_menu.configure(state='disabled')
+
 corpus_statistics_var.set(1)
-corpus_statistics_checkbox = tk.Checkbutton(window,text="Document(s) linguistic features", variable=corpus_statistics_var, onvalue=1, offvalue=0)
+corpus_statistics_checkbox = tk.Checkbutton(window,text="Document(s) linguistic features", variable=corpus_statistics_var, onvalue=1, offvalue=0, command=lambda: activate_linguistic_features_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,corpus_statistics_checkbox,True)
 
 corpus_statistics_options_menu_var.set('*')

@@ -312,6 +312,8 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
 
         if str(sort_order) =="nan":
             sort_order = "1"
+            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
+                        'No sort order available.\n\nFiles will be read in using entire filename.', False,'',True,'',False)
         try:
             aa = float(sort_order)
             aa = int(aa)
