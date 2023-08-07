@@ -29,7 +29,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='form-lemma', #'POS_bar',
-                                                           column_xAxis_label='Lemma values',
+                                                           column_xAxis_label='Form & Lemma values',
                                                            groupByList=['Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Lemma Values')

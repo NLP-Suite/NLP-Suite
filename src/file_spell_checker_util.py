@@ -126,7 +126,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
                                                    chart_title='Frequency of Misspelled-Unusual Words',
                                                    count_var=1, hover_label=[],
                                                    outputFileNameType='',  # 'line_bar',
-                                                   column_xAxis_label='Word',
+                                                   column_xAxis_label='Misspelled-Unusual word',
                                                    groupByList=['Document ID', 'Document'],
                                                    plotList=['Misspelled-Unusual Words Statistics'],
                                                    chart_title_label='')
@@ -140,12 +140,6 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen=[] # do not open twice, hee and calling function
-    # already shown in NLP.py
-    # IO_util.timed_alert(GUI_util.window,3000,'Analysis end','Finished running NLTK unusual words at',True)
-    # for u in unusual:
-    #     print(u[-1])
-    #
-    # print(len(unusual))
     return filesToOpen
 
 def generate_simple_csv(Dataframe):

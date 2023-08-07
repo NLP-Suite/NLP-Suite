@@ -69,7 +69,6 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
         # annotator returns a list and not a string
         # the gender annotator returns 2 Excel charts in addition to the csv file
         if len(output)>0:
-            # output=output[0]
             filesToOpen.append(output)
 
     #dict annotate

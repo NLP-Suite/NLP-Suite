@@ -285,7 +285,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
                                                            chart_title='Frequency of Number of Sentences',
                                                            count_var=0, hover_label=[],
                                                            outputFileNameType='sent',
-                                                           column_xAxis_label='Number of Sentences',
+                                                           column_xAxis_label='Number of sentences',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Number of Sentences in Document'],
                                                            chart_title_label='Statistical Measures for Number of Sentences')
@@ -767,7 +767,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumb
                                                                count_var=0, hover_label=[], #hover_label,
                                                                # outputFileNameType='n-grams_'+str(gram), # +'_'+ tail,
                                                                outputFileNameType='',
-                                                               column_xAxis_label='n-grams',
+                                                               column_xAxis_label=str(gram) + '-gram',
                                                                groupByList=['Document ID','Document'],
                                                                plotList=['Frequency in Document'],
                                                                chart_title_label='Statistical Measures for ' + str(gram) + '-gram')
@@ -1028,7 +1028,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                 chart_title_label = 'Frequency of subjectivity scores'
                 chart_title_byDocID = 'Frequency of subjectivity scores by Document'
                 chart_title_bySentID = 'Frequency of subjectivity scores by Sentence ID'
-                column_xAxis_label = 'Subjectivity Scores'
+                column_xAxis_label = 'Subjectivity scores'
 
                 d = nlp(s)
                 subjectivity_score = d._.blob.subjectivity
@@ -1047,7 +1047,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                     chart_title_label = 'Frequency of Short Words (<4 Characters)'
                     chart_title_byDocID='Frequency of Short Words by Document'
                     chart_title_bySentID ='Frequency of Short Words by Sentence Index'
-                    column_xAxis_label = 'Short Words (<4 Characters)'
+                    column_xAxis_label = 'Short words (<4 characters)'
 
                     # exclude numbers from list
                     if word and len(word) <= int(word_length) and word.isalpha():
@@ -1064,7 +1064,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                     chart_title_label = 'Frequency of Initial-Capital Words'
                     chart_title_byDocID ='Frequency of Initial-Capital Words by Document'
                     chart_title_bySentID ='Frequency of Initial-Capital Words by Sentence Index'
-                    column_xAxis_label = 'Initial-Capital Words'
+                    column_xAxis_label = 'Initial-capital words'
 
                     if word and word and word[0].isupper():
                         word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID,
@@ -1081,7 +1081,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                     chart_title_label = 'Frequency of Initial-Vowel Words'
                     chart_title_byDocID='Frequency of Initial-Vowel Words by Document'
                     chart_title_bySentID = 'Frequency of Initial-Vowel Words by Sentence Index'
-                    column_xAxis_label = 'Initial-Vowel Words'
+                    column_xAxis_label = 'Initial-vowel words'
                     if word and word and word[0].lower() in "aeiou" and word.isalpha():
                         word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
     # PUNCTUATION SYMBOLS --------------------------------------------------------------------------

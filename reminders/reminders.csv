@@ -214,3 +214,7 @@ You can always view your default selection saved in the config file NLP_default_
 Stanford_CoreNLP,CoreNLP POS annotator timing,"Beware that the CoreNLP POS annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 2 minutes on a standard laptop.",OFF
 file_splitter_ByLength,Output directory of split files,"This is a reminder that all file splitter scripts save the split files inside a subdirectory by the name of split_files of the directory where the input txt files are located, regardless of the choice of output directory.",OFF
 data_manipulation,Merge option,"Please, click next the + sign on this line to select another KEY to be used for merging files or click OK to accept current selection.",OFF
+whats_in_your_corpus,What is in your corpus - Topic modeling Gensim,"The Gensim topic modeling routine run from here is a reduced version of the script, meant to provide a quick overview of the topics in your corpus.
+
+For a more in-depth analysis of topics, use the topic modeling scripts for Gensim and MALLET.",ON
+whats_in_your_corpus,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags.",OFF
