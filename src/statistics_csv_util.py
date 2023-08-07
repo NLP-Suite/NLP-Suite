@@ -520,7 +520,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             # Calculate the first selected column (Lemma) frequency within each group
             grouped = data.groupby(group_col + selected_cols).size().reset_index(name='Frequency_Document ID')
 
-            if 'Document' in group_col:
+            if 'Document' == group_col[0]:
                 # Create a dictionary to map each document to its index
                 document_id_map = {document: i+1 for i, document in enumerate(grouped['Document'].unique())}
 
@@ -543,10 +543,10 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                                              f'Frequency_{selected_cols[1]}']]
             else:
                 result = result[group_col + [selected_cols[0], f'Frequency_{selected_cols[0]}', selected_cols[1],
-                                             f'Frequency_{selected_cols[1]}', 'Frequency_Document ID']]
-            counts = result.groupby('Document ID').size()
+                                             f'Frequency_{selected_cols[1]}']]
+            counts = result.groupby(group_col[0]).size()
             # Map the counts back to the original dataframe
-            result['Frequency_Document ID'] = result['Document ID'].map(counts)
+            result['Frequency_'+str(group_col[0])] = result[group_col[0]].map(counts)
 
             return result
 
