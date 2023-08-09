@@ -625,10 +625,10 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
         temp_outputDir=os.path.dirname(filesToOpen[0])
         if temp_outputDir!=outputDir:
             check_number_ofFiles = True
+    split_files = False
     if check_number_ofFiles: #outputDir != temp_outputDir: #GUI_util.output_dir_path.get():
         subDirs=next(os.walk(temp_outputDir))[1]
         listOfFiles = list()
-        split_files = False
         for (dirpath, dirnames, filenames) in os.walk(temp_outputDir):
             if "split_" in dirpath:
                 split_files=True

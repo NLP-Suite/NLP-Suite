@@ -30,7 +30,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='form-lemma', #'POS_bar',
                                                            column_xAxis_label='Form & Lemma values',
-                                                           groupByList=['Document'],
+                                                           groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Lemma Values')
 
@@ -53,7 +53,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='POS', #'POS_bar',
                                                            column_xAxis_label='POS tag values',
-                                                           groupByList=['Document'],
+                                                           groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='POS Tag Values')
         if outputFiles!=None:
@@ -97,7 +97,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                count_var=1, hover_label=[],
                                outputFileNameType='NER-tag', #'NER_tag_bar',
                                column_xAxis_label='NER tags',
-                               groupByList=['Document'],
+                               groupByList=['Document ID', 'Document'],
                                plotList=['Frequency'],
                                chart_title_label='NER')
             if outputFiles!=None:
@@ -143,7 +143,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='DepRel',
                                                            column_xAxis_label='DepRel values',
-                                                           groupByList=['Document'],
+                                                           groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='DepRel')
         if outputFiles!=None:
@@ -188,7 +188,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='date-express', #'NER_info_bar',
                                                            column_xAxis_label='Date expression',
-                                                           groupByList=['Document'],
+                                                           groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Date Expressions')
         if outputFiles!=None:
@@ -207,7 +207,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='date', #'NER_date_bar',
                                                            column_xAxis_label='Normalized date',
-                                                           groupByList=['Document'],
+                                                           groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Normalized Dates')
         if outputFiles!=None:
@@ -226,7 +226,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='date-types', #'NER_info_bar',
                                                            column_xAxis_label='Date type',
-                                                           groupByList=['Document'],
+                                                           groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Date Types')
         if outputFiles!=None:
@@ -248,7 +248,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='gender-values', #'gender_bar',
                                                            column_xAxis_label='Gender values',
-                                                           groupByList=['Document'],
+                                                           groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Statistical Measures for Gender')
         if outputFiles!=None:
@@ -266,7 +266,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='gender-words', #'gender_bar',
                                                            column_xAxis_label='Gender words',
-                                                           groupByList=['Document'],
+                                                           groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Statistical Measures for Gendered Words')
         if outputFiles!=None:
@@ -294,7 +294,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='quote', #'quote_bar',
                                                            column_xAxis_label='Speakers',
-                                                           groupByList=['Document'],
+                                                           groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Statistical Measures for Quotes')
         if outputFiles!=None:
@@ -316,7 +316,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                                count_var=0, hover_label=[],
                                                                outputFileNameType='score', #'senti_bar',
                                                                column_xAxis_label='Sentiment score',
-                                                               groupByList=['Document'],
+                                                               groupByList=['Document ID', 'Document'],
                                                                plotList=['Sentiment score'],
                                                                chart_title_label='Sentiment Statistics')
             if outputFiles!=None:
@@ -334,7 +334,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                                count_var=1, hover_label=[],
                                                                outputFileNameType='label', #'senti_bar',
                                                                column_xAxis_label='Sentiment label',
-                                                               groupByList=['Document'],
+                                                               groupByList=['Document ID', 'Document'],
                                                                plotList=['Sentiment label'],
                                                                chart_title_label='Sentiment Statistics')
             if outputFiles!=None:
@@ -369,7 +369,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='S-form', #'S_bar',
                                                            column_xAxis_label='Subjects (unlemmatized, unfiltered)',
-                                                           groupByList=['Document'],
+                                                           groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Subjects (unlemmatized, unfiltered)')
         if outputFiles!=None:
@@ -388,7 +388,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='V-form', #'V_bar',
                                                            column_xAxis_label='Verbs (unlemmatized, unfiltered)',
-                                                           groupByList=['Document'],
+                                                           groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Verbs (unlemmatized, unfiltered)')
         if outputFiles!=None:
@@ -407,7 +407,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='O-form', #'O_bar',
                                                            column_xAxis_label='Objects (unlemmatized, unfiltered)',
-                                                           groupByList=['Document'],
+                                                           groupByList=['Document ID', 'Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Objects (unlemmatized, unfiltered)')
         if outputFiles!=None:

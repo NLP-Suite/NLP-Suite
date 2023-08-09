@@ -497,7 +497,7 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
                                               count_var=1, hover_label=[],
                                               outputFileNameType='', #'line_bar', column_xAxis_label='Line length',
                                               column_xAxis_label='Line length',
-                                              groupByList=['Document ID','Document'],
+                                              groupByList=['Document ID', 'Document'],
                                               plotList=['Line length (in words)'], chart_title_label='Statistical Measures for Line Length')
 
     if outputFiles!=None:
@@ -768,7 +768,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumb
                                                                # outputFileNameType='n-grams_'+str(gram), # +'_'+ tail,
                                                                outputFileNameType='',
                                                                column_xAxis_label=str(gram) + '-gram',
-                                                               groupByList=['Document ID','Document'],
+                                                               groupByList=['Document ID', 'Document'],
                                                                plotList=['Frequency in Document'],
                                                                chart_title_label='Statistical Measures for ' + str(gram) + '-gram')
             if outputFiles!=None:
@@ -1632,7 +1632,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                                                                    count_var=0, hover_label=[],
                                                                    outputFileNameType='grade',  # 'READ_bar',
                                                                    column_xAxis_label='Grade level',
-                                                                   groupByList=['Document ID','Document'],
+                                                                   groupByList=['Document ID', 'Document'],
                                                                    plotList=['Grade level'],
                                                                    chart_title_label='Statistical Measures for Readability Grade Level')
                 if outputFiles!=None:
@@ -1856,7 +1856,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
                                                        outputFileNameType='', #'' #'complexity_bar',
                                                        column_xAxis_label='Complexity scores',
                                                        column_yAxis_label='Scores',
-                                                       groupByList=['Document ID','Document'],
+                                                       groupByList=['Document ID', 'Document'],
                                                        plotList=['Yngve score','Frazier score'],
                                                        chart_title_label='Statistical Measures for Complexity Scores')
     if outputFiles!=None:

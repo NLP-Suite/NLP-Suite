@@ -613,7 +613,27 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         # SIMON should get the col of frequency in data_final
         #group_list = group_col_SV.copy()
 
+        df = data
+        '''something done to ensure a brutal order here'''
+        if selected_col == ['Form', 'Lemma'] and 'Document' in group_col:
+            try:
+                document_col = df.filter(like="Document").columns[0]  # Assuming only one column matches
 
+                # 2. Calculate the primary columns
+                df['Document ID'] = df.groupby(document_col).cumcount() + 1
+                document_frequencies = df[document_col].value_counts()
+                df['Document_Frequency'] = df[document_col].map(document_frequencies)
+                df['Document ID_Frequency'] = df['Document_Frequency']
+
+                # 3 & 4. Preserve the order of other columns and remove any redundant ones
+                desired_columns = ['Document', 'Document ID', 'Document_Frequency', 'Document ID_Frequency']
+                other_columns = [col for col in df.columns if
+                                 col not in desired_columns and 'Document' not in col and 'Document ID' not in col]
+
+                final_columns_order = desired_columns + other_columns
+                df = df[final_columns_order]
+            except:
+                pass
         # added TONY1
         # pivot=True
         if pivot==True:
@@ -667,31 +687,18 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         return
 
     df = data
-
     if createCharts:
-        if selected_col == ['Form', 'Lemma'] and group_col == ['Document']:
-            document_ids = data['Document ID'].unique()
-
-            # Loop through each unique Document ID
-            for id in document_ids:
-                # Filter rows with the current Document ID
-                filtered_df = df[df['Document ID'] == id]
-
-                # SIMON should NOT create a new csv file for each document; this may produce hundreds of files
-                # Write the filtered data to a new csv file
-                filename = outputDir + os.sep + str(id) + ".csv"
-                filtered_df.to_csv(filename, index=False)
-                # document, form, lemma with their respective frequencies
-                columns_to_be_plotted = [[1, 2], [3, 4], [5, 6]]
-                outputFilename = filename
-                column_xAxis_label_var = ''
-                outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
-                                                  outputFileLabel=fileNameType,
-                                                  chartPackage=chartPackage,
-                                                  chart_type_list=[chartType],
-                                                  chart_title=chart_title,
-                                                  column_xAxis_label_var=column_xAxis_label_var,
-                                                  hover_info_column_list=hover_over_header)
+        if selected_col == ['Form','Lemma'] and 'Document' in group_col:
+            # document, form, lemma with their respective frequencies
+            columns_to_be_plotted = [[1,2], [3,4], [5, 6]]
+            column_xAxis_label_var = ''
+            outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
+                                              outputFileLabel=fileNameType,
+                                              chartPackage=chartPackage,
+                                              chart_type_list=[chartType],
+                                              chart_title=chart_title,
+                                              column_xAxis_label_var=column_xAxis_label_var,
+                                              hover_info_column_list=hover_over_header)
         else:
             column_xAxis_label_var = ''
             outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,

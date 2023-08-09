@@ -147,7 +147,7 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=False
 
 GUI_width=str(GUI_IO_util.get_GUI_width(2))
-GUI_size = GUI_width + 'x550'
+GUI_size = GUI_width + 'x590'
 
 GUI_label='Graphical User Interface (GUI) for Narrative Analysis'
 head, scriptName = os.path.split(os.path.basename(__file__))
@@ -208,7 +208,7 @@ shape_stories_var = tk.IntVar()
 story_parts_var = tk.IntVar()
 
 
-characters_lb = tk.Label(window, text='Characters: Who & Whom')
+characters_lb = tk.Label(window, text='Characters: Who & Whom', foreground="red",font=("Courier", 12, "bold"))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,characters_lb)
 
 characters_NER_var.set(0)
@@ -236,7 +236,7 @@ characters_byGender_dict_checkbox = tk.Checkbutton(window,text="By gender - Via 
 # characters_byGender_dict_checkbox.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_5th_column,y_multiplier_integer,characters_byGender_dict_checkbox)
 
-scene_lb = tk.Label(window, text='Scenes/settings (When & where action happens)')
+scene_lb = tk.Label(window, text='Scenes/settings (When & where action happens)',foreground="red",font=("Courier", 12, "bold"))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,scene_lb)
 
 time_NER_var.set(0)
@@ -269,7 +269,7 @@ space_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text="Via DBpedia/YAGO", va
 # space_DBpedia_YAGO_checkbox.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_4th_column,y_multiplier_integer,space_DBpedia_YAGO_checkbox)
 
-characters_BySettings_lb = tk.Label(window, text='Characters in their scenes/settings')
+characters_BySettings_lb = tk.Label(window, text='Characters in their scenes/settings', foreground="red",font=("Courier", 12, "bold"))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,characters_BySettings_lb)
 
 characters_bySetting_var.set(0)
@@ -277,7 +277,7 @@ characters_bySetting_checkbox = tk.Checkbutton(window,text="Characters (By scene
 characters_bySetting_checkbox.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,characters_bySetting_checkbox)
 
-action_lb = tk.Label(window, text='Action: What')
+action_lb = tk.Label(window, text='Action: What', foreground="red",font=("Courier", 12, "bold"))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,action_lb)
 
 action_POS_var.set(0)
@@ -295,10 +295,13 @@ action_DBpedia_YAGO_checkbox = tk.Checkbutton(window, text="Via DBpedia/YAGO", v
 # action_DBpedia_YAGO_checkbox.config(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.narrative_analysis_3rd_column,y_multiplier_integer,action_DBpedia_YAGO_checkbox)
 
+character_action_lb = tk.Label(window, text='Characters in action: Who & What', foreground="red",font=("Courier", 12, "bold"))
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,character_action_lb)
+
 SVO_var.set(0)
 SVO_checkbox = tk.Checkbutton(window, text="SVOs: Who, What, Whom, When, Where",variable=SVO_var, onvalue=1, offvalue=0)
 # SVO_checkbox.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,SVO_checkbox,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,SVO_checkbox,True)
 
 shape_stories_var.set(0)
 shape_stories_checkbox = tk.Checkbutton(window, text="Shape of stories",variable=shape_stories_var, onvalue=1, offvalue=0)
@@ -342,9 +345,9 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help","Please, tick any of the checkboxes to extract the story characters using different NLP tools.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer+1, "NLP Suite Help","Please, tick the checkbox to analyze the TEMPORAL (story/plot) dimensions of stories, extracting time via Stanford CoreNLP NER normalized time.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help","Please, tick any of the checkboxes to analyze the SPATIAL dimensions of stories via the GIS pipeline, WordNet, and/or the knowledge bases DBpedia/YAGO.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer+1,"NLP Suite Help","Please, tick the checkbox to extract characters by setting.\n\nThe option is not available. Sorry!")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer+1,"NLP Suite Help","Please, tick the checkbox to extract characters by setting.\n\nThe option is currently not available. Sorry!")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer+1,"NLP Suite Help","Please, tick the checkboxes to extract action via the POS annotator (Part of Speech) with verb tags, WordNet or the knowledge bases DBpedia/YAGO.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes:\n\n  1. to open the specialized GUI to extract SVO triplets (Subject-Verb-Object) and time (When) and location (Where);\n  2. to open the specialized GUI to analyze the shape of stories;\n  3. to open the specialized GUI to analyze narrative elements.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer+1,"NLP Suite Help","Please, tick the checkboxes:\n\n  1. to open the specialized GUI to extract SVO triplets (Subject-Verb-Object) and time (When) and location (Where);\n  2. to open the specialized GUI to analyze the shape of stories;\n  3. to open the specialized GUI to analyze narrative elements.")
 
     return y_multiplier_integer
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,1)

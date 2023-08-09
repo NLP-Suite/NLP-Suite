@@ -629,7 +629,7 @@ def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackag
                                                         count_var=1, hover_label=[],
                                                         outputFileNameType='date-express', #'NER_info_bar',
                                                         column_xAxis_label='Date expression',
-                                                        groupByList=['Document ID','Document'],
+                                                        groupByList=['Document ID', 'Document'],
                                                         plotList=['Frequency'],
                                                         chart_title_label='Date Expressions')
     if outputFiles!=None:
@@ -647,7 +647,7 @@ def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackag
                                                         count_var=1, hover_label=[],
                                                         outputFileNameType='date', #'NER_date_bar',
                                                         column_xAxis_label='Normalized date',
-                                                        groupByList=['Document ID','Document'],
+                                                        groupByList=['Document ID', 'Document'],
                                                         plotList=['Frequency'],
                                                         chart_title_label='Normalized Dates')
     if outputFiles!=None:
@@ -665,7 +665,7 @@ def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackag
                                                         count_var=1, hover_label=[],
                                                         outputFileNameType='date-types', #'NER_info_bar',
                                                         column_xAxis_label='Date type',
-                                                        groupByList=['Document ID','Document'],
+                                                        groupByList=['Document ID', 'Document'],
                                                         plotList=['Frequency'],
                                                         chart_title_label='Date Types')
     if outputFiles!=None:
