@@ -40,6 +40,8 @@ import charts_util
 IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','wordnet')
 IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','omw-1.4')
 IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','sentiwordnet')
+IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
+IO_libraries_util.import_nltk_resource(GUI_util.window,'averaged_perceptron_tagger','averaged_perceptron_tagger')
 
 from nltk.corpus import wordnet as wn
 from nltk.corpus import sentiwordnet as swn

@@ -46,6 +46,7 @@ import os
 import time
 import argparse
 import tkinter.messagebox as mb
+IO_libraries_util.import_nltk_resource(GUI_util.window,'vader_lexicon','vader_lexicon')
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 # from nltk import tokenize
 # from nltk import word_tokenize

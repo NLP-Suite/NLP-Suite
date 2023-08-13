@@ -133,6 +133,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
                                                               createCharts, chartPackage,
                                                               bySentenceIndex_character_var)
 
+# corpus statistics --------------------------------------------------------------------
 
     if corpus_statistics_var:
         stopwords_var = False
@@ -168,6 +169,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
                 else:
                     filesToOpen.extend(outputFiles)
 
+# complexity_readability    ---------------------------------------------------------------------
+
     if complexity_readability_analysis_var == True:
         if '*' in complexity_readability_analysis_menu_var or 'Sentence' in complexity_readability_analysis_menu_var:
             if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
@@ -185,6 +188,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
         if complexity_readability_analysis_menu_var=='':
             mb.showwarning('Warning', 'No option has been selected for Complexity/readability analysis.\n\nPlease, select an option from the dropdown menu and try again.')
             return
+
+# vocabulary analysis    ---------------------------------------------------------------------
 
     if vocabulary_analysis_var == True:
         openOutputFilesSV=openOutputFiles

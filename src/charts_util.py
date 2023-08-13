@@ -642,6 +642,34 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
     if data_to_be_plotted==None:
             return
     else:
+        # the lines below handle specifically the "Form-Lemma" annotator because "form-lemma" is not processed in statistics_csv_util.py
+        withHeader_var = IO_csv_util.csvFile_has_header(inputFilename)  # check if the file has header
+        data, headers = IO_csv_util.get_csv_data(inputFilename, withHeader_var)  # get the data and header
+        def double_level_grouping_and_frequency(data, selected_col, group_col):
+            # Calculate the counts for each column
+            group_col_count = data[group_col[0]].value_counts().reset_index()
+            group_col_count.columns = [group_col[0], f'Frequency_{group_col[0]}']
+
+            selected_col_count = data.groupby(group_col)[selected_col[0]].value_counts().reset_index(
+                name=f'Frequency_{selected_col[0]}')
+
+            # Merge the counts back into the original dataframe
+            data_final = pd.merge(group_col_count, selected_col_count, how='inner', on=group_col[0])
+
+            data_final = data_final.drop_duplicates()  # Remove potential duplicate rows
+
+            # Convert DataFrame into list of lists
+            data_list = data_final.values.tolist()
+
+            # Extract 2nd and 3rd column into one list of lists and 4th and 5th into another
+            list_1 = [[row[2], row[3]] for row in data_list]
+            list_2 = [[row[0], row[1]] for row in data_list]
+            list_1.insert(0, ['Form values', 'Frequencies of Form'])
+            list_2.insert(0, ['Lemma values', 'Frequencies of Lemma'])
+            return [list_1, list_2]
+        if len(data_to_be_plotted)==2 and data_to_be_plotted[0][0]==['Form values','Frequencies of Form'] and data_to_be_plotted[1][0]==['Lemma values','Frequencies of Lemma']:
+            data = pd.DataFrame(data, columns=headers)
+            data_to_be_plotted=double_level_grouping_and_frequency(data,['Form'],['Lemma'])
         chart_title = chart_title
         outputFiles = charts_Excel_util.create_excel_chart(GUI_util.window, data_to_be_plotted,
                                                   inputFilename, outputDir,
@@ -650,6 +678,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
                                                   hover_info_column_list,
                                                   reverse_column_position_for_series_label,
                                                   series_label_list, second_y_var, second_yAxis_label)
+
     return outputFiles
 
 def build_timed_alert_message(chart_type,withHeader_var,count_var):

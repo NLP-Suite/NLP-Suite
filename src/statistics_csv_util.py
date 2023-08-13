@@ -421,12 +421,15 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         file_label = file_label + col + '_'
     if len(group_col)>0:
         if 'Document' in group_col:
-            file_label = file_label + 'byDoc'
+            # file_label = file_label + 'byDoc'
+            file_label = 'byDoc'
         else:
-            file_label = file_label + 'by'+group_col[0] # add only the first element
-    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
-                    '.csv', file_label + '_col-freq')
+            # file_label = file_label + 'by'+group_col[0] # add only the first element
+            file_label = 'by' + group_col[0]  # add only the first element
 
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
+                    '.csv', file_label + '_freq') # + '_col-freq'
+    # the outputFilename may get too long and lead to code breakdown when saving the file
     if len(selected_col) == 0:
         mb.showwarning('Missing field', 'You have not selected the csv field for which to compute frequencies.\n\nPlease, select the field and try again.')
         return filesToOpen
@@ -613,27 +616,27 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         # SIMON should get the col of frequency in data_final
         #group_list = group_col_SV.copy()
 
-        df = data
-        '''something done to ensure a brutal order here'''
-        if selected_col == ['Form', 'Lemma'] and 'Document' in group_col:
-            try:
-                document_col = df.filter(like="Document").columns[0]  # Assuming only one column matches
-
-                # 2. Calculate the primary columns
-                df['Document ID'] = df.groupby(document_col).cumcount() + 1
-                document_frequencies = df[document_col].value_counts()
-                df['Document_Frequency'] = df[document_col].map(document_frequencies)
-                df['Document ID_Frequency'] = df['Document_Frequency']
-
-                # 3 & 4. Preserve the order of other columns and remove any redundant ones
-                desired_columns = ['Document', 'Document ID', 'Document_Frequency', 'Document ID_Frequency']
-                other_columns = [col for col in df.columns if
-                                 col not in desired_columns and 'Document' not in col and 'Document ID' not in col]
-
-                final_columns_order = desired_columns + other_columns
-                df = df[final_columns_order]
-            except:
-                pass
+        # df = data
+        # '''something done to ensure a brutal order here'''
+        # if selected_col == ['Form', 'Lemma'] and 'Document' in group_col:
+        #     try:
+        #         document_col = df.filter(like="Document").columns[0]  # Assuming only one column matches
+        #
+        #         # 2. Calculate the primary columns
+        #         df['Document ID'] = df.groupby(document_col).cumcount() + 1
+        #         document_frequencies = df[document_col].value_counts()
+        #         df['Document_Frequency'] = df[document_col].map(document_frequencies)
+        #         df['Document ID_Frequency'] = df['Document_Frequency']
+        #
+        #         # 3 & 4. Preserve the order of other columns and remove any redundant ones
+        #         desired_columns = ['Document', 'Document ID', 'Document_Frequency', 'Document ID_Frequency']
+        #         other_columns = [col for col in df.columns if
+        #                          col not in desired_columns and 'Document' not in col and 'Document ID' not in col]
+        #
+        #         final_columns_order = desired_columns + other_columns
+        #         df = df[final_columns_order]
+        #     except:
+        #         pass
         # added TONY1
         # pivot=True
         if pivot==True:

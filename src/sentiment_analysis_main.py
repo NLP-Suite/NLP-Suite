@@ -115,26 +115,10 @@ def run(inputFilename,inputDir,outputDir,
         mb.showwarning('Warning',
                 SA_algorithm_var.lstrip() + " is not available yet. Sorry!\n\nPlease, select another option and try again.")
         return
-    #ANEW _______________________________________________________
-    if anew_var==1 and (mean_var or median_var):
-        if language=='English':
-            if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'EnglishShortenedANEW.csv', 'sentiment_analysis_ANEW')==False:
-                return
-            if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_ANEW_util.py')==False:
-                return
-            startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running ANEW Sentiment Analysis at',
-                                                         True, '', True, '', False)
 
-            outputFiles=sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
+# NEURAL NETWORK APPROACHES -------------------------------------------------------------------
 
-            if len(outputFiles)>0:
-                filesToOpen.append(outputFiles)
-
-            IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running ANEW Sentiment Analysis at', True, '', True, startTime)
-        else:
-            IO_user_interface_util.timed_alert(GUI_util.window,4000,'Warning','The ANEW algorithm is available only for the English language.\n\nYour currently selected language is '+language+'.\n\nYou can change the language using the Setup dropdownmenu at the bottom of this GUI and selecting "Setup NLP package and corpus language."')
-
-# BERT ---------------------------------------------------------
+    # BERT ---------------------------------------------------------
 
     if BERT_var==1:
         import BERT_util
@@ -247,6 +231,7 @@ def run(inputFilename,inputDir,outputDir,
                 outputFilename = outputFiles[0]
 
 # shape of stories ------------------------------------------------------------------------
+#   only for neural network approaches
 
     if (BERT_var or spaCy_var or CoreNLP_var or Stanza_var) and shape_of_stories_var:
         if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py') == False:
@@ -275,7 +260,38 @@ def run(inputFilename,inputDir,outputDir,
                                      True)
         call("python shape_of_stories_main.py", shell=True)
 
-#HEDONOMETER _______________________________________________________
+# DICTIONARY APPROACHES -------------------------------------------------------------------
+
+# ANEW _______________________________________________________
+
+    if anew_var == 1 and (mean_var or median_var):
+        if language == 'English':
+            if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'EnglishShortenedANEW.csv',
+                                     'sentiment_analysis_ANEW') == False:
+                return
+            if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_ANEW_util.py') == False:
+                return
+            startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                           'Started running ANEW Sentiment Analysis at',
+                                                           True, '', True, '', False)
+
+            outputFiles = sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, mode, createCharts,
+                                                            chartPackage)
+
+            if SA_algorithm_var!='*' and outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                               'Finished running ANEW Sentiment Analysis at', True, '', True,
+                                               startTime)
+        else:
+            IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Warning',
+                                               'The ANEW algorithm is available only for the English language.\n\nYour currently selected language is ' + language + '.\n\nYou can change the language using the Setup dropdownmenu at the bottom of this GUI and selecting "Setup NLP package and corpus language."')
+
+# HEDONOMETER _______________________________________________________
 
     if SA_algorithm_var=='*' or hedonometer_var==1 and (mean_var or median_var):
         if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'hedonometer.json', 'sentiment_analysis_hedonometer_util.py')==False:
@@ -289,8 +305,11 @@ def run(inputFilename,inputDir,outputDir,
 
             outputFiles = sentiment_analysis_hedonometer_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
-            if SA_algorithm_var!='*' and len(outputFiles)>0:
-                filesToOpen.append(outputFiles)
+            if SA_algorithm_var!='*' and outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
             IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running HEDONOMETER Sentiment Analysis at', True, '', True, startTime)
         else:
@@ -307,14 +326,18 @@ def run(inputFilename,inputDir,outputDir,
 
             outputFiles = sentiment_analysis_SentiWordNet_util.main(inputFilename, inputDir, outputDir, config_filename, mode, createCharts, chartPackage)
 
-            if SA_algorithm_var!='*' and len(outputFiles)>0:
-                filesToOpen.append(outputFiles)
+            if SA_algorithm_var!='*' and outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
 
             IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running SentiWordNet Sentiment Analysis at', True, '', True, startTime)
         else:
             IO_user_interface_util.timed_alert(GUI_util.window,4000,'Warning','The SentiWordNet algorithm is available only for the English language.\n\nYour currently selected language is '+language+'.\n\nYou can change the language using the Setup dropdownmenu at the bottom of this GUI and selecting "Setup NLP package and corpus language."')
 
-#VADER _______________________________________________________
+# VADER _______________________________________________________
 
     if SA_algorithm_var=='*' or vader_var==1 and (mean_var or median_var):
         if language=='English':
@@ -326,8 +349,11 @@ def run(inputFilename,inputDir,outputDir,
                                                          True, '', True, '', False)
             outputFiles = sentiment_analysis_VADER_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
-            if len(outputFiles)>0:
-                filesToOpen.append(outputFiles)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
             IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running VADER Sentiment Analysis at', True, '', True, startTime)
         else:

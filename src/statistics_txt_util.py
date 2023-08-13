@@ -56,7 +56,7 @@ from spacytextblob.spacytextblob import SpacyTextBlob
 # check stopwords
 # IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/stopwords','stopwords')
 # check punkt
-# IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
+IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
 
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet
@@ -279,7 +279,8 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
                                            'Finished running document(s) statistics at', True, '', True, startTime,
                                            False)
 
-        # number of sentences in input
+# number of sentences in input ---------------------------------------------------------------------
+
         outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Number of Sentences in Document'],
                                                            chart_title='Frequency of Number of Sentences',
@@ -296,7 +297,8 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
             else:
                 filesToOpen.extend(outputFiles)
 
-        # number of words in input
+# number of words in input ---------------------------------------------------------------------
+
         outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Number of Words in Document'],
                                                            chart_title='Frequency of Number of Words',
@@ -313,7 +315,8 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
             else:
                 filesToOpen.extend(outputFiles)
 
-        # number of syllables in input
+# number of syllables in input ---------------------------------------------------------------------
+
         outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Number of Syllables in Document'],
                                                            chart_title='Frequency of Number of Syllables',
@@ -1175,43 +1178,10 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
         # hapax and ngrams are processed above outside the for doc loop
         #    a for doc loop is already carried out in the function compute_character_word_ngrams
 
-    # To remove the words that are never repeated
-
-
-
-
-
-
-       # for sublist in word_list_temp:
-        #    if sublist[2] in rep_words_first:
-         #       if sublist[2] not in rep_words_last:
-         #           print(sublist[2])
-         #           word_list.remove(sublist)
-         #   elif sublist[2] in rep_words_last:
-         #       if sublist[2] not in rep_words_first:
-         #           print(sublist[2])
-          #          word_list.remove(sublist)
-
-
-
-
-            #if count_wrd == 1:
-            #    for sublist in word_list:
-            #
-            #        if el == sublist[2]:
-            #            word_list.remove(sublist)
-            #            break
-
-
-
-
-
-
-
-
-        #word_list.sort(key = lambda x: x[4])
-
-    #print(word_list[0])
+    if len(word_list)==0:
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,"Empty file",
+                                               "The " + processType + " algorithm has not generated any output.")
+        return filesToOpen
 
     word_list.insert(0, header)
 
@@ -1219,23 +1189,6 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
     IO_error=IO_csv_util.list_to_csv(window, word_list, outputFilename)
     if not IO_error:
         filesToOpen.append(outputFilename)
-
-
-    #if 'Repetition: Words' in processType:
-     #   columns_to_be_plotted_xAxis=[]
-      #  columns_to_be_plotted_yAxis=['Word Count']
-      #  count_var=0
-      #  outputFiles = charts_util.visualize_chart(createCharts, chartPackage,
-      #                                                      outputFilename, outputDir,
-       #                                                     columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
-       #                                                     chart_title="Word Count for First and Last K (" + str(k) + ") Sentences (in order from left to right)",
-        #                                                    outputFileNameType='k_sent',
-         #                                                   column_xAxis_label='Word Count',
-          #                                                  count_var=count_var,
-           #                                                 hover_label=[],
-            #                                                groupByList=[], # ['Document ID', 'Document'],
-             #                                               plotList=[], #['Concreteness (Mean score)'],
-              #                                              chart_title_label='') #'Concreteness Statistics')
 
     outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                 columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,

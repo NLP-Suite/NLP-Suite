@@ -139,7 +139,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
-        filesToOpen=[] # do not open twice, hee and calling function
+        filesToOpen=[] # do not open twice, here and calling function
     return filesToOpen
 
 def generate_simple_csv(Dataframe):

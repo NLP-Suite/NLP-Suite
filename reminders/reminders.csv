@@ -228,3 +228,10 @@ If that happens, with your mouse, draw an area you want to focus on in the Carte
 
 YOU CAN GO BACK TO THE ORIGINAL DISPLAY BY CLICKING THE REFRESH BUTTON IN YOUR BROWSER.",OFF
 word2vec,Word2Vec Eucledian distance,The Word2Vec algorithms compute the Eucledian distance of every word with every other word for the 10 most frequent words. You can use this csv file to locate the most significant words in the Cartesian space.,OFF
+sentiment_analysis,VADER Sentiment Analysis system requirements,"VADER heavily relies on a number of NLTK libraries. If VADER fails to run, make sure that in command line you run
+
+python -m nltk.downloader all",OFF
+sentiment_analysis,VADER Mean/Median,"VADER cannot compute sentence mean and median values because VADER computes a single compound value for the entire sentence.
+
+Use the hedonometer algorithm to compute separate values and word list of words found.",ON
+sentiment_analysis,SentiWordNet,SentiWordNet does not compute sentence mean and median values nor does it display a list of the individual words found.,ON
