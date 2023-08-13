@@ -40,6 +40,11 @@ def run(inputFilename, inputDir, outputDir,
         continue_manual_Coref_var,
         corefed_txt_file):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('_main.py', '_config.csv')
+
     # pull the widget names from the GUI since the scripts change the IO values
     inputFilename = GUI_util.inputFilename.get()
     inputDir = GUI_util.input_main_dir_path.get()
@@ -54,12 +59,8 @@ def run(inputFilename, inputDir, outputDir,
     language_var = language
     language_list = [language]
 
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        temp_config_filename = 'NLP_default_IO_config.csv'
-    else:
-        temp_config_filename = scriptName.replace('_main.py', '_config.csv')
 
-    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = \
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = \
         config_util.get_date_options(temp_config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
@@ -172,11 +173,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              increment=2)  # to be added for full display
 
 GUI_label = 'Graphical User Interface (GUI) for Coreference PRONOMINAL Resolution (via CoreNLP) and Manual Editing'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

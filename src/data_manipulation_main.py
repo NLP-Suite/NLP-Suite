@@ -26,6 +26,11 @@ def run(inputFilename,
         append_var, concatenate_var, drop_var, extract_var, merge_var,
         output_to_csv_var, openOutputFiles, outputDir):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('_main.py', '_config.csv')
+
     filesToOpen = []  # Store all files that are to be opened once finished
 
     # data_files = [file for file in data_manipulation_util.select_csv(filePath)]  # dataframes
@@ -127,8 +132,8 @@ if __name__ == '__main__':
                                                      increment=1)  # to be added for full display
 
     GUI_label = 'Graphical User Interface (GUI) for csv Data Manipulation'
+    config_filename = 'NLP_default_IO_config.csv'
     head, scriptName = os.path.split(os.path.basename(__file__))
-    config_filename = 'data-manager_config.csv'
     # The 4 values of config_option refer to:
     #   input file
             # 1 for CoNLL file
@@ -182,6 +187,7 @@ if __name__ == '__main__':
     operation_name_var = tk.StringVar()
     csv_file_operations_var = tk.StringVar()
     select_csv_field_var = tk.StringVar()
+    select_csv_field_append_var = tk.StringVar()
     select_csv_field_concatenate_var = tk.StringVar()
     selectedCsvFile_var = tk.StringVar()
     select_csv_field_merge_var = tk.StringVar()
@@ -311,11 +317,11 @@ if __name__ == '__main__':
                 if select_csv_field_extract_var.get() != '':
                     comparator_menu.configure(state="normal")
                     add_extract_options.config(state='normal')
-                    OK_WHERE_button.config(state='normal')
+                    # OK_WHERE_button.config(state='normal')
                 else:
                     comparator_menu.configure(state="disabled")
                     add_extract_options.config(state='disabled')
-                    OK_WHERE_button.config(state='disabled')
+                    # OK_WHERE_button.config(state='disabled')
                 if comparator_var.get() != '':
                     where_entry.configure(state="normal")
                 else:
@@ -331,11 +337,11 @@ if __name__ == '__main__':
                     and_or_menu.configure(state='disabled')
                     # add_file_button.config(state='disabled')
                     add_extract_options.config(state='disabled')
-                    WHERE_button.config(state='disabled')
+                    # WHERE_button.config(state='disabled')
                 else:
                     # add_file_button.config(state='normal')
                     add_extract_options.config(state='normal')
-                    OK_WHERE_button.config(state='normal')
+                    # OK_WHERE_button.config(state='normal')
                     comparator_menu.configure(state="normal")
                     where_entry.configure(state="normal")
             else:
@@ -351,7 +357,7 @@ if __name__ == '__main__':
             comparator_menu.configure(state="disabled")
             where_entry.configure(state="disabled")
             and_or_menu.configure(state="disabled")
-            OK_WHERE_button.config(state='disabled')
+            # OK_WHERE_button.config(state='disabled')
 
             where_entry_var.set("")
             comparator_var.set("")
@@ -383,10 +389,20 @@ if __name__ == '__main__':
         csv_file_operations_var.set('')
         reset_csv_field_values()
         merge_var.set(0)
+        add_merge_field.configure(state='disabled')
+        add_merge_file.configure(state='disabled')
+        OK_merge_button.configure(state='disabled')
         concatenate_var.set(0)
+        add_concatenate_field.configure(state='disabled')
+        OK_concatenate_button.configure(state='disabled')
         append_var.set(0)
+        add_append_file.configure(state='disabled')
+        OK_append_button.configure(state='disabled')
         extract_var.set(0)
         drop_var.set(0)
+        add_drop_field.configure(state='disabled')
+        add_drop_file.configure(state='disabled')
+        OK_drop_button.configure(state='disabled')
         select_csv_field_concatenate_var.set('')
         select_csv_field_drop_var.set('')
         select_csv_field_extract_var.set('')
@@ -566,6 +582,16 @@ if __name__ == '__main__':
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                    append_checkbox, True)
 
+    # add another field
+    add_append_field = tk.Button(window, text='+', width=2, height=1, state='disabled', command=lambda: merge_reminder_plus())
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 950,
+                                                   y_multiplier_integer,
+                                                   add_append_field,
+                                                   True, False, False, False, 90,
+                                                   GUI_IO_util.labels_x_coordinate + 760,
+                                                   "Click the + button to add another csv field\nOPTION NOT AVAILABLE FOR APPEND")
+
     # add another file
     add_append_file = tk.Button(window, text='+', width=2, height=1, state='disabled',
                          command=lambda: add_csvFile(window, 'Select INPUT csv file',
@@ -628,6 +654,17 @@ if __name__ == '__main__':
                                                    GUI_IO_util.labels_x_coordinate + 760,
                                                    "Click the + button to add another csv field")
 
+    # add another file
+    add_concatenate_file = tk.Button(window, text='+', width=2, height=1, state='disabled',
+                         command=lambda: add_csvFile(window, 'Select INPUT csv file',
+                                                                [("csv files", "*.csv")]))
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 1000,
+                                                   y_multiplier_integer,
+                                                   add_concatenate_file, True, False, False, False, 90,
+                                                   GUI_IO_util.labels_x_coordinate + 800,
+                                                   "Click the + button to add another csv file\nOPTION NOT AVAILABLE FOR CONCATENATE")
+
 
     OK_concatenate_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
                                       command=lambda: build_concatenate_string(False, True))
@@ -669,9 +706,39 @@ if __name__ == '__main__':
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate,
                                                    y_multiplier_integer,
                                                    WHERE_drop_button,
-                                                   False, False, False, False, 90,
+                                                   True, False, False, False, 90,
                                                    GUI_IO_util.open_setup_x_coordinate,
                                                    "Click the button to activate the WHERE clause on top of this GUI")
+
+    add_drop_field = tk.Button(window, text='+', width=2, height=1, state='disabled', command=lambda: merge_reminder_plus())
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 950,
+                                                   y_multiplier_integer,
+                                                   add_drop_field,
+                                                   True, False, False, False, 90,
+                                                   GUI_IO_util.labels_x_coordinate + 760,
+                                                   "Click the + button to add another csv field")
+
+    # add another file
+    add_drop_file = tk.Button(window, text='+', width=2, height=1, state='disabled',
+                         command=lambda: add_csvFile(window, 'Select INPUT csv file',
+                                                                [("csv files", "*.csv")]))
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 1000,
+                                                   y_multiplier_integer,
+                                                   add_drop_file, True, False, False, False, 90,
+                                                   GUI_IO_util.labels_x_coordinate + 800,
+                                                   "Click the + button to add another csv file")
+
+    OK_drop_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
+                                command=lambda: merge_reminder_OK())
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 1050,
+                                                   y_multiplier_integer,
+                                                   OK_drop_button,
+                                                   False, False, False, False, 90,
+                                                   GUI_IO_util.open_reminders_x_coordinate,
+                                                   "Click the 'OK' button to approve the selections made and display the selected option in the display widget")
 
 # EXTRACT fields --------------------------------------------------------------------------------------
     extract_var.set(0)
@@ -782,7 +849,7 @@ if __name__ == '__main__':
                                          reminders_util.message_data_manager_merge2,
                                          True)
         build_merge_string(False, False)
-        mergeSelection(False, False)
+        # mergeSelection(False, False)
 
     select_csv_field_merge_var.trace('w',merge_reminder2)
 
@@ -897,7 +964,6 @@ if __name__ == '__main__':
             clear("<Escape>")
 
     selectedCsvFile_var.trace('w', lambda x, y, z: changed_filename(selectedCsvFile_var.get()))
-
     GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
 
@@ -957,6 +1023,16 @@ if __name__ == '__main__':
         select_csv_field_merge_menu.config(state='disabled')
         WHERE_drop_button.configure(state='disabled')
         WHERE_extract_button.configure(state='disabled')
+        add_concatenate_field.configure(state='disabled')
+        OK_concatenate_button.configure(state='disabled')
+        add_append_file.configure(state='disabled')
+        OK_append_button.configure(state='disabled')
+        add_drop_field.configure(state='disabled')
+        add_drop_file.configure(state='disabled')
+        OK_drop_button.configure(state='disabled')
+        add_merge_field.configure(state='disabled')
+        add_merge_file.configure(state='disabled')
+        OK_merge_button.configure(state='disabled')
 
         if error:
             append_checkbox.configure(state='disabled')
@@ -974,6 +1050,8 @@ if __name__ == '__main__':
         merge_checkbox.configure(state='normal')
         drop_checkbox.configure(state='normal')
 
+# APPEND
+
         if append_var.get():
             concatenate_checkbox.configure(state='disabled')
             extract_checkbox.configure(state='disabled')
@@ -983,7 +1061,9 @@ if __name__ == '__main__':
             add_append_file.configure(state='normal')
             OK_append_button.configure(state='normal')
 
-        elif concatenate_var.get():
+# CONCATENATE
+
+        if concatenate_var.get():
             append_checkbox.configure(state='disabled')
             extract_checkbox.configure(state='disabled')
             merge_checkbox.configure(state='disabled')
@@ -997,8 +1077,12 @@ if __name__ == '__main__':
                     n_concatenate_fields=n_concatenate_fields+1
                     print(selected_csv_fields_var.get().count(','))
                     OK_concatenate_button.config(state='normal')
+        # else:
+        #     select_csv_field_concatenate_var.set('')
 
-        elif drop_var.get():
+# DROP
+
+        if drop_var.get():
             append_checkbox.configure(state='disabled')
             concatenate_checkbox.configure(state='disabled')
             extract_checkbox.configure(state='disabled')
@@ -1007,8 +1091,15 @@ if __name__ == '__main__':
 
             if select_csv_field_drop_var.get()!='':
                 WHERE_drop_button.configure(state='normal')
+                add_drop_field.configure(state='normal')
+                add_drop_file.configure(state='normal')
+                OK_drop_button.configure(state='normal')
+        # else:
+        #     select_csv_field_drop_var.set('')
 
-        elif extract_var.get():
+# EXTRACT
+
+        if extract_var.get():
             append_checkbox.configure(state='disabled')
             concatenate_checkbox.configure(state='disabled')
             merge_checkbox.configure(state='disabled')
@@ -1017,17 +1108,23 @@ if __name__ == '__main__':
             if select_csv_field_extract_var.get()!='':
                 output_to_csv_checkbox.configure(state='normal')
                 WHERE_extract_button.configure(state='normal')
+        # else:
+        #     select_csv_field_extract_var.set('')
 
-        elif merge_var.get():
+# MERGE
+
+        if merge_var.get():
             append_checkbox.configure(state='disabled')
             concatenate_checkbox.configure(state='disabled')
-            extract_checkbox.configure(state='disabled')
             drop_checkbox.configure(state='disabled')
+            extract_checkbox.configure(state='disabled')
 
             if select_csv_field_merge_var.get()!='':
                 add_merge_field.configure(state='normal')
                 add_merge_file.configure(state='normal')
                 OK_merge_button.configure(state='normal')
+            # else:
+            #     select_csv_field_merge_var.set('')
 
     select_csv_field_concatenate_var.trace("w", activate_all_options)
     select_csv_field_drop_var.trace("w", activate_all_options)
@@ -1094,6 +1191,7 @@ if __name__ == '__main__':
         elif drop_var.get():
             WHERE_drop_button.configure(state='disabled')
             if select_csv_field_drop_var.get() != '':
+                select_csv_field_drop_menu.configure(state='disabled')
                 WHERE_drop_button.configure(state='normal')
             if checkButton == True:
 
@@ -1105,10 +1203,10 @@ if __name__ == '__main__':
                     select_csv_field_drop_menu.configure(state='normal')
                     # select_csv_field2_drop_menu.configure(state='normal')
 
-                merge_checkbox.config(state='disabled')
-                concatenate_checkbox.config(state='disabled')
                 append_checkbox.config(state='disabled')
+                concatenate_checkbox.config(state='disabled')
                 extract_checkbox.config(state='disabled')
+                merge_checkbox.config(state='disabled')
 
             else:
                 select_csv_field_drop_var.set('')
@@ -1116,10 +1214,10 @@ if __name__ == '__main__':
                 select_csv_field_drop_menu.config(state='disabled')
                 # select_csv_field2_drop_menu.configure(state='disabled')
 
-                merge_checkbox.config(state='normal')
-                concatenate_checkbox.config(state='normal')
                 append_checkbox.config(state='normal')
+                concatenate_checkbox.config(state='normal')
                 extract_checkbox.config(state='normal')
+                merge_checkbox.config(state='normal')
         elif extract_var.get():
             WHERE_extract_button.configure(state='disabled')
             if select_csv_field_drop_var.get() != '':
@@ -1169,9 +1267,8 @@ if __name__ == '__main__':
     # select_csv_field_merge_var.trace('w', mergeSelection)
 
 
-    def concatenateSelection(*args):
-        activate_csv_fields_selection('concatenate', concatenate_var.get(), False, False)
-
+    # def concatenateSelection(*args):
+    #     activate_csv_fields_selection('concatenate', concatenate_var.get(), False, False)
 
     # def purgeSelection(*args):
     #     activate_csv_fields_selection('drop', drop_var.get(), False, False)
@@ -1235,14 +1332,16 @@ if __name__ == '__main__':
         y_multiplier_integer = y_multiplier_integer + 1
         # APPEND
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "The APPEND option allows you to add multiple csv files for as long as they have the same number and type of fields.\n\nIn INPUT, the option takes at least 2 csv files.\n\nIn OUTPUT, the option creates a single csv file that combines all selected input files. "+resetAll)
+                                      "The APPEND option allows you to add multiple csv files for as long as they have the same number and type of fields. THE ROWS OF EACH SUCCESSIVE FILE WILL BE ADDED AFTER THE LAST ROW OF THE OUTPUT FILE.\n\nIn INPUT, the option takes at least 2 csv files.\n\nIn OUTPUT, the option creates a single csv file that combines all selected input files. "+resetAll)
         # CONCATENATE
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "The CONCATENATE option allows you to join together 2 or more fields of a csv file, separated by a user-selected sttring.\n\nIn INPUT, the option takes a single csv file.\n\nIn OUTPUT, the option creates a single csv file with all the original fields plus the concatenated fields. "+resetAll)
+                                      "The CONCATENATE option allows you to join together 2 or more fields of a csv file, separated by a user-selected string (e.g., the value 'John' in one field and 'Meyer' in another field, concatenated as 'John Meyer' or 'John, Meyer' or 'John & Meyer' - depending upon the user-selected concatenation value - in a new field).\n\nIn INPUT, the option takes a single csv file.\n\nIn OUTPUT, the option creates a single csv file with all the original fields plus the concatenated fields."+resetAll)
         # "The DROP and EXTRACT options allow you to select specific fields, even by specific values, from one or more csv files and save the output as a new file.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value in the \'WHERE\' widget (case sensitive!), and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll)
         # DROP
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                      "The DROP option allows you to select several files, merge them together in a single file using the key of overlapping fields (the equivalent of an SQL JOIN operation), and save the output as a new file.\n\nAfter selecting the 'Merge files (Join)' option, press the + button either to add a new csv field or a new csv file (you can add repeatedly more fields and/or files).\n\nIn INPUT the MERGE option takes 2 or more csv files.\n\nIn OUTPUT, the MERGE option creates a csv file containing all the fields from all input files matched on the basis of the same selected overlapping field(s) (e.g., Document ID, Sentence ID)."+ GUI_IO_util.msg_Esc + resetAll)
+                                      "The DROP option allows you to delete/drop/purge rows from a csv file depending on the values of specific field(s) of the same file. It is also possible to drop rows using the field values from a different csv file (e.g., using a file of stop words to drop all the rows of a CoNLL table where the Form or Lemma fields are stop words)."
+                                      "\n\nThe DROP option creates in OUTPUT a csv file containing all the same input fields of the INPUT file but with fewer rows (the purged rows)." + GUI_IO_util.msg_Esc + resetAll)
+
         # EXTRACT
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "The EXTRACT option allows you to select specific fields, even by specific values, from a csv file and save the output as a new csv or txt file.\n\nYOU CAN SAVE THE OUTPUT TO CSV FILE OR TO A TEXT FILE. Just tick the Output csv checkbox as desired.\n\nStart by ticking the Extract checkbox, then selecting the csv field from the current csv file. To filter the field by specific values, select the comparator character to be used (e.g., =), enter the desired value, and select and/or if you want to add another filter.\n\nOptions become available in succession.\n\nPress the + button to register your choices (these will be displayed in command line in the form: filename and path, field, comparator, WHERE value, and/or selection; empty values will be recorded as ''. ). PRESSING THE + BUTTON TWICE WITH NO NEW CHOICES WILL CLEAR THE CURRENT CHOICES. PRESS + AGAIN TO RE-INSERT THE CHOICES. WATCH THIS IN COMMAND LINE.\n\nIF YOU DO NOT WISH TO FILTER FIELDS, PRESS THE + BUTTON AFTER SELECTING THE FIELD." + plusButton + OKButton + GUI_IO_util.msg_Esc + resetAll + "\n\nIn INPUT, the EXTRACT option takes 1 csv file.\n\nIn OUTPUT, the EXTRACT option creates either a csv or a text file containing only the fields selected for extraction from the input file."+ GUI_IO_util.msg_Esc + resetAll)

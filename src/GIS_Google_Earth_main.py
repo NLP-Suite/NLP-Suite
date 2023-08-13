@@ -52,6 +52,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             description_csv_field_var, bold_var_list, italic_var_list,
             description_var_list, description_csv_field_var_list, heat_map_var):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     filesToOpen = []
     inputIsCoNLL = False
 
@@ -162,11 +167,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                                                  increment=1)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for Geocoding, Preparing kml File, and Visualizing Maps in Google Earth Pro'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

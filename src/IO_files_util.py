@@ -161,8 +161,12 @@ def getFileList_SubDir(inputFilename, inputDir, fileType='.*', silent=False):
 #   examples of calls
 # https://thispointer.com/python-how-to-get-list-of-files-in-directory-and-sub-directories/
 
+
+
+
 import functools
 from datetime import datetime
+import os
 
 
 # the below is to convert from self-defined date format to the correct datetime format
@@ -182,12 +186,10 @@ def parse_date(date_str, date_formats):
         pass
     return None
 # this below function attempts to make it more clear in structure.
-def help_date(c1,c2,date_loc,file_end,compare_date,inputDir):
-    #print(c1[date_loc].replace(file_end, '').replace(inputDir,''),c2[date_loc].replace(file_end, '').replace(inputDir,''))
-    #print(c1[date_loc].replace(file_end, '').replace(inputDir,''))
-    val1 = parse_date(c1[date_loc].replace(file_end, '').replace(inputDir,''), compare_date)
-    val2 = parse_date(c2[date_loc].replace(file_end, '').replace(inputDir,''), compare_date)
-    #print(val1,val2)
+def help_date(c1, c2, date_loc, file_end, compare_date):
+    val1 = parse_date(c1[date_loc].replace(file_end, ''), compare_date)
+    val2 = parse_date(c2[date_loc].replace(file_end, ''), compare_date)
+
     if val1 is not None and val2 is not None:
         return val1<val2
     return -1
@@ -201,41 +203,55 @@ def complete_order(bb, c):
     non_appearing_elements = list(all_elements.difference(set(c)))
     non_appearing_elements.sort()
     return [x-1 for x in (c+ non_appearing_elements)]
-def do_compare(input_list, compare_split, compare_date, file_end, date_loc,ordering,inputDir):
-    # example: input_list: a lists of files
+  ##############
+  # example: input_list: a lists of files
     # compare_split, what do you want to be splitting each file. For instance, a_b_1989.txt, has it _.
     # compare_date, what form of date do you want to be compared. For instance, YYYY
     # file_end, what file ending is the file, for instance, .txt in the above case
     # date_loc, where is your date location. For instance, the above is 3 (natural order).
     # ordering: the string like "2,3"
 
+
+
+def do_compare(input_list, compare_split, compare_date, file_end, date_loc, ordering):
     def compare(pair1, pair2):
         try:
-            c1 = pair1.replace(inputDir, '').replace(file_end, '')
-            c2 = pair2.replace(inputDir, '').replace(file_end, '')
-            c1 = c1.split(compare_split)
-            c2 = c2.split(compare_split)
-            i = 0
-            q = complete_order(len(c1),[int(x) for x in ordering.split(",")])
+            c1 = os.path.basename(pair1).replace(file_end, '')
+            c2 = os.path.basename(pair2).replace(file_end, '')
 
-            #print(date_loc)
-            while i<=len(c1)-1:
-                if q[i]+1==date_loc:
+            if compare_split in c1 and compare_split in c2:
+                # scenario where filenames contain separators
+                c1 = c1.split(compare_split)
+                c2 = c2.split(compare_split)
+                i = 0
+                q = complete_order(len(c1), [int(x) for x in ordering.split(",")])
 
-                    if help_date(c1,c2,date_loc-1,file_end,compare_date,inputDir):
-                        return -1
+                while i <= len(c1) - 1:
+                    if q[i] + 1 == date_loc:
+                        if help_date(c1, c2, date_loc - 1, file_end, compare_date):
+                            return -1
+                        else:
+                            return 1
                     else:
-                        return 1
-                else:
-                    if c1[q[i]]<c2[q[i]]:
-                        return -1
-                    else:
-                        return 1
-                i+=1
+                        if c1[q[i]] < c2[q[i]]:
+                            return -1
+                        else:
+                            return 1
+                    i += 1
+            else:
+                # scenario where filenames are dates
+                val1 = parse_date(c1, compare_date)
+                val2 = parse_date(c2, compare_date)
+                if val1 is not None and val2 is not None:
+                    return -1 if val1 < val2 else 1
         except:
-            #print("There must be at least one file that is incomparable due to split size error. But we skip it and proceed.")
+            print("There must be at least one file that is incomparable due to split size error. But we skip it and proceed.")
+            print(pair1, pair2)
             return -1
+
     return sorted(input_list, key=functools.cmp_to_key(compare))
+
+
 
 
 def getFileListOld(inputFile, inputDir, fileType='.*',silent=False):
@@ -296,6 +312,8 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
 
         if str(sort_order) =="nan":
             sort_order = "1"
+            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
+                        'No sort order available.\n\nFiles will be read in using entire filename.', False,'',True,'',False)
         try:
             aa = float(sort_order)
             aa = int(aa)
@@ -314,7 +332,7 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
         # print("=========")
         # print(separator, date_format, fileType, date_pos,sort_order,inputDir+os.sep)
         try:
-            files = do_compare(files, separator, date_format, fileType, date_pos,sort_order,inputDir+os.sep)
+            files = do_compare(files, separator, date_format, fileType, date_pos,sort_order)
         except:
             print('maybe error?')
             print("Because of a significant error. We proceed using default logic.")
@@ -576,12 +594,12 @@ def openFile(window, inputFilename):
 
 
 # open a set of output files (csv, txt,...) stored as a list in filesToOpen []
+# filesToOpen is a single list []
 def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName='', filesToOpenSubset=[]):
     if filesToOpen == None:
         return
     if len(filesToOpen) == 0:
         return
-    # if filesToOpen != list:
     if not isinstance(filesToOpen, list):
         if isinstance(filesToOpen, set):
             filesToOpen = list(set(filesToOpen))
@@ -591,11 +609,26 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
     if len(filesToOpenSubset)> 0:
         filesToOpen=filesToOpenSubset
 
-    if outputDir != GUI_util.output_dir_path.get():
-        subDirs=next(os.walk(outputDir))[1]
+    # you want to check the number of files through all subdir created
+    #   only when the output directory is NOT the default output directory
+    #   (in which case you potentially get a huge number of files having nothing to do with the script being run)
+    check_number_ofFiles = False
+    if outputDir!=GUI_util.output_dir_path.get():
+        # check that no output subdir has been created;
+        #   e.g., the parse_annotator_main passes only the main output dir rather than the subdir
+        temp_outputDir=outputDir
+        check_number_ofFiles = True
+    else:
+        # get the outputDir from the first output file
+        # temp_outputDir = os.path.dirname(outputDir)
+        temp_outputDir=os.path.dirname(filesToOpen[0])
+        if temp_outputDir!=outputDir:
+            check_number_ofFiles = True
+    split_files = False
+    if check_number_ofFiles: #outputDir != temp_outputDir: #GUI_util.output_dir_path.get():
+        subDirs=next(os.walk(temp_outputDir))[1]
         listOfFiles = list()
-        split_files = False
-        for (dirpath, dirnames, filenames) in os.walk(outputDir):
+        for (dirpath, dirnames, filenames) in os.walk(temp_outputDir):
             if "split_" in dirpath:
                 split_files=True
                 subDirs.remove(os.path.basename(dirpath))
@@ -614,21 +647,35 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
     nFiles=len(listOfFiles)
     nSubDirs = len(subDirs)
     subDirs=", \n   ".join(subDirs)
-    label=''
+    wayTooMany = ''
+    label = ''
     subsetLabel = ''
-    if nSubDirs>0:
-        label = " organized in " + str(nSubDirs) + " different subfolders:\n\n   " + subDirs
-        if split_files:
-            label = label + "\n\nA folder containing split files was generated by Stanford CoreNLP to deal with CoreNLP file-size limitation of 99000 characters. " \
-                            "You do not need to be concerned about that; large files will have been split for processing and put back together automatically by the SVO algorithm."
+    opened_folder_label = ''
+    opened_folder_label = "\n\nFor your convenience, the NLP Suite will place you in the main output subdirectory where you can select any other files you want/need to open:\n\n" + temp_outputDir
+    if nSubDirs==1:
+        label = " exported to the subfolder:\n\n" + temp_outputDir
+        opened_folder_label = "\n\nFor your convenience, the NLP Suite will place you in this output subdirectory"
+    if nSubDirs>1:
+        label = " organized in " + str(nSubDirs) + " different subfolders:\n\n  " + subDirs
+    if split_files:
+        label = label + "\n\nA folder containing split files was generated by Stanford CoreNLP to deal with CoreNLP file-size limitation of 99000 characters. " \
+                        "You do not need to be concerned about that; large files will have been split for processing and put back together automatically by the SVO algorithm."
+    if nSubDirs > 0:
         if len(filesToOpenSubset)>0:
             subsetLabel = "\n\nThe NLP Suite will open next a subset of " + str(len(filesToOpenSubset)) + " most relevant output files from the different subfolders: all charts and main csv files.\n"
-        mb.showwarning(title="Output files subset",message="The " + scriptName + " has generated " +
-                    str(nFiles) + " files in output" + label + subsetLabel +
-                    "\n\nFor your convenience, the NLP Suite will also place you in the main output subdirectory where you can select  any other files you want/need to open:\n\n"+outputDir)
-    # mb.showwarning(title='Too many files to open',message='There are ' + str(len(filesToOpen)) + ' files to be opened. This is way too many files.\n\nFor your convenience, you will be placed next in the output directory\n\n'+outputDir+'\n\nYou can select there the files you want/need to open.')
+
     # always open outputDir
-    openExplorer(window, outputDir)
+    openExplorer(window, temp_outputDir)
+
+    if nFiles > 20:
+        wayTooMany = "n\nWAY TOO MANY TO BE OPENED AUTOMATICALLY."
+
+    mb.showwarning(title="Output files",message="The " + scriptName + " has generated " +
+                str(nFiles) + " files in output" + wayTooMany + label + subsetLabel + opened_folder_label + ".")
+
+    if nFiles > 20:
+        return
+
     if len(filesToOpen) == 1:
         singularPlural = 'file'
     else:

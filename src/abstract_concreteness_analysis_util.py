@@ -224,10 +224,10 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 		# should sort by Document ID and Sentence ID
 		# IO_csv_util.sort_csvFile_by_columns(outputFilename, outputFilename, ['Document ID', 'Sentence ID'])
 
-	chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+	outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
 													   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Concreteness (Mean score)'],
 													   # columns_to_be_plotted_bySent= [[10, 7, 0]],
-													   chartTitle='Frequency Distribution of Abstract/Concrete Scores',
+													   chart_title='Frequency Distribution of Abstract/Concrete Scores',
 													   count_var=0, # 0 for numeric field
 													   hover_label=[],
 													   outputFileNameType='',
@@ -235,9 +235,11 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 													   groupByList=['Document ID', 'Document'],
 													   plotList=['Concreteness (Mean score)'],
 													   chart_title_label='Concreteness Statistics')
-	if chart_outputFilename != None:
-		if len(chart_outputFilename) > 0:
-			filesToOpen.extend(chart_outputFilename)
+	if outputFiles!=None:
+		if isinstance(outputFiles, str):
+			filesToOpen.append(outputFiles)
+		else:
+			filesToOpen.extend(outputFiles)
 
 
 	IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',

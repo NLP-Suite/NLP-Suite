@@ -339,7 +339,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         'All POS':["ID", "Form", "POS", "Record ID", "Sentence ID", "Document ID", "Document"],
         'NER': ['Word', 'NER', 'tokenBegin', 'tokenEnd', 'Sentence ID', 'Sentence', 'Document ID','Document'],
         # TODO NER with date for dynamic GIS; modified below
-        # 'NER': ['Word', 'NER Tag', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
+        # 'NER': ['Word', 'NER', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
         'sentiment': ['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         'quote': ['Speakers', 'Number of Quotes', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
@@ -868,13 +868,15 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 # when multiple annotators are selected (e.g., quote, gender, normalized-date)
                 #   charts output must go to the appropriate subdirectory
                 outputDir_chosen = os.path.dirname(outputFilename)
-                chart_outputFilename = parsers_annotators_visualization_util.parsers_annotators_visualization(
+                outputFiles = parsers_annotators_visualization_util.parsers_annotators_visualization(
                     config_filename, inputFilename, inputDir, outputDir_chosen,
                     outputFilename, annotator_params, kwargs, createCharts,
                     chartPackage)
-                if chart_outputFilename!=None:
-                    if len(chart_outputFilename) > 0:
-                        filesToOpen.extend(chart_outputFilename)
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
     CoreNLP_nlp.kill()
     # print("Length of Files to Open after visualization: ", len(filesToOpen))
@@ -2053,7 +2055,7 @@ def get_csv_column_unique_val_list(inputFilename, col):
 
 
 def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
-    # columns: Location, NER Tag, Sentence ID, Sentence, Document ID, Document
+    # columns: Location, NER, Sentence ID, Sentence, Document ID, Document
     to_write = []
     for sent in locations:
         for locs in sent[2]:
@@ -2154,10 +2156,10 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
             if createCharts:
                 columns_to_be_plotted_xAxis=[]
                 columns_to_be_plotted_yAxis=["Number of Pronouns", "Number of Coreferenced Pronouns", "Pronouns Coreference Rate"]
-                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                                   chartTitle='Coreferenced Pronouns',
+                                                                   chart_title='Coreferenced Pronouns',
                                                                    # count_var = 1 for columns of alphabetic values
                                                                    count_var=0, hover_label=[],
                                                                    outputFileNameType='', #'pronouns_bar',
@@ -2165,9 +2167,11 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
                                                                    groupByList=[],
                                                                    plotList=[],
                                                                    chart_title_label='')
-                if chart_outputFilename != None:
-                    if len(chart_outputFilename) > 0:
-                        return_files.extend(chart_outputFilename)
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
     return return_files
 
 available_languages = [

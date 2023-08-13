@@ -1,5 +1,5 @@
 I/O configuration label,Path,Sort order,Item separator character(s),Date format,Date position
-Input txt filename with path,C:/Users/rfranzo/Documents/My Publications/My Papers/IN PROGRESS/NLP/Genoa notary project/Data/Giovanni scriba 3 docs.txt,,,,
-Input files directory,,,,,
+Input txt filename with path,,,,,
+Input files directory,C:/Users/rfranzo/Desktop/Test,,,,
 Input files secondary directory,,,,,
-Output files directory,C:/Program Files (x86)/NLP_backup/Output,,,,
+Output files directory,C:/Users/rfranzo/Documents/NLP output,,,,

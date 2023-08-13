@@ -56,7 +56,7 @@ from spacytextblob.spacytextblob import SpacyTextBlob
 # check stopwords
 # IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/stopwords','stopwords')
 # check punkt
-# IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
+IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
 
 from nltk.corpus import stopwords
 from nltk.corpus import wordnet
@@ -279,25 +279,29 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
                                            'Finished running document(s) statistics at', True, '', True, startTime,
                                            False)
 
-        # number of sentences in input
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+# number of sentences in input ---------------------------------------------------------------------
+
+        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Number of Sentences in Document'],
-                                                           chartTitle='Frequency of Number of Sentences',
+                                                           chart_title='Frequency of Number of Sentences',
                                                            count_var=0, hover_label=[],
                                                            outputFileNameType='sent',
-                                                           column_xAxis_label='Number of Sentences',
+                                                           column_xAxis_label='Number of sentences',
                                                            groupByList=['Document ID', 'Document'],
                                                            plotList=['Number of Sentences in Document'],
                                                            chart_title_label='Statistical Measures for Number of Sentences')
 
-        if chart_outputFilename != None:
-            # chart_outputFilename is a list [] must use extend
-            filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
-        # number of words in input
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+# number of words in input ---------------------------------------------------------------------
+
+        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Number of Words in Document'],
-                                                           chartTitle='Frequency of Number of Words',
+                                                           chart_title='Frequency of Number of Words',
                                                            count_var=0, hover_label=[],
                                                            outputFileNameType='word',
                                                            column_xAxis_label='Number of words',
@@ -305,14 +309,17 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
                                                            plotList=['Number of Words in Document'],
                                                            chart_title_label='Statistical Measures for Number of Words')
 
-        if chart_outputFilename != None:
-            # chart_outputFilename is a list [] must use extend
-            filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
-        # number of syllables in input
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+# number of syllables in input ---------------------------------------------------------------------
+
+        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Number of Syllables in Document'],
-                                                           chartTitle='Frequency of Number of Syllables',
+                                                           chart_title='Frequency of Number of Syllables',
                                                            count_var=0,
                                                            hover_label=[],
                                                            outputFileNameType='syll',
@@ -321,9 +328,11 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
                                                            plotList=['Number of Syllables in Document'],
                                                            chart_title_label='Statistical Measures for Number of Syllables')
 
-        if chart_outputFilename != None:
-            # chart_outputFilename is a list [] must use extend
-            filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
         # TODO
         #   we should create 10 classes of values by distance to the median of
@@ -407,17 +416,20 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
 
     filesToOpen.append(outputFilename)
 
-    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentence length (in words)'],
-                                                       chartTitle='Frequency of Sentence Lengths',
+                                                       chart_title='Frequency of Sentence Lengths',
                                                        count_var=1, hover_label=[],
                                                        outputFileNameType='Sent', #'line_bar',
                                                        column_xAxis_label='Sentence length',
                                                        groupByList=['Document ID', 'Document'],
                                                        plotList=['Sentence length (in words)'], chart_title_label='Statistical Measures for Sentence Lenghts')
 
-    if chart_outputFilename != None:
-        filesToOpen.extend(chart_outputFilename)
+    if outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
     return filesToOpen
 
@@ -482,17 +494,20 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running line length analysis at', True, '', True, startTime, True)
 
     # produce all charts
-    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Line length (in words)'],
-                                              chartTitle='Frequency Distribution of Line Length',
+                                              chart_title='Frequency Distribution of Line Length',
                                               count_var=1, hover_label=[],
                                               outputFileNameType='', #'line_bar', column_xAxis_label='Line length',
                                               column_xAxis_label='Line length',
-                                              groupByList=['Document ID','Document'],
+                                              groupByList=['Document ID', 'Document'],
                                               plotList=['Line length (in words)'], chart_title_label='Statistical Measures for Line Length')
 
-    if chart_outputFilename != None:
-        filesToOpen.extend(chart_outputFilename)
+    if outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
     return filesToOpen
 
@@ -748,20 +763,22 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumb
 
         if not errorFound:
             filesToOpen.append(csv_outputFilename)
-            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, csv_outputFilename,
+            outputFiles = charts_util.visualize_chart(createCharts, chartPackage, csv_outputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                               chartTitle='Frequency of ' + str(gram) + '-gram' + hapax_header,
+                                                               chart_title='Frequency of ' + str(gram) + '-gram' + hapax_header,
                                                                count_var=0, hover_label=[], #hover_label,
                                                                # outputFileNameType='n-grams_'+str(gram), # +'_'+ tail,
                                                                outputFileNameType='',
-                                                               column_xAxis_label='n-grams',
-                                                               groupByList=['Document ID','Document'],
+                                                               column_xAxis_label=str(gram) + '-gram',
+                                                               groupByList=['Document ID', 'Document'],
                                                                plotList=['Frequency in Document'],
                                                                chart_title_label='Statistical Measures for ' + str(gram) + '-gram')
-            if chart_outputFilename != None:
-                if len(chart_outputFilename) > 0:
-                    filesToOpen.extend(chart_outputFilename)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
         gram += 1
 
     return filesToOpen
@@ -1014,7 +1031,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                 chart_title_label = 'Frequency of subjectivity scores'
                 chart_title_byDocID = 'Frequency of subjectivity scores by Document'
                 chart_title_bySentID = 'Frequency of subjectivity scores by Sentence ID'
-                column_xAxis_label = 'Subjectivity Scores'
+                column_xAxis_label = 'Subjectivity scores'
 
                 d = nlp(s)
                 subjectivity_score = d._.blob.subjectivity
@@ -1033,7 +1050,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                     chart_title_label = 'Frequency of Short Words (<4 Characters)'
                     chart_title_byDocID='Frequency of Short Words by Document'
                     chart_title_bySentID ='Frequency of Short Words by Sentence Index'
-                    column_xAxis_label = 'Short Words (<4 Characters)'
+                    column_xAxis_label = 'Short words (<4 characters)'
 
                     # exclude numbers from list
                     if word and len(word) <= int(word_length) and word.isalpha():
@@ -1050,7 +1067,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                     chart_title_label = 'Frequency of Initial-Capital Words'
                     chart_title_byDocID ='Frequency of Initial-Capital Words by Document'
                     chart_title_bySentID ='Frequency of Initial-Capital Words by Sentence Index'
-                    column_xAxis_label = 'Initial-Capital Words'
+                    column_xAxis_label = 'Initial-capital words'
 
                     if word and word and word[0].isupper():
                         word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID,
@@ -1067,7 +1084,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                     chart_title_label = 'Frequency of Initial-Vowel Words'
                     chart_title_byDocID='Frequency of Initial-Vowel Words by Document'
                     chart_title_bySentID = 'Frequency of Initial-Vowel Words by Sentence Index'
-                    column_xAxis_label = 'Initial-Vowel Words'
+                    column_xAxis_label = 'Initial-vowel words'
                     if word and word and word[0].lower() in "aeiou" and word.isalpha():
                         word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
     # PUNCTUATION SYMBOLS --------------------------------------------------------------------------
@@ -1161,43 +1178,10 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
         # hapax and ngrams are processed above outside the for doc loop
         #    a for doc loop is already carried out in the function compute_character_word_ngrams
 
-    # To remove the words that are never repeated
-
-
-
-
-
-
-       # for sublist in word_list_temp:
-        #    if sublist[2] in rep_words_first:
-         #       if sublist[2] not in rep_words_last:
-         #           print(sublist[2])
-         #           word_list.remove(sublist)
-         #   elif sublist[2] in rep_words_last:
-         #       if sublist[2] not in rep_words_first:
-         #           print(sublist[2])
-          #          word_list.remove(sublist)
-
-
-
-
-            #if count_wrd == 1:
-            #    for sublist in word_list:
-            #
-            #        if el == sublist[2]:
-            #            word_list.remove(sublist)
-            #            break
-
-
-
-
-
-
-
-
-        #word_list.sort(key = lambda x: x[4])
-
-    #print(word_list[0])
+    if len(word_list)==0:
+        IO_user_interface_util.timed_alert(GUI_util.window,2000,"Empty file",
+                                               "The " + processType + " algorithm has not generated any output.")
+        return filesToOpen
 
     word_list.insert(0, header)
 
@@ -1206,26 +1190,9 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
     if not IO_error:
         filesToOpen.append(outputFilename)
 
-
-    #if 'Repetition: Words' in processType:
-     #   columns_to_be_plotted_xAxis=[]
-      #  columns_to_be_plotted_yAxis=['Word Count']
-      #  count_var=0
-      #  chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
-      #                                                      outputFilename, outputDir,
-       #                                                     columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
-       #                                                     chartTitle="Word Count for First and Last K (" + str(k) + ") Sentences (in order from left to right)",
-        #                                                    outputFileNameType='k_sent',
-         #                                                   column_xAxis_label='Word Count',
-          #                                                  count_var=count_var,
-           #                                                 hover_label=[],
-            #                                                groupByList=[], # ['Document ID', 'Document'],
-             #                                               plotList=[], #['Concreteness (Mean score)'],
-              #                                              chart_title_label='') #'Concreteness Statistics')
-
-    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                 columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                chartTitle=chart_title_label,
+                                                chart_title=chart_title_label,
                                                 count_var=1, hover_label=[],
                                                 outputFileNameType='',  # 'line_bar',
                                                 column_xAxis_label=column_xAxis_label,
@@ -1233,8 +1200,11 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                                                 plotList=['Frequency'],
                                                 chart_title_label='Statistical Measures for ' + column_xAxis_label)
 
-    if chart_outputFilename != None:
-        filesToOpen.extend(chart_outputFilename)
+    if outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
     # ngrams already display the started running... No need to duplicate
     if not 'unigrams' in processType:
@@ -1324,6 +1294,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
         return
 
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
+
     nFile = len(files)
     if nFile == 0:
         return
@@ -1565,19 +1536,21 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
 
                 # overall qualitative grade level (e.g., 4th)
                 hover_label = []
-                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Overall readability consensus'],
-                                                                   chartTitle='Text Readability\nFrequencies of Overall Readability Consensus',
+                                                                   chart_title='Text Readability\nFrequencies of Overall Readability Consensus',
                                                                    count_var=1, hover_label=[],
                                                                    outputFileNameType='cons',  # 'READ_bar',
                                                                    column_xAxis_label='Consensus readability level',
                                                                    groupByList=[],
                                                                    plotList=[],
                                                                    chart_title_label='')
-                if chart_outputFilename != None:
-                    if len(chart_outputFilename) > 0:
-                        filesToOpen.extend(chart_outputFilename)
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
                 # 0 (Flesch Reading Ease) has a different scale and 3 (SMOG) is often 0
                 #	do NOT plot on the same chart these two measures
@@ -1587,35 +1560,39 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                 # hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
                 hover_label = []
 
-                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                                   chartTitle='Text Readability\nFrequencies of 6 Readability Measures',
+                                                                   chart_title='Text Readability\nFrequencies of 6 Readability Measures',
                                                                    count_var=0, hover_label=[],
                                                                    outputFileNameType='',  # 'READ_bar',
                                                                    column_xAxis_label='Readability scores',
                                                                    groupByList=[],
                                                                    plotList=[],
                                                                    chart_title_label='')
-                if chart_outputFilename != None:
-                    if len(chart_outputFilename) > 0:
-                        filesToOpen.extend(chart_outputFilename)
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
                 # overall numeric grade level
                 hover_label = []
-                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Grade level'],
-                                                                   chartTitle='Text Readability\nFrequencies of Overall Grade Level',
+                                                                   chart_title='Text Readability\nFrequencies of Overall Grade Level',
                                                                    count_var=0, hover_label=[],
                                                                    outputFileNameType='grade',  # 'READ_bar',
                                                                    column_xAxis_label='Grade level',
-                                                                   groupByList=['Document ID','Document'],
+                                                                   groupByList=['Document ID', 'Document'],
                                                                    plotList=['Grade level'],
                                                                    chart_title_label='Statistical Measures for Readability Grade Level')
-                if chart_outputFilename != None:
-                    if len(chart_outputFilename) > 0:
-                        filesToOpen.extend(chart_outputFilename)
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Text Readability at',
                                        True, '', True, startTime)
@@ -1824,20 +1801,22 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
     filesToOpen.append(outputFilename)
     # TODO we need an X-axis to plot these scores against
     # , 'Frazier score'
-    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Yngve score'],
-                                                       chartTitle='Frequency Distribution of Complexity Scores\n(Yngve & Frazier)',
+                                                       chart_title='Frequency Distribution of Complexity Scores\n(Yngve & Frazier)',
                                                        count_var=0, # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                        hover_label=[],
                                                        outputFileNameType='', #'' #'complexity_bar',
                                                        column_xAxis_label='Complexity scores',
                                                        column_yAxis_label='Scores',
-                                                       groupByList=['Document ID','Document'],
+                                                       groupByList=['Document ID', 'Document'],
                                                        plotList=['Yngve score','Frazier score'],
                                                        chart_title_label='Statistical Measures for Complexity Scores')
-    if chart_outputFilename != None:
-        if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
+    if outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Sentence Complexity at', True, '', True, startTime)

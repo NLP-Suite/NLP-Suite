@@ -29,6 +29,12 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     extract_sentences_var,
     search_words_var):
 
+
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('_main.py', '_config.csv')
+
     filesToOpen = []  # Store all files that are to be opened once finished
 
     if (compute_sentence_length_var==False and
@@ -39,11 +45,6 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         extract_sentences_var==False):
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
             return
-
-    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-        config_filename = 'NLP_default_IO_config.csv'
-    else:
-        config_filename = scriptName.replace('_main.py', '_config.csv')
 
     if compute_sentence_length_var:
         filesToOpen = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir, config_filename, createCharts, chartPackage )
@@ -134,8 +135,8 @@ else: # full display
 GUI_size = str(GUI_width) + 'x' + str(GUI_height)
 
 GUI_label='Graphical User Interface (GUI) for Sentence Analysis'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

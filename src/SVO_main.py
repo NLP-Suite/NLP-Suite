@@ -60,6 +60,21 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         wordcloud_var,
         google_earth_var):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
+    # get the NLP package and language options
+    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    language_var = language
+    language_list = [language]
+
+    # get the date options from filename
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(
+        config_filename, config_input_output_numeric_options)
+    extract_date_from_text_var = 0
+
     # pull the widget names from the GUI since the scripts change the IO values
     inputFilename = GUI_util.inputFilename.get()
     inputDir = GUI_util.input_main_dir_path.get()
@@ -72,15 +87,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     filesToOpen = []
     files_to_open = []
 
-    # get the NLP package and language options
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
-    language_var = language
-    language_list = [language]
-
-    # get the date options from filename
-    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
-        config_filename, config_input_output_numeric_options)
-    extract_date_from_text_var = 0
+    # # get the NLP package and language options
+    # error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+    # language_var = language
+    # language_list = [language]
+    #
+    # # get the date options from filename
+    # filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(
+    #     config_filename, config_input_output_numeric_options)
+    # extract_date_from_text_var = 0
 
     if package_display_area_value == '':
         mb.showwarning(title='No setup for NLP package and language',
@@ -241,7 +256,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # annotator_params will run the annotator for SVO and run the gender and quote placing results inside the SVO output folder
         # gender_var and quote_var are used in CoreNLP_annotate to add gender and quote columns to the SVO csv output file
         # they can be passed independently, but it is useful to have both arguments
-        tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                    outputSVODir, openOutputFiles,
                                    createCharts,
                                    chartPackage,
@@ -257,10 +272,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                    gender_var = gender_var, gender_filename = gender_filename, gender_filename_html = gender_filename_html,
                                    quote_var = quote_var, quote_filename = quote_filename)
 
-        if len(tempOutputFiles)!=0:
-            SVO_filename=tempOutputFiles[0]
-            filesToOpen.extend(tempOutputFiles)
-            svo_result_list.append(tempOutputFiles[0])
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                SVO_filename = outputFiles
+                svo_result_list.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+                SVO_filename=outputFiles[0]
+                svo_result_list.append(outputFiles[0])
 
             # TODO MINO: create normalize_date subdir and outputs
             outputNormalizedDateDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
@@ -279,7 +299,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                            message='The Stanford CoreNLP OpenIE annotator is only available for English.')
             return
 
-        tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputSVODir, openOutputFiles,
                                                                            createCharts,
                                                                            chartPackage,
@@ -293,10 +313,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                            date_position_var=date_position_var,
                                                                            google_earth_var = google_earth_var,
                                                                            location_filename = location_filename)
-        if len(tempOutputFiles)!=0:
-            SVO_filename=tempOutputFiles[0]
-            filesToOpen.extend(tempOutputFiles)
-            svo_result_list.append(tempOutputFiles[0])
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+            SVO_filename = outputFiles
+            svo_result_list.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
+            SVO_filename = outputFiles[0]
+            svo_result_list.append(outputFiles[0])
 
 # removed from the options; way way too slow and with far better options now in spaCy and Stanza
 # SENNA _____________________________________________________
@@ -320,7 +344,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         document_length_var = 1
         limit_sentence_length_var = 1000
         annotator = 'SVO'
-        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputSVODir,
                                                     openOutputFiles,
                                                     createCharts, chartPackage,
@@ -334,11 +358,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                     google_earth_var=google_earth_var,
                                                     location_filename=location_filename)
 
-        if tempOutputFiles != None:
-            filesToOpen.extend(tempOutputFiles)
-            # the SVO output file is in tempOutputFiles[1] tempOutputFiles[0] contains the CoNLL parser output
-            SVO_filename = tempOutputFiles[1]
-            svo_result_list.append(tempOutputFiles[1])
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                SVO_filename = outputFiles
+                svo_result_list.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+                SVO_filename=outputFiles[1]
+                svo_result_list.append(outputFiles[1])
+            # the SVO output file is in outputFiles[1] outputFiles[0] contains the CoNLL parser output
 
 # Stanza _____________________________________________________
 
@@ -346,7 +375,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         document_length_var = 1
         limit_sentence_length_var = 1000
         annotator = ['SVO']
-        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputSVODir,
                                                       openOutputFiles,
                                                       createCharts, chartPackage,
@@ -360,11 +389,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       google_earth_var=google_earth_var,
                                                       location_filename=location_filename)
 
-        if tempOutputFiles != None:
-            filesToOpen.extend(tempOutputFiles)
-            # the SVO output file is in tempOutputFiles[1] tempOutputFiles[0] contains the CoNLL parser output
-            SVO_filename = tempOutputFiles[1]
-            svo_result_list.append(tempOutputFiles[1])
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                SVO_filename = outputFiles
+                svo_result_list.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+                # the SVO output file is in outputFiles[1] outputFiles[0] contains the CoNLL parser output
+                SVO_filename = outputFiles[1]
+                svo_result_list.append(outputFiles[1])
 
 # -------------------------------------------------------------------------------------------------------------------------------------
 # Lemmatizing and Filtering SVO for all packages
@@ -395,7 +429,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         # WordNet is only available for English
         if language_var=='English' and (lemmatize_subjects or lemmatize_verbs or lemmatize_objects):
-            # tempOutputFiles[0] is the filename with lemmatized SVO values
+            # outputFiles[0] is the filename with lemmatized SVO values
             # we want to aggregate with WordNet the verbs in column 'V'
             # check that SVO output file contains records
             nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(SVO_lemmatized_filename,
@@ -432,9 +466,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         else:
             reminders_util.checkReminder(scriptName, reminders_util.title_options_no_SVO_records,
                                          reminders_util.message_no_SVO_records, True)
-
-        # filesToOpen.extend(tempOutputFiles)
-        # svo_result_list.append(tempOutputFiles[0])
 
     reminders_util.checkReminder(scriptName, reminders_util.title_options_SVO_someone,
                                  reminders_util.message_SVO_someone, True)
@@ -641,30 +672,27 @@ GUI_label = 'Graphical User Interface (GUI) for Subject-Verb-Object (SVO) Extrac
 #   input secondary dir
 #   output dir
 config_input_output_numeric_options=[6,1,0,1]
-head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('main.py', 'config.csv')
 
+head, scriptName = os.path.split(os.path.basename(__file__))
+config_filename = 'NLP_default_IO_config.csv'
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
 # location of this src python file
 scriptPath = GUI_IO_util.scriptPath
-# one folder UP, the NLP folder
 NLPPath = GUI_IO_util.NLPPath
-# subdirectory of script directory where config files are saved
-# libPath = GUI_IO_util.libPath +os.sep+'wordLists'
 
 window = GUI_util.window
+
+GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
+
 inputFilename = GUI_util.inputFilename
 input_main_dir_path = GUI_util.input_main_dir_path
+
 
 subject_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
 verb_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-action-list.csv'
 object_filePath = GUI_IO_util.wordLists_libPath + os.sep + 'social-actor-list.csv'
 
-GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 def clear(e):
     coref_var.set(0)
@@ -879,7 +907,7 @@ subjects_checkbox = tk.Checkbutton(window, text='Filter', variable=filter_subjec
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.filter_S, y_multiplier_integer,
                                    subjects_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Filter subjects list excluding subjects that are not social actors.\nThe option for filtering subjects via WordNet for social actors is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
+                                   "Filter subjects list EXCLUDING subjects that are not social actors.\nThe option for filtering subjects via WordNet for social actors is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the subjects file
 openInputFile_subjects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
@@ -904,7 +932,7 @@ verbs_checkbox = tk.Checkbutton(window, text='Filter', variable=filter_verbs_var
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.filter_V, y_multiplier_integer,
                                    verbs_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Filter verbs list excluding verbs that are not social actions.\nThe option for filtering verbs for social actions via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
+                                   "Filter verbs list EXCLUDING verbs that are not social actions.\nThe option for filtering verbs for social actions via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the verbs file
 openInputFile_verbs_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
@@ -929,7 +957,7 @@ objects_checkbox = tk.Checkbutton(window, text='Filter', variable=filter_objects
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.filter_O, y_multiplier_integer,
                                    objects_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.SVO_2nd_column,
-                                   "Filter objects list excluding objects that are not social actors.\nThe option for filtering objects for social actors via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
+                                   "Filter objects list EXCLUDING objects that are not social actors.\nThe option for filtering objects for social actors via WordNet is available only for the English language.\nBut you can choose a different special-purpose file. Just tick the checkbox twice.")
 
 # setup a button to open Windows Explorer on the objects file
 openInputFile_objects_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
@@ -1235,6 +1263,16 @@ if error:
 error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
 
 check_NER(True)
+
+# # get the NLP package and language options
+# error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
+# language_var = language
+# language_list = [language]
+#
+# # get the date options from filename
+# filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(
+#     config_filename, config_input_output_numeric_options)
+# extract_date_from_text_var = 0
 
 # GUI_util.window.focus_force()
 

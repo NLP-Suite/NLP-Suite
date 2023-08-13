@@ -105,13 +105,15 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mo
         filesToOpen.append(outputFilename)
         import parsers_annotators_visualization_util
         kwargs = NER_dict
-        chart_outputFilename = parsers_annotators_visualization_util.parsers_annotators_visualization(
+        outputFiles = parsers_annotators_visualization_util.parsers_annotators_visualization(
             configFileName, inputFilename, inputDir, outputDir,
             outputFilename, ['NER'], kwargs, createCharts,
             chartPackage)
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
         IO_user_interface_util.timed_alert(window, 2000, 'Analysis end',
                                            'Finished running BERT NER annotator at',
@@ -338,9 +340,10 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
                                    keywords_var,
                                    compute_distances_var, top_words_var, BERT=True)
         if outputFiles!=None:
-            if len(outputFiles) > 0:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
                 filesToOpen.extend(outputFiles)
-
 
         # print(f'\nStarted computing word distances between top {top_words_var} words at {time.asctime( time.localtime(time.time()))}')
         # # find user-selected top most-frequent words
@@ -427,10 +430,10 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         # filesToOpen.append(dist_outputFilename)
         # filesToOpen.append(cos_sim_outputFilename)
         #
-        # chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, dist_outputFilename,
+        # outputFiles = charts_util.visualize_chart(createCharts, chartPackage, dist_outputFilename,
         #                                                    outputDir,
         #                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['n-dimensional Euclidean distance'],
-        #                                                    chartTitle='Frequency Distribution of n-dimensional Euclidean distances',
+        #                                                    chart_title='Frequency Distribution of n-dimensional Euclidean distances',
         #                                                    # count_var = 1 for columns of alphabetic values
         #                                                    count_var=0, hover_label=[],
         #                                                    outputFileNameType='nDim_dist', #'POS_bar',
@@ -439,14 +442,14 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         #                                                    plotList=[],
         #                                                    chart_title_label='')
         #
-        # if chart_outputFilename!=None:
+        # if outputFiles!=None:
         #     if len(chart_outputFilename) > 0:
         #         filesToOpen.extend(chart_outputFilename)
         #
-        # chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, cos_sim_outputFilename,
+        # outputFiles = charts_util.visualize_chart(createCharts, chartPackage, cos_sim_outputFilename,
         #                                                    outputDir,
         #                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Cosine similarity'],
-        #                                                    chartTitle='Frequency Distribution of cosine similarities',
+        #                                                    chart_title='Frequency Distribution of cosine similarities',
         #                                                    # count_var = 1 for columns of alphabetic values
         #                                                    count_var=0, hover_label=[],
         #                                                    outputFileNameType='coos_simil', #'POS_bar',
@@ -455,7 +458,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         #                                                    plotList=[],
         #                                                    chart_title_label='')
         #
-        # if chart_outputFilename!=None:
+        # if outputFiles!=None:
         #     if len(chart_outputFilename) > 0:
         #         filesToOpen.extend(chart_outputFilename)
 
@@ -592,10 +595,10 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode, cre
 
     if createCharts == True:
 
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Sentiment score'],
-                                                           chartTitle='Frequency of roBERTa Sentiment Scores',
+                                                           chart_title='Frequency of roBERTa Sentiment Scores',
                                                            count_var=0, hover_label=[],
                                                            outputFileNameType='roBERTa_scores',  # 'line_bar',
                                                            column_xAxis_label='Sentiment score',
@@ -604,14 +607,16 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode, cre
                                                            plotList=['Sentiment Score'],
                                                            chart_title_label='Measures of roBERTa Sentiment Scores')
 
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Sentiment label'],
-                                                           chartTitle='Frequency of roBERTa Sentiment Labels',
+                                                           chart_title='Frequency of roBERTa Sentiment Labels',
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='roBERTa_labels',  # 'line_bar',
                                                            column_xAxis_label='Sentiment label',
@@ -620,9 +625,11 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode, cre
                                                            plotList=['Sentiment label'],
                                                            chart_title_label='Measures of roBERTa Sentiment Labels')
 
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     return filesToOpen
 

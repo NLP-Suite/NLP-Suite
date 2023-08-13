@@ -361,24 +361,25 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename, config_input
     dirName = ''
     y_multiplier_integer=1
     # temp_config_filename is used to check the existence of the default or GUI specific config
-    if 'Default' in setup_IO_menu_var.get():
-        temp_config_filename='NLP_default_IO_config.csv'
-    else:
-        temp_config_filename=config_filename
+    # if 'Default' in setup_IO_menu_var.get():
+    #     temp_config_filename='NLP_default_IO_config.csv'
+    # else:
+    #     temp_config_filename=config_filename
     silent=False
     if IO_setup_display_brief:
-        date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missingIO = set_IO_brief_values(temp_config_filename,y_multiplier_integer)
+        date_hover_over_label, IO_setup_display_string, config_input_output_alphabetic_options, missingIO = \
+            set_IO_brief_values(config_filename,y_multiplier_integer)
 ###
     # the full options must always be displayed, even when the brief option is selected;
     #   the reason is that the IO widgets filename, inputDir, and outputDir are used in all GUIs
     if scriptName=='NLP_menu_main.py':
         missingIO='' # define the variable; the RUN button state is always 'normal' in menu_main
-    run_button_state, err_msg = activateRunButton(temp_config_filename,IO_setup_display_brief,scriptName, missingIO, silent)
+    run_button_state, err_msg = activateRunButton(config_filename,IO_setup_display_brief,scriptName, missingIO, silent)
     if run_button_state=="disabled":
         if setup_IO_menu_var.get():
-            err_msg=err_msg + "The RUN button is disabled until the expected I/O information is entered.\n\nClick on the 'Setup INPUT/OUTPUT configuration' button on top of this GUI to enter the required information. This, however, will affect all GUIs in the NLP Suite. You may wish to select the 'GUI-specific I/O configuration' instead of the current 'Default I/O configuration'."
+            err_msg=err_msg + "The RUN button is disabled until the expected I/O information is entered.\n\nFor your convenience the script will open the NLP_setup_IO_main GUI where you can setup the I/O configuration.\n\nAt anytime, you can also click on the 'Setup INPUT/OUTPUT configuration' button on top of this GUI to enter the required information. This, however, will affect all GUIs in the NLP Suite. You may wish to select the 'GUI-specific I/O configuration' instead of the current 'Default I/O configuration'."
         else:
-            err_msg=err_msg + "The RUN button is disabled until the expected I/O information is entered.\n\nClick on the 'Setup INPUT/OUTPUT configuration' button on top of this GUI to enter the required information."
+            err_msg=err_msg + "The RUN button is disabled until the expected I/O information is entered.\n\nFor your convenience the script will open the NLP_setup_IO_main GUI where you can setup the I/O configuration.\n\nAt anytime, you can also click on the 'Setup INPUT/OUTPUT configuration' button on top of this GUI to enter the required information."
     return err_msg
 
 def get_file_type(config_input_output_numeric_options):
@@ -479,8 +480,8 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missing
 #__________________________________________________________________________________________________________________
 
 def set_IO_brief_values(config_filename, y_multiplier_integer):
-    config_input_output_alphabetic_options, missingIO = config_util.read_config_file(config_filename,
-                                                                config_input_output_numeric_options)
+    config_input_output_alphabetic_options, missingIO, config_file_exists = \
+        config_util.read_config_file(config_filename, config_input_output_numeric_options)
     date_hover_over_label=''
 
 # checking inputFilename -----------------------------------------------------
@@ -582,7 +583,8 @@ def openConfigFile(setup_IO_menu_var, scriptName, config_filename):
     time.sleep(10) # wait 10 seconds to give enough time to save any changes to the csv config file
 
 def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptName, silent):
-    IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Setup INPUT/OUTPUT configuration',command=lambda: setup_IO_configuration_options(True,scriptName, silent))
+    IO_setup_button = tk.Button(window, width=GUI_IO_util.select_file_directory_button_width, text='Setup INPUT/OUTPUT configuration',
+                command=lambda: setup_IO_configuration_options(True, scriptName, silent))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
                                                    y_multiplier_integer,
@@ -783,11 +785,11 @@ def IO_config_setup_full (window, y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,
                                                        y_multiplier_integer, outputDir_lb)
 
-def setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent):
+def setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent):
     if 'Default' in setup_IO_menu_var.get(): # GUI_util.GUI_util.setup_IO_menu_var.get()
         temp_config_filename = 'NLP_default_IO_config.csv'
     else:
-        temp_config_filename=config_filename
+        temp_config_filename = scriptName.replace('main.py', 'config.csv')
     # 2 arguments are passed to python NLP_setup_IO_main.py:
     #   1. config_input_output_numeric_options (i.e., the list of GUI specific IO options setup in every _main [1,0,0,1])
     #       when passing a default config, this list will be checked in IO_setup_main against the GUI specific IO list
@@ -796,7 +798,8 @@ def setup_IO_configuration_options(IO_setup_display_brief,scriptName,silent):
     #   2. temp_config_filename, either as default or GUI-specific config
     # same call to NLP_setup_IO_main.py in NLP_menu_main
     if not 'NLP_setup_IO_main' in scriptName:
-        call("python NLP_setup_IO_main.py --config_option " + str(config_input_output_numeric_options).replace('[', '"').replace(']', '"') + " --config_filename " + temp_config_filename, shell=True)
+        call("python NLP_setup_IO_main.py --config_option " + str(config_input_output_numeric_options).replace('[', '"').replace(']', '"')
+             + " --config_filename " + temp_config_filename, shell=True)
         # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
         err_msg=display_IO_setup(window, IO_setup_display_brief, temp_config_filename, config_input_output_numeric_options, scriptName,silent)
 
@@ -850,6 +853,9 @@ def display_about_release_team_cite_buttons(scriptName):
                                                        GUI_IO_util.team_button_x_coordinate,
                                                        "Click on the button to access the How to Cite page of the NLP Suite GitHub repository.\nYou must be connected to the internet.")
 
+global IO_setup_config_SV
+IO_setup_config_SV = ''
+
 
 #__________________________________________________________________________________________________________________
 
@@ -859,6 +865,7 @@ def display_about_release_team_cite_buttons(scriptName):
 # silent is set to True in those GUIs where the selected default I/O configuration does not confirm to the expected input
 #   For example, you need a csv file but the default is a Directory, e.g., data_manager_main
 def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_display_brief,scriptName,silent=False):
+    # config_filename='NLP_default_IO_config.csv'
     import IO_libraries_util
     from PIL import Image, ImageTk
 
@@ -877,6 +884,24 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
         display_about_release_team_cite_buttons(scriptName)
 
     y_multiplier_integer=0
+
+    # global IO_setup_config_SV
+    # IO_setup_config_SV = ''
+    #
+    # def changed_setup_IO_config(*args):
+    #     global IO_setup_config_SV
+    #     config_filename = scriptName.replace('main.py', 'config.csv')
+    #
+    #     if setup_IO_menu_var.get() != IO_setup_config_SV:
+    #         IO_setup_config_SV = setup_IO_menu_var.get()
+    #         # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
+    #         err_msg=display_IO_setup(window, IO_setup_display_brief, config_filename,
+    #                          config_input_output_numeric_options, scriptName, silent)
+    #         if err_msg != '':
+    #             mb.showwarning(title='Warning', message=err_msg)
+
+    # setup_IO_menu_var.trace("w", changed_setup_IO_config)
+    # err_msg = changed_setup_IO_config()
 
     #__________________________________________________________________________________________________________________
     # INPUT options widgets
@@ -914,6 +939,8 @@ def GUI_top(config_input_output_numeric_options,config_filename, IO_setup_displa
         # The error message is displayed at the end of the script after the whole GUI has been displayed
         global noLicenceError
         noLicenceError=True
+
+
 # GUI bottom buttons widgets (ReadMe, Videos, TIPS, RUN, CLOSE)
 # silent is set to True in those GUIs where the selected default I/O configuration does not confirm to the expected input
 #   For example, you need a csv file but the default is a Directory, e.g., data_manager_main
@@ -981,6 +1008,8 @@ def setup_parsers_annotators(y_multiplier_integer, scriptName):
     setup_menu.set("Setup")
     return error, package, parsers, package_basics, language, package_display_area_value, package_display_area_value_new, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var
 
+
+
 # Watching video inside the NLP Suite but vlc and pafy gives loads of problems
 # def watch_video(*args):
 #     if videos_lookup == {''} or len(videos_dropdown_field.get()) == 'No videos available':
@@ -1013,6 +1042,25 @@ def watch_video(videos_lookup,scriptName):
         else:
             import webbrowser
             webbrowser.open(url)
+
+def changed_setup_IO_config(scriptName, IO_setup_display_brief, silent=False):
+    global IO_setup_config_SV
+    if setup_IO_menu_var.get() == 'Default I/O configuration' or setup_IO_menu_var.get() == '':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
+    if setup_IO_menu_var.get() != IO_setup_config_SV:
+        IO_setup_config_SV = setup_IO_menu_var.get()
+        # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
+        err_msg = display_IO_setup(window, IO_setup_display_brief, config_filename,
+                                   config_input_output_numeric_options, scriptName, silent)
+        if err_msg != '':
+            mb.showwarning(title='Warning', message=err_msg)
+            call("python NLP_setup_IO_main.py --config_option " + str(config_input_output_numeric_options).replace('[',
+                                                                                                                   '"').replace(
+                ']', '"')
+                 + " --config_filename " + config_filename, shell=True)
 
 def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
                videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName='', silent=False, package_display_area_value=''):
@@ -1283,19 +1331,19 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     else:
         temp_config_filename = config_filename
 
-    global IO_setup_config_SV
-    IO_setup_config_SV = ''
+    # global IO_setup_config_SV
+    # IO_setup_config_SV = ''
 
     ###
-    def changed_setup_IO_config(*args):
-        global IO_setup_config_SV
-        if setup_IO_menu_var.get() != IO_setup_config_SV:
-            IO_setup_config_SV = setup_IO_menu_var.get()
-            # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
-            err_msg=display_IO_setup(window, IO_setup_display_brief, config_filename,
-                             config_input_output_numeric_options, scriptName, silent)
-            if err_msg != '':
-                mb.showwarning(title='Warning', message=err_msg)
+    # def changed_setup_IO_config(*args):
+    #     global IO_setup_config_SV
+    #     if setup_IO_menu_var.get() != IO_setup_config_SV:
+    #         IO_setup_config_SV = setup_IO_menu_var.get()
+    #         # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
+    #         err_msg=display_IO_setup(window, IO_setup_display_brief, config_filename,
+    #                          config_input_output_numeric_options, scriptName, silent)
+    #         if err_msg != '':
+    #             mb.showwarning(title='Warning', message=err_msg)
 
     # avoid tracing again since tracing is already done at the bottom of those scripts
     if scriptName!='SVO_main.py' and scriptName!='parsers_annotators_main.py':
@@ -1323,8 +1371,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     if result != None:
         title_options = reminders_util.getReminders_list(scriptName)
 
-    setup_IO_menu_var.trace("w", changed_setup_IO_config)
-    err_msg=changed_setup_IO_config()
+    setup_IO_menu_var.trace("w", lambda x, y, z: changed_setup_IO_config(scriptName, IO_setup_display_brief))
+    # err_msg=changed_setup_IO_config(config_filename, scriptName, IO_setup_display_brief)
 
     # check_GitHub_release(local_release_version)
     window.protocol("WM_DELETE_WINDOW", _close_window)

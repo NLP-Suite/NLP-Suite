@@ -80,6 +80,11 @@ def run(inputFilename,inputDir, outputDir,
         SVO_var,
         open_SVO_GUI_var):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('_main.py', '_config.csv')
+
     filesToOpen=[]
     openOutputFilesSV=openOutputFiles
     openOutputFiles=False # to make sure files are only opened at the end of this multi-tool script
@@ -91,7 +96,7 @@ def run(inputFilename,inputDir, outputDir,
     language_list = [language]
 
     # get the date options from filename
-    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
@@ -104,11 +109,11 @@ def run(inputFilename,inputDir, outputDir,
     if (utf8_var==False and \
         ASCII_var == False and \
         corpus_statistics_var==False and \
-        ((wordclouds_var == False) and (wordclouds_var == True and open_wordclouds_GUI_var==False)) and \
-        ((topics_var==False) and (topics_var==True and topics_Mallet_var==False and topics_Gensim_var==False and open_tm_GUI_var==False)) and \
+        ((wordclouds_var == False) or (wordclouds_var == True and open_wordclouds_GUI_var==False)) and \
+        ((topics_var==False) or (topics_var==True and topics_Mallet_var==False and topics_Gensim_var==False and open_tm_GUI_var==False)) and \
         what_else_var==False and \
-        ((GIS_var == False) and (GIS_var == True and open_GIS_GUI_var == False)) and \
-        ((SVO_var == False) and (SVO_var == True and open_SVO_GUI_var == False))):
+        ((GIS_var == False) or (GIS_var == True and open_GIS_GUI_var == False)) and \
+        ((SVO_var == False) or (SVO_var == True and open_SVO_GUI_var == False))):
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
             return
 
@@ -124,7 +129,7 @@ def run(inputFilename,inputDir, outputDir,
         return
 
     if utf8_var==True:
-        file_checker_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles)
+        file_checker_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles,True)
 
     if ASCII_var==True:
         result=file_cleaner_util.convert_quotes(GUI_util.window,inputFilename, inputDir, outputDir, config_filename)
@@ -149,9 +154,11 @@ def run(inputFilename,inputDir, outputDir,
             output = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config_filename, False,
                                   createCharts, chartPackage,
                                   stopwords, lemmatize)
-            # append because output contains a list of files rather than a single file string
-            if output!=None:
-                filesToOpen.append(output)
+            if output != None:
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
         # compute ngrams ----------------------------------------------------
 
@@ -170,77 +177,115 @@ def run(inputFilename,inputDir, outputDir,
 
         if 'sentence length' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir, config_filename, createCharts, chartPackage)
-
-            if output!=None:
-                filesToOpen.append(output)
+            if output != None:
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
         # compute line length ----------------------------------------------------
 
         if 'line length' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir, False,
                                                    createCharts, chartPackage)
-            if output!=None:
-                filesToOpen.append(output)
+            if output != None:
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
         if '*' == corpus_statistics_options_menu_var:
             output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, config_filename,
                                                                    openOutputFiles, createCharts, chartPackage)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
         if '*' == corpus_statistics_options_menu_var:
             output = statistics_txt_util.process_words(window, config_filename,inputFilename, inputDir, outputDir, config_filename,
                                                                    openOutputFiles, createCharts, chartPackage)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
         if 'detection' in corpus_statistics_options_menu_var:
             output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, config_filename,
                                                                          openOutputFiles, createCharts, chartPackage)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
         if 'capital' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir, config_filename,
                                                                    openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
         if 'Short' in corpus_statistics_options_menu_var:
             output=statistics_txt_util.process_words(window,config_filename,inputFilename,inputDir, outputDir, config_filename,
                                                      openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
         if 'Vowel' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir, config_filename,
                                                        openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
         if 'Punctuation' in corpus_statistics_options_menu_var:
             output=statistics_txt_util.process_words(window,config_filename,inputFilename, inputDir, outputDir, config_filename,
                                                      openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
         if '*' == corpus_statistics_options_menu_var or 'Yule' in corpus_statistics_options_menu_var:
-            filesToOpen=statistics_txt_util.yule(window, inputFilename, inputDir, outputDir, config_filename)
+            output=statistics_txt_util.yule(window, inputFilename, inputDir, outputDir, config_filename)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
         if '*' == corpus_statistics_options_menu_var or 'Unusual' in corpus_statistics_options_menu_var:
             output=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, config_filename, False, createCharts, chartPackage)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
         if '*' == corpus_statistics_options_menu_var or 'Abstract' in corpus_statistics_options_menu_var:
             # ABSTRACT/CONCRETENESS _______________________________________________________
             output = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, config_filename, openOutputFiles, createCharts, chartPackage, processType='')
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
         if '*' in corpus_statistics_options_menu_var or 'complexity' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.compute_sentence_complexity(GUI_util.window, inputFilename,
                                                                      inputDir, outputDir, config_filename,
                                                                      openOutputFiles, createCharts, chartPackage)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
 
         # compute ngrams ----------------------------------------------------
@@ -262,7 +307,10 @@ def run(inputFilename,inputDir, outputDir,
                                                               openOutputFiles, createCharts, chartPackage,
                                                               bySentenceIndex_var)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
     # wordclouds --------------------------------------------------------------
 
@@ -287,7 +335,10 @@ def run(inputFilename,inputDir, outputDir,
             import wordclouds_util
             output=wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, config_filename, selectedImage="", use_contour_only=use_contour_only, prefer_horizontal=prefer_horizontal, font=font, max_words=max_words, lemmatize=lemmatize, exclude_stopwords=exclude_stopwords, exclude_punctuation=exclude_punctuation, lowercase=lowercase, differentPOS_differentColors=differentPOS_differentColors, differentColumns_differentColors=differentColumns_differentColors, csvField_color_list=csvField_color_list, doNotListIndividualFiles=doNotListIndividualFiles,openOutputFiles=False, collocation=collocation)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
 # topic modeling ---------------------------------------------------------------------------------
     if topics_var==True:
@@ -318,8 +369,11 @@ def run(inputFilename,inputDir, outputDir,
                     # run with all default values; do not run MALLET
                     output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir_TM, config_filename, num_topics=20,
                                                           remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createCharts=createCharts, chartPackage=chartPackage)
-                    if output!=None:
-                        filesToOpen.append(output)
+                    if output != None:
+                        if isinstance(output, str):
+                            filesToOpen.append(output)
+                        else:
+                            filesToOpen.extend(output)
 
         if topics_Mallet_var==True:
             if open_tm_GUI_var == True:
@@ -335,9 +389,12 @@ def run(inputFilename,inputDir, outputDir,
                     # running with default values
                     output = topic_modeling_mallet_util.run_MALLET(inputDir, outputDir_TM, openOutputFiles=openOutputFiles, createCharts=createCharts, chartPackage=chartPackage, OptimizeInterval=True, numTopics=20)
                     if output != None:
-                        filesToOpen.append(output)
+                        if isinstance(output, str):
+                            filesToOpen.append(output)
+                        else:
+                            filesToOpen.extend(output)
 
-#  what else ---------------------------------------------------------------------------------
+    #  what else ---------------------------------------------------------------------------------
     nouns_var=False
     verbs_var=False
     dialogues_var = False
@@ -413,8 +470,11 @@ def run(inputFilename,inputDir, outputDir,
                                 return
                             output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
                                                                         openOutputFiles, createCharts, chartPackage, language_var)
-                            if output!=None and output!='':
-                                filesToOpen.append(output)
+                            if output != None:
+                                if isinstance(output, str):
+                                    filesToOpen.append(output)
+                                else:
+                                    filesToOpen.extend(output)
 
                         if nouns_var == True:
                             inputFilename = files[1]  # Nouns but... double check
@@ -424,8 +484,11 @@ def run(inputFilename,inputDir, outputDir,
                                 return
                             output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
                                                                         openOutputFiles, createCharts, chartPackage, language_var)
-                            if output!=None and output!='':
-                                filesToOpen.append(output)
+                            if output != None:
+                                if isinstance(output, str):
+                                    filesToOpen.append(output)
+                                else:
+                                    filesToOpen.extend(output)
                     else:
                         if (what_else_var and what_else_menu_var == '*'):
                             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Missing WordNet',
@@ -443,7 +506,10 @@ def run(inputFilename,inputDir, outputDir,
                                                                       language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
         if people_organizations_var == True:
             annotator = 'NER'
@@ -457,7 +523,10 @@ def run(inputFilename,inputDir, outputDir,
                                                                       limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
         if gender_var == True:
             annotator = 'gender'
@@ -467,7 +536,10 @@ def run(inputFilename,inputDir, outputDir,
                                                                       annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
 
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
         if dialogues_var==True:
             annotator = 'quote'
@@ -477,7 +549,10 @@ def run(inputFilename,inputDir, outputDir,
                                                                       annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       single_quote_var = single_quote)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
         if times_var==True:
             annotator='normalized-date'
@@ -485,7 +560,10 @@ def run(inputFilename,inputDir, outputDir,
                         openOutputFiles, createCharts, chartPackage,
                         annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
         if locations_var == True:
             annotator = 'NER'
@@ -498,7 +576,10 @@ def run(inputFilename,inputDir, outputDir,
                                                                       language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
         if sentiments_var == True:
             annotator = 'sentiment'
@@ -509,7 +590,10 @@ def run(inputFilename,inputDir, outputDir,
                                                                       memory_var, export_json_var, document_length_var,
                                                                       limit_sentence_length_var)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 # GIS --------------------------------------------------------------------------------
     if GIS_var==True:
         if open_GIS_GUI_var == True:
@@ -554,7 +638,7 @@ def run(inputFilename,inputDir, outputDir,
 
         # locationColumnName where locations to be geocoded (or geocoded) are stored in the csv file;
         #   any changes to the columns will result in error
-        out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
+        output = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
                         NER_outputFilename,inputDir, outputDir_temp,
                         geocoder, GIS_package_var, createCharts, chartPackage,
                         datePresent,
@@ -568,11 +652,13 @@ def run(inputFilename,inputDir, outputDir,
                         [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
                         [1],[1]) # bold_var_list, italic_var_list)
 
-        if out_file != None:
-            if len(out_file) > 0:
-                filesToOpen.extend(out_file)
+        if output != None:
+            if isinstance(output, str):
+                filesToOpen.append(output)
+            else:
+                filesToOpen.extend(output)
 
-# SVO ------------------------------------------------------------------------------------
+    # SVO ------------------------------------------------------------------------------------
 
     if SVO_var==True:
         outputDir_SVO = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
@@ -621,7 +707,10 @@ def run(inputFilename,inputDir, outputDir,
                                                                                quote_var=quote_var,
                                                                                quote_filename=quote_filename)
             if output != None:
-                filesToOpen.append(output)
+                if isinstance(output, str):
+                    filesToOpen.append(output)
+                else:
+                    filesToOpen.extend(output)
 
     openOutputFiles=openOutputFilesSV
     if openOutputFiles == True:
@@ -643,11 +732,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              increment=1)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for a Sweeping View of Your Corpus (Single/Multiple Document(s)) - A Pipeline'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -731,8 +817,14 @@ ASCII_var.set(1)
 ASCII_checkbox = tk.Checkbutton(window, text='Convert non-ASCII apostrophes & quotes and % to percent', variable=ASCII_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,ASCII_checkbox)
 
+def activate_linguistic_features_options():
+    if corpus_statistics_var.get():
+        corpus_statistics_options_menu.configure(state='normal')
+    else:
+        corpus_statistics_options_menu.configure(state='disabled')
+
 corpus_statistics_var.set(1)
-corpus_statistics_checkbox = tk.Checkbutton(window,text="Document(s) linguistic features", variable=corpus_statistics_var, onvalue=1, offvalue=0)
+corpus_statistics_checkbox = tk.Checkbutton(window,text="Document(s) linguistic features", variable=corpus_statistics_var, onvalue=1, offvalue=0, command=lambda: activate_linguistic_features_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,corpus_statistics_checkbox,True)
 
 corpus_statistics_options_menu_var.set('*')
@@ -742,7 +834,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.whats_in_your_co
 corpus_statistics_options_menu = tk.OptionMenu(window, corpus_statistics_options_menu_var,
                                                '*',
                                                'Compute statistics (sentences, words, syllables)',
-                                               'Compute n-grams'
+                                               'Compute n-grams',
                                                'Compute Hapax legomena (once-occurring words)',
                                                'Compute sentence length',
                                                'Compute line length',
@@ -1017,7 +1109,7 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
     config_filename = 'NLP_default_IO_config.csv'
-filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(config_filename, config_input_output_numeric_options)
+filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(config_filename, config_input_output_numeric_options)
 extract_date_from_text_var=0
 
 GUI_util.window.mainloop()

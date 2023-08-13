@@ -245,10 +245,10 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         filesToOpen.append(outputCsvLocationsOnly)
         if datePresent == True:
             # always use the location_var variable passed by algorithms to make sure locations are then matched
-            locations.insert(0, ['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document',  'Date'])
+            locations.insert(0, ['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document',  'Date'])
         else:
             # always use the location_var variable passed by algorithms to make sure locations are then matched
-            locations.insert(0, ['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+            locations.insert(0, ['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
         IO_csv_util.list_to_csv(window, locations, outputCsvLocationsOnly)
 
     # the plot of locations frequencies is done in the CoreNLP_annotator_util
@@ -260,15 +260,15 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         filesToOpen.append(geocodedLocationsOutputFilename)
         if createCharts:
             if geocoder=='':
-                chartTitle = 'Frequency of Locations'
+                chart_title = 'Frequency of Locations'
             else:
-                chartTitle = 'Frequency of Locations Found by ' + geocoder
+                chart_title = 'Frequency of Locations Found by ' + geocoder
 
             #@@@
-            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
+            outputFiles = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
-                                                               chartTitle=chartTitle,
+                                                               chart_title=chart_title,
                                                                # count_var = 1 for columns of alphabetic values
                                                                count_var=1, hover_label=[],
                                                                outputFileNameType='', #'found',  # 'NER_tag_bar',
@@ -277,11 +277,11 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                                                                plotList=[],
                                                                chart_title_label='')
 
-            if chart_outputFilename != None:
-                if len(chart_outputFilename) > 0:
-                    os.rename(chart_outputFilename[0], chart_outputFilename[0].replace('LOCATIONS','LOCATIONS_found'))
-                    chart_outputFilename[0]=chart_outputFilename[0].replace('LOCATIONS','LOCATIONS_found')
-                    filesToOpen.extend(chart_outputFilename)
+            if outputFiles!=None:
+                if len(outputFiles) > 0:
+                    os.rename(outputFiles[0], outputFiles[0].replace('LOCATIONS','LOCATIONS_found'))
+                    outputFiles[0]=outputFiles[0].replace('LOCATIONS','LOCATIONS_found')
+                    filesToOpen.extend(outputFiles)
 
     # RF
     if not inputIsGeocoded:
@@ -291,10 +291,10 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                 filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
                 if createCharts:
                     #@@@
-                    chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
+                    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
                                                                            outputDir,
                                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
-                                                                           chartTitle='Frequency of Locations not Found by ' + geocoder,
+                                                                           chart_title='Frequency of Locations not Found by ' + geocoder,
                                                                            # count_var = 1 for columns of alphabetic values
                                                                            count_var=1, hover_label=[],
                                                                            outputFileNameType='', #'not-found',  # 'NER_tag_bar',
@@ -302,12 +302,12 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                                                                            groupByList=[],
                                                                            plotList=[],
                                                                            chart_title_label='')
-                    if chart_outputFilename != None:
-                        if len(chart_outputFilename) > 0:
-                            os.rename(chart_outputFilename[0],
-                                      chart_outputFilename[0].replace('LOCATIONS', 'LOCATIONS_not-found'))
-                            chart_outputFilename[0] = chart_outputFilename[0].replace('LOCATIONS', 'LOCATIONS_not-found')
-                            filesToOpen.extend(chart_outputFilename)
+                    if outputFiles!=None:
+                        if len(outputFiles) > 0:
+                            os.rename(outputFiles[0],
+                                      outputFiles[0].replace('LOCATIONS', 'LOCATIONS_not-found'))
+                            outputFiles[0] = outputFiles[0].replace('LOCATIONS', 'LOCATIONS_not-found')
+                            filesToOpen.extend(outputFiles)
 
                 # save to csv file and run visualization
                 # outputFilename= IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv','found-notFound')
@@ -322,10 +322,10 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                 # no need to display since the chart will contain the values
                 # return_files.append(outputFilename)
                 columns_to_be_plotted_yAxis=["Number of Distinct Locations Found by Geocoder ", "Number of Distinct Locations NOT Found by Geocoder"]
-                chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                                   chartTitle='Number of DISTINCT Locations Found and not Found by Geocoder',
+                                                                   chart_title='Number of DISTINCT Locations Found and not Found by Geocoder',
                                                                    # count_var = 1 for columns of alphabetic values
                                                                    count_var=0, hover_label=[],
                                                                    outputFileNameType='',
@@ -333,9 +333,11 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                                                                    groupByList=[],
                                                                    plotList=[],
                                                                    chart_title_label='')
-                if chart_outputFilename != None:
-                    if len(chart_outputFilename) > 0:
-                        filesToOpen.extend(chart_outputFilename)
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
     # ------------------------------------------------------------------------------------
     # map

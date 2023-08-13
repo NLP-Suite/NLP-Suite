@@ -97,10 +97,10 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_va
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=['Word']
             count_var=1
-            chart_outputFilename_rep_words = charts_util.visualize_chart(createCharts, chartPackage,
+            outputFiles = charts_util.visualize_chart(createCharts, chartPackage,
                                                             outputFilename_rep_words, outputDir,
                                                             columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
-                                                            chartTitle="Frequency Distribution of Repeated Words in first and last K (" + str(Begin_K_sent_var)+'-'+str(End_K_sent_var) +") sentences",
+                                                            chart_title="Frequency Distribution of Repeated Words in first and last K (" + str(Begin_K_sent_var)+'-'+str(End_K_sent_var) +") sentences",
                                                             outputFileNameType=str(Begin_K_sent_var)+'-'+str(End_K_sent_var)+'-sent_rep_words',
                                                             column_xAxis_label='Words',
                                                             count_var=count_var,
@@ -108,8 +108,11 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_va
                                                             groupByList=[], # ['Document ID', 'Document'],
                                                             plotList=[], #['Concreteness (Mean score)'],
                                                             chart_title_label='') #'Concreteness Statistics')
-            if chart_outputFilename_rep_words != None:
-                filesToOpen.extend(chart_outputFilename_rep_words)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
 
 
@@ -201,10 +204,10 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_va
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=['Nouns Proportion','Verbs Proportion','Adjectives Proportion','Proper-Nouns Proportion']
             count_var=0
-            chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage,
+            outputFiles = charts_util.visualize_chart(createCharts, chartPackage,
                                                             outputFilename, outputDir,
                                                             columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
-                                                            chartTitle="Frequency Distribution of Different Proportions in First and Last K (" + str(Begin_K_sent_var)+'-'+str(End_K_sent_var) + ") Sentences",
+                                                            chart_title="Frequency Distribution of Different Proportions in First and Last K (" + str(Begin_K_sent_var)+'-'+str(End_K_sent_var) + ") Sentences",
                                                             outputFileNameType='k_sent',
                                                             column_xAxis_label='Tags',
                                                             count_var=count_var,
@@ -212,8 +215,11 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_va
                                                             groupByList=[], # ['Document ID', 'Document'],
                                                             plotList=[], #['Concreteness (Mean score)'],
                                                             chart_title_label='') #'Concreteness Statistics')
-            if chart_outputFilename != None:
-                filesToOpen.extend(chart_outputFilename)
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
     return outputDir, filesToOpen
 

@@ -21,6 +21,11 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
         all_csv_stats,csv_field_freq,
         csv_list,hover_over_list, groupBy_list, script_to_run):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     filesToOpen=[]
 
     window=GUI_util.window
@@ -45,25 +50,33 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
         # tempOutputFiles=statistics_csv_util.compute_csv_column_statistics(window,inputFilename,outputDir,
         #                         groupBy_list, [], '', createCharts, chartPackage)
 
-        tempOutputFiles=statistics_csv_util.compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,openOutputFiles,createCharts, chartPackage)
-        if tempOutputFiles != None:
-            filesToOpen.append(tempOutputFiles)
+        outputFiles=statistics_csv_util.compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,openOutputFiles,createCharts, chartPackage)
+        if outputFiles:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if csv_field_freq:
         if len(csv_list) == 0:
             mb.showwarning(title='Warning', message='You have selected to compute the frequency of a csv file field but no field has been selected.\n\nPlease, select a csv file field and try again.')
             return
-        chart_outputFilename=statistics_csv_util.compute_csv_column_frequencies(window,
+        chart_title='Frequency Distribution of TEMPORARY TITLE!!!'
+        outputFiles=statistics_csv_util.compute_csv_column_frequencies(window,
                                                            inputFilename,
                                                            None,
                                                            outputDir,
                                                            openOutputFiles, createCharts, chartPackage,
                                                            csv_list,hover_over_list,groupBy_list,
                                                            False,
-                                                           'CSV','line',False)
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+                                                           chart_title=chart_title,
+                                                           fileNameType='CSV',chartType='line',pivot=False)
+
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -100,11 +113,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              increment=2)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for Statistical Analyses of csv Files'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

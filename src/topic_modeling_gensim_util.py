@@ -207,14 +207,14 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     # columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[[1, 3]]
     # hover_label = 'Topic_Keywords'
     # inputFilename = fileName
-    # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+    # outputFiles = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
     #                                           outputFileLabel='TM_Gensim',
     #                                           chart_type_list=["bar"],
     #                                           chart_title='Number of Documents per Topic',
     #                                           column_xAxis_label_var='Topic number',
     #                                           hover_info_column_list=hover_label)
     #
-    # if chart_outputFilename != None:
+    # if outputFiles!=None:
     #     filesToOpen.append(chart_outputFilename)
 
     # Find the most representative document for each topic
@@ -243,16 +243,18 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     columns_to_be_plotted_yAxis=[[1, 2]]
     hover_label = 'Topic keywords'
     inputFilename = fileName
-    chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+    outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                               outputFileLabel='TM_Gensim',
                                               chart_type_list=["bar"],
                                               chart_title='Percentage Contribution of Each Topic',
                                               column_xAxis_label_var='Topic number',
                                               hover_info_column_list=hover_label)
 
-    if chart_outputFilename != None:
-        if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
+    if outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
     # Topic distribution across documents
     # Number of Documents for Each Topic
@@ -310,14 +312,14 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     # columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[[1, 2]]
     # hover_label = 'Topic keywords'
     # inputFilename = fileName
-    # chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+    # outputFiles = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
     #                                           outputFileLabel='TM_Gensim',
     #                                           chart_type_list=["bar"],
     #                                           chart_title='Percentage Contribution of Each Topic',
     #                                           column_xAxis_label_var='Topic number',
     #                                           hover_info_column_list=hover_label)
     #
-    # if chart_outputFilename != None:
+    # if outputFiles!=None:
     #     filesToOpen.append(chart_outputFilename)
 
 

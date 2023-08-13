@@ -46,6 +46,7 @@ import os
 import time
 import argparse
 import tkinter.messagebox as mb
+IO_libraries_util.import_nltk_resource(GUI_util.window,'vader_lexicon','vader_lexicon')
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 # from nltk import tokenize
 # from nltk import word_tokenize
@@ -293,9 +294,9 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
     if createCharts == True:
         # VADER does not compute separate mean and median values
 
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment score'],
-                                                   chartTitle='Frequency of VADER Sentiment Scores',
+                                                   chart_title='Frequency of VADER Sentiment Scores',
                                                    count_var=0, hover_label=[],
                                                    outputFileNameType='VADER',  # 'line_bar',
                                                    column_xAxis_label='Sentiment label',
@@ -304,9 +305,11 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                                                    plotList=['Sentiment Score'],
                                                    chart_title_label='Measures of VADER Sentiment Scores')
 
-        if chart_outputFilename != None:
-            if len(chart_outputFilename)> 0:
-                filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     return filesToOpen
 

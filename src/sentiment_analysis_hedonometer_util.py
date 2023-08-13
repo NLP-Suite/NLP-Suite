@@ -281,9 +281,9 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
             columns_to_be_plotted_yAxis=['Sentiment score (Median)']
         # inputFilename = outputFilename
 
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                   chartTitle='Frequency of Hedonometer Sentiment Scores',
+                                                   chart_title='Frequency of Hedonometer Sentiment Scores',
                                                    count_var=0, hover_label=[],
                                                    outputFileNameType='Hedo',  # 'line_bar',
                                                    column_xAxis_label='Sentiment score',
@@ -292,9 +292,11 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                                                    plotList=['Sentiment Score'],
                                                    chart_title_label='Measures of Hedonometer Sentiment Scores')
 
-        if chart_outputFilename != None:
-            if len(chart_outputFilename)> 0:
-                filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     return filesToOpen
 

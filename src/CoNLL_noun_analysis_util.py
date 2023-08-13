@@ -169,7 +169,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0,1]]
         count_var=0
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, noun_postag_stats_file_name, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, noun_postag_stats_file_name, outputDir,
                                      outputFileLabel='Nouns_POS',
                                      chartPackage=chartPackage,
                                      chart_type_list=['bar'],
@@ -180,10 +180,13 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                      complete_sid=False)  # TODO to be changed
 
         # run_all returns a string; must use append
-        if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, noun_deprel_stats_file_name, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, noun_deprel_stats_file_name, outputDir,
 														 outputFileLabel='Nouns_DEPREL',
 														 chartPackage=chartPackage,
 														 chart_type_list=['bar'],
@@ -194,10 +197,13 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                                          complete_sid=False)  # TODO to be changed
 
         # run_all returns a string; must use append
-        if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, noun_ner_stats_file_name, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, noun_ner_stats_file_name, outputDir,
                                      outputFileLabel='Nouns_NER',
                                      chartPackage=chartPackage,
                                      chart_type_list=['bar'],
@@ -208,8 +214,11 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                      complete_sid=False)  # TODO to be changed
 
         # run_all returns a string; must use append
-        if chart_outputFilename != None:
-            filesToOpen.append(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running NOUN ANALYSES at', True, '', True, startTime, True)
 

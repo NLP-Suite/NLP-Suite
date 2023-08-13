@@ -33,6 +33,11 @@ import reminders_util
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         searchedCoNLLField, searchField_kw, postag, deprel, co_postag, co_deprel, Begin_K_sent_var, End_K_sent_var):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     global recordID_position, documentId_position, data, all_CoNLL_records
     recordID_position = 9 # NEW CoNLL_U
     documentId_position = 11 # NEW CoNLL_U
@@ -86,21 +91,21 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                   data,
                                                                   all_CoNLL_records,
                                                                   openOutputFiles, createCharts, chartPackage)
-            if outputFiles != None:
+            if outputFiles!=None:
                 filesToOpen.extend(outputFiles)
 
         if all_analyses.get() =='*' or all_analyses.get() =='Noun analysis':
             import CoNLL_noun_analysis_util
             outputFiles = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, all_CoNLL_records,
                                                               openOutputFiles, createCharts, chartPackage)
-            if outputFiles != None:
+            if outputFiles!=None:
                 filesToOpen.extend(outputFiles)
         if all_analyses.get() =='*' or all_analyses.get() =='Verb analysis':
             import CoNLL_verb_analysis_util
             outputFiles = CoNLL_verb_analysis_util.verb_stats(config_filename, inputFilename, outputDir, data, all_CoNLL_records,
                                                               openOutputFiles, createCharts, chartPackage)
 
-            if outputFiles != None:
+            if outputFiles!=None:
                 filesToOpen.extend(outputFiles)
 
         if all_analyses.get() =='*' or all_analyses.get() =='Function (junk/stop) words analysis':
@@ -108,7 +113,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             outputFiles = CoNLL_function_words_analysis_util.function_words_stats(inputFilename, outputDir, data,
                                                                                   all_CoNLL_records, openOutputFiles,
                                                                                   createCharts, chartPackage)
-            if outputFiles != None:
+            if outputFiles!=None:
                 filesToOpen.extend(outputFiles)
 
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
@@ -199,7 +204,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                        'Started running the CoNLL table K-sentences analyzer at',
                                                        True, '', True, '', False)
         temp_outputDir, outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_var, End_K_sent_var)
-        if outputFiles != None:
+        if outputFiles!=None:
             outputDir = temp_outputDir
             filesToOpen.extend(outputFiles)
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
@@ -240,11 +245,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                                                  increment=1)  # to be added for full display
 
 GUI_label = 'Graphical User Interface (GUI) for CoNLL Table Analyzer'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file
@@ -475,8 +477,16 @@ extract_fromCoNLL = tk.Button(window, text='Extract other fields/data from CoNLL
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
     y_multiplier_integer,
     extract_fromCoNLL,
-    False, False, False, False, 90, GUI_IO_util.read_button_x_coordinate,
+    True, False, False, False, 90, GUI_IO_util.read_button_x_coordinate,
     "Click on the button to open the Data manipulation GUI where you can use the function 'Extract field(s) from csv file' with several options for complex data queries of csv files (in this case, a CoNLL table).")
+
+compute_Ngrams = tk.Button(window, text='Compute Ngrams (Open GUI)', command = lambda: call("python style_analysis_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
+    y_multiplier_integer,
+    compute_Ngrams,
+    False, False, False, False, 90, GUI_IO_util.read_button_x_coordinate,
+    "Click on the button to open the Style analysis GUI where you can compute Ngrams, with various options for excluding puntuations, determinants/articles, stopwords.")
 
 all_analyses_checkbox.configure(state='normal')
 searchToken_checkbox.configure(state='normal')
@@ -582,7 +592,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox to analyze the CoNLL table for different types of clauses (e.g., noun-phrase, NP, verb phrase, VP), nouns (singular, plural, proper nouns, subject and object), verbs (modality, tense, voice), and functions words (or junk/stop words) (e.g., articles/determnants, auxiliaries, conjunctions, prepositions, pronouns)." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox to analyze the CoNLL table for different types of clauses (e.g., noun-phrase, NP, verb phrase, VP), nouns (singular, plural, proper nouns, subject and object), verbs (modality, tense, voice), and functions words (or junk/stop words) (e.g., articles/determinants, auxiliaries, conjunctions, prepositions, pronouns)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checbox to search the CoNLL table for a specific token/word. Enter the CASE SENSITIVE token (i.e., word) to be searched (enter * for any word). ENTER * TO SEARCH FOR ANY TOKEN/WORD. The EXACT word will be searched (e.g., if you enter 'American', any instances of 'America' will not be found).\n\nDO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN. n\nThe algorithm will search all the tokens related to this token in the CoNLL table. For example, if the the token wife is entered, the algorithm will search in each dependency tree (i.e., each sentence).\n\nIn OUTPUT the algorithm will produce several charts and a Gephi network graphs of the relationship between searched and co-occurring words." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -613,18 +623,19 @@ scriptName=os.path.basename(__file__)
 
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName,True)
 
-# if GUI_util.input_main_dir_path.get()!='' or (os.path.basename(GUI_util.inputFilename.get())[-4:] != ".csv"):
-#     GUI_util.run_button.configure(state='disabled')
-#     mb.showwarning(title='Input file',
-#                    message="The CoNLL Table Analyzer scripts require in input a csv CoNLL table created by the Stanford CoreNLP parser (not the spaCy and Stanza parsers).\n\nAll options and RUN button are disabled until the expected CoNLL file is seleted in input.\n\nPlease, select in input a CoNLL file created by the Stanford CoreNLP parser.")
-#     error = True
-#     activate_all_options()
-# else:
-#     GUI_util.run_button.configure(state='normal')
-#     if inputFilename.get()!='':
-#         if not CoNLL_util.check_CoNLL(inputFilename.get()):
-#             error = True
-#             activate_all_options()
+if GUI_util.input_main_dir_path.get()!='' or (os.path.basename(GUI_util.inputFilename.get())[-4:] != ".csv"):
+    GUI_util.run_button.configure(state='disabled')
+    mb.showwarning(title='Input file',
+                   message="The CoNLL Table Analyzer scripts require in input a csv CoNLL table created by the Stanford CoreNLP parser (not the spaCy and Stanza parsers).\n\nAll options and RUN button are disabled until the expected CoNLL file is seleted in input.\n\nPlease, select in input a CoNLL file created by the Stanford CoreNLP parser.")
+    error = True
+    activate_all_options()
+else:
+    GUI_util.run_button.configure(state='normal')
+    if inputFilename.get()!='':
+        if not CoNLL_util.check_CoNLL(inputFilename.get()):
+            error = True
+            activate_all_options()
+
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
 state = str(GUI_util.run_button['state'])

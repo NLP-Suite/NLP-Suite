@@ -132,7 +132,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
 
     # search in sentence  -----------------------------------------------
             if search_within_sentence:
-                chartTitle = 'Frequency Distribution of Search Words'
+                chart_title = 'Frequency Distribution of Search Words'
                 sentences_ = nlp(docText).sentences
                 sentences = [sentence.text for sentence in sentences_]
                 sentence_index = 0
@@ -181,7 +181,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     # search in document, regardless of sentence -----------------------------------------------
 
             else: # search in document, regardless of sentence
-                chartTitle = 'Frequency Distribution of Documents with Search Words'
+                chart_title = 'Frequency Distribution of Documents with Search Words'
                 if not case_sensitive:
                     docText = docText.lower()
                 # words_ = word_tokenize(docText)  # the list of sentences in corpus
@@ -284,9 +284,9 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     else:
         filesToOpen.append(outputFilename)
 
-        chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Search word(s)'],
-                                                           chartTitle=chartTitle,
+                                                           chart_title=chart_title,
                                                            count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                            hover_label=[],
                                                            outputFileNameType='',
@@ -294,9 +294,11 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                                            groupByList=[],
                                                            plotList=[],
                                                            chart_title_label='')
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     # copy all the files in the set to the output directory
     # if create_subcorpus_var:

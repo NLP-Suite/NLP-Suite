@@ -259,7 +259,7 @@ title_options_SA_VADER = ['VADER Sentiment Analysis system requirements']
 message_SA_VADER = 'VADER heavily relies on a number of NLTK libraries. If VADER fails to run, make sure that in command line you run\n\npython -m nltk.downloader all'
 
 title_options_VADER_MeanMedian = ['VADER Mean/Median']
-message_VADER_MeanMedian = 'VADER cannot compute sentence mean and median values because VADER computes a single compound value for the entire sentence.\n\nUse the hedonometer to compute separate values and word list of words found.'
+message_VADER_MeanMedian = 'VADER cannot compute sentence mean and median values because VADER computes a single compound value for the entire sentence.\n\nUse the hedonometer algorithm to compute separate values and word list of words found.'
 
 title_options_SA_SentiWordNet = ['SentiWordNet']
 message_SA_SentiWordNet = 'SentiWordNet does not compute sentence mean and median values nor does it display a list of the individual words found.'

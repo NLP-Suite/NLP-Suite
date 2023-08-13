@@ -34,6 +34,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         date_options,
         temporal_aggregation_var,
         viewer_options_list):
+
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     # print(date_options, temporal_aggregation_var, date_format, items_separator_var, date_position_var)
     filesToOpen = []
 
@@ -45,7 +51,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     error_flag = False
 
     # get the date options from filename
-    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
@@ -213,11 +219,9 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                                                  increment=1) # to be added for full display
 
 GUI_label = 'Graphical User Interface (GUI) for N-Grams and Word Co-Occurrences Viewer'
+config_filename = 'NLP_default_IO_config.csv'
+
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

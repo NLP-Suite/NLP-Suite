@@ -229,6 +229,7 @@ def check_windows_64_bits():
 
 # return errorFound, error_code, system_output
 def check_java_installation(script):
+    java_version=0
     Java_errorFound = False
     config_filename = ''
     reminder_title = ''
@@ -245,7 +246,7 @@ def check_java_installation(script):
 
     try:
         # if you are testing new Java install/uninstall ...
-        #   YOU MUST CLOSE PyCharm to run correctly the next command
+        #   YOU MUST CLOSE PyCharm to run correctly the next command subprocess.run
         java_output = subprocess.run(['java', '-version'], capture_output=True)
         error_code = java_output.returncode  # Should be 0 if java installed
         system_output = java_output.stderr.decode('utf-8')  # This is what you see when you run "java -version" in your command line
@@ -356,7 +357,7 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName, re
     if not 'Java' in programName: #!='Java (JDK)' Java (JDK)'
         if not os.path.isdir(software_dir):
             mb.showinfo(title='Warning',
-                    message='The installation directory\n\n' + software_dir + '\m\nfor the external software ' + programName +
+                    message='The installation directory\n\n' + software_dir + '\n\nfor the external software ' + programName +
                             ' stored in the config file NLP_setup_external_software_config.csv DOES NOT EXIST.\n\nYou may have moved it or renamed it.'
                             '\n\nPlease, reinstall ' + programName + '.')
         else:

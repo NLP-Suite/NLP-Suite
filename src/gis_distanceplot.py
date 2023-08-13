@@ -19,30 +19,30 @@ output_dir='C:\\Users\\rfranzo\\Documents\\My Publications\\My Papers\\IN PROGRE
 # inputFilenamename = 'NLP_GIS_la_stampa_groom_bride_waypoints_distance_gis_groom_res_gis_bride_res_ALL.csv'
 # inputFilenamename=os.path.join(input_dir,inputFilenamename)
 # # titles to be displayed in the chart
-# chartTitle1='Geodesic distance in miles (Groom\'s residence distance to bride\'s residence)'
-# chartTitle2='Geodesic distance in Km (Groom\'s residence distance to bride\'s residence)'
-# chartTitle3='Great circle distance in miles (Groom\'s residence distance to bride\'s residence)'
-# chartTitle4='Great circle distance in Km (Groom\'s residence distance to bride\'s residence)'
+# chart_title1='Geodesic distance in miles (Groom\'s residence distance to bride\'s residence)'
+# chart_title2='Geodesic distance in Km (Groom\'s residence distance to bride\'s residence)'
+# chart_title3='Great circle distance in miles (Groom\'s residence distance to bride\'s residence)'
+# chart_title4='Great circle distance in Km (Groom\'s residence distance to bride\'s residence)'
 
 # groom residence distance from Torino, all 22K records
 # comment/uncomment the next 7 lines
 # inputFilenamename = 'NLP_GIS_la_stampa_groom_bride_waypoints_distance_gis_groom_res_gis_bride_res_ALL.csv'
 # inputFilenamename=os.path.join(input_dir,inputFilenamename)
 # # titles to be displayed in the chart
-# chartTitle1='Geodesic distance in miles (Groom\'s residence distance to Turin)'
-# chartTitle2='Geodesic distance in Km (Groom\'s residence distance to Turin)'
-# chartTitle3='Great circle distance in miles (Groom\'s residence distance to Turin)'
-# chartTitle4='Great circle distance in Km (Groom\'s residence distance to Turin)'
+# chart_title1='Geodesic distance in miles (Groom\'s residence distance to Turin)'
+# chart_title2='Geodesic distance in Km (Groom\'s residence distance to Turin)'
+# chart_title3='Great circle distance in miles (Groom\'s residence distance to Turin)'
+# chart_title4='Great circle distance in Km (Groom\'s residence distance to Turin)'
 
 # bride residence distance from Torino, all 22K records
 # comment/uncomment the next 7 lines
 inputFilenamename = 'NLP_GIS_la_stampa_groom_bride_waypoints_distance_Torino_gis_bride_res_ALL.csv'
 inputFilenamename=os.path.join(input_dir,inputFilenamename)
 # titles to be displayed in the chart
-chartTitle1='Geodesic distance in miles (Bride\'s residence distance to Turin)'
-chartTitle2='Geodesic distance in Km (Bride\'s residence distance to Turin)'
-chartTitle3='Great circle distance in miles (Bride\'s residence distance to Turin)'
-chartTitle4='Great circle distance in Km (Bride\'s residence distance to Turin)'
+chart_title1='Geodesic distance in miles (Bride\'s residence distance to Turin)'
+chart_title2='Geodesic distance in Km (Bride\'s residence distance to Turin)'
+chart_title3='Great circle distance in miles (Bride\'s residence distance to Turin)'
+chart_title4='Great circle distance in Km (Bride\'s residence distance to Turin)'
 
 encodingValue='latin-1'
 
@@ -86,35 +86,35 @@ df[yAxisLabel] = pd.cut(df[column2], bins, labels=names)
 
 #plot miles with matplot lib -- bar chart
 df[yAxisLabel].value_counts().sort_index(ascending=True).plot(kind=chartType1)
-plt.title(chartTitle1)
+plt.title(chart_title1)
 plt.xlabel(xAxisLabel1)
 plt.ylabel(yAxisLabel)
-outFilename=os.path.join(output_dir,chartTitle1+'.png')
+outFilename=os.path.join(output_dir,chart_title1+'.png')
 plt.savefig(outFilename,dpi=100)
 plt.show()
 
 #plot km with matplot lib -- bar chart
 df[yAxisLabel].value_counts().sort_index(ascending=True).plot(kind=chartType1)
-plt.title(chartTitle2)
+plt.title(chart_title2)
 plt.xlabel(xAxisLabel2)
 plt.ylabel(yAxisLabel)
-outFilename=os.path.join(output_dir,chartTitle2+'.png')
+outFilename=os.path.join(output_dir,chart_title2+'.png')
 plt.savefig(outFilename,dpi=100)
 plt.show()
 
 #plot miles with matplot lib -- pie chart
 df[yAxisLabel].value_counts().plot(kind=chartType2, autopct='%1.1f%%')
-plt.title(chartTitle3)
+plt.title(chart_title3)
 plt.ylabel('')
-outFilename=os.path.join(output_dir,chartTitle3+'.png')
+outFilename=os.path.join(output_dir,chart_title3+'.png')
 plt.savefig(outFilename,dpi=100)
 plt.show()
 
 #plot km with matplot lib -- pie chart
 df[yAxisLabel].value_counts().plot(kind=chartType2, autopct='%1.1f%%')
-plt.title(chartTitle4)
+plt.title(chart_title4)
 plt.ylabel('')
-outFilename=os.path.join(output_dir,chartTitle4+'.png')
+outFilename=os.path.join(output_dir,chart_title4+'.png')
 plt.savefig(outFilename,dpi=100)
 plt.show()
 

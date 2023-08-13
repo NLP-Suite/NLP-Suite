@@ -77,10 +77,10 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
             filesToOpen.append(outputFile)
         # headers=IO_csv_util.get_csvfile_headers(outputFile)
         # columns_to_be_plotted_xAxis=IO_csv_util.get_headerValue_from_columnNumber(headers,column_number=0)
-        # chart_outputFilename = charts_util.visualize_chart(createCharts, chartPackage, outputFile,
+        # outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFile,
         #                                                    outputDir,
         #                                                    columns_to_be_plotted_xAxis=[columns_to_be_plotted_xAxis], columns_to_be_plotted_yAxis=['Frequency'],
-        #                                                    chartTitle='Frequency Distribution of Simplex Object\n' + str(simplex_data),
+        #                                                    chart_title='Frequency Distribution of Simplex Object\n' + str(simplex_data),
         #                                                    # count_var = 1 for columns of alphabetic values
         #                                                    count_var=1, hover_label=[],
         #                                                    outputFileNameType=str(simplex_data), #'gender_bar',
@@ -88,7 +88,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
         #                                                    groupByList=[],
         #                                                    plotList=[],
         #                                                    chart_title_label='')
-        # if chart_outputFilename!=None:
+        # if outputFiles!=None:
         #     if len(chart_outputFilename) > 0:
         #         filesToOpen.extend(chart_outputFilename)
 
@@ -236,8 +236,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                                                  increment=1)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for PC-ACE Tables Analyzer (via Pandas)'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

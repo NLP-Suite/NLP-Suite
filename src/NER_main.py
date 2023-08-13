@@ -26,6 +26,11 @@ import Stanza_util
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, config_filename,
         NER_package, NER_list):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     filesToOpen = []  # Store all files that are to be opened once finished
 
     # get the NLP package and language options
@@ -34,7 +39,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     language_list = [language]
 
     # get the date options from filename
-    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var = config_util.get_date_options(
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
@@ -55,21 +60,23 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         import BERT_util
         NER_list = BERT_util.NER_dict
         NER_entry_var.set(NER_list['NERs'])
-        tempOutputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, config_filename, '', createCharts, chartPackage)
-        if tempOutputFiles != None:
-            if len(tempOutputFiles) > 0:
-                filesToOpen.extend(tempOutputFiles) # append since a string is returned
+        outputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, config_filename, '', createCharts, chartPackage)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if '*' in NER_package or 'spaCy' in NER_package:
         document_length_var = 1
         limit_sentence_length_var = 1000
         NER_list = spaCy_util.NER_dict
         NER_entry_var.set(NER_list)
-        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
+        oputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
                                                     openOutputFiles,
                                                     createCharts, chartPackage,
-                                                    'NER', False,
+                                                    ['NER'], False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
                                                     NERs=NER_list,
@@ -78,14 +85,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                     items_separator_var=items_separator_var,
                                                     date_position_var=date_position_var)
 
-        if tempOutputFiles != None:
-            if len(tempOutputFiles) > 0:
-                filesToOpen.extend(tempOutputFiles)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if '*' in NER_package or 'CoreNLP' in NER_package:
-        if '*' in NER_package:
-            NER_list=Stanford_CoreNLP_util.NER_list
-        tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
+        NER_list = NER_entry_var.get() #Stanford_CoreNLP_util.NER_list
+        outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                             openOutputFiles, createCharts, chartPackage,
                                                             'NER',
                                                             language=language_var,
@@ -101,9 +109,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                             items_separator_var=items_separator_var,
                                                             date_position_var=date_position_var)
 
-        if tempOutputFiles!=None:
-            if len(tempOutputFiles)>0:
-                filesToOpen.extend(tempOutputFiles)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if '*' in NER_package or 'Stanza' in NER_package:
         document_length_var = 1
@@ -112,7 +122,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         NER_list = get_NER_list('Stanza',language)
         NER_entry_var.set(NER_list)
 
-        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputDir,
                                                       openOutputFiles,
                                                       createCharts, chartPackage,
@@ -125,9 +135,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       items_separator_var=items_separator_var,
                                                       date_position_var=date_position_var)
 
-        if tempOutputFiles!= None:
-            if len(tempOutputFiles) > 0:
-                filesToOpen.extend(tempOutputFiles) # extends since a list [] is returned
+        if outputFiles!= None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -165,6 +177,9 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              increment=2)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for NER (Named Entity Recognition) Extraction'
+config_filename = 'NLP_default_IO_config.csv'
+head, scriptName = os.path.split(os.path.basename(__file__))
+
 # The 4 values of config_option refer to:
 #   input file
         # 1 for CoNLL file
@@ -177,12 +192,6 @@ GUI_label='Graphical User Interface (GUI) for NER (Named Entity Recognition) Ext
 #   input secondary dir
 #   output dir
 config_input_output_numeric_options=[2,1,0,1]
-
-head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('main.py', 'config.csv')
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
 
@@ -312,12 +321,16 @@ def add_NER_tag(coming_from_add, coming_from_reset):
         NER_tag_var.set(' ')
         window.focus_force()
         return
-    # --- is used for CoreNLP for NER subsets (e.g., --- All spatial expressions)
-    if NER_tag_var.get() in NER_list and not('---' in NER_tag_var.get()):
-        mb.showwarning(title='Warning', message='The NER tag "'+ NER_tag_var.get() + '" is already in your selection list: '+ str(NER_entry_var.get()) + '.\n\nPlease, select another NER tag.')
-        window.focus_force()
-        return
+    # NER_tag_var is set everywhere to ' ' as opposed to ''
+    if NER_tag_var.get()!=' ':
+        # --- is used for CoreNLP for NER subsets (e.g., --- All spatial expressions)
+        if NER_tag_var.get() in NER_entry_var.get() and not('---' in NER_tag_var.get()):
+            mb.showwarning(title='Warning', message='The NER tag "'+ NER_tag_var.get() + '" is already in your selection NER list: '+ str(NER_entry_var.get()) + '.\n\nPlease, select another NER tag.')
+            window.focus_force()
+            return
+
     if NER_tag_var.get().strip():
+    # if NER_entry_var.get().strip():
         # NER_split_values_prefix_entry.configure(state="normal")
         # NER_split_values_suffix_entry.configure(state="normal")
         if not('---' in NER_tag_var.get()):

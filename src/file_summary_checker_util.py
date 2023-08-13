@@ -399,17 +399,18 @@ def main(CoreNLPDir, input_main_dir_path,input_secondary_dir_path,outputDir,open
                        'List of Summary Filenames for Type of Error',
                        'List of Summary Filenames for Type of Error']
         inputFilename = outputFilename
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel=fileType,
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   chart_title='Missing Character (File Summaries in Error)',
                                                   column_xAxis_label_var='Type of Error',
                                                   hover_info_column_list=hover_label)
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
-
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

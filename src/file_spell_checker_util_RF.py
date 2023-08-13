@@ -121,16 +121,18 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
         columns_to_be_plotted_yAxis=[[2,2]]
         hover_label=['']
         inputFilename=outputFilename
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                    outputFileLabel='NLTK_spell',
                                                    chart_type_list=["bar"],
                                                    chart_title='Misspelled/Unusual Words Frequency',
                                                    column_xAxis_label_var='',
                                                    hover_info_column_list=hover_label,
                                                    count_var=1)
-        if chart_outputFilename != None:
-            if len(chart_outputFilename) > 0:
-                filesToOpen.extend(chart_outputFilename)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -147,7 +149,7 @@ def generate_simple_csv(Dataframe):
     pass
 
 def createChart(inputFilename,outputDir,columns_to_be_plotted,hover_label):
-    chart_outputFilename = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
+    outputFiles = charts_util.run_all(columns_to_be_plotted, inputFilename, outputDir,
                                               outputFileLabel='Leven_spell',
                                               chart_type_list=["pie"],
                                               chart_title='Frequency of Potential Typos',
@@ -182,7 +184,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
         filesToOpen.append(outputFileName_complete)
 
         if createCharts:
-            chart_outputFilename = createChart(outputFileName_simple,outputDir, [[10, 10]], '')
+            outputFiles = createChart(outputFileName_simple,outputDir, [[10, 10]], '')
             if chart_outputFilename!="":
                 filesToOpen.append(chart_outputFilename)
 
@@ -443,11 +445,13 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
                                                'Finished running Word similarity at', True)
 
             if createCharts:
-                chart_outputFilename=createChart(outputFileName_simple, outputDir, [[10, 10]], '')
+                outputFiles=createChart(outputFileName_simple, outputDir, [[10, 10]], '')
 
-                if chart_outputFilename != None:
-                    if len(chart_outputFilename) > 0:
-                        filesToOpen.extend(chart_outputFilename)
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
@@ -852,7 +856,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
         chart_title='Frequency of Languages Detected by 3 Algorithms'
         hover_label=['LANGDETECT', 'SPACY', 'LANGID']
         inputFilename = outputFilenameCSV
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel='_bar_chart',
                                                   chart_type_list=["bar"],
                                                   chart_title=chart_title,

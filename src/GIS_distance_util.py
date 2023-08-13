@@ -47,45 +47,45 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
     yAxis = 'Geodesic distance in miles'
     xAxis = ''
     if baselineLocation=='':
-        chartTitle = 'Geodesic distance in miles'
+        chart_title = 'Geodesic distance in miles'
     else:
-        chartTitle = 'Geodesic distance in miles from ' + baselineLocation
+        chart_title = 'Geodesic distance in miles from ' + baselineLocation
     columns_to_be_plotted_xAxis=[]
     columns_to_be_plotted_yAxis=[[3,6]]
-    chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
+    outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                               '',
                                               chartPackage=chartPackage,
                                               chart_type_list=["bar"],
-                                              chart_title=chartTitle,
+                                              chart_title=chart_title,
                                               column_xAxis_label_var=xAxis,
                                               hover_info_column_list=[],
                                               count_var = 0,
                                               column_yAxis_label_var=yAxis)
 
-    xlsxFilename = chart_outputFilename.replace('.xlsx','_Geodesic.xlsx')
+    xlsxFilename = outputFiles.replace('.xlsx','_Geodesic.xlsx')
     try:
-        os.rename(chart_outputFilename,xlsxFilename)
+        os.rename(outputFiles,xlsxFilename)
     except:
         # the file already exists and must be removed
         if os.path.isfile(xlsxFilename):
             os.remove(xlsxFilename)
-        os.rename(chart_outputFilename,xlsxFilename)
+        os.rename(outputFiles,xlsxFilename)
     filesToOpen.append(xlsxFilename)
 
     xlsxFilename=distanceoutputFilename
     yAxis = 'Great circle distance in miles'
     xAxis = ''
     if baselineLocation=='':
-        chartTitle = 'Great circle distance in miles'
+        chart_title = 'Great circle distance in miles'
     else:
-        chartTitle = 'Great circle distance in miles from ' + baselineLocation
+        chart_title = 'Great circle distance in miles from ' + baselineLocation
     columns_to_be_plotted_xAxis=[]
     columns_to_be_plotted_yAxis=[[3,8]]
-    chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
+    outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                               '',
                                               chartPackage=chartPackage,
                                               chart_type_list=["bar"],
-                                              chart_title=chartTitle,
+                                              chart_title=chart_title,
                                               column_xAxis_label_var=xAxis,
                                               hover_info_column_list=[],
                                               count_var = 0,
@@ -97,7 +97,7 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
         # the file already exists and must be removed
         if os.path.isfile(xlsxFilename):
             os.remove(xlsxFilename)
-        os.rename(chart_outputFilename,xlsxFilename)
+        os.rename(outputFiles,xlsxFilename)
     filesToOpen.append(xlsxFilename)
     return filesToOpen
 

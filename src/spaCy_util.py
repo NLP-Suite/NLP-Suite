@@ -221,14 +221,18 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
         if filesToVisualize[j][-4:] == ".csv":
             file_df = pd.read_csv(filesToVisualize[j])
             if not file_df.empty:
+                # inputFilename is the original file
+                # outputFilename is the csv file containing the fields to be visualized
                 outputFilename = filesToVisualize[j]
-                chart_outputFilename = parsers_annotators_visualization_util.parsers_annotators_visualization(
+                outputFiles = parsers_annotators_visualization_util.parsers_annotators_visualization(
                     configFilename, inputFilename, inputDir, outputDir,
                     outputFilename, annotator_params, kwargs, createCharts,
                     chartPackage)
-                if chart_outputFilename!=None:
-                    if len(chart_outputFilename) > 0:
-                        filesToOpen.extend(chart_outputFilename)
+                if outputFiles!=None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
     return filesToOpen
 

@@ -35,6 +35,11 @@ def run(inputFilename,inputDir,outputDir,
         sentence_index_var,
         shape_of_stories_var):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('_main.py', '_config.csv')
+
     usefile = False
     usedir = False
     flag="" #used by CoreNLP
@@ -110,26 +115,10 @@ def run(inputFilename,inputDir,outputDir,
         mb.showwarning('Warning',
                 SA_algorithm_var.lstrip() + " is not available yet. Sorry!\n\nPlease, select another option and try again.")
         return
-    #ANEW _______________________________________________________
-    if anew_var==1 and (mean_var or median_var):
-        if language=='English':
-            if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'EnglishShortenedANEW.csv', 'sentiment_analysis_ANEW')==False:
-                return
-            if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_ANEW_util.py')==False:
-                return
-            startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running ANEW Sentiment Analysis at',
-                                                         True, '', True, '', False)
 
-            outputFiles=sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
+# NEURAL NETWORK APPROACHES -------------------------------------------------------------------
 
-            if len(outputFiles)>0:
-                filesToOpen.append(outputFiles)
-
-            IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running ANEW Sentiment Analysis at', True, '', True, startTime)
-        else:
-            IO_user_interface_util.timed_alert(GUI_util.window,4000,'Warning','The ANEW algorithm is available only for the English language.\n\nYour currently selected language is '+language+'.\n\nYou can change the language using the Setup dropdownmenu at the bottom of this GUI and selecting "Setup NLP package and corpus language."')
-
-# BERT ---------------------------------------------------------
+    # BERT ---------------------------------------------------------
 
     if BERT_var==1:
         import BERT_util
@@ -137,12 +126,16 @@ def run(inputFilename,inputDir,outputDir,
             model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
         else:
             model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
-        tempOutputFiles = BERT_util.sentiment_main(inputFilename, inputDir, outputDir, config_filename, mode, createCharts, chartPackage, model_path)
-        if tempOutputFiles == None:
+        outputFiles = BERT_util.sentiment_main(inputFilename, inputDir, outputDir, config_filename, mode, createCharts, chartPackage, model_path)
+        if outputFiles == None:
             return
-        if len(tempOutputFiles) > 0:
-            filesToOpen.extend(tempOutputFiles)
-            outputFilename = tempOutputFiles[0]
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+            outputFilename = outputFiles
+        else:
+            filesToOpen.extend(outputFiles)
+            outputFilename = outputFiles[0]
+
     # spaCy  _______________________________________________________
 
     if SA_algorithm_var == '*' or spaCy_var == 1 and (mean_var or median_var):
@@ -157,7 +150,7 @@ def run(inputFilename,inputDir,outputDir,
         document_length_var = 1
         limit_sentence_length_var = 1000
         import spaCy_util
-        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
                                                     openOutputFiles,
                                                     createCharts, chartPackage,
@@ -169,10 +162,13 @@ def run(inputFilename,inputDir,outputDir,
                                                     items_separator_var='',
                                                     date_position_var=0)
 
-        if tempOutputFiles != None:
-            if len(tempOutputFiles) > 0:
-                filesToOpen.extend(tempOutputFiles)
-                outputFilename = tempOutputFiles[0]
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                outputFilename = outputFiles
+            else:
+                filesToOpen.extend(outputFiles)
+                outputFilename = outputFiles[0]
 
 # Stanford CORENLP  _______________________________________________________
 
@@ -189,13 +185,18 @@ def run(inputFilename,inputDir,outputDir,
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
             return
         import Stanford_CoreNLP_util
-        outputFilename = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                           outputDir, openOutputFiles, createCharts, chartPackage,'sentiment', False,
                                                                           language_var, export_json_var,
                                                                           memory_var)
         # outputFilename=outputFilename[0] # annotators return a list and not a string
-        if SA_algorithm_var!='*' and len(outputFilename)>0:
-            filesToOpen.extend(outputFilename)
+        if SA_algorithm_var!='*' and outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                outputFilename = outputFiles
+            else:
+                filesToOpen.extend(outputFiles)
+                outputFilename = outputFiles[0]
 
 # Stanza  _______________________________________________________
 
@@ -209,7 +210,7 @@ def run(inputFilename,inputDir,outputDir,
         document_length_var = 1
         limit_sentence_length_var = 1000
         import Stanza_util
-        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputDir,
                                                       openOutputFiles,
                                                       createCharts, chartPackage,
@@ -221,12 +222,16 @@ def run(inputFilename,inputDir,outputDir,
                                                       items_separator_var='',
                                                       date_position_var=0)
 
-        if tempOutputFiles != None:
-            if len(tempOutputFiles) > 0:
-                filesToOpen.extend(tempOutputFiles)
-                outputFilename = tempOutputFiles[0]
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                outputFilename = outputFiles
+            else:
+                filesToOpen.extend(outputFiles)
+                outputFilename = outputFiles[0]
 
 # shape of stories ------------------------------------------------------------------------
+#   only for neural network approaches
 
     if (BERT_var or spaCy_var or CoreNLP_var or Stanza_var) and shape_of_stories_var:
         if IO_libraries_util.check_inputPythonJavaProgramFile('shape_of_stories_main.py') == False:
@@ -240,7 +245,7 @@ def run(inputFilename,inputDir,outputDir,
         #   with one sublist for each of the four types of IO configurations: filename, input main dir, input secondary dir, output dir
         # each sublist has four items: path, date format, date separator, date position
         # e.g., [['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/The Three Little Pigs.txt', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['C:\\Program Files (x86)\\NLP_backup\\Output', '', '', '']]
-        config_input_output_alphabetic_options_temp, missingIO = config_util.read_config_file(config_filename_temp, config_input_output_numeric_options_temp)
+        config_input_output_alphabetic_options_temp, missingIO, config_file_exists = config_util.read_config_file(config_filename_temp, config_input_output_numeric_options_temp)
         # add the sentiment csv file to the config file 'shape_of_stories_config.csv'
         config_input_output_alphabetic_options_temp[0][1]=outputFilename
         # add the output directory to the config file 'shape_of_stories_config.csv'
@@ -255,7 +260,38 @@ def run(inputFilename,inputDir,outputDir,
                                      True)
         call("python shape_of_stories_main.py", shell=True)
 
-#HEDONOMETER _______________________________________________________
+# DICTIONARY APPROACHES -------------------------------------------------------------------
+
+# ANEW _______________________________________________________
+
+    if anew_var == 1 and (mean_var or median_var):
+        if language == 'English':
+            if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'EnglishShortenedANEW.csv',
+                                     'sentiment_analysis_ANEW') == False:
+                return
+            if IO_libraries_util.check_inputPythonJavaProgramFile('sentiment_analysis_ANEW_util.py') == False:
+                return
+            startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                           'Started running ANEW Sentiment Analysis at',
+                                                           True, '', True, '', False)
+
+            outputFiles = sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, mode, createCharts,
+                                                            chartPackage)
+
+            if SA_algorithm_var!='*' and outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+            IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                               'Finished running ANEW Sentiment Analysis at', True, '', True,
+                                               startTime)
+        else:
+            IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Warning',
+                                               'The ANEW algorithm is available only for the English language.\n\nYour currently selected language is ' + language + '.\n\nYou can change the language using the Setup dropdownmenu at the bottom of this GUI and selecting "Setup NLP package and corpus language."')
+
+# HEDONOMETER _______________________________________________________
 
     if SA_algorithm_var=='*' or hedonometer_var==1 and (mean_var or median_var):
         if lib_util.checklibFile(GUI_IO_util.sentiment_libPath + os.sep + 'hedonometer.json', 'sentiment_analysis_hedonometer_util.py')==False:
@@ -269,8 +305,11 @@ def run(inputFilename,inputDir,outputDir,
 
             outputFiles = sentiment_analysis_hedonometer_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
-            if SA_algorithm_var!='*' and len(outputFiles)>0:
-                filesToOpen.append(outputFiles)
+            if SA_algorithm_var!='*' and outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
             IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running HEDONOMETER Sentiment Analysis at', True, '', True, startTime)
         else:
@@ -287,14 +326,18 @@ def run(inputFilename,inputDir,outputDir,
 
             outputFiles = sentiment_analysis_SentiWordNet_util.main(inputFilename, inputDir, outputDir, config_filename, mode, createCharts, chartPackage)
 
-            if SA_algorithm_var!='*' and len(outputFiles)>0:
-                filesToOpen.append(outputFiles)
+            if SA_algorithm_var!='*' and outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
 
             IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running SentiWordNet Sentiment Analysis at', True, '', True, startTime)
         else:
             IO_user_interface_util.timed_alert(GUI_util.window,4000,'Warning','The SentiWordNet algorithm is available only for the English language.\n\nYour currently selected language is '+language+'.\n\nYou can change the language using the Setup dropdownmenu at the bottom of this GUI and selecting "Setup NLP package and corpus language."')
 
-#VADER _______________________________________________________
+# VADER _______________________________________________________
 
     if SA_algorithm_var=='*' or vader_var==1 and (mean_var or median_var):
         if language=='English':
@@ -306,8 +349,11 @@ def run(inputFilename,inputDir,outputDir,
                                                          True, '', True, '', False)
             outputFiles = sentiment_analysis_VADER_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
 
-            if len(outputFiles)>0:
-                filesToOpen.append(outputFiles)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
             IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running VADER Sentiment Analysis at', True, '', True, startTime)
         else:
@@ -345,11 +391,8 @@ GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_di
                              increment=2)  # to be added for full display
 
 GUI_label='Graphical User Interface (GUI) for Sentiment Analysis'
+config_filename = 'NLP_default_IO_config.csv'
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('_main.py', '_config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

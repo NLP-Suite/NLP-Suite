@@ -20,7 +20,7 @@ def Extract(lst):
 
 def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, configFileName,
 								  createCharts, chartPackage, openOutputFiles=True,
-								  input_dictionary_file='', chartTitle=''):
+								  input_dictionary_file='', chart_title=''):
 	from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
 	filesToOpen = []
@@ -46,8 +46,8 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, co
 		dic_value = dic.iloc[:, 0].tolist()
 		dic_sec_value = dic.iloc[:, 1].tolist()
 		dic = [(dic_value[i], dic_sec_value[i]) for i in range(len(dic_value))]
-		if chartTitle == '':
-			chartTitle = "Dictionary value"
+		if chart_title == '':
+			chart_title = "Dictionary value"
 		documentID = 0
 		container = []
 		for file in file_list:
@@ -85,8 +85,8 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, co
 	else:
 		dic = pd.read_csv(input_dictionary_file, encoding='utf-8', on_bad_lines='skip')
 		dic_value = dic.iloc[:, 0].tolist()
-		if chartTitle == '':
-			chartTitle = "Dictionary value"
+		if chart_title == '':
+			chart_title = "Dictionary value"
 		documentID = 0
 		container = []
 		for file in file_list:
@@ -131,7 +131,7 @@ def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, co
 																 str(Sentence_ID) + '-Dict_value', 'chart', '', '', '',
 																 False, True)
 		filesToOpen.append(outputFilename)
-		charts_Excel_util.create_excel_chart(GUI_util.window, [DictionaryList], outputFilename, chartTitle, ["bar"])
+		charts_Excel_util.create_excel_chart(GUI_util.window, [DictionaryList], outputFilename, chart_title, ["bar"])
 
 	if openOutputFiles == True:
 		IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)

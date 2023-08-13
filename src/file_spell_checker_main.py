@@ -30,6 +30,11 @@ def run(inputFilename, inputDir, outputDir,
         checker_value_var,
         check_withinSubDir_spell_checker_var):
 
+    if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
+        config_filename = 'NLP_default_IO_config.csv'
+    else:
+        config_filename = scriptName.replace('main.py', 'config.csv')
+
     filesToOpen = []
     df_list = []
     df = []
@@ -152,11 +157,9 @@ else: # full display
 GUI_size = str(GUI_width) + 'x' + str(GUI_height)
 
 GUI_label = 'Graphical User Interface (GUI) for Spelling Checker and Word Similarity (Levenshtein\'s Word/Edit Distance)'
+config_filename = 'NLP_default_IO_config.csv'
+
 head, scriptName = os.path.split(os.path.basename(__file__))
-if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
-    config_filename = 'NLP_default_IO_config.csv'
-else:
-    config_filename = scriptName.replace('main.py', 'config.csv')
 
 # The 4 values of config_option refer to:
 #   input file

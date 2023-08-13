@@ -228,7 +228,7 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
         columns_to_be_plotted_yAxis=[[3, 3]]
         hover_label=''
         inputFilename = outputFilename
-        chart_outputFilename = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel='SSR_NER_home',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["pie"],
@@ -236,9 +236,11 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
                                                   column_xAxis_label_var='',
                                                   hover_info_column_list=hover_label,
                                                   count_var=1)
-    if chart_outputFilename != None:
-        if len(chart_outputFilename) > 0:
-            filesToOpen.extend(chart_outputFilename)
+    if outputFiles!=None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
