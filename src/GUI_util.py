@@ -181,7 +181,7 @@ def display_logo():
     # https://stackoverflow.com/questions/17504570/creating-simply-image-gallery-in-python-tkinter-pil
     image_list = [GUI_IO_util.image_libPath + os.sep + "logo.png"]
     for x in image_list:
-        img = ImageTk.PhotoImage(Image.open(x).resize((85,50), Image.ANTIALIAS))
+        img = ImageTk.PhotoImage(Image.open(x).resize((85,50), Image.LANCZOS)) #Image.ANTIALIAS))
         logo = tk.Label(window, width=85, height=50, anchor='nw', image=img)
         logo.image = img
         # the logo has some white spaces to its left; better cutting this so that it can be aligned with HELP? buttons

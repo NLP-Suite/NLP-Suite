@@ -235,7 +235,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
             return
     else:
         kmloutputFilename = GIS_geocode_util.process_geocoded_data_for_kml(window, locations, inputFilename, outputDir,
-                                      locationColumnName, encodingValue)
+                                      locationColumnName, encodingValue, geocoder)
         if kmloutputFilename!='':
             filesToOpen.append(kmloutputFilename)
 

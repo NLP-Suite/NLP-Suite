@@ -163,8 +163,11 @@ def google_geocode(geolocator, loc, region=None, timeout=10):
 #	 filenames are '' if empty, perhaps for a permission error
 
 def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
-			locationColumnName, encodingValue):
-	Google_API = GIS_pipeline_util.getGoogleAPIkey(window, 'Google-geocode-API_config.csv')
+			locationColumnName, encodingValue, geocoder):
+	if 'Google' in geocoder:
+		Google_API = GIS_pipeline_util.getGoogleAPIkey(window, 'Google-geocode-API_config.csv')
+		# if Google_API == '':
+		# 	return Google_API
 	kml = simplekml.Kml()
 	icon_url = GIS_Google_pin_util.pin_icon_select(['Pushpins'], ['red'])
 	kmloutputFilename = inputFilename.replace('.csv', '.kml')
@@ -196,7 +199,8 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 		print("   Processing geocoded record for kml file for Google Earth Pro " + str(index+1) + '/' + str(len(input_df.index)))
 		pnt = kml.newpoint(coords=[(lng, lat)])
 		pnt.style.iconstyle.icon.href = icon_url
-		pnt.name = location
+		# putting the location on the map creates a VERY busy map
+		# pnt.name = location
 		pnt.style.labelstyle.scale = '1'
 		# pnt.style.labelstyle.color = simplekml.Color.rgb(int(r_value), int(g_value), int(b_value))
 		# the code would break if no sentence is passed (e.g., from DB_PC-ACE)
@@ -206,7 +210,10 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 			pnt.description = "<i><b>Location</b></i>: " + location + "<br/><br/>" \
 																		   "<i><b>Description</b></i>: " + sentence + "<br/><br/>"
 		except:
-			pnt.description = "<i><b>Location</b></i>: " + location + "<br/><br/>"
+			try:
+				pnt.description = "<i><b>Location</b></i>: " + location + "<br/><br/>"
+			except:
+				print(location)
 		# TODO MINO GIS date option
 		if datePresent:
 			GGPdateFormat = convertToGGP(date)
@@ -456,6 +463,7 @@ def geocode(window,locations, inputFilename, outputDir,
 				print("   Processing geocoded record for kml file for Google Earth Pro")
 				pnt = kml.newpoint(coords=[(lng, lat)])
 				pnt.style.iconstyle.icon.href = icon_url
+				# putting the location on the map creates a VERY busy map
 				# pnt.name = itemToGeocode
 				pnt.style.labelstyle.scale = '1'
 				# pnt.style.labelstyle.color = simplekml.Color.rgb(int(r_value), int(g_value), int(b_value))
