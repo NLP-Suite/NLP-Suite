@@ -734,14 +734,4 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 check_IO_requirements(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get())
 
-state = str(GUI_util.run_button['state'])
-if state == 'disabled':
-    error = True
-    # check to see if there is a GUI-specific config file, i.e., a CoNLL table file, and set it to the setup_IO_menu_var
-    if os.path.isfile(os.path.join(GUI_IO_util.configPath, config_filename)):
-        GUI_util.setup_IO_menu_var.set('GUI-specific I/O configuration')
-        mb.showwarning(title='Warning',
-               message="Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
-        error = False
-
 GUI_util.window.mainloop()

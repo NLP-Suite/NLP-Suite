@@ -179,6 +179,7 @@ def display_logo():
 
     from PIL import Image, ImageTk
     # https://stackoverflow.com/questions/17504570/creating-simply-image-gallery-in-python-tkinter-pil
+    # https://stackoverflow.com/questions/76616042/attributeerror-module-pil-image-has-no-attribute-antialias
     image_list = [GUI_IO_util.image_libPath + os.sep + "logo.png"]
     for x in image_list:
         img = ImageTk.PhotoImage(Image.open(x).resize((85,50), Image.LANCZOS)) #Image.ANTIALIAS))
@@ -355,6 +356,7 @@ def selectDirectory_set_options(window, input_main_dir_path,output_dir_path,titl
         output_dir_path.set(directoryName)
 
 # configuration_type is the value displayed on the GUI: Default I/O configuration,GUI-specific I/O configuration
+# called every time the IO configuration is changed default or GUI-specific
 def display_IO_setup(window,IO_setup_display_brief,config_filename, config_input_output_numeric_options, scriptName,silent,*args):
     error = False
     fileName = ''
@@ -374,6 +376,7 @@ def display_IO_setup(window,IO_setup_display_brief,config_filename, config_input
     #   the reason is that the IO widgets filename, inputDir, and outputDir are used in all GUIs
     if scriptName=='NLP_menu_main.py':
         missingIO='' # define the variable; the RUN button state is always 'normal' in menu_main
+    # print(config_input_output_numeric_options, config_input_output_alphabetic_options)
     run_button_state, err_msg = activateRunButton(config_filename,IO_setup_display_brief,scriptName, missingIO, silent)
     if run_button_state=="disabled":
         if setup_IO_menu_var.get():
@@ -431,10 +434,13 @@ def check_fileName(scriptName, file_type, config_input_output_numeric_options):
 # config_filename can be either the Default value or the GUI_specific value depending on setup_IO_menu_var.get()
 def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missingIO, silent = False):
     global run_button_state, answer
+    run_button_state = 'normal'
+    if scriptName=='NLP_menu_main.py':
+        run_button_state='normal'
     err_msg =''
     silent=True
 # both input filename and dir are valid options but both are missing
-    run_button_state, answer = config_util.check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_display_brief, silent)
+#     run_button_state, answer = config_util.check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_display_brief, silent)
     if missingIO!='':
         # the message is displayed in check_missingIO
         # mb.showwarning(title='Warning',message='The RUN button is disabled until expected I/O options are entered.')
@@ -457,11 +463,15 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missing
                 file_type = get_file_type(config_input_output_numeric_options)
                 err_msg = check_fileName(scriptName, file_type, config_input_output_numeric_options)
 
-        if (config_input_output_numeric_options == [0,0,0,0]) or \
-                (config_input_output_numeric_options[0]==0 and inputFilename.get()!='') or \
+        if (config_input_output_numeric_options[0]==0 and inputFilename.get()!='') or \
                 (config_input_output_numeric_options[1]==0 and input_main_dir_path.get()!='') or \
                 err_msg!='':
-            # mb.showwarning(title='Warning',message=err_msg+'The RUN button is disabled until the expected I/O options are entered.')
+        # if (config_input_output_numeric_options == [0,0,0,0]) or \
+        #         (config_input_output_numeric_options[0]==0 and inputFilename.get()!='') or \
+        #         (config_input_output_numeric_options[1]==0 and input_main_dir_path.get()!='') or \
+        #         err_msg!='':
+            # 8/27 uncommented next line
+            mb.showwarning(title='Warning',message=err_msg+'The RUN button is disabled until the expected I/O options are entered.')
             run_button_state = 'disabled'
             # run_button.configure(state=run_button_state)
             # return run_button_state, answer
@@ -473,6 +483,21 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missing
         #     # mb.showwarning(title='Warning',message='The RUN button is disabled until expected I/O options are entered.')
         #     run_button_state='disabled'
     run_button.configure(state=run_button_state)
+    # if the run button is disabled, check if a GUI-specific config file is available that may contain the required information
+    if run_button_state=='disabled':
+        temp_config_filename = scriptName.replace('main.py', 'config.csv')
+        # check to see if there is a GUI-specific config file, i.e., a CoNLL table file, and set it to the setup_IO_menu_var
+        if os.path.isfile(os.path.join(GUI_IO_util.configPath, temp_config_filename)):
+            config_input_output_alphabetic_options, missingIO, config_file_exists = \
+                config_util.read_config_file(temp_config_filename, config_input_output_numeric_options)
+            if missingIO=='': # no point in switching to the GUI_specific config if IO values are missing
+                setup_IO_menu_var.set('GUI-specific I/O configuration')
+                run_button.configure(state='normal')
+                mb.showwarning(title='Warning',
+                       message="Since a GUI-specific " + temp_config_filename + " file is available, the I/O configuration will be automatically set to GUI-specific I/O configuration.")
+                # reset the IO display
+                set_IO_brief_values(temp_config_filename, y_multiplier_integer)
+
     return run_button_state, err_msg
 
 #GUI top widgets ALL IO widgets
@@ -785,6 +810,7 @@ def IO_config_setup_full (window, y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate,
                                                        y_multiplier_integer, outputDir_lb)
 
+# called when clicking on the IO configuration button
 def setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent):
     if 'Default' in setup_IO_menu_var.get(): # GUI_util.GUI_util.setup_IO_menu_var.get()
         temp_config_filename = 'NLP_default_IO_config.csv'
@@ -1043,6 +1069,7 @@ def watch_video(videos_lookup,scriptName):
             import webbrowser
             webbrowser.open(url)
 
+# called via setup_IO_menu_var.trace
 def changed_setup_IO_config(scriptName, IO_setup_display_brief, silent=False):
     global IO_setup_config_SV
     if setup_IO_menu_var.get() == 'Default I/O configuration' or setup_IO_menu_var.get() == '':
@@ -1331,26 +1358,17 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
     else:
         temp_config_filename = config_filename
 
-    # global IO_setup_config_SV
-    # IO_setup_config_SV = ''
-
-    ###
-    # def changed_setup_IO_config(*args):
-    #     global IO_setup_config_SV
-    #     if setup_IO_menu_var.get() != IO_setup_config_SV:
-    #         IO_setup_config_SV = setup_IO_menu_var.get()
-    #         # must pass config_filename and not temp_config_filename since the value is recomputed in display_IO_setup
-    #         err_msg=display_IO_setup(window, IO_setup_display_brief, config_filename,
-    #                          config_input_output_numeric_options, scriptName, silent)
-    #         if err_msg != '':
-    #             mb.showwarning(title='Warning', message=err_msg)
-
     # avoid tracing again since tracing is already done at the bottom of those scripts
     if scriptName!='SVO_main.py' and scriptName!='parsers_annotators_main.py':
         setup_menu.trace('w',lambda x, y, z: setup_parsers_annotators(y_multiplier_integer, scriptName))
 
-    # answer = True when you do not wish to enter I/O information on the IO_setup_main GUI
-    # run_button_state, answer = activateRunButton(temp_config_filename, IO_setup_display_brief, scriptName, silent)
+    # 8/27
+    missingIO=''
+    config_input_output_alphabetic_options, missingIO, config_file_exists = \
+        config_util.read_config_file(temp_config_filename, config_input_output_numeric_options)
+    # print(config_input_output_numeric_options, config_input_output_alphabetic_options)
+    run_button_state, err_msg = activateRunButton(temp_config_filename, IO_setup_display_brief, scriptName, missingIO, silent)
+
     # GUI front end is used for those GUIs that do not have any code to run functions but the buttons just open other GUIs
     if ('GUI front end' not in reminder_options):
         # recompute the options since a new line has been added

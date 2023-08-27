@@ -207,16 +207,26 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 		try:
 			label = 'Event'
 			sentence = input_df.at[index-1, label]
-			pnt.description = "<i><b>Location</b></i>: " + location + "<br/><br/>" \
-																		   "<i><b>Description</b></i>: " + sentence + "<br/><br/>"
+			description = "<i><b>Location</b></i>: " + location + "<br/><br/>"
+			if datePresent:
+				description = description + "\n" + "<i><b>Date</b></i>: " + date + "<br/><br/>"
+			description = description + "\n" + "<i><b>Description</b></i>: " + sentence + "<br/><br/>"
+			pnt.description = description
 		except:
 			try:
-				pnt.description = "<i><b>Location</b></i>: " + location + "<br/><br/>"
+				description = "<i><b>Location</b></i>: " + location + "<br/><br/>"
+				if datePresent:
+					description = description + "\n" + "<i><b>Date</b></i>: " + date + "<br/><br/>"
+				pnt.description = description
 			except:
 				print(location)
 		# TODO MINO GIS date option
 		if datePresent:
-			GGPdateFormat = convertToGGP(date)
+			try:
+				GGPdateFormat = convertToGGP(date)
+			except:
+				print(date)
+				GGPdateFormat = ''
 			pnt.timespan.begin = GGPdateFormat
 			pnt.timespan.end = GGPdateFormat
 

@@ -1100,15 +1100,23 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
                 continue
             if row[col1] not in graph.nodes:
                 if spellCol != "":
-                    node = Node(graph,row[col1],row[col1],
-                                r = random.randint(0,255),g = random.randint(0,255),b = random.randint(0,255),
-                                size = "50",
-                                spells = [
-                                    {"start":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))))
-                                        .strftime("%Y-%m-%d"),
-                                     "end":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))+1))
-                                        .strftime("%Y-%m-%d")}
-                                ])
+                    try:
+                        if isinstance(row[spellCol], str):
+                            date_format = '"%m-%d-%Y"'
+                            date_obj = datetime.datetime.strptime(row[spellCol], date_format)
+                            print('Date object', date_obj)
+                        node = Node(graph,row[col1],row[col1],
+                                    r = random.randint(0,255),g = random.randint(0,255),b = random.randint(0,255),
+                                    size = "50",
+                                    spells = [
+                                        {"start":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))))
+                                            .strftime("%Y-%m-%d"),
+                                         "end":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))+1))
+                                            .strftime("%Y-%m-%d")}
+                                    ])
+                    except:
+                        print('Error in row value (cannot convert string to float)',row[spellCol])
+                        continue
                 else:
                     node = Node(graph, row[col1], row[col1],
                                 r=random.randint(0, 255), g=random.randint(0, 255), b=random.randint(0, 255),
