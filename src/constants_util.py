@@ -565,7 +565,7 @@ NLP_Suite_data_file_handling_tools_menu = \
 'File matcher (file name)',\
 'File manager (List, Rename, Copy, Move, Delete, Count, Split)', 'PC-ACE database (via Pandas)', 'SQL database (via SQLite)'
 
-NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample data (ALL options GUI)', 'Search (ALL options GUI)',\
+NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample corpus (ALL options GUI)', 'Search (ALL options GUI)',\
 '', \
 '-----------------------------------------------------------------------------------------', \
 '', \
@@ -587,6 +587,7 @@ NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample d
 'Find non-related documents', \
 'Language detection', \
 'Newspaper article/Document titles', \
+'Sample corpus (ALL options GUI)', \
 'Similarities between documents (via Java Lucene)', \
 'Similarities between documents (via Python difflib)', \
 'Similarities between words (Levenshtein distance)', \

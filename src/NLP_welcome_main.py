@@ -121,6 +121,7 @@ def make_images(canvas_width, canvas_height):
         if canvas_width < image_width:
             image_height = image_height * canvas_width / image_width
             image_width = canvas_width
+        # https://stackoverflow.com/questions/76616042/attributeerror-module-pil-image-has-no-attribute-antialias
         image_obj = Image.open(image).resize((int(image_width), int(image_height)), Image.Resampling.LANCZOS)
         images.append(image_obj)
         photo_image = ImageTk.PhotoImage(image_obj)

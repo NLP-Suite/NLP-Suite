@@ -93,7 +93,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         if relations_menu_var=='Gephi':
             if len(csv_file_field_list)!=3:
                 mb.showwarning("Warning",
-                               "You must select three csv fields to be used in the computation of the network graph, in the order of node, edge, node (e.g., Subject, Verb, Object).\n\nIf you wish to create a dynamic network graph you can select a fourth field to be used as the dynamic index (e.g., Sentence ID).")
+                               "You must select three csv fields to be used in the computation of the network graph, in the order of node, edge, node (e.g., Subject, Verb, Object).\n\nIf you wish to create a dynamic network graph you can select a fourth field to be used as the dynamic index (e.g., Sentence ID or Date).")
                 return
             outputFiles = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
 
@@ -210,7 +210,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         elif time_var=='Yearly':
             yearly=True
 
-        outputFiles = charts_util.timeline(inputFilename, outputFilename, csv_field3_var, date_format_var, cumulative_var, monthly, yearly)
+        # import timechart_util
+        # outputFiles = charts_util.timeline(inputFilename, outputFilename, csv_field3_var, date_format_var, cumulative_var, monthly, yearly)
+        outputFiles = charts_util.timechart(inputFilename, outputFilename, csv_field3_var, date_format_var, cumulative_var, monthly, yearly)
 
     if outputFiles!=None:
         if isinstance(outputFiles, str):
@@ -941,12 +943,12 @@ videos_options='No videos available'
 
 TIPS_lookup = {
                "Network Graphs (via Gephi)": "TIPS_NLP_Gephi network graphs.pdf",
-               "Special visuals in Plotly":"TIPS_NLP_Plotly special visuals.pdf",
+               "Special visuals":"TIPS_NLP_Specialized visualization tools.pdf",
                "Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf",
                'Excel charts': 'TIPS_NLP_Excel Charts.pdf',
                'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf'}
 
-TIPS_options='Network Graphs (via Gephi)', 'Special visuals in Plotly', 'Word clouds', 'Excel charts', 'csv files - Problems & solutions'
+TIPS_options='Network Graphs (via Gephi)', 'Special visuals', 'Word clouds', 'Excel charts', 'csv files - Problems & solutions'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -966,7 +968,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the GUI you wish to open for specialized data visualization options: Excel charts, geographic maps in Google Earth Pro, HTML file, wordclouds.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize relations between a set of elements, 3 elements in a network graph in Gephi (e.g, SVO) or 2 or 3 elements in a Plotly Sankey graph (e.g., SVO or SO).\n\nOptions become available in succession.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the csv file field to be used to visualize relations.\n\nPress the + button to add another field until all 2 or 3 elements have been added (2 or 3 for Sankey, 3 for Gephi). For instance, in a Gephi graph, the first field selected is the first node; the second field selected is the edge; the third field selected is the second node.\n\nPress the 'Show' button to display the fields currently selected.\n\nPress the 'Reset' button to clear selected values and start fresh.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE GEPHI PLOT ONLY.\n\nFor Gephi network graphs, once all three fields (node 1, edge, node 2) have been selected, the widget 'csv file field for dynamic graph' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID) or ignore the option if the network should not be dynamic.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE GEPHI PLOT ONLY.\n\nFor Gephi network graphs, once all three fields (node 1, edge, node 2) have been selected, the widget 'csv file field for dynamic graph' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID or Date) or ignore the option if the network should not be dynamic.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SANKEY PLOT ONLY.\n\nPlease, using the dropdown menus, select the maximum number of values to be considered for each of the 2 or 3 elements in computing the interactive Sankey plot.\n\nWith too many values, Sankey plots become very messy.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in an interactive sunburst or treemap plot.\n\nThe algorithm applies to categorical data rather than numerical data.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the comma-separated labels/parts of a filename to be used to separate fields in the filename (e.g., in the filename, Harry Potter_Book1_1, Harry Potter_Book2_3, ..., Harry Potter_Book4_1... you could enter Book1, Book3 to sample the files to be used for visualization.\n\nThe number of distinct labels/parts of filename should be small (e.g., the 7 Harry Potter books).")
@@ -985,22 +987,6 @@ readMe_message="The Python 3 script provides access to different GUIs to be used
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
-state = str(GUI_util.run_button['state'])
-if state == 'disabled':
-    error = True
-else:
-    error = False
-
 activate_visualization_options()
-
-state = str(GUI_util.run_button['state'])
-if state == 'disabled':
-    error = True
-    # check to see if there is a GUI-specific config file, i.e., a CoNLL table file, and set it to the setup_IO_menu_var
-    if os.path.isfile(os.path.join(GUI_IO_util.configPath, config_filename)):
-        GUI_util.setup_IO_menu_var.set('GUI-specific I/O configuration')
-        mb.showwarning(title='Warning',
-               message="Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
-        error = False
 
 GUI_util.window.mainloop()

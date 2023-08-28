@@ -441,13 +441,5 @@ message = "Some of the algorithms behind this GUI rely on a specific NLP package
           + str(package_basics) + ".\n\nYou can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language."
 reminders_util.checkReminder(scriptName, title, message)
 
-state = str(GUI_util.run_button['state'])
-if state == 'disabled':
-    # check to see if there is a GUI-specific config file and set it to the setup_IO_menu_var
-    if os.path.isfile(os.path.join(GUI_IO_util.configPath, config_filename)):
-        GUI_util.setup_IO_menu_var.set('GUI-specific I/O configuration')
-        mb.showwarning(title='Warning',
-                       message="Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
-
 GUI_util.window.mainloop()
 

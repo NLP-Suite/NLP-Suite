@@ -1056,18 +1056,6 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 
 display_icon_image(pic_url, y_multiplier_integer_save)
 
-state = str(GUI_util.run_button['state'])
-if state == 'disabled':
-    error = True
-    # check to see if there is a GUI-specific config file, i.e., a CoNLL table file, and set it to the setup_IO_menu_var
-    if os.path.isfile(os.path.join(GUI_IO_util.configPath, config_filename)):
-        GUI_util.setup_IO_menu_var.set('GUI-specific I/O configuration')
-        mb.showwarning(title='Warning',
-                       message="Since a GUI-specific " + config_filename + " file is available, the I/O configuration has been automatically set to GUI-specific I/O configuration.")
-        changed_GIS_filename()
-        error = False
-
-
 GUI_util.window.mainloop()
 
 # 2 IO_configuration_menu + 50 400
