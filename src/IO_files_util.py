@@ -504,7 +504,16 @@ def getDateFromFileName(file_name, date_format='mm-dd-yyyy', sep='_', date_field
                 date = ''  # must assign or you get an error in return
                 dateStr = ''
     # TODO: see the modification, so we can get a date object and a string from the same method, DO keep this change for the file_classifier to work.
-    return date, dateStr, int(month), int(day), int(year)
+    int_month=''
+    int_day=''
+    int_year=''
+    if month!='':
+        int_month=int(month)
+    if day!='':
+        int_day=int(day)
+    if year != '':
+        int_year=int(year)
+    return date, dateStr, int_month, int_day, int_year
 
 def checkDirectory(path, message=True):
     if os.path.isdir(path):
