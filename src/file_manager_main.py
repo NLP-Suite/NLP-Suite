@@ -117,7 +117,7 @@ def run(inputDir, outputDir,
         outputFilename = "split_files_" + currentSubfolder + ".csv"
 
     if options==0:
-        mb.showwarning(title='File manager', message='No file manager option has been selected.\n\nPlease, select one option (rename, copy, move, delete) and try again.')
+        mb.showwarning(title='File manager', message='No file manager option has been selected.\n\nPlease, select one option (list, rename, copy, move, delete, count, split) and try again.')
         return
 
     if options==1:
@@ -368,7 +368,7 @@ def run(inputDir, outputDir,
             filesToOpen.append(os.path.join(outputDir,outputFilename))
             IO_files_util.OpenOutputFiles(GUI_util.window, True, filesToOpen, outputDir, scriptName)
     else:
-        mb.showwarning(title='File manager', message='No files ' + msg + operation + '.\n\nPlease, check the following information:\n  1. INPUT files directory;\n  2. selected file type (if you ticked the By file type option);\n  3. Include subdirectory option.')
+        mb.showwarning(title='File manager', message='No files ' + msg + operation + '.\n\nPlease, check the following information:\n  1. INPUT files directory;\n  2. selected file type (if you ticked the By file type option);\n  3. Include subdirectory option;\n  4. the correct "Number of items" when you are using the option "By number of embedded items".')
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
