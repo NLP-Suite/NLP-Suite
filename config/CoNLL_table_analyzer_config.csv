@@ -1,5 +1,0 @@
-I/O configuration label,Path,Sort order,Item separator character(s),Date format,Date position
-Input csv CoNLL filename with path,C:/Users/rfranzo/Documents/NLP output/parser (nn)_CoreNLP_The Three Little Pigs/NLP_CoreNLP_The Three Little Pigs_nn_CoNLL.csv,,,,
-Input files directory,,,,,
-Input files secondary directory,,,,,
-Output files directory,C:/Users/rfranzo/Documents/NLP output,,,,
