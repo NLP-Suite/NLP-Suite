@@ -1,5 +1,0 @@
-I/O configuration label,Path,Sort order,Item separator character(s),Date format,Date position
-Input csv filename with path,C:/Users/rfranzo/Documents/NLP output/SVO_spaCy_The Three Little Pigs/SVO/NLP_SVO_spaCy_The Three Little Pigs.csv,,,,
-Input files directory,,,,,
-Input files secondary directory,,,,,
-Output files directory,C:/Users/rfranzo/Documents/NLP output,,,,
