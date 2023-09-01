@@ -169,10 +169,10 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
 
     filesToOpen = []
     # check that the CoreNLPdir has been setup
-    CoreNLPDir, existing_software_config = IO_libraries_util.external_software_install('file_classifier_NER_util',
+    CoreNLPDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('file_classifier_NER_util',
                                                                                          'Stanford CoreNLP',
                                                                                          '',
-                                                                                         silent=False)
+                                                                                         silent=False, errorFound=False)
     if CoreNLPDir==None:
         return filesToOpen
 

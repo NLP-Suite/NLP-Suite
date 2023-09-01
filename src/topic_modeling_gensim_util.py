@@ -520,11 +520,11 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
 
     if run_Mallet==True:
         # check that the CoreNLPdir as been setup
-        MalletDir, existing_software_config = IO_libraries_util.external_software_install(
+        MalletDir, existing_software_config, errorFound = IO_libraries_util.external_software_install(
             'topic_modeling_gensim_util',
             'MALLET',
             '',
-            silent=False)
+            silent=False, errorFound=False)
 
         if MalletDir==None or MalletDir=='':
             return

@@ -56,10 +56,10 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
         return filesToOpen
 
     # check that external software WordNet has been setup
-    WordNetDir, existing_software_config = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
+    WordNetDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
                                                                                          'WordNet',
                                                                                          '',
-                                                                                         silent=False)
+                                                                                         silent=False, errorFound=False)
 
     if WordNetDir == None or WordNetDir == '':
         return filesToOpen
@@ -99,10 +99,10 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
     filesToOpen=[]
 
     # check that external software WordNet has been setup
-    WordNetDir, existing_software_config = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
+    WordNetDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
                                                                                          'WordNet',
                                                                                          '',
-                                                                                         silent=False)
+                                                                                         silent=False, errorFound=False)
 
     if WordNetDir == None or WordNetDir == '':
         return filesToOpen

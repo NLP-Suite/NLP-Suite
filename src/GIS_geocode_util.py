@@ -189,10 +189,23 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 		if datePresent:
 			date = row['Date']
 
-		# try:
-		# 	description = row['Description']
-		# except:
-		# 	print('No description field available')
+		if 'Date' in headers:
+			date = row['Date']
+
+		if 'Document' in headers:
+			document = row['Document']
+		else:
+			document = ''
+
+		if 'Summary' in headers:
+			summary = row['Summary']
+		else:
+			summary = ''
+
+		if 'Sentence' in headers:
+			sentence = row['Sentence']
+		else:
+			sentence = ''
 
 
 		# TODO MINO GIS create kml record
@@ -210,16 +223,15 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 			description = "<i><b>Location</b></i>: " + location + "<br/><br/>"
 			if datePresent:
 				description = description + "\n" + "<i><b>Date</b></i>: " + date + "<br/><br/>"
-			description = description + "\n" + "<i><b>Description</b></i>: " + sentence + "<br/><br/>"
+			if document != "":
+				description = description + "\n" + "<i><b>Document</b></i>: " + document + "<br/><br/>"
+			if summary !='':
+				description = description + "\n" + "<i><b>Summary</b></i>: " + summary + "<br/><br/>"
+			if sentence !='':
+				description = description + "\n" + "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>"
 			pnt.description = description
 		except:
-			try:
-				description = "<i><b>Location</b></i>: " + location + "<br/><br/>"
-				if datePresent:
-					description = description + "\n" + "<i><b>Date</b></i>: " + date + "<br/><br/>"
-				pnt.description = description
-			except:
-				print(location)
+			print(location)
 		# TODO MINO GIS date option
 		if datePresent:
 			try:
@@ -482,9 +494,17 @@ def geocode(window,locations, inputFilename, outputDir,
 					sentence = input_df.at[index-1, 'Sentence']
 					document = input_df.at[index - 1, 'Document']
 					document = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document))[1]
-					pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
-																				   "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>" + \
-									  "<i><b>Document</b></i>: " + document
+					if datePresent:
+						date = input_df.at[index - 1, 'Date']
+					if date!='':
+						pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
+									"<i><b>Date</b></i>: " + date + "<br/><br/>" + \
+									  "<i><b>Document</b></i>: " + document + \
+									  "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>"
+					else:
+						pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
+										  "<i><b>Document</b></i>: " + document + \
+										  "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>"
 				except:
 					pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>"
 				# TODO MINO GIS date option

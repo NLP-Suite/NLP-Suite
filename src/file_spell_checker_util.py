@@ -255,10 +255,10 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
     ner_dict = {}
 
     # check that the CoreNLPdir has been setup
-    CoreNLPDir, existing_software_config = IO_libraries_util.external_software_install('file_spell_checker_util',
+    CoreNLPDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('file_spell_checker_util',
                                                                                          'Stanford CoreNLP',
                                                                                          '',
-                                                                                         silent=False)
+                                                                                         silent=False, errorFound=False)
     if CoreNLPDir == None or CoreNLPDir=='':
         return
     if by_all_tokens_var:

@@ -80,7 +80,7 @@ openInputConfigFile_button = tk.Button(window, width=GUI_IO_util.open_file_direc
 x_coordinate_hover_over=1150
 y_multiplier_integer = GUI_IO_util.placeWidget(window,x_coordinate_hover_over, y_multiplier_integer,
                                                openInputConfigFile_button, False, False, True,False, 90,
-                                               x_coordinate_hover_over-120, "Open csv config file")
+                                               GUI_IO_util.open_reminders_x_coordinate, "Open csv config file 'NLP_setup_external_software_config.csv'\nYou can manually enter any external software installation path (in case of errors with the setup algorithm)")
 
 software_download_lb = tk.Label(window,text='Software DOWNLOAD from web')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
@@ -113,7 +113,7 @@ def openWebsite(software_website_url):
         webbrowser.open_new_tab(software_website_url)
     else:
         mb.showwarning(title='Warning',
-                   message='There is no external software website url.\n\nPlease, using the dropdown menu, select the "Software download" option you want to access and try again.')
+                   message='There is no external software website url.\n\nPlease, using the dropdown menu "Software DOWNLOAD" select the software website and try again.')
 
 openWebsite_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                  command=lambda: openWebsite(software_website_url_var.get()))
@@ -128,7 +128,7 @@ def openSoftwareDir(software_dir):
         IO_files_util.open_directory_removing_date_from_directory(window,software_dir,True)
     else:
         mb.showwarning(title='Warning',
-                message='There is no external software directory to open.\n\nPlease, using the dropdown menu, select the "Software install" option you want to access and try again.')
+                message='There is no external software directory to open.\n\nPlease, using the dropdown menu "Software INSTALL" select the software and try again.')
 
 software_install_lb = tk.Label(window,text='Software INSTALL on your machine')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
@@ -179,7 +179,7 @@ def activate_software_download(*args):
         # software_install_var contains the list of external software
         # this command will trigger install via .trace: software_install_var.set('')
         # get the installation directory and web download url
-        software_dir, software_url, missing_software = IO_libraries_util.get_external_software_dir(
+        software_dir, software_url, missing_software, error_found = IO_libraries_util.get_external_software_dir(
             scriptName, software_name,
             silent=True, only_check_missing=True, install_download='download')
         software_website_url_var.set(software_url)
@@ -226,8 +226,8 @@ def activate_software_install(download_install,software_dir, software_url, missi
         else:
             software_name = software_download_var.get()
         # get software_dir, software_url of software_name; must be silent to avoid message
-        software_dir, software_url, missing_software =IO_libraries_util.get_external_software_dir(scriptName, software_name,
-                                  silent=True, only_check_missing=True, install_download='install')
+        software_dir, software_url, missing_software, error_found = IO_libraries_util.get_external_software_dir(scriptName, software_name,
+                                  silent=False, only_check_missing=True, install_download='install')
         # software_install_dir_var.set(software_dir)
         software_website_url_var.set(software_url)
         software_website_display_area = software_url
@@ -244,10 +244,12 @@ def activate_software_install(download_install,software_dir, software_url, missi
         if software_install_var.get()!='':
             software_download_var.set('')
 
-        software_dir, existing_software_config = IO_libraries_util.external_software_install(scriptName,
+        # @@@
+        # 9/1
+        software_dir, existing_software_config, errorFound = IO_libraries_util.external_software_install(scriptName,
                                                                                              software_name,
                                                                                              existing_software_config,
-                                                                                             silent=False)
+                                                                                             silent=False, errorFound=error_found)
         if software_dir==None or software_dir=='':
             software_install_dir_var.set('Not installed')
             software_install_area = 'Not installed' # software_install_dir_var.get()
@@ -339,7 +341,9 @@ readMe_message = "This Python 3 script provides a front-end GUI (Graphical User 
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, True, scriptName, False)
 
-software_dir, software_url, missing_external_software = IO_libraries_util.get_external_software_dir(scriptName, software_download_var.get(), silent=False, only_check_missing=True)
+# when looping through all the software rows in the NLP_setup_external_software_config.csv config
+#   the algorithm should be silent and just give a summary at the end
+software_dir, software_url, missing_external_software, error_found = IO_libraries_util.get_external_software_dir(scriptName, software_download_var.get(), silent=True, only_check_missing=True)
 if missing_external_software == '':
     missing_software_var.set('All external software has been installed')
     mb.showwarning(title='Warning',message='All external software has been installed.')
@@ -351,14 +355,16 @@ else:
     missing_software_var.set(temp_missing_external_software)
     if not os.path.isfile(config_filename):
         mb.showwarning(title='External software installation error',
-           message='The following external software needs to be downloaded/installed or some of the algorithms that require the software listed below will not run.\n\n' + str(missing_external_software) + \
-                   '\n\nPlease, using the dropdown menu "Software download", or "Software install" if you have already downloaded the listed software, and download/install the listed software.' \
-                    '\n\nYou can download/install all external software separately, downloading all listed software first, ' \
+           message='The following external software needs to be downloaded and/or installed or some of the algorithms that require the software listed below will not run.\n\n' + str(missing_external_software) + \
+                   '\nDOWNLOAD means to open the sotware website to get a copy of the software on your machine (you must be connected to the internet);' \
+                   '\nINSTALL means to select the folder where you downloaded the software so that the NLP Suite knows where to find it.' \
+                   '\n\nPlease, using the dropdown menu "Software DOWNLOAD", or "Software INSTALL" if you have already downloaded the listed software, and download or install the listed software.' \
+                    '\n\nYou can download and/or install all external software separately, downloading all listed software first, ' \
                     'and later install all downloaded software (advised if internet connection time is a premium).' \
-                    '\n\nYou can also download/install a specific external software required to run a specific algorithm (not all external software is required at all times).')
+                    '\n\nYou can also download and/or install a specific external software required to run a specific algorithm (not all external software is required at all times).')
     else:
         mb.showwarning(title='External software installation error',
-                   message='The following external software have not been found or have been found with errors (e.g., you may have moved or renamed the Stanford CoreNLP directory) in the config file NLP_setup_external_software_config.csv:\n\n' + str(missing_external_software) + '\n\nSome of the algorithms that require the software listed above will not run.\n\nPlease, using the dropdown menu Software download & install, select the software to download/install.')
+                   message='The following external software have not been found or have been found with errors (e.g., you may have moved or renamed the Stanford CoreNLP directory) in the config file NLP_setup_external_software_config.csv:\n\n' + str(missing_external_software) + '\n\nSome of the algorithms that require the software listed above will not run.\n\nPlease, using the dropdown menu "Software DOWNLOAD" and "Software INSTALL", select the software to download and/or install.')
     answer = tk.messagebox.askyesno("Warning", 'Do you want to watch the video on how to setup external software?')
     if answer:
         GUI_util.videos_dropdown_field.set('Setup external software')

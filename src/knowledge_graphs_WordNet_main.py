@@ -54,10 +54,10 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
     language_var='English' # WordNet works only for English language
 
     # check that the WordNet has been setup
-    WordNetDir, existing_software_config = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
+    WordNetDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('knowledge_graphs_WordNet_util',
                                                                                          'WordNet',
                                                                                          '',
-                                                                                         silent=False)
+                                                                                         silent=False, errorFound=False)
 
     if WordNetDir == None:
         return

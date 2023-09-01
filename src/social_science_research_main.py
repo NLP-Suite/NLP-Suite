@@ -275,10 +275,10 @@ def run(inputDir, input_secondary_dir_path, outputDir, openOutputFiles, createCh
     global filesToOpen
     filesToOpen = []
     # check that the CoreNLPdir has been setup
-    CoreNLPdir, existing_software_config = IO_libraries_util.external_software_install('social_science_research_main',
+    CoreNLPdir, existing_software_config, errorFound = IO_libraries_util.external_software_install('social_science_research_main',
                                                                                          'Stanford CoreNLP',
                                                                                          '',
-                                                                                         silent=False)
+                                                                                         silent=False, errorFound=False)
     if CoreNLPdir==None or CoreNLPdir=='':
         return filesToOpen
 

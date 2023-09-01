@@ -114,10 +114,10 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
 
     software=config_filename.replace('_config.csv','')
     # check that the GEP has been setup
-    GoogleEarthProDir, existing_software_config = IO_libraries_util.external_software_install('GIS_pipeline_util',
+    GoogleEarthProDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('GIS_pipeline_util',
                                                                                          'Google Earth Pro',
                                                                                          '',
-                                                                                         silent=False)
+                                                                                         silent=False, errorFound=False)
 
     if GoogleEarthProDir == None or GoogleEarthProDir == '':
         return
