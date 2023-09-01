@@ -381,8 +381,8 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 software_dir = ''
 
 def setup_external_programs_checkbox():
-    # get the software_dir and software_url for the selected software_name
-    software_dir, software_url, missing_software = IO_libraries_util.get_external_software_dir('NLP_menu_main', '',
+    # get the software_dir and software_url for the selected software_name from the config file
+    software_dir, software_url, missing_software, error_found = IO_libraries_util.get_external_software_dir('NLP_menu_main', '',
                                                         silent=True, only_check_missing=True, install_download='download')
     if missing_software!='':
         setup_external_software_OK_checkbox_var.set(0)

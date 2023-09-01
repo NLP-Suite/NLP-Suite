@@ -98,7 +98,7 @@ def run(inputFilename, inputDir, outputDir, visualization_tools, prefer_horizont
             url="http://www.wordle.net/"
 
         if not IO_libraries_util.open_url(visualization_tools, url, message_title='', message='', config_filename='',
-                     reminder_title='', reminder_message=''):
+                     reminder_title='', reminder_message='', scriptName=scriptName):
             return
     elif visualization_tools=="Python WordCloud":
         import wordclouds_util

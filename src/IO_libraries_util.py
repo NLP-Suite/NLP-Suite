@@ -337,38 +337,58 @@ def check_CoreNLPVersion(CoreNLPdir,calling_script='',silent=False):
                 break
     return
 
-# the function checks that external programs (e.g., Gephi, StanfordCoreNLP) have been properly installed
-#   it either reads a config csv file or it comes from having selected a program directory
-def check_inputExternalProgramFile(calling_script, software_dir, programName, readingConfig=True, silent=False):
-    unarchive_msg = ''
-    head, tail = os.path.split(software_dir)
-    if readingConfig:
-        wrong_dir_msg = 'The software directory\n\n  ' + software_dir + '\n\nstored in the config file\n\nNLP_setup_external_software_config.csv\n\nis NOT the expected ' + programName.upper() + ' directory.'
-    else:
-        wrong_dir_msg = 'The selected software directory\n\n  ' + software_dir + '\n\nis NOT the expected ' + programName.upper() + ' directory.'
-    if os.path.isdir(os.path.join(software_dir,tail)):
-        unarchive_msg = '\n\nIt looks like your ' + programName + ' directory ' + software_dir + ' contains a ' + tail + ' directory inside. DO MAKE SURE THAT WHEN YOU UNARCHIVE THE ' + programName.upper() + ' ARCHIVE YOU DO NOT END UP WITH A ' + programName.upper() + ' DIRECTORY INSIDE A ' + programName.upper() + ' DIRECTORY.'
-    select_directory_msg = '\n\nPlease, select the appropriate ' + programName.upper() + ' directory.'
-    directory_content = '' # initialize variable
-    Mac_msg = '\n\nOnce you have downloaded ' + programName.upper() + ' double click on the downloaded .dmg file and drag the ' + programName.upper() + ' application in your Mac Applications directory.'
-    message=''
+# the function checks that a specific external program (e.g., Gephi, StanfordCoreNLP) have been properly installed
+#   it either reads a config csv file or it comes from having selected a specific program directory
+# returns False when there is an error; true otherwise
 
+def check_inputExternalProgramFile(calling_script, software_dir, programName, readingConfig=True, silent=False):
+
+    message=''
     fileList = []
     if not 'Java' in programName: #!='Java (JDK)' Java (JDK)'
+        unarchive_msg = ''
+        head, tail = os.path.split(software_dir)
+        # 9/1
+        if software_dir=='':
+            installation_message = programName.upper() + ' has not been installed on your machine (the Path cell is blank in the config file NLP_setup_external_software_config.csv).\n\nIf you have not downloaded the software yet, cancel installation when prompted and use the dropdown menu "Software DOWNLOAD" instead.\n\n' # \
+                                   # + software_location_message
+
+        if readingConfig:
+            wrong_dir_msg = 'The software directory\n\n  ' + software_dir + '\n\nstored in the config file\n\nNLP_setup_external_software_config.csv\n\nis NOT the expected ' + programName.upper() + ' directory.'
+        else:
+            wrong_dir_msg = 'The selected software directory\n\n  ' + software_dir + '\n\nis NOT the expected ' + programName.upper() + ' directory.'
+        if os.path.isdir(os.path.join(software_dir, tail)):
+            unarchive_msg = '\n\nIt looks like your ' + programName + ' directory ' + software_dir + ' contains a ' + tail + ' directory inside. DO MAKE SURE THAT WHEN YOU UNARCHIVE THE ' + programName.upper() + ' ARCHIVE YOU DO NOT END UP WITH A ' + programName.upper() + ' DIRECTORY INSIDE A ' + programName.upper() + ' DIRECTORY.'
+        select_directory_msg = '\n\nPlease, select the appropriate ' + programName.upper() + ' directory.'
+        directory_content = ''  # initialize variable
+        Mac_msg = '\n\nOnce you have downloaded ' + programName.upper() + ' double click on the downloaded .dmg file and drag the ' + programName.upper() + ' application in your Mac Applications directory.'
+
+
+        message = ''
+
+        if software_dir=='':
+            if not silent:
+                mb.showinfo(title='Warning', message=installation_message)
+                return False
         if not os.path.isdir(software_dir):
-            mb.showinfo(title='Warning',
-                    message='The installation directory\n\n' + software_dir + '\n\nfor the external software ' + programName +
-                            ' stored in the config file NLP_setup_external_software_config.csv DOES NOT EXIST.\n\nYou may have moved it or renamed it.'
-                            '\n\nPlease, reinstall ' + programName + '.')
+            if 'setup_external_software' in calling_script:
+                reinstall_string = '\n\nPlease, reinstall ' + programName + ' by selecting the folder where the software is stored on your machine' #using the dropdown menu "Software INSTALL" and select the location where the software is stored on your machine'
+            else:
+                reinstall_string = '\n\nPlease, reinstall ' + programName
+            wrong_software_dir = 'The installation directory\n\n' + software_dir + '\n\nfor the external software ' + \
+                                programName + \
+                                ' stored in the config file NLP_setup_external_software_config.csv DOES NOT EXIST.' \
+                                '\n\nIt may have been moved or renamed.' + reinstall_string + '.'
+            if not silent:
+                mb.showinfo(title='Warning',message=wrong_software_dir)
+                return False
         else:
             for file in os.listdir(software_dir):
                 # create a list of files inside the program directory so that they can be checked for validity
                 if os.listdir(software_dir):
-                    # if file.endswith(".txt"):
-                    # print(os.path.join(software_dir, file))
                     fileList.append(file)
 
-    # Check Stanford CoreNLP
+#  Stanford CoreNLP
     if programName == 'Stanford CoreNLP':
         for item in fileList:
             if 'ejml' in str(item) or 'javax' in str(item):
@@ -376,7 +396,7 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName, re
         directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, many files with \'ejml\' and \'javax\' in the filename.'
         message = directory_content + unarchive_msg + select_directory_msg
 
-    # Check Gephi
+# Gephi
     if programName == 'Gephi':
         if platform == 'win32':
             if 'gephi' in fileList and 'gephi' in fileList and 'platform' in fileList:
@@ -389,7 +409,7 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName, re
             directory_content ='\n\nThe ' + programName.upper() + ' was not found among Mac applications.'
             message = directory_content + Mac_msg
 
-# Check Google Earth Pro
+# Google Earth Pro
     if programName == 'Google Earth Pro':
         if platform == 'win32':
             if 'client' in fileList:
@@ -403,9 +423,31 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName, re
             directory_content = '\n\nThe ' + programName.upper() + ' was not found among Mac applications.'
             message = directory_content + Mac_msg
 
-# Check Java (JDK)
+# Java (JDK)
+    if 'Java' in programName:
+        Java_errorFound, error_code, system_output, java_version = check_java_installation(programName)
+        # url = 'https://www.oracle.com/java/technologies/downloads/archive/'
+        # Java_errorFound=True # for testing
+        if not Java_errorFound:
+            if "Java version " + str(java_version) + " installed" != software_dir:
+                # need to update the config file Path (i.e., software_dir) for the current Java version
+                # overwrite the csv file with updated csv_fields
+                existing_software_config = get_existing_software_config()
+                existing_software_config = update_software_config("Java version " + str(java_version) + " installed", programName, existing_software_config)
+                save_software_config(existing_software_config, '', silent=True)
+            return True
+        if Java_errorFound and not silent:
+            mb.showwarning(title=programName + ' installation.',
+                           message=programName + ' is not installed on your machine.')
+            return False
+        else:
+            if software_dir=='' and not silent:
+                mb.showwarning(title=programName + ' installation.',
+                               message=programName + ' is installed on your machine (Java version ' + str(java_version) + ') but the Java version is not saved in NLP_setup_external_software_config.csv' \
+                                       '\n\nPlease, use the droopdown meny for "Software INSTALL on your machine and select "Java (JDK)" to save the Java version in the config file.')
+                return True
 
-# Check MALLET
+    # MALLET
     if programName == 'MALLET':
         # check that MALLET has no spaces in path
         if ('bin' in fileList and 'class' in fileList) and not ' ' in software_dir:
@@ -418,29 +460,29 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName, re
         directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, the subdirectories \'bin\' and \'class\''
         message = directory_content + unarchive_msg + select_directory_msg
 
-# Check WordNet
+# WordNet
     if programName == 'WordNet':
         if 'dict' in fileList and 'src' in fileList:
             return True
         directory_content = wrong_dir_msg + '\n\nThe ' + programName.upper() + ' directory should contain, among other things, the subdirectories \'dict\' and \'src\''
         message = directory_content + unarchive_msg + select_directory_msg
 
-        # display error messages ----------------------------------------------------------------
+    # display error messages ----------------------------------------------------------------
     # it gets here only if there ws an error and with a specific message return True for all software options
     # if the user has tinkered with the config file adding an extra line, for whatever reason,
     #   it would not be marked with an error message; if message is '' we do not want to display the warning; all is OK
     if message!='' and not silent:
         mb.showwarning(title=programName.upper() + ' installation error',
                 message=message)
+    # False is returned when there is an error
     return False
 
-def open_url(website_name, url, ask_to_open = False, message_title='', message='', config_filename='', reminder_title='', reminder_message=''):
+def open_url(website_name, url, ask_to_open = False, message_title='', message='', config_filename='', reminder_title='', reminder_message='', scriptName=''):
     # check internet connection
     if not IO_internet_util.check_internet_availability_warning("Check on GitHub the NLP Suite newest release version"):
         return False
     # check if a reminder needs to be displayed
     if reminder_title != '':
-
         reminders_util.checkReminder(scriptName, reminder_title,
                                      reminder_message, True)
     # check if the question to open the website is asked
@@ -547,6 +589,7 @@ def update_software_config(softwareDir, software_name, existing_software_config)
     for i, row in enumerate(existing_software_config):
         if row[0] == software_name:
             existing_software_config[i][1] = softwareDir  # update path of csv_fields
+            break
         else:
             existing_software_config[i][1] = existing_software_config[i][1] # copy current value
     return existing_software_config
@@ -562,7 +605,7 @@ def save_software_config(existing_software_config, missing_software_string, sile
         missing_software_list = missing_software_string.split(",")
         if len(missing_software_list)>0:
             missing_software_string=", ".join(missing_software_list)
-            message = message + "\n\nDon\'t forget that you have " + str(len(missing_software_list)) + " other remaining missing software to download/install: " + missing_software_string
+            message = message + "\n\nDon\'t forget that you have " + str(len(missing_software_list)) + " other remaining missing software to download and/or install: " + missing_software_string
         if not silent:
             mb.showwarning(title='Config installation file saved',
                        message=message)
@@ -570,13 +613,13 @@ def save_software_config(existing_software_config, missing_software_string, sile
 # software_name is != '' when ...
 #   1. the function is called from a specific script that uses the software_name (e.g., parsers_annotators_main)
 #   2. the function is called from NLP_menu_main when clicking on the button Setup external software
-# return software_dir, missing_software
+# return software_dir, software_url, missing_software, errorFound
 
-def get_external_software_dir(calling_script, software_name_checked, silent, only_check_missing, install_download=''):
+def get_external_software_dir(calling_script, software_name_checked, silent, only_check_missing, install_download='', errorFound = False):
     software_dir = ''
     software_url = ''
     index = 0
-    errorFound = False
+
     missing_software=''
 
     # get a list of software in software-config.csv
@@ -589,30 +632,40 @@ def get_external_software_dir(calling_script, software_name_checked, silent, onl
         software_dir = row[1]
         software_url = row[2]
 
+        # when checking a specific software, skip all other software in the loop
+        if software_name_checked.lower() != '' and \
+                (software_name_checked.lower() != software_name.lower()):
+            continue
+
         if software_name_checked.lower() != '' and \
                 ((software_name_checked.lower() == software_name.lower()) or
                  ('Java' in software_name_checked and 'Java' in software_name)):
             if software_dir == '':
                 errorFound=True
 
-# software_dir does NOT exists
-        if software_dir == None or software_dir == '':
-            if missing_software=='':
-                missing_software = str(software_name).upper() + '\n\n'
-                errorFound = True
-            else:
-                missing_software = missing_software + str(software_name).upper() + '\n\n'
-# software_dir exists
-        else:
-            errorFound=False
-            # the software directory is stored in config file but...
-            #   check that the software directory still exists and the software_name has not been moved
-            ExternalProgramFile_result = check_inputExternalProgramFile(calling_script, software_dir, software_name, True, True )
-
+# software_dir does NOT exist (the path cell is blank in the config file NLP_setup_external_software_config.csv)
+#         if software_dir == None or software_dir == '':
+#             if missing_software=='':
+#                 missing_software = str(software_name).upper() + '\n\n'
+#                 errorFound = True
+#             else:
+#                 missing_software = missing_software + str(software_name).upper() + '\n\n'
+#
+# # software_dir exists (the path cell contains a software path in the config file NLP_setup_external_software_config.csv)
+#         else:
+        # the software directory is stored in config file but...
+        #   check that the software directory still exists and the software_name has not been moved
+        # False is returned when there is an error
+        # check_inputExternalProgramFile checks a specific software software_name stored in NLP_setup_external_software_config.csv
+        errorFound = not check_inputExternalProgramFile(calling_script, software_dir, software_name, True, silent)
         if errorFound:
-            software_dir = existing_software_config[index][1]
+            # RF 7/28
+            software_dir = ''
+            # software_dir = existing_software_config[index][1]
             software_url = existing_software_config[index][2]
-            existing_software_config[index][1] = software_dir
+            existing_software_config[index][1] = '' #software_dir
+            if software_name not in missing_software:
+                missing_software = missing_software + str(software_name).upper() + '\n\n'
 
         # if you are checking for a specific software_name and the directory is NOT found
         #   return None; no point continuing in the for loop
@@ -627,7 +680,7 @@ def get_external_software_dir(calling_script, software_name_checked, silent, onl
             software_dir = None
             software_url = ''
 
-    return software_dir, software_url, missing_software
+    return software_dir, software_url, missing_software, errorFound
     # end of get_external_software_dir
 def ask_download_installation_questions(download_install, software_name, software_dir, message, silent=False):
     cancel_download_install = False
@@ -652,8 +705,10 @@ def check_program_Mac_Applications(programName):
         return True
     return False
 
+# called by external_software_download
+# called by external_software_install
 def display_download_installation_messages(download_install, software_name, software_dir, software_url,
-                                         calling_script, missing_software, silent):
+                                         calling_script, missing_software, silent, error_found=False):
     title='Warning'
     download_install_message = ''
     download_message = ''
@@ -759,10 +814,10 @@ def display_download_installation_messages(download_install, software_name, soft
     # both download-install messages ------------------------------------------------------------------------------------------------------------------------------------------
 
     if software_name == '':
-        title = 'NLP Suite external software download/install'
+        title = 'NLP Suite external software download and/or install'
         opening_message = 'The NLP Suite relies on several external programs that need to be downloaded and installed.\n\n' \
                 'LIST OF PROGRAMS TO BE DOWNLOADED/INSTALLED:\n\n' + missing_software + \
-                '\n\nPlease, click on the "Software download" button to download and install the software in the list or some functionality will be lost for some of the scripts ' \
+                '\n\nPlease, use the "Software DOWNLOAD" dropdown menu to download and install the software in the list or some functionality will be lost for some of the scripts ' \
                                 '(e.g., you cannot do any textual analysis of any kind without Stanford CoreNLP or produce any geographic maps without Google Earth Pro). ' \
                                 'The algorithms that use any of these programs will remind you that you need to install them if you want to run the algorithm. ' \
                                 '\n\nIf you have already downloaded the software, but not installed it, click on the "Software install" button to select the directory where you saved it on your machine in order to install it; ' \
@@ -780,7 +835,7 @@ def display_download_installation_messages(download_install, software_name, soft
                         download_message = ''
                         call("python NLP_setup_external_software_main.py", shell=False)
                         # must get software_dir in case it was changed in the NLP_setup_external_software_main GUI
-                        software_dir, software_url, missing_software = get_external_software_dir(calling_script,
+                        software_dir, software_url, missing_software, error_found = get_external_software_dir(calling_script,
                                                                                                  software_name,
                                                                                                  silent=True,
                                                                                                  only_check_missing=True,
@@ -800,13 +855,14 @@ def display_download_installation_messages(download_install, software_name, soft
 
 # DOWNLOAD check software_dir ------------------------------------------------------------------------------
 
-        if software_dir == None or software_dir == '': # software not yet downloaded and installed
+        # software not yet downloaded and installed (i.e., Path field is blank in NLP_setup_external_software_config.csv)
+        if software_dir == None or software_dir == '':
 
 # DOWNLOAD check software_name --------------------------------------------------------------------------------
-
+#   setting up messages
             if software_name!='':
 
-                title = software_name.upper() + ' software download/install'
+                title = software_name.upper() + ' software download and/or install'
                 after_website_opens_message = 'Once the ' + software_name.upper() + ' download website opens up, download ' + \
                    file_name + '.'
 
@@ -818,7 +874,8 @@ def display_download_installation_messages(download_install, software_name, soft
                   ' software directory, you will be asked whether you also want to install ' + software_name.upper() + \
                   ' by selecting its saved directory location. You will only have to do this once; the selected installation directory will be saved in NLP_setup_external_software_config.csv).'
 
-
+# GEPHI & GOOGLE EARTH PRO DOWNLOAD
+#   setting up messages
                 if platform == 'darwin':
                     if check_program_Mac_Applications(software_name):
                         # GEPHI & GOOGLE EARTH PRO DOWNLOAD
@@ -833,15 +890,18 @@ def display_download_installation_messages(download_install, software_name, soft
                         software_dir = "/Applications"
                         after_download_message = '\n\nAfter download is completed, double click on the ' + software_extension + ' file to install Google Earth Pro. The installation process will automatically place Google Earth Pro in the Applications directory.'
 
+# Java download
+#   setting up messages
+
                 if 'Java' in software_name:
                     # since Stanford CoreNLP, Gephi, and MALLET need Java, check for Java installation
                     Java_errorFound, error_code, system_output, java_version = check_java_installation(
                         software_name)
                     if not Java_errorFound:
-                        software_dir = "Java version " + java_version + " installed"
+                        software_dir = "Java version " + str(java_version) + " installed"
                         mb.showwarning(title=software_name + ' installation.',
                                        message=software_name + ' is already installed on your machine:\n\n' + software_dir + ' as saved in NLP_setup_external_software_config.csv.'
-                                                '\n\nIf you want to install a new version, you need to uninstall the current version, since Java is in your environment variables, and then download/install a different version.')
+                                                '\n\nIf you want to install a new version, you need to uninstall the current version, since Java is in your environment variables, and then download and/or install a different version.')
                         # download_message='' is used to detect a cancellation
                         download_message = ""
                         return software_dir, title, opening_message, download_message, installation_message
@@ -855,19 +915,20 @@ def display_download_installation_messages(download_install, software_name, soft
 
 # DOWNLOAD check software_dir ------------------------------------------------------------------------------
 
-        else: # already downloaded
+        else: # already downloaded (i.e., Path field has a value in NLP_setup_external_software_config.csv)
 
 # DOWNLOAD check software_name --------------------------------------------------------------------------------
 
+# Java download
             if software_name != '':
                 if 'Java' in software_name:
                     # since Stanford CoreNLP, Gephi, and MALLET need Java, check for Java installation
                     Java_errorFound, error_code, system_output, java_version = check_java_installation(software_name)
                     if not Java_errorFound:
-                        software_dir = "Java version " + java_version + " installed"
+                        software_dir = "Java version " + str(java_version) + " installed"
                     mb.showwarning(title=software_name + ' installation.',
                                    message=software_name + ' is already installed on your machine:\n\n' + software_dir + ' as saved in NLP_setup_external_software_config.csv.'
-                                                        '\n\nIf you want to install a new version, you need to uninstall the current version, since Java is in your environment variables, and then download/install a different version.')
+                                                        '\n\nIf you want to install a new version, you need to uninstall the current version, since Java is in your environment variables, and then download and/or install a different version.')
                     # download_message, installation_message are set to '' when no new download or installation is desired
                     download_message = ''
                     return software_dir, title, opening_message, download_message, installation_message
@@ -882,6 +943,8 @@ def display_download_installation_messages(download_install, software_name, soft
                 # download_message, installation_message are set to '' when no new download or installation is desired
                 download_message=''
                 return software_dir, title, opening_message, download_message, installation_message
+
+# WordNet download
 
             if software_name == 'WordNet':
                 download_message = 'Once the WORDNET website opens up, you need to download the executable file WordNet-2.1.exe. After downloading, run the executable file by double-clicking on it and move the WordNet directory ' \
@@ -904,64 +967,78 @@ def display_download_installation_messages(download_install, software_name, soft
 
 # INSTALL check software_name --------------------------------------------------------------------------------
 
+# Java
             if 'Java' in software_name:
                 # since Stanford CoreNLP, Gephi, and MALLET need Java, check for Java installation
                 Java_errorFound, error_code, system_output, java_version = check_java_installation(software_name)
-                if not Java_errorFound:
-                    software_dir = "Java version " + java_version + " installed"
+                # RF 8/30
+                # if not Java_errorFound:
+                if Java_errorFound:
+                    software_dir = "Java version " + str(java_version) + " installed"
+                    # @@@
                     mb.showwarning(title=software_name + ' installation.',
                                    message=software_name + ' is already installed on your machine (but the Java version is not saved in NLP_setup_external_software_config.csv; '
                                                            'when you CLOSE this GUI make sure to save the changes).'
                                                            '\n\nIf you want to install a new version, you need to uninstall the current version, '
-                                                           'since Java is in your environment variables, and then use the "Software download" button to download and install a different version.')
+                                                           'since Java is in your environment variables, and then use the "Software DOWNLOAD" dropdown menu to download and install a different version.')
 
                 # download_message, installation_message are set to '' when no new download or installation is desired
                 download_message = '###'
                 return software_dir, title, opening_message, download_message, installation_message
 
+# Gephi and Google Earth Pro
+
             if platform == 'darwin' and (software_name=='Gephi' or software_name=='Google Earth Pro'):
-                        if not check_program_Mac_Applications(software_name):
-                            installation_message = software_name.upper() + ' IS NOT INSTALLED ON YOUR MACHINE.' \
-                                                    '\n\nIf you have already downloaded the software, and just not installed it, double click on the downloaded ' + software_extension + ' file.'
-                            if software_name=='Gephi':
-                                installation_message = installation_message + '\n\nGephi will be placed next to the Applications directory and you must manually move it to Applications.'
-                            if software_name == 'Google Earth Pro':
-                                    installation_message = installation_message + '\n\nThe installation process will automatically place Google Earth Pro in the Applications directory.'
-                        else:
-                            installation_message = software_name.upper() + ' IS ALREADY INSTALLED ON YOUR MACHINE.\n\nIf you want to install a different version, please go to the Applications directory, delete ' + \
-                                                   software_name + ', and use the dropdown menu "Software download" to select ' + software_name + ' and download and install a different release.'
+                    if not check_program_Mac_Applications(software_name):
+                        installation_message = software_name.upper() + ' IS NOT INSTALLED ON YOUR MACHINE (the Path cell is blank in the config file NLP_setup_external_software_config.csv).' \
+                                                '\n\nIf you have already downloaded the software, and just not installed it, double click on the downloaded ' + software_extension + ' file.'
+                        if software_name=='Gephi':
+                            installation_message = installation_message + '\n\nGephi will be placed next to the Applications directory and you must manually move it to Applications.'
+                        if software_name == 'Google Earth Pro':
+                                installation_message = installation_message + '\n\nThe installation process will automatically place Google Earth Pro in the Applications directory.'
+                    else:
+                        installation_message = software_name.upper() + ' IS ALREADY INSTALLED ON YOUR MACHINE.\n\nIf you want to install a different version, please go to the Applications directory, delete ' + \
+                                               software_name + ', and use the dropdown menu "Software DOWNLOAD" to select ' + software_name + ' and download and install a different release.'
 
-                        mb.showwarning(title='Install ' + software_name.upper(), message=installation_message)
-                        software_dir='/Applications'
-                        # download_message, installation_message are set to '' when no new download or installation is desired
-                        download_message = installation_message
-                        return software_dir, title, opening_message, download_message, installation_message
+                    mb.showwarning(title='Install ' + software_name.upper(), message=installation_message)
+                    software_dir='/Applications'
+                    # download_message, installation_message are set to '' when no new download or installation is desired
+                    download_message = installation_message
+                    return software_dir, title, opening_message, download_message, installation_message
 
-            installation_message = software_name.upper() + ' has not been installed on your machine. If you have not downloaded it yet, cancel installation when prompted and use the dropdown menu "Software download" instead.\n\n' \
+            installation_message = software_name.upper() + ' has not been installed on your machine (the Path cell is blank in the config file NLP_setup_external_software_config.csv).\n\nIf you have not downloaded the software yet, cancel installation when prompted and use the dropdown menu "Software DOWNLOAD" instead.\n\n' \
                                    + software_location_message
-
-            mb.showwarning(title='Install ' + software_name.upper(), message=installation_message)
+            # @@@ 9/1
+            if not error_found:
+                mb.showwarning(title='Install ' + software_name.upper(), message=installation_message)
 
 # INSTALL check software_dir ------------------------------------------------------------------------------
 
         else: # already installed
+
+# any software
 
             if 'NLP_menu' in calling_script or 'NLP_setup_external_software' in calling_script:
                 installation_message = software_name.upper() + " has already been installed on your machine.\n\nDo you want to install it again, " \
                     "selecting a different directory location from the current location?\n\n" + software_dir
             else:
                 installation_message=''
+
+# Java
+
             if 'Java' in software_name:
                 # since Stanford CoreNLP, Gephi, and MALLET need Java, check for Java installation
                 Java_errorFound, error_code, system_output, java_version = check_java_installation(software_name)
                 if not Java_errorFound:
-                    software_dir = "Java version " + java_version + " installed"
+                    software_dir = "Java version " + str(java_version) + " installed"
                     mb.showwarning(title=software_name + ' installation.',
                                message=software_name + ' is already installed on your machine:\n\n' + software_dir + ' as saved in NLP_setup_external_software_config.csv.\n\nIf you want to install a new version, '
-                                    'you need to uninstall the current version, since Java is in your environment variables, and then use the "Software download" button to download and install a different version.')
+                                    'you need to uninstall the current version, since Java is in your environment variables, and then use the "Software DOWNLOAD" dropdown menu to download and install a different version.')
                 # download_message, installation_message are set to '' when no new download or installation is desired
                 download_message = ''
                 return software_dir, title, opening_message, download_message, installation_message
+
+# Stanford CoreNLP
 
             # check that Stanford CoreNLP is the latest release
             if software_name == 'Stanford CoreNLP':
@@ -986,7 +1063,8 @@ def display_download_installation_messages(download_install, software_name, soft
         installation_directory_message = "You will be asked next to select the" + Mac_Applications_label + \
                                             "where \n\n" + software_name.upper() + \
                                             "\n\nis saved on your machine. " \
-                                            "\n\nPress Esc or Cancel to exit when the dialogue box opens if you do not want to install " + software_name.upper() + '.'
+                                            "\n\nPress Esc or Cancel to exit when the dialogue box opens if you do not want to install " + software_name.upper() + '.\n\n' \
+                                            + software_location_message
 
         mb.showwarning(title='Install ' + software_name.upper(), message=installation_directory_message)
 
@@ -1022,14 +1100,14 @@ def display_download_installation_messages(download_install, software_name, soft
 def external_software_download(calling_script, software_name, existing_software_config, silent=False):
 
     # get the software_dir and software_url for the selected software_name
-    software_dir, software_url, missing_software = get_external_software_dir(calling_script, software_name,
+    software_dir, software_url, missing_software, error_found = get_external_software_dir(calling_script, software_name,
                                                         silent=True, only_check_missing=True, install_download='download')
     download_message=''
     if missing_software=='':
         return software_dir, software_url, download_message
 
     software_dir, title, opening_message, download_message, installation_message = \
-        display_download_installation_messages('download', software_name, software_dir, software_url, calling_script, '', silent)
+        display_download_installation_messages('download', software_name, software_dir, software_url, calling_script, '', silent, error_found)
 
     # download_message is set to ''' when the software has already been downloaded and the user opts NOT to re-download
     if download_message=='':
@@ -1058,15 +1136,16 @@ def external_software_download(calling_script, software_name, existing_software_
 # INSTALLING -------------------------------------------------------------------------------
 # updates the array existing_software_config with the value of software_dir
 # returns the software_dir and the double list existing_software_config = [[]]
-def external_software_install(calling_script, software_name, existing_software_config, silent):
+def external_software_install(calling_script, software_name, existing_software_config, silent, errorFound):
     # get installation directory and website
-    software_dir, software_url, missing_software = get_external_software_dir(calling_script, software_name,
-                                                            silent=True, only_check_missing=True, install_download='install')
+    # if not error_found:
+    software_dir, software_url, missing_software, error_found = get_external_software_dir(calling_script, software_name,
+                                                            silent=True, only_check_missing=True, install_download='install', errorFound=errorFound)
     #@@@
     # if missing_software=='':
     #     return software_dir, existing_software_config
     software_dir, title, opening_message, download_message, installation_message = \
-        display_download_installation_messages('install', software_name, software_dir, software_url, calling_script, missing_software, silent)
+        display_download_installation_messages('install', software_name, software_dir, software_url, calling_script, missing_software, silent, errorFound)
     # download_message, installation_message are set to '' when no new download or installation is desired
     if download_message=='':
         return software_dir, existing_software_config
@@ -1074,7 +1153,7 @@ def external_software_install(calling_script, software_name, existing_software_c
     ###
     # existing_software_config = get_existing_software_config()
 
-    if software_dir != None and software_dir != '':
+    if not error_found and software_dir != None and software_dir != '':
         # check that it is the correct software directory
         if 'corenlp' in software_name.lower():
             software_name = 'Stanford CoreNLP'
