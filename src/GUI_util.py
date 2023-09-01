@@ -1088,6 +1088,7 @@ def changed_setup_IO_config(scriptName, IO_setup_display_brief, silent=False):
                                                                                                                    '"').replace(
                 ']', '"')
                  + " --config_filename " + config_filename, shell=True)
+            err_msg=display_IO_setup(window, IO_setup_display_brief, config_filename, config_input_output_numeric_options, scriptName, silent)
 
 def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command,
                videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief,scriptName='', silent=False, package_display_area_value=''):

@@ -246,7 +246,7 @@ def activate_software_install(download_install,software_dir, software_url, missi
 
         # @@@
         # 9/1
-        software_dir, existing_software_config = IO_libraries_util.external_software_install(scriptName,
+        software_dir, existing_software_config, errorFound = IO_libraries_util.external_software_install(scriptName,
                                                                                              software_name,
                                                                                              existing_software_config,
                                                                                              silent=False, errorFound=error_found)

@@ -1148,7 +1148,7 @@ def external_software_install(calling_script, software_name, existing_software_c
         display_download_installation_messages('install', software_name, software_dir, software_url, calling_script, missing_software, silent, errorFound)
     # download_message, installation_message are set to '' when no new download or installation is desired
     if download_message=='':
-        return software_dir, existing_software_config
+        return software_dir, existing_software_config, error_found
 
     ###
     # existing_software_config = get_existing_software_config()
@@ -1177,4 +1177,4 @@ def external_software_install(calling_script, software_name, existing_software_c
     if software_dir != None and software_dir != '':
         existing_software_config = update_software_config(software_dir, software_name, existing_software_config)
 
-    return software_dir, existing_software_config
+    return software_dir, existing_software_config, error_found

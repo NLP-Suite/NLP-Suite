@@ -219,10 +219,10 @@ def CoreNLP_annotate(config_filename,inputFilename,
         return filesToOpen
 
     # check that the CoreNLPdir has been setup
-    CoreNLPdir, existing_software_config = IO_libraries_util.external_software_install('Stanford_CoreNLP_util',
+    CoreNLPdir, existing_software_config, errorFound = IO_libraries_util.external_software_install('Stanford_CoreNLP_util',
                                                                                          'Stanford CoreNLP',
                                                                                          '',
-                                                                                         silent=False)
+                                                                                         silent=False, errorFound=False)
     if CoreNLPdir== '' or CoreNLPdir== None:
         return filesToOpen
 

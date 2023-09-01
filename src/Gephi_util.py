@@ -1074,10 +1074,10 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
     :return: gexf file path.
     """
     # check that the CoreNLPdir has been setup
-    GephiDir, existing_software_config = IO_libraries_util.external_software_install('Gephi_util',
+    GephiDir, existing_software_config, errorFound = IO_libraries_util.external_software_install('Gephi_util',
                                                                                          'Gephi',
                                                                                          '',
-                                                                                         silent=False)
+                                                                                         silent=False, errorFound=False)
     if GephiDir == None or GephiDir=='':
         return
 

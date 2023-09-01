@@ -318,10 +318,10 @@ def run(config_filename,inputFilename, inputDir, outputDir, openOutputFiles, cre
     errorFound = False
 
     # check that the CoreNLPdir as been setup
-    CoreNLPdir, existing_software_config = IO_libraries_util.external_software_install('Stanford_CoreNLP_coreference_util',
+    CoreNLPdir, existing_software_config, errorFound = IO_libraries_util.external_software_install('Stanford_CoreNLP_coreference_util',
                                                                                          'Stanford CoreNLP',
                                                                                          '',
-                                                                                         silent=False)
+                                                                                         silent=False, errorFound=False)
 
     if CoreNLPdir==None or CoreNLPdir=='':
         return []
