@@ -507,18 +507,70 @@ sentence_tools_menu['values'] = ['Sentence analysis (ALL options GUI)']
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, sentence_tools_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
 
+def clear_selected_options(tool_selected):
+    if tool_selected=='data_file_handling_tools' and data_file_handling_tools_var.get()!='':
+        pre_processing_tools_var.set('')
+        statistical_tools_var.set('')
+        visualization_tools_var.set('')
+        corpus_tools_var.set('')
+        corpus_document_tools_var.set('')
+        sentence_tools_var.set('')
+    if tool_selected=='pre_processing_tools' and pre_processing_tools_var.get()!='':
+        data_file_handling_tools_var.set('')
+        statistical_tools_var.set('')
+        visualization_tools_var.set('')
+        corpus_tools_var.set('')
+        corpus_document_tools_var.set('')
+        sentence_tools_var.set('')
+    if tool_selected=='statistical_tools' and statistical_tools_var.get()!='':
+        data_file_handling_tools_var.set('')
+        pre_processing_tools_var.set('')
+        visualization_tools_var.set('')
+        corpus_tools_var.set('')
+        corpus_document_tools_var.set('')
+        sentence_tools_var.set('')
+    if tool_selected=='visualization_tools' and visualization_tools_var.get()!='':
+        data_file_handling_tools_var.set('')
+        pre_processing_tools_var.set('')
+        statistical_tools_var.set('')
+        corpus_tools_var.set('')
+        corpus_document_tools_var.set('')
+        sentence_tools_var.set('')
+    if tool_selected=='corpus_tools' and corpus_tools_var.get()!='':
+        data_file_handling_tools_var.set('')
+        pre_processing_tools_var.set('')
+        statistical_tools_var.set('')
+        visualization_tools_var.set('')
+        corpus_document_tools_var.set('')
+        sentence_tools_var.set('')
+    if tool_selected=='corpus_document_tools' and corpus_document_tools_var.get()!='':
+        data_file_handling_tools_var.set('')
+        pre_processing_tools_var.set('')
+        statistical_tools_var.set('')
+        visualization_tools_var.set('')
+        corpus_tools_var.set('')
+        sentence_tools_var.set('')
+    if tool_selected=='sentence_tools' and sentence_tools_var.get()!='':
+        data_file_handling_tools_var.set('')
+        pre_processing_tools_var.set('')
+        statistical_tools_var.set('')
+        visualization_tools_var.set('')
+        corpus_tools_var.set('')
+        corpus_document_tools_var.set('')
 
-def getScript(script):
+def getScript(tool_selected, script):
     global script_to_run, IO_values
-    script_to_run, IO_values = IO_files_util.getScript(pydict, script)
+    if script != '':
+        script_to_run, IO_values = IO_files_util.getScript(pydict, script)
+    clear_selected_options(tool_selected)
 
-data_file_handling_tools_var.trace('w', lambda x, y, z: getScript(data_file_handling_tools_var.get()))
-pre_processing_tools_var.trace('w', lambda x, y, z: getScript(pre_processing_tools_var.get()))
-statistical_tools_var.trace('w', lambda x, y, z: getScript(statistical_tools_var.get()))
-visualization_tools_var.trace('w', lambda x, y, z: getScript(visualization_tools_var.get()))
-corpus_tools_var.trace('w', lambda x, y, z: getScript(corpus_tools_var.get()))
-corpus_document_tools_var.trace('w', lambda x, y, z: getScript(corpus_document_tools_var.get()))
-sentence_tools_var.trace('w', lambda x, y, z: getScript(sentence_tools_var.get()))
+data_file_handling_tools_var.trace('w', lambda x, y, z: getScript('data_file_handling_tools',data_file_handling_tools_var.get()))
+pre_processing_tools_var.trace('w', lambda x, y, z: getScript('pre_processing_tools', pre_processing_tools_var.get()))
+statistical_tools_var.trace('w', lambda x, y, z: getScript('statistical_tools',statistical_tools_var.get()))
+visualization_tools_var.trace('w', lambda x, y, z: getScript('visualization_tools',visualization_tools_var.get()))
+corpus_tools_var.trace('w', lambda x, y, z: getScript('corpus_tools',corpus_tools_var.get()))
+corpus_document_tools_var.trace('w', lambda x, y, z: getScript('corpus_document_tools',corpus_document_tools_var.get()))
+sentence_tools_var.trace('w', lambda x, y, z: getScript('sentence_tools',sentence_tools_var.get()))
 
 def openYouTube(video_url):
     if video_url!='':
