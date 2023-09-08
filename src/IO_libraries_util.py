@@ -438,12 +438,12 @@ def check_inputExternalProgramFile(calling_script, software_dir, programName, re
             return True
         if Java_errorFound and not silent:
             mb.showwarning(title=programName + ' installation.',
-                           message=programName + ' is not installed on your machine.')
+                           message=programName + ' IS NOT INSTALLED ON YOUR MACHINE.')
             return False
         else:
             if software_dir=='' and not silent:
                 mb.showwarning(title=programName + ' installation.',
-                               message=programName + ' is installed on your machine (Java version ' + str(java_version) + ') but the Java version is not saved in NLP_setup_external_software_config.csv' \
+                               message=programName + ' IS INSTALLED ON YOUR MACHINE (Java version ' + str(java_version) + ') but the Java version is not saved in NLP_setup_external_software_config.csv' \
                                        '\n\nPlease, use the droopdown meny for "Software INSTALL on your machine and select "Java (JDK)" to save the Java version in the config file.')
                 return True
 
@@ -705,6 +705,27 @@ def check_program_Mac_Applications(programName):
         return True
     return False
 
+def process_Mac_Applications(software_name, software_extension):
+    if not check_program_Mac_Applications(software_name):
+        software_dir = ''
+        installation_message = software_name.upper() + ' IS NOT INSTALLED ON YOUR MACHINE (the Path cell is blank in the config file NLP_setup_external_software_config.csv).' \
+                                                       '\n\nIf you have already downloaded the software, and just not installed it, double click on the downloaded ' + software_extension + ' file.'
+        if software_name == 'Gephi':
+            installation_message = installation_message + '\n\nGephi will be placed next to the Applications directory and you must manually move it to Applications.'
+        if software_name == 'Google Earth Pro':
+            # software_dir = '/Applications'
+            installation_message = installation_message + '\n\nThe installation process will automatically place Google Earth Pro in the Applications directory.'
+    else: # software already installed
+        software_dir = '/Applications'
+        installation_message = software_name.upper() + ' IS ALREADY INSTALLED ON YOUR MACHINE.\n\nIf you want to install a different version, please go to the Applications directory, delete ' + \
+                               software_name + ', and use the dropdown menu "Software DOWNLOAD" to select ' + software_name + ' and download and install a different release.'
+
+    mb.showwarning(title='Install ' + software_name.upper(), message=installation_message)
+    # download_message, installation_message are set to '' when no new download or installation is desired
+    download_message = installation_message
+    return software_dir, download_message, installation_message
+
+
 # called by external_software_download
 # called by external_software_install
 def display_download_installation_messages(download_install, software_name, software_dir, software_url,
@@ -900,7 +921,7 @@ def display_download_installation_messages(download_install, software_name, soft
                     if not Java_errorFound:
                         software_dir = "Java version " + str(java_version) + " installed"
                         mb.showwarning(title=software_name + ' installation.',
-                                       message=software_name + ' is already installed on your machine:\n\n' + software_dir + ' as saved in NLP_setup_external_software_config.csv.'
+                                       message=software_name + ' IS ALREADY INSTALLED ON YOUR MACHINE:\n\n' + software_dir + ' as saved in NLP_setup_external_software_config.csv.'
                                                 '\n\nIf you want to install a new version, you need to uninstall the current version, since Java is in your environment variables, and then download and/or install a different version.')
                         # download_message='' is used to detect a cancellation
                         download_message = ""
@@ -927,7 +948,7 @@ def display_download_installation_messages(download_install, software_name, soft
                     if not Java_errorFound:
                         software_dir = "Java version " + str(java_version) + " installed"
                     mb.showwarning(title=software_name + ' installation.',
-                                   message=software_name + ' is already installed on your machine:\n\n' + software_dir + ' as saved in NLP_setup_external_software_config.csv.'
+                                   message=software_name + ' IS ALREADY INSTALLED ON YOUR MACHINE:\n\n' + software_dir + ' as saved in NLP_setup_external_software_config.csv.'
                                                         '\n\nIf you want to install a new version, you need to uninstall the current version, since Java is in your environment variables, and then download and/or install a different version.')
                     # download_message, installation_message are set to '' when no new download or installation is desired
                     download_message = ''
@@ -977,7 +998,7 @@ def display_download_installation_messages(download_install, software_name, soft
                     software_dir = "Java version " + str(java_version) + " installed"
                     # @@@
                     mb.showwarning(title=software_name + ' installation.',
-                                   message=software_name + ' is already installed on your machine (but the Java version is not saved in NLP_setup_external_software_config.csv; '
+                                   message=software_name + ' IS ALREADY INSTALLED ON YOUR MACHINE (but the Java version is not saved in NLP_setup_external_software_config.csv; '
                                                            'when you CLOSE this GUI make sure to save the changes).'
                                                            '\n\nIf you want to install a new version, you need to uninstall the current version, '
                                                            'since Java is in your environment variables, and then use the "Software DOWNLOAD" dropdown menu to download and install a different version.')
@@ -989,22 +1010,8 @@ def display_download_installation_messages(download_install, software_name, soft
 # Gephi and Google Earth Pro
 
             if platform == 'darwin' and (software_name=='Gephi' or software_name=='Google Earth Pro'):
-                    if not check_program_Mac_Applications(software_name):
-                        installation_message = software_name.upper() + ' IS NOT INSTALLED ON YOUR MACHINE (the Path cell is blank in the config file NLP_setup_external_software_config.csv).' \
-                                                '\n\nIf you have already downloaded the software, and just not installed it, double click on the downloaded ' + software_extension + ' file.'
-                        if software_name=='Gephi':
-                            installation_message = installation_message + '\n\nGephi will be placed next to the Applications directory and you must manually move it to Applications.'
-                        if software_name == 'Google Earth Pro':
-                                installation_message = installation_message + '\n\nThe installation process will automatically place Google Earth Pro in the Applications directory.'
-                    else:
-                        installation_message = software_name.upper() + ' IS ALREADY INSTALLED ON YOUR MACHINE.\n\nIf you want to install a different version, please go to the Applications directory, delete ' + \
-                                               software_name + ', and use the dropdown menu "Software DOWNLOAD" to select ' + software_name + ' and download and install a different release.'
-
-                    mb.showwarning(title='Install ' + software_name.upper(), message=installation_message)
-                    software_dir='/Applications'
-                    # download_message, installation_message are set to '' when no new download or installation is desired
-                    download_message = installation_message
-                    return software_dir, title, opening_message, download_message, installation_message
+                software_dir, download_message, installation_message = process_Mac_Applications(software_name, software_extension)
+                return software_dir, title, opening_message, download_message, installation_message
 
             installation_message = software_name.upper() + ' has not been installed on your machine (the Path cell is blank in the config file NLP_setup_external_software_config.csv).\n\nIf you have not downloaded the software yet, cancel installation when prompted and use the dropdown menu "Software DOWNLOAD" instead.\n\n' \
                                    + software_location_message
@@ -1019,8 +1026,11 @@ def display_download_installation_messages(download_install, software_name, soft
 # any software
 
             if 'NLP_menu' in calling_script or 'NLP_setup_external_software' in calling_script:
-                installation_message = software_name.upper() + " has already been installed on your machine.\n\nDo you want to install it again, " \
-                    "selecting a different directory location from the current location?\n\n" + software_dir
+                if platform == 'darwin' and (software_name == 'Gephi' or software_name == 'Google Earth Pro'):
+                    software_dir, download_message, installation_message = process_Mac_Applications(software_name, software_extension)
+                else:
+                    installation_message = software_name.upper() + " IS ALREADY INSTALLED ON YOUR MACHINE.\n\nDo you want to install it again, " \
+                        "selecting a different directory location from the current location?\n\n" + software_dir
             else:
                 installation_message=''
 
@@ -1032,7 +1042,7 @@ def display_download_installation_messages(download_install, software_name, soft
                 if not Java_errorFound:
                     software_dir = "Java version " + str(java_version) + " installed"
                     mb.showwarning(title=software_name + ' installation.',
-                               message=software_name + ' is already installed on your machine:\n\n' + software_dir + ' as saved in NLP_setup_external_software_config.csv.\n\nIf you want to install a new version, '
+                               message=software_name + ' IS ALREADY INSTALLED ON YOUR MACHINE:\n\n' + software_dir + ' as saved in NLP_setup_external_software_config.csv.\n\nIf you want to install a new version, '
                                     'you need to uninstall the current version, since Java is in your environment variables, and then use the "Software DOWNLOAD" dropdown menu to download and install a different version.')
                 # download_message, installation_message are set to '' when no new download or installation is desired
                 download_message = ''
