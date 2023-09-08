@@ -237,7 +237,7 @@ def processColorList(currenttext, color_to_words, csvField_color_list, myfile):
     return currenttext, color_to_words
 
 # add bg_image_flag parameter to indicate whether to add background image
-def display_wordCloud_sep_color(inputFilename, outputDir, text, color_to_words, transformed_image_mask,collocation,prefer_horizontal, bg_image = None,bg_image_flag = False, font = None, max_words = 100):
+def display_wordCloud_sep_color(inputFilename, inputDir, outputDir, text, color_to_words, transformed_image_mask,collocation,prefer_horizontal, bg_image = None,bg_image_flag = False, font = None, max_words = 100):
     # stopwords dealt with in main function
     stopwords=''
     c_wid = 0 if bg_image_flag else 3
@@ -251,7 +251,7 @@ def display_wordCloud_sep_color(inputFilename, outputDir, text, color_to_words, 
     grouped_color_func = GroupedColorFunc(color_to_words, default_color)
     wc.recolor(color_func=grouped_color_func)
     plt.figure(figsize = (8, 8), facecolor = None)
-    output_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.png', 'WC', 'img')
+    output_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.png', 'WC', 'img')
     if bg_image_flag and bg_image is not None:
         img = changeWhiteToTransparent(wc.to_image())
         img = img.resize(bg_image.size)
@@ -275,12 +275,8 @@ def display_wordCloud_sep_color(inputFilename, outputDir, text, color_to_words, 
         wc.to_file(output_file_name)
     return output_file_name
 
+# called by python_wordCloud
 def display_wordCloud(inputFilename,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, stopwords, collocation, prefer_horizontal,bg_image = None, bg_image_flag = True, font = None, max_words=100):
-    # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='wordcloud',
-                                                       silent=True)
-    if outputDir == '':
-        return
 
     comment_words = ' '
     # stopwords = set(STOPWORDS)
@@ -383,6 +379,9 @@ def processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles,csvFie
     myfile.close()
     return tempOutputfile
 
+# TOP-level function for wordclouds
+# called by whats_in_your_corpus_main
+# called by wordclouds_main
 def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selectedImage, use_contour_only, prefer_horizontal, font, max_words, lemmatize, exclude_stopwords, exclude_punctuation, lowercase, differentPOS_differentColors, differentColumns_differentColors, csvField_color_list, doNotListIndividualFiles,openOutputFiles, collocation):
     # https://www.geeksforgeeks.org/generating-word-cloud-python/
     # Python program to generate WordCloud
@@ -630,7 +629,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
 
             if doNotListIndividualFiles==False or len(inputFilename)>0:
                 if differentPOS_differentColors:
-                    tempOutputfile = display_wordCloud_sep_color(doc, outputDir, textToProcess, color_to_words,
+                    tempOutputfile = display_wordCloud_sep_color(doc, inputDir, outputDir, textToProcess, color_to_words,
                                                                  transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
                 else:
                     # when stopwords = '' stopwords will be INCLUDEED in the output visual
@@ -643,11 +642,12 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
             combinedtext = combinedtext + textToProcess
 
     if len(inputDir)>0:
+        doc = '' # doc would otherwise have the value of the last document read in the inputDir
         if differentPOS_differentColors:
-            tempOutputfile=display_wordCloud_sep_color(inputDir, outputDir, combinedtext, color_to_words, transformed_image_mask, collocation, prefer_horizontal,bg_image=img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
+            tempOutputfile=display_wordCloud_sep_color(doc, inputDir, outputDir, combinedtext, color_to_words, transformed_image_mask, collocation, prefer_horizontal,bg_image=img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
         else:
             # when stopwords = '' stopwords will be INCLUDEED in the output visual
-            tempOutputfile=display_wordCloud(inputDir,inputDir,outputDir,combinedtext, doNotListIndividualFiles, transformed_image_mask, stopwords, collocation,prefer_horizontal, bg_image=img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
+            tempOutputfile=display_wordCloud(doc,inputDir,outputDir,combinedtext, doNotListIndividualFiles, transformed_image_mask, stopwords, collocation,prefer_horizontal, bg_image=img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
         filesToOpen.append(tempOutputfile)
         # write an output txt file that can be used for internet wordclouds services
         if lemmatize or exclude_stopwords:

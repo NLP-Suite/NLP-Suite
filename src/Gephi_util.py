@@ -19,6 +19,7 @@ import random
 import os
 from lxml import etree
 from datetime import date
+import tkinter.messagebox as mb
 import itertools
 import traceback
 import IO_libraries_util
@@ -1099,18 +1100,48 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
             if row[col1] == '' or row[col2] == '' or row[col3] == '':
                 continue
             if row[col1] not in graph.nodes:
-                if spellCol != "":
+                # https://www.datacamp.com/tutorial/converting-strings-datetime-objects
+                date_format = "%Y-%m-%d"
+                # % Y: 4-digit year
+                # % y: 2-digit year
+                # % m: 2-digit month(01 - 12)
+                # % d: 2-digit day of the month(01 - 31)
+                # % H: 2-digit hour(00 - 23)
+                # % M: 2-digit minute(00 - 59)
+                # % S: 2-digit second(00 - 59)
+                date_str = row[spellCol]
+                date_format = "%m-%d-%Y"
+                try:
+                    date_obj = datetime.datetime.strptime(date_str, date_format)
+                except:
+                    if '/' in row[spellCol] and spellCol == 'Date':
+                        mb.showwarning(title='Warning',
+                                       message='Error in date value ' + row[
+                                           spellCol] + '.\n\nDate values should not be separated by / but by - (e.g., ' +
+                                               row[spellCol] + ' should be ' + row[spellCol].replace('/', '-') + ').')
+                        return
+                # days = int(float(date_obj))
+                # date(row[spellCol]).strftime(date_format)
+                if spellCol != "": #this could be a Date field
                     try:
                         node = Node(graph,row[col1],row[col1],
                                     r = random.randint(0,255),g = random.randint(0,255),b = random.randint(0,255),
                                     size = "50",
                                     spells = [
-                                        {"start":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))))
-                                            .strftime("%Y-%m-%d"),
-                                         "end":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))+1))
-                                            .strftime("%Y-%m-%d")}
+                                        {"start":(EPOCH+datetime.timedelta(days = row[spellCol]))
+                                            .strftime(date_format),
+                                         "end":(EPOCH+datetime.timedelta(days = row[spellCol]))
+                                            .strftime(date_format)}
+                                        # {"start":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))))
+                                        #     .strftime(date_format),
+                                        #  "end":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))+1))
+                                        #     .strftime(date_format)}
                                     ])
                     except:
+                        if '/' in row[spellCol] and spellCol == 'Date':
+                            mb.showwarning(title='Warning',
+                                message='Date error in date value' + row[spellCol] + '. Date values should not be separated by / but by - (e.g., ' + row[spellCol] + row[spellCol].replace('/','-') + ')')
+                            return
                         print('Error in row value (cannot convert string to float)',row[spellCol])
                         continue
                 else:
@@ -1124,9 +1155,9 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
                 if spellCol != "":
                     graph.nodes[row[col1]].spells.append({
                         "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                            .strftime("%Y-%m-%d"),
+                            .strftime(date_format),
                         "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                            .strftime("%Y-%m-%d")
+                            .strftime(date_format)
                     })
 
             if row[col3] not in graph.nodes:
@@ -1136,9 +1167,9 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
                                 size="50",
                                 spells=[
                                     {"start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                                        .strftime("%Y-%m-%d"),
+                                        .strftime(date_format),
                                      "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                                        .strftime("%Y-%m-%d")}
+                                        .strftime(date_format)}
                                 ])
                 else:
                     node = Node(graph, row[col3], row[col3],
@@ -1151,9 +1182,9 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
                 if spellCol != "":
                     graph.nodes[row[col3]].spells.append({
                         "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                            .strftime("%Y-%m-%d"),
+                            .strftime(date_format),
                         "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                            .strftime("%Y-%m-%d")
+                            .strftime(date_format)
                     })
 
             edge_id = row[col1]+" "+row[col3]
@@ -1161,9 +1192,9 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
                 if spellCol != "":
                     edge = Edge(graph,edge_id,row[col1],row[col3],
                                 spells = [{"start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                                        .strftime("%Y-%m-%d"),
+                                        .strftime(date_format),
                                            "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                                        .strftime("%Y-%m-%d")}],
+                                        .strftime(date_format)}],
                                 label = row[col2])
                 else:
                     edge = Edge(graph, edge_id, row[col1], row[col3],
@@ -1173,9 +1204,9 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
                 if spellCol != "":
                     graph.edges[edge_id].spells.append(
                         {"start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                                        .strftime("%Y-%m-%d"),
+                                        .strftime(date_format),
                          "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                                        .strftime("%Y-%m-%d")})
+                                        .strftime(date_format)})
     gexf.write(open(os.path.join(OutputDir,graph_name),'wb'))
 
     IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running Gephi network graphs at', True,

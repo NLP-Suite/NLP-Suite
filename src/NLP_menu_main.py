@@ -115,7 +115,6 @@ def clear(e):
     sentence_tools_var.set('')
     GUI_util.clear("Escape")
 
-
 window.bind("<Escape>", clear)
 
 # IO fields do not need to be checked for scripts that open their own GUI

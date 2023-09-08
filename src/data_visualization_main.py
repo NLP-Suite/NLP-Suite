@@ -479,7 +479,8 @@ def activate_csv_fields_selection(comingFromPlus=False):
         if len(csv_file_field_list) == 3:
             csv_field_menu.configure(state='disabled')
             dynamic_network_field_menu.config(state='normal')
-            mb.showwarning(title='Warning', message='You have selected the maximum number of fields (3) to visualize relations.\n\nPress the "Show" button to display your selection. Press the "Reset" button to clear your selection and start again.')
+            if dynamic_network_field_var.get()=='':
+                mb.showwarning(title='Warning', message='You have selected the maximum number of fields (3) to visualize relations.\n\nPress the "Show" button to display your selection. Press the "Reset" button to clear your selection and start again.')
     else:
         csv_field_menu.config(state='normal')
         dynamic_network_field_menu.config(state='normal')
@@ -507,8 +508,8 @@ dynamic_network_field_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+200, y_multiplier_integer,
                                    dynamic_network_field_menu,
-                                   False, False, True, False, 90, GUI_IO_util.visualization_csv_field_dynamic_network_lb_pos,
-                                   "Select the field to be used for a dynamic network graph (e.g., Sentence ID) if you wish to compute a dynamic network graph")
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Select the field to be used for a dynamic network graph (e.g., Sentence ID, Date) if you wish to compute a dynamic network graph.\nTHE OPTION IS CURRENTLY DISABLED.")
 
 Sankey_lb = tk.Label(window, text='Sankey parameters')
 # place widget with hover-over info
@@ -544,7 +545,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                    Sankey_limit2_menu,
                                    True, False, True, False, 90, GUI_IO_util.visualization_csv_field_dynamic_network_lb_pos,
                                    "Select the maximum number of categories for variable 2")
-
 
 Sankey_limit3_lb = tk.Label(window, text='Variable 3 max')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_dynamic_network_field_pos, y_multiplier_integer,
@@ -860,10 +860,13 @@ def activate_visualization_options(*args):
         time_mapper_checkbox.configure(state='disabled')
         csv_field_menu.configure(state='normal')
         dynamic_network_field_menu.configure(state='normal')
+        dynamic_network_field_menu.configure(state='disabled') # delete this line when date issue solved
+
         if relations_menu_var.get() == '':
             dynamic_network_field_menu.configure(state='disabled')
         elif relations_menu_var.get() == 'Gephi':
             dynamic_network_field_menu.configure(state='normal')
+            dynamic_network_field_menu.configure(state='disabled')  # delete this line when date issue solved
             Gephi_var.set(True)
             Sankey_var.set(False)
         elif relations_menu_var.get() == 'Sankey':
