@@ -189,7 +189,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             mb.showwarning("Warning",
                            "The selected treemap option with the use of numerical data requires a variable containing the numertical data.\n\nPlease, select the csv file field containing the numertical data and try again.")
             return
-        import RF_charts_treemaper_util
         #def treemaper(data,outputFilename,interest,var,extra_dimension_average,average_variable=None):
         outputFiles = charts_util.treemaper(inputFilename, outputFilename,
                                                                temp_interest, label, use_numerical_variable_var.get(),csv_field2_var)

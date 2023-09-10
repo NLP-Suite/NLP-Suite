@@ -121,8 +121,8 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, False,'')
 #   selectFile or selectDirectory in IO_files_util
 # initial folders are setup in IO_files_util
 
-# config_input_output_alphabetic_options, config_input_output_full_options, missingIO = config_util.read_config_file(config_filename, config_input_output_numeric_options)
-config_input_output_alphabetic_options, missingIO, config_file_exists = config_util.read_config_file(config_filename, config_input_output_numeric_options)
+
+config_input_output_alphabetic_options, missing_IO, config_file_exists = config_util.read_config_file(config_filename, config_input_output_numeric_options)
 # set existing GUI options
 
 # TODO Must relay the widget here to display hover-over information, although the widget has been laid in GUI_util
@@ -727,18 +727,25 @@ def close_GUI(IO_configuration_upon_entry):
         missing_input = True
     if GUI_util.output_dir_path.get()=='':
         missing_output = True
+    if 'default_IO_config' in config_filename:
+        msg = '\n\nYou are setting up the default IO options for the NLP Suite. All GUIs rely on these options as saved in the config file "NLP_default_IO_config.cs."' \
+                    '\n\nYOU WILL NOT BE ABLE TO RUN ANY ALGORITHMS IN THE NLP SUITE WITHOUT SETTING UP THE INPUT/OUTPUT OPTIONS.'
     if missing_input and missing_output:
-        msg = 'You MUST select either an INPUT TXT file or an INPUT files directory.\n\nYou MUST also select an OUTPUT files directory where all output files from the NLP Suite algorithms will be saved.\n\nDo you want exit the NLP_setup IO_main script anyway?'
+        msg = msg  + '\n\nYou MUST select either an INPUT TXT file or an INPUT files directory.\n\nYou MUST also select an OUTPUT files directory where all output files from the NLP Suite algorithms will be saved.'
     if missing_input and not missing_output:
-        msg = 'You MUST select either an INPUT TXT file or an INPUT files directory.\n\nDo you want exit the NLP_setup IO_main script anyway?'
+        msg = msg  + 'You MUST select either an INPUT TXT file or an INPUT files directory.'
     if not missing_input and missing_output:
-        msg = 'You MUST select an OUTPUT files directory where all output files from the NLP Suite algorithms will be saved.\n\nDo you want exit the NLP_setup IO_main script anyway?'
-    if msg!='':
+        msg = msg  + 'You MUST select an OUTPUT files directory where all output files from the NLP Suite algorithms will be saved.'
+    if msg!='' and missing_IO!='':
+        msg = msg + '\n\nAre you sure you want to EXIT the NLP_setup IO_main script anyway?'
         answer = tk.messagebox.askyesno("Warning", msg)
+
         if not answer:
             return
 
     import NLP_setup_update_util
+    #@@@
+    answer = False
     if Error: # old config file without sort order; save automatically
         save_config(config_input_output_alphabetic_options)
     else:
@@ -764,10 +771,10 @@ GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_mult
 if err_msg!="":
     mb.showwarning(title='Warning', message=err_msg)
     mb.showwarning(title='Warning',
-               message="The config file " + config_filename + " could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default NLP package and language options then click on the CLOSE button to save your options.")
+               message="The config file " + config_filename + " could not be found in the sub-directory 'config' of your main NLP Suite folder.\n\nPlease, setup the default Input/Output (I/O) options then click on the CLOSE button to save your options.")
 
-if missingIO or err_msg!='':
-    answer = tk.messagebox.askyesno("Warning", 'Do you want to watch the video on how to setup Input/Output options?')
+if missing_IO:
+    answer = tk.messagebox.askyesno("Warning", 'Do you want to watch the video on how to setup Input/Output (I/O) options?')
     if answer:
         GUI_util.videos_dropdown_field.set('Setup Input/Output (I/O) options')
         # GUI_util.watch_video(videos_lookup, scriptName)
