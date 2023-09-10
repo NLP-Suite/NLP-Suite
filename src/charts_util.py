@@ -389,7 +389,6 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     #   the first item is the column of numeric values
     #   the second item is the X-axis
     #   see the example of call in get_ngramlist
-    # if we
     headers = IO_csv_util.get_csvfile_headers_pandas(inputFilename)
     if len(headers)==0:
         IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Empty csv file',

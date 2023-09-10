@@ -198,7 +198,7 @@ pydict["Annotator - hedge/uncertainty"] = ["", 0]
 pydict["CoNLL table analyzer - Search the CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["CoNLL table analyzer - Clause, noun, verb, function words frequencies"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Statistics (csv files)"] = ["statistics_csv_main.py", 1]
-pydict["Statistics (txt files)"] = ["style_analysis_main.py", 1]
+pydict["Statistics (txt files)"] = ["statistics_txt_ALL_main.py", 1] # ["style_analysis_main.py", 1]
 pydict["Co-Reference PRONOMINAL resolution (via Stanford CoreNLP)"] = ["parsers_annotators_main.py", 1]
 pydict["Co-Occurrences viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
 pydict["N-grams viewer"] = ["NGrams_CoOccurrences_Viewer_main.py", 1]
@@ -310,7 +310,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                                              "The checkbox, always disabled, is ticked ON when the I/O options have been setup.\nIf the checkbox is OFF, click on the 'SETUP default I/O options...' button to set up.")
 
 def setup_IO():
-    GUI_util.setup_IO_configuration_options(False,scriptName,True)
+    GUI_util.setup_IO_configuration_options(False,scriptName, silent=True, open_setup_IO_GUI=True)
     setup_IO_checkbox()
 
 def setup_IO_checkbox():
@@ -318,9 +318,9 @@ def setup_IO_checkbox():
     # state = str(GUI_util.run_button['state'])
     # if state != 'disabled':
 
-    config_input_output_alphabetic_options, missingIO, config_file_exists = config_util.read_config_file(config_filename, config_input_output_numeric_options)
+    config_input_output_alphabetic_options, missing_IO, config_file_exists = config_util.read_config_file(config_filename, config_input_output_numeric_options)
 
-    if missingIO=='':
+    if missing_IO=='':
         setup_IO_OK_checkbox_var.set(1)
     else:
         setup_IO_OK_checkbox_var.set(0)

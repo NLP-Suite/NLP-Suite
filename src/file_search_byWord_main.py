@@ -60,9 +60,10 @@ def run(inputFilename,inputDir, outputDir,
 
     if search_by_keyword:
         # check create_subcorpus_var
-        filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, config_filename, search_by_dictionary,
-                                                  search_by_keyword, search_keyword_values, create_subcorpus_var, search_options_list, language,
-                                                  createCharts, chartPackage, config_filename)
+        filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, config_filename,
+                            search_by_dictionary, search_by_keyword,
+                            search_keyword_values, create_subcorpus_var, search_options_list, language,
+                            createCharts, chartPackage)
 
     if extract_sentences_var:
         file_search_byWord_util.search_extract_sentences(window, inputFilename, inputDir, outputDir, config_filename,

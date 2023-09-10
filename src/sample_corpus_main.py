@@ -46,8 +46,11 @@ def run(window, inputFilename, inputDir, outputDir, selectedFile,
 
         import file_search_byWord_util
         outputDir = os.path.join(inputDir, 'subcorpus_search')
-        filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, search_by_dictionary=False,
-                                              search_by_search_keywords=True, search_keywords_list=keywords_inDocument, create_subcorpus_var=True, search_options_list=[], lang='English',
+
+        filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename,inputDir,outputDir,config_filename,
+                                              search_by_dictionary=False, search_by_search_keywords=True,
+                                              search_keywords_list=keywords_inDocument,
+                                              create_subcorpus_var=True, search_options_list=[], lang='English',
                                               createCharts=createCharts, chartPackage=chartPackage)
     else:
         mb.showwarning(title='Warning',message='The selected option is not available yet. Please, check back soon.\n\nSorry!')

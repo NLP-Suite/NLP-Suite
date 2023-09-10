@@ -39,7 +39,8 @@ def find_k_adjacent_elements(s, sv, kplus,kminus):
     after_k = s[idx+1:min(n, idx+kplus+1)]
     return prior_k + [sv] + after_k
 
-def search_sentences_documents(inputFilename, inputDir, outputDir, configFileName, search_by_dictionary, search_by_search_keywords, search_keywords_list,
+def search_sentences_documents(inputFilename, inputDir, outputDir, configFileName,
+        search_by_dictionary, search_by_search_keywords, search_keywords_list,
         create_subcorpus_var, search_options_list, lang, createCharts, chartPackage):
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
@@ -324,8 +325,9 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         if len(corpus_to_copy) > 0:
             for file in corpus_to_copy:
                 shutil.copy(file, outputDir)
-            mb.showwarning(title='Warning',message='The search function has created a subcorpus of the files containing the search word(s) "' + search_list + '" as a subdirectory called "subcorpus_search" of the input directory:\n\n'+outputDir + \
-                           '\n\nA set of csv files have also been exported to the same directory.')
+            mb.showwarning(title='Warning',message='The search function has created a subcorpus of the files containing the search word(s) "'
+                            + search_keywords_list + '" as a subdirectory called "subcorpus_search" of the input directory:\n\n'
+                            + outputDir + '\n\nA set of csv files have also been exported to the same directory.')
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the Search word function at',
                                        True, '', True, startTime,  False)

@@ -225,7 +225,7 @@ def save_NLP_package_language_config(window, currently_selected_options,
 # each sublist has four items: path, date format, date separator, date position
 # e.g., [['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/The Three Little Pigs.txt', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['C:\\Program Files (x86)\\NLP_backup\\Output', '', '', '']]
 # 5 fields: label/path + sort order + 3 date items (Item separator character(s), Date format, Date position)
-#@@@RF also added sort order
+
 def get_template_config_csv_file(config_input_output_numeric_options, config_input_output_alphabetic_options):
     IO_configuration =[]
     fileType=getFiletype(config_input_output_numeric_options) # different types of input files
@@ -254,7 +254,6 @@ def get_template_config_csv_file(config_input_output_numeric_options, config_inp
                     IO_configuration.append([configuration_column_label, sublist[0]])
                 config_input_output_alphabetic_options=IO_configuration
         else:
-            #@@@RF
             # 5 fields: label/path + sort order + 3 date items (Item separator character(s), Date format, Date position)
             IO_configuration.append([IO_configuration_label[index], '', '', '', 0])
     return IO_configuration
@@ -305,10 +304,11 @@ def read_config_file(config_filename, config_input_output_numeric_options):
         # setup an empty double list config_input_output_alphabetic_options, WITHOUT header
         # @@@RF also added sort order
         config_input_output_alphabetic_options=get_template_config_csv_file(config_input_output_numeric_options,config_input_output_alphabetic_options)
-    missingIO=get_missing_IO_values(config_input_output_numeric_options, config_input_output_alphabetic_options)
-    return config_input_output_alphabetic_options, missingIO, config_file_exists
+    missing_IO=get_missing_IO_values(config_input_output_numeric_options, config_input_output_alphabetic_options)
+    return config_input_output_alphabetic_options, missing_IO, config_file_exists
 
 # called by read_config_file above
+# returns the IO labels that are missing: Filename, Dir, output Dir
 def get_missing_IO_values(config_input_output_numeric_options, config_input_output_alphabetic_options):
     missing_IO=''
     # loop through the 4 input/output options: input filename, input man dir, input secondary dir, output dir
@@ -341,21 +341,27 @@ def get_missing_IO_values(config_input_output_numeric_options, config_input_outp
         index = index + 1
     return missing_IO
 
-# check_missingIO is called from GUI_util
+# check_missing_IO is called from GUI_util
 # the function checks for missing IO values, displays messages and sets the RUN button to normal or disabled
-def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_display_brief, silent=False):
+def check_missing_IO(window, config_filename, scriptName, IO_setup_display_brief, missing_IO, silent=False):
+    # missing_IO=''
     if config_filename=='NLP_config.csv' or 'NLP_menu_main' in scriptName:
         config_filename = 'NLP_default_IO_config.csv'
     # the IO_button_name error message changes depending upon the call
     button = "button"
-    # there is no RUN button when setting up IO information so the call to check_missingIO should be silent
+    # there is no RUN button when setting up IO information so the call to check_missing_IO should be silent
     # setup all potential error messages
-    run_button_disabled_msg = "The RUN button is disabled until the required information for the selected Input/Output fields is entered.\n\n"
-    if "IO_setup_main" in scriptName:
+
+    # similar messages for run_button_disabled_msg are displayed in GUIO_util.activateRunButton
+    if 'NLP_menu_main' in scriptName:
+        run_button_disabled_msg = "The RUN button in ALL GUIs will be disabled, and you will not be able to run any algorithm, until the expected I/O options are entered.\n\n"
+    else:
+        run_button_disabled_msg = "The RUN button is disabled until the required information for the selected Input/Output fields is entered.\n\n"
+    if "setup_IO_main" in scriptName:
         run_button_disabled_msg = ""
         enter_required_IO='Press OK to enter the required I/O information using the \'Select INPUT and Select OUTPUT\' buttons at the top of the GUI.\nPress CANCEL to exit without entering I/O information then press CLOSE.'
     elif 'NLP_menu_main' in scriptName:
-        enter_required_IO="Please, click on the top button 'Setup default I/O options: INPUT corpus file(s) and OUTPUT files directory' to enter the required I/O information."
+        enter_required_IO="The 'NLP_setup_IO_main' GUI will now open where you can enter missing required IO information.\n\nYou can also click on the top button 'Setup default I/O options: INPUT corpus file(s) and OUTPUT files directory' to enter the required I/O information."
     else:
         if not IO_setup_display_brief:
             enter_required_IO='' #'Press OK to enter the required I/O information using the \'Select INPUT and Select OUTPUT\' buttons at the top of the GUI.\nPress CANCEL to exit without entering I/O information.'
@@ -375,19 +381,20 @@ def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_displ
     if config_filename == "social-science-research_config.csv":
         # RUN button always active since several options are available and IO gets checked in the respective scripts
         Run_Button_Off=False
-        missingIO=''
+        missing_IO=''
     mutually_exclusive_msg=''
-    if "Input txt filename with path" in missingIO and "Input files directory" in missingIO:
-        mutually_exclusive_msg='The two I/O options - "Input txt filename with path" and "Input files directory" - are MUTUALLY EXCLUSIVE. YOU CAN ONLY HAVE ONE OR THE OTHER BUT NOT BOTH. In other words, you can choose to work with a sigle file in input or with many files stored in a directory.\n\n'
-    answer=True # = cancel in mb.askokcancel
-    if missingIO!='':
+    # test for "filename with path" since the actual label could be "Input txt filename with path" or "Input csv filename with path"
+    if "filename with path" in missing_IO and "Input files directory" in missing_IO:
+        mutually_exclusive_msg='The two I/O options - "Input filename with path" and "Input files directory" - are MUTUALLY EXCLUSIVE. YOU CAN ONLY HAVE ONE OR THE OTHER BUT NOT BOTH. In other words, you can choose to work with a sigle file in input or with many files stored in a directory.\n\n'
+    open_setup_IO_GUI=True # = cancel in mb.askokcancel
+    if missing_IO!='':
         Run_Button_Off = True
         if not silent:
-            if (not IO_setup_display_brief) and (not "IO_setup_main" in scriptName):
-                mb.showwarning(title='Warning', message='The following required INPUT/OUTPUT information is missing in config file ' + config_filename + ':\n\n' + missingIO + '\n' + mutually_exclusive_msg + run_button_disabled_msg + enter_required_IO)
-                answer=False
+            if (not IO_setup_display_brief) and (not "setup_IO_main" in scriptName):
+                mb.showwarning(title='Warning', message='The following required INPUT/OUTPUT information is missing in config file ' + config_filename + ':\n\n' + missing_IO + '\n' + mutually_exclusive_msg + run_button_disabled_msg + enter_required_IO)
+                # open_setup_IO_GUI=False
             else:
-                answer=mb.askokcancel(title='Warning', message='The following required INPUT/OUTPUT information is missing in config file ' + config_filename + ':\n\n' + missingIO + '\n' + mutually_exclusive_msg + run_button_disabled_msg + enter_required_IO)
+                open_setup_IO_GUI=mb.askokcancel(title='Warning', message='The following required INPUT/OUTPUT information is missing in config file ' + config_filename + ':\n\n' + missing_IO + '\n' + mutually_exclusive_msg + run_button_disabled_msg + enter_required_IO)
     if Run_Button_Off==True:
         run_button_state="disabled"
     else:
@@ -396,7 +403,7 @@ def check_missingIO(window,missingIO,config_filename, scriptName, IO_setup_displ
         window.focus_force()
     except:
         pass
-    return run_button_state, answer
+    return run_button_state, open_setup_IO_GUI
 
 # every IO widget, files or directories, have a line in the config file
 # config lines are blank, if NOT required by the specific NLP script
@@ -438,8 +445,7 @@ def get_date_options(config_filename, config_input_output_numeric_options):
 
     # in the NLP_setup_IO_config there are 6 columns and 4 rows (each row for input file, input dir1, input dir2, output dir):
     # 5 fields: label/path + sort order + 3 date items (Item separator character(s), Date format, Date position)
-    #@@@RF
-    config_input_output_alphabetic_options, missingIO, config_file_exists = read_config_file(config_filename, config_input_output_numeric_options)
+    config_input_output_alphabetic_options, missing_IO, config_file_exists = read_config_file(config_filename, config_input_output_numeric_options)
     if len(config_input_output_alphabetic_options)>0:
         index=0
         # define variable with default values
