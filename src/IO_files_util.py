@@ -213,40 +213,49 @@ def complete_order(bb, c):
 
 
 
-def do_compare(input_list, compare_split, compare_date, file_end, date_loc, ordering):
-    def compare(pair1, pair2):
+def do_compare(input_list, compare_split, date_format, file_end, date_loc, ordering):
+    def compare(filename1, filename2):
+        if not compare_split in filename1:
+            print("Non fatal filename error in filename separator. Error ignored.\nThe filename separator '" + compare_split + "' stored for the filenames in your corpus is not contained in the filename\n   " + filename1 + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n")
+            return -1
+        if not compare_split in filename2:
+            #  The information may have been entered incorrectly when setting up INPUT/OUTPUT (I/O) configuration. Please, check and edit the information. The information may have been entered incorrectly when setting up INPUT/OUTPUT (I/O) configuration. Please, check and edit the information.
+            print("Non fatal filename error in filename separator. Error ignored.\nThe filename separator '" + compare_split + "' stored for the filenames in your corpus is not contained in the filename\n   " + filename2 + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n")
+            return -1
+
         try:
-            c1 = os.path.basename(pair1).replace(file_end, '')
-            c2 = os.path.basename(pair2).replace(file_end, '')
+            filename1 = os.path.basename(filename1).replace(file_end, '')
+            filename2 = os.path.basename(filename2).replace(file_end, '')
 
-            if compare_split in c1 and compare_split in c2:
+            if compare_split in filename1 and compare_split in filename2:
                 # scenario where filenames contain separators
-                c1 = c1.split(compare_split)
-                c2 = c2.split(compare_split)
+                filename1 = filename1.split(compare_split)
+                filename2 = filename2.split(compare_split)
                 i = 0
-                q = complete_order(len(c1), [int(x) for x in ordering.split(",")])
+                q = complete_order(len(filename1), [int(x) for x in ordering.split(",")])
 
-                while i <= len(c1) - 1:
+                while i <= len(filename1) - 1:
                     if q[i] + 1 == date_loc:
-                        if help_date(c1, c2, date_loc - 1, file_end, compare_date):
+                        if help_date(filename1, filename2, date_loc - 1, file_end, date_format):
                             return -1
                         else:
                             return 1
                     else:
-                        if c1[q[i]] < c2[q[i]]:
+                        if filename1[q[i]] < filename2[q[i]]:
                             return -1
                         else:
                             return 1
                     i += 1
             else:
-                # scenario where filenames are dates
-                val1 = parse_date(c1, compare_date)
-                val2 = parse_date(c2, compare_date)
+                # scenario where filenames contain dates
+                val1 = parse_date(filename1, date_format)
+                val2 = parse_date(filename2, date_format)
                 if val1 is not None and val2 is not None:
                     return -1 if val1 < val2 else 1
         except:
-            print("There must be at least one file that is incomparable due to split size error. But we skip it and proceed.")
-            print(pair1, pair2)
+            # The following pair of filenames are incompatible with the
+            print("Non fatal filename error: date error. Error ignored.\nThe date format " + date_format + " and/or date location " + str(date_location) + " stored for the filenames in your corpus are not valid for the filename\n   " + filename2 + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n")
+            print(filename1, "\n", filename2)
             return -1
 
     return sorted(input_list, key=functools.cmp_to_key(compare))
@@ -313,7 +322,7 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
         if str(sort_order) =="nan":
             sort_order = "1"
             IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
-                        'No sort order available.\n\nFiles will be read in using entire filename.', False,'',True,'',False)
+                        "Non fatal filename error: no sort order available. Error ignored. Files will be read without sorting.\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration' at the top of the GUI.\n\n", False,'',True,'',False)
         try:
             aa = float(sort_order)
             aa = int(aa)
@@ -329,13 +338,9 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
         if str(separator)=="nan":
             separator=' '
 
-        # print("=========")
-        # print(separator, date_format, fileType, date_pos,sort_order,inputDir+os.sep)
         try:
             files = do_compare(files, separator, date_format, fileType, date_pos,sort_order)
         except:
-            print('maybe error?')
-            print("Because of a significant error. We proceed using default logic.")
             files.sort()
         return files
 

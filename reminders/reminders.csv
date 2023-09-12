@@ -242,3 +242,9 @@ Your selected NLP package for basic functions (e.g., sentence splitting, tokeniz
 
 You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",OFF
 GIS,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags.",ON
+parsers_annotators,CoNLL table analyzer,"The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' GUI. When the GUI opens, you will need to select theGUI-specific I/O configuration.
+
+In the 'CoNLL table analyzer' GUI you can:
+
+  1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;
+  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words).",ON

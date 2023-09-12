@@ -306,7 +306,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # e.g., [['C:/Users/rfranzo/Desktop/NLP-Suite/lib/sampleData/The Three Little Pigs.txt', '', '', ''], ['', '', '', ''], ['', '', '', ''], ['C:\\Program Files (x86)\\NLP_backup\\Output', '', '', '']]
         config_input_output_alphabetic_options_temp, missing_IO, config_file_exists = config_util.read_config_file(config_filename_temp, config_input_output_numeric_options_temp)
         # add the CoNLL table file to the config file 'conll_table_analyzer_config.csv'
-        config_input_output_alphabetic_options_temp[0][1]=filesToOpen[0][0]
+        config_input_output_alphabetic_options_temp[0][1]=filesToOpen[0] #@@@[0] # outputfilename
         # add the output directory to the config file 'conll_table_analyzer_config.csv'
         config_input_output_alphabetic_options_temp[3][1] = outputDir
         config_util.write_IO_config_file(GUI_util.window, config_filename_temp, config_input_output_numeric_options_temp, config_input_output_alphabetic_options_temp, True)

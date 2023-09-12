@@ -576,13 +576,20 @@ def get_IO_options_list(saving=False):
     #   e.g., fileType='Input csv CoNLL filename with path'
     fileType = config_util.getFiletype(config_input_output_numeric_options)
 
-# check date
+    inputFilename_list = []
     input_item_date = []
 
     # filename_embeds_date_var, date_format_var, items_separator_var, date_position_var
     #   are all local to this GUI rather than on GUI_util
+    #@@@
+    # if filename_embeds_multiple_items_var.get():
+    #     input_item_date.append(items_separator_var.get())
+    #     input_item_date.append(sort_order_var.get())
+    #     inputFilename_list.append(items_separator_var.get())
+    #     if not '...' in sort_order_var.get():
+    #         inputFilename_list.append(sort_order_var.get())
+
     if filename_embeds_date_var.get():
-        input_item_date.append(items_separator_var.get())
         input_item_date.append(date_format_var.get())
         input_item_date.append(date_position_var.get())
         date_label = ' (Date: ' + str(date_format_var.get()) + ' ' + \
@@ -592,10 +599,11 @@ def get_IO_options_list(saving=False):
         date_label = ''
         # character separator, date format, date position
         input_item_date = ['', '', '']
+    #@@@
+    print("date_label",date_label)
 
 # input file -------------------------------------------------------------------------
 
-    inputFilename_list = []
     inputFilename_list.append(fileType)
     if not filename_embeds_date_var.get():
         fileName_no_date = IO_files_util.open_file_removing_date_from_filename(window, GUI_util.inputFilename.get(),
@@ -612,14 +620,23 @@ def get_IO_options_list(saving=False):
     else:
         inputFilename_list.append('')
 
-    # append sort order
-    if not '...' in sort_order_var.get():
-        if GUI_util.inputFilename.get()!='':
-            inputFilename_list.append(sort_order_var.get())
+    # append sort order and separator
+    # unfortunately, the sort order is saved as first column in the config file and separator second,
+    #   contrary to the display in the IO setup GUI)
+    if filename_embeds_multiple_items_var.get():
+        if not '...' in sort_order_var.get():
+            if GUI_util.inputFilename.get()!='':
+                #@@@
+                inputFilename_list.append(sort_order_var.get())
+                inputFilename_list.append(items_separator_var.get())  # append items separator
+            else:
+                inputFilename_list.append('') # append sort order
+                inputFilename_list.append('')  # append items separator
         else:
             inputFilename_list.append('') # append sort order
     else:
-        inputFilename_list.append('') # append sort order
+        inputFilename_list.append('')  # append sort order
+        inputFilename_list.append('') # append items separator
 
     # append date items
     if GUI_util.inputFilename.get() != '':
@@ -648,14 +665,19 @@ def get_IO_options_list(saving=False):
     else:
         inputDir_list.append('')
 
-    # append sort order
+    # append sort order and separator
+    # unfortunately, the sort order is saved as first column in the config file and separator second,
+    #   contrary to the display in the IO setup GUI)
     if not '...' in sort_order_var.get():
         if GUI_util.input_main_dir_path.get()!='':
             inputDir_list.append(sort_order_var.get())
+            inputDir_list.append(items_separator_var.get())  # append items separator
         else:
             inputDir_list.append('') # append sort order
+            inputDir_list.append('')  # append items separator
     else:
         inputDir_list.append('') # append sort order
+        inputDir_list.append('')  # append items separator
 
     # append date items
     if GUI_util.input_main_dir_path.get() != '':
@@ -681,15 +703,19 @@ def get_IO_options_list(saving=False):
     if not '...' in sort_order_var.get():
         if GUI_util.input_secondary_dir_path.get()!='':
             inputDir2_list.append(sort_order_var.get())
+            inputDir2_list.append(items_separator_var.get())
         else:
             inputDir2_list.append('')
+            inputDir2_list.append('')
     else:
+        inputDir2_list.append('')
         inputDir2_list.append('')
 
     inputDir2_list.extend(input_item_date)
 
 # output dir
 
+    # the output does not have separator, sort and date fields
     outputDir_list = []
     # outputDir_list.extend([GUI_util.output_dir_path.get(), '','',''])
     # if GUI_util.output_dir_path.get()!='':
@@ -699,7 +725,12 @@ def get_IO_options_list(saving=False):
     else:
         outputDir_list.append('')
     outputDir_list.append('') # sort order
+    outputDir_list.append('') # separator character
     outputDir_list.extend(input_item_date)
+
+    #@@@
+    print("inputFilename_list", inputFilename_list)
+    print("inputDir_list",inputDir_list)
 
     # combine all four Input/output options in a list
     current_config_input_output_alphabetic_options = []
@@ -713,6 +744,8 @@ def get_IO_options_list(saving=False):
 
 def save_config(config_input_output_alphabetic_options):
     current_config_input_output_alphabetic_options=get_IO_options_list(True)
+    #@@@
+    print("current_config_input_output_alphabetic_options",current_config_input_output_alphabetic_options)
     config_util.write_IO_config_file(window, config_filename, config_input_output_numeric_options,
                                      current_config_input_output_alphabetic_options, silent=False)
 
