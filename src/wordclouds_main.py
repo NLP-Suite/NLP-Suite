@@ -293,7 +293,7 @@ lemmatize_checkbox.config(text="Lemmas")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_lemmas_pos, y_multiplier_integer,
                                    lemmatize_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.wordclouds_lemmas_pos,
-                                   "Tick the checkbox to lemmatize words in the corpus; untick the checkbox to NOT lemmatize words."
+                                   "Untick the checkbox to NOT lemmatize words; tick the checkbox to lemmatize words in the corpus."
                                    "\nLemmatization is based on Stanza.")
 
 stopwords_checkbox = tk.Checkbutton(window, variable=exclude_stopwords_var,
@@ -304,7 +304,7 @@ stopwords_checkbox.config(text="Stopwords")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_stopwords_pos, y_multiplier_integer,
                                    stopwords_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "Tick the checkbox to EXCLUDE stopwords; untick to INCLUDE stopwords."
+                                   "Untick the checkbox to INCLUDE stopwords; tick the checkbox to EXCLUDE stopwords."
                                    "\nStopwords are provided by the Wordclouds package and printed in command line/terminal when stopwords are included.")
 
 punctuation_checkbox = tk.Checkbutton(window, variable=exclude_punctuation_var,
@@ -315,7 +315,7 @@ punctuation_checkbox.config(text="Punctuation")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_punctuation_pos, y_multiplier_integer,
                                    punctuation_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.wordclouds_punctuation_pos,
-                                   "Tick the checkbox to EXCLUDE punctuation; untick the checkbox to INCLUDE punctuation")
+                                   "Untick the checkbox to EXCLUDE punctuation; tick the checkbox to INCLUDE punctuation")
 
 lowercase_checkbox = tk.Checkbutton(window, variable=lowercase_var,
                                                        onvalue=1, offvalue=0)
@@ -325,7 +325,7 @@ lowercase_checkbox.config(text="Lowercase")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_lowercase_pos, y_multiplier_integer,
                                    lowercase_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "Tick the checkbox to process corpus words in lowercase; untick to NOT process corpus words in lowercase")
+                                   "Untick the checkbox to NOT process corpus words in lowercase; tick the checkbox to process corpus words in lowercase")
 
 collocation_checkbox = tk.Checkbutton(window, variable=collocation_var,
                                                        onvalue=1, offvalue=0)
@@ -335,15 +335,14 @@ collocation_checkbox.config(text="Collocation")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_collocation_pos, y_multiplier_integer,
                                    collocation_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "Tick the checkbox to process multiple words together (e.g., standing up); untick to NOT process multiple words together")
+                                   "Untick the checkbox to NOT process multiple words together; tick the checkbox to process multiple words together (e.g., standing up)")
 
 differentPOS_differentColor_checkbox.config(text="Different colors by POS tags")
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_color_by_POS_tags, y_multiplier_integer,
                                    differentPOS_differentColor_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "Tick the checkbox to process in different colors words by their POS value: nouns, verbs, adjectives, and adverbs."
-                                   "untick to NOT process words in different colors by their POS value.\n"
+                                   "Untick the checkbox to NOT process words in different colors by their POS value; tick the checkbox to process in different colors words by their POS value: nouns, verbs, adjectives, and adverbs.\n"
                                    "POS values are computed by Stanza."
                                    "\nRED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, and GREY for ADVERBS.")
 
@@ -390,7 +389,7 @@ use_contour_only_checkbox.config(text="Use image contour only")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.contour_only_pos, y_multiplier_integer,
                                    use_contour_only_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.wordclouds_punctuation_pos,
-                                   "Tick/untick the checkbox to use only the image contour rather than the image itself")
+                                   "Tick/untick the checkbox to use (or not use) only the image contour rather than the image itself")
 def get_image(window,title,fileType):
     selectedImage_var.set('')
     initialFolder = os.path.dirname(os.path.abspath(__file__))
