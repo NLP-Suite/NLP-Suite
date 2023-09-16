@@ -36,9 +36,7 @@ import charts_Excel_util
 import statistics_csv_util
 
 # Prepare the data (data_to_be_plotted) to be used in charts_Excel_util.create_excel_chart with the format:
-#   the variable has this format:
-# (['little, pig', 22])
-#   one serie: [[['Name1','Frequency'], ['A', 7]]]
+#   one series: [[['Name1','Frequency'], ['A', 7]]]
 #   two series: [[['Name1','Frequency'], ['A', 7]], [['Name2','Frequency'], ['B', 4]]]
 #   three series: [[['Name1','Frequency'], ['A', 7]], [['Name2','Frequency'], ['B', 4]], [['Name3','Frequency'], ['C', 9]]]
 #   more series: ..........
@@ -101,10 +99,10 @@ def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage
     outputFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
                                                   inputFilename, None, outputDir, False,
                                                   createCharts, chartPackage,
-                                                  # selected_col=columns_to_be_plotted_numeric,
-                                                  selected_col=columns_to_be_plotted_yAxis,
+                                                  # plot_cols=columns_to_be_plotted_numeric,
+                                                  plot_cols=columns_to_be_plotted_yAxis,
                                                   hover_col=[],
-                                                  group_col=groupByList,
+                                                  group_cols=groupByList,
                                                   complete_sid=False,
                                                   chart_title=chart_title,
                                                   fileNameType=
@@ -129,8 +127,15 @@ def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage
     # 2 is the Document ID
     # 3 is the Document
     # 4 is Frequency
-    # sel_column_name = IO_csv_util.get_headerValue_from_columnNumber(headers, 1)
-    columns_to_be_plotted_byGroup = [[2, 0, 3]]  # will give different bars for each value
+    # sel_column_name = IO_csv_util. = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)(headers, 1)
+    #@@@
+    headers=IO_csv_util.get_csvfile_headers(inputFilename, ask_Question=False)
+    docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)
+    groupBy_Field = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_yAxis[0], inputFilename)
+
+    # columns_to_be_plotted_byGroup = [[docCol, groupBy_Field, 3]]  # will give different bars for each value
+    columns_to_be_plotted_byGroup = [[docCol, groupBy_Field]]  # will give different bars for each value
+    # columns_to_be_plotted_byGroup = [[2, 0, 3]]  # will give different bars for each value
     # columns_to_be_plotted_byGroup = [[1, 4, 0, 2, 3]] # will give different bars for each value
     # outputFileLabel='by_' + str(groupByList[0])
     # chart_title='Frequency Distribution of ' + str(columns_to_be_plotted_yAxis[0]) + ' by ' + str(groupByList[0])
@@ -178,11 +183,11 @@ def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage
 #             GUI_util.window,
 #             inputFilename, None, outputDir,
 #             False, createCharts, chartPackage,
-#             # selected_col=columns_to_be_plotted_numeric,
-#             selected_col=columns_to_be_plotted_yAxis,
+#             # plot_cols=columns_to_be_plotted_numeric,
+#             plot_cols=columns_to_be_plotted_yAxis,
 #             hover_col=[],
 #             chart_title=chart_title + ' by Document',
-#             group_col=['Document ID', 'Document'],
+#             group_cols=['Document ID', 'Document'],
 #             complete_sid=False,
 #             fileNameType=columns_to_be_plotted_yAxis[0], chartType='', pivot=pivot)
 #         new_inputFilename = temp_outputFilename[0]
@@ -218,7 +223,7 @@ def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage
 #                 # if number_column_entries > 1:
 #                 #     answer = tk.messagebox.askyesno("Warning", "For the chart of '" + sel_column_name + "' by document, do you want to:\n\n  (Y) sum the values across all " + str(number_column_entries) + " '" + column_name + "';\n  (N) use all " + str(number_column_entries) + " distinct column values.")
 #                 #     if answer:
-#                 #         # [[1, 3]] will give one bar for each doc, the sum of all values in selected_column to be plotted
+#                 #         # [[1, 3]] will give one bar for each doc, the sum of all values in plot_colsumn to be plotted
 #                 #         columns_to_be_plotted_byDoc = [[1, 3]]
 #                 #     else:
 #                 #         # [[1, 3, 2]] will give different bars for each value
@@ -275,9 +280,9 @@ def visualize_chart_bySent(inputFilename, outputDir, createCharts, chartPackage,
             False,
             createCharts,
             chartPackage,
-            selected_col=columns_to_be_plotted_numeric,
+            plot_cols=columns_to_be_plotted_numeric,
             hover_col=[],
-            group_col=[['Document ID', 'Document', 'Sentence ID']],
+            group_cols=[['Document ID', 'Document', 'Sentence ID']],
             complete_sid=True,
             fileNameType='CSV',
             chartType='',
@@ -351,12 +356,15 @@ def visualize_chart_bySent(inputFilename, outputDir, createCharts, chartPackage,
 #   all double lists [[]]
 #   BUT they are passed by calling functions as single lists []
 #       and converted to double lists for run_all
-#       e.g., columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment score (Median)', 'Arousal score (Median)', 'Dominance score (Median)']
-#       e.g., columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Yngve score', 'Frazier score']
-#       e.g., columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Yngve score']
+#       e.g., columns_to_be_plotted_xAxis=[],
+#             columns_to_be_plotted_yAxis=['Sentiment score (Median)', 'Arousal score (Median)', 'Dominance score (Median)']
+#       e.g., columns_to_be_plotted_xAxis=[],
+#             columns_to_be_plotted_yAxis=['Yngve score', 'Frazier score']
+#       e.g., columns_to_be_plotted_xAxis=[],
+#             columns_to_be_plotted_yAxis=['Yngve score']
 # the variable groupByList,plotList, chart_title_label are used to compute column statistics
-#   groupByList is typically the list ['Document ID', 'Document']
-#   plotList is the list of fields that want to be plotted
+#   groupByList is typically the list ['Document ID', 'Document'] or just ['Document']
+#   plotList is the list of fields to be plotted
 #   chart_title_label is used as part of the chart_title when plotting the fields statistics
 # X-axis
 
@@ -402,10 +410,9 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         field_number_xAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_xAxis[0],
                                                                           inputFilename)
 
-    # if "Document ID" in headers:
     if "Document" in str(groupByList):
         docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)
-        # docCol = docCol +1 # we need to visualize the doc filename
+        # we need to visualize the doc filename
         byDoc = True
     else:
         byDoc = False
@@ -465,6 +472,8 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     print("\n\n\nRecords in inputfile (in charts_util)",nRecords, '  ', inputFilename)
 
 # standard bar chart ------------------------------------------------------------------------------
+    # Form	Lemma	POS	Record ID	Sentence ID	Document ID	Document
+    # columns_to_be_plotted_numeric = [[0,0], [1,1]] with count_var = 1 since these values need to be counted
     if len(columns_to_be_plotted_numeric[0])>0: # compute only if the double list is not empty
         outputFiles = run_all(columns_to_be_plotted_numeric, inputFilename, outputDir,
                                                   outputFileLabel=outputFileNameType,
@@ -584,6 +593,27 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 #   you need to run first statistics_csv_util.compute_csv_column_frequencies_with_aggregationgroupBy and then run_all
 #   Examples of this can be found in parsers_annotators_visualization in parsers_annotators_visualization
 #   and in visualize_chart in charts_util
+
+
+# TODO columns_to_be_plotted comes in a single list to be exported to run_all as double list
+# columns_to_be_plotted, columns_to_be_plotted_bySent, columns_to_be_plotted_byDoc
+#   all double lists [[]]
+#   BUT they are passed by calling functions as single lists []
+#       and converted to double lists for run_all
+#       e.g., columns_to_be_plotted_xAxis=[],
+#             columns_to_be_plotted_yAxis=['Sentiment score (Median)', 'Arousal score (Median)', 'Dominance score (Median)']
+#       e.g., columns_to_be_plotted_xAxis=[],
+#             columns_to_be_plotted_yAxis=['Yngve score', 'Frazier score']
+#       e.g., columns_to_be_plotted_xAxis=[],
+#             columns_to_be_plotted_yAxis=['Yngve score']
+# the variable groupByList,plotList, chart_title_label are used to compute column statistics
+#   groupByList is typically the list ['Document ID', 'Document'] or just ['Document']
+
+# Form values	Frequencies of Form	Lemma values	Frequencies of Lemma
+# [[0,0], [1,1]] will plot two series, 1 and 2 (e.g., Form & Lemma values) as bar charts, one bar next the other
+
+#   plotList is the list of fields to be plotted
+#   chart_title_label is used as part of the chart_title when plotting the fields statistics
 def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             chartPackage, chart_type_list,chart_title, column_xAxis_label_var,
             hover_info_column_list=[],
@@ -644,16 +674,16 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
         # the lines below handle specifically the "Form-Lemma" annotator because "form-lemma" is not processed in statistics_csv_util.py
         withHeader_var = IO_csv_util.csvFile_has_header(inputFilename)  # check if the file has header
         data, headers = IO_csv_util.get_csv_data(inputFilename, withHeader_var)  # get the data and header
-        def double_level_grouping_and_frequency(data, selected_col, group_col):
+        def double_level_grouping_and_frequency(data, plot_cols, group_cols):
             # Calculate the counts for each column
-            group_col_count = data[group_col[0]].value_counts().reset_index()
-            group_col_count.columns = [group_col[0], f'Frequency_{group_col[0]}']
+            group_cols_count = data[group_cols[0]].value_counts().reset_index()
+            group_cols_count.columns = [group_cols[0], f'Frequency_{group_cols[0]}']
 
-            selected_col_count = data.groupby(group_col)[selected_col[0]].value_counts().reset_index(
-                name=f'Frequency_{selected_col[0]}')
+            plot_cols_count = data.groupby(group_cols)[plot_cols[0]].value_counts().reset_index(
+                name=f'Frequency_{plot_cols[0]}')
 
             # Merge the counts back into the original dataframe
-            data_final = pd.merge(group_col_count, selected_col_count, how='inner', on=group_col[0])
+            data_final = pd.merge(group_cols_count, plot_cols_count, how='inner', on=group_cols[0])
 
             data_final = data_final.drop_duplicates()  # Remove potential duplicate rows
 

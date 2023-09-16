@@ -597,8 +597,6 @@ TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download 
                'Stanford CoreNLP performance & accuracy':'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf',
                'Stanford CoreNLP parser': 'TIPS_NLP_Stanford CoreNLP parser.pdf',
                'Stanford CoreNLP memory issues': 'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
-               'NER (Named Entity Recognition)': 'TIPS_NLP_NER (Named Entity Recognition).pdf',
-               'Stanford CoreNLP date extractor (NER normalized date)': 'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
                'Stanford CoreNLP OpenIE': 'TIPS_NLP_Stanford CoreNLP OpenIE.pdf',
                'Stanford CoreNLP coreference resolution': 'TIPS_NLP_Stanford CoreNLP coreference resolution.pdf',
                'Excel - Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
@@ -610,17 +608,19 @@ TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download 
                'Things to do with words: Overall view': 'TIPS_NLP_Things to do with words Overall view.pdf',
                'Stanford CoreNLP supported languages':'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
                'CoNLL Table': 'TIPS_NLP_Stanford CoreNLP CoNLL table.pdf',
+               'NER (Named Entity Recognition)': 'TIPS_NLP_NER (Named Entity Recognition).pdf',
                'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
-               'Gender annotator':'TIPS_NLP_Stanford CoreNLP gender annotator.pdf',
-               'Quote annotator':'TIPS_NLP_Stanford CoreNLP quote annotator.pdf',
-               'Normalized NER date annotator':'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
+               'DEPREL (Stanford Dependency Relations)': "TIPS_NLP_DEPREL (Dependency Relations) Stanford CoreNLP.pdf",
+               'Stanford CoreNLP gender annotator':'TIPS_NLP_Stanford CoreNLP gender annotator.pdf',
+               'Stanford CoreNLP date extractor (NER normalized date)': 'TIPS_NLP_Stanford CoreNLP date extractor.pdf',
                'Sentiment analysis':'TIPS_NLP_Sentiment analysis.pdf',
                'Noun Analysis': "IPS_NLP_Noun Analysis.pdf",
                'Verb Analysis': "TIPS_NLP_Verb Analysis.pdf",
                'Function Words Analysis': 'TIPS_NLP_Function Words Analysis.pdf',
                'Clause Analysis': 'TIPS_NLP_Clause analysis.pdf'}
                # 'Java download install run': 'TIPS_NLP_Java download install run.pdf',
-TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy', 'Stanford CoreNLP download', 'Stanford CoreNLP parser', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor (NER normalized date)', 'Stanford CoreNLP coreference resolution', 'Stanford CoreNLP OpenIE', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'NER (Named Entity Recognition)','Gender annotator','Quote annotator','Normalized NER date annotator','Sentiment analysis','Things to do with words: Overall view' #, 'Java download install run'
+# 'Stanford CoreNLP quote annotator' NOT available
+TIPS_options = 'utf-8 encoding', 'Excel - Enabling Macros', 'Excel smoothing data series', 'csv files - Problems & solutions', 'Statistical measures', 'English Language Benchmarks', 'Things to do with words: Overall view', 'Stanford CoreNLP supported languages', 'Stanford CoreNLP performance & accuracy', 'Stanford CoreNLP download', 'Stanford CoreNLP parser', 'Stanford CoreNLP memory issues', 'Stanford CoreNLP date extractor (NER normalized date)', 'Stanford CoreNLP coreference resolution', 'Stanford CoreNLP OpenIE', 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'NER (Named Entity Recognition)','Stanford CoreNLP gender annotator','Sentiment analysis','Things to do with words: Overall view' #, 'Java download install run'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons

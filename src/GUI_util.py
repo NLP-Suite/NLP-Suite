@@ -416,6 +416,8 @@ def check_fileName(scriptName, file_type, config_input_output_numeric_options):
 
 # config_filename can be either the Default value or the GUI_specific value depending on setup_IO_menu_var.get()
 def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missing_IO, silent = False):
+
+
     # global run_button_state, answer
     run_button_state = 'normal'
     err_msg =''
@@ -809,10 +811,12 @@ def setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent, o
     #       a warning will be raised
     #   2. temp_config_filename, either as default or GUI-specific config
 
-    missing_IO = display_IO_setup(window, IO_setup_display_brief, temp_config_filename,
-                                  config_input_output_numeric_options, scriptName, silent)
-    if missing_IO!='':
-        open_setup_IO_GUI=True
+    missing_IO=''
+    if not 'package_language' in scriptName:
+        missing_IO = display_IO_setup(window, IO_setup_display_brief, temp_config_filename,
+                                      config_input_output_numeric_options, scriptName, silent)
+        if missing_IO!='':
+            open_setup_IO_GUI=True
     #@@@
     if not 'NLP_setup_IO_main' in scriptName: # if the NLP_setup_IO_main is already opened, you do not want to open it again
         #@@@
@@ -827,7 +831,7 @@ def setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent, o
         if open_setup_IO_GUI:
             call("python NLP_setup_IO_main.py --config_option " + str(config_input_output_numeric_options).replace('[', '"').replace(']', '"')
                  + " --config_filename " + temp_config_filename, shell=True)
-            if not 'NLP_menu_main' in scriptName:
+            if not 'NLP_menu_main' in scriptName and not 'package_language' in scriptName:
                 IO_setup_display_brief = True
             missing_IO=display_IO_setup(window, IO_setup_display_brief, temp_config_filename, config_input_output_numeric_options, scriptName,silent)
         # if not 'NLP_menu_main' in scriptName:

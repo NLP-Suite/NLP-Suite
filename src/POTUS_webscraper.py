@@ -5,13 +5,27 @@ import IO_libraries_util
 # if IO_libraries_util.install_all_Python_packages(GUI_util.window,"POTUS_webscraper.py",['beautifulsoup4'])==False:
 #     sys.exit(0)
 
+import tkinter as tk
 import requests
 # conda install -c anaconda beautifulsoup4
 from bs4 import BeautifulSoup
+import os
+import shutil
 
 base_url = "https://www.presidency.ucsb.edu/" # base website url for link redirects
+out_path = tk.filedialog.askdirectory(title='Select a directory where to save the scraped POTUS files. The fiiles will be saved in a subdirectory "\data" of the selected directory.\n Press Esc or Cancel to exit.')
 
-out_path = "data/" # folder for output saving
+out_path = out_path # folder for output saving
+if out_path=='':
+    sys.exit(0)
+else:
+    out_path = out_path + os.sep + "POTUS_data/"
+if not os.path.exists(out_path):
+    os.mkdir(out_path)
+else:
+    # remove/delete and recreate directory
+    shutil.rmtree(out_path)
+    os.mkdir(out_path)
 
 # Base link for inaugural address speeches
 ina_base = "https://www.presidency.ucsb.edu/advanced-search?field-keywords=&field-keywords2=&field-keywords3=&from%5Bdate%5D=&to%5Bdate%5D=&person2=&category2%5B%5D=46&items_per_page=100"
@@ -53,7 +67,7 @@ class Speech():
         date = self.date.lower().split(" ")
         # Get rid of the date formatting and comma
         date = date[0] + "_" + date[1][:-1] + "_" + date[2]
-        # Get rid of any punctionation in the name
+        # Get rid of any punctuation in the name
         name = self.president.replace(".", "").lower().split(" ")
         name = "_".join(name)
 

@@ -230,6 +230,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
         #                  'Skewness', 'Kurtosis', '25% quantile', '50% quantile', '75% quantile']
 
         columns_to_be_plotted_xAxis=[]
+        #@@@
         columns_to_be_plotted_yAxis=[[2,4], [2,5], [2,10], [2,11]] # document field comes first [2
         # columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Mean', 'Mode', 'Skewness', 'Kurtosis'] # document field comes first [2
         # hover_label=['Document']
@@ -280,11 +281,11 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, outputFileName
 
 
 # written by Roberto June 2022
-def get_columns_to_be_plotted(outputFilename,col):
-    headers = IO_csv_util.get_csvfile_headers(outputFilename)
-    col1_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, col, outputFilename)
-    col2_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Frequency', outputFilename)
-    columns_to_be_plotted=[[col1_nunmber, col2_nunmber]]
+def get_columns_to_be_plotted(inputFilename, X_col, Y_col):
+    headers = IO_csv_util.get_csvfile_headers(inputFilename)
+    X_col_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, X_col, inputFilename)
+    Y_col_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, Y_col, inputFilename)
+    columns_to_be_plotted=[[X_col_nunmber, Y_col_nunmber]]
     return columns_to_be_plotted
 
 # TODO Tony, can you pass more than one value? Yngve and Frazier
@@ -305,17 +306,17 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
 # TODO TONY How does this differ from the several compute frequency options that I have extensively commented for clarity
     # the latter one seems doing the same staff  but the former one is only for stats results
 # the three steps function computes
-#   1. the frequencies of a given csv field (select_col) aggregating the results by (group_col and select_col).
+#   1. the frequencies of a given csv field (select_col) aggregating the results by (group_cols and select_col).
 #   2. the resulting frequencies are pivoted in order plot the data in a multi-line chart (one chart for every distinct value of select_col) by Sentence ID.
 #   3. the result of pivoting is then plotted
 # select_col should be one column name to be plotted eg: ['Verb Voice']
-# group_col should be a list of column names eg ['Sentence ID']
+# group_cols should be a list of column names eg ['Sentence ID']
 # enable complete_sid to make sentence index continuous
 # enable graph to make a multiline graph
 # the input should be saved to a csv file first
-# def compute_csv_column_frequencies(inputFilename, group_col, select_col, outputDir, chart_title,
+# def compute_csv_column_frequencies(inputFilename, group_cols, select_col, outputDir, chart_title,
 #         graph = True, complete_sid = True, series_label = None, chartPackage = 'Excel'):
-#     cols = group_col + select_col
+#     cols = group_cols + select_col
 #     if 'Excel' in chartPackage:
 #        use_plotly = False
 #     else:
@@ -328,11 +329,11 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
 #         print("Error: cannot read the csv file " + inputFilename)
 #         return
 #     #data = CoNLL_verb_analysis_util.verb_voice_data_preparation(data)
-#     #data,stats,pas,aux,act = CoNLL_verb_analysis_util.voice_output(data, group_col)
+#     #data,stats,pas,aux,act = CoNLL_verb_analysis_util.voice_output(data, group_cols)
 #     #data = pd.DataFrame(data,columns=header+["Verb Voice"])
 #     try:
 #         print(data[select_col])
-#         print(data[group_col])
+#         print(data[group_cols])
 #     except:
 #         # an error message about wrong csv file without the necessary columns
 #         print("Please select the correct csv file, with correct columns")
@@ -346,7 +347,7 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
 #     data = pd.read_csv(name, encoding='utf-8',on_bad_lines='skip')
 #     # transform the data by the select columns
 #     # Reshape data (produce a “pivot” table) based on column values. Uses unique values from specified index / columns to form axes of the resulting DataFrame.
-#     data = data.pivot(index = group_col, columns = select_col, values = "count")
+#     data = data.pivot(index = group_cols, columns = select_col, values = "count")
 #     print(data)
 #     data.to_csv(name, encoding='utf-8')
 #     # complete sentence id if needed
@@ -383,11 +384,11 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
 # in INPUT the function can use either a csv file or a data frame
 # in OUTPUT the function returns a csv file with frequencies for the selected field
 
-# selected_col, hover_col, group_col are single lists with the column headers (alphabetic, rather than column number)
-#   selected_col=['POS'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
+# plot_cols, hover_col, group_cols are single lists with the column headers (alphabetic, rather than column number)
+#   plot_cols=['POS'], hover_col=[], group_cols=[Sentence ID', 'Sentence', 'Document ID', 'Document']
 def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputDir,
             openOutputFiles,createCharts,chartPackage,
-            selected_col, hover_col, group_col, complete_sid,
+            plot_cols, hover_col, group_cols, complete_sid,
             chart_title, fileNameType='CSV',chartType='line',pivot=True):
     name = outputDir + os.sep + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
 
@@ -417,26 +418,26 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
     # outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
     #                 '.csv', 'col-freq_'+fileNameType)
     file_label=''
-    for col in selected_col:
+    for col in plot_cols:
         file_label = file_label + col + '_'
-    if len(group_col)>0:
-        if 'Document' in group_col:
+    if len(group_cols)>0:
+        if 'Document' in group_cols:
             # file_label = file_label + 'byDoc'
             file_label = 'byDoc'
         else:
-            # file_label = file_label + 'by'+group_col[0] # add only the first element
-            file_label = 'by' + group_col[0]  # add only the first element
+            # file_label = file_label + 'by'+group_cols[0] # add only the first element
+            file_label = 'by' + group_cols[0]  # add only the first element
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
                     '.csv', file_label + '_freq') # + '_col-freq'
     # the outputFilename may get too long and lead to code breakdown when saving the file
-    if len(selected_col) == 0:
+    if len(plot_cols) == 0:
         mb.showwarning('Missing field', 'You have not selected the csv field for which to compute frequencies.\n\nPlease, select the field and try again.')
         return filesToOpen
 
-# no aggregation by group_col --------------------------------------------------------
-    elif len(selected_col) != 0 and len(group_col) == 0:
-        for col in selected_col:
+# no aggregation by group_cols --------------------------------------------------------
+    elif len(plot_cols) != 0 and len(group_cols) == 0:
+        for col in plot_cols:
             data = data[col].value_counts().to_frame().reset_index()
             hdr = [col, col + ' Frequency']
             hover_over_header = []
@@ -460,70 +461,81 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 
 # PREVIOUS CODE
 
-    # aggregation by group_col NO hover over ----------------------------------------
-    elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
+    # aggregation by group_cols NO hover over ----------------------------------------
+    elif len(plot_cols) != 0 and len(group_cols) != 0 and len(hover_col) == 0:
 
-# aggregation by group_col NO hover over ----------------------------------------
-#     elif len(selected_col) != 0 and len(group_col) != 0 and len(hover_col) == 0:
+# aggregation by group_cols NO hover over ----------------------------------------
+#     elif len(plot_cols) != 0 and len(group_cols) != 0 and len(hover_col) == 0:
 #         columns_to_be_plotted = []
 
 
-        # for col in selected_col:
-        #     # selected_col, hover_col, group_col are single lists with the column headers
-        #     #   selected_col=['POStag'], hover_col=[], group_col=[Sentence ID', 'Sentence', 'Document ID', 'Document']
+        # for col in plot_cols:
+        #     # plot_cols, hover_col, group_cols are single lists with the column headers
+        #     #   plot_cols=['POStag'], hover_col=[], group_cols=[Sentence ID', 'Sentence', 'Document ID', 'Document']
         #     # the aggregation can deal with column items passed as integer (from visualization_chart) or
         #     #   alphabetic values (from statistics_NLP_main)
-        group_col_SV = group_col.copy()
-        group_column_names=[]
+        group_cols_SV = group_cols.copy()
+        group_colsumn_names=[]
         # create a single list
-        temp_group_column_names = group_col + selected_col
+        temp_group_colsumn_names = group_cols + plot_cols
         # test for list of lists [[],[]]
-        if any(isinstance(el, list) for el in temp_group_column_names):
+        if any(isinstance(el, list) for el in temp_group_colsumn_names):
             # flatten the list of lists to a single list
-            temp_group_column_names = [x for xs in temp_group_column_names for x in xs]
+            temp_group_colsumn_names = [x for xs in temp_group_colsumn_names for x in xs]
         i = 0
-        while i<len(temp_group_column_names):
-            t = temp_group_column_names[i]
+        while i<len(temp_group_colsumn_names):
+            t = temp_group_colsumn_names[i]
             header = t
-            # check that t is not already in the list group_column_names
+            # check that t is not already in the list group_colsumn_names
             if isinstance(t, (int, float)):
                 header = IO_csv_util.get_headerValue_from_columnNumber(headers, t)
-                if group_column_names.count(header) == 0:
-                    group_column_names.append(header)
+                if group_colsumn_names.count(header) == 0:
+                    group_colsumn_names.append(header)
             else:
-                if group_column_names.count(header) == 0:
-                    group_column_names.append(header)
+                if group_colsumn_names.count(header) == 0:
+                    group_colsumn_names.append(header)
             i = i+1
-        if len(group_column_names)==0:
-            group_column_names=temp_group_column_names
-        # #     data = data.groupby(group_column_names).size().reset_index(name='Frequency')
+        if len(group_colsumn_names)==0:
+            group_colsumn_names=temp_group_colsumn_names
+        # #     data = data.groupby(group_colsumn_names).size().reset_index(name='Frequency')
 
-        group_column_names_SV = group_column_names.copy()
-        group_col_SV = group_col.copy()
+        group_colsumn_names_SV = group_colsumn_names.copy()
+        group_cols_SV = group_cols.copy()
 
-        group_list = group_col.copy()
+        group_list = group_cols.copy()
         data_final = pd.DataFrame()
 
 
         # you can pass Document ID and Document (e.g., in NLTK unusual words), Document (e.g., annotator POS)
-        if group_col[0] == 'Document ID' or group_col[0] == 'Document':
+        # aggregating by document
+        if group_cols[0] == 'Document ID' or group_cols[0] == 'Document':
             if not 'by Document' in chart_title:
                 chart_title = chart_title + ' by Document'
             # the data_final has the column layout: Document ID, Document, Frequency Document ID, then all other fields each with its respective frequency
             # [0, 2] will display the document ID in the Data sheet of the xlsx file; but then the user will not know which document the ID refers to
             # [1, 2] will display the document name in the Data sheet of the xlsx file
-            columns_to_be_plotted = [[1, 2], [3, 4]]
+
+            # 0 is the groupBy field with no-hyperlinks (e.g., NER)
+            # 1 is the column plotted (e.g., Form)
+            # 2 is the Document ID
+            # 3 is the Document
+            # 4 is Frequency
+            # sel_column_name = IO_csv_util. = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)(headers, 1)
+            # columns_to_be_plotted = [[1, 2], [3, 4]]
+            columns_to_be_plotted = get_columns_to_be_plotted(outputFilename, group_cols[0], header)
+            columns_to_be_plotted = [[1, 3]]
         else:
-            if group_col[0]!='':
-                chart_title = chart_title + ' by ' + str(group_col[0])
-            # if there is no document ID and/or document 0 refers to the field name and 1 to its frequency
+            if group_cols[0]!='':
+                chart_title = chart_title + ' by ' + str(group_cols[0])
+            # if there is no document ID and/or document 0 refers to the field name to bbe plotted and 1 to its frequency
+            #@@@
             columns_to_be_plotted = [[0, 1], [2, 3]]
 
-        def multi_level_grouping_and_frequency(data, selected_cols, group_col):
+        def multi_level_grouping_and_frequency(data, plot_colss, group_cols):
             # Calculate the first selected column (Lemma) frequency within each group
-            grouped = data.groupby(group_col + selected_cols).size().reset_index(name='Frequency_Document ID')
+            grouped = data.groupby(group_cols + plot_colss).size().reset_index(name='Frequency_Document ID')
 
-            if 'Document' == group_col[0]:
+            if 'Document' == group_cols[0]:
                 # Create a dictionary to map each document to its index
                 document_id_map = {document: i+1 for i, document in enumerate(grouped['Document'].unique())}
 
@@ -531,65 +543,66 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                 grouped['Document ID'] = grouped['Document'].map(document_id_map)
 
             # Step 2: Separate into two dataframes for frequencies.
-            freq_0 = grouped.groupby(group_col + [selected_cols[0]])['Frequency_Document ID'].sum().reset_index(
-                name=f'Frequency_{selected_cols[0]}')
-            freq_1 = grouped.groupby(group_col + [selected_cols[1]])['Frequency_Document ID'].sum().reset_index(
-                name=f'Frequency_{selected_cols[1]}')
+            freq_0 = grouped.groupby(group_cols + [plot_colss[0]])['Frequency_Document ID'].sum().reset_index(
+                name=f'Frequency_{plot_colss[0]}')
+            freq_1 = grouped.groupby(group_cols + [plot_colss[1]])['Frequency_Document ID'].sum().reset_index(
+                name=f'Frequency_{plot_colss[1]}')
 
             # Step 3: Merge these dataframes back together.
-            result = pd.merge(grouped, freq_0, on=group_col + [selected_cols[0]], how='left')
-            result = pd.merge(result, freq_1, on=group_col + [selected_cols[1]], how='left')
+            result = pd.merge(grouped, freq_0, on=group_cols + [plot_colss[0]], how='left')
+            result = pd.merge(result, freq_1, on=group_cols + [plot_colss[1]], how='left')
 
             # Rearrange columns to desired order
-            if 'Document' in group_col:
-                result = result[group_col + ['Frequency_Document ID', selected_cols[0], f'Frequency_{selected_cols[0]}', selected_cols[1],
-                                             f'Frequency_{selected_cols[1]}']]
+            if 'Document' in group_cols:
+                result = result[group_cols + ['Frequency_Document ID', plot_colss[0], f'Frequency_{plot_colss[0]}', plot_colss[1],
+                                             f'Frequency_{plot_colss[1]}']]
             else:
-                result = result[group_col + [selected_cols[0], f'Frequency_{selected_cols[0]}', selected_cols[1],
-                                             f'Frequency_{selected_cols[1]}']]
-            counts = result.groupby(group_col[0]).size()
+                result = result[group_cols + [plot_colss[0], f'Frequency_{plot_colss[0]}', plot_colss[1],
+                                             f'Frequency_{plot_colss[1]}']]
+            counts = result.groupby(group_cols[0]).size()
             # Map the counts back to the original dataframe
-            result['Frequency_'+str(group_col[0])] = result[group_col[0]].map(counts)
+            result['Frequency_'+str(group_cols[0])] = result[group_cols[0]].map(counts)
 
             return result
 
-        def double_level_grouping_and_frequency(data, selected_col, group_col):
+        def double_level_grouping_and_frequency(data, plot_cols, group_cols):
             # Calculate the counts for each column
-            group_col_count = data[group_col[0]].value_counts().reset_index()
-            group_col_count.columns = [group_col[0], f'Frequency_{group_col[0]}']
+            group_cols_count = data[group_cols[0]].value_counts().reset_index()
+            group_cols_count.columns = [group_cols[0], f'Frequency_{group_cols[0]}']
 
-            selected_col_count = data.groupby(group_col)[selected_col[0]].value_counts().reset_index(
-                name=f'Frequency_{selected_col[0]}')
+            plot_cols_count = data.groupby(group_cols)[plot_cols[0]].value_counts().reset_index(
+                name=f'Frequency_{plot_cols[0]}')
 
             # you can pass Document ID and Document (e.g., in NLTK unusual words), Document (e.g., annotator POS)
-            if 'Document' in group_col[0]:
+            if 'Document' in group_cols[0]:
                 # Create a dictionary to map each document to its index starting from 1
-                document_id_map = {document: i + 1 for i, document in enumerate(group_col_count[group_col[0]].unique())}
+                document_id_map = {document: i + 1 for i, document in enumerate(group_cols_count[group_cols[0]].unique())}
 
                 # Add the 'Document ID' column to the dataframe
                 # SIMON Document ID should always be the first item, before Document
-                group_col_count['Document ID'] = group_col_count[group_col[0]].map(document_id_map)
+                group_cols_count['Document ID'] = group_cols_count[group_cols[0]].map(document_id_map)
 
             # Merge the counts back into the original dataframe
-            data_final = pd.merge(group_col_count, selected_col_count, how='inner', on=group_col[0])
+            data_final = pd.merge(group_cols_count, plot_cols_count, how='inner', on=group_cols[0])
             # Remove potential duplicate rows
             data_final = data_final.drop_duplicates()
 
             # Rearrange columns to desired order
-            if group_col[0] == 'Document ID' and group_col[1] == 'Document':
-                data_final = data_final[[group_col[0], group_col[1], f'Frequency_{group_col[0]}', selected_col[0], f'Frequency_{selected_col[0]}']]
+            if group_cols[0] == 'Document ID' and group_cols[1] == 'Document':
+                data_final = data_final[[group_cols[0], group_cols[1], f'Frequency_{group_cols[0]}', plot_cols[0], f'Frequency_{plot_cols[0]}']]
                 # the data_final has the column layout: Document ID, Document, Frequency Document ID, then all other fields each with its respective frequency
                 # [0, 2] will display the document ID in the Data sheet of the xlsx file; but then the user will not know which document the ID refers to
                 # [1, 2] will display the document name in the Data sheet of the xlsx file
+                #@@@
                 columns_to_be_plotted = [[1, 2], [3, 4]]
 
             return data_final
 
-        print(selected_col,group_col)
-        if len(selected_col) >=2:
-            data_final = multi_level_grouping_and_frequency(data,selected_col,group_col)
+        # print(plot_cols,group_cols)
+        if len(plot_cols) >=2:
+            data_final = multi_level_grouping_and_frequency(data,plot_cols,group_cols)
         else:
-            data_final = double_level_grouping_and_frequency(data,selected_col,group_col)
+            data_final = double_level_grouping_and_frequency(data,plot_cols,group_cols)
             # Calculate the counts for each column
 
         if 'Document ID' in data_final.columns and 'Document' in data_final.columns:
@@ -600,10 +613,10 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             data_final = data_final[['Document ID', 'Document'] + other_cols]
         # This ensures you have enforced the order. Easily you can generalize it to enforce the order of other columns simply by tweaking the
 
-        print(inputFilename,columns_to_be_plotted)
+        # print(inputFilename,columns_to_be_plotted)
         # Pivot the dataframe if you want to change the layout
         # If you want to keep it as it is, you can comment these lines out.
-        #data_final = data_final.pivot(index=group_col, columns=selected_col, values="Frequency")
+        #data_final = data_final.pivot(index=group_cols, columns=plot_cols, values="Frequency")
         data_final.fillna(0, inplace=True)
         data = data_final
         # Excel allows to group a series value by another series values (e.g., Form or Lemma values by POS or NER tags)
@@ -614,11 +627,11 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         #   https://openpyxl.readthedocs.io/en/latest/charts/secondary.html
 
         # SIMON should get the col of frequency in data_final
-        #group_list = group_col_SV.copy()
+        #group_list = group_cols_SV.copy()
 
         # df = data
         # '''something done to ensure a brutal order here'''
-        # if selected_col == ['Form', 'Lemma'] and 'Document' in group_col:
+        # if plot_cols == ['Form', 'Lemma'] and 'Document' in group_cols:
         #     try:
         #         document_col = df.filter(like="Document").columns[0]  # Assuming only one column matches
         #
@@ -640,7 +653,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         # added TONY1
         # pivot=True
         if pivot==True:
-            data = data.pivot(index = group_column_names[1:], columns = group_column_names[0], values = "Frequency")
+            data = data.pivot(index = group_colsumn_names[1:], columns = group_colsumn_names[0], values = "Frequency")
             data.fillna(0, inplace=True)
             #data.reset_index("Document")
         if (complete_sid):
@@ -652,36 +665,37 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         hover_over_header = []
         chartType='bar'
 
-# aggregation by group_col & hover over -----------------------------------------------
+# aggregation by group_cols & hover over -----------------------------------------------
     else:
         for col_hover in hover_col:
-            col = str(selected_col[0])
-            temp = group_col.copy()
+            col = str(plot_cols[0])
+            temp = group_cols.copy()
             temp.append(col_hover)
-            c = data.groupby(group_col)[col_hover].apply(list).to_dict()
+            c = data.groupby(group_cols)[col_hover].apply(list).to_dict()
 
             container.append(c)
 
-        temp = group_col.copy()
-        temp.extend(selected_col) # plotting variable
+        temp = group_cols.copy()
+        temp.extend(plot_cols) # plotting variable
         data = data.groupby(temp).size().reset_index(name='Frequency')
         for index, row in data.iterrows():
-            if row[selected_col[0]] == '':
+            if row[plot_cols[0]] == '':
                 data.at[index,'Frequency'] = 0
 
         hover_header = ', '.join(hover_col)
         hover_over_header=['Hover_over: ' + hover_header]
         for index, hover in enumerate(hover_col):
             df = pd.Series(container[index]).reset_index()
-            temp = group_col.copy()
+            temp = group_cols.copy()
             temp.append(hover)
             df.columns = temp
-            data = data.merge(df, how = 'left', left_on= group_col,right_on = group_col)
+            data = data.merge(df, how = 'left', left_on= group_cols,right_on = group_cols)
         temp_str = '%s'+'\n%s'* (len(hover_col)-1)
         data['Hover_over: ' + hover_header+'_y'] = data.apply(lambda x: temp_str % tuple(x[h] for h in hover_col),axis=1)
         data.drop(hover_col, axis=1, inplace=True)
         data.to_csv(outputFilename, encoding='utf-8', index=False)
         filesToOpen.extend(outputFilename)
+        #@@@
         columns_to_be_plotted = [[1, 2]]
         hover_over_header = [hover_over_header + '_y']
 
@@ -691,10 +705,16 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 
     df = data
     if createCharts:
-        if selected_col == ['Form','Lemma'] and 'Document' in group_col:
+        if plot_cols == ['Form','Lemma'] and 'Document' in group_cols:
             # document, form, lemma with their respective frequencies
-            columns_to_be_plotted = [[1,2], [3,4], [5, 6]]
-            column_xAxis_label_var = ''
+            #@@@
+            columns_to_be_plotted = get_columns_to_be_plotted(outputFilename, group_cols[0], plot_cols[0])
+            # [1, 2] frequency of docs, then form and lemma,
+            #   where 1, 3, and 5 are the document name, the form values, and the lemma values
+            #   and 2, 4, 6 are their respective frequencies
+            # columns_to_be_plotted = [[1, 2], [3, 4], [5, 6]]
+            columns_to_be_plotted = [[0, 1], [2, 3], [4, 5]]
+            column_xAxis_label_var = group_cols[0]
             outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                               outputFileLabel=fileNameType,
                                               chartPackage=chartPackage,
@@ -703,13 +723,20 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                                               column_xAxis_label_var=column_xAxis_label_var,
                                               hover_info_column_list=hover_over_header)
         else:
-            column_xAxis_label_var = ''
+            #@@@
+            # column_xAxis_label_var = ''
+            headers = IO_csv_util.get_csvfile_headers(outputFilename)
+            column_xAxis_label_var = group_cols[0]
+            xCol = IO_csv_util.get_columnNumber_from_headerValue(headers, group_cols[0], outputFilename)
+            yCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Frequency_'+header, outputFilename)
+            columns_to_be_plotted=[[xCol, 3, yCol]]
             outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                               outputFileLabel=fileNameType,
                                               chartPackage=chartPackage,
                                               chart_type_list=[chartType],
                                               chart_title=chart_title,
                                               column_xAxis_label_var=column_xAxis_label_var,
+                                              column_yAxis_label_var=header,
                                               hover_info_column_list=hover_over_header)
         if outputFiles != None:
             if isinstance(outputFiles, str):
