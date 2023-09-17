@@ -1,3 +1,6 @@
+# written by Rafael Piloto Fall 2021
+# edited by Roberto Franzosi Fall 2023
+
 import sys
 import GUI_util
 import IO_libraries_util
@@ -27,6 +30,9 @@ else:
     shutil.rmtree(out_path)
     os.mkdir(out_path)
 
+os.mkdir(out_path+os.sep + "ina")
+os.mkdir(out_path+os.sep + "sotu")
+
 # Base link for inaugural address speeches
 ina_base = "https://www.presidency.ucsb.edu/advanced-search?field-keywords=&field-keywords2=&field-keywords3=&from%5Bdate%5D=&to%5Bdate%5D=&person2=&category2%5B%5D=46&items_per_page=100"
 
@@ -36,6 +42,31 @@ sotu_base = "https://www.presidency.ucsb.edu/advanced-search?field-keywords=&fie
 """
     Speech stores data about an individual speech
 """
+
+
+def month_to_number(x):
+    months = {
+        'jan': 1,
+        'feb': 2,
+        'mar': 3,
+        'apr': 4,
+        'may': 5,
+        'jun': 6,
+        'jul': 7,
+        'aug': 8,
+        'sep': 9,
+        'oct': 10,
+        'nov': 11,
+        'dec': 12
+    }
+    month = x.strip()[:3].lower()
+    try:
+        month_number = months[month]
+    except:
+        raise ValueError(x + ' is not a month')
+    return month_number
+
+
 class Speech():
     """
     Store data about each individual speech with functionality to write to a file
@@ -63,16 +94,17 @@ class Speech():
     prefix: str
         The prefix that goes before the file name
     """
-    def writeToFile(self, prefix: str):
+
+    def writeToFile(self, out_path, prefix: str):
         date = self.date.lower().split(" ")
         # Get rid of the date formatting and comma
-        date = date[0] + "_" + date[1][:-1] + "_" + date[2]
+        date = str(month_to_number(date[0])) + "-" + str(date[1][:-1]) + "-" + str(date[2])
         # Get rid of any punctuation in the name
         name = self.president.replace(".", "").lower().split(" ")
-        name = "_".join(name)
+        name = " ".join(name)
 
         try:
-            with open(f'./{out_path + prefix}_{name}_{date}.txt', "x") as f:
+            with open(f'{out_path + os.sep + prefix}_{name}_{date}.txt', "x") as f:
                 f.write(self.text)
         except Exception:
             print(f"got duplicate speech {self.link}")
@@ -135,15 +167,19 @@ def getSpeech(link: str, date: str, president: str) -> Speech:
     text = []
     for p in speech:
         text.append(p.text)
-
     return Speech(link, date, president, "\n".join(text))
 
 
 if __name__ == "__main__":
     # Get the inaugural speeches
     for speech in getSpeeches(ina_base):
-        speech.writeToFile("ina")
-
+        out_path_ina = out_path +os.sep + "ina"
+        speech.writeToFile(out_path_ina,"ina")
+        print("Processing POTUS Inaugural speech: ", speech.president, speech.date)
+    print ("All inaugural speeches processed")
     # Get the State of the Union Speeches
     for speech in getSpeeches(sotu_base):
-        speech.writeToFile("sotu")
+        print("Processing POTUS State of the Union speech: ", speech.president, speech.date)
+        out_path_sotu = out_path +os.sep + "sotu"
+        speech.writeToFile(out_path_sotu,"sotu")
+    print ("All State of the Union speeches processed")
