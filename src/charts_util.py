@@ -612,6 +612,13 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 # Form values	Frequencies of Form	Lemma values	Frequencies of Lemma
 # [[0,0], [1,1]] will plot two series, 1 and 2 (e.g., Form & Lemma values) as bar charts, one bar next the other
 
+# Suppose to have a csv file with the following headers:
+#   Document ID, Document, Frequency_Document, NER, Frequency_NER
+# The order of items in the list columns_to_be_plotted matters:
+#   columns_to_be_plotted = [[3, 4], [1, 2]] will display documents in the X-Axis with 2 bars for document frequency and NER frequency
+#   columns_to_be_plotted = [[1, 2], [3, 4]] will display NER tags in the X-Axis with 2 bars for document frequency and NER frequency
+#   THE LAST ITEM IN THE LIST DETERMINES WHAT GOES ON THE X AND Y AXES
+
 #   plotList is the list of fields to be plotted
 #   chart_title_label is used as part of the chart_title when plotting the fields statistics
 def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
