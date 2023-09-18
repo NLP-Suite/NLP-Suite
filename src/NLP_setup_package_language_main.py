@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as mb
 import os
-import sys
+import collections
 
 import GUI_IO_util
 import GUI_util
@@ -69,10 +69,41 @@ window.bind("<Escape>", clear)
 
 def display_available_options():
     global y_multiplier_integer, y_multiplier_integer_SV1, error, parsers, memory_var, document_length_var, limit_sentence_length_var, package_display_area_value
-    error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory, document_length, limit_sentence_length = config_util.read_NLP_package_language_config()
+    global package_display_area_value_upon_entry
+    error, package, parsers, package_basics, language, package_display_area_value, \
+        encoding_var, export_json_var, memory, document_length, limit_sentence_length = config_util.read_NLP_package_language_config()
+    package_display_area_value_upon_entry = package+ package_basics + language + encoding_var + str(export_json_var) + \
+                str(memory) + str(document_length) + str(limit_sentence_length)
+    if not package in ['BERT', 'spaCy', 'Stanford CoreNLP', 'Stanza']:
+                       mb.showwarning(title='Warning',
+                                      message='"' + package + '" is not a package available in the NLP Suite. The config file NLP_default_package_language_config.csv may be corrupted.\n\nThe package option has been temporarily set to Stanford CoreNLP.\n\nYou can change this NLP package option by using the NLP package dropdown menu, scroll through the list, and select the preferred package.')
+                       package = 'Stanford CoreNLP'
     package_var.set(package)
+
+    # parsers has an extra blank after each item
+    parsers_in_config = ' '.join([item.lstrip() for item in parsers])
+    parsers_available = ' '.join([item.lstrip() for item in available_parsers])
+
+    if parsers_in_config != parsers_available:
+                       if len(parsers)==1:
+                           msg = 'is not a parser option'
+                       else:
+                           msg = 'are not parser options'
+                       mb.showwarning(title='Warning',
+                                      message='"' + str(parsers_in_config) + '"' + msg + ' available for the NLP package ' + \
+                                              package + '. The config file NLP_default_package_language_config.csv may be corrupted.\n\nThe parsers option has been reset.')
+                       parsers = available_parsers
+
+    if package_basics=='':
+        package_basics ='Stanza'
     package_basics_var.set(package_basics)
+    if language=='':
+        language='English'
     if language_var.get()!=language:
+        if not language in get_available_languages():
+            mb.showwarning(title='Warning',
+                           message='"' + language + '" is not a language available for ' + package_var.get() + '. The config file NLP_default_package_language_config.csv may be corrupted.\n\nThe language option has been temporarily set to English.\n\nYou can change this language option by using the Language dropdown menu, scroll through the list, and select the preferred language.')
+            language = 'English'
         language_var.set(language)
     memory_var.set(int(memory))
     document_length_var.set(int(document_length))
@@ -87,15 +118,26 @@ def display_available_options():
                                                    "The text area displays the currently selected options. To change this selection, use the NLP package and/or language dropdown menu,")
 
 def get_str_package_display_area_value():
-    display_area_value= \
-        str(package_var.get()) + \
-        str(package_basics_var.get()) + \
-        str(language_var.get()) + \
-        str(encoding_var.get()) + \
-        str(export_json_var.get()) + \
-        str(memory_var.get()) + \
-        str(document_length_var.get()) + \
-        str(limit_sentence_length_var.get())
+    if package_var.get()=='':
+        display_area_value=''
+    else:
+        if package_var.get()=='Stanford CoreNLP':
+            CoreNLP_options= str(export_json_var.get()) + \
+                            str(memory_var.get()) + \
+                            str(document_length_var.get()) + \
+                            str(limit_sentence_length_var.get())
+        else:
+            CoreNLP_options = '0000'
+        display_area_value= \
+            str(package_var.get()) + \
+            str(package_basics_var.get()) + \
+            str(language_var.get()) + \
+            str(encoding_var.get()) + \
+            CoreNLP_options
+            # str(export_json_var.get()) + \
+            # str(memory_var.get()) + \
+            # str(document_length_var.get()) + \
+            # str(limit_sentence_length_var.get())
     return display_area_value
 
 def openConfigFile():
@@ -116,7 +158,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,x_coordinate_hover_over, y
 package_lb = tk.Label(window,text='NLP package (parser & annotators)')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
                                                y_multiplier_integer, package_lb, True)
-package_var.set('Stanford CoreNLP')
+package_var.set('') # Stanford CoreNLP
 package_menu = tk.OptionMenu(window, package_var, 'BERT', 'spaCy','Stanford CoreNLP', 'Stanza')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.all_widget_pos,
                                                y_multiplier_integer, package_menu)
@@ -125,15 +167,20 @@ y_multiplier_integer_SV2=y_multiplier_integer
 
 # display_available_options()
 
+available_parsers=[]
+parsers_display_area =''
+
 def changed_NLP_package_set_parsers(*args):
     global y_multiplier_integer_SV2
-    global parsers_display_area
+    global parsers_display_area, available_parsers
     if package_var.get() == 'spaCy':
         available_parsers = ['Dependency parser']
-    if package_var.get()=='Stanford CoreNLP':
+    elif package_var.get()=='Stanford CoreNLP':
         available_parsers = ['Neural Network', 'Probabilistic Context Free Grammar (PCFG)']
-    if package_var.get() == 'Stanza':
+    elif package_var.get() == 'Stanza':
         available_parsers = ['Dependency parser','Constituency parser']
+    else:
+        available_parsers = []
 
     parsers_lb = tk.Label(window, text='Available parsers for ' + package_var.get()+'                      ')
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate,
@@ -179,6 +226,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 menu_values = []
 global language_menu
 def get_available_languages():
+    languages_available=''
     if package_var.get() == 'Stanford CoreNLP':
         languages_available=['Arabic','Chinese','English', 'German','Hungarian','Italian','Spanish']
     if package_var.get() == 'BERT':
@@ -441,7 +489,7 @@ if error:
         GUI_util.videos_dropdown_field.set('Setup NLP package & language options')
         # GUI_util.watch_video(videos_lookup, scriptName)
 
-package_display_area_value_upon_entry = get_str_package_display_area_value()
+# package_display_area_value_upon_entry = get_str_package_display_area_value()
 
 # to make sure the release version is updated even when users do not click on the CLOSE button
 #   but on the Mac top-left red button or Windows top-right X button
