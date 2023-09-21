@@ -152,13 +152,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         else:
             co_deprel = '*'
 
-        if (not os.path.isfile(inputFilename.strip())) and \
-                ('CoNLL' not in inputFilename) and \
-                (not inputFilename.strip()[-4:] == '.csv'):
-            mb.showwarning(title='INPUT File Path Error',
-                           message='Please, check INPUT FILE PATH and try again. The file must be a CoNLL table (extension .conll with Stanford CoreNLP no clausal tags, extension .csv with Stanford CoreNLP with clausal tags)')
-            return
         if 'e.g.: father' in searchField_kw:
+            if (not os.path.isfile(inputFilename.strip())) and \
+                    ('CoNLL' not in inputFilename) and \
+                    (not inputFilename.strip()[-4:] == '.csv'):
+                mb.showwarning(title='INPUT File Path Error',
+                               message='Please, check INPUT FILE PATH and try again. The file must be a CoNLL table (extension .conll with Stanford CoreNLP no clausal tags, extension .csv with Stanford CoreNLP with clausal tags)')
+                return
             msg = "Please, check the \'Searched token\' field and try again.\n\nThe value entered must be different from the default value (e.g.: father)."
             mb.showwarning(title='Searched Token Input Error', message=msg)
             return  # breaks loop

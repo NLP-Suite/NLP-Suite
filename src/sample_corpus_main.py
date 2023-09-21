@@ -162,7 +162,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                                GUI_IO_util.IO_configuration_menu, "Click on the button to select the input csv file")
 
 # setup a button to open Windows Explorer on open the csv file
-openFile_button = tk.Button(window, width=3, text='',
+openFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                  command=lambda: IO_files_util.openFile(window,
                                                                         selectedFile_var.get()))
 

@@ -26,21 +26,28 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 # DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
 from tkinter import *
 # lang_dict = dict(constants_util.languages)
+import json
+import stanza.resources.common
+DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
 
 # https://stanfordnlp.github.io/stanza/available_models.html
 # language_var.set('English')
 # language_list.append('English')
 # LIST OF LANGUAGES AVAILABLE IN STANZA
 def list_all_languages():
-    import json
-    import stanza.resources.common
-    DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
     with open(os.path.join(DEFAULT_MODEL_DIR, 'resources.json')) as fin:
         resources = json.load(fin)
-    languages = [lang for lang in resources if 'alias' not in resources[lang]]
-    languages = sorted(languages)
-    langs_full = sorted([dict(constants_util.languages)[x] for x in languages])
-    return langs_full
+    #languages = [lang for lang in resources if 'alias' not in resources[lang]]
+    #languages = sorted(languages)
+        # Extracting language codes and corresponding names from resources.json
+    languages_from_resources = []
+    for key, value in resources.items():
+        if isinstance(value, dict) and "lang_name" in value:
+            languages_from_resources.append(value["lang_name"])
+    languages_from_resources.sort()
+    #langs_full = sorted([dict(constants_util.languages)[x] for x in languages])
+   # print(langs_full)
+    return languages_from_resources
 
 def open_Stanza_website(message, lang_list):
     url='https://stanfordnlp.github.io/stanza/available_models.html'
@@ -701,7 +708,14 @@ def create_output_directory(inputFilename, inputDir, outputDir,
     return outputDir
 
 # Python dictionary of language (values) and their acronyms (keys)
-lang_dict  = dict(constants_util.languages)
+lang_dict = {}
+lang_dict_rev = {}
+with open(os.path.join(DEFAULT_MODEL_DIR, 'resources.json')) as fin:
+    resources = json.load(fin)
+for key, value in resources.items():
+    if isinstance(value, dict) and "lang_name" in value:
+        lang_dict[key]=value["lang_name"]
+        lang_dict_rev[value['lang_name']]=key
 
 # Available Stanza models for languages
 available_ud = [

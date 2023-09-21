@@ -481,7 +481,7 @@ if sys.platform == 'darwin':  # Mac OS
 # Mac: html_annotator_gender_main.py
 
     html_annotator_gender_annotator_dictionary_file_width = 60
-    html_annotator_gender_select_dictionary_file_button = 380
+    html_annotator_gender_select_dictionary_file_button = 350
     html_annotator_gender_select_dictionary_file_annotator = 460
     html_annotator_gender_SS_folder_width = 65
     html_annotator_gender_by_type_dropdown = 575
