@@ -370,7 +370,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Click on the button to select the png image file")
 
 # setup a button to open Windows Explorer on open the png image file
-openImage_button = tk.Button(window, width=3, text='', state='disabled',
+openImage_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', state='disabled',
                                  command=lambda: IO_files_util.openFile(window,
                                                                         selectedImage_var.get()))
 # the button widget has hover-over effects (no_hover_over_widget=False) and the info displayed is in text_info

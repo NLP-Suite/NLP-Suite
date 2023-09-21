@@ -74,7 +74,8 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mo
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         documentID = documentID + 1
-        print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
+        # NER
+        print("`Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
 
         header = ["Word", "NER", "Sentence ID", "Sentence", "Document ID", "Document"]
         with open(doc, "r", encoding="utf-8", errors="ignore") as f:
@@ -139,6 +140,7 @@ def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, createCha
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         documentID = documentID + 1
+        # doc_summary
         print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
 
         with open(doc, "r", encoding="utf-8", errors="ignore") as f:
@@ -214,6 +216,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     for doc in inputDocs:
         head, tail = os.path.split(doc)
         documentID = documentID + 1
+        # word embeddings
         print("Processing file " + str(documentID) + "/" + str(Ndocs) + " " + tail)
 
         with open(doc, "r", encoding="utf-8", errors="ignore") as f:
@@ -576,8 +579,13 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode, cre
                 inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt',
                                                       silent=False,
                                                       configFileName=configFileName)
-
+                nDocs = len(inputDocs)
                 for file in inputDocs:
+
+                    head, tail = os.path.split(file)
+                    # sentiment analysis
+                    documentID = documentID + 1
+                    print("Processing file " + str(documentID) + "/" + str(nDocs) + " " + tail)
                     filename = os.path.join(inputDir, os.fsdecode(file))
                     if filename.endswith(".txt"):
                         # start_time = time.asctime( time.localtime(time.time()))()
@@ -603,7 +611,7 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode, cre
                                                            outputFileNameType='roBERTa_scores',  # 'line_bar',
                                                            column_xAxis_label='Sentiment score',
                                                            column_yAxis_label='Scores',
-                                                           groupByList=['Document ID', 'Document'],
+                                                           groupByList=['Document'],
                                                            plotList=['Sentiment Score'],
                                                            chart_title_label='Measures of roBERTa Sentiment Scores')
 
@@ -621,7 +629,7 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode, cre
                                                            outputFileNameType='roBERTa_labels',  # 'line_bar',
                                                            column_xAxis_label='Sentiment label',
                                                            column_yAxis_label='Frequency',
-                                                           groupByList=['Document ID', 'Document'],
+                                                           groupByList=['Document'],
                                                            plotList=['Sentiment label'],
                                                            chart_title_label='Measures of roBERTa Sentiment Labels')
 

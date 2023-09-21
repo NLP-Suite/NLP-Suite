@@ -617,7 +617,7 @@ if 'Maps' in open_API_config_var.get():
     config_file = 'Google-Maps-API_config.csv'
 else:
     config_file = 'Google-geocode-API_config.csv'
-open_API_config_button = tk.Button(window, width=3,
+open_API_config_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width,
                                      text='',
                                      command=lambda:GIS_pipeline_util.getGoogleAPIkey(window,  config_file,True))
 # place widget with hover-over info

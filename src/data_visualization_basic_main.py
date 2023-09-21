@@ -339,7 +339,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.setup_pop_up_
                                                "The multiple charts visualization option requires multiple csv files in input.\nUse the dropdown menu to select a specific file that you can then open for inspection.")
 
 # setup a button to open Windows Explorer on the selected input directory
-openInputFile_button = tk.Button(window, width=3, text='',
+openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                  command=lambda: IO_files_util.openFile(window,
                                                                         csv_file_var.get()))
 # place widget with hover-over info

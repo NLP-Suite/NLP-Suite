@@ -220,7 +220,7 @@ if __name__ == '__main__':
                                                    selectedCsvFile,True)
 
     # setup a button to open Windows Explorer on the selected input directory
-    openInputFile_button = tk.Button(window, width=3, text='',
+    openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
                                      command=lambda: IO_files_util.openFile(window,
                                                                             selectedCsvFile_var.get()))
     # place widget with hover-over info

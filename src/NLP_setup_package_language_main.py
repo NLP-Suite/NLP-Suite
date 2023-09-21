@@ -105,6 +105,15 @@ def display_available_options():
                            message='"' + language + '" is not a language available for ' + package_var.get() + '. The config file NLP_default_package_language_config.csv may be corrupted.\n\nThe language option has been temporarily set to English.\n\nYou can change this language option by using the Language dropdown menu, scroll through the list, and select the preferred language.')
             language = 'English'
         language_var.set(language)
+    if package_var.get()=='Stanza':
+        try:
+            import stanza
+            stanza.download(Stanza_util.lang_dict_rev[language])
+        except:
+            import stanza.resources.common
+            DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
+            os.path.join(DEFAULT_MODEL_DIR, 'resources.json')
+            print('stanza not installed!!!!')
     memory_var.set(int(memory))
     document_length_var.set(int(document_length))
     limit_sentence_length_var.set(int(limit_sentence_length))
