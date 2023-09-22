@@ -269,7 +269,7 @@ if __name__ == '__main__':
 
     ##
     add_extract_options_var = tk.IntVar()
-    add_extract_options = tk.Button(window, text='+', width=2, height=1, state='disabled',
+    add_extract_options = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                                     command=lambda: activate_extract_options())
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 1000,
@@ -279,7 +279,7 @@ if __name__ == '__main__':
                                                    GUI_IO_util.labels_x_coordinate + 760,
                                                    "Click the + button to add another WHERE option")
 
-    OK_WHERE_extract_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
+    OK_WHERE_extract_button = tk.Button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled',
                                   command=lambda: build_extract_string(False, True))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 1050,
@@ -583,7 +583,7 @@ if __name__ == '__main__':
                                                    append_checkbox, True)
 
     # add another field
-    add_append_field = tk.Button(window, text='+', width=2, height=1, state='disabled', command=lambda: merge_reminder_plus())
+    add_append_field = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled', command=lambda: merge_reminder_plus())
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 950,
                                                    y_multiplier_integer,
@@ -593,7 +593,7 @@ if __name__ == '__main__':
                                                    "Click the + button to add another csv field\nOPTION NOT AVAILABLE FOR APPEND")
 
     # add another file
-    add_append_file = tk.Button(window, text='+', width=2, height=1, state='disabled',
+    add_append_file = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                          command=lambda: add_csvFile(window, 'Select INPUT csv file',
                                                                 [("csv files", "*.csv")]))
     # place widget with hover-over info
@@ -603,7 +603,7 @@ if __name__ == '__main__':
                                                    GUI_IO_util.labels_x_coordinate + 800,
                                                    "Click the + button to add another csv file")
 
-    OK_append_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
+    OK_append_button = tk.Button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled',
                                  command=lambda: build_append_string(False, True))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 1050,
@@ -645,7 +645,7 @@ if __name__ == '__main__':
                                                    character_separator_entry, True)
 
     # add another field
-    add_concatenate_field = tk.Button(window, text='+', width=2, height=1, state='disabled', command=lambda: merge_reminder_plus())
+    add_concatenate_field = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled', command=lambda: merge_reminder_plus())
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 950,
                                                    y_multiplier_integer,
@@ -655,7 +655,7 @@ if __name__ == '__main__':
                                                    "Click the + button to add another csv field")
 
     # add another file
-    add_concatenate_file = tk.Button(window, text='+', width=2, height=1, state='disabled',
+    add_concatenate_file = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                          command=lambda: add_csvFile(window, 'Select INPUT csv file',
                                                                 [("csv files", "*.csv")]))
     # place widget with hover-over info
@@ -666,7 +666,7 @@ if __name__ == '__main__':
                                                    "Click the + button to add another csv file\nOPTION NOT AVAILABLE FOR CONCATENATE")
 
 
-    OK_concatenate_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
+    OK_concatenate_button = tk.Button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled',
                                       command=lambda: build_concatenate_string(False, True))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 1050,
@@ -710,7 +710,7 @@ if __name__ == '__main__':
                                                    GUI_IO_util.open_setup_x_coordinate,
                                                    "Click the button to activate the WHERE clause on top of this GUI")
 
-    add_drop_field = tk.Button(window, text='+', width=2, height=1, state='disabled', command=lambda: merge_reminder_plus())
+    add_drop_field = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled', command=lambda: merge_reminder_plus())
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 950,
                                                    y_multiplier_integer,
@@ -720,7 +720,7 @@ if __name__ == '__main__':
                                                    "Click the + button to add another csv field")
 
     # add another file
-    add_drop_file = tk.Button(window, text='+', width=2, height=1, state='disabled',
+    add_drop_file = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                          command=lambda: add_csvFile(window, 'Select INPUT csv file',
                                                                 [("csv files", "*.csv")]))
     # place widget with hover-over info
@@ -730,7 +730,7 @@ if __name__ == '__main__':
                                                    GUI_IO_util.labels_x_coordinate + 800,
                                                    "Click the + button to add another csv file")
 
-    OK_drop_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
+    OK_drop_button = tk.Button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled',
                                 command=lambda: merge_reminder_OK())
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 1050,
@@ -809,7 +809,7 @@ if __name__ == '__main__':
     y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 100, y_multiplier_integer,
                                                    select_csv_field_merge_menu, True)
 
-    add_merge_field = tk.Button(window, text='+', width=2, height=1, state='disabled', command=lambda: merge_reminder_plus())
+    add_merge_field = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled', command=lambda: merge_reminder_plus())
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 950,
                                                    y_multiplier_integer,
@@ -819,7 +819,7 @@ if __name__ == '__main__':
                                                    "Click the + button to add another csv field")
 
     # add another file
-    add_merge_file = tk.Button(window, text='+', width=2, height=1, state='disabled',
+    add_merge_file = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                          command=lambda: add_csvFile(window, 'Select INPUT csv file',
                                                                 [("csv files", "*.csv")]))
     # place widget with hover-over info
@@ -829,7 +829,7 @@ if __name__ == '__main__':
                                                    GUI_IO_util.labels_x_coordinate + 800,
                                                    "Click the + button to add another csv file")
 
-    OK_merge_button = tk.Button(window, text='OK', width=3, height=1, state='disabled',
+    OK_merge_button = tk.Button(window, text='OK', width=GUI_IO_util.OK_button_width, height=1, state='disabled',
                                 command=lambda: merge_reminder_OK())
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate + 1050,

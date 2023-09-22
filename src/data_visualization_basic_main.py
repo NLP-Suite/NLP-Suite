@@ -290,7 +290,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    "The widgets on this line refer to the multiple bar charts option only")
 
 # add another file
-add_file = tk.Button(window, text='+', width=2, height=1,
+add_file = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1,
                             command=lambda: add_csvFile(window, 'Select INPUT csv file',
                                                         [("csv files", "*.csv")]))
 # place widget with hover-over info
@@ -316,7 +316,7 @@ def reset_csv_files_values():
     csv_files_list.clear()
     process_csv_file_menu(inputFilename.get())
 
-reset_button = tk.Button(window, text='Reset', width=5, height=1, state='normal',
+reset_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, state='normal',
                                 command=lambda: reset_csv_files_values())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_indented_coordinate + 40,

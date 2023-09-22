@@ -108,12 +108,15 @@ def display_available_options():
     if package_var.get()=='Stanza':
         try:
             import stanza
+            # lang_dict_rev will use alias, instead of lang_name, as found in resources.json
+            # e.g., stanza.download(Stanza_util.lang_dict_rev['en'])
             stanza.download(Stanza_util.lang_dict_rev[language])
         except:
             import stanza.resources.common
             DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
-            os.path.join(DEFAULT_MODEL_DIR, 'resources.json')
-            print('stanza not installed!!!!')
+            resources_path = os.path.join(DEFAULT_MODEL_DIR, 'resources.json')
+            mb.showwarning(title='Warning',
+                           message='Stanza does not seem to be installed in your machine. The file-path resources_path could not be found.\n\nPlease, open terminal, type conda activate NLP (Enter) and then type pip install stanza (Enter) and try again.')
     memory_var.set(int(memory))
     document_length_var.set(int(document_length))
     limit_sentence_length_var.set(int(limit_sentence_length))
@@ -257,21 +260,21 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.all_widget_po
                                                GUI_IO_util.open_TIPS_x_coordinate,
                                                "Use the dropdown menu to select the language your corpus is written in.\nDifferent packages (CoreNLP, spaCy, Stanza) can handle different sets of languages. Only Stanza allows multi-language selection.")
 
-add_language_button = tk.Button(window, text='+', width=2,height=1,state='normal',command=lambda: activate_language_var())
+add_language_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='normal',command=lambda: activate_language_var())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.plus_column, y_multiplier_integer,
                                                add_language_button, True, False, False, False, 90,
                                                GUI_IO_util.open_reminders_x_coordinate,
                                                "Click on the + button to activate the language dropdown menu where you can select another language to add to the list.\nOnly Stanza allows multi-language selection.")
 
-reset_language_button = tk.Button(window, text='Reset', width=5,height=1,state='normal',command=lambda: reset_language_list())
+reset_language_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width,height=1,state='normal',command=lambda: reset_language_list())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.reset_column, y_multiplier_integer,
                                                reset_language_button, True, False, False, False, 90,
                                                GUI_IO_util.open_reminders_x_coordinate,
                                                "Click on the Reset button to clear the list of any previously selected language(s).")
 
-show_language_button = tk.Button(window, text='Show', width=5,height=1,state='normal',command=lambda: show_language_list())
+show_language_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='normal',command=lambda: show_language_list())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.show_column, y_multiplier_integer,
                                                show_language_button, False, False, False, False, 90,

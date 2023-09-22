@@ -410,11 +410,11 @@ group_number = tk.Entry(window, width=3, state='disabled', textvariable=group_nu
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 50, y_multiplier_integer,
                                                group_number, True)
 
-add_group_button = tk.Button(window, text='+', width=2, height=1, state='disabled', command=lambda: add_group_to_list())
+add_group_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled', command=lambda: add_group_to_list())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 100, y_multiplier_integer,
                                                add_group_button, True)
 
-reset_group_button = tk.Button(window, text='Reset', width=5, height=1, state='disabled',
+reset_group_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, state='disabled',
                                command=lambda: reset_all_values())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 140, y_multiplier_integer,
                                                reset_group_button, True)

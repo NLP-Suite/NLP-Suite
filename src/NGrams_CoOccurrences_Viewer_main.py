@@ -340,13 +340,13 @@ def check_dateFields(*args):
         temporal_aggregation_menu.config(state="disabled")
 date_options.trace('w',check_dateFields)
 
-add_viewer_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_viewer_var())
+add_viewer_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_viewer_var())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_add_viewer_button_pos,y_multiplier_integer,add_viewer_button, True)
 
-reset_viewer_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_viewer_options_list())
+reset_viewer_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_viewer_options_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_reset_viewer_button_pos,y_multiplier_integer,reset_viewer_button,True)
 
-show_viewer_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_viewer_options_list())
+show_viewer_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_viewer_options_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_show_viewer_button_pos,y_multiplier_integer,show_viewer_button,True)
 
 viewer_menu_lb = tk.Label(window, text='VIEWER options')
