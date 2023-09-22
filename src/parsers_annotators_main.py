@@ -675,6 +675,7 @@ def activate_NLP_options(*args):
             CoNLL_table_analyzer_checkbox_msg.config(text="Open CoNLL table analyzer GUI")
         else:
             CoNLL_table_analyzer_checkbox_msg.config(text="Do NOT open CoNLL table analyzer GUI")
+        CoNLL_table_analyzer_checkbox.configure(state='normal')
 
     if package_display_area_value_new != package_display_area_value:
         language_list = [language]

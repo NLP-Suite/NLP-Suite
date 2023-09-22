@@ -290,14 +290,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 menu_values = ['']
 
-reset_csv_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_csv_list())
+reset_csv_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_csv_list())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_reset_csv_button_pos, y_multiplier_integer,
                                    reset_csv_button,
                                    True, False, True, False, 90, GUI_IO_util.statistics_csv_reset_csv_button_pos,
                                    "Click the 'Reset' button to clear all selected csv field, group-by field and hover-over field, and start fresh")
 
-show_csv_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_csv_list())
+show_csv_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_csv_list())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_show_csv_button_pos, y_multiplier_integer,
                                    show_csv_button,
@@ -357,7 +357,7 @@ def activate_hover_over_field_menu():
         csv_hover_over_field_menu.configure(state="normal")
 
 # add extra group_by field
-add_field3_button = tk.Button(window, text='+', width=2, height=1, state='disabled',
+add_field3_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                               command=lambda: activate_groupBy_field_menu())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
@@ -378,7 +378,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv
                                    "\nMULTIPLE GROUP-BY FIELDS CAN BE SELECTED")
 
 # add extra hover_over field
-add_field2_button = tk.Button(window, text='+', width=2, height=1, state='disabled',
+add_field2_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                               command=lambda: activate_hover_over_field_menu())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_add_field2_button_pos, y_multiplier_integer,

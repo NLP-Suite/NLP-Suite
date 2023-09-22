@@ -1,3 +1,5 @@
+import sys
+
 import stanza
 from stanza.pipeline.multilingual import MultilingualPipeline
 import pandas as pd
@@ -11,8 +13,6 @@ import tkinter as tk
 
 import IO_files_util
 import IO_csv_util
-import charts_util
-import file_splitter_ByLength_util
 import GUI_util
 import GUI_IO_util
 import IO_user_interface_util
@@ -21,11 +21,6 @@ import parsers_annotators_visualization_util
 
 warnings.simplefilter(action='ignore', category=FutureWarning)
 
-# import json
-# import stanza.resources.common
-# DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
-from tkinter import *
-# lang_dict = dict(constants_util.languages)
 import json
 import stanza.resources.common
 DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
@@ -710,6 +705,17 @@ def create_output_directory(inputFilename, inputDir, outputDir,
 # Python dictionary of language (values) and their acronyms (keys)
 lang_dict = {}
 lang_dict_rev = {}
+# lang_dict_rev will use alias, instead of lang_name, as found in resources.json
+# e.g., stanza.download(Stanza_util.lang_dict_rev['en'])
+import stanza.resources.common
+
+EFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
+resources_path = os.path.join(DEFAULT_MODEL_DIR, 'resources.json')
+if not os.path.exists(resources_path):
+    mb.showwarning(title='Warning',
+                   message='Stanza does not seem to be installed in your machine. The file-path\n\n' + resources_path + '\n\ncould not be found.\n\nPlease, open terminal, type conda activate NLP (Enter) and then type pip install stanza (Enter) and try again.')
+    sys.exit()
+
 with open(os.path.join(DEFAULT_MODEL_DIR, 'resources.json')) as fin:
     resources = json.load(fin)
 for key, value in resources.items():

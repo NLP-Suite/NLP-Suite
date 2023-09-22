@@ -251,12 +251,12 @@ def check_GitHub_release(local_release_version: str, silent = False):
     if 'Not Found' not in GitHub_newest_release and old_version: #GitHub_newest_release != local_release_version:
         # update is carried out in NLP_setup_update_util.py
         result = mb.askyesno("NLP Suite Outdated",
-                    "You are running the NLP Suite release version " + str(local_release_version) + ", an OLD version." +
-                    "\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) + "." +
+                    "You are running the NLP Suite release version " + str(local_release_version).rstrip() + ", an OLD version." +
+                    "\n\nA NEW version of the NLP Suite has been released on GitHub: " + str(GitHub_newest_release) +
                     "\n\nThe OLD and NEW release versions are displayed on the top left-hand corner of the GUI, local OLD version left of \ GitHUB new version right of \ (0.0.0 is displayed when you are not connected to the internet to access GitHub)." +
                     "\n\nTo update to the newer release, EXIT the NLP Suite NOW by clicking on the CLOSE button and fire up the NLP Suite again.\n\nThe NLP Suite is automatically updated every time you exit the NLP Suite and fire it up again." +
                     "\n\nThe update features of the NLP Suite rely on Git. Please download Git at this link https://git-scm.com/downloads, if it hasn’t been installed already." +
-                    "\n\nWOULD YOU LIKE TO SEE WHAT IS NEW IN THE RELEASE VERSION " + str(GitHub_newest_release) + "?")
+                    "\n\nWOULD YOU LIKE TO SEE WHAT IS NEW IN THE RELEASE VERSION " + str(GitHub_newest_release).rstrip() + "?")
         if result:
             url = "https://github.com/NLP-Suite/NLP-Suite/wiki/NLP-Suite-Release-History"
             IO_libraries_util.open_url('NLP Suite GitHub', url)

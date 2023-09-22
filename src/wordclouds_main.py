@@ -489,10 +489,10 @@ def update_csvFields():
     csv_field_menu.configure(state="normal")
     color_var.set(0)
 
-add_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: update_csvFields())
+add_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: update_csvFields())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_add_button,y_multiplier_integer,add_button, True)
 
-reset_button = tk.Button(window, text='Reset', height=1,state='disabled',command=lambda: clear_field_color_list())
+reset_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1,state='disabled',command=lambda: clear_field_color_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_reset_button,y_multiplier_integer,reset_button,True)
 
 def showList():
@@ -501,7 +501,7 @@ def showList():
     else:
         mb.showwarning(title='Warning', message='The currently selected combination of csv fields and colors is:\n\n' + ','.join(csvField_color_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
-show_columns_button = tk.Button(window, text='Show',height=1,state='disabled',command=lambda: showList())
+show_columns_button = tk.Button(window, text='Show',width=GUI_IO_util.show_button_width, height=1,state='disabled',command=lambda: showList())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_show_button,y_multiplier_integer,show_columns_button)
 
 def activateCsvField(*args):
