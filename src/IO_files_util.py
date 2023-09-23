@@ -213,7 +213,7 @@ def complete_order(bb, c):
 
 
 
-def do_compare(input_list, compare_split, date_format, file_end, date_loc, ordering):
+def do_compare(input_list, file_end, sort_order, compare_split, date_format, date_loc):
     def compare(filename1, filename2):
         if not compare_split in filename1:
             print("Non fatal filename error in filename separator. Error ignored.\nThe filename separator '" + compare_split + "' stored for the filenames in your corpus is not contained in the filename\n   " + filename1 + "\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration at the top of the GUI.\n\n")
@@ -232,7 +232,7 @@ def do_compare(input_list, compare_split, date_format, file_end, date_loc, order
                 filename1 = filename1.split(compare_split)
                 filename2 = filename2.split(compare_split)
                 i = 0
-                q = complete_order(len(filename1), [int(x) for x in ordering.split(",")])
+                q = complete_order(len(filename1), [int(x) for x in sort_order.split(",")])
 
                 while i <= len(filename1) - 1:
                     if q[i] + 1 == date_loc:
@@ -259,8 +259,6 @@ def do_compare(input_list, compare_split, date_format, file_end, date_loc, order
             return -1
 
     return sorted(input_list, key=functools.cmp_to_key(compare))
-
-
 
 
 def getFileListOld(inputFile, inputDir, fileType='.*',silent=False):
@@ -304,10 +302,13 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
     configFileName= GUI_IO_util.configPath + os.sep+configFileName
     #print(inputDir)
 
+    # append sort order and separator
+    # unfortunately, the sort order is saved as first column in the config file and separator second,
+    #   contrary to the display in the IO setup GUI)
     if configFileName!='':
         import pandas as pd
         try:
-            a = pd.read_csv(configFileName)
+            a = pd.read_csv(configFileName, index_col=False)
         except:
             if configFileName=='NLP_default_IO_config.csv':
                 mb.showwarning(title='Input config file error',
@@ -322,24 +323,31 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
         if str(sort_order) =="nan":
             sort_order = "1"
             IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
-                        "Non fatal filename error: no sort order available. Error ignored. Files will be read without sorting.\nYou should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration' at the top of the GUI.\n\n", False,'',True,'',False)
+                        "Non fatal filename error: no sort order available. Error ignored. Files will be read without sorting.\nIf you wish to sort the input files in a specific oorder, you should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration' at the top of the GUI.\n\n", False,'',True,'',False)
+
         try:
             aa = float(sort_order)
             aa = int(aa)
             sort_order = str(aa)
         except:
             pass
+
+        separator = a['Item separator character(s)'][1]
+        if str(separator)=="nan":
+            separator=' '
+
         date_format = a['Date format'][1]
         try:
             date_pos = int(a['Date position'][1])
         except:
             date_pos = 9e999
-        separator = a['Item separator character(s)'][1]
-        if str(separator)=="nan":
-            separator=' '
+        #@@@
+        # separator = a['Item separator character(s)'][1]
+        # if str(separator)=="nan":
+        #     separator=' '
 
         try:
-            files = do_compare(files, separator, date_format, fileType, date_pos,sort_order)
+            files = do_compare(files, fileType, sort_order, separator, date_format, date_pos)
         except:
             files.sort()
         return files
