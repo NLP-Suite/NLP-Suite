@@ -5,7 +5,14 @@ import GUI_util
 
 if IO_libraries_util.install_all_Python_packages(GUI_util.window, "DB_PC-ACE_data_analyzer_main.py", ['os', 'tkinter','pandas','numpy'])==False:
     sys.exit(0)
-
+def safe_pandas_call(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            print(f"Error in {func.__name__}: {e}")
+            # Handle error as needed
+    return wrapper
 import numpy as np
 import pandas as pd
 import os
@@ -20,6 +27,7 @@ import TIPS_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
+## OK Pass test of import PCACE
 def import_PCACE_tables(inputDir):
     dirSearch = os.listdir(inputDir)
     tableList = []
@@ -44,7 +52,8 @@ def import_PCACE_tables(inputDir):
     return tableList
 
 
-# check if the required documents can be found
+
+# check if the required documents can be found. OK pass checks.
 def check_missing(fileName):
     if os.path.isfile(fileName):
         fileName_df = pd.DataFrame(pd.read_excel(fileName))
@@ -110,31 +119,40 @@ def give_all_Simplex(data):
     return simplex
 
 # depend on users' choice, get a list of all value in data_SimplexText, data_SimplexDate or data_SimplexNumber
+# Pass test 2023 / 09 / 22
 def give_Simplex_text_date_number(simplex_type, data_SimplexText, data_SimplexDate, data_SimplexNumber):
     list_simplex_data = []
+
     if simplex_type == 'text':
-        if type(data_SimplexText) == str:
-            if os.path.isfile(data_SimplexText):
-                data_SimplexText_df = pd.DataFrame(pd.read_excel(data_SimplexText))
-                data = data_SimplexText_df[data_SimplexText_df['Value'].notna()]
-                list_simplex_data = data['Value'].values.tolist()
+        if isinstance(data_SimplexText, str) and os.path.isfile(data_SimplexText):
+            data_SimplexText_df = pd.read_excel(data_SimplexText)
+            data = data_SimplexText_df[data_SimplexText_df['Value'].notna()]
+            list_simplex_data = data['Value'].values.tolist()
+
     elif simplex_type == 'date':
-        if type(data_SimplexDate) == str:
-            if os.path.isfile(data_SimplexDate):
-                data_SimplexDate_df = pd.DataFrame(pd.read_excel(data_SimplexDate))
-                data = data_SimplexDate_df[data_SimplexDate_df['Value'].notna()]
-                list_simplex_data = data['Value'].values.tolist()
+        if isinstance(data_SimplexDate, str) and os.path.isfile(data_SimplexDate):
+            data_SimplexDate_df = pd.read_excel(data_SimplexDate)
+            data = data_SimplexDate_df[data_SimplexDate_df['Value'].notna()]
+            list_simplex_data = data['Value'].values.tolist()
+
     elif simplex_type == 'number':
-        if type(data_SimplexNumber) == str:
-            if os.path.isfile(data_SimplexNumber):
-                data_SimplexNumber_df = pd.DataFrame(pd.read_excel(data_SimplexNumber))
-                data = data_SimplexNumber_df[data_SimplexNumber_df['Value'].notna()]
-                list_simplex_data = data['Value'].values.tolist()
-                for i in range(len(list_simplex_data)):
-                    num = list_simplex_data[i]
-                    if num.is_integer():
-                        list_simplex_data[i] = int(num)
-    list_simplex_data.sort()
+        if isinstance(data_SimplexNumber, str) and os.path.isfile(data_SimplexNumber):
+            data_SimplexNumber_df = pd.read_excel(data_SimplexNumber)
+            data = data_SimplexNumber_df[data_SimplexNumber_df['Value'].notna()]
+            list_simplex_data = data['Value'].values.tolist()
+            for i in range(len(list_simplex_data)):
+                num = list_simplex_data[i]
+                if isinstance(num, float) and num.is_integer():
+                    list_simplex_data[i] = int(num)
+
+    if all(isinstance(item, (int, float)) for item in list_simplex_data):
+        list_simplex_data.sort()
+    elif all(isinstance(item, (str)) for item in list_simplex_data):
+        list_simplex_data.sort()
+    elif all(isinstance(item, (pd.Timestamp)) for item in list_simplex_data):
+        list_simplex_data.sort()
+    # add more conditions as necessary based on the data types you expect in the list
+
     return list_simplex_data
 
 def find_complex_in_document(name, inputDir, outputDir):
@@ -204,7 +222,7 @@ def get_simplex_frequencies(name, inputDir, outputDir):
     select = select[['ID_data_simplex', 'ID_data_complex']]
     count = select.groupby(['ID_data_simplex']).count()
 
-    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
     count = pd.merge(count, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
 
@@ -302,7 +320,7 @@ def get_complex_frequencies(name, inputDir, outputDir):
 
     return complex_frequency_file_name
 
-
+# pass test, Sep 22, 2023
 def get_complex_frequencies_all(inputDir, outputDir):
     setup_Complex = os.path.join(inputDir, 'setup_Complex.xlsx')
     if os.path.isfile(setup_Complex):
@@ -329,9 +347,9 @@ def get_complex_frequencies_all(inputDir, outputDir):
         simplex_id = find_setup_id([name], setup_Complex_df)
         id = simplex_id.iat[0,0]
 
-        temp = pd.merge(data_xref_Complex_Complex_df, data_Complex_df, how = 'left', left_on = 'ID_data_complex.1', right_on = 'ID_data_complex')
-        select = temp[temp['ID_setup_complex']==id]
-        select = select[['ID_data_complex.1', 'ID_data_complex_x']]
+        temp = pd.merge(data_xref_Complex_Complex_df, data_Complex_df, how = 'left', on = 'ID_data_complex')
+        select = temp[temp['ID_data_complex']==id]
+        select = select[['ID_data_complex.1', 'ID_data_complex']]
 
         all_rows.append([name, len(select)])
 
@@ -729,7 +747,7 @@ def dist_1(name, setup_Simplex, setup_xref_Simplex_Complex, data_xref_Simplex_Co
     xref_data = xref_data[['ID_data_simplex', 'ID_data_complex']]
     count = xref_data.groupby(['ID_data_simplex']).count()
 
-    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
     count = pd.merge(count, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
     count = count[['ID_data_simplex', 'Value', 'ID_data_complex']]
@@ -773,7 +791,7 @@ def semantic_triplet_complex(setup_Complex, setup_xref_Complex_Complex, data_xre
 # parameter: "Participant-S" or "Participant-O"
 # return: dataframe: Participant-S data id, Value = simplex, Type = simplex name
 def participant_simplex(participant, data_Simplex, data_SimplexText, setup_Complex, setup_Simplex, data_Complex, data_xref_Simplex_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex):
-    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
     xref_sc_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
     xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
@@ -813,7 +831,7 @@ def process_simplex(setup_Simplex, data_Simplex, data_SimplexText, data_xref_Sim
     simplex_id = find_setup_id_simplex(['Negation', 'Modal verb', 'Verbal phrase'], setup_Simplex)
     simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
 
-    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
     xref_sc_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
     xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
@@ -903,9 +921,9 @@ def semantic_triplet_simplex(setup_Complex, setup_Simplex, setup_xref_Complex_Co
 
     # S5: add document information
     # ref: complex id for semantic triplet
-    data_xref_Complex_Document_modified = data_xref_Complex_Document[['Complex','Document']]
-    simplex_version = pd.merge(simplex_version, data_xref_Complex_Document_modified, how = 'left', left_on = 'Semantic Triplet', right_on = 'Complex')
-    simplex_version = simplex_version.drop('Complex', axis = 1)
+    data_xref_Complex_Document_modified = data_xref_Complex_Document[['ID_data_complex','ID_data_document']]
+    simplex_version = pd.merge(simplex_version, data_xref_Complex_Document_modified, how = 'left', left_on = 'Semantic Triplet', right_on = 'ID_data_complex')
+    simplex_version = simplex_version.drop('ID_data_complex', axis = 1)
 
     # S6: add VComment
     # ref: complex id for semantic triplet
@@ -925,7 +943,7 @@ def semantic_triplet_simplex(setup_Complex, setup_Simplex, setup_xref_Complex_Co
     verifierID_idx = simplex_version.columns.get_loc('VerifierID')
     simplex_version.insert(verifierID_idx + 1, 'VerifierName', verifier_name)
 
-    simplex_version = simplex_version.rename(columns = {'Macro Event':'Macro Event ID','Event':'Event ID', 'Semantic Triplet':'Semantic Triplet ID', 'Document':'Document ID'})
+    simplex_version = simplex_version.rename(columns = {'Macro Event':'Macro Event ID','Event':'Event ID', 'Semantic Triplet':'Semantic Triplet ID', 'ID_data_document':'Document ID'})
 
     return simplex_version
 
@@ -934,7 +952,7 @@ def semantic_triplet_simplex(setup_Complex, setup_Simplex, setup_xref_Complex_Co
 # give the semantic triplet with simplex
 # return: dataframe: Semantic triplet data id, S data id, S Type, S Simplex, V data id, V Simplex, O data id, O Type, O Simplex
 # p.s. Type = Individual / Orgaization / Collective actor
-def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, document_info='', comment_info=''):
+def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, comment_info='', document_info=False):
     setup_Complex_df = check_missing(os.path.join(inputDir,'setup_Complex.xlsx'))
     if setup_Complex_df is False:
         return
@@ -1005,7 +1023,7 @@ def semantic_triplet_simplex_main(inputDir, outputDir, macro_event_id, document_
         macro_event_id = int(macro_event_id.split()[0])
         simplex_version = simplex_version[simplex_version['Macro Event ID'] == macro_event_id]
 
-    if not document_info:
+    if document_info:
         simplex_version = simplex_version.drop('Document ID', axis=1)
 
     if comment_info == '':
@@ -1030,7 +1048,7 @@ def find_time_simplex(setup_Simplex, data_Simplex, data_SimplexText, setup_Compl
     simplex_id = find_setup_id_simplex(['Moment of the day'], setup_Simplex)
     simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
 
-    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
     xref_sc_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
     xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
@@ -1056,7 +1074,7 @@ def find_time_simplex(setup_Simplex, data_Simplex, data_SimplexText, setup_Compl
 
 
 # give the semantic triplet (SVO) with time
-def semantic_triplet_time(inputDir, outputDir, macro_event_id, document_info, comment_info):
+def semantic_triplet_time(inputDir, outputDir, macro_event_id, document_inf='', comment_info=''):
     setup_Complex_df = check_missing(os.path.join(inputDir,'setup_Complex.xlsx'))
     if setup_Complex_df is False:
         return
@@ -1139,7 +1157,7 @@ def semantic_triplet_time(inputDir, outputDir, macro_event_id, document_info, co
         macro_event_id = int(macro_event_id.split()[0])
         triplet_with_time = triplet_with_time[triplet_with_time['Macro Event ID'] == macro_event_id]
 
-    if not document_info:
+    if False:
         triplet_with_time = triplet_with_time.drop('Document ID', axis=1)
 
     if comment_info == '':
@@ -1165,7 +1183,7 @@ def find_space_simplex(setup_Simplex, data_Simplex, data_SimplexText, setup_Comp
     simplex_id = find_setup_id_simplex(['City name', 'County', 'State'], setup_Simplex)
     simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
 
-    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
     xref_sc_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
     xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
@@ -1197,7 +1215,7 @@ def find_space_simplex_event(setup_Simplex, data_Simplex, data_SimplexText, setu
     simplex_id = find_setup_id_simplex(['City name', 'County', 'State'], setup_Simplex)
     simplex_id = simplex_id['ID_setup_simplex'].values.tolist()
 
-    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
     xref_sc_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
     xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
@@ -1252,11 +1270,11 @@ def semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_d
 
     # move Document column to the last position of the dataframe
     document_id = triplet_with_space.pop('Document ID')
-    triplet_with_space.insert(len(triplet_with_space.columns), 'Document ID', document_id)
+    triplet_with_space.insert(len(triplet_with_space.columns), 'ID_data_document', document_id)
 
     # move Comment column to the last position of the dataframe
-    comment = triplet_with_space.pop('Comment')
-    triplet_with_space.insert(len(triplet_with_space.columns), 'Comment', comment)
+#    comment = triplet_with_space.pop('Comment')
+#    triplet_with_space.insert(len(triplet_with_space.columns), 'Comment', comment)
 
     UserID = triplet_with_space.pop('UserID')
     triplet_with_space.insert(len(triplet_with_space.columns), 'UserID', UserID)
@@ -1272,7 +1290,7 @@ def semantic_triplet_space(setup_Simplex_df, data_Simplex_df, data_SimplexText_d
 
 # prepare the function for the use in main
 # give semantic triplet with space
-def semantic_triplet_space_main(inputDir, outputDir, macro_event_id, document_info, comment_info):
+def semantic_triplet_space_main(inputDir, outputDir, macro_event_id, comment_info='', document_info=False):
     setup_Complex_df = check_missing(os.path.join(inputDir,'setup_Complex.xlsx'))
     if setup_Complex_df is False:
         return
@@ -1343,7 +1361,7 @@ def semantic_triplet_space_main(inputDir, outputDir, macro_event_id, document_in
         macro_event_id = int(macro_event_id.split()[0])
         triplet_with_space = triplet_with_space[triplet_with_space['Macro Event ID'] == macro_event_id]
 
-    if not document_info:
+    if document_info:
         triplet_with_space = triplet_with_space.drop('Document ID', axis=1)
 
     if comment_info == '':
@@ -1363,7 +1381,7 @@ def semantic_triplet_space_main(inputDir, outputDir, macro_event_id, document_in
 
 
 # give semantic triplet with time and space
-def semantic_triplet_time_space(inputDir, outputDir, macro_event_id, document_info, comment_info):
+def semantic_triplet_time_space(inputDir, outputDir, macro_event_id, comment_info='', document_info=False):
     setup_Complex_df = check_missing(os.path.join(inputDir,'setup_Complex.xlsx'))
     if setup_Complex_df is False:
         return
@@ -1437,30 +1455,32 @@ def semantic_triplet_time_space(inputDir, outputDir, macro_event_id, document_in
     triplet_with_time_space = triplet_with_time_space.rename(columns = {'Indefinite time of day':'Time ID', 'Time':'Time Simplex'})
 
     # move Document column to the last position of the dataframe
-    document_id = triplet_with_time_space.pop('Document ID')
-    triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'Document ID', document_id)
-
+    try:
+        document_id = triplet_with_time_space.pop('Document ID')
+        triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'Document ID', document_id)
+    except:
+        print('unable to move the Document ID')
     # move Comment column to the last position of the dataframe
-    comment = triplet_with_time_space.pop('Comment')
-    triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'Comment', comment)
 
-    # move VerifierID column to the last position of the dataframe
-    UserID = triplet_with_time_space.pop('UserID')
-    triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'UserID', UserID)
-    user_name = triplet_with_time_space.pop('UserName')
-    triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'UserName', user_name)
-    VerifierID = triplet_with_time_space.pop('VerifierID')
-    triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'VerifierID', VerifierID)
-    verifier_name = triplet_with_time_space.pop('VerifierName')
-    triplet_with_time_space.insert(len(triplet_with_time_space.columns), 'VerifierName', verifier_name)
+    columns_to_move = ['Comment', 'UserID', 'UserName', 'VerifierID', 'VerifierName']
+
+    for col in columns_to_move:
+        try:
+            data = triplet_with_time_space.pop(col)
+            triplet_with_time_space.insert(len(triplet_with_time_space.columns), col, data)
+        except KeyError:
+            print(f"Column {col} not found in dataframe.")
 
     if macro_event_id != '':
         macro_event_id = int(macro_event_id.split()[0])
         triplet_with_time_space = triplet_with_time_space[triplet_with_time_space['Macro Event ID'] == macro_event_id]
 
     if not document_info:
-        triplet_with_time_space = triplet_with_time_space.drop('Document ID', axis=1)
 
+        try:
+            triplet_with_time_space = triplet_with_time_space.drop('Document ID', axis=1)
+        except:
+            print("unabel to drop doc id")
     if comment_info == '':
         triplet_with_time_space = triplet_with_time_space.drop(['Comment','UserID','UserName','VerifierID','VerifierName'], axis=1)
     elif comment_info == 'user':
@@ -1476,8 +1496,8 @@ def semantic_triplet_time_space(inputDir, outputDir, macro_event_id, document_in
     return triplet_with_space_time_file_name
 
 
-# give indivudal characteristics
-def individual_characteristics(inputDir, outputDir, macro_event_id, document_info, comment_info):
+# give individual characteristics
+def individual_characteristics(inputDir, outputDir, macro_event_id='', comment_info='', document_info=False):
     setup_Complex_df = check_missing(os.path.join(inputDir,'setup_Complex.xlsx'))
     if setup_Complex_df is False:
         return
@@ -1576,7 +1596,7 @@ def individual_characteristics(inputDir, outputDir, macro_event_id, document_inf
     # start to build simplex table
     table_simplex = table_complex
 
-    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
 
     xref_sc_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
@@ -1657,9 +1677,9 @@ def individual_characteristics(inputDir, outputDir, macro_event_id, document_inf
     table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
 
     # Age
-    data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', on = 'ID_data_date_number_text')
     data_Simplex_temp1 = data_Simplex_temp1.dropna(subset = ['Value'])
-    data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', on = 'ID_data_date_number_text')
     data_Simplex_temp2 = data_Simplex_temp2.dropna(subset = ['Value'])
     data_Simplex_temp = pd.concat([data_Simplex_temp1, data_Simplex_temp2])
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'Value']]
@@ -1706,9 +1726,9 @@ def individual_characteristics(inputDir, outputDir, macro_event_id, document_inf
 
     # add document information
     # ref: complex id for semantic triplet
-    data_xref_Complex_Document_modified = data_xref_Complex_Document_df[['Complex','Document']]
-    table_simplex = pd.merge(table_simplex, data_xref_Complex_Document_modified, how = 'left', left_on = 'Individual ID', right_on = 'Complex')
-    table_simplex = table_simplex.drop('Complex', axis = 1)
+    data_xref_Complex_Document_modified = data_xref_Complex_Document_df[['ID_data_complex','ID_data_document']]
+    table_simplex = pd.merge(table_simplex, data_xref_Complex_Document_modified, how = 'left', left_on = 'Individual ID', right_on = 'ID_data_complex')
+    table_simplex = table_simplex.drop('ID_data_complex', axis = 1)
     table_simplex = table_simplex.rename(columns={'Document':'Document ID'})
 
     # add VComment
@@ -1738,7 +1758,7 @@ def individual_characteristics(inputDir, outputDir, macro_event_id, document_inf
         table_simplex = table_simplex[table_simplex['Individual ID'] == actor_id]
 
 
-    if not document_info:
+    if document_info:
         table_simplex = table_simplex.drop('Document ID', axis=1)
 
     if comment_info == '':
@@ -1757,7 +1777,7 @@ def individual_characteristics(inputDir, outputDir, macro_event_id, document_inf
 
 
 # give collective actor characteristics
-def collective_actor_characteristics(inputDir, outputDir, macro_event_id, document_info, comment_info):
+def collective_actor_characteristics(inputDir, outputDir, macro_event_id='', comment_info='', document_info=False):
     setup_Complex_df = check_missing(os.path.join(inputDir,'setup_Complex.xlsx'))
     if setup_Complex_df is False:
         return
@@ -1857,7 +1877,7 @@ def collective_actor_characteristics(inputDir, outputDir, macro_event_id, docume
     # start to build simplex table
     table_simplex = table_complex
 
-    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
 
     xref_sc_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
@@ -1937,9 +1957,9 @@ def collective_actor_characteristics(inputDir, outputDir, macro_event_id, docume
     table_simplex = table_simplex.drop(complex_name+' Identifier', axis = 1)
 
     # Age
-    data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', on = 'ID_data_date_number_text')
     data_Simplex_temp1 = data_Simplex_temp1.dropna(subset = ['Value'])
-    data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', on = 'ID_data_date_number_text')
     data_Simplex_temp2 = data_Simplex_temp2.dropna(subset = ['Value'])
     data_Simplex_temp = pd.concat([data_Simplex_temp1, data_Simplex_temp2])
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'Value']]
@@ -2004,9 +2024,10 @@ def collective_actor_characteristics(inputDir, outputDir, macro_event_id, docume
 
     # add document information
     # ref: complex id for semantic triplet
-    data_xref_Complex_Document_modified = data_xref_Complex_Document_df[['Complex','Document']]
-    table_simplex = pd.merge(table_simplex, data_xref_Complex_Document_modified, how = 'left', left_on = 'Collective actor ID', right_on = 'Complex')
-    table_simplex = table_simplex.drop('Complex', axis = 1)
+    data_xref_Complex_Document_modified = data_xref_Complex_Document_df[['ID_data_complex','ID_data_document']]
+    #SIMON
+    table_simplex = pd.merge(table_simplex, data_xref_Complex_Document_modified, how = 'left', left_on = 'Collective actor ID', right_on = 'ID_data_complex')
+    table_simplex = table_simplex.drop('ID_data_complex', axis = 1)
     table_simplex = table_simplex.rename(columns={'Document':'Document ID'})
 
     # add VComment
@@ -2036,7 +2057,7 @@ def collective_actor_characteristics(inputDir, outputDir, macro_event_id, docume
         table_simplex = table_simplex[table_simplex['Collective actor ID'] == actor_id]
 
 
-    if not document_info:
+    if document_info:
         table_simplex = table_simplex.drop('Document ID', axis=1)
 
     if comment_info == '':
@@ -2087,7 +2108,7 @@ def organization_characteristics(setup_Simplex, data_Simplex, data_SimplexText, 
     # start to build simplex table
     table_simplex = table_complex
 
-    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
 
     xref_sc_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
@@ -2139,9 +2160,9 @@ def organization_characteristics(setup_Simplex, data_Simplex, data_SimplexText, 
     complex_organization_table_complex = table
 
     # Complex Organization: Number of individuals in unit
-    data_Simplex_temp1 = pd.merge(data_Simplex, data_SimplexText, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp1 = pd.merge(data_Simplex, data_SimplexText, how = 'right', on = 'ID_data_date_number_text')
     data_Simplex_temp1 = data_Simplex_temp1.dropna(subset = ['Value'])
-    data_Simplex_temp2 = pd.merge(data_Simplex, data_SimplexNumber, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp2 = pd.merge(data_Simplex, data_SimplexNumber, how = 'right', on = 'ID_data_date_number_text')
     data_Simplex_temp2 = data_Simplex_temp2.dropna(subset = ['Value'])
     data_Simplex_temp = pd.concat([data_Simplex_temp1, data_Simplex_temp2])
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'Value']]
@@ -2241,7 +2262,7 @@ def organization_characteristics(setup_Simplex, data_Simplex, data_SimplexText, 
     path = ['Complex organization', 'Name of unit']
     table_simplex = link_data_id(path, setup_Complex, setup_xref_Complex_Complex, data_xref_Complex_Complex)
 
-    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
 
     xref_sc_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
@@ -2323,9 +2344,9 @@ def organization_characteristics(setup_Simplex, data_Simplex, data_SimplexText, 
 
     # add document information
     # ref: complex id for semantic triplet
-    data_xref_Complex_Document_modified = data_xref_Complex_Document_df[['Complex','Document']]
-    organization_table = pd.merge(organization_table, data_xref_Complex_Document_modified, how = 'left', left_on = 'Organization ID', right_on = 'Complex')
-    organization_table = organization_table.drop('Complex', axis = 1)
+    data_xref_Complex_Document_modified = data_xref_Complex_Document_df[['ID_data_complex','ID_data_document']]
+    organization_table = pd.merge(organization_table, data_xref_Complex_Document_modified, how = 'left', left_on = 'Organization ID', right_on = 'ID_data_complex')
+    organization_table = organization_table.drop('ID_data_complex', axis = 1)
     organization_table = organization_table.rename(columns={'Document':'Document ID'})
 
     # add VComment
@@ -2349,7 +2370,7 @@ def organization_characteristics(setup_Simplex, data_Simplex, data_SimplexText, 
     return organization_table
 
 
-def organization_characteristics_main(inputDir, outputDir, macro_event_id, document_info, comment_info):
+def organization_characteristics_main(inputDir, outputDir, macro_event_id='', comment_info='', document_info=False):
     setup_Complex_df = check_missing(os.path.join(inputDir,'setup_Complex.xlsx'))
     if setup_Complex_df is False:
         return
@@ -2434,7 +2455,7 @@ def organization_characteristics_main(inputDir, outputDir, macro_event_id, docum
         table_simplex = table_simplex[table_simplex['Collective actor ID'] == actor_id]
 
 
-    if not document_info:
+    if document_info:
         table_simplex = table_simplex.drop('Document ID', axis=1)
 
     if comment_info == '':
@@ -2531,16 +2552,16 @@ def victim_of_lynching_info(inputDir, outputDir):
     # start to build simplex table
     table_simplex = table_complex
 
-    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
 
     xref_sc_value = pd.merge(data_xref_Simplex_Complex_df, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
     xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
 
     # Age
-    data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', on = 'ID_data_date_number_text')
     data_Simplex_temp1 = data_Simplex_temp1.dropna(subset = ['Value'])
-    data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', on = 'ID_data_date_number_text')
     data_Simplex_temp2 = data_Simplex_temp2.dropna(subset = ['Value'])
     data_Simplex_temp = pd.concat([data_Simplex_temp1, data_Simplex_temp2])
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'Value']]
@@ -2731,16 +2752,16 @@ def victim_of_alleged_crime_info(inputDir, outputDir):
     # start to build simplex table
     table_simplex = table_complex
 
-    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'ID_setup_simplex', 'Value']]
 
     xref_sc_value = pd.merge(data_xref_Simplex_Complex, data_Simplex_temp, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
     xref_sc_value = xref_sc_value[['ID_data_complex', 'ID_setup_simplex', 'ID_data_simplex', 'Value']]
 
     # Age
-    data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp1 = pd.merge(data_Simplex_df, data_SimplexText_df, how = 'right', on = 'ID_data_date_number_text')
     data_Simplex_temp1 = data_Simplex_temp1.dropna(subset = ['Value'])
-    data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_Simplex_temp2 = pd.merge(data_Simplex_df, data_SimplexNumber_df, how = 'right', on = 'ID_data_date_number_text')
     data_Simplex_temp2 = data_Simplex_temp2.dropna(subset = ['Value'])
     data_Simplex_temp = pd.concat([data_Simplex_temp1, data_Simplex_temp2])
     data_Simplex_temp = data_Simplex_temp[['ID_data_simplex', 'Value']]
@@ -2970,7 +2991,7 @@ def individual_simplex_info(simplex, setup_Simplex, setup_Complex, setup_xref_Si
 
     # the name of simplex
     data_simplex_temp = pd.concat([data_SimplexDate, data_SimplexNumber, data_SimplexText])
-    data_simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', left_on = 'ID_data_date_number_text', right_on = 'ID')
+    data_simplex_temp = pd.merge(data_Simplex, data_SimplexText, how = 'left', on = 'ID_data_date_number_text')
     data_simplex_select = data_simplex_temp[data_simplex_temp['Value']==simplex]
     simplex_setup_id = data_simplex_select['ID_setup_simplex'].values.tolist()
     simplex_name = setup_Simplex[setup_Simplex['ID_setup_simplex'].isin(simplex_setup_id)]
@@ -2979,8 +3000,8 @@ def individual_simplex_info(simplex, setup_Simplex, setup_Complex, setup_xref_Si
         simplex_info.append([name])
 
     # frequency
-    temp = pd.merge(data_xref_Simplex_Complex, data_Simplex, how = 'left', left_on = 'ID_data_simplex', right_on = 'ID_data_simplex')
-    ID_data_date_number_text = data_simplex_select['ID_data_date_number_text'].values.tolist()
+    temp = pd.merge(data_xref_Simplex_Complex, data_Simplex, how = 'left', on = 'ID_data_simplex')
+    ID_data_date_number_text = temp['ID_data_date_number_text'].values.tolist()
     ID_data_date_number_text = ID_data_date_number_text[0]
     data_xref_Simplex_Complex_select = temp[temp['ID_data_date_number_text']==ID_data_date_number_text]
     for i in range(len(simplex_info)):
@@ -3037,13 +3058,13 @@ def individual_simplex_info_main(simplex, inputDir, outputDir):
 
     setup_Complex_df = check_missing(os.path.join(inputDir,'setup_Complex.xlsx'))
     if setup_Complex_df is False:
-        return
+        return None
     else:
         setup_Complex_df = setup_Complex_df.rename(columns = {'ID':'ID_setup_complex'})
 
     setup_Simplex_df = check_missing(os.path.join(inputDir,'setup_Simplex.xlsx'))
     if setup_Simplex_df is False:
-        return
+        return None
     else:
         setup_Simplex_df = setup_Simplex_df.rename(columns = {'ID':'ID_setup_simplex'})
 
@@ -3119,7 +3140,6 @@ def build_macro_event_dropdown_menu(inputDir):
     else:
         setup_Complex_df = setup_Complex_df.rename(columns = {'ID':'ID_setup_complex'})
 
-
     data_Complex_df = check_missing(os.path.join(inputDir,'data_Complex.xlsx'))
     if data_Complex_df.empty:
         return downdown_menu_list
@@ -3131,7 +3151,7 @@ def build_macro_event_dropdown_menu(inputDir):
         macro_event_name_id = find_setup_id(["Macro Event"], setup_Complex_df)
         macro_event_name_id = macro_event_name_id.iloc[0,0]
 
-        macro_event_identifier = data_Complex_df[data_Complex_df['IDD_setup_complex'] == macro_event_name_id]
+        macro_event_identifier = data_Complex_df[data_Complex_df['ID_setup_complex'] == macro_event_name_id]
 
         downdown_menu_list = macro_event_identifier.apply(lambda x: f"{x['ID_data_complex']} - {x['Identifier']}", axis=1).tolist()
 

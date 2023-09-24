@@ -234,9 +234,9 @@ if config_input_output_numeric_options[3] != 0: # output dir
 
 def activate_fields(*args):
     if filename_embeds_multiple_items_var.get():
-        date_checkbox.config(state='normal')
         item_separator.config(state='normal')
         sort_order.config(state='normal')
+        date_checkbox.config(state='normal')
     else:
         # date_checkbox.config(state='disabled')
         item_separator.config(state='disabled')
@@ -600,7 +600,7 @@ def get_IO_options_list(saving=False):
         # character separator, date format, date position
         input_item_date = ['', '', '']
     #@@@
-    print("date_label",date_label)
+    # print("date_label",date_label)
 
 # input file -------------------------------------------------------------------------
 
@@ -729,8 +729,8 @@ def get_IO_options_list(saving=False):
     outputDir_list.extend(input_item_date)
 
     #@@@
-    print("inputFilename_list", inputFilename_list)
-    print("inputDir_list",inputDir_list)
+    # print("inputFilename_list", inputFilename_list)
+    # print("inputDir_list",inputDir_list)
 
     # combine all four Input/output options in a list
     current_config_input_output_alphabetic_options = []
@@ -745,7 +745,7 @@ def get_IO_options_list(saving=False):
 def save_config(config_input_output_alphabetic_options):
     current_config_input_output_alphabetic_options=get_IO_options_list(True)
     #@@@
-    print("current_config_input_output_alphabetic_options",current_config_input_output_alphabetic_options)
+    # print("current_config_input_output_alphabetic_options",current_config_input_output_alphabetic_options)
     config_util.write_IO_config_file(window, config_filename, config_input_output_numeric_options,
                                      current_config_input_output_alphabetic_options, silent=False)
 

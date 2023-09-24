@@ -95,18 +95,22 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
     if semantic_triplet_var:
         outputFile = ''
         if time_var and space_var:
-            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time_space(inputDir, outputDir, primary_complex_var)
+            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time_space(inputDir, outputDir,
+                         primary_complex_var, comments_var, document_sources_var)
         elif time_var:
-            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time(inputDir, outputDir, primary_complex_var)
+            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time(inputDir, outputDir,
+                         primary_complex_var, comments_var, document_sources_var)
         elif space_var:
-            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_space_main(inputDir, outputDir, primary_complex_var)
+            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_space_main(inputDir, outputDir,
+                         primary_complex_var, comments_var, document_sources_var)
         else: # only SVO
-            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_simplex_main(inputDir, outputDir, primary_complex_var)
+            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_simplex_main(inputDir, outputDir,
+                        primary_complex_var, comments_var, document_sources_var)
 
         if outputFile != '':
             filesToOpen.append(outputFile)
 
-    # Gephi ----------------------------------------------------------------------------------------
+# Gephi ----------------------------------------------------------------------------------------
 
         if gephi_var:
             svo_result_list=[]
@@ -117,18 +121,18 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
                                                    "Subject (S)", "Verb (V)", "Object (O)") # Sentence ID will be added as the last column
                 filesToOpen.append(gexf_file)
 
-            # wordcloud  _________________________________________________
+# wordcloud  _________________________________________________
 
-            if wordcloud_var:
-                nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFile)
-                if nRecords > 1:  # including headers; file is empty
-                    myfile = IO_files_util.openCSVFile(outputFile, 'r')
-                    out_file = wordclouds_util.SVOWordCloud(myfile, outputFile, outputDir,
-                                                            "", prefer_horizontal=.9)
-                    myfile.close()
-                    filesToOpen.append(out_file)
+        if wordcloud_var:
+            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFile)
+            if nRecords > 1:  # including headers; file is empty
+                myfile = IO_files_util.openCSVFile(outputFile, 'r')
+                out_file = wordclouds_util.SVOWordCloud(myfile, outputFile, outputDir,
+                                                        "", prefer_horizontal=.9)
+                myfile.close()
+                filesToOpen.append(out_file)
 
-        # GIS maps _____________________________________________________
+# GIS maps _____________________________________________________
 
         if google_earth_var and (setup_simplex=='City name' or setup_simplex=='County') and SELECTED_simplex_objects_frequencies_var:
             extract_date_from_text_var = 0
@@ -293,6 +297,7 @@ wordcloud_var = tk.IntVar()
 google_earth_var = tk.IntVar()
 
 def clear(e):
+    primary_complex_var.set('')
     value_parent_object_var.set(0)
     setup_complex=''
     setup_simplex=''
@@ -300,7 +305,10 @@ def clear(e):
 
     simplex_data_type_var.set('')
     simplex_list=[]
+    simplex_data_menu_var.set(simplex_list)
     simplex_data_menu_var.set('')
+    simplex_data['values'] = []
+
     value_parent_object_var.set(0)
 
     select_parents_var.set('')

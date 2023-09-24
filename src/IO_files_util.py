@@ -692,8 +692,12 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
     if nFiles > 20:
         wayTooMany = "\n\nWAY TOO MANY TO BE OPENED AUTOMATICALLY."
 
+    if nFiles == 1:
+        file_singular_plural='file'
+    else:
+        file_singular_plural = 'files'
     mb.showwarning(title="Output files",message="The " + scriptName + " has generated " +
-                str(nFiles) + " files in output." + wayTooMany + label + subsetLabel + opened_folder_label)
+                str(nFiles) + " " + file_singular_plural + " in output." + wayTooMany + label + subsetLabel + opened_folder_label)
 
     if nFiles > 20:
         return
