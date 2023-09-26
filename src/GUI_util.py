@@ -287,10 +287,11 @@ def display_release():
         y_multiplier_integer = -.9
 
     ## get the release version available on GitHub
-    GitHub_newest_release = get_GitHub_release_version()
+    # get_GitHub_release_version() has a double \n\n which then overwrites the first line of the GUIs: ?HELP and Setup
+    GitHub_newest_release = get_GitHub_release_version().replace('\n','')
 
     release_display = 'Release ' + str(release_version_var.get().replace('\n','')) + "/" + str(GitHub_newest_release)
-    release_lb = tk.Label(window, text=release_display, foreground="red")
+    release_lb = tk.Label(window, text=release_display, foreground="red") #height=1,
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.help_button_x_coordinate,
                                                    y_multiplier_integer,
@@ -1157,8 +1158,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        GUI_IO_util.open_setup_x_coordinate,
                                                        "The selection of specific chart types is still under development.\nCharts are currently automatically visualized as bar or line charts.")
 
-        # if not 'data_manipulation_main.py' in scriptName and not not 'data_visualization_main.py' in scriptName :
-        data_tools_options = ['Corpus sampling', 'Data manipulation', 'Data statistics', 'Data visualization']
+        # if not 'data_manipulation_main.py' in scriptName and not not 'data_visualization_1_main.py' in scriptName :
+        data_tools_options = ['Corpus sampling', 'Data manipulation', 'Data statistics', 'Data visualization 1', 'Data visualization 2']
         data_tools_options_widget.set('Data tools')
         data_tools_menu_lb = tk.OptionMenu(window, data_tools_options_widget, *data_tools_options)
         # place widget with hover-over info
@@ -1173,8 +1174,10 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                 call("python data_manipulation_main.py", shell=True)
             if not 'statistics_csv_main.py' in scriptName and 'statistics' in data_tools_options_widget.get():
                 call("python statistics_csv_main.py", shell=True)
-            if not 'data_visualization_main.py' in scriptName and 'visualization' in data_tools_options_widget.get():
-                call("python data_visualization_main.py", shell=True)
+            if not 'data_visualization_1_main.py' in scriptName and 'visualization 1' in data_tools_options_widget.get():
+                call("python data_visualization_1_main.py", shell=True)
+            if not 'data_visualization_2_main.py' in scriptName and 'visualization 2' in data_tools_options_widget.get():
+                call("python data_visualization_2_main.py", shell=True)
             if not 'sample_corpus_main.py' in scriptName and 'sampling' in data_tools_options_widget.get():
                 call("python sample_corpus_main.py", shell=True)
         data_tools_options_widget.trace('w',run_data_tool)

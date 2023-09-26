@@ -1111,6 +1111,7 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
                 # % S: 2-digit second(00 - 59)
                 date_str = row[spellCol]
                 date_format = "%m-%d-%Y"
+                date_format = "%Y-%m-%d" # Old code
                 try:
                     date_obj = datetime.datetime.strptime(date_str, date_format)
                 except:

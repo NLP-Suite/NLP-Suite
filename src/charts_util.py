@@ -1,7 +1,7 @@
 # Written by Yuhang Feng November 2019-April 2020
 # Written by Yuhang Feng November 2019-April 2020
 # Edited by Roberto Franzosi, Tony May 2022
-
+# Edited by Samir Kaddoura, March 2023
 
 import sys
 import GUI_util
@@ -1114,6 +1114,8 @@ def complete_sentence_index(file_path):
 #
 
 
+# written by Samir Kaddoura, March 2023
+
 #Returns a grid of barcharts for each algorithm.
 #Algorithms are horizontally organized based on the order on which they are inputted
 #datalist is list of algorithms
@@ -1140,6 +1142,7 @@ def multiple_barchart(datalist,outputFilename,var,ntopchoices):
     fig.write_html(outputFilename)
     return outputFilename
 
+# written by Samir Kaddoura, March 2023
 
 #var is the variable of choice to apply the boxplot on
 #bycategory is a boolean that chooses whether we want to split it by category along a categorical variable, determined by the following category argument
@@ -1164,6 +1167,7 @@ def boxplot(data,outputFilename,var,points,bycategory=None,category=None,color=N
     fig.write_html(outputFilename)
     return outputFilename
 
+# written by Samir Kaddoura, March 2023
 
 #var1 is the first categorical variable, lengthvar1 is the amount of var 1: should take values of 5 or 10
 #var2 is the second categorical variable, lengthvar2 is the amount of var 2: should take values of 5,10 or 20
@@ -1246,9 +1250,9 @@ def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,
 
 # created by Samir Kaddoura, November 2022
 
-
 # Function creates a new column that identifies the documents based on a specific interest variable
 # two inputs taken: data is the dataset in question, interest is a vector that the user will have to define, as it changes depending on the corpus
+
 def separator(data,interest):
 
     interestvector=[]#empty interest vector
@@ -1260,11 +1264,13 @@ def separator(data,interest):
                 interestvector.append(interest[j])
                 id_list.append(i)#append the index of the row that contains the interest value
 
+    # finaldata=data.loc[id_list] #filter dataset by row with interest values
     finaldata=data.loc[id_list,:] #filter dataset by row with interest values
     finaldata['interest']=interestvector #add interest column
 
     return finaldata
 
+# written by Samir Kaddoura, March 2023
 
 #Returns sunburst piechart. Input a dataframe provided by the NLP suite as data, interest is a vector including interest separation based on separator (as defined above)
 #label is a categorical variable we're interested in
@@ -1342,24 +1348,7 @@ def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,
         return outputFilename
 
 
-# Function creates a new column that identifies the documents based on a specific interest variable
-#two inputs taken: data is the dataset in question, interest is a vector that the user will have to define, as it changes depending on the corpus
-def separator(data,interest):
-
-    interestvector=[]#empty interest vector
-    id_list=[] #empty id list in which we record every entry in the dataset that contains one of the interest inputs
-
-    for i in range(0,len(data)): #check every entry in dataset
-        for j in range(0,len(interest)): #check every interest vector
-            if re.search('.*'+interest[j]+'[^.]',data['Document'][i]):#if the name of the document contains a word of intersest, we append that word to a vector
-                interestvector.append(interest[j])
-                id_list.append(i)#append the index of the row that contains the interest value
-
-    finaldata=data.loc[id_list] #filter dataset by row with interest values
-    finaldata['interest']=interestvector #add interest column
-
-    return finaldata
-
+# written by Samir Kaddoura, March 2023
 
 # This function takes the data, an interest vector defined the same way as in the sunburster function,
 #   a variable of choice (should be categorical) var,
@@ -1385,6 +1374,8 @@ def treemaper(data,outputFilename,interest,csv_file_field,extra_dimension_averag
         fig=px.treemap(data,path=[px.Constant('Total Frequency'),'interest',csv_file_field],color=average_variable,color_continuous_scale='RdBu')
     fig.write_html(outputFilename)
     return outputFilename
+
+# written by Samir Kaddoura, March 2023
 
 #choose a data set, a variable to show the evolution through time, outputFilename to save output, monthly and yearly are boolean variables
 #If both are passed as false, return daily graph

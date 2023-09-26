@@ -1287,7 +1287,7 @@ if __name__ == '__main__':
     visualize_csv_data_GUI_button = tk.Button(window,
                                             text='Visualize csv data (Open GUI)',
                                             width=GUI_IO_util.widget_width_medium,
-                                            command=lambda: call("python data_visualization_main.py", shell=True))
+                                            command=lambda: call("python data_visualization_1_main.py", shell=True))
     # place widget with hover-over info
     y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                    visualize_csv_data_GUI_button,

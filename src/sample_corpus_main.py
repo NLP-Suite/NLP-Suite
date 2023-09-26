@@ -17,6 +17,8 @@ def run(window, inputFilename, inputDir, outputDir, selectedFile,
             openOutputFiles,
             createCharts,
             chartPackage,
+            sample_by_documentID,
+            sample_by_date, date_menu, comparator, date_distance_value, date_type,
             sample_by_keywords_inFilename,
             keywords_inFilename,
             sample_by_keywords_inDocument,
@@ -69,6 +71,12 @@ run_script_command=lambda: run(window, GUI_util.inputFilename.get(),
                                GUI_util.open_csv_output_checkbox.get(),
                                GUI_util.create_chart_output_checkbox.get(),
                                GUI_util.charts_package_options_widget.get(),
+                               sample_by_documentID_var.get(),
+                               sample_by_date_var.get(),
+                               date_menu_var.get(),
+                               comparator_var.get(),
+                               date_distance_value_var.get(),
+                               date_type_var.get(),
                                sample_by_keywords_inFilename_var.get(),
                                keywords_inFilename_var.get(),
                                sample_by_keywords_inDocument_var.get(),
@@ -100,8 +108,8 @@ config_input_output_numeric_options=[0,1,0,1]
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=420, # height at brief display
-                             GUI_height_full=500, # height at full display
+                             GUI_height_brief=460, # height at brief display
+                             GUI_height_full=540, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2) # to be added for full display
@@ -272,16 +280,27 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.setup_IO_brief_c
                     date_value, False, False, True, False,
                     90, GUI_IO_util.date_char_sep_lb_coordinate,
                     "Enter the date value to be used in filtering files by date (e.g., 1995, 12-11-1898)")
-# def check_dateFields(*args):
-#     if sample_by_date_var.get() == 1:
-#         date_format_menu.config(state="normal")
-#         date_separator.config(state='normal')
-#         date_position_menu.config(state='normal')
-#     else:
-#         date_format_menu.config(state="disabled")
-#         date_separator.config(state='disabled')
-#         date_position_menu.config(state="disabled")
-# sample_by_date_var.trace('w',check_dateFields)
+
+date_distance_value_lb = tk.Label(window, text='Date distance ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer, date_distance_value_lb,True)
+
+date_distance_value_var=tk.StringVar()
+date_distance_value = tk.Entry(window, textvariable=date_distance_value_var)
+date_distance_value.configure(width=4)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+100, y_multiplier_integer,
+                    date_distance_value, True, False, True, False,
+                    90, GUI_IO_util.IO_configuration_menu+100,
+                    "Enter the distance as an integer value to be used in computing the distance between dates (e.g., 1, 6 for a distance of 1 or 6 day/month/year)")
+
+date_type_lb = tk.Label(window, text='Date type ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+210,y_multiplier_integer, date_type_lb,True)
+
+date_type_var=tk.StringVar()
+date_type = tk.OptionMenu(window, date_type_var, 'day', 'month','year')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+300, y_multiplier_integer,
+                    date_type, False, False, True, False,
+                    90, GUI_IO_util.IO_configuration_menu+100,
+                    "Select the date type to be used to compute the date distance (e.g., month)")
 
 sample_by_keywords_inFilename_var = tk.IntVar()
 sample_by_keywords_inFilename_checkbox = tk.Checkbutton(window, text='Sample files by string in filename', variable=sample_by_keywords_inFilename_var,
@@ -418,15 +437,17 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = y_multiplier_integer +.5
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, tick the checkbox to sample your corpus by copying the files listed under 'Document' in a csv file.\nAfter clicking the button you will be prompted to select the input scv file. After selecting the csv file, you can clisk on the little button to open the file for inspection.\n\nIn INPUT the function expects:\n   1. a directory containing the files to be sampled; the directory is selected above in the INPUT/OUTPUT configuration;\n   2. a csv file containing a list of documents under the header 'Document' that will be used to sample; this csv file can be generated in a number of ways, e.g., using the 'Data manipulation' GUI with the option to 'Extract field(s) from csv file' in a file generated by any of the NLP Suite scripts.\n\nIn OUTPUT the function will copy the sampled files to a sub-folder of the input folder.")
+                                  "Please, tick the checkbox to sample your corpus by copying the files listed under 'Document ID' in a csv file.\nAfter clicking the button you will be prompted to select the input scv file. After selecting the csv file, you can clisk on the little button to open the file for inspection.\n\nIn INPUT the function expects:\n   1. a directory containing the files to be sampled; the directory is selected above in the INPUT/OUTPUT configuration;\n   2. a csv file containing a list of documents under the header 'Document' that will be used to sample; this csv file can be generated in a number of ways, e.g., using the 'Data manipulation' GUI with the option to 'Extract field(s) from csv file' in a file generated by any of the NLP Suite scripts.\n\nIn OUTPUT the function will copy the sampled files to a sub-folder of the input folder.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                   "Please, tick the checkbox to sample your corpus by dates embedded in the filename. Once available, enter the various options for filtering your corpus by date (format, date separator character(s), date position in filename (e.g., in the filename New York Time_4_12-21-1982, the date position is 3, the date separator character _, and the date format is mm-dd-yyyy) .\n\nThe date options are set by clicking the 'Setup INPUT/OUTPUT configuration' button at the top of this GUI.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, tick the checkbox to sample your corpus by a specific string in the filename of the input documents." \
-                                  "\n\nIn INPUT the scripts expect a set of txt files in a directory." \
-                                  "\n\nIn OUTPUT the algorithm will export all the txt files that contain the search words in the filename to a directory called 'subcorpus_search' inside the input directory. It will also generate a set of csv files in the same directory.")
+                                  "Please, enter the number of units (e.g., 1, 2, ..., 5, ...) and select the date type from the dropdown menu (day, month, year) that you wish to consider as the date distance for classification (e.g., the SOURCE date being + or - 5 days around the dates of the TARGET filename dates).\n\nAny SOURCE file within the selected date distance will be copied to the appropriate TARGET subdirectory.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                  "Please, tick the checkbox to sample your corpus by specific word(s) in the input documents." \
+                                  "Please, tick the checkbox to sample your corpus by specific word(s) in the input filename (NOT file content) (e.g., 'The New York Times' in a corpus of articles from many different newspapers)." \
+                                    "\n\nIn INPUT the scripts expect a set of txt files in a directory." \
+                                    "\n\nIn OUTPUT the algorithm will export all the txt files that contain the search words to a directory called 'subcorpus_search' inside the input directory. It will also generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                  "Please, tick the checkbox to sample your corpus by specific word(s) contained in the input documents (NOT filenames)." \
                                     "\n\nIn INPUT the scripts expect a set of txt files in a directory." \
                                     "\n\nIn OUTPUT the algorithm will export all the txt files that contain the search words to a directory called 'subcorpus_search' inside the input directory. It will also generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

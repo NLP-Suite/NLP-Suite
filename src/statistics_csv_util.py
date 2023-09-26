@@ -285,10 +285,10 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, outputFileName
 # written by Roberto June 2022
 def get_columns_to_be_plotted(inputFilename, group_cols, plot_cols):
     headers = IO_csv_util.get_csvfile_headers(inputFilename)
-    X_col_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, group_cols[0], inputFilename)
-    Y_col_nunmber = IO_csv_util.get_columnNumber_from_headerValue(headers, plot_cols[0], inputFilename)
-    columns_to_be_plotted=[[X_col_nunmber, Y_col_nunmber]]
-    # we should return
+    X_col_number = IO_csv_util.get_columnNumber_from_headerValue(headers, group_cols[0], inputFilename)
+    Y_col_number = IO_csv_util.get_columnNumber_from_headerValue(headers, plot_cols[0], inputFilename)
+    columns_to_be_plotted=[[X_col_number, Y_col_number]]
+    # we return the double list [[]] columns_to_be_plotted
     return columns_to_be_plotted
 
 # TODO Tony, can you pass more than one value? Yngve and Frazier

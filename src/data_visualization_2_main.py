@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"data_visualization_basic_main.py",['os','tkinter'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"data_visualization_2_main.py",['os','tkinter'])==False:
     sys.exit(0)
 
 import os
@@ -24,7 +24,11 @@ def run(inputFilename, outputDir, openOutputFiles,
         split_data_byCategory_var,
         csv_field2_var,
         csv_field3_var,
-        csv_files_list):
+        csv_files_list,
+        time_mapper_var,
+        date_format_var,
+        time_var,
+        cumulative_var):
 
 
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
@@ -65,6 +69,32 @@ def run(inputFilename, outputDir, openOutputFiles,
         if outputfilename!='':
             filesToOpen.append(outputfilename)
 
+    # time_mapper --------------------------------------------------------------------------------
+    if time_mapper_var:
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
+                                                                 '.html', 'timeMapper')
+
+        if csv_field3_var == '':
+            mb.showwarning("Warning",
+                           "The csv file field is blank. The Plotly timeline algorithm expects in input a valid csv file field.\n\nPlease, select a csv file field and try again.")
+            return
+        monthly = False
+        yearly = False
+        if time_var == 'Monthly':
+            monthly = True
+        elif time_var == 'Yearly':
+            yearly = True
+
+        # import timechart_util
+        # outputFiles = charts_util.timeline(inputFilename, outputFilename, csv_field3_var, date_format_var, cumulative_var, monthly, yearly)
+        outputFiles = charts_util.timechart(inputFilename, outputFilename, csv_field3_var, date_format_var,
+                                            cumulative_var, monthly, yearly)
+
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if openOutputFiles and len(filesToOpen) > 0:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -79,7 +109,12 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             split_data_byCategory_var.get(),
                             csv_field2_var.get(),
                             csv_field3_var.get(),
-                            csv_files_list)
+                            csv_files_list,
+                            time_mapper_var.get(),
+                            date_format_var.get(),
+                            time_var.get(),
+                            cumulative_var.get(),
+                            csv_field3_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -90,8 +125,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=520, # height at brief display
-                             GUI_height_full=560, # height at full display
+                             GUI_height_brief=600, # height at brief display
+                             GUI_height_full=640, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -134,6 +169,12 @@ csv_field_var = tk.StringVar()
 use_numerical_variable_var = tk.IntVar()
 csv_field2_var = tk.StringVar()
 
+time_mapper_var = tk.IntVar()
+date_format_var = tk.StringVar()
+csv_field3_var = tk.StringVar()
+time_var = tk.StringVar()
+cumulative_var = tk.IntVar()
+
 csv_files_list = []
 file_menu_values = []
 menu_values = []
@@ -159,7 +200,7 @@ def open_GUI(*args):
     elif 'HTML' in open_GUI_var.get():
         call("python html_annotator_main.py", shell = True)
     elif 'Visualize categorical, network, temporal data' in open_GUI_var.get():
-        call("python data_visualization_main.py", shell=True)
+        call("python data_visualization_1_main.py", shell=True)
     elif 'Wordclouds' in open_GUI_var.get():
         call("python wordclouds_main.py", shell=True)
 open_GUI_var.trace('w',open_GUI)
@@ -311,6 +352,7 @@ def reset_all_values():
     csv_field3_var.set('')
     points_var.set('')
     process_csv_file_menu(inputFilename.get())
+    date_format_menu.configure(state='disabled')
 
 def reset_csv_files_values():
     csv_files_list.clear()
@@ -373,6 +415,68 @@ def process_csv_file_menu(InputFile):
     for s in file_menu_values:
         m.add_command(label=s, command=lambda value=s: csv_file_var.set(value))
 
+time_mapper_var.set(0)
+time_mapper_checkbox = tk.Checkbutton(window, text='Visualize temporal data', variable=time_mapper_var,
+                                    onvalue=1, command=lambda: activate_visualization_options())
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   time_mapper_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Tick the checkbox if you wish to visualize data in a dynamic time mapper\nIn input the filenames under the 'Document' field in the csv file must contain date values\n"
+                                               "(e.g., /Users/me/Desktop/Janet Maslin_Living Centuries Apart_2014-12-12.txt)")
+
+
+date_format_lb = tk.Label(window,text='Date format ')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,
+                                               y_multiplier_integer, date_format_lb, True)
+date_format_var.set('mm-dd-yyyy')
+date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
+date_format_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,
+                                               GUI_IO_util.visualization_K_sent_begin_pos,
+                                               y_multiplier_integer,
+                                               date_format_menu,
+                                               True, False, False, False, 90,
+                                               GUI_IO_util.visualization_K_sent_begin_pos,
+                                               'Select the date type embedded in your filename')
+
+select_time_lb = tk.Label(window, text='Timeline')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_pos, y_multiplier_integer,
+                                               select_time_lb, True)
+
+time_var.set('Daily')
+select_time_menu = tk.OptionMenu(window, time_var, 'Daily','Monthly','Yearly')
+select_time_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                   select_time_menu,
+                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   "Select the time option")
+
+cumulative_var.set(0)
+cumulative_checkbox = tk.Checkbutton(window, text='Cumulative', variable=cumulative_var,
+                                    onvalue=1, offvalue=0)
+cumulative_checkbox.configure(state='disabled')
+
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+                                   cumulative_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Tick the checkbox for a cumulative time chart showing the frequency of the chosen variable up until a current day/month/year rather than visualizing the frequency day/month/year by day/month/year")
+
+csv_field4_lb = tk.Label(window, text='csv file field')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_lb_pos, y_multiplier_integer,
+                                               csv_field4_lb, True)
+
+csv_field4_menu = tk.OptionMenu(window, csv_field3_var, *menu_values) # timemapper
+csv_field4_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_menu_pos, y_multiplier_integer,
+                                   csv_field4_menu,
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Select the csv file field to be used to visualize specific data\nThe field must be categorical rather than numeric (e.g., 'Sentiment label', rather than 'Sentiment score', in a sentiment analysis csv output file)")
+
 def changed_filename(tracedInputFile):
     global error
     if tracedInputFile.endswith('.csv'):
@@ -417,6 +521,11 @@ def changed_filename(tracedInputFile):
 def activate_visualization_options(*args):
     if error:
         return
+    # time-line options
+    date_format_menu.configure(state='disabled')
+    select_time_menu.configure(state='disabled')
+    cumulative_checkbox.configure(state='disabled')
+    csv_field3_menu.configure(state='disabled')
 
 activate_visualization_options()
 
@@ -425,18 +534,19 @@ visualizations_menu_var.trace('w',activate_visualization_options)
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf",
-               "Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf",
+TIPS_lookup = {"Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf",
                "Wordle":"TIPS_NLP_Wordclouds Wordle.pdf",
                "Tagxedo":"TIPS_NLP_Wordclouds Tagxedo.pdf",
                "Tagcrowd":"TIPS_NLP_Wordclouds Tagcrowd.pdf",
                'Excel charts': 'TIPS_NLP_Excel Charts.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                'Network Graphs (via Gephi)': 'TIPS_NLP_Gephi network graphs.pdf',
+               "Specialized visualization tools 1":"TIPS_NLP_Specialized visualization tools 1.pdf",
+               "Specialized visualization tools 2":"TIPS_NLP_Specialized visualization tools 2.pdf",
                'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
 
-TIPS_options='Lemmas & stopwords', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle', 'Excel smoothing data series', 'Network Graphs (via Gephi)', 'csv files - Problems & solutions', 'Statistical measures'
+TIPS_options='Specialized visualization tools 1', 'Specialized visualization tools 2', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle', 'Excel smoothing data series', 'Network Graphs (via Gephi)', 'csv files - Problems & solutions', 'Statistical measures'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -460,6 +570,10 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE BOXPLOT OPTION ONLY.\n\nUse the dropdown menu to select the type of data points to be processed. Tick the 'Split data by category' checkbox if you want to use a file field to split and/or color the charts by the value of a csv file field.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE 'Multiple bar charts parameters' widget is just a label. Use the widgets in the next line to set the parameters required by the 'Comparative bar charts' option.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE COMPARATIVE MULTIPLE BAR CHARTS OPTION ONLY.\n\nAT LEAST TWO CSV FILES ARE REQUIRED FOR THE MULTIPLE BAR CHARTS OPTION.\n\nClick on the + button to add a new csv file.\nClick on the Reset button to clear the current selection and start over.\nUse the dropdown menu to select a specific csv file that you can then open with the Open button.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to analyze time-dependent data in an interactive bar chart.\n\nIn INPUT the script expects the filenames under the 'Document' field in the csv file to contain date values (e.g., /Users/me/Desktop/Janet Maslin_Living Centuries Apart_2014-12-12.txt)."
+            "\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE 'Setup INPUT/OUTPUT configuration' WIDGET AT THE TOP OF THE ALGORITHM GUI THAT HAS PRODUCED THE CSV FILE USED HERE IN INPUT AND THEN TICKING THE CHECKBOXS 'Filename embeds multiple items' AND 'Filename embeds date' WHEN THE NLP_setup_IO_main GUI OPENS.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select the options to be applied to the timeline chart:\n\n1. date format embedded in the filename\n2. Timeline (daily, monthly, yearly)\n3. Cumulative, for a time chart showing the frequency of the chosen variable up until a current day rather than visualizing the frequency day by day\n4. csv file variable to be used for plotting (the variable must contain CATEGORICAL data; for instance, it could be the POS or NER fields in a CoNLL table exported by a parser that processed a corpus of files that embedded a date)." \
+            "\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE 'Setup INPUT/OUTPUT configuration' WIDGET AT THE TOP OF THE ALGORITHM GUI THAT HAS PRODUCED THE CSV FILE USED HERE IN INPUT AND THEN TICKING THE CHECKBOXS 'Filename embeds multiple items' AND 'Filename embeds date' WHEN THE NLP_setup_IO_main GUI OPENS.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)

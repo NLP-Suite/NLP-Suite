@@ -26,9 +26,13 @@ def create_timedelta(date_distance_value, date_type):
     else:
         return timedelta(days=date_distance_value*365)
 
+# the function provides a way to extract files from a corpus
+# based on dates embedded in filenames where the distance between dates falls within user-selected values
+# (e.g., 30 days, 6 months, 5 years)
+
 # input_first_dir is the source dir containing a list of files
 # input_sec_dir is the target directory containing a set of subdirs
-def classifier(input_first_dir, input_sec_dir,outputDir,openOutputFiles, date_format,date_separator,date_position,date_distance_value, date_type):
+def file_classifier_byDate_distance(input_first_dir, input_sec_dir,outputDir,openOutputFiles, date_format,date_separator,date_position,date_distance_value, date_type):
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                        'Started running the File Classifier by embedded date at',
                                                  True, '', True, '', True)
