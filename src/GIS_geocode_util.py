@@ -499,11 +499,11 @@ def geocode(window,locations, inputFilename, outputDir,
 					if date!='':
 						pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
 									"<i><b>Date</b></i>: " + date + "<br/><br/>" + \
-									  "<i><b>Document</b></i>: " + document + \
+									  "<i><b>Document</b></i>: " + document + "<br/><br/>" \
 									  "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>"
 					else:
 						pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
-										  "<i><b>Document</b></i>: " + document + \
+										  "<i><b>Document</b></i>: " + document + "<br/><br/>" \
 										  "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>"
 				except:
 					pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>"

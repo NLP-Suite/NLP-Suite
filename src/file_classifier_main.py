@@ -49,7 +49,7 @@ def run(input_main_dir_path, input_secondary_dir_path, outputDir,
         if date_type=='':
             mb.showwarning("Warning", "The required 'Date type' value is missing.\n\nPlease, enter a 'Date type' value and try again.")
             return
-        outputFiles=file_classifier_date_util.classifier(input_main_dir_path, input_secondary_dir_path, outputDir,openOutputFiles,
+        outputFiles=file_classifier_date_util.file_classifier_byDate_distance(input_main_dir_path, input_secondary_dir_path, outputDir,openOutputFiles,
                         date_format,date_separator,date_position, date_distance_value, date_type)
         if len(outputFiles) > 0:
             filesToOpen.append(outputFiles)

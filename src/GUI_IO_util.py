@@ -569,7 +569,7 @@ if sys.platform == 'darwin':  # Mac OS
     NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = 594
     NGrams_Co_occurrences_Viewer_show_viewer_button_pos = 680
 
-# Mac: data_visualization_main
+# Mac: data_visualization_1_main
 
     visualization_csv_field_menu_pos = 260
     visualization_add_button_pos = 983
@@ -955,7 +955,7 @@ else: #windows and anything else
     NGrams_Co_occurrences_Viewer_reset_viewer_button_pos = NGrams_Co_occurrences_Viewer_add_viewer_button_pos + 40  # 540
     NGrams_Co_occurrences_Viewer_show_viewer_button_pos = NGrams_Co_occurrences_Viewer_reset_viewer_button_pos + 60  # 560
 
-# Windows: data_visualization_main
+# Windows: data_visualization_1_main
 
     visualization_csv_field_menu_pos = 280
     visualization_add_button_pos = 1105

@@ -20,8 +20,12 @@ import os
 import shutil
 import IO_files_util
 
+# Samir Kaddoura, 2/3/2023
 def sample_corpus_by_search_words_inFileName(window, inputDir, configFileName, keywords_inFilename):
-    keywords_inFilename_list = [word.lstrip().rstrip() for word in keywords_inFilename.split(",")]
+    # keywords_inFilename_list = [word.lstrip().rstrip() for word in keywords_inFilename.split(",")]
+    for i in range(0,len(keywords_inFilename)):
+        keywords_inFilename[i]=re.sub('\s*','',keywords_inFilename[i])
+    keywords_inFilename_list = keywords_inFilename.split(',')
     SubSampleDir=IO_files_util.make_directory(inputDir+os.sep+'subcorpus_sample')
     inputDocs = IO_files_util.getFileList('', inputDir, fileType='.txt', silent=False, configFileName=configFileName)
     Ndocs = len(inputDocs)
