@@ -258,7 +258,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_c
 add_dictValue_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: csv_field_value_menu.configure(state="normal"))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_add_dictValue_button,y_multiplier_integer,add_dictValue_button, True)
 
-reset_dictValue_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: clear_dictionary_list())
+reset_dictValue_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: clear_dictionary_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.html_annotator_reset_dictValue_button,y_multiplier_integer,reset_dictValue_button,True)
 
 def showKeywordList():

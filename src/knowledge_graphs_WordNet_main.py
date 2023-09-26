@@ -334,7 +334,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coor
                                              90, GUI_IO_util.entry_box_x_coordinate,
                                              "Click on the + button to add another synset")
 
-reset_keywords_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1, state='disabled',
+reset_keywords_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width, height=1, state='disabled',
                                   command=lambda: clear_keyword_list())
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_reset_pos, y_multiplier_integer,

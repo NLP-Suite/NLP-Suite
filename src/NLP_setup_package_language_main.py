@@ -267,7 +267,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.plus_column, 
                                                GUI_IO_util.open_reminders_x_coordinate,
                                                "Click on the + button to activate the language dropdown menu where you can select another language to add to the list.\nOnly Stanza allows multi-language selection.")
 
-reset_language_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width,height=1,state='normal',command=lambda: reset_language_list())
+reset_language_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='normal',command=lambda: reset_language_list())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.reset_column, y_multiplier_integer,
                                                reset_language_button, True, False, False, False, 90,

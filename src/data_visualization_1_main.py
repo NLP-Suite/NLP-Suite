@@ -37,16 +37,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         Sankey_limit1_var, Sankey_limit2_var, Sankey_limit3_var,
         categorical_var,
         filename_label_var,
-        csv_field2_var,
+        csv_field_categorical_var,
         K_sent_begin_var,
         K_sent_end_var,
         split_var,
         do_not_split_var,
-        time_mapper_var,
-        date_format_var,
-        time_var,
-        cumulative_var,
-        csv_field3_var):
+        use_numerical_variable_var,
+        csv_field_treemap_var):
 
 
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
@@ -97,6 +94,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 return
             outputFiles = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
 
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
 # Sankey  --------------------------------------------------------------------------------
 
         if relations_menu_var=='Sankey':
@@ -114,7 +117,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 Sankey_limit3_var=None
             outputFiles = charts_util.Sankey(inputFilename, outputFilename,
                                 csv_file_field_list[0], Sankey_limit1_var, csv_file_field_list[1], Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
-            # Function takes a csv file as data input,
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
 
 # Categorical data (sunburst or treemap) --------------------------------------------------------------------------------
 
@@ -135,12 +143,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         for i in range(len(interest)):
             temp_interest.append(interest[i].lstrip())
         # label is a string that has the header field in the csv file to be used for display
-        label=csv_field2_var
+        label=csv_field_categorical_var
 
 # Categorical data: Sunburst  --------------------------------------------------------------------------------
 
         if 'Sunburst' in categorical_menu_var.get():
-            if csv_field2_var=='':
+            if csv_field_categorical_var=='':
                 mb.showwarning("Warning",
                                "The sunburst visualization function requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
                 return
@@ -178,46 +186,30 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             # for i in range(len(interest)):
             #     temp_interest.append(interest[i].lstrip())
             # # label is a string that has the header field in the csv file to be used for display
-            # label=csv_field2_var
+            # label=csv_field_categorical_var
             outputFiles = charts_util.Sunburster(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
                                             do_not_split_var, int_K_sent_begin_var, int_K_sent_end_var, split_var)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
 # Categorical data: treemap --------------------------------------------------------------------------------
 
-    if 'Treemap' in categorical_menu_var.get():
-        if use_numerical_variable_var and csv_field2_var=='':
-            mb.showwarning("Warning",
-                           "The selected treemap option with the use of numerical data requires a variable containing the numertical data.\n\nPlease, select the csv file field containing the numertical data and try again.")
-            return
-        #def treemaper(data,outputFilename,interest,var,extra_dimension_average,average_variable=None):
-        outputFiles = charts_util.treemaper(inputFilename, outputFilename,
-                                                               temp_interest, label, use_numerical_variable_var.get(),csv_field2_var)
-
-# time_mapper --------------------------------------------------------------------------------
-    if time_mapper_var:
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
-                                                                 '.html', 'timeMapper')
-
-        if csv_field3_var=='':
-            mb.showwarning("Warning",
-                           "The csv file field is blank. The Plotly timeline algorithm expects in input a valid csv file field.\n\nPlease, select a csv file field and try again.")
-            return
-        monthly = False
-        yearly = False
-        if time_var=='Monthly':
-            monthly=True
-        elif time_var=='Yearly':
-            yearly=True
-
-        # import timechart_util
-        # outputFiles = charts_util.timeline(inputFilename, outputFilename, csv_field3_var, date_format_var, cumulative_var, monthly, yearly)
-        outputFiles = charts_util.timechart(inputFilename, outputFilename, csv_field3_var, date_format_var, cumulative_var, monthly, yearly)
-
-    if outputFiles!=None:
-        if isinstance(outputFiles, str):
-            filesToOpen.append(outputFiles)
-        else:
-            filesToOpen.extend(outputFiles)
+        if 'Treemap' in categorical_menu_var.get():
+            if use_numerical_variable_var and csv_field_categorical_var=='':
+                mb.showwarning("Warning",
+                               "The selected treemap option with the use of numerical data requires a variable containing the numertical data.\n\nPlease, select the csv file field containing the numertical data and try again.")
+                return
+            #def treemaper(data,outputFilename,interest,var,extra_dimension_average,average_variable=None):
+            outputFiles = charts_util.treemaper(inputFilename, outputFilename,
+                                                                   temp_interest, label, use_numerical_variable_var,csv_field_categorical_var)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
     if openOutputFiles and len(filesToOpen) > 0:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -235,16 +227,13 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             Sankey_limit1_var.get(), Sankey_limit2_var.get(), Sankey_limit3_var.get(),
                             categorical_var.get(),
                             filename_label_var.get(),
-                            csv_field2_var.get(),
+                            csv_field_categorical_var.get(),
                             K_sent_begin_var.get(),
                             K_sent_end_var.get(),
                             split_var.get(),
                             do_not_split_var.get(),
-                            time_mapper_var.get(),
-                            date_format_var.get(),
-                            time_var.get(),
-                            cumulative_var.get(),
-                            csv_field3_var.get())
+                            use_numerical_variable_var.get(),
+                            csv_field_treemap_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -255,8 +244,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=680, # height at brief display
-                             GUI_height_full=760, # height at full display
+                             GUI_height_brief=600, # height at brief display
+                             GUI_height_full=680, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -295,18 +284,16 @@ def clear(e):
 
     relations_var.set(0)
     categorical_var.set(0)
-    time_mapper_var.set(0)
 
     relations_checkbox.configure(state='normal')
     categorical_checkbox.configure(state='normal')
-    time_mapper_checkbox.configure(state='normal')
 
     case_sensitive_var.set(1)
     # for now always set to disabled
     case_sensitive_checkbox.configure(state='disabled',text="Case sensitive")
     filename_label.configure(state='disabled')
     filename_label_var.set('')
-    csv_field2_var.set('')
+    csv_field_categorical_var.set('')
     K_sent_begin_var.set('')
     K_sent_end_var.set('')
     K_sent_begin.configure(state='disabled')
@@ -315,7 +302,7 @@ def clear(e):
     split_checkbox.configure(state='disabled')
     do_not_split_var.set(0)
     do_not_split_checkbox.configure(state='disabled')
-    date_format_menu.configure(state='disabled')
+    csv_field_treemap_var.set('')
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -333,20 +320,14 @@ categorical_var = tk.IntVar()
 categorical_menu_var = tk.StringVar()
 case_sensitive_var = tk.IntVar()
 filename_label_var = tk.StringVar()
-csv_field2_var = tk.StringVar()
+csv_field_categorical_var = tk.StringVar()
 K_sent_begin_var = tk.StringVar()
 K_sent_end_var = tk.StringVar()
 split_var = tk.IntVar()
 do_not_split_var = tk.IntVar()
 
 use_numerical_variable_var = tk.IntVar()
-csv_field2_var = tk.StringVar()
-
-time_mapper_var = tk.IntVar()
-date_format_var = tk.StringVar()
-csv_field3_var = tk.StringVar()
-time_var = tk.StringVar()
-cumulative_var = tk.IntVar()
+csv_field_treemap_var = tk.StringVar()
 
 csv_file_field_list = []
 menu_values = []
@@ -387,7 +368,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 relations_menu_var.set('Gephi')
 relations_menu = tk.OptionMenu(window, relations_menu_var, 'Gephi','Sankey')
-# select_time_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    relations_menu,
@@ -411,7 +391,7 @@ csv_field_lb = tk.Label(window, text='csv file field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                csv_field_lb, True)
 
-csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values)
+csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values) # relational
 csv_field_menu.configure(state='disabled')
 # place widget with hover-over info
 # visualization_csv_field_menu_pos
@@ -447,7 +427,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Click on the + button to add a selected csv field to the list of Gephy parameters (edge1, node, edge2)")
 
-reset_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset())
+reset_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_reset_button_pos, y_multiplier_integer,
                                    reset_button,
@@ -573,7 +553,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 categorical_menu_var.set('Sunburst')
 categorical_menu = tk.OptionMenu(window, categorical_menu_var, 'Sunburst','Treemap')
-# select_time_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    categorical_menu,
@@ -609,15 +588,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                    "Enter the comma-separated label/part of a filename to be used to sample the corpus for visualization (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...)")
 
 
-csv_field2_lb = tk.Label(window, text='csv file field')
+csv_field_categorical_lb = tk.Label(window, text='csv file field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_lb_pos, y_multiplier_integer,
-                                               csv_field2_lb, True)
+                                               csv_field_categorical_lb, True)
 
-csv_field2_menu = tk.OptionMenu(window, csv_field2_var, *menu_values)
-csv_field2_menu.configure(state='disabled')
+csv_field_categorical_menu = tk.OptionMenu(window, csv_field_categorical_var, *menu_values) # Sunburst
+csv_field_categorical_menu.configure(state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_menu_pos, y_multiplier_integer,
-                                   csv_field2_menu,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_do_not_split_pos, y_multiplier_integer,
+                                   csv_field_categorical_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_K_sent_end_pos,
                                    "Select the csv file field to be used to visualize specific data (e.g., 'Sentiment label' in a sentiment analysis csv output file)")
 
@@ -627,7 +606,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    sunburst_lb,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "The widgets on this line refer to the sunburst option only")
-
 
 K_sent_begin_var.set('')
 K_sent_begin_lb = tk.Label(window, text='First K')
@@ -690,77 +668,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
                                    "Tick the checkbox if you wish to use a numerical variable to improve the treemap plot")
 
 
-csv_field2_lb = tk.Label(window, text='csv file field')
+csv_field_treemap_lb = tk.Label(window, text='csv file field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_end_pos, y_multiplier_integer,
-                                               csv_field2_lb, True)
+                                               csv_field_treemap_lb, True)
 
-csv_field2_menu = tk.OptionMenu(window, csv_field2_var, *menu_values)
-csv_field2_menu.configure(state='disabled')
+csv_field_treemap_menu = tk.OptionMenu(window, csv_field_treemap_var, *menu_values) # treemapper
+csv_field_treemap_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
-                                   csv_field2_menu,
-                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Select the csv file field to be used to visualize specific data\nThe field must be categorical rather than numeric (e.g., 'Sentiment label', rather than 'Sentiment score', in a sentiment analysis csv output file)")
-
-time_mapper_var.set(0)
-time_mapper_checkbox = tk.Checkbutton(window, text='Visualize temporal data', variable=time_mapper_var,
-                                    onvalue=1, command=lambda: activate_visualization_options())
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   time_mapper_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox if you wish to visualize data in a dynamic time mapper\nIn input the filenames under the 'Document' field in the csv file must contain date values\n"
-                                               "(e.g., /Users/me/Desktop/Janet Maslin_Living Centuries Apart_2014-12-12.txt)")
-
-
-date_format_lb = tk.Label(window,text='Date format ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,
-                                               y_multiplier_integer, date_format_lb, True)
-date_format_var.set('mm-dd-yyyy')
-date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
-date_format_menu.configure(state='disabled')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,
-                                               GUI_IO_util.visualization_K_sent_begin_pos,
-                                               y_multiplier_integer,
-                                               date_format_menu,
-                                               True, False, False, False, 90,
-                                               GUI_IO_util.visualization_K_sent_begin_pos,
-                                               'Select the date type embedded in your filename')
-
-select_time_lb = tk.Label(window, text='Timeline')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_pos, y_multiplier_integer,
-                                               select_time_lb, True)
-
-time_var.set('Daily')
-select_time_menu = tk.OptionMenu(window, time_var, 'Daily','Monthly','Yearly')
-select_time_menu.configure(state='disabled')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
-                                   select_time_menu,
-                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "Select the time option")
-
-cumulative_var.set(0)
-cumulative_checkbox = tk.Checkbutton(window, text='Cumulative', variable=cumulative_var,
-                                    onvalue=1, offvalue=0)
-cumulative_checkbox.configure(state='disabled')
-
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
-                                   cumulative_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox for a cumulative time chart showing the frequency of the chosen variable up until a current day/month/year rather than visualizing the frequency day/month/year by day/month/year")
-
-csv_field3_lb = tk.Label(window, text='csv file field')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_lb_pos, y_multiplier_integer,
-                                               csv_field3_lb, True)
-
-csv_field3_menu = tk.OptionMenu(window, csv_field3_var, *menu_values)
-csv_field3_menu.configure(state='disabled')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_menu_pos, y_multiplier_integer,
-                                   csv_field3_menu,
+                                   csv_field_treemap_menu,
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Select the csv file field to be used to visualize specific data\nThe field must be categorical rather than numeric (e.g., 'Sentiment label', rather than 'Sentiment score', in a sentiment analysis csv output file)")
 
@@ -786,7 +702,7 @@ def changed_filename(tracedInputFile):
         menu_values.clear()
         # mb.showwarning("Warning",
         #                "The selected input option is not a csv file.\n\nThe visualization algorithms behind this GUI expect in input a csv file.\n\nPlease, select a csv file in input and try again.")
-    m1 = csv_field_menu["menu"]
+    m1 = csv_field_menu["menu"] # relational
     m2 = dynamic_network_field_menu["menu"]
     m1.delete(0, "end")
     m2.delete(0, "end")
@@ -795,23 +711,23 @@ def changed_filename(tracedInputFile):
         m1.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
         m2.add_command(label=s, command=lambda value=s: dynamic_network_field_var.set(value))
 
-    m3 = csv_field2_menu["menu"]
+    m3 = csv_field_categorical_menu["menu"] # Sunburst
     m3.delete(0, "end")
 
     for s in menu_values:
-        m3.add_command(label=s, command=lambda value=s: csv_field2_var.set(value))
+        m3.add_command(label=s, command=lambda value=s: csv_field_categorical_var.set(value))
 
-    m4 = csv_field2_menu["menu"]
+    m4 = csv_field_categorical_menu["menu"]
     m4.delete(0, "end")
 
     for s in menu_values:
-        m4.add_command(label=s, command=lambda value=s: csv_field2_var.set(value))
+        m4.add_command(label=s, command=lambda value=s: csv_field_categorical_var.set(value))
 
-    m5 = csv_field3_menu["menu"]
+    m5 = csv_field_treemap_menu["menu"] # treemapper
     m5.delete(0, "end")
 
     for s in menu_values:
-        m5.add_command(label=s, command=lambda value=s: csv_field3_var.set(value))
+        m5.add_command(label=s, command=lambda value=s: csv_field_treemap_var.set(value))
 
     clear("<Escape>")
 
@@ -821,12 +737,10 @@ def activate_visualization_options(*args):
     if error:
         relations_checkbox.configure(state='disabled')
         categorical_checkbox.configure(state='disabled')
-        time_mapper_checkbox.configure(state='disabled')
         return
 
     relations_checkbox.configure(state='normal')
     categorical_checkbox.configure(state='normal')
-    time_mapper_checkbox.configure(state='normal')
 
     # relations options
     relations_menu.configure(state='disabled')
@@ -838,7 +752,7 @@ def activate_visualization_options(*args):
 
     # categorical options
     categorical_menu.configure(state='disabled')
-    csv_field2_menu.configure(state='disabled')
+    csv_field_categorical_menu.configure(state='disabled')
     case_sensitive_checkbox.configure(state='disabled')
     filename_label.configure(state='disabled')
     K_sent_begin.configure(state='disabled')
@@ -846,17 +760,10 @@ def activate_visualization_options(*args):
     split_checkbox.configure(state='disabled')
     do_not_split_checkbox.configure(state='disabled')
 
-    # time-line options
-    date_format_menu.configure(state='disabled')
-    select_time_menu.configure(state='disabled')
-    cumulative_checkbox.configure(state='disabled')
-    csv_field3_menu.configure(state='disabled')
-
     if relations_var.get():
         relations_menu.configure(state='normal')
         relations_checkbox.configure(state='normal')
         categorical_checkbox.configure(state='disabled')
-        time_mapper_checkbox.configure(state='disabled')
         csv_field_menu.configure(state='normal')
         dynamic_network_field_menu.configure(state='normal')
         dynamic_network_field_menu.configure(state='disabled') # delete this line when date issue solved
@@ -876,16 +783,15 @@ def activate_visualization_options(*args):
             Sankey_limit2_menu.configure(state='normal')
             Sankey_limit3_menu.configure(state='normal')
 
-    elif categorical_var.get():
+    elif categorical_var.get(): # sunburst, treemap
         # case_sensitive_checkbox.configure(state='normal')
         # for now always set to disabled
         categorical_menu.configure(state='normal')
         categorical_checkbox.configure(state='normal')
         relations_checkbox.configure(state='disabled')
-        time_mapper_checkbox.configure(state='disabled')
         case_sensitive_checkbox.configure(state='disabled')
         filename_label.configure(state='normal')
-        csv_field2_menu.configure(state='normal')
+        csv_field_categorical_menu.configure(state='normal')
 
         if categorical_menu_var.get()=='':
             K_sent_begin.configure(state='disabled')
@@ -894,8 +800,9 @@ def activate_visualization_options(*args):
             do_not_split_checkbox.configure(state='disabled')
 
             use_numerical_variable_checkbox.configure(state='disabled')
-            csv_field2_menu.configure(state='disabled')
+            csv_field_categorical_menu.configure(state='disabled')
         elif categorical_menu_var.get()=='Sunburst':
+            csv_field_categorical_menu.configure(state='normal')
             K_sent_begin.configure(state='normal')
             K_sent_end.configure(state='normal')
             split_checkbox.configure(state='normal')
@@ -911,6 +818,9 @@ def activate_visualization_options(*args):
                 K_sent_begin.configure(state='disabled')
                 K_sent_end.configure(state='disabled')
                 do_not_split_checkbox.configure(state='disabled')
+            csv_field_treemap_var.set('')
+            csv_field_treemap_menu.configure(state='disabled')
+
         elif categorical_menu_var.get()=='Treemap':
             K_sent_begin.configure(state='disabled')
             K_sent_end.configure(state='disabled')
@@ -918,20 +828,12 @@ def activate_visualization_options(*args):
             do_not_split_checkbox.configure(state='disabled')
 
             use_numerical_variable_checkbox.configure(state='normal')
-            csv_field2_menu.configure(state='normal')
+            csv_field_treemap_menu.configure(state='normal')
 
         if split_var.get():
             K_sent_begin.configure(state='disabled')
             K_sent_end.configure(state='disabled')
             do_not_split_checkbox.configure(state='disabled')
-    elif time_mapper_var.get():
-        time_mapper_checkbox.configure(state='normal')
-        relations_checkbox.configure(state='disabled')
-        categorical_checkbox.configure(state='disabled')
-        date_format_menu.configure(state='normal')
-        select_time_menu.configure(state='normal')
-        cumulative_checkbox.configure(state='normal')
-        csv_field3_menu.configure(state='normal')
 
 activate_visualization_options()
 
@@ -945,12 +847,13 @@ videos_options='No videos available'
 
 TIPS_lookup = {
                "Network Graphs (via Gephi)": "TIPS_NLP_Gephi network graphs.pdf",
-               "Special visuals":"TIPS_NLP_Specialized visualization tools.pdf",
+               "Specialized visualization tools 1":"TIPS_NLP_Specialized visualization tools 1.pdf",
+               "Specialized visualization tools 2":"TIPS_NLP_Specialized visualization tools 2.pdf",
                "Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf",
                'Excel charts': 'TIPS_NLP_Excel Charts.pdf',
                'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf'}
 
-TIPS_options='Network Graphs (via Gephi)', 'Special visuals', 'Word clouds', 'Excel charts', 'csv files - Problems & solutions'
+TIPS_options='Network Graphs (via Gephi)', 'Specialized visualization tools 1', 'Specialized visualization tools 2','Word clouds', 'Excel charts', 'csv files - Problems & solutions'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -969,23 +872,19 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the GUI you wish to open for specialized data visualization options: Excel charts, geographic maps in Google Earth Pro, HTML file, wordclouds.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize relations between a set of elements, 3 elements in a network graph in Gephi (e.g, SVO) or 2 or 3 elements in a Plotly Sankey graph (e.g., SVO or SO).\n\nOptions become available in succession.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the csv file field to be used to visualize relations.\n\nPress the + button to add another field until all 2 or 3 elements have been added (2 or 3 for Sankey, 3 for Gephi). For instance, in a Gephi graph, the first field selected is the first node; the second field selected is the edge; the third field selected is the second node.\n\nPress the 'Show' button to display the fields currently selected.\n\nPress the 'Reset' button to clear selected values and start fresh.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the csv file field to be used to visualize relations.\n\nPress the + button to add another field until all 2 or 3 elements have been added (2 or 3 for Sankey, 3 for Gephi). For instance, in a Gephi graph, the first field selected is the first node; the second field selected is the edge; the third field selected is the second node.\n\nPress the 'Show' button to display the fields currently selected.\n\nPress the 'Reset ' button to clear selected values and start fresh.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE GEPHI PLOT ONLY.\n\nFor Gephi network graphs, once all three fields (node 1, edge, node 2) have been selected, the widget 'csv file field for dynamic graph' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID or Date) or ignore the option if the network should not be dynamic.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SANKEY PLOT ONLY.\n\nPlease, using the dropdown menus, select the maximum number of values to be considered for each of the 2 or 3 elements in computing the interactive Sankey plot.\n\nWith too many values, Sankey plots become very messy.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in an interactive sunburst or treemap plot.\n\nThe algorithm applies to categorical data rather than numerical data.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the comma-separated labels/parts of a filename to be used to separate fields in the filename (e.g., in the filename, Harry Potter_Book1_1, Harry Potter_Book2_3, ..., Harry Potter_Book4_1... you could enter Book1, Book3 to sample the files to be used for visualization.\n\nThe number of distinct labels/parts of filename should be small (e.g., the 7 Harry Potter books).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the comma-separated labels/parts of a filename to be used to separate fields in the filename (e.g., in the filename, Harry Potter_Book1_1, Harry Potter_Book2_3, ..., Harry Potter_Book4_1... you could enter Book1, Book3 to sample the files to be used for visualization.\n\nThe number of distinct labels/parts of filename should be small (e.g., the 7 Harry Potter books).\n\nThe widgets in this line are REQUIRED to run either the Sunburst or Treemap algorithms.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SUNBUST PLOT ONLY.\n\nPlease, enter the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the checkbox 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.\n\nTick the checkbox 'Do NOT split documents' if you wish to visualize an entire document.\n\nThe three options are mutually exclusive.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE TREEMAP PLOT ONLY.\n\nPlease, tick the checkbox if you wish to use the values of a numerical variable to improve the treemap plot.\n\nUse the dropdown menu to select the csv file numeric field to be used for plotting.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to analyze time-dependent data in an interactive bar chart.\n\nIn INPUT the script expects the filenames under the 'Document' field in the csv file to contain date values (e.g., /Users/me/Desktop/Janet Maslin_Living Centuries Apart_2014-12-12.txt)."
-            "\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE 'Setup INPUT/OUTPUT configuration' WIDGET AT THE TOP OF THE ALGORITHM GUI THAT HAS PRODUCED THE CSV FILE USED HERE IN INPUT AND THEN TICKING THE CHECKBOXS 'Filename embeds multiple items' AND 'Filename embeds date' WHEN THE NLP_setup_IO_main GUI OPENS.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select the options to be applied to the timeline chart:\n\n1. date format embedded in the filename\n2. Timeline (daily, monthly, yearly)\n3. Cumulative, for a time chart showing the frequency of the chosen variable up until a current day rather than visualizing the frequency day by day\n4. csv file variable to be used for plotting (the variable must contain CATEGORICAL data; for instance, it could be the POS or NER fields in a CoNLL table exported by a parser that processed a corpus of files that embedded a date)." \
-            "\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE 'Setup INPUT/OUTPUT configuration' WIDGET AT THE TOP OF THE ALGORITHM GUI THAT HAS PRODUCED THE CSV FILE USED HERE IN INPUT AND THEN TICKING THE CHECKBOXS 'Filename embeds multiple items' AND 'Filename embeds date' WHEN THE NLP_setup_IO_main GUI OPENS.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE TREEMAP PLOT ONLY. THE FIELDS ARE OPTIONAL (i.e., not required to run the treemap algorithm). \n\nPlease, tick the checkbox if you wish to use the values of a numerical variable to improve the treemap plot.\n\nUse the dropdown menu to select the csv file numeric field to be used for plotting.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
-readMe_message="The Python 3 script provides access to different GUIs to be used to visualize data (e.g., wordclouds) and network graphs via Gephi and different interactive charts via sunburst and time mapper.\n\nIn INPUT the algorithms expect a csv file. The categorical and time-dependent algorithms also expect the csv file to have a 'Document' field header as created by various NLP Suite algoriths.\n\nIn OUTPUT the algorithms produce different types of charts."
+readMe_message="The Python 3 script provides access to different GUIs to be used to visualize data (e.g., wordclouds) and network graphs via Gephi and Sankey different interactive charts via Sankey, sunburst, and treemap.\n\nIn INPUT the algorithms expect a csv file. The categorical and time-dependent algorithms also expect the csv file to have a 'Document' field header as created by various NLP Suite algoriths.\n\nIn OUTPUT the algorithms produce different types of charts."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
