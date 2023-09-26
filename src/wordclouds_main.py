@@ -492,7 +492,7 @@ def update_csvFields():
 add_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: update_csvFields())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_add_button,y_multiplier_integer,add_button, True)
 
-reset_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width, height=1,state='disabled',command=lambda: clear_field_color_list())
+reset_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width, height=1,state='disabled',command=lambda: clear_field_color_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.wordclouds_reset_button,y_multiplier_integer,reset_button,True)
 
 def showList():

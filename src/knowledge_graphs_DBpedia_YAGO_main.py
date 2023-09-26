@@ -478,7 +478,7 @@ def activate_class_var():
     else:
         add_class_button.configure(state='disabled')
 
-reset_class_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: clear_ontology_list())
+reset_class_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: clear_ontology_list())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.knowledge_reset_button,
                                                y_multiplier_integer,

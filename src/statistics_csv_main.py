@@ -229,7 +229,7 @@ window.bind("<Escape>", clear)
 # add_n_grams_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_n_grams_var())
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+500,y_multiplier_integer,add_n_grams_button, True)
 #
-# reset_n_grams_button = tk.Button(window, text='Reset', width=5,height=1,state='disabled',command=lambda: reset_n_grams_list())
+# reset_n_grams_button = tk.Button(window, text='Reset ', width=5,height=1,state='disabled',command=lambda: reset_n_grams_list())
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+540,y_multiplier_integer,reset_n_grams_button,True)
 #
 # show_n_grams_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_n_grams_list())
@@ -290,12 +290,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 menu_values = ['']
 
-reset_csv_button = tk.Button(window, text='Reset', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_csv_list())
+reset_csv_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_csv_list())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_reset_csv_button_pos, y_multiplier_integer,
                                    reset_csv_button,
                                    True, False, True, False, 90, GUI_IO_util.statistics_csv_reset_csv_button_pos,
-                                   "Click the 'Reset' button to clear all selected csv field, group-by field and hover-over field, and start fresh")
+                                   "Click the 'Reset ' button to clear all selected csv field, group-by field and hover-over field, and start fresh")
 
 show_csv_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_csv_list())
 # place widget with hover-over info
