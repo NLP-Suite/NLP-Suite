@@ -283,12 +283,18 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, outputFileName
 
 
 # written by Roberto June 2022
-def get_columns_to_be_plotted(inputFilename, group_cols, plot_cols):
+# get_columns_to_be_plotted(outputFilename, )
+def get_columns_to_be_plotted(inputFilename, columns_list):
+    # the group_cols are plotted on the x axis as columns for aggregating variables (e.g., lemma values by NER tags, POS tags by Document)
+    columns_to_be_plotted=[]
     headers = IO_csv_util.get_csvfile_headers(inputFilename)
-    X_col_number = IO_csv_util.get_columnNumber_from_headerValue(headers, group_cols[0], inputFilename)
-    Y_col_number = IO_csv_util.get_columnNumber_from_headerValue(headers, plot_cols[0], inputFilename)
-    columns_to_be_plotted=[[X_col_number, Y_col_number]]
-    # we return the double list [[]] columns_to_be_plotted
+    for i in range(0,len(columns_list)):
+        temp_columns_to_be_plotted=[]
+        col_num=IO_csv_util.get_columnNumber_from_headerValue(headers, columns_list[i][0], inputFilename)
+        temp_columns_to_be_plotted.append(col_num)
+        col_num=IO_csv_util.get_columnNumber_from_headerValue(headers, columns_list[i][1], inputFilename)
+        temp_columns_to_be_plotted.append(col_num)
+        columns_to_be_plotted.append(temp_columns_to_be_plotted)
     return columns_to_be_plotted
 
 # TODO Tony, can you pass more than one value? Yngve and Frazier
@@ -464,14 +470,8 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 
 # PREVIOUS CODE
 
-    # aggregation by group_cols NO hover over ----------------------------------------
+ # aggregation by group_cols NO hover over ----------------------------------------
     elif len(plot_cols) != 0 and len(group_cols) != 0 and len(hover_col) == 0:
-
-# aggregation by group_cols NO hover over ----------------------------------------
-#     elif len(plot_cols) != 0 and len(group_cols) != 0 and len(hover_col) == 0:
-#         columns_to_be_plotted = []
-
-
         # for col in plot_cols:
         #     # plot_cols, hover_col, group_cols are single lists with the column headers
         #     #   plot_cols=['POStag'], hover_col=[], group_cols=[Sentence ID', 'Sentence', 'Document ID', 'Document']
@@ -531,17 +531,16 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             # For example, [[1, 2], [3, 4]], for NER, will plot the document and the NER frequency, with NER on X axis
             # 0 is the groupBy field with no-hyperlinks (e.g., NER)
             # sel_column_name = IO_csv_util. = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)(headers, 1)
-            columns_to_be_plotted = [[3, 4], [1, 2]]
-            # columns_to_be_plotted = get_columns_to_be_plotted(outputFilename, group_cols[0], header)
-        else:
+            #@@@
+            columns_list=[[plot_cols[0], 'Frequency_'+plot_cols[0]], [group_cols[0], 'Frequency_'+group_cols[0]]]
+        else: # NO document, but another aggregate, e.g., by POS and form
             if group_cols[0]!='':
                 chart_title = chart_title + ' by ' + str(group_cols[0])
             # if there is no document ID and/or document 0 refers to the field name to be plotted and 1 to its frequency
             # see note above about the order of items in columns_to_be_plotted list
             #   the group_cols item must always be the last item in the columns_to_be_plotted list
-            columns_to_be_plotted = [[2, 3], [0, 1]]
             #@@@
-            print('outputFilename',outputFilename, 'columns_to_be_plotted',columns_to_be_plotted)
+            columns_list=[[plot_cols[0], 'Frequency_'+plot_cols[0]], [group_cols[0], 'Frequency_'+group_cols[0]]]
 
         def multi_level_grouping_and_frequency(data, plot_colss, group_cols):
             # Calculate the first selected column (Lemma) frequency within each group
@@ -607,10 +606,6 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                 # [1, 2] will display the document name in the Data sheet of the xlsx file
                 # see note above about the order of items in columns_to_be_plotted list
                 #   the group_cols item must always be the last item in the columns_to_be_plotted list
-                columns_to_be_plotted = [[3, 4], [1, 2]]
-                #@@@
-                print('outputFilename',outputFilename, 'columns_to_be_plotted',columns_to_be_plotted)
-
             return data_final
 
         # print(plot_cols,group_cols)
@@ -720,11 +715,12 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 
     df = data
     if createCharts:
+        columns_to_be_plotted = get_columns_to_be_plotted(outputFilename, columns_list)
         # The form/lemma + doc have a special treatment
         if plot_cols == ['Form','Lemma'] and 'Document' in group_cols:
+            #@@@
             # the headers layout of the outputFilename is the following:
             #   Document, Frequency_Document ID, Form, Frequency_Form, Lemma, Frequency_Lemma, Frequency_Document
-            #@@@
             # columns_to_be_plotted = get_columns_to_be_plotted(outputFilename, group_cols[0], plot_cols[0])
             # [1, 2] frequency of docs, then form and lemma,
             #   where 1, 3, and 5 are the document name, the form values, and the lemma values
@@ -733,7 +729,6 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             #   will display form and lemma in the X axes (in which case column_xAxis_label_var must be changed)
             # columns_to_be_plotted = [[2, 3], [4, 5], [0, 1]]
             #   will display document in the X axes
-            columns_to_be_plotted = [[2, 3], [4, 5], [0, 1]]
             column_xAxis_label_var = group_cols[0]
             outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                               outputFileLabel=fileNameType,
@@ -743,18 +738,10 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                                               column_xAxis_label_var=column_xAxis_label_var,
                                               hover_info_column_list=hover_over_header)
         else:
-            # column_xAxis_label_var = ''
-            # headers = IO_csv_util.get_csvfile_headers(outputFilename)
             column_xAxis_label_var = group_cols[0]
             # see note above about the order of items in columns_to_be_plotted list
             #   the group_cols item must always be the last item in the columns_to_be_plotted list
-            #@@@
             headers = IO_csv_util.get_csvfile_headers(outputFilename)
-
-            if 'Document' in headers:
-                columns_to_be_plotted = [[3, 4], [1, 2]] # Document and doc freq
-            else:
-                columns_to_be_plotted = [[0, 1], [2, 3]]  # POS and form freq
 
             outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                               outputFileLabel=fileNameType,

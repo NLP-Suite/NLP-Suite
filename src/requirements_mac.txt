@@ -66,14 +66,14 @@ fonttools==4.38.0
 fqdn==1.5.1
 fst-pso==1.8.1
 funcy==1.17
-future==0.18.2
+future==0.18.3
 FuzzyTM==2.0.5
 fuzzywuzzy==0.18.0
 gast==0.4.0
 gensim==4.3.0
 geographiclib==1.52
 geopy==2.1.0
-gevent==22.10.2
+gevent==23.9.1
 gevent-websocket==0.10.1
 google-api-core==2.11.0
 google-auth==2.15.0
@@ -87,15 +87,15 @@ google-resumable-media==2.4.0
 googleapis-common-protos==1.58.0
 googlemaps==4.4.7
 greenlet==2.0.2
-grpcio==1.51.1
-grpcio-status==1.51.1
+grpcio==1.53.0
+grpcio-status==1.53.0
 h5py==3.7.0
 huggingface-hub==0.11.1
 idna @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_771olrhiqw/croot/idna_1666125579282/work
 iniconfig==1.1.1
 install==1.3.5
 ipykernel==6.19.4
-ipython==8.8.0
+ipython==8.10
 ipython-genutils==0.2.0
 ipywidgets==8.0.4
 isodate==0.6.1
@@ -124,7 +124,7 @@ langdetect==1.0.7
 langid==1.1.6
 Levenshtein==0.20.9
 libclang==14.0.6
-lxml==4.6.5
+lxml==4.9.1
 macholib==1.16.2
 Markdown==3.4.1
 MarkupSafe @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_12c133f5-0720-4727-9c18-599a3af825723lzwham3/croots/recipe/markupsafe_1654597866058/work
@@ -157,7 +157,7 @@ pdfminer.six==20221105
 pexpect==4.8.0
 pickleshare==0.7.5
 Pillow==9.4.0
-pipreqs==0.4.11
+pipreqs==0.4.12
 platformdirs==2.6.2
 plotly==5.11.0
 pluggy @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_croot-w6jyveby/pluggy_1648109277227/work
@@ -166,7 +166,7 @@ preshed @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_a2
 prometheus-client==0.15.0
 prompt-toolkit==3.0.36
 proto-plus==1.22.2
-protobuf==3.19.6
+protobuf==3.20.2
 psutil==5.9.4
 ptyprocess==0.7.0
 pure-eval==0.2.2
@@ -179,7 +179,7 @@ pycparser @ file:///tmp/build/80754af9/pycparser_1636541352034/work
 pydantic==1.8.2
 pyFUME==0.2.25
 pygit2==1.11.1
-Pygments==2.14.0
+Pygments==2.15.0
 pyinstaller==5.7.0
 pyinstaller-hooks-contrib==2022.15
 pyLDAvis==2.1.2
@@ -262,10 +262,10 @@ tomli==2.0.1
 toolz @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_362wyqvvgy/croot/toolz_1667464079070/work
 torch==1.13.1
 torchvision==0.14.1
-tornado==6.2
+tornado==6.3.3
 tqdm @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_637jfu39ar/croots/recipe/tqdm_1664392693982/work
 traitlets==5.8.0
-transformers==4.25.1
+transformers==4.30.0
 twython==3.9.1
 typer @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_b087e198-118c-465c-b762-290735aa34c4vpglb3lf/croots/recipe/typer_1651237167837/work
 typing_extensions @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_10a8_u2ijw/croot/typing_extensions_1669923788997/work
@@ -278,7 +278,7 @@ wcwidth==0.2.5
 webcolors==1.12
 webencodings==0.5.1
 websocket-client==1.4.2
-Werkzeug==2.2.2
+Werkzeug==2.2.3
 whichcraft==0.6.1
 widgetsnbextension==4.0.5
 wn==0.0.23
