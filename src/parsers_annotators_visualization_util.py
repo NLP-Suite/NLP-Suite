@@ -159,11 +159,12 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            chart_title='Frequency Distribution of Form Values', # by DepRel (Dependency Relations) Values',
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
-                                                           outputFileNameType='DepRel',
+                                                           outputFileNameType='Form',
                                                            column_xAxis_label='Form values',
                                                            groupByList=['DepRel'],
                                                            plotList=['Frequency'],
-                                                           chart_title_label='DepRel')
+                                                           chart_title_label='Form Values')
+
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)

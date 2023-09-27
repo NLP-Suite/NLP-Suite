@@ -55,7 +55,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
     int_K_sent_begin_var=None
     int_K_sent_end_var=None
 
-    if relations_var==False and categorical_var == False and time_mapper_var==False:
+    if relations_var==False and categorical_var == False:
         mb.showwarning("Warning",
                        "No options have been selected.\n\nPlease, select an option to run and try again.")
         return
@@ -66,9 +66,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                            "The visualization options requires in input a csv file.\n\nPlease, select a csv file and try again.")
             return
 
-    if relations_menu_var!='':
+    if relations_var:
         output_label=relations_menu_var
-    elif categorical_menu_var.get()!='':
+    elif categorical_var:
         output_label = categorical_menu_var.get()
     else:
         output_label = ''
@@ -198,9 +198,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
 # Categorical data: treemap --------------------------------------------------------------------------------
 
         if 'Treemap' in categorical_menu_var.get():
+            if label=='':
+                mb.showwarning("Warning",
+                               "You have not entered a 'csv file field' required by the treemap algorithm.\n\nPlease, use the dropdown menu to select the csv file field containing categorical data and try again.")
+                return
             if use_numerical_variable_var and csv_field_categorical_var=='':
                 mb.showwarning("Warning",
-                               "The selected treemap option with the use of numerical data requires a variable containing the numertical data.\n\nPlease, select the csv file field containing the numertical data and try again.")
+                               "The selected treemap option with the use of numerical data requires a variable containing the numerical data.\n\nPlease, select the csv file field containing the numerical data and try again.")
                 return
             #def treemaper(data,outputFilename,interest,var,extra_dimension_average,average_variable=None):
             outputFiles = charts_util.treemaper(inputFilename, outputFilename,

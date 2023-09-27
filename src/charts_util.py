@@ -1253,7 +1253,7 @@ def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,
 # Function creates a new column that identifies the documents based on a specific interest variable
 # two inputs taken: data is the dataset in question, interest is a vector that the user will have to define, as it changes depending on the corpus
 
-def separator(data,interest):
+def separator(data,interest, algorithm):
 
     interestvector=[]#empty interest vector
     id_list=[] #empty id list in which we record every entry in the dataset that contains one of the interest inputs
@@ -1267,7 +1267,9 @@ def separator(data,interest):
     # finaldata=data.loc[id_list] #filter dataset by row with interest values
     finaldata=data.loc[id_list,:] #filter dataset by row with interest values
     finaldata['interest']=interestvector #add interest column
-
+    if finaldata.empty:
+        mb.showwarning("Warning",
+                   "The " + algorithm + " algorithm has produced an empty dataframe.\n\nPlease, make sure that the 'Filename label/part' you have entered are in the document name under the Document field of your input file.\n\nREMEMBER THAT SEARCH WORDS ARE CASE SENSITIVE.\n\nPlease, try again.")
     return finaldata
 
 # written by Samir Kaddoura, March 2023
@@ -1281,7 +1283,7 @@ def separator(data,interest):
 def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,beginning_and_end=False,first_sentences=None,last_sentences=None,half_text=None):
     if type(data)==str:
         data=pd.read_csv(data)
-    if type(data[label])!=str:
+    if type(data[label][0])!=str:
         mb.showwarning("Warning",
                    "The csv file field selected should be categorical.\n\nYou should select a categorical field, rather than a continuous numeric field, and try again.")
 
@@ -1290,7 +1292,7 @@ def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,
         return 'both number of first sentences and number of last sentences have to be specified or absent at the same time'
     else: #Otherwise, we run the Sunburster
 
-        tempdata=separator(data,interest) #Create "interest" variable
+        tempdata=separator(data,interest, "Sunburst") #Create "interest" variable
         if beginning_and_end==False:
             if half_text==True or (first_sentences==None and last_sentences==None): #If half text is true or both number of first sentences and last sentences is absent, we split each text in half and attribute a "beginning" half and "end" half
 
@@ -1305,23 +1307,23 @@ def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,
                 ogdata2['Beginning or End']=oglist2 #add list "End" the length of the first half
 
                 finaldata=pd.concat([ogdata1,ogdata2]) #merge dataframes
+                if not finaldata.empty:
+                    for i in range(2,max(data['Document ID'])+1): #iterate same process for each document
+                        intermediatedata=tempdata[tempdata['Document ID']==i]
 
-                for i in range(2,max(data['Document ID'])+1): #iterate same process for each document
-                    intermediatedata=tempdata[tempdata['Document ID']==i]
+                        intermediatedata1=intermediatedata[intermediatedata['Sentence ID']<=len(intermediatedata)/2]
+                        intermediatelist1=list(np.repeat('Beginning',len(intermediatedata1)))
+                        intermediatedata1['Beginning or End']=intermediatelist1
 
-                    intermediatedata1=intermediatedata[intermediatedata['Sentence ID']<=len(intermediatedata)/2]
-                    intermediatelist1=list(np.repeat('Beginning',len(intermediatedata1)))
-                    intermediatedata1['Beginning or End']=intermediatelist1
+                        finaldata=pd.concat([finaldata,intermediatedata1])
 
-                    finaldata=pd.concat([finaldata,intermediatedata1])
+                        intermediatedata2=intermediatedata[intermediatedata['Sentence ID']>len(intermediatedata)/2]
+                        intermediatelist2=list(np.repeat('End',len(intermediatedata2)))
+                        intermediatedata2['Beginning or End']=intermediatelist2
 
-                    intermediatedata2=intermediatedata[intermediatedata['Sentence ID']>len(intermediatedata)/2]
-                    intermediatelist2=list(np.repeat('End',len(intermediatedata2)))
-                    intermediatedata2['Beginning or End']=intermediatelist2
+                        finaldata=pd.concat([finaldata,intermediatedata2])
 
-                    finaldata=pd.concat([finaldata,intermediatedata2])
-
-                fig=px.sunburst(finaldata,path=['interest','Beginning or End',label]) #return sunburster
+                    fig=px.sunburst(finaldata,path=['interest','Beginning or End',label]) #return sunburster
 
                 # return plotly.offline.plot(fig)
 
@@ -1343,7 +1345,10 @@ def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,
                 fig=px.sunburst(finaldata,path=['interest','Beginning or End',label]) #create sunburst plot
         else:
             fig=px.sunburst(tempdata,path=['interest',label])
-        fig.write_html(outputFilename)
+        if finaldata.empty:
+            outputFilename=None
+        else:
+            fig.write_html(outputFilename)
 
         return outputFilename
 
@@ -1366,13 +1371,15 @@ def treemaper(data,outputFilename,interest,csv_file_field,extra_dimension_averag
         mb.showwarning("Warning",
                    "The csv file field selected should be numeric.\n\nYou should select a numeric field, rather than an alphabetic field, and try again.")
 
-    data=separator(data,interest)#use separator function to create interest vector
-
-    if extra_dimension_average==False:#return regular 2 variable graph if false
-        fig=px.treemap(data,path=[px.Constant('Total Frequency'),'interest',csv_file_field])
-    else:#return graph with extra variable if true
-        fig=px.treemap(data,path=[px.Constant('Total Frequency'),'interest',csv_file_field],color=average_variable,color_continuous_scale='RdBu')
-    fig.write_html(outputFilename)
+    data=separator(data,interest,"Treemap")#use separator function to create interest vector
+    if data.empty:
+        outputFilename=None
+    else:
+        if extra_dimension_average==False:#return regular 2 variable graph if false
+            fig=px.treemap(data,path=[px.Constant('Total Frequency'),'interest',csv_file_field])
+        else:#return graph with extra variable if true
+            fig=px.treemap(data,path=[px.Constant('Total Frequency'),'interest',csv_file_field],color=average_variable,color_continuous_scale='RdBu')
+        fig.write_html(outputFilename)
     return outputFilename
 
 # written by Samir Kaddoura, March 2023

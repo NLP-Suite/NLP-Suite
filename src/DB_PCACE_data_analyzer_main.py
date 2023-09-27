@@ -111,14 +111,26 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
             filesToOpen.append(outputFile)
 
 # Gephi ----------------------------------------------------------------------------------------
-
+        import os
         if gephi_var:
             svo_result_list=[]
             fileBase = os.path.basename(outputFile)[0:-5]
             nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFile, encodingValue='utf-8')
+
             if nRecords > 1:  # including headers; file is empty
+                import pandas as pd
+
+                df = pd.read_csv(outputFile)
+                # Add a new empty column called 'data expression'
+                df['Date expression'] = '1998-09-01'
+                df['Normalized date'] = ''
+                df['Date type'] = ''
+                # Write the updated DataFrame back to the CSV file
+                df.to_csv(outputFile, index=False)
+                print("New column 'data expression' added successfully!")
+
                 gexf_file = Gephi_util.create_gexf(window, fileBase, outputDir, outputFile,
-                                                   "Subject (S)", "Verb (V)", "Object (O)") # Sentence ID will be added as the last column
+                                                   "Subject (S)", "Verb (V)", "Object (O)",'') # Sentence ID will be added as the last column
                 filesToOpen.append(gexf_file)
 
 # wordcloud  _________________________________________________
