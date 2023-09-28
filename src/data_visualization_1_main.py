@@ -150,12 +150,19 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         if 'Sunburst' in categorical_menu_var.get():
             if csv_field_categorical_var=='':
                 mb.showwarning("Warning",
-                               "The sunburst visualization function requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
+                               "The sunburst algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
                 return
 
+            if (K_sent_begin_var!='' and K_sent_end_var!='') or  split_var:
+                # these options require a Document ID and Sentence ID fields
+                headers = IO_csv_util.get_csvfile_headers(inputFilename)
+                if not 'Document ID' in headers or not 'Sentence ID' in headers:
+                    mb.showwarning("Warning",
+                                   "The 'First K' 'Last K' or 'Split documents in equal halves' options of the sunburst algorithm require a csv file in input with 'Document ID' and 'Sentence ID' fields'. Your csv file does not contain these fields.\n\nPlease, select a different csv file or use the 'Do NOT split documents' option and try again.")
+                    return
             if K_sent_begin_var=='' and K_sent_end_var=='' and split_var==False and do_not_split_var==False:
                 mb.showwarning("Warning",
-                               "The sunburst function requires a selection of Begin/End K sentences or Split documents in equal halves or Do not split documents.\n\nPlease, make a selection and try again.")
+                               "The sunburst algorithm requires a selection of Begin/End K sentences or Split documents in equal halves or Do not split documents.\n\nPlease, make a selection and try again.")
                 return
             # check that K_sent_begin_var and K_sent_end_var values are numeric
             if split_var==False and do_not_split_var==False:
@@ -187,7 +194,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             #     temp_interest.append(interest[i].lstrip())
             # # label is a string that has the header field in the csv file to be used for display
             # label=csv_field_categorical_var
-            outputFiles = charts_util.Sunburster(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
+            outputFiles = charts_util.Sunburst(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
                                             do_not_split_var, int_K_sent_begin_var, int_K_sent_end_var, split_var)
             if outputFiles != None:
                 if isinstance(outputFiles, str):
@@ -206,8 +213,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 mb.showwarning("Warning",
                                "The selected treemap option with the use of numerical data requires a variable containing the numerical data.\n\nPlease, select the csv file field containing the numerical data and try again.")
                 return
-            #def treemaper(data,outputFilename,interest,var,extra_dimension_average,average_variable=None):
-            outputFiles = charts_util.treemaper(inputFilename, outputFilename,
+            #def Treemap(data,outputFilename,interest,var,extra_dimension_average,average_variable=None):
+            outputFiles = charts_util.Treemap(inputFilename, outputFilename,
                                                                    temp_interest, label, use_numerical_variable_var,csv_field_categorical_var)
             if outputFiles != None:
                 if isinstance(outputFiles, str):
@@ -553,7 +560,7 @@ categorical_checkbox = tk.Checkbutton(window, text='Visualize categorical data',
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    categorical_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox if you wish to visualize categorical data in interactive sunburst or treemap plots")
+                                   "Tick the checkbox if you wish to visualize categorical data in interactive sunburst or treemap charts")
 
 categorical_menu_var.set('Sunburst')
 categorical_menu = tk.OptionMenu(window, categorical_menu_var, 'Sunburst','Treemap')
@@ -561,7 +568,7 @@ categorical_menu = tk.OptionMenu(window, categorical_menu_var, 'Sunburst','Treem
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    categorical_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
-                                   "Visualize categorical data as sunbust plot or treemap plot via Plotly)")
+                                   "Visualize categorical data as sunburst plot or treemap chart via Plotly)")
 
 case_sensitive_var.set(1)
 case_sensitive_checkbox = tk.Checkbutton(window, state='disabled',text='Case sensitive', variable=case_sensitive_var,
@@ -621,7 +628,7 @@ K_sent_begin = tk.Entry(window, state='disabled', textvariable=K_sent_begin_var,
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    K_sent_begin,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "Enter the number of sentences at the beginning of each document to be used to visualize differences in the data")
+                                   "Enter the number of sentences at the beginning of each document to be used to visualize differences in the data\nThe option requires a Document ID and a Sentence ID field in the input file")
 
 K_sent_end_var.set('')
 K_sent_end_lb = tk.Label(window, text='Last K')
@@ -632,7 +639,7 @@ K_sent_end = tk.Entry(window, state='disabled',textvariable=K_sent_end_var, widt
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    K_sent_end,
                                    True, False, True, False, 90, GUI_IO_util.visualization_K_sent_end_lb_pos,
-                                   "Enter the number of sentences at the end of each document to be used to visualize differences in the data")
+                                   "Enter the number of sentences at the end of each document to be used to visualize differences in the data\nThe option requires a Document ID and a Sentence ID field in the input file")
 
 split_var.set(0)
 split_checkbox = tk.Checkbutton(window, state='disabled',text='Split documents in equal halves', variable=split_var,
@@ -641,7 +648,7 @@ split_checkbox = tk.Checkbutton(window, state='disabled',text='Split documents i
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_split_pos, y_multiplier_integer,
                                    split_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "Tick the checkbox if you wish to visualize differences in the data by splitting each document in two halves")
+                                   "Tick the checkbox if you wish to visualize differences in the data by splitting each document in two halves\nThe option requires a Document ID and a Sentence ID field in the input file")
 
 do_not_split_var.set(0)
 do_not_split_checkbox = tk.Checkbutton(window, state='disabled', text='Do NOT split documents', variable=do_not_split_var,
@@ -669,14 +676,14 @@ use_numerical_variable_checkbox.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_begin_pos, y_multiplier_integer,
                                    use_numerical_variable_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.visualization_K_sent_begin_pos,
-                                   "Tick the checkbox if you wish to use a numerical variable to improve the treemap plot")
+                                   "Tick the checkbox if you wish to use a numerical variable to improve the treemap chart")
 
 
 csv_field_treemap_lb = tk.Label(window, text='csv file field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_end_pos, y_multiplier_integer,
                                                csv_field_treemap_lb, True)
 
-csv_field_treemap_menu = tk.OptionMenu(window, csv_field_treemap_var, *menu_values) # treemapper
+csv_field_treemap_menu = tk.OptionMenu(window, csv_field_treemap_var, *menu_values) # treemap
 csv_field_treemap_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
@@ -727,7 +734,7 @@ def changed_filename(tracedInputFile):
     for s in menu_values:
         m4.add_command(label=s, command=lambda value=s: csv_field_categorical_var.set(value))
 
-    m5 = csv_field_treemap_menu["menu"] # treemapper
+    m5 = csv_field_treemap_menu["menu"] # treemap
     m5.delete(0, "end")
 
     for s in menu_values:
@@ -879,10 +886,10 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the csv file field to be used to visualize relations.\n\nPress the + button to add another field until all 2 or 3 elements have been added (2 or 3 for Sankey, 3 for Gephi). For instance, in a Gephi graph, the first field selected is the first node; the second field selected is the edge; the third field selected is the second node.\n\nPress the 'Show' button to display the fields currently selected.\n\nPress the 'Reset ' button to clear selected values and start fresh.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE GEPHI PLOT ONLY.\n\nFor Gephi network graphs, once all three fields (node 1, edge, node 2) have been selected, the widget 'csv file field for dynamic graph' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID or Date) or ignore the option if the network should not be dynamic.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SANKEY PLOT ONLY.\n\nPlease, using the dropdown menus, select the maximum number of values to be considered for each of the 2 or 3 elements in computing the interactive Sankey plot.\n\nWith too many values, Sankey plots become very messy.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in an interactive sunburst or treemap plot.\n\nThe algorithm applies to categorical data rather than numerical data.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in an interactive sunburst or treemap chart.\n\nThe algorithm applies to categorical data rather than numerical data.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the comma-separated labels/parts of a filename to be used to separate fields in the filename (e.g., in the filename, Harry Potter_Book1_1, Harry Potter_Book2_3, ..., Harry Potter_Book4_1... you could enter Book1, Book3 to sample the files to be used for visualization.\n\nThe number of distinct labels/parts of filename should be small (e.g., the 7 Harry Potter books).\n\nThe widgets in this line are REQUIRED to run either the Sunburst or Treemap algorithms.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SUNBUST PLOT ONLY.\n\nPlease, enter the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the checkbox 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.\n\nTick the checkbox 'Do NOT split documents' if you wish to visualize an entire document.\n\nThe three options are mutually exclusive.\n\nThe Sunburst algorithm uses the values in Document ID and Sentence ID to process First K and Last K sentences or to split a document in halves.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE TREEMAP PLOT ONLY. THE FIELDS ARE OPTIONAL (i.e., not required to run the treemap algorithm). \n\nPlease, tick the checkbox if you wish to use the values of a numerical variable to improve the treemap plot.\n\nUse the dropdown menu to select the csv file numeric field to be used for plotting.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SUNBURST OPTION ONLY.\n\nPlease, enter the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the checkbox 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.\n\nTick the checkbox 'Do NOT split documents' if you wish to visualize an entire document.\n\nThe three options are mutually exclusive.\n\nThe Sunburst algorithm uses the values in Document ID and Sentence ID to process First K and Last K sentences or to split a document in halves.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE TREEMAP OPTION ONLY. THE FIELDS ARE OPTIONAL (i.e., not required to run the treemap algorithm). \n\nPlease, tick the checkbox if you wish to use the values of a numerical variable to improve the treemap chart.\n\nUse the dropdown menu to select the csv file numeric field to be used for plotting.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)

@@ -1279,8 +1279,8 @@ def separator(data,interest, algorithm):
 #first_sentences is the n first sentences
 #last_sentences is the n last sentences
 #half_text is a boolean defining whether to split the text in half or not
-#beginning_and_end is a boolean that dictates if its a two-level or three level sunburster
-def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,beginning_and_end=False,first_sentences=None,last_sentences=None,half_text=None):
+#beginning_and_end is a boolean that dictates if its a two-level or three level Sunburst
+def Sunburst(data, outputFilename, outputDir, case_sensitive, interest, label,beginning_and_end=False,first_sentences=None,last_sentences=None,half_text=None):
     if type(data)==str:
         data=pd.read_csv(data)
         # @@@ nan values will break the code
@@ -1293,7 +1293,7 @@ def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,
     #the last 3 arguments are optional. If first_sentences is specified and last_sentences is not or vice versa, we return a message stating they must both be specified or absent at the same time
     if (first_sentences==None and last_sentences!=None) or (first_sentences!=None and last_sentences==None):
         return 'both number of first sentences and number of last sentences have to be specified or absent at the same time'
-    else: #Otherwise, we run the Sunburster
+    else: #Otherwise, we run the Sunburst
 
         tempdata=separator(data,interest, "Sunburst") #Create "interest" variable
         if beginning_and_end==False:
@@ -1329,7 +1329,7 @@ def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,
                     # finaldata not empty
                     #@@@ nan values will break the code
                     finaldata = finaldata.fillna('Blank value')
-                    fig = px.sunburst(finaldata, path=['interest', 'Beginning or End', label]) #return sunburster
+                    fig = px.sunburst(finaldata, path=['interest', 'Beginning or End', label]) #return Sunburst
                 else:
                     if finaldata.empty:
                         mb.showwarning("Warning",
@@ -1351,7 +1351,7 @@ def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,
                 finaldata=tempdata1
                 finaldata['Beginning or End']=finallist
 
-                fig=px.sunburst(finaldata,path=['interest','Beginning or End',label]) #create sunburst plot
+                fig=px.sunburst(finaldata,path=['interest','Beginning or End',label]) #create sunburst chart
         else:
             # @@@ nan values will break the code
             tempdata = tempdata.fillna('Blank value')
@@ -1367,13 +1367,13 @@ def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,
 
 # written by Samir Kaddoura, March 2023
 
-# This function takes the data, an interest vector defined the same way as in the sunburster function,
+# This function takes the data, an interest vector defined the same way as in the Sunburst function,
 #   a variable of choice (should be categorical) var,
 #   a boolean variable to dictate if the user wants to observe an additional variable with "extra_dimension_average",
 #   the numerical variable of choice average_variable
 
 #The graph shows the frequencies of each group by default depending on the interest vector and the initial variable of choice. If specified, it shows the average of average_variable per group
-def treemaper(data,outputFilename,interest,csv_file_field,extra_dimension_average,average_variable=None):
+def Treemap(data,outputFilename,interest,csv_file_field,extra_dimension_average,average_variable=None):
     if type(data)==str:#convert data to dataframe
         data=pd.read_csv(data)
     # The presence of a Nan value will classify the object as float

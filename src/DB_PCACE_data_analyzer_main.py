@@ -92,61 +92,68 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
         #     if len(chart_outputFilename) > 0:
         #         filesToOpen.extend(chart_outputFilename)
 
-    if semantic_triplet_var:
-        outputFile = ''
-        if time_var and space_var:
-            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time_space(inputDir, outputDir,
-                         primary_complex_var, comments_var, document_sources_var)
-        elif time_var:
-            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time(inputDir, outputDir,
-                         primary_complex_var, comments_var, document_sources_var)
-        elif space_var:
-            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_space_main(inputDir, outputDir,
-                         primary_complex_var, comments_var, document_sources_var)
-        else: # only SVO
-            outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_simplex_main(inputDir, outputDir,
-                        primary_complex_var, comments_var, document_sources_var)
+    if semantic_triplet_var and not time_var and not space_var:
+        # SVO only
+        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_simplex_main(inputDir, outputDir,
+                                                                               primary_complex_var, comments_var,
+                                                                               document_sources_var)
+    if semantic_triplet_var and time_var and space_var:
+        # SVO + time + space
+        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time_space(inputDir, outputDir,
+                     primary_complex_var, comments_var, document_sources_var)
 
-        if outputFile != '':
-            filesToOpen.append(outputFile)
+    if semantic_triplet_var and time_var and not space_var:
+        # SVO + time
+        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_time(inputDir, outputDir,
+                     primary_complex_var, comments_var, document_sources_var)
+
+    if semantic_triplet_var and space_var and not time_var:
+        # SVO + space
+        outputFile = DB_PCACE_data_analyzer_util.semantic_triplet_space_main(inputDir, outputDir,
+                     primary_complex_var, comments_var, document_sources_var)
+
+    if outputFile != '':
+        filesToOpen.append(outputFile)
 
 # Gephi ----------------------------------------------------------------------------------------
+    if semantic_triplet_var and gephi_var:
         import os
-        if gephi_var:
-            svo_result_list=[]
-            fileBase = os.path.basename(outputFile)[0:-5]
-            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFile, encodingValue='utf-8')
+        svo_result_list=[]
+        fileBase = os.path.basename(outputFile)[0:-5]
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFile, encodingValue='utf-8')
 
-            if nRecords > 1:  # including headers; file is empty
-                import pandas as pd
+        if nRecords > 1:  # including headers; file is empty
+            import pandas as pd
 
-                df = pd.read_csv(outputFile)
-                # Add a new empty column called 'data expression'
-                df['Date expression'] = '1998-09-01'
-                df['Normalized date'] = ''
-                df['Date type'] = ''
-                # Write the updated DataFrame back to the CSV file
-                df.to_csv(outputFile, index=False)
-                print("New column 'data expression' added successfully!")
+            df = pd.read_csv(outputFile)
+            # Add a new empty column called 'data expression'
+            df['Date expression'] = '1998-09-01'
+            df['Normalized date'] = ''
+            df['Date type'] = ''
+            # Write the updated DataFrame back to the CSV file
+            df.to_csv(outputFile, index=False)
+            print("New column 'data expression' added successfully!")
 
-                gexf_file = Gephi_util.create_gexf(window, fileBase, outputDir, outputFile,
-                                                   "Subject (S)", "Verb (V)", "Object (O)",'',"non-default") # Sentence ID will be added as the last column
-                filesToOpen.append(gexf_file)
+            gexf_file = Gephi_util.create_gexf(window, fileBase, outputDir, outputFile,
+                                               "Subject (S)", "Verb (V)", "Object (O)",'',"non-default") # Sentence ID will be added as the last column
+            filesToOpen.append(gexf_file)
 
 # wordcloud  _________________________________________________
 
-        if wordcloud_var:
-            nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFile)
-            if nRecords > 1:  # including headers; file is empty
-                myfile = IO_files_util.openCSVFile(outputFile, 'r')
-                out_file = wordclouds_util.SVOWordCloud(myfile, outputFile, outputDir,
-                                                        "", prefer_horizontal=.9)
-                myfile.close()
-                filesToOpen.append(out_file)
+    if semantic_triplet_var and wordcloud_var:
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFile)
+        if nRecords > 1:  # including headers; file is empty
+            myfile = IO_files_util.openCSVFile(outputFile, 'r')
+            outputFile = wordclouds_util.SVOWordCloud(myfile, outputFile, outputDir,
+                                                    "", prefer_horizontal=.9)
+            myfile.close()
+            filesToOpen.append(outputFile)
 
 # GIS maps _____________________________________________________
 
-        if google_earth_var and (setup_simplex=='City name' or setup_simplex=='County') and SELECTED_simplex_objects_frequencies_var:
+    if semantic_triplet_var or space_var:
+        if google_earth_var and (setup_simplex=='City name' or setup_simplex=='County') \
+                and SELECTED_simplex_objects_frequencies_var:
             extract_date_from_text_var = 0
             filename_embeds_date_var = 0
             reminders_util.checkReminder(scriptName, reminders_util.title_options_geocoder,
@@ -164,7 +171,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
             if setup_simplex == 'County':
                 IO_csv_util.rename_header(location_filename, 'County', 'Location')
 
-            out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
+            outputFile = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
                                                       config_filename, location_filename, inputDir,
                                                       outputDir,
                                                       'Nominatim', 'Google Earth Pro & Google Maps',
@@ -183,10 +190,10 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
                                                       # name_var_list, scale_var_list, color_var_list, color_style_var_list,
                                                       [1], [1])  # bold_var_list, italic_var_list
 
-            if out_file != None:
-                if len(out_file) > 0:
+            if outputFile != None:
+                if len(outputFile) > 0:
                     # since out_file produced by KML is a list cannot use append
-                    filesToOpen = filesToOpen + out_file
+                    filesToOpen = filesToOpen + outputFile
 
 # actors ----------------------------------------------------------------------
 
@@ -245,8 +252,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=720, # height at brief display
-                                                 GUI_height_full=760, # height at full display
+                                                 GUI_height_brief=640, # height at brief display
+                                                 GUI_height_full=680, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -466,16 +473,28 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Tick the checkbox to extract semantic triplets/SVOs (i.e., combinations of Subject, Verb, Object).\nWhen a specific macro event is selected, SVOs will be extracted for that specific macro event.")
 
+
+actors_lb = tk.Label(window, text='Actors ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,actors_lb,True)
+
+actors_var.set('')
+actors_menu = tk.OptionMenu(window, actors_var, '*', 'collective actor', 'individual', 'organization')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+50, y_multiplier_integer,
+                                   actors_menu,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Use the dropdown menu to select the type of actor you want to extract ")
+
 time_checkbox = tk.Checkbutton(window, text='Time', variable=time_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    time_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Tick the checkbox to extract the time of action.\nWhen a specific macro event is selected, the time will be extracted for that specific macro event.")
 
 space_checkbox = tk.Checkbutton(window, text='Space', variable=space_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+350, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    space_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Tick the checkbox to extract the space of action.\nWhen a specific macro event is selected, the space will be extracted for that specific macro event.")
@@ -493,7 +512,7 @@ wordcloud_var.set(0)
 wordcloud_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in wordcloud', variable=wordcloud_var,
                                     onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+350, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    wordcloud_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate+350,
                                    "Tick the checkbox to visualize the triplet SVOs in a wordcloud")
@@ -507,16 +526,16 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                    False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Tick the checkbox to visualize the space of SVOs as in a Google Earth Pro pin map and Google Maps heat map")
 
-actors_lb = tk.Label(window, text='Extract actors ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,actors_lb,True)
-
-actors_var.set('')
-actors_menu = tk.OptionMenu(window, actors_var, '*', 'collective actor', 'individual', 'organization')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
-                                   actors_menu,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Use the dropdown menu to select the type of actor you want to extract ")
+# actors_lb = tk.Label(window, text='Extract actors ')
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,actors_lb,True)
+#
+# actors_var.set('')
+# actors_menu = tk.OptionMenu(window, actors_var, '*', 'collective actor', 'individual', 'organization')
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
+#                                    actors_menu,
+#                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+#                                    "Use the dropdown menu to select the type of actor you want to extract ")
 
 complex_objects_lb = tk.Label(window, text='Complex ')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,complex_objects_lb,True)
@@ -563,7 +582,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Tick the checkbox to extract the value frequencies for ALL objects (complex & simplex)")
 
-SELECTED_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for SELECTED object', variable=SELECTED_objects_frequencies_var, onvalue=1, offvalue=0)
+SELECTED_complex_objects_checkbox = tk.Checkbutton(window, text='Get value frequencies for SELECTED Complex OR Simplex object', variable=SELECTED_objects_frequencies_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    SELECTED_complex_objects_checkbox,
@@ -723,11 +742,11 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     # SVO + time + space
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help",
-                                                         "Please, tick the checkbox to extract Subject, Verb, Objet relations (semantic triplet) and the time and space of action.\n\nWhen a primary complex (or macro event) has been selected, SVOs, time, and space will be selected for the selected macro event only." + GUI_IO_util.msg_Esc)
+                                                         "Please, tick the checkbox to extract Subject, Verb, Objet relations (semantic triplet) and/or the type of actor for which you wish to extract all instances of semantic triplets, i.e., Subject-Verb-Object combinations (* for all types of actors) and/or the time and/or space of action.\n\nWhen a primary complex (or macro event) has been selected, SVOs, time, and space will be selected for the selected macro event only." + GUI_IO_util.msg_Esc)
     # SVO visualization
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkboxes to visualize Subjects, Verbs, Objects in network graphs and wordclouds, and to visualize space in geographic maps." + GUI_IO_util.msg_Esc)
     # actors
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, use the dropdown menu to select the type of actor for which you wish to extract all instances of semantic triplets, i.e., Subject-Verb-Object combinations (* for all types of actors)." + GUI_IO_util.msg_Esc)
+    # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, use the dropdown menu to select the type of actor for which you wish to extract all instances of semantic triplets, i.e., Subject-Verb-Object combinations (* for all types of actors)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,
                                                          "NLP Suite Help",
                                                          "The dropdown menu displays all the COMPLEX or SIMPLEX objects parent and children of the objects selected in the 'Complex objects' or 'Simplex objects' dropdown menu widgets." + GUI_IO_util.msg_Esc)
