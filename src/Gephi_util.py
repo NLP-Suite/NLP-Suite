@@ -1115,7 +1115,8 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
                     date_format = "%m-%d-%Y"
                     # date_format = "%Y-%m-%d" # Old code
                     try:
-                        date_obj = datetime.datetime.strptime(date_str, date_format)
+                        import dateutil.parser
+                        date_obj = dateutil.parser.parse(date_str)
                     except:
                         if '/' in row[spellCol] and spellCol == 'Date':
                             mb.showwarning(title='Warning',
@@ -1142,19 +1143,30 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
                 # date(row[spellCol]).strftime(date_format)
                 if spellCol != "": #this could be a Date field
                     try:
-                        node = Node(graph,row[col1],row[col1],
-                                    r = random.randint(0,255),g = random.randint(0,255),b = random.randint(0,255),
-                                    size = "50",
-                                    spells = [
-                                        {"start":(EPOCH+datetime.timedelta(days = int(row[spellCol])))
-                                            .strftime(date_format),
-                                         "end":(EPOCH+datetime.timedelta(days = int(row[spellCol])))
-                                            .strftime(date_format)}
-                                        # {"start":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))))
-                                        #     .strftime(date_format),
-                                        #  "end":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))+1))
-                                        #     .strftime(date_format)}
-                                    ])
+                        if spellCol =='Date':
+                            import dateutil.parser
+                            node = Node(graph, row[col1], row[col1],
+                                        r=random.randint(0, 255), g=random.randint(0, 255), b=random.randint(0, 255),
+                                        size="50",
+                                        spells=[
+                                            {"start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                             "end": dateutil.parser.parse(row[spellCol]).strftime(date_format)}
+                                        ])
+                        else:
+                            #pass
+                            node = Node(graph,row[col1],row[col1],
+                                        r = random.randint(0,255),g = random.randint(0,255),b = random.randint(0,255),
+                                        size = "50",
+                                        spells = [
+                                            {"start":(EPOCH+datetime.timedelta(days = int(row[spellCol])))
+                                                .strftime(date_format),
+                                             "end":(EPOCH+datetime.timedelta(days = int(row[spellCol])))
+                                                .strftime(date_format)}
+                                            # {"start":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))))
+                                            #     .strftime(date_format),
+                                            #  "end":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))+1))
+                                            #     .strftime(date_format)}
+                                        ])
                     except:
                         if '/' in row[spellCol] and spellCol == 'Date':
                             mb.showwarning(title='Warning',
@@ -1172,24 +1184,40 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
             else:
                 graph.nodes[row[col1]].size = str(int(graph.nodes[row[col1]].size)+50)
                 if spellCol != "":
-                    graph.nodes[row[col1]].spells.append({
-                        "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                            .strftime(date_format),
-                        "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                            .strftime(date_format)
-                    })
+                    if spellCol == 'Date':
+                        import dateutil.parser
+                        graph.nodes[row[col1]].spells.append({"start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                         "end": dateutil.parser.parse(row[spellCol]).strftime(date_format)})
+
+                    else:
+                        graph.nodes[row[col1]].spells.append({
+                            "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
+                                .strftime(date_format),
+                            "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
+                                .strftime(date_format)
+                        })
 
             if row[col3] not in graph.nodes:
                 if spellCol != "":
-                    node = Node(graph, row[col3], row[col3],
-                                r=random.randint(0,255), g=random.randint(0,255), b=random.randint(0,255),
-                                size="50",
-                                spells=[
-                                    {"start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                                        .strftime(date_format),
-                                     "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                                        .strftime(date_format)}
-                                ])
+                    if spellCol == 'Date':
+                        import dateutil.parser
+                        node = Node(graph, row[col1], row[col1],
+                                    r=random.randint(0, 255), g=random.randint(0, 255), b=random.randint(0, 255),
+                                    size="50",
+                                    spells=[
+                                        {"start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                         "end": dateutil.parser.parse(row[spellCol]).strftime(date_format)}
+                                    ])
+                    else:
+                        node = Node(graph, row[col3], row[col3],
+                                    r=random.randint(0,255), g=random.randint(0,255), b=random.randint(0,255),
+                                    size="50",
+                                    spells=[
+                                        {"start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
+                                            .strftime(date_format),
+                                         "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
+                                            .strftime(date_format)}
+                                    ])
                 else:
                     node = Node(graph, row[col3], row[col3],
                                 r=random.randint(0, 255), g=random.randint(0, 255), b=random.randint(0, 255),
@@ -1199,33 +1227,57 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
             else:
                 graph.nodes[row[col3]].size = str(int(graph.nodes[row[col3]].size)+50)
                 if spellCol != "":
-                    graph.nodes[row[col3]].spells.append({
-                        "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                            .strftime(date_format),
-                        "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                            .strftime(date_format)
-                    })
+                    if spellCol == 'Date':
+                        import dateutil.parser
+                        graph.nodes[row[col3]].spells.append({
+                            "start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                            "end": dateutil.parser.parse(row[spellCol]).strftime(date_format)
+                        })
 
+                    else:
+                        graph.nodes[row[col3]].spells.append({
+                            "start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
+                                .strftime(date_format),
+                            "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
+                                .strftime(date_format)
+                        })
             edge_id = row[col1]+" "+row[col3]
             if edge_id not in graph.edges:
                 if spellCol != "":
-                    edge = Edge(graph,edge_id,row[col1],row[col3],
-                                spells = [{"start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                                        .strftime(date_format),
-                                           "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                                        .strftime(date_format)}],
-                                label = row[col2])
+                    if spellCol == 'Date':
+                        import dateutil.parser
+                        edge = Edge(graph,edge_id,row[col1],row[col3],
+                                    spells=[
+                                        {"start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                                         "end": dateutil.parser.parse(row[spellCol]).strftime(date_format)}],
+                                        label = row[col2]
+                                    )
+                    else:
+                        edge = Edge(graph,edge_id,row[col1],row[col3],
+                                    spells = [{"start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
+                                            .strftime(date_format),
+                                               "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
+                                            .strftime(date_format)}],
+                                    label = row[col2])
                 else:
                     edge = Edge(graph, edge_id, row[col1], row[col3],
                                 label=row[col2])
                 graph.edges[edge_id] = edge
             else:
                 if spellCol != "":
-                    graph.edges[edge_id].spells.append(
-                        {"start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
-                                        .strftime(date_format),
-                         "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
-                                        .strftime(date_format)})
+                    if spellCol == 'Date':
+                        import dateutil.parser
+                        graph.edges[edge_id].spells.append(
+                            {"start": dateutil.parser.parse(row[spellCol]).strftime(date_format),
+                             "end": dateutil.parser.parse(row[spellCol]).strftime(date_format)})
+
+
+                    else:
+                        graph.edges[edge_id].spells.append(
+                            {"start": (EPOCH + datetime.timedelta(days=int(float(row[spellCol]))))
+                                            .strftime(date_format),
+                             "end": (EPOCH + datetime.timedelta(days=int(float(row[spellCol])) + 1))
+                                            .strftime(date_format)})
     gexf.write(open(os.path.join(OutputDir,graph_name),'wb'))
 
     IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running Gephi network graphs at', True,
