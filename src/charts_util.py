@@ -1283,10 +1283,13 @@ def separator(data,interest, algorithm):
 def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,beginning_and_end=False,first_sentences=None,last_sentences=None,half_text=None):
     if type(data)==str:
         data=pd.read_csv(data)
+        # @@@ nan values will break the code
+        data = data.fillna('Blank value')
+    # The presence of a Nan value will classify the object as float
     if type(data[label][0])!=str:
         mb.showwarning("Warning",
                    "The csv file field selected should be categorical.\n\nYou should select a categorical field, rather than a continuous numeric field, and try again.")
-
+        # return
     #the last 3 arguments are optional. If first_sentences is specified and last_sentences is not or vice versa, we return a message stating they must both be specified or absent at the same time
     if (first_sentences==None and last_sentences!=None) or (first_sentences!=None and last_sentences==None):
         return 'both number of first sentences and number of last sentences have to be specified or absent at the same time'
@@ -1296,7 +1299,8 @@ def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,
         if beginning_and_end==False:
             if half_text==True or (first_sentences==None and last_sentences==None): #If half text is true or both number of first sentences and last sentences is absent, we split each text in half and attribute a "beginning" half and "end" half
 
-                ogdata=tempdata[tempdata['Document ID']==1] #take the first document
+                first_docID = tempdata['Document ID'].iloc[0]
+                ogdata=tempdata[tempdata['Document ID']==first_docID] #take the first document
 
                 ogdata1=ogdata[ogdata['Sentence ID']<=len(ogdata)/2] #split the document by first half
                 oglist1=list(np.repeat('Beginning',len(ogdata1)))
@@ -1322,9 +1326,14 @@ def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,
                         intermediatedata2['Beginning or End']=intermediatelist2
 
                         finaldata=pd.concat([finaldata,intermediatedata2])
-
-                    fig=px.sunburst(finaldata,path=['interest','Beginning or End',label]) #return sunburster
-
+                    # finaldata not empty
+                    #@@@ nan values will break the code
+                    finaldata = finaldata.fillna('Blank value')
+                    fig = px.sunburst(finaldata, path=['interest', 'Beginning or End', label]) #return sunburster
+                else:
+                    if finaldata.empty:
+                        mb.showwarning("Warning",
+                                       "The Sunburst algorithm has produced an empty dataframe.\n\nPlease, make sure that the 'Filename label/part' you have entered are in the document name under the Document field of your input file.\n\nREMEMBER THAT SEARCH WORDS ARE CASE SENSITIVE.\n\nPlease, try again.")
                 # return plotly.offline.plot(fig)
 
             else:
@@ -1344,7 +1353,10 @@ def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,
 
                 fig=px.sunburst(finaldata,path=['interest','Beginning or End',label]) #create sunburst plot
         else:
+            # @@@ nan values will break the code
+            tempdata = tempdata.fillna('Blank value')
             fig=px.sunburst(tempdata,path=['interest',label])
+            finaldata=tempdata
         if finaldata.empty:
             outputFilename=None
         else:
@@ -1364,13 +1376,15 @@ def Sunburster(data, outputFilename, outputDir, case_sensitive, interest, label,
 def treemaper(data,outputFilename,interest,csv_file_field,extra_dimension_average,average_variable=None):
     if type(data)==str:#convert data to dataframe
         data=pd.read_csv(data)
+    # The presence of a Nan value will classify the object as float
     if type(data[csv_file_field][0])!=str:
         mb.showwarning("Warning",
                    "The csv file field selected should be categorical.\n\nYou should select a categorical field, rather than a continuous numeric field, and try again.")
+        # return
     if extra_dimension_average and type(data[average_variable][0])!=np.float64:
         mb.showwarning("Warning",
                    "The csv file field selected should be numeric.\n\nYou should select a numeric field, rather than an alphabetic field, and try again.")
-
+        return
     data=separator(data,interest,"Treemap")#use separator function to create interest vector
     if data.empty:
         outputFilename=None

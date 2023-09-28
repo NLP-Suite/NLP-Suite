@@ -130,7 +130,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
                 print("New column 'data expression' added successfully!")
 
                 gexf_file = Gephi_util.create_gexf(window, fileBase, outputDir, outputFile,
-                                                   "Subject (S)", "Verb (V)", "Object (O)",'') # Sentence ID will be added as the last column
+                                                   "Subject (S)", "Verb (V)", "Object (O)",'',"non-default") # Sentence ID will be added as the last column
                 filesToOpen.append(gexf_file)
 
 # wordcloud  _________________________________________________
