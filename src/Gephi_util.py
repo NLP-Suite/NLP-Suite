@@ -1068,7 +1068,7 @@ class GexfImport:
 
 # returns a gexf file
 
-def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spellCol=''):
+def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spellCol='',logic='default'):
     """
     Create gexf format file that can be used in Gephi to visualize result dynamically.
     :param corpus: A Corpus Object
@@ -1109,18 +1109,35 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
                 # % H: 2-digit hour(00 - 23)
                 # % M: 2-digit minute(00 - 59)
                 # % S: 2-digit second(00 - 59)
-                date_str = row[spellCol]
-                date_format = "%m-%d-%Y"
-                date_format = "%Y-%m-%d" # Old code
-                try:
-                    date_obj = datetime.datetime.strptime(date_str, date_format)
-                except:
-                    if '/' in row[spellCol] and spellCol == 'Date':
-                        mb.showwarning(title='Warning',
-                                       message='Error in date value ' + row[
-                                           spellCol] + '.\n\nDate values should not be separated by / but by - (e.g., ' +
-                                               row[spellCol] + ' should be ' + row[spellCol].replace('/', '-') + ').')
-                        return
+                #print("i am here")
+                if logic=='default':
+                    date_str = row[spellCol]
+                    date_format = "%m-%d-%Y"
+                    # date_format = "%Y-%m-%d" # Old code
+                    try:
+                        date_obj = datetime.datetime.strptime(date_str, date_format)
+                    except:
+                        if '/' in row[spellCol] and spellCol == 'Date':
+                            mb.showwarning(title='Warning',
+                                           message='Error in date value ' + row[
+                                               spellCol] + '.\n\nDate values should not be separated by / but by - (e.g., ' +
+                                                   row[spellCol] + ' should be ' + row[spellCol].replace('/', '-') + ').')
+                            return
+                else:
+                    if spellCol != "":
+                        date_str = row[spellCol]
+                        date_format = "%m-%d-%Y"
+                        # date_format = "%Y-%m-%d"  # Old code
+                        try:
+                            date_obj = datetime.datetime.strptime(date_str, date_format)
+                        except:
+                            if '/' in row[spellCol] and spellCol == 'Date':
+                                mb.showwarning(title='Warning',
+                                               message='Error in date value ' + row[
+                                                   spellCol] + '.\n\nDate values should not be separated by / but by - (e.g., ' +
+                                                       row[spellCol] + ' should be ' + row[spellCol].replace('/',
+                                                                                                             '-') + ').')
+                                return
                 # days = int(float(date_obj))
                 # date(row[spellCol]).strftime(date_format)
                 if spellCol != "": #this could be a Date field
@@ -1129,9 +1146,9 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
                                     r = random.randint(0,255),g = random.randint(0,255),b = random.randint(0,255),
                                     size = "50",
                                     spells = [
-                                        {"start":(EPOCH+datetime.timedelta(days = row[spellCol]))
+                                        {"start":(EPOCH+datetime.timedelta(days = int(row[spellCol])))
                                             .strftime(date_format),
-                                         "end":(EPOCH+datetime.timedelta(days = row[spellCol]))
+                                         "end":(EPOCH+datetime.timedelta(days = int(row[spellCol])))
                                             .strftime(date_format)}
                                         # {"start":(EPOCH+datetime.timedelta(days = int(float(row[spellCol]))))
                                         #     .strftime(date_format),
@@ -1150,6 +1167,7 @@ def create_gexf(window,fileBase, OutputDir, inputFilename, col1, col2, col3, spe
                                 r=random.randint(0, 255), g=random.randint(0, 255), b=random.randint(0, 255),
                                 size="50")
                 graph.nodes[row[col1]] = node
+
 
             else:
                 graph.nodes[row[col1]].size = str(int(graph.nodes[row[col1]].size)+50)
