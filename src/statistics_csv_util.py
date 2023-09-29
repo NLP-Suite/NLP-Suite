@@ -580,6 +580,8 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             # Map the counts back to the original dataframe
             result['Frequency_'+str(group_cols[0])] = result[group_cols[0]].map(counts)
 
+            result['Frequency_'+group_cols[0]]=0
+
             return result
 
         def double_level_grouping_and_frequency(data, plot_cols, group_cols):
@@ -612,6 +614,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                 # [1, 2] will display the document name in the Data sheet of the xlsx file
                 # see note above about the order of items in columns_to_be_plotted list
                 #   the group_cols item must always be the last item in the columns_to_be_plotted list
+            data_final['Frequency_'+group_cols[0]]=0
             return data_final
 
         # print(plot_cols,group_cols)
@@ -642,30 +645,6 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         #   e.g., a bar chart for Form or Lemma values and a bar or line chart for POS tags
         #   https://openpyxl.readthedocs.io/en/latest/charts/secondary.html
 
-        # should get the col of frequency in data_final
-        #group_list = group_cols_SV.copy()
-
-        # df = data
-        # '''something done to ensure a brutal order here'''
-        # if plot_cols == ['Form', 'Lemma'] and 'Document' in group_cols:
-        #     try:
-        #         document_col = df.filter(like="Document").columns[0]  # Assuming only one column matches
-        #
-        #         # 2. Calculate the primary columns
-        #         df['Document ID'] = df.groupby(document_col).cumcount() + 1
-        #         document_frequencies = df[document_col].value_counts()
-        #         df['Document_Frequency'] = df[document_col].map(document_frequencies)
-        #         df['Document ID_Frequency'] = df['Document_Frequency']
-        #
-        #         # 3 & 4. Preserve the order of other columns and remove any redundant ones
-        #         desired_columns = ['Document', 'Document ID', 'Document_Frequency', 'Document ID_Frequency']
-        #         other_columns = [col for col in df.columns if
-        #                          col not in desired_columns and 'Document' not in col and 'Document ID' not in col]
-        #
-        #         final_columns_order = desired_columns + other_columns
-        #         df = df[final_columns_order]
-        #     except:
-        #         pass
         # added TONY1
         # pivot=True
         if pivot==True:
