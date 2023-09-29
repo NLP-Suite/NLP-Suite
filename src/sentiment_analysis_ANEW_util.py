@@ -404,7 +404,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                                                    column_yAxis_label='Scores',
                                                    groupByList=['Document ID', 'Document'],
                                                    plotList=columns_to_be_plotted_yAxis,
-                                                   chart_title_label='Measures of ANEW Sentiment Scores')
+                                                   chart_title_label='ANEW Sentiment Scores')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):

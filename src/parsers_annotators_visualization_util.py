@@ -251,7 +251,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            column_xAxis_label='Gender values',
                                                            groupByList=['Document'],
                                                            plotList=['Frequency'],
-                                                           chart_title_label='Statistical Measures for Gender')
+                                                           chart_title_label='Gender')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -269,7 +269,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            column_xAxis_label='Gender words',
                                                            groupByList=['Document'],
                                                            plotList=['Frequency'],
-                                                           chart_title_label='Statistical Measures for Gendered Words')
+                                                           chart_title_label='Gendered Words')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -297,7 +297,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            column_xAxis_label='Speakers',
                                                            groupByList=['Document'],
                                                            plotList=['Frequency'],
-                                                           chart_title_label='Statistical Measures for Quotes')
+                                                           chart_title_label='Quotes')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -314,7 +314,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                                columns_to_be_plotted_xAxis=[],
                                                                columns_to_be_plotted_yAxis=['Sentiment score'], # sentiment score
                                                                chart_title='Frequency Distribution of Sentiment Scores',
-                                                               count_var=0, hover_label=[],
+                                                               count_var=1, hover_label=[],
                                                                outputFileNameType='score', #'senti_bar',
                                                                column_xAxis_label='Sentiment score',
                                                                groupByList=['Document'],

@@ -191,9 +191,11 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
     # group the data frame by group columns
     if len(groupByField)>0:
         try:
-            # np as numpy
-            df_group = df.groupby(groupByField).agg([np.sum, np.mean, lambda x: stats.mode(x, keepdims=False)[0], np.median,
-                                                     np.std, np.min, np.max,
+            # the function computes mean, mode... skewness, kurtosis, ...
+            ###SIMON
+            df_group = df.groupby(groupByField).agg([np.sum, np.mean,
+                                                     lambda x: stats.mode(x, keepdims=False)[0],
+                                                     np.median, np.std, np.min, np.max,
                                                      stats.skew, stats.kurtosis,
                                                      percentile(25), percentile(50), percentile(75)])
         except ValueError as e:
@@ -233,7 +235,11 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
         #@@@
         # see note above about the order of items in columns_to_be_plotted list
         #   the group_cols item must always be the last item in the columns_to_be_plotted list
-        columns_to_be_plotted_yAxis=[[2,4], [2,5], [2,10], [2,11]] # document field comes first [2
+        headers=IO_csv_util.get_csvfile_headers(outputFilename)
+        columns_list = [[groupByField[0], 'Mean'], [groupByField[0], 'Mode'], [groupByField[0], 'Skewness'], [groupByField[0], 'Kurtosis']]
+        # columns_to_be_plotted_yAxis=[[2,4], [2,5], [2,10], [2,11]] # document field comes first [2
+        columns_to_be_plotted = get_columns_to_be_plotted(outputFilename, columns_list)
+        columns_to_be_plotted_yAxis=get_columns_to_be_plotted(outputFilename, columns_list)
         # columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Mean', 'Mode', 'Skewness', 'Kurtosis'] # document field comes first [2
         # hover_label=['Document']
         hover_label=[]
@@ -590,7 +596,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                 document_id_map = {document: i + 1 for i, document in enumerate(group_cols_count[group_cols[0]].unique())}
 
                 # Add the 'Document ID' column to the dataframe
-                # SIMON Document ID should always be the first item, before Document
+                # Document ID should always be the first item, before Document
                 group_cols_count['Document ID'] = group_cols_count[group_cols[0]].map(document_id_map)
 
             # Merge the counts back into the original dataframe
@@ -636,7 +642,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         #   e.g., a bar chart for Form or Lemma values and a bar or line chart for POS tags
         #   https://openpyxl.readthedocs.io/en/latest/charts/secondary.html
 
-        # SIMON should get the col of frequency in data_final
+        # should get the col of frequency in data_final
         #group_list = group_cols_SV.copy()
 
         # df = data

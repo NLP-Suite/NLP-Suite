@@ -613,7 +613,7 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode, cre
                                                            column_yAxis_label='Scores',
                                                            groupByList=['Document'],
                                                            plotList=['Sentiment Score'],
-                                                           chart_title_label='Measures of roBERTa Sentiment Scores')
+                                                           chart_title_label='roBERTa Sentiment Scores')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
@@ -631,7 +631,7 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode, cre
                                                            column_yAxis_label='Frequency',
                                                            groupByList=['Document'],
                                                            plotList=['Sentiment label'],
-                                                           chart_title_label='Measures of roBERTa Sentiment Labels')
+                                                           chart_title_label='roBERTa Sentiment Labels')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
