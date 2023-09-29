@@ -230,7 +230,7 @@ def main(inputFilename, inputDir, outputDir, configFileName, mode, createCharts=
                                                    column_yAxis_label='Scores',
                                                    groupByList=['Document ID', 'Document'],
                                                    plotList=['Sentiment score'],
-                                                   chart_title_label='Measures of SentiWordNet Sentiment Scores')
+                                                   chart_title_label='SentiWordNet Sentiment Scores')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):

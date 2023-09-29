@@ -303,7 +303,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                                                    column_yAxis_label='Scores',
                                                    groupByList=['Document ID', 'Document'],
                                                    plotList=['Sentiment Score'],
-                                                   chart_title_label='Measures of VADER Sentiment Scores')
+                                                   chart_title_label='VADER Sentiment Scores')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):

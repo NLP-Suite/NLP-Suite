@@ -365,7 +365,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
 
     # check if more than one language has been annotated
     # Stanza doc to Pandas DataFrame conversion logic for multilingual annotation
-    if len(language) > 1 or language[0]=='multilingual' or type(stanza_doc) is list:
+    if annotator_params!='sentiment' and len(language) > 1 or language[0]=='multilingual' or type(stanza_doc) is list:
         try:
             dicts = []
             for doc in stanza_doc:

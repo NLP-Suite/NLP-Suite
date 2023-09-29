@@ -365,7 +365,7 @@ def visualize_chart_bySent(inputFilename, outputDir, createCharts, chartPackage,
 # the variable groupByList,plotList, chart_title_label are used to compute column statistics
 #   groupByList is typically the list ['Document ID', 'Document'] or just ['Document']
 #   plotList is the list of fields to be plotted
-#   chart_title_label is used as part of the chart_title when plotting the fields statistics
+#   chart_title_label is used as part of the chart_title when plotting the fields statistics (Mean, Mode, Skewness,...)
 # X-axis
 
 def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
@@ -1284,7 +1284,7 @@ def Sunburst(data, outputFilename, outputDir, case_sensitive, interest, label,be
     if type(data)==str:
         data=pd.read_csv(data)
         # @@@ nan values will break the code
-        data = data.fillna('Blank value')
+        data = data.fillna('Blank/missing value')
     # The presence of a Nan value will classify the object as float
     if type(data[label][0])!=str:
         mb.showwarning("Warning",
@@ -1328,7 +1328,7 @@ def Sunburst(data, outputFilename, outputDir, case_sensitive, interest, label,be
                         finaldata=pd.concat([finaldata,intermediatedata2])
                     # finaldata not empty
                     #@@@ nan values will break the code
-                    finaldata = finaldata.fillna('Blank value')
+                    finaldata = finaldata.fillna('Blank/missing value')
                     fig = px.sunburst(finaldata, path=['interest', 'Beginning or End', label]) #return Sunburst
                 else:
                     if finaldata.empty:
@@ -1354,7 +1354,7 @@ def Sunburst(data, outputFilename, outputDir, case_sensitive, interest, label,be
                 fig=px.sunburst(finaldata,path=['interest','Beginning or End',label]) #create sunburst chart
         else:
             # @@@ nan values will break the code
-            tempdata = tempdata.fillna('Blank value')
+            tempdata = tempdata.fillna('Blank/missing value')
             fig=px.sunburst(tempdata,path=['interest',label])
             finaldata=tempdata
         if finaldata.empty:

@@ -8,6 +8,7 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"statistics_txt
     sys.exit(0)
 
 import os
+import os
 import tkinter as tk
 import tkinter.messagebox as mb
 import collections
@@ -228,10 +229,10 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
             f = open(doc, "r", encoding="utf-8", errors="ignore")
             docText = f.read()
             f.close()
-            Nsentences = str(textstat.sentence_count(docText))
+            Nsentences = textstat.sentence_count(docText)
             # print('TOTAL number of sentences: ',Nsentences)
 
-            Nwords = str(textstat.lexicon_count(docText, removepunct=True))
+            Nwords = textstat.lexicon_count(docText, removepunct=True)
             # print('TOTAL number of words: ',Nwords)
 
             Nsyllables = textstat.syllable_count(docText, lang='en_US')
@@ -264,7 +265,6 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
             # print("\n\nTOP 20 most frequent words  ----------------------------")
             # for item in word_counts.most_common(20):
             #     print(item)
-            # currentLine=[[Ndocs,documentID,doc,Nsentences,Nwords,Nsyllables]]
             currentLine = [
                 [Ndocs, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc), Nsentences, Nwords, Nsyllables]]
             for item in word_counts.most_common(20):
@@ -284,13 +284,13 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
         outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Number of Sentences in Document'],
-                                                           chart_title='Number of Sentences',
+                                                           chart_title='Frequency of Number of Sentences',
                                                            count_var=0, hover_label=[],
                                                            outputFileNameType='sent',
                                                            column_xAxis_label='Number of sentences',
                                                            groupByList=['Document'],
                                                            plotList=['Number of Sentences in Document'],
-                                                           chart_title_label='Statistical Measures for Number of Sentences')
+                                                           chart_title_label='Number of Sentences')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
@@ -309,7 +309,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
                                                            column_xAxis_label='Number of words',
                                                            groupByList=['Document'],
                                                            plotList=['Number of Words in Document'],
-                                                           chart_title_label='Statistical Measures for Number of Words')
+                                                           chart_title_label='Number of Words')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
@@ -329,7 +329,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
                                                            column_xAxis_label='Number of syllables',
                                                            groupByList=['Document'],
                                                            plotList=['Number of Syllables in Document'],
-                                                           chart_title_label='Statistical Measures for Number of Syllables')
+                                                           chart_title_label='Number of Syllables')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
@@ -427,7 +427,8 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
                                                        outputFileNameType='Sent', #'line_bar',
                                                        column_xAxis_label='Sentence length',
                                                        groupByList=['Document'],
-                                                       plotList=['Sentence length (in words)'], chart_title_label='Statistical Measures for Sentence Lenghts')
+                                                       plotList=['Sentence length (in words)'],
+                                                       chart_title_label='Sentence Lenghts')
 
     if outputFiles!=None:
         if isinstance(outputFiles, str):
@@ -506,7 +507,8 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
                                               outputFileNameType='', #'line_bar', column_xAxis_label='Line length',
                                               column_xAxis_label='Line length',
                                               groupByList=['Document'],
-                                              plotList=['Line length (in words)'], chart_title_label='Statistical Measures for Line Length')
+                                              plotList=['Line length (in words)'],
+                                              chart_title_label='Line Length')
 
     if outputFiles!=None:
         if isinstance(outputFiles, str):
@@ -779,7 +781,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumb
                                                                column_xAxis_label=str(gram) + '-gram',
                                                                groupByList=['Document'],
                                                                plotList=['Frequency in Document'],
-                                                               chart_title_label='Statistical Measures for ' + str(gram) + '-gram')
+                                                               chart_title_label=str(gram) + '-gram')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -1205,7 +1207,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                                                 column_xAxis_label=column_xAxis_label,
                                                 groupByList=['Document'],
                                                 plotList=['Frequency'],
-                                                chart_title_label='Statistical Measures for ' + column_xAxis_label)
+                                                chart_title_label=column_xAxis_label)
 
     if outputFiles!=None:
         if isinstance(outputFiles, str):
@@ -1597,7 +1599,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                                                                    column_xAxis_label='Grade level',
                                                                    groupByList=['Document'],
                                                                    plotList=['Grade level'],
-                                                                   chart_title_label='Statistical Measures for Readability Grade Level')
+                                                                   chart_title_label='Readability Grade Level')
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
@@ -1822,7 +1824,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
                                                        column_yAxis_label='Scores',
                                                        groupByList=['Document'],
                                                        plotList=['Yngve score','Frazier score'],
-                                                       chart_title_label='Statistical Measures for Complexity Scores')
+                                                       chart_title_label='Complexity Scores')
     if outputFiles!=None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)
