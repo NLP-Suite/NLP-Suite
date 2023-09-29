@@ -282,15 +282,15 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
 # number of sentences in input ---------------------------------------------------------------------
 
         outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Number of Sentences in Document'],
-                                                           chart_title='Frequency of Number of Sentences',
-                                                           count_var=0, hover_label=[],
-                                                           outputFileNameType='sent',
-                                                           column_xAxis_label='Number of sentences',
-                                                           groupByList=['Document'],
-                                                           plotList=['Number of Sentences in Document'],
-                                                           chart_title_label='Number of Sentences')
+                               columns_to_be_plotted_xAxis=[],
+                               columns_to_be_plotted_yAxis=['Number of Sentences in Document'],
+                               chart_title='Frequency of Number of Sentences',
+                               count_var=0, hover_label=[],
+                               outputFileNameType='sent',
+                               column_xAxis_label='', #'Number of sentences',
+                               groupByList=['Document'],
+                               plotList=['Number of Sentences in Document'],
+                               chart_title_label='Number of Sentences')
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
