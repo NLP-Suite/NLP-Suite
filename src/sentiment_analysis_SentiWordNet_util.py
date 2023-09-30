@@ -228,7 +228,7 @@ def main(inputFilename, inputDir, outputDir, configFileName, mode, createCharts=
                                                    outputFileNameType='SentiWordNet',  # 'line_bar',
                                                    column_xAxis_label='Sentiment score',
                                                    column_yAxis_label='Scores',
-                                                   groupByList=['Document ID', 'Document'],
+                                                   groupByList=['Document'],
                                                    plotList=['Sentiment score'],
                                                    chart_title_label='SentiWordNet Sentiment Scores')
 

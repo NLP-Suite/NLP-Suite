@@ -134,7 +134,10 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
         annotator = 'sentiment'
 
     # create the appropriate subdirectory to better organize output files                                               silent=False)
-    outputDir = create_output_directory(inputFilename, inputDir, outputDir, annotator)
+    # outputDir = create_output_directory(inputFilename, inputDir, outputDir, annotator)
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                       label=annotator + "_spaCy",
+                                                       silent=True)
 
     # set up spaCy pipeline
     # download selected spaCy language models

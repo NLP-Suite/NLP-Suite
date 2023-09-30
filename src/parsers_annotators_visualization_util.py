@@ -52,10 +52,10 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            # count_var = 1 for columns of alphabetic values
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='POS', #'POS_bar',
-                                                           column_xAxis_label='POS tag values',
+                                                           column_xAxis_label='POS (Part of Speech) tag values',
                                                            groupByList=['Document'],
                                                            plotList=['Frequency'],
-                                                           chart_title_label='POS Tag Values')
+                                                           chart_title_label='POS (Part of Speech) Tag Values')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)

@@ -206,7 +206,10 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
             file_label='parser (dep)'
         else:
             file_label=annotator
-        outputDir = create_output_directory(inputFilename, inputDir, outputDir, file_label)
+        # outputDir = create_output_directory(inputFilename, inputDir, outputDir, file_label)
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                           label=annotator + "_Stanza",
+                                                           silent=True)
 
         nlp = stanza.Pipeline(lang=short_lang, processors=processors, verbose=False)
 

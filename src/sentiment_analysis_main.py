@@ -87,6 +87,18 @@ def run(inputFilename,inputDir,outputDir,
     anew_var=0
 
     if SA_algorithm_var=='*':
+        if inputFilename != '':
+            inputBaseName = os.path.basename(inputFilename)[0:-4]  # without .txt
+        else:
+            inputBaseName = os.path.basename(inputDir)
+        # create a sentiment subdirectory of the output directory
+        outputSentDir = os.path.join(outputDir, 'Sentiment_ALL_' + inputBaseName)
+        outputSentDir = IO_files_util.make_output_subdirectory('', '', outputSentDir, label='',
+                                                              silent=True)
+        if outputSentDir == '':
+            return
+        outputDir=outputSentDir
+
         BERT_var=1
         CoreNLP_var=1
         spaCy_var=1
@@ -126,15 +138,14 @@ def run(inputFilename,inputDir,outputDir,
             model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
         else:
             model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
-        outputFiles = BERT_util.sentiment_main(inputFilename, inputDir, outputDir, config_filename, mode, createCharts, chartPackage, model_path)
-        if outputFiles == None:
-            return
-        if isinstance(outputFiles, str):
-            filesToOpen.append(outputFiles)
-            outputFilename = outputFiles
-        else:
-            filesToOpen.extend(outputFiles)
-            outputFilename = outputFiles[0]
+        outputFiles = BERT_util.sentiment_main(inputFilename, inputDir, outputDir, config_filename, mode, True, chartPackage, model_path)
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                outputFilename = outputFiles # used later by shape_of_stories
+            else:
+                filesToOpen.extend(outputFiles)
+                outputFilename = outputFiles[0] # used later by shape_of_stories
 
     # spaCy  _______________________________________________________
 
@@ -153,7 +164,7 @@ def run(inputFilename,inputDir,outputDir,
         outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
                                                     openOutputFiles,
-                                                    createCharts, chartPackage,
+                                                    True, chartPackage,
                                                     annotator, False,
                                                     language_var,
                                                     memory_var, document_length_var, limit_sentence_length_var,
@@ -165,10 +176,10 @@ def run(inputFilename,inputDir,outputDir,
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
-                outputFilename = outputFiles
+                outputFilename = outputFiles # used later by shape_of_stories
             else:
                 filesToOpen.extend(outputFiles)
-                outputFilename = outputFiles[0]
+                outputFilename = outputFiles[0] # used later by shape_of_stories
 
 # Stanford CORENLP  _______________________________________________________
 
@@ -186,17 +197,17 @@ def run(inputFilename,inputDir,outputDir,
             return
         import Stanford_CoreNLP_util
         outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                          outputDir, openOutputFiles, createCharts, chartPackage,'sentiment', False,
+                                                                          outputDir, openOutputFiles, True, chartPackage,'sentiment', False,
                                                                           language_var, export_json_var,
                                                                           memory_var)
         # outputFilename=outputFilename[0] # annotators return a list and not a string
-        if SA_algorithm_var!='*' and outputFiles!=None:
+        if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
-                outputFilename = outputFiles
+                outputFilename = outputFiles # used later by shape_of_stories
             else:
                 filesToOpen.extend(outputFiles)
-                outputFilename = outputFiles[0]
+                outputFilename = outputFiles[0] # used later by shape_of_stories
 
 # Stanza  _______________________________________________________
 
@@ -213,7 +224,7 @@ def run(inputFilename,inputDir,outputDir,
         outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputDir,
                                                       openOutputFiles,
-                                                      createCharts, chartPackage,
+                                                      True, chartPackage,
                                                       annotator, False,
                                                       [language_var], # Stanza_util takes language_var as a list
                                                       memory_var, document_length_var, limit_sentence_length_var,
@@ -222,15 +233,13 @@ def run(inputFilename,inputDir,outputDir,
                                                       items_separator_var='',
                                                       date_position_var=0)
 
-        if outputFiles!=None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
-                outputFilename = outputFiles
             else:
                 filesToOpen.extend(outputFiles)
-                outputFilename = outputFiles[0]
 
-# shape of stories ------------------------------------------------------------------------
+    # shape of stories ------------------------------------------------------------------------
 #   only for neural network approaches
 
     if (BERT_var or spaCy_var or CoreNLP_var or Stanza_var) and shape_of_stories_var:
@@ -275,10 +284,10 @@ def run(inputFilename,inputDir,outputDir,
                                                            'Started running ANEW Sentiment Analysis at',
                                                            True, '', True, '', False)
 
-            outputFiles = sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, mode, createCharts,
+            outputFiles = sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, mode, True,
                                                             chartPackage)
 
-            if SA_algorithm_var!='*' and outputFiles!=None:
+            if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
@@ -303,9 +312,9 @@ def run(inputFilename,inputDir,outputDir,
             startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running HEDONOMETER Sentiment Analysis at',
                                                          True, '', True, '', False)
 
-            outputFiles = sentiment_analysis_hedonometer_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
+            outputFiles = sentiment_analysis_hedonometer_util.main(inputFilename, inputDir, outputDir, mode, True, chartPackage)
 
-            if SA_algorithm_var!='*' and outputFiles!=None:
+            if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
@@ -324,9 +333,9 @@ def run(inputFilename,inputDir,outputDir,
             startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running SentiWordNet Sentiment Analysis at',
                                                          True, '', True, '', False)
 
-            outputFiles = sentiment_analysis_SentiWordNet_util.main(inputFilename, inputDir, outputDir, config_filename, mode, createCharts, chartPackage)
+            outputFiles = sentiment_analysis_SentiWordNet_util.main(inputFilename, inputDir, outputDir, config_filename, mode, True, chartPackage)
 
-            if SA_algorithm_var!='*' and outputFiles!=None:
+            if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
@@ -347,7 +356,7 @@ def run(inputFilename,inputDir,outputDir,
                 return
             startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running VADER Sentiment Analysis at',
                                                          True, '', True, '', False)
-            outputFiles = sentiment_analysis_VADER_util.main(inputFilename, inputDir, outputDir, mode, createCharts, chartPackage)
+            outputFiles = sentiment_analysis_VADER_util.main(inputFilename, inputDir, outputDir, mode, True, chartPackage)
 
             if outputFiles != None:
                 if isinstance(outputFiles, str):
