@@ -234,7 +234,7 @@ python -m nltk.downloader all",OFF
 sentiment_analysis,VADER Mean/Median,"VADER cannot compute sentence mean and median values because VADER computes a single compound value for the entire sentence.
 
 Use the hedonometer algorithm to compute separate values and word list of words found.",ON
-sentiment_analysis,SentiWordNet,SentiWordNet does not compute sentence mean and median values nor does it display a list of the individual words found.,ON
+sentiment_analysis,SentiWordNet,SentiWordNet does not compute sentence mean and median values nor does it display a list of the individual words found.,OFF
 wordclouds,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
 
 Your selected corpus language is English.

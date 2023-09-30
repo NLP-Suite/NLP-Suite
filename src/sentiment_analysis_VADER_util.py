@@ -301,7 +301,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                                                    outputFileNameType='VADER',  # 'line_bar',
                                                    column_xAxis_label='Sentiment label',
                                                    column_yAxis_label='Scores',
-                                                   groupByList=['Document ID', 'Document'],
+                                                   groupByList=['Document'],
                                                    plotList=['Sentiment Score'],
                                                    chart_title_label='VADER Sentiment Scores')
 

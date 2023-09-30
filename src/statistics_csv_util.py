@@ -89,7 +89,8 @@ def compute_statistics_CoreNLP_CoNLL_tag(data_list,column_to_be_counted,column_n
 
 def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, openOutputFiles,
                                             createCharts, chartPackage,
-                                            columnNumber=-1):
+                                            columnNumber=[]):
+    filesToOpen=[]
     if inputFilename[-4:]!='.csv':
         mb.showwarning(title='File type error', message="The input file\n\n" + inputFilename + "\n\nis not a csv file. The statistical function only works with input csv files.\n\nPlease, select a csv file in input and try again!")
         return None
@@ -97,10 +98,10 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, ope
     outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', 'ungroup_stats')
 
     stats=[]
-    if columnNumber > -1:
-        loopValue=[columnNumber]
+    if columnNumber != []:
+        loopValue=columnNumber
     else:
-        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
+        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFilename)
         loopValue=range(nColumns)
     # insert headers
     headers=['Column header','Number of documents',
@@ -114,7 +115,7 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, ope
             # This method is most useful when you don’t know if your object is a Series or DataFrame,
             #   but you do know it has just a single column.
             #   In that case you can safely call squeeze to ensure you have a Series.
-            df = pd.read_csv(inputFilename, encoding="utf-8", on_bad_lines='skip', squeeze = True)
+            df = pd.read_csv(inputFilename, encoding="utf-8", index_col=False, on_bad_lines='skip', squeeze = True)
         except:
             mb.showwarning(title='Data encoding error', message="The input file\n\n" + inputFilename + "\n\nhas character encoding that breaks the code. The statistical function only works with utf-8 compliant files.\n\nPlease, check your input file encoding and try again!")
             return None
@@ -128,6 +129,11 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, ope
                 nDocs=df.iloc[:, docIDColumn].max()
             else:
                 nDocs=1
+            # need at least 3 values to compute skewness and kurtosis
+            # mode always returns a series and t must be processed lambda x: stats.mode(x, keepdims=False)[0]
+            # df.iloc[:, currentColumn].mode(), \
+            print(lambda x: df.iloc[:, currentColumn].mode(x, keepdims=False)[0])
+
             currentStats=nDocs,df.iloc[:, currentColumn].sum(), \
                          df.iloc[:, currentColumn].mean(), \
                          df.iloc[:, currentColumn].mode(), \
@@ -152,7 +158,47 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, ope
         df = pd.DataFrame(stats)
         IO_csv_util.df_to_csv(GUI_util.window, df, outputFilename, headers=None, index=False,
                               language_encoding='utf-8')
-    return outputFilename
+        filesToOpen.append(outputFilename)
+
+    # NoGroupBy
+    headers_stats=['Count','Mean','Mode','Median','Standard deviation','Minimum','Maximum',
+                   'Skewness','Kurtosis','25% quantile','50% quantile','75% quantile']
+
+    if createCharts:
+        column_name_to_be_plotted=headers_stats[1] # Mean
+        # the mode is returned as a series; exclude for now
+        # column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[2] # Mode
+        column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[7] # Skewness
+        column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[8] # Kurtosis
+        # Plot Mean, Mode, Skewness, Kurtosis
+
+        columns_to_be_plotted_xAxis=[]
+        #@@@
+        # see note above about the order of items in columns_to_be_plotted list
+        #   the group_cols item must always be the last item in the columns_to_be_plotted list
+        headers=IO_csv_util.get_csvfile_headers(outputFilename)
+        # the mode is returned as a series; exclude for now
+        columns_list = [['Column header', 'Mean'], ['Column header', 'Skewness'], ['Column header', 'Kurtosis']]
+        columns_to_be_plotted = get_columns_to_be_plotted(outputFilename, columns_list)
+        columns_to_be_plotted_yAxis=get_columns_to_be_plotted(outputFilename, columns_list)
+        hover_label=[]
+        #@@@
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, outputFilename, outputDir,
+                                                  outputFileLabel='',
+                                                  chartPackage=chartPackage,
+                                                  chart_type_list=["bar"],
+                                                  chart_title=column_name_to_be_plotted + ' Values\nby Document Statistic',
+                                                  column_xAxis_label_var='', #Document
+                                                  column_yAxis_label_var=column_name_to_be_plotted,
+                                                  hover_info_column_list=hover_label,
+                                                  remove_hyperlinks=True)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
+    return filesToOpen
 
 def percentile(n):
     def percentile_(x):
@@ -162,6 +208,8 @@ def percentile(n):
 
 
 #written by Yi Wang March 2020, edited Landau/Franzosi February 2021, November 2022
+
+# the function computes different statistics (mean, mode, skewness, kurtosis etc.) for a csv column values
 
 # lists are the columns to be used for grouping (e.g., Document ID, Document) as ['Document ID', 'Document']
 # plotField are the columns to be used for plotting (e.g., Mean, Mode)) as ['Mean', 'Mode'] or ['Mean']
@@ -192,7 +240,8 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
     if len(groupByField)>0:
         try:
             # the function computes mean, mode... skewness, kurtosis, ...
-            ###SIMON
+
+            # mode always returns a series and t must be processed lambda x: stats.mode(x, keepdims=False)[0]
             df_group = df.groupby(groupByField).agg([np.sum, np.mean,
                                                      lambda x: stats.mode(x, keepdims=False)[0],
                                                      np.median, np.std, np.min, np.max,
@@ -249,7 +298,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   #chart_title=column_name_to_be_plotted + '\n' + chart_title_label + ' by Document',
-                                                  chart_title=column_name_to_be_plotted + '\n' + chart_title_label + ' by Document',
+                                                  chart_title=column_name_to_be_plotted + '\n' + chart_title_label + ' ' + str(groupByField[0]),
                                                   column_xAxis_label_var='', #Document
                                                   column_yAxis_label_var=column_name_to_be_plotted,
                                                   hover_info_column_list=hover_label,
@@ -289,7 +338,7 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, outputFileName
 
 
 # written by Roberto June 2022
-# get_columns_to_be_plotted(outputFilename, )
+# columns_list is a double list [[]]
 def get_columns_to_be_plotted(inputFilename, columns_list):
     # the group_cols are plotted on the x axis as columns for aggregating variables (e.g., lemma values by NER tags, POS tags by Document)
     columns_to_be_plotted=[]
@@ -514,7 +563,6 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         group_list = group_cols.copy()
         data_final = pd.DataFrame()
 
-
         # you can pass Document ID and Document (e.g., in NLTK unusual words), Document (e.g., annotator POS)
         # aggregating by document
         if group_cols[0] == 'Document ID' or group_cols[0] == 'Document':
@@ -537,7 +585,6 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             # For example, [[1, 2], [3, 4]], for NER, will plot the document and the NER frequency, with NER on X axis
             # 0 is the groupBy field with no-hyperlinks (e.g., NER)
             # sel_column_name = IO_csv_util. = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)(headers, 1)
-            #@@@
             columns_list=[[plot_cols[0], 'Frequency_'+plot_cols[0]], [group_cols[0], 'Frequency_'+group_cols[0]]]
         else: # NO document, but another aggregate, e.g., by POS and form
             if group_cols[0]!='':
@@ -545,7 +592,6 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             # if there is no document ID and/or document 0 refers to the field name to be plotted and 1 to its frequency
             # see note above about the order of items in columns_to_be_plotted list
             #   the group_cols item must always be the last item in the columns_to_be_plotted list
-            #@@@
             columns_list=[[plot_cols[0], 'Frequency_'+plot_cols[0]], [group_cols[0], 'Frequency_'+group_cols[0]]]
 
         def multi_level_grouping_and_frequency(data, plot_colss, group_cols):
@@ -566,23 +612,27 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                 name=f'Frequency_{plot_colss[1]}')
 
             # Step 3: Merge these dataframes back together.
-            result = pd.merge(grouped, freq_0, on=group_cols + [plot_colss[0]], how='left')
-            result = pd.merge(result, freq_1, on=group_cols + [plot_colss[1]], how='left')
+            data_final = pd.merge(grouped, freq_0, on=group_cols + [plot_colss[0]], how='left')
+            data_final = pd.merge(data_final, freq_1, on=group_cols + [plot_colss[1]], how='left')
 
             # Rearrange columns to desired order
             if 'Document' in group_cols:
-                result = result[group_cols + ['Frequency_Document ID', plot_colss[0], f'Frequency_{plot_colss[0]}', plot_colss[1],
+                data_final = data_final[group_cols + ['Frequency_Document ID', plot_colss[0], f'Frequency_{plot_colss[0]}', plot_colss[1],
                                              f'Frequency_{plot_colss[1]}']]
             else:
-                result = result[group_cols + [plot_colss[0], f'Frequency_{plot_colss[0]}', plot_colss[1],
+                data_final = data_final[group_cols + [plot_colss[0], f'Frequency_{plot_colss[0]}', plot_colss[1],
                                              f'Frequency_{plot_colss[1]}']]
-            counts = result.groupby(group_cols[0]).size()
+            counts = data_final.groupby(group_cols[0]).size()
             # Map the counts back to the original dataframe
-            result['Frequency_'+str(group_cols[0])] = result[group_cols[0]].map(counts)
+            data_final['Frequency_'+str(group_cols[0])] = data_final[group_cols[0]].map(counts)
 
-            result['Frequency_'+group_cols[0]]=0
+            # The Frequency_'+group_cols[0] is set to 0 as a way to display the document/group label on the X axis
+            #   but... you do not want to display the frequency of document/group computed above otherwise you get charts with the same meaningless bar
+            data_final['Frequency_'+group_cols[0]]=0
+            # this creates a duplicate header
+            # data_final.rename(columns={'Frequency_'+group_cols[0]:group_cols[0]})
 
-            return result
+            return data_final
 
         def double_level_grouping_and_frequency(data, plot_cols, group_cols):
             # Calculate the counts for each column
@@ -614,7 +664,11 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                 # [1, 2] will display the document name in the Data sheet of the xlsx file
                 # see note above about the order of items in columns_to_be_plotted list
                 #   the group_cols item must always be the last item in the columns_to_be_plotted list
+            # The Frequency_'+group_cols[0] is set to 0 as a way to display the document/group label on the X axis
+            #   but... you do not want to display the frequency of document/group computed above otherwise you get charts with the same meaningless bar
             data_final['Frequency_'+group_cols[0]]=0
+            # this creates a duplicate header
+            # data_final.rename(columns={'Frequency_'+group_cols[0]:group_cols[0]})
             return data_final
 
         # print(plot_cols,group_cols)

@@ -250,7 +250,7 @@ def visualize_SVOs(fileName, outputDir, createCharts, chartPackage, filesToOpen,
                                                        count_var=1, hover_label=[],
                                                        outputFileNameType='S-' + label1,  # 'POS_bar',
                                                        column_xAxis_label='Subjects (' + label + ')',
-                                                       groupByList=['Document ID', 'Document'],
+                                                       groupByList=['Document'],
                                                        plotList=['Frequency'],
                                                        chart_title_label='Subjects (' + label + ')')
 
@@ -267,7 +267,7 @@ def visualize_SVOs(fileName, outputDir, createCharts, chartPackage, filesToOpen,
                                                        count_var=1, hover_label=[],
                                                        outputFileNameType='V-' + label1,  # 'POS_bar',
                                                        column_xAxis_label='Verbs (' + label + ')',
-                                                       groupByList=['Document ID', 'Document'],
+                                                       groupByList=['Document'],
                                                        plotList=['Frequency'],
                                                        chart_title_label='Verbs (' + label + ')')
     if openFiles and outputFiles!=None:
@@ -283,7 +283,7 @@ def visualize_SVOs(fileName, outputDir, createCharts, chartPackage, filesToOpen,
                                                        count_var=1, hover_label=[],
                                                        outputFileNameType='O-' + label1,  # 'POS_bar',
                                                        column_xAxis_label='Objects (' + label + ')',
-                                                       groupByList=['Document ID', 'Document'],
+                                                       groupByList=['Document'],
                                                        plotList=['Frequency'],
                                                        chart_title_label='Objects (' + label + ')')
 
@@ -629,7 +629,7 @@ def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackag
                                                         count_var=1, hover_label=[],
                                                         outputFileNameType='date-express', #'NER_info_bar',
                                                         column_xAxis_label='Date expression',
-                                                        groupByList=['Document ID', 'Document'],
+                                                        groupByList=['Document'],
                                                         plotList=['Frequency'],
                                                         chart_title_label='Date Expressions')
     if outputFiles!=None:
@@ -647,7 +647,7 @@ def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackag
                                                         count_var=1, hover_label=[],
                                                         outputFileNameType='date', #'NER_date_bar',
                                                         column_xAxis_label='Normalized date',
-                                                        groupByList=['Document ID', 'Document'],
+                                                        groupByList=['Document'],
                                                         plotList=['Frequency'],
                                                         chart_title_label='Normalized Dates')
     if outputFiles!=None:
@@ -665,7 +665,7 @@ def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackag
                                                         count_var=1, hover_label=[],
                                                         outputFileNameType='date-types', #'NER_info_bar',
                                                         column_xAxis_label='Date type',
-                                                        groupByList=['Document ID', 'Document'],
+                                                        groupByList=['Document'],
                                                         plotList=['Frequency'],
                                                         chart_title_label='Date Types')
     if outputFiles!=None:

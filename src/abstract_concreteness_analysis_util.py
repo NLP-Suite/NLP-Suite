@@ -232,7 +232,7 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 													   hover_label=[],
 													   outputFileNameType='',
 													   column_xAxis_label='Concreteness scores',
-													   groupByList=['Document ID', 'Document'],
+													   groupByList=['Document'],
 													   plotList=['Concreteness (Mean score)'],
 													   chart_title_label='Concreteness Statistics')
 	if outputFiles!=None:

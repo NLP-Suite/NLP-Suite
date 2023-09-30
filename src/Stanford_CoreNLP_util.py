@@ -67,7 +67,7 @@ def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
     if outputDirSV != outputDir:
         # create output subdirectory
         outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-                                                           label=annotator,
+                                                           label=annotator + "_CoreNLP",
                                                            silent=True)
     else:
         # when coming from coref annotator, the outputDir will contain an unnecessary NLP_CoreNLP_coref_ string

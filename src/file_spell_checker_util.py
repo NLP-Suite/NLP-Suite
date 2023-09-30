@@ -127,7 +127,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
                                                    count_var=1, hover_label=[],
                                                    outputFileNameType='',  # 'line_bar',
                                                    column_xAxis_label='Misspelled-Unusual word',
-                                                   groupByList=['Document ID', 'Document'],
+                                                   groupByList=['Document'],
                                                    plotList=['Misspelled-Unusual Words Statistics'],
                                                    chart_title_label='')
 

@@ -279,65 +279,52 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
                                            'Finished running document(s) statistics at', True, '', True, startTime,
                                            False)
 
-# number of sentences in input ---------------------------------------------------------------------
+    # number of sentences in input ---------------------------------------------------------------------
+    # number of words in input ---------------------------------------------------------------------
+    # number of syllables in input ---------------------------------------------------------------------
+    columns_list = [['Document', 'Number of Sentences in Document'], ['Document', 'Number of Words in Document'], ['Document', 'Number of Syllables in Document']]
+    import statistics_csv_util
+    columns_to_be_plotted_numeric = statistics_csv_util.get_columns_to_be_plotted(outputFilename, columns_list)
+    outputFiles = charts_util.run_all(columns_to_be_plotted_numeric, outputFilename, outputDir,
+                          outputFileLabel='sent-word-syll',
+                          chartPackage=chartPackage,
+                          chart_type_list=['bar'],
+                          chart_title='Number of Sentences, Words, Syllables by Document',
+                          column_xAxis_label_var='Document',
+                          column_yAxis_label_var='Frequencies',
+                          hover_info_column_list=[],
+                          count_var=0)  # always 1 to get frequencies of values, except for n-grams where we already pass stats
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                               columns_to_be_plotted_xAxis=[],
-                               columns_to_be_plotted_yAxis=['Number of Sentences in Document'],
-                               chart_title='Frequency of Number of Sentences',
-                               count_var=0, hover_label=[],
-                               outputFileNameType='sent',
-                               column_xAxis_label='', #'Number of sentences',
-                               groupByList=['Document'],
-                               plotList=['Number of Sentences in Document'],
-                               chart_title_label='Number of Sentences')
+    if outputFiles != None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
-        if outputFiles!=None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
-            else:
-                filesToOpen.extend(outputFiles)
+    # compute and chart mean, mode, skewness, kurtosis
+    #   need at least 3 values, i.e., 3 documents, to compute skewness and kurtosis
+    # do not use the compute_csv_column_statistics_groupBy function since only one value is available for
+    #   each document
+    columns_list = [['Document', 'Number of Sentences in Document'], ['Document', 'Number of Words in Document'], ['Document', 'Number of Syllables in Document']]
+    columns_to_be_plotted_numeric = statistics_csv_util.get_columns_to_be_plotted(outputFilename, columns_list)
 
-# number of words in input ---------------------------------------------------------------------
+    # convert columns_to_be_plotted_numeric double list to list
+    flat_list = []
+    for row in columns_to_be_plotted_numeric:
+        flat_list.extend(row)
+    columns_to_be_plotted_numeric=flat_list
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Number of Words in Document'],
-                                                           chart_title='Number of Words',
-                                                           count_var=0, hover_label=[],
-                                                           outputFileNameType='word',
-                                                           column_xAxis_label='Number of words',
-                                                           groupByList=['Document'],
-                                                           plotList=['Number of Words in Document'],
-                                                           chart_title_label='Number of Words')
+    outputFiles = statistics_csv_util.compute_csv_column_statistics_NoGroupBy(window, outputFilename, outputDir, False,
+                                            createCharts, chartPackage,
+                                            columns_to_be_plotted_numeric)
 
-        if outputFiles!=None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
-            else:
-                filesToOpen.extend(outputFiles)
+    if outputFiles != None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
 
-# number of syllables in input ---------------------------------------------------------------------
-
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                           columns_to_be_plotted_xAxis=[],
-                                                           columns_to_be_plotted_yAxis=['Number of Syllables in Document'],
-                                                           chart_title='Number of Syllables',
-                                                           count_var=0,
-                                                           hover_label=[],
-                                                           outputFileNameType='syll',
-                                                           column_xAxis_label='Number of syllables',
-                                                           groupByList=['Document'],
-                                                           plotList=['Number of Syllables in Document'],
-                                                           chart_title_label='Number of Syllables')
-
-        if outputFiles!=None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
-            else:
-                filesToOpen.extend(outputFiles)
-
-        # TODO
+    # TODO
         #   we should create 10 classes of values by distance to the median of
         #       each value in the Number of Words in Document Col. E
         #   -0-10 11-20 21-30,… 91-100

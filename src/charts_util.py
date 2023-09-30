@@ -96,6 +96,7 @@ def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage
     filesToOpen=[]
 
     # the function compute_csv_column_frequencies produces plots
+    #@@@ 9/29/2023
     outputFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
                                                   inputFilename, None, outputDir, False,
                                                   createCharts, chartPackage,
@@ -474,6 +475,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 # standard bar chart ------------------------------------------------------------------------------
     # Form	Lemma	POS	Record ID	Sentence ID	Document ID	Document
     # columns_to_be_plotted_numeric = [[0,0], [1,1]] with count_var = 1 since these values need to be counted
+    #@@@ 9/29/2023
     if len(columns_to_be_plotted_numeric[0])>0: # compute only if the double list is not empty
         outputFiles = run_all(columns_to_be_plotted_numeric, inputFilename, outputDir,
                                                   outputFileLabel=outputFileNameType,
@@ -508,6 +510,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
             for header in groupByList:
                 groupCol = IO_csv_util.get_columnNumber_from_headerValue(headers, header, inputFilename)
                 columns_to_be_plotted_byGroup.append([groupCol, field_number_yAxis])
+
             # by DOCUMENT
             outputFiles = visualize_chart_byGroup(inputFilename, outputDir,
                                        createCharts, chartPackage,

@@ -402,7 +402,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                                                    outputFileNameType='',
                                                    column_xAxis_label='Sentiment score',
                                                    column_yAxis_label='Scores',
-                                                   groupByList=['Document ID', 'Document'],
+                                                   groupByList=['Document'],
                                                    plotList=columns_to_be_plotted_yAxis,
                                                    chart_title_label='ANEW Sentiment Scores')
 
