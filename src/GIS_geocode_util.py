@@ -355,9 +355,7 @@ def geocode(window,locations, inputFilename, outputDir,
 		else:
 			geowriter.writerow(['Location','NER Tag','Latitude', 'Longitude', 'Address'])
 
-	#@@@ 10/1/2023 next two lines
 	geowriterNotFound.writerow(['Location','NER Tag'])
-	# no geocoded data message
 	geowriterNotFoundNonDistinct.writerow(['Location','NER Tag'])
 
 	# CYNTHIA
@@ -395,7 +393,7 @@ def geocode(window,locations, inputFilename, outputDir,
 					date = item[6]
 			else:
 				itemToGeocode =item[0]
-				NER_Tag = item[1]
+				NER_Tag = item[3]
 				if NER_Tag == 'COUNTRY':
 					NER_Tag_nominatim = 'country'
 				elif NER_Tag == 'STATE_OR_PROVINCE':
@@ -493,10 +491,6 @@ def geocode(window,locations, inputFilename, outputDir,
 				# pnt.style.labelstyle.color = simplekml.Color.rgb(int(r_value), int(g_value), int(b_value))
 				# the code would break if no sentence is passed (e.g., from DB_PC-ACE)
 				try:
-					# CoNLL tables do not contain a Sentence field
-					# if not inputIsCoNLL:
-					# 	sentence = input_df.at[index-1, 'Sentence']
-					# document = input_df.at[index - 1, 'Document']
 					document = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document))[1]
 					date=''
 					if datePresent:
