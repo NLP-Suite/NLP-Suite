@@ -82,25 +82,21 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 						currList.append(IO_csv_util.dressFilenameForCSVHyperlink(row[filenamePositionInCoNLLTable])) #append filename
 			elif len(currList) == 0:
 				# # A blank value for the filename will be checked in Description to avoid displaying it
-				# # currList = [row[filenamePositionInCoNLLTable]] #col 11 is the filename
-				# if "=hyperlink" in str(row[filenamePositionInCoNLLTable]):
-				# 	currList.append(row[filenamePositionInCoNLLTable])  # append filename
-				# else:
-				# 	currList = [IO_csv_util.dressFilenameForCSVHyperlink(row[filenamePositionInCoNLLTable])] #col 11 is the filename
 				if row[1].lower() in split_locations_prefix:
-					# the currrent location value (e.g., las) needs to be merged with the next row value (e.g., las vegas)
+					# the current location value (e.g., las) needs to be merged with the next row value (e.g., las vegas)
 					tempLocation=row[1]
 					continue
 				else:
 					if tempLocation!='': #we are on the next row
 						currList.append(tempLocation + ' ' + row[1]) #col 1 is the FORM value
+						currList.append(row[4])  # append NER tag (e.g., COUNTRY)
 						tempLocation=''
 					else:
 						currList.append(row[1]) #col 1 is the FORM value (e.g., Italy)
 						currList.append(row[4])  # append NER tag (e.g., COUNTRY)
 
 				currList.append(sentenceID)
-				currList.append(sentence_str)
+				currList.append(sentence_str.lstrip())
 				currList.append(documentID)
 
 				# A blank value for the filename will be checked in Description to avoid displaying it
@@ -177,4 +173,6 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 	# IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Finished extracting locations from csv file at", True, '', True, startTime, True)
 	# return sorted(locList)
 	# do not sort locations so that you can check from wrong CoreNLP NER tag, e.g., South America as South = LOCATION, America = COUNTRY
+
+	# locList is a list of four items: location mane, row index in the locations table, date, NER tag (e.g., COUNTRY)
 	return locList
