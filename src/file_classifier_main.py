@@ -22,6 +22,7 @@ import IO_files_util
 def run(input_main_dir_path, input_secondary_dir_path, outputDir,
         openOutputFiles,
         createCharts,
+        chartPackage,
         by_date_var,
         date_format,
         date_separator,

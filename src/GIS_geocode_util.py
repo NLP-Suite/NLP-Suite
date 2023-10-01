@@ -267,7 +267,7 @@ def geocode(window,locations, inputFilename, outputDir,
 			split_locations_suffix=''):
 
 	if not IO_internet_util.check_internet_availability_warning('GIS geocoder'):
-		return '', ''  # empty output files
+		return '', '', '', ''  # empty output files
 
 	distinctGeocodedLocations= {}
 	distinctGeocodedList=[]
@@ -299,26 +299,21 @@ def geocode(window,locations, inputFilename, outputDir,
 	geocodedLocationsOutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
 																			  geoName, locationColumnName, '', '', False,
 																			  True)
-	# locationsNotFoundoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
-	# 																		  geoName, 'Not-Found', locationColumnName, '',
-	# 																		  False, True)
 	locationsNotFoundoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
-																			  geoName, '', locationColumnName, '',
+																			  geoName, 'LOCATIONS_not-found', locationColumnName, '',
 																			  False, True)
-	locationsNotFoundoutputFilename = locationsNotFoundoutputFilename.replace('LOCATIONS', 'LOCATIONS_not-found')
-	# locationsNotFoundNonDistinctoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
-	# 																		geoName, 'Not-Found-Non-Distinct', locationColumnName, '',
-	# 																		False, True)
+	# locationsNotFoundoutputFilename = locationsNotFoundoutputFilename.replace('LOCATIONS', 'LOCATIONS_not-found')
+
 	locationsNotFoundNonDistinctoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
-																			geoName, '', locationColumnName, '',
+																			geoName, 'LOCATIONS_Not-Found-Non-Distinct', locationColumnName, '',
 																			False, True)
-	locationsNotFoundNonDistinctoutputFilename = locationsNotFoundNonDistinctoutputFilename.replace('LOCATIONS', 'LOCATIONS_Not-Found-Non-Distinct')
+	# locationsNotFoundNonDistinctoutputFilename = locationsNotFoundNonDistinctoutputFilename.replace('LOCATIONS', 'LOCATIONS_Not-Found-Non-Distinct')
 	# TODO MINO GIS create kml record
 	kmloutputFilename = geocodedLocationsOutputFilename.replace('.csv', '.kml')
 
 	if locations=='':
 		outputCsvLocationsOnly = ''
-		if inputIsCoNLL == True:
+		if inputIsCoNLL:
 			outputCsvLocationsOnly = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
 																	   'NER_locations', '', '', '', False, True)
 			locations = GIS_location_util.extract_NER_locations(window, inputFilename, encodingValue, split_locations_prefix, split_locations_suffix, datePresent)
@@ -327,26 +322,27 @@ def geocode(window,locations, inputFilename, outputDir,
 			locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnName, encodingValue)
 
 		if locations == None or len(locations) == 0:
-			return '', ''  # empty output files
-
-	csvfile = IO_files_util.openCSVFile(geocodedLocationsOutputFilename, 'w', encodingValue)
-	if csvfile=='': # permission error
-		return '', ''
-	csvfileNotFound = IO_files_util.openCSVFile(locationsNotFoundoutputFilename, 'w', encodingValue)
-	if csvfileNotFound=='': # permission error
-		return '', ''
-	csvfileNotFoundNonDistinct = IO_files_util.openCSVFile(locationsNotFoundNonDistinctoutputFilename, 'w', encodingValue)
-	if csvfileNotFoundNonDistinct=='': # permission error
-			return '', ''
-	geowriter = csv.writer(csvfile)
-	geowriterNotFound = csv.writer(csvfileNotFound)
-	geowriterNotFoundNonDistinct = csv.writer(csvfileNotFoundNonDistinct)
+			return '', '', '', ''  # empty output files
 
 	# define variable
 	NER_Tag = ''
 
-	if inputIsCoNLL==True: #the filename, sentence, date were exported
-		if datePresent==True:
+	csvfile = IO_files_util.openCSVFile(geocodedLocationsOutputFilename, 'w', encodingValue)
+	if csvfile=='': # permission error
+		return '', '', '', '' # empty output files
+	csvfileNotFound = IO_files_util.openCSVFile(locationsNotFoundoutputFilename, 'w', encodingValue)
+	if csvfileNotFound=='': # permission error
+		return '', '', '', '' # empty output files
+	csvfileNotFoundNonDistinct = IO_files_util.openCSVFile(locationsNotFoundNonDistinctoutputFilename, 'w', encodingValue)
+	if csvfileNotFoundNonDistinct=='': # permission error
+			return '', '', '', '' # empty output files
+	geowriter = csv.writer(csvfile)
+	geowriterNotFound = csv.writer(csvfileNotFound)
+	geowriterNotFoundNonDistinct = csv.writer(csvfileNotFoundNonDistinct)
+
+	# insert headers
+	if inputIsCoNLL: #the filename, sentence, date were exported
+		if datePresent:
 			# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
 			geowriter.writerow(['Location','NER Tag','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document','Date'])
 		else:
@@ -358,8 +354,12 @@ def geocode(window,locations, inputFilename, outputDir,
 			geowriter.writerow(['Location','NER Tag','Latitude','Longitude','Address', 'Date'])
 		else:
 			geowriter.writerow(['Location','NER Tag','Latitude', 'Longitude', 'Address'])
+
+	#@@@ 10/1/2023 next two lines
 	geowriterNotFound.writerow(['Location','NER Tag'])
+	# no geocoded data message
 	geowriterNotFoundNonDistinct.writerow(['Location','NER Tag'])
+
 	# CYNTHIA
 	# ; added in SVO list of locations in SVO output (e.g., Los Angeles; New York; Washington)
 	tmp_loc = []
@@ -377,23 +377,25 @@ def geocode(window,locations, inputFilename, outputDir,
 		index=index+1 #items in locations are NOT DISTINCT
 		if skipNext:
 			continue
-		if str(item)!='nan' and str(item)!='':
+		if not pd.isna(item[0]) and str(item[0]) != '':
 			currRecord=str(index) + "/" + str(len(locations))
 			print("Processing location " + currRecord + " for geocoding: "
-				  + str(item[0]) + " (NER tag: " + str(item[len(item) - 1]) + ")")
-			#for CoNLL tables as input rows & columns
+					+ str(item[0]) + " (NER tag: " + str(item[1]) + ")")
+			# for CoNLL tables as input rows & columns
 			#   refer to the four fields exported by the NER locator
-			if inputIsCoNLL==True: #the filename was exported in GIS_location_util
+			if inputIsCoNLL: #the filename was exported in GIS_location_util
 				itemToGeocode = item[0] # location in FORM
-				sentenceID = item[1]
-				sentence = item[2]
-				documentID = item[3]
-				filename = item[4]
+				NER_Tag = item[1] # location in NER
+				sentenceID = item[2]
+				sentence = item[3]
+				documentID = item[4]
+				document = item[5]
 				if datePresent==True:
-					date = item[5]
+					NER_Tag = item[len(item) - 1]
+					date = item[6]
 			else:
 				itemToGeocode =item[0]
-				NER_Tag = item[len(item)-1]
+				NER_Tag = item[1]
 				if NER_Tag == 'COUNTRY':
 					NER_Tag_nominatim = 'country'
 				elif NER_Tag == 'STATE_OR_PROVINCE':
@@ -402,7 +404,7 @@ def geocode(window,locations, inputFilename, outputDir,
 					NER_Tag_nominatim = 'city'
 
 				if datePresent:
-					date=item[1]
+					date=item[2]
 
 			# avoid repetition so as not to access the geocoder service several times for the same location;
 			# 	location already in list
@@ -470,11 +472,11 @@ def geocode(window,locations, inputFilename, outputDir,
 					address = distinctGeocodedLocations[itemToGeocode][2]
 			#print(currRecord + itemToGeocode + str(lat) + str(lng) + address+"\n")
 			if lat!=0 and lng!=0:
-				if inputIsCoNLL==True:
+				if inputIsCoNLL:
 					if datePresent:
-						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, sentenceID, sentence, documentID, filename, date])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, sentenceID, sentence, documentID, document, date])
 					else:
-						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, sentenceID, sentence, documentID, filename])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, sentenceID, sentence, documentID, document])
 				else:
 					if datePresent:
 						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, date])
@@ -491,9 +493,12 @@ def geocode(window,locations, inputFilename, outputDir,
 				# pnt.style.labelstyle.color = simplekml.Color.rgb(int(r_value), int(g_value), int(b_value))
 				# the code would break if no sentence is passed (e.g., from DB_PC-ACE)
 				try:
-					sentence = input_df.at[index-1, 'Sentence']
-					document = input_df.at[index - 1, 'Document']
+					# CoNLL tables do not contain a Sentence field
+					# if not inputIsCoNLL:
+					# 	sentence = input_df.at[index-1, 'Sentence']
+					# document = input_df.at[index - 1, 'Document']
 					document = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(document))[1]
+					date=''
 					if datePresent:
 						date = input_df.at[index - 1, 'Date']
 					if date!='':
@@ -547,11 +552,15 @@ def geocode(window,locations, inputFilename, outputDir,
 # from GIS_KML_util
 def convertToGGP(date):
 	GGPdateFormat = ''
-	if 'float' in str(type(date)): # this occurs when dealing with an integer YEAR only
-		date=str(int(date))
-	if 'int' in str(type(date)): # this occurs when dealing with an integer YEAR only
-		date=str(int(date))
-	if date != 'nan' and date != '':
+	# if 'float' in str(type(date)): # this occurs when dealing with an integer YEAR only
+	# 	date=str(int(date))
+	# if 'int' in str(type(date)): # this occurs when dealing with an integer YEAR only
+	# 	date=str(int(date))
+	if not pd.isna(date) and date != '':
+		if 'float' in str(type(date)):  # this occurs when dealing with an integer YEAR only
+			date = str(int(date))
+		if 'int' in str(type(date)):  # this occurs when dealing with an integer YEAR only
+			date = str(int(date))
 		fmts = ('%Y', '%y', '%Y-%m-%d', '%y-%m-%d', '%Y-%m', '%y-%m',
 				'%Y-%B-%d', '%y-%B-%d', '%Y-%b-%d', '%y-%b-%d', '%Y-%B', '%y-%B', '%Y-%b', '%y-%b'
 				'%m-%d-%Y', '%m-%d-%y', '%d-%m-%Y', '%d-%m-%y', '%m-%Y', '%m-%y',

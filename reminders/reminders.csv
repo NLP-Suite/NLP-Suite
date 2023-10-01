@@ -252,3 +252,11 @@ wordclouds,Python wordclouds,"You have selected to visualize words only horizont
 
 Combining horizontal and vertical displays maximizes the number of words visualized in the wordclouds image.",ON
 Stanford_CoreNLP,CoreNLP gender timing,"Beware that the CoreNLP gender algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop.",ON
+GIS,GIS/Google Earth Pro with CoNLL input,"You are using a GIS visualization tool with a CoNLL table in input. The algorithm will geocode every instance of NER location tags (CITY, STATE_OR_PROVINCE, COUNTRY). But... The CoNLL table produced by the CoreNLP parser has a record for each token in the document(s) processed.
+
+Thus, each word in 'New York City' would have a separate NER CITY tag.
+
+As input, you should use the csv file of NER values produced by 'Stanford_CoreNLP_NER_main.py.'",OFF
+GIS,Input csv file,"You have a csv file in the 'Select INPUT CSV file' widget. The RUN command would process this file in input rather than the file stored in the I/O configuration.
+
+Press ESC if you want to clear the 'Select INPUT CSV file' widget.",OFF

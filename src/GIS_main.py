@@ -194,8 +194,8 @@ def run(inputFilename,
 
         # locationColumnName where locations to be geocoded (or geocoded) are stored in the csv file;
         #   any changes to the columns will result in error
-        # out_file includes both kml file and Google Earth files
-        out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
+        # outputFiles includes both kml file and Google Earth files
+        outputFiles = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
                         NER_outputFilename, inputDir, outputDir, geocoder,
                         GIS_package_var, createCharts, chartPackage,
                         extract_date_from_text_var,
@@ -209,15 +209,16 @@ def run(inputFilename,
                         [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
                         [1],[1]) # bold_var_list, italic_var_list)
 
-        if out_file!=None:
-            if len(out_file)>0:
-                filesToOpen.extend(out_file)
-                csv_file_var.set(out_file[1])
+        if outputFiles!=None:
+            if len(outputFiles)>0:
+                filesToOpen.extend(outputFiles)
+                csv_file_var.set(outputFiles[1])
                 NER_extractor_var.set(0)
                 NER_extractor_checkbox.config(state='disabled')
                 geocode_locations_var.set(0)
+
         if len(filesToOpen)>0:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
     else:
         if GIS_package_var!='':
             mb.showwarning("Option not available","The " + GIS_package_var + " option is not available yet.\n\nSorry! Please, check back soon...")
@@ -331,6 +332,8 @@ def check_csv_file_headers(csv_file):
                                      reminders_util.message_input_csv_file, True)
         location_menu_var.set('NER')
         location_menu='NER'
+        geocoder_var.set('Nominatim')
+        geocoder = 'Nominatim'
         location_field.config(state='disabled')
     if ('Location' in headers and not 'Latitude' in headers) or "Word" in headers:
         geocode_locations_var.set(1)
@@ -339,6 +342,7 @@ def check_csv_file_headers(csv_file):
             location_menu_var.set('Word') #RF
             location_menu='Word' #RF
         else:
+            geocoder_var.set('Nominatim')
             location_menu_var.set('Location') #RF
             location_menu='Location' #RF
     elif 'Latitude' in headers and 'Longitude' in headers:
@@ -353,6 +357,7 @@ def check_csv_file_headers(csv_file):
     elif not 'Location' in headers and not 'Word' in headers and not 'NER' in headers:
         mb.showwarning(title='Warning',
                        message="The selected input csv file does not contain the word 'Location' in its headers.\n\nThe GIS algorithms expect in input either\n   1. txt file(s) from which to extract locations (via Stanford CoreNLP NER annotator) to be geocoded and mapped;\n   2. a csv file\n      a. with a column of locations (with header 'Location') to be geocoded and mapped;\n      b. a csv file with a column of locations (with header 'Location'; the header 'Word' from the CoreNLP NER annotator will be converted automatically to 'Location')';\n      c. already geocoded and to be mapped (this file will also contain latitudes and longitudes, with headers 'Latitude' and 'Longitude').\n\nPlease, select the appropriate input csv file and try again. Or simply run the complete pipeline, going from text to maps, with txt file(s) in input.")
+        geocoder_var.set('Nominatim')
         csv_file_var.set('')
         NER_extractor_var.set(1)
         NER_extractor = True
@@ -360,6 +365,7 @@ def check_csv_file_headers(csv_file):
         # cannotRun = True
         # return cannotRun
     else: # no location or lat long
+        geocoder_var.set('Nominatim')
         geocode_locations_var.set(1)
         geocode_locations=True
         NER_extractor_checkbox.config(state='disabled')
