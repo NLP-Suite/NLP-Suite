@@ -96,7 +96,8 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 						currList.append(tempLocation + ' ' + row[1]) #col 1 is the FORM value
 						tempLocation=''
 					else:
-						currList.append(row[1]) #col 1 is the FORM value
+						currList.append(row[1]) #col 1 is the FORM value (e.g., Italy)
+						currList.append(row[4])  # append NER tag (e.g., COUNTRY)
 
 				currList.append(sentenceID)
 				currList.append(sentence_str)
@@ -107,8 +108,8 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 				if "=hyperlink" in str(row[filenamePositionInCoNLLTable]):
 					currList.append(row[filenamePositionInCoNLLTable])  # append filename
 				else:
-					currList.append([IO_csv_util.dressFilenameForCSVHyperlink(
-						row[filenamePositionInCoNLLTable])])  # col 11 is the filename
+					currList.append(IO_csv_util.dressFilenameForCSVHyperlink(
+						row[filenamePositionInCoNLLTable]))  # col 11 is the filename
 
 				# years before 1900 cannot be used
 				# pre 1900 dates may give a problem in Windows: ValueError: format %y requires year >= 1900 on Windows

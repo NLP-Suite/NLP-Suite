@@ -222,13 +222,15 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     kmloutputFilename = geocodedLocationsOutputFilename.replace('.csv', '.kml')
 
     # RF
+
     if not inputIsGeocoded:
         geocodedLocationsOutputFilename, \
         locationsNotFoundoutputFilename, \
         locationsNotFoundNonDistinctoutputFilename, \
         kmloutputFilename = \
             GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
-                locationColumnName,geocoder,country_bias,area_var,restrict,encodingValue,split_locations_prefix,split_locations_suffix)
+                locationColumnName,geocoder,country_bias, area_var,restrict,
+                encodingValue,split_locations_prefix,split_locations_suffix)
         if kmloutputFilename!='':
             filesToOpen.append(kmloutputFilename)
         if geocodedLocationsOutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
@@ -257,6 +259,8 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
 
     nRecordsFound, nColumns  = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(geocodedLocationsOutputFilename)
     if geocodedLocationsOutputFilename != '' and nRecordsFound >0:
+        # set inputIsGeocoded
+        inputIsGeocoded=True
         filesToOpen.append(geocodedLocationsOutputFilename)
         if createCharts:
             if geocoder=='':
@@ -279,18 +283,20 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
 
             if outputFiles!=None:
                 if len(outputFiles) > 0:
-                    os.rename(outputFiles[0], outputFiles[0].replace('LOCATIONS','LOCATIONS_found'))
-                    outputFiles[0]=outputFiles[0].replace('LOCATIONS','LOCATIONS_found')
+                    # must split the file in case both path and filename contain the word LOCATION
+                    head, tail = os.path.split(outputFiles[0])
+                    tail = tail.replace('LOCATIONS', 'LOCATIONS_found')
+                    # change the filename on the computer drive
+                    outputFiles[0]=os.rename(outputFiles[0], head+os.sep+tail)
                     filesToOpen.extend(outputFiles)
 
-    # RF
     if not inputIsGeocoded:
         if locationsNotFoundNonDistinctoutputFilename!='':
             nRecordsNotFound, nColumns  = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(locationsNotFoundNonDistinctoutputFilename)
             if nRecordsNotFound>0:
                 filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
                 if createCharts:
-                    #@@@
+
                     outputFiles = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
                                                                            outputDir,
                                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
@@ -304,9 +310,11 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                                                                            chart_title_label='')
                     if outputFiles!=None:
                         if len(outputFiles) > 0:
-                            os.rename(outputFiles[0],
-                                      outputFiles[0].replace('LOCATIONS', 'LOCATIONS_not-found'))
-                            outputFiles[0] = outputFiles[0].replace('LOCATIONS', 'LOCATIONS_not-found')
+                            # must split the file in case both path and filename contain the word LOCATION
+                            head, tail = os.path.split(outputFiles[0])
+                            tail = tail.replace('LOCATIONS', 'LOCATIONS_not_found')
+                            # change the filename on the computer drive
+                            outputFiles[0] = os.rename(outputFiles[0], head + os.sep + tail)
                             filesToOpen.extend(outputFiles)
 
                 # save to csv file and run visualization
