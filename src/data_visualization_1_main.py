@@ -105,14 +105,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         if relations_menu_var=='Sankey':
             if len(csv_file_field_list)!=2 and len(csv_file_field_list)!=3:
                 mb.showwarning("Warning",
-                               "You must select 2 or 3 csv fields to be used in the computation of a Sankey plot (e.g., Subject, Verb, Object or Subject, Object).\n\nMAKE SURE TO CLICK ON THE + BUTTON AFTER THE LAST SELECTION. CLICK ON THE SHOW BUTTON TO SEE THE CURRENT SELECTION.")
+                               "You must select 2 or 3 csv fields to be used in the computation of a Sankey chart (e.g., Subject, Verb, Object or Subject, Object).\n\nMAKE SURE TO CLICK ON THE + BUTTON AFTER THE LAST SELECTION. CLICK ON THE SHOW BUTTON TO SEE THE CURRENT SELECTION.")
                 return
             if len(csv_file_field_list)==3:
                 three_way_Sankey=True
                 var3=csv_file_field_list[2]
                 # Sankey_limit3_var
             else:
-                three_way_Sankey = None
+                three_way_Sankey = False
                 var3=None
                 Sankey_limit3_var=None
             outputFiles = charts_util.Sankey(inputFilename, outputFilename,
@@ -296,6 +296,8 @@ def clear(e):
     relations_var.set(0)
     categorical_var.set(0)
 
+    selected_csv_file_fields.set('')
+    
     relations_checkbox.configure(state='normal')
     categorical_checkbox.configure(state='normal')
 
@@ -375,7 +377,7 @@ relations_checkbox = tk.Checkbutton(window, text='Visualize relations', variable
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    relations_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Tick the checkbox if you wish to visualize relational data in interactive Gephi network graphs or Sankey plots")
+                                   "Tick the checkbox if you wish to visualize relational data in interactive Gephi network graphs or Sankey charts")
 
 relations_menu_var.set('Gephi')
 relations_menu = tk.OptionMenu(window, relations_menu_var, 'Gephi','Sankey')
@@ -383,7 +385,7 @@ relations_menu = tk.OptionMenu(window, relations_menu_var, 'Gephi','Sankey')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    relations_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
-                                   "Visualize relations (network graphs via Gephi or Sankey graphs via Plotly)")
+                                   "Visualize relations (network graphs via Gephi or Sankey chart via Plotly)")
 
 if GUI_util.inputFilename.get() != '' and GUI_util.inputFilename.get()[-4:] == ".csv":
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(GUI_util.inputFilename.get())
@@ -411,10 +413,19 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                    True, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
                                    "Select the three fields to be used for the network graph in the order node1, edge, node2 (e.g., SVO)")
 
+selected_csv_file_fields = tk.StringVar()
+
+missing_software_display_area = tk.Entry(width=GUI_IO_util.missing_software_display_area_width, state='disabled', textvariable=selected_csv_file_fields)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                               missing_software_display_area, True, False, True, False, 90,
+                                               GUI_IO_util.open_TIPS_x_coordinate, "The widget, always disabled, displays all the  selected csv file fields.")
+
 def display_selected_csv_fields():
     if csv_field_var.get() != '' and not csv_field_var.get() in csv_file_field_list:
         csv_file_field_list.append(csv_field_var.get())
-        # csv_field_menu.configure(state='disabled')
+        new_missing_software_string=', '.join(csv_file_field_list)
+        selected_csv_file_fields.set(new_missing_software_string.lstrip())
     else:
         mb.showwarning(title='Warning',
                        message='The option "' + csv_field_var.get() + '" has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
@@ -426,6 +437,7 @@ def display_selected_csv_fields():
 def reset():
     csv_file_field_list.clear()
     csv_field_var.set('')
+    selected_csv_file_fields.set('')
     dynamic_network_field_var.set('')
     selected_csv_file_fields_var.set('')
 
@@ -442,7 +454,7 @@ reset_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_w
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_reset_button_pos, y_multiplier_integer,
                                    reset_button,
-                                   True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
+                                   False, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "Click on the Reset button to clear the list of selected fields and start again")
 def show_Gephi_options_list():
     if len(csv_file_field_list)==0:
@@ -450,12 +462,12 @@ def show_Gephi_options_list():
     else:
         mb.showwarning(title='Warning', message='The currently selected Gephi options are:\n\n  ' + '\n  '.join(csv_file_field_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
-show_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_Gephi_options_list())
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_show_button_pos, y_multiplier_integer,
-                                   show_button,
-                                   False, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
-                                   "Click on the Show button to display the list of currently selected csv fields")
+# show_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_Gephi_options_list())
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_show_button_pos, y_multiplier_integer,
+#                                    show_button,
+#                                    False, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
+#                                    "Click on the Show button to display the list of currently selected csv fields")
 
 def activate_csv_fields_selection(comingFromPlus=False):
     if csv_field_var.get() != '':
@@ -465,7 +477,7 @@ def activate_csv_fields_selection(comingFromPlus=False):
             csv_field_menu.config(state='disabled')
         add_button.config(state='normal')
         reset_button.config(state='normal')
-        show_button.config(state='normal')
+        # show_button.config(state='normal')
         if len(csv_file_field_list) == 3:
             csv_field_menu.configure(state='disabled')
             dynamic_network_field_menu.config(state='normal')
@@ -475,7 +487,7 @@ def activate_csv_fields_selection(comingFromPlus=False):
         csv_field_menu.config(state='normal')
         dynamic_network_field_menu.config(state='normal')
         reset_button.config(state='disabled')
-        show_button.config(state='disabled')
+        # show_button.config(state='disabled')
 csv_field_var.trace('w', callback = lambda x,y,z: activate_csv_fields_selection())
 dynamic_network_field_var.trace('w', callback = lambda x,y,z: activate_csv_fields_selection())
 
@@ -568,7 +580,7 @@ categorical_menu = tk.OptionMenu(window, categorical_menu_var, 'Sunburst','Treem
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    categorical_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
-                                   "Visualize categorical data as sunburst plot or treemap chart via Plotly)")
+                                   "Visualize categorical data as sunburst chart or treemap chart via Plotly)")
 
 case_sensitive_var.set(1)
 case_sensitive_checkbox = tk.Checkbutton(window, state='disabled',text='Case sensitive', variable=case_sensitive_var,
@@ -587,7 +599,7 @@ def activate_case_label(*args):
 case_sensitive_var.trace('w',activate_case_label)
 
 filename_label_lb = tk.Label(window, text='Filename label/part')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
                                                y_multiplier_integer, filename_label_lb, True)
 
 filename_label_var.set('')
@@ -620,23 +632,23 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 
 K_sent_begin_var.set('')
 K_sent_begin_lb = tk.Label(window, text='First K')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_begin_lb,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
                                                y_multiplier_integer, K_sent_begin_lb, True)
 
 K_sent_begin = tk.Entry(window, state='disabled', textvariable=K_sent_begin_var, width=3)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+70, y_multiplier_integer,
                                    K_sent_begin,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Enter the number of sentences at the beginning of each document to be used to visualize differences in the data\nThe option requires a Document ID and a Sentence ID field in the input file")
 
 K_sent_end_var.set('')
 K_sent_end_lb = tk.Label(window, text='Last K')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_end_pos,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
                                                y_multiplier_integer, K_sent_end_lb, True)
 K_sent_end = tk.Entry(window, state='disabled',textvariable=K_sent_end_var, width=3)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+70, y_multiplier_integer,
                                    K_sent_end,
                                    True, False, True, False, 90, GUI_IO_util.visualization_K_sent_end_lb_pos,
                                    "Enter the number of sentences at the end of each document to be used to visualize differences in the data\nThe option requires a Document ID and a Sentence ID field in the input file")
@@ -673,20 +685,20 @@ use_numerical_variable_checkbox = tk.Checkbutton(window, state='disabled', text=
 use_numerical_variable_checkbox.configure(state='disabled')
 
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_begin_pos, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    use_numerical_variable_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.visualization_K_sent_begin_pos,
                                    "Tick the checkbox if you wish to use a numerical variable to improve the treemap chart")
 
 
 csv_field_treemap_lb = tk.Label(window, text='csv file field')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_K_sent_end_pos, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                csv_field_treemap_lb, True)
 
 csv_field_treemap_menu = tk.OptionMenu(window, csv_field_treemap_var, *menu_values) # treemap
 csv_field_treemap_menu.configure(state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+100, y_multiplier_integer,
                                    csv_field_treemap_menu,
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Select the csv file field to be used to visualize specific data\nThe field must be categorical rather than numeric (e.g., 'Sentiment label', rather than 'Sentiment score', in a sentiment analysis csv output file)")
@@ -882,10 +894,10 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the GUI you wish to open for specialized data visualization options: Excel charts, geographic maps in Google Earth Pro, HTML file, wordclouds.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize relations between a set of elements, 3 elements in a network graph in Gephi (e.g, SVO) or 2 or 3 elements in a Plotly Sankey graph (e.g., SVO or SO).\n\nOptions become available in succession.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the csv file field to be used to visualize relations.\n\nPress the + button to add another field until all 2 or 3 elements have been added (2 or 3 for Sankey, 3 for Gephi). For instance, in a Gephi graph, the first field selected is the first node; the second field selected is the edge; the third field selected is the second node.\n\nPress the 'Show' button to display the fields currently selected.\n\nPress the 'Reset ' button to clear selected values and start fresh.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE GEPHI PLOT ONLY.\n\nFor Gephi network graphs, once all three fields (node 1, edge, node 2) have been selected, the widget 'csv file field for dynamic graph' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID or Date) or ignore the option if the network should not be dynamic.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SANKEY PLOT ONLY.\n\nPlease, using the dropdown menus, select the maximum number of values to be considered for each of the 2 or 3 elements in computing the interactive Sankey plot.\n\nWith too many values, Sankey plots become very messy.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize relations between a set of elements, 3 elements in a network graph in Gephi (e.g, SVO) or 2 or 3 elements in a Plotly Sankey chart (e.g., SVO or SO).\n\n\n\nOptions become available in succession.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the csv file fields to be used to visualize relations.\n\nPress the + button to add successive fields until all 2 or 3 elements have been added (2 or 3 for Sankey, 3 for Gephi). For instance, in a Gephi graph, the first field selected is the first node; the second field selected is the edge; the third field selected is the second node (the selected fields will be displayed in the grayed out widget; make sure to press the + sign after the last selection).\n\nPress the 'Reset ' button to clear selected values and start fresh.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE GEPHI CHART ONLY.\n\nFor Gephi network graphs, once all three fields (node 1, edge, node 2) have been selected, the widget 'csv file field for dynamic graph' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID or Date) or ignore the option if the network should not be dynamic.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SANKEY CHART ONLY.\n\nPlease, using the dropdown menus, select the maximum number of values to be considered for each of the 2 or 3 elements in computing the interactive Sankey chart.\n\nWith too many values, Sankey charts become very messy.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in an interactive sunburst or treemap chart.\n\nThe algorithm applies to categorical data rather than numerical data.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the comma-separated labels/parts of a filename to be used to separate fields in the filename (e.g., in the filename, Harry Potter_Book1_1, Harry Potter_Book2_3, ..., Harry Potter_Book4_1... you could enter Book1, Book3 to sample the files to be used for visualization.\n\nThe number of distinct labels/parts of filename should be small (e.g., the 7 Harry Potter books).\n\nThe widgets in this line are REQUIRED to run either the Sunburst or Treemap algorithms.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SUNBURST OPTION ONLY.\n\nPlease, enter the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the checkbox 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.\n\nTick the checkbox 'Do NOT split documents' if you wish to visualize an entire document.\n\nThe three options are mutually exclusive.\n\nThe Sunburst algorithm uses the values in Document ID and Sentence ID to process First K and Last K sentences or to split a document in halves.")

@@ -250,7 +250,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            outputFileNameType='gender-values', #'gender_bar',
                                                            column_xAxis_label='Gender values',
                                                            groupByList=['Document'],
-                                                           plotList=['Frequency'],
+                                                           plotList=['Gender'],
                                                            chart_title_label='Gender')
         if outputFiles!=None:
             if isinstance(outputFiles, str):
@@ -267,7 +267,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                            count_var=1, hover_label=[],
                                                            outputFileNameType='gender-words', #'gender_bar',
                                                            column_xAxis_label='Gender words',
-                                                           groupByList=['Document'],
+                                                           groupByList=['Gender','Document'],
                                                            plotList=['Frequency'],
                                                            chart_title_label='Gendered Words')
         if outputFiles!=None:

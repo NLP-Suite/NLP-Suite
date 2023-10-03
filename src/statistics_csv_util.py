@@ -298,7 +298,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   #chart_title=column_name_to_be_plotted + '\n' + chart_title_label + ' by Document',
-                                                  chart_title=column_name_to_be_plotted + '\n' + chart_title_label + ' ' + str(groupByField[0]),
+                                                  chart_title=column_name_to_be_plotted + '\n' + chart_title_label + ' by ' + str(groupByField[0]),
                                                   column_xAxis_label_var='', #Document
                                                   column_yAxis_label_var=column_name_to_be_plotted,
                                                   hover_info_column_list=hover_label,
