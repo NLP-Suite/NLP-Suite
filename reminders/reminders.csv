@@ -241,7 +241,7 @@ Your selected corpus language is English.
 Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
 
 You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",OFF
-GIS,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags.",ON
+GIS,NER tags frequency,"O is likely to be the most frequent NER tag in your corpus. It is likely to 'mask' all other tags. If that is the case, when the chart is displayed you may want to delete the row containing the O tag in the Data worksheet of the Excel chart file to have a better view of all other tags.",OFF
 parsers_annotators,CoNLL table analyzer,"The Stanford CoreNLP GUI will now open the 'CoNLL table analyzer' GUI. When the GUI opens, you will need to select theGUI-specific I/O configuration.
 
 In the 'CoNLL table analyzer' GUI you can:
@@ -251,7 +251,7 @@ In the 'CoNLL table analyzer' GUI you can:
 wordclouds,Python wordclouds,"You have selected to visualize words only horizontally in the wordclouds image. Some of the lower-frequency words may need to be dropped from the wordclouds image since there may not be enough room for their display.
 
 Combining horizontal and vertical displays maximizes the number of words visualized in the wordclouds image.",ON
-Stanford_CoreNLP,CoreNLP gender timing,"Beware that the CoreNLP gender algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop.",ON
+Stanford_CoreNLP,CoreNLP gender timing,"Beware that the CoreNLP gender algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop.",OFF
 GIS,GIS/Google Earth Pro with CoNLL input,"You are using a GIS visualization tool with a CoNLL table in input. The algorithm will geocode every instance of NER location tags (CITY, STATE_OR_PROVINCE, COUNTRY). But... The CoNLL table produced by the CoreNLP parser has a record for each token in the document(s) processed.
 
 Thus, each word in 'New York City' would have a separate NER CITY tag.
@@ -260,3 +260,4 @@ As input, you should use the csv file of NER values produced by 'Stanford_CoreNL
 GIS,Input csv file,"You have a csv file in the 'Select INPUT CSV file' widget. The RUN command would process this file in input rather than the file stored in the I/O configuration.
 
 Press ESC if you want to clear the 'Select INPUT CSV file' widget.",OFF
+Stanford_CoreNLP,CoreNLP normalized date timing,"Beware that the CoreNLP normalized date algortithm on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 50 minutes on a standard laptop.",ON

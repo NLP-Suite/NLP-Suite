@@ -1164,6 +1164,21 @@ def boxplot(data,outputFilename,var,points,bycategory=None,category=None,color=N
 
     if type(data)==str:
         data=pd.read_csv(data)
+
+    if not 'int' in str(type(data[var][0])) and not 'float' in str(type(data[var][0])):
+        mb.showwarning(title='Warning', message='The "Boxplots" option requires a numeric field.\n\nPlease, use the dropdown menu to select a numeric csv file field for visualization and try again.')
+        return
+
+    if bycategory!=0 and bycategory!=None and category!=None:
+        if not 'str' in str(type(data[category][0])):
+            mb.showwarning(title='Warning', message='The "Split data by category" Boxplots option requires a CATEGORICAL "csv file field"".\n\nPlease, use the "csv file field" dropdown menu to select a CATEGORICAL field and try again.')
+            return
+
+    if color!=None:
+        if not 'str' in str(type(data[color][0])):
+            mb.showwarning(title='Warning', message='The Boxplots with "Split data by category" and color options requires a secodn CATEGORICAL "csv file field" for the color option".\n\nPlease, use the second "csv file field" dropdown menu to select a CATEGORICAL field and try again.')
+            return
+
     if bycategory==False:
         fig=px.box(data,y=var,points=points)
     else:
@@ -1180,16 +1195,20 @@ def boxplot(data,outputFilename,var,points,bycategory=None,category=None,color=N
 #three_way_Sankey is a boolean variable that dictates whether the returned Sankey is 2way or 3way. True for 3 variables, false for 2 variables
 def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,var3=None,lengthvar3=None):
     if type(data)==str:
-        data=pd.read_csv(data)
-    if type(data[var1][0])!=str and type(data[var2][0])!=str:
+        data=pd.read_csv(data, index_col=False)
+
+    if type(data[var1][0])!=str or type(data[var2][0])!=str:
         mb.showwarning("Warning",
-                   "The csv file field(s) selected should be categorical.\n\nYou should select categorical field(s), rather than continuous numeric field(s), and try again.")
+                   "All csv file fields should be CATEGORICAL for a Sankey flowchart.\n\nPlease, select categorical field(s) (i.e., fields with string values), rather than continuous numeric field(s), and try again.")
 
-    if three_way_Sankey==False:
-
+    if three_way_Sankey:
+        # 3 variables
         data[var1]=data[var1].str.lower()
         tempframe=pd.DataFrame(data[var1].value_counts().head(lengthvar1)).reset_index()
-        finalframe=data[data[var1].isin(list(set(tempframe['index'])))]
+        try:
+            finalframe=data[data[var1].isin(list(set(tempframe['index'])))]
+        except:
+            finalframe = data[data[var1].isin(list(set(tempframe.index)))]
         tempframe2=pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
         finalframe=finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
         finalframe=finalframe.reset_index(drop=True)
@@ -1212,9 +1231,13 @@ def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,
         labelvector=sorted(list(set(finalframe[var1])))+sorted(list(set(finalframe[var2])))
 
     else:
+        # 2 variables
         data[var1]=data[var1].str.lower()
         tempframe=pd.DataFrame(data[var1].value_counts().head(lengthvar1)).reset_index()
-        finalframe=data[data[var1].isin(list(set(tempframe['index'])))]
+        try:
+            finalframe=data[data[var1].isin(list(set(tempframe['index'])))]
+        except:
+            finalframe = data[data[var1].isin(list(set(tempframe.index)))]
         tempframe2=pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
         finalframe=finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
         finalframe=finalframe.reset_index(drop=True)

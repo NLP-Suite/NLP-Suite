@@ -389,7 +389,6 @@ def geocode(window,locations, inputFilename, outputDir,
 				documentID = item[4]
 				document = item[5]
 				if datePresent==True:
-					NER_Tag = item[len(item) - 1]
 					date = item[6]
 			else:
 				itemToGeocode =item[0]
