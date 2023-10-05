@@ -24,8 +24,8 @@ def extract_index(inputFilename, InputCodedCsvFile, encodingValue, location_var_
 	# startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'GIS extract_index ', 'Started running extract_index algorithm at',
 	# 											   True, '', True, '', silent=True)
 
-	inputfile = pd.read_csv(InputCodedCsvFile, encoding=encodingValue)
-	data = pd.read_csv(inputFilename, encoding=encodingValue)
+	inputfile = pd.read_csv(InputCodedCsvFile, encoding=encodingValue, on_bad_lines='skip')
+	data = pd.read_csv(inputFilename, encoding=encodingValue, on_bad_lines='skip')
 	headers = data.columns.values.tolist()
 	if len(inputfile)==0:
 		return []
@@ -53,7 +53,7 @@ def extract_NER_locations(window,conllFile,encodingValue,split_locations_prefix,
 	split_locations_prefix = re.sub("[^\w]", " ",  split_locations_prefix).split()
 	if encodingValue=='':
 		encodingValue = 'utf-8'
-	dt = pd.read_csv(conllFile,encoding=encodingValue)
+	dt = pd.read_csv(conllFile,encoding=encodingValue, on_bad_lines='skip')
 	numDocs=dt['Document ID'].max()
 	numRecords=dt['Record ID'].max()
 	currentRecord=0
@@ -142,7 +142,7 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 	locList = []
 	#latin-1 for the Italian or the code will break
 	try:
-		dt = pd.read_csv(inputFilename,encoding=encodingValue)
+		dt = pd.read_csv(inputFilename,encoding=encodingValue, on_bad_lines='skip')
 		count_row = dt.shape[0]  # gives number of row count
 		#count_col = dt.shape[1]  # gives number of col count
 	except:

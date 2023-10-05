@@ -100,8 +100,9 @@ def make_output_subdirectory(inputFilename, inputDir, outputDir, label, silent=T
             outputSubDir = ''
     try:
         # chmod() changes the mode of path to the passed numeric mode
-        os.chmod(Path(outputSubDir).parent.absolute(), 0o755)
-        os.mkdir(outputSubDir, 0o755)
+        if outputSubDir != '':
+            os.chmod(Path(outputSubDir).parent.absolute(), 0o755)
+            os.mkdir(outputSubDir, 0o755)
     except Exception as e:
         mb.showwarning(title='Directory error',
                        message="Could not create the directory " + outputSubDir + "\n\n" + str(e))
@@ -308,7 +309,7 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
     if configFileName!='':
         import pandas as pd
         try:
-            a = pd.read_csv(configFileName, index_col=False)
+            a = pd.read_csv(configFileName, index_col=False,encoding='utf-8',on_bad_lines='skip')
         except:
             if configFileName=='NLP_default_IO_config.csv':
                 mb.showwarning(title='Input config file error',

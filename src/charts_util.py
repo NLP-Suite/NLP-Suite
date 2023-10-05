@@ -1128,7 +1128,7 @@ def complete_sentence_index(file_path):
 def multiple_barchart(datalist,outputFilename,var,ntopchoices):
     tempdatalist=[]
     for i in datalist:
-        tempdatalist.append(pd.read_csv(i))
+        tempdatalist.append(pd.read_csv(i, encoding='utf-8', on_bad_lines='skip'))
     newDatalist=[]
     for i in tempdatalist:
         newDatalist.append(pd.DataFrame(i[var].value_counts()).reset_index().rename(columns={'index':var,var:'Frequency'}).head(ntopchoices))
@@ -1163,7 +1163,7 @@ def boxplot(data,outputFilename,var,points,bycategory=None,category=None,color=N
         color = None
 
     if type(data)==str:
-        data=pd.read_csv(data)
+        data=pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
 
     if not 'int' in str(type(data[var][0])) and not 'float' in str(type(data[var][0])):
         mb.showwarning(title='Warning', message='The "Boxplots" option requires a numeric field.\n\nPlease, use the dropdown menu to select a numeric csv file field for visualization and try again.')
@@ -1195,7 +1195,7 @@ def boxplot(data,outputFilename,var,points,bycategory=None,category=None,color=N
 #three_way_Sankey is a boolean variable that dictates whether the returned Sankey is 2way or 3way. True for 3 variables, false for 2 variables
 def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,var3=None,lengthvar3=None):
     if type(data)==str:
-        data=pd.read_csv(data, index_col=False)
+        data=pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
 
     if type(data[var1][0])!=str or type(data[var2][0])!=str:
         mb.showwarning("Warning",
@@ -1208,7 +1208,7 @@ def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,
         try:
             finalframe=data[data[var1].isin(list(set(tempframe['index'])))]
         except:
-            finalframe = data[data[var1].isin(list(set(tempframe.index)))]
+            finalframe=data[data[var1].isin(list(set(tempframe.index)))]
         tempframe2=pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
         finalframe=finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
         finalframe=finalframe.reset_index(drop=True)
@@ -1237,7 +1237,7 @@ def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,
         try:
             finalframe=data[data[var1].isin(list(set(tempframe['index'])))]
         except:
-            finalframe = data[data[var1].isin(list(set(tempframe.index)))]
+            finalframe=data[data[var1].isin(list(set(tempframe.index)))]
         tempframe2=pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
         finalframe=finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
         finalframe=finalframe.reset_index(drop=True)
@@ -1309,7 +1309,7 @@ def separator(data,interest, algorithm):
 #beginning_and_end is a boolean that dictates if its a two-level or three level Sunburst
 def Sunburst(data, outputFilename, outputDir, case_sensitive, interest, label,beginning_and_end=False,first_sentences=None,last_sentences=None,half_text=None):
     if type(data)==str:
-        data=pd.read_csv(data)
+        data=pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
         # @@@ nan values will break the code
         data = data.fillna('Blank/missing value')
     # The presence of a Nan value will classify the object as float
@@ -1402,7 +1402,7 @@ def Sunburst(data, outputFilename, outputDir, case_sensitive, interest, label,be
 #The graph shows the frequencies of each group by default depending on the interest vector and the initial variable of choice. If specified, it shows the average of average_variable per group
 def Treemap(data,outputFilename,interest,csv_file_field,extra_dimension_average,average_variable=None):
     if type(data)==str:#convert data to dataframe
-        data=pd.read_csv(data)
+        data=pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
     # The presence of a Nan value will classify the object as float
     if type(data[csv_file_field][0])!=str:
         mb.showwarning("Warning",
@@ -1438,7 +1438,7 @@ def Treemap(data,outputFilename,interest,csv_file_field,extra_dimension_average,
 def timechart(data,outputFilename,var,date_format_var,cumulative,monthly=None,yearly=None):
 #convert csv to pandas
     if type(data)==str:
-        data=pd.read_csv(data)
+        data=pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
     date=[]
     year=[]
     month=[]

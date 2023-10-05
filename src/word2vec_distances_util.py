@@ -38,7 +38,7 @@ def compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts,
     # compute only distances if inputFile is csv
     if inputFilename.endswith('csv'):
         # read csv
-        w2v_df = pd.read_csv(inputFilename, encoding='utf-8')
+        w2v_df = pd.read_csv(inputFilename, encoding='utf-8',on_bad_lines='skip')
         # check if csv file has Vector column
         if 'Vector' in w2v_df.columns:
             w2v_df['Vector'] = w2v_df['Vector'].astype(object)

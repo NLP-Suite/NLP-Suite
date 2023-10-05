@@ -134,7 +134,7 @@ def read_NLP_package_language_config():
         error=True
     else:
         try:
-            dataset = pd.read_csv(config_filename)
+            dataset = pd.read_csv(config_filename,encoding='utf-8',on_bad_lines='skip')
             package = dataset.iat[0, 0]
             parsers = dataset.iat[0, 1].split(',')
             basics_package = dataset.iat[0, 2]

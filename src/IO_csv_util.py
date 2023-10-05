@@ -134,7 +134,7 @@ def GetNumberOf_Records_Columns_inCSVFile(inputFilename,encodingValue='utf-8'):
     nRecords=0
     nColumns=0
     try:
-        maxnum = pd.read_csv(inputFilename, encoding=encodingValue).shape
+        maxnum = pd.read_csv(inputFilename, encoding=encodingValue,on_bad_lines='skip').shape
     except:
         return nRecords, nColumns
     return maxnum # tuple with first value number of records, second value number of columns
@@ -142,7 +142,7 @@ def GetNumberOf_Records_Columns_inCSVFile(inputFilename,encodingValue='utf-8'):
 # inputFile has path
 def GetMaxValueInCSVField(inputFilename,algorithm='',columnHeader='Document ID',encodingValue='utf-8'):
     maxvalue = 0
-    df = pd.read_csv(inputFilename)
+    df = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
     try:
         column = df[columnHeader]
     except:
@@ -320,7 +320,7 @@ def rename_header(inputFilename, header1, header2):
         if header1 == header:
             ID=get_columnNumber_from_headerValue(headers, header1, inputFilename)
             # If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
-            temp = pd.read_csv(inputFilename)
+            temp = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
             if temp.columns[ID] == header1:
                 temp = temp.rename(columns={header1: header2})
                 temp.to_csv(inputFilename, encoding='utf-8', index=False)
@@ -355,7 +355,7 @@ def export_csv_to_text(inputFilename, outputDir, column=None, column_list=[]):
             text_file.write(text)
 
     elif len(column_list) == 0:
-        df = pd.read_csv(inputFilename)
+        df = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
         if not column in df.columns:
             mb.showwarning(title='csv file error',
                            message="The selected csv file\n\n" + inputFilename + "\n\ndoes not contain the column header\n\n" + column)
@@ -367,7 +367,7 @@ def export_csv_to_text(inputFilename, outputDir, column=None, column_list=[]):
         with open(outputDir + '/' + os.path.basename(inputFilename) + '.txt', "w", encoding='utf-8', errors='ignore') as text_file:
             text_file.write(text)
     else:
-        df = pd.read_csv(inputFilename)
+        df = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
 
         for column in column_list:
             if not column in df.columns:
@@ -436,7 +436,7 @@ def sort_by_column(input, column):
     if isinstance(input, pd.DataFrame):
         df = input
     else:
-        df = pd.read_csv(input)
+        df = pd.read_csv(input,encoding='utf-8',on_bad_lines='skip')
     col_list = set(df[column].tolist())
     df_list = [df[df[column] == value] for value in col_list]
     return df_list

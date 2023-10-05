@@ -114,8 +114,8 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
         return key
 
     df = pd.DataFrame(columns=['Same SVO', 'Same SV', 'Different SVO', 'Different SV', 'Total SVO', 'Total SV'])
-    CoreNLP_df = pd.read_csv(CoreNLP_csv)
-    senna_df = pd.read_csv(senna_csv)
+    CoreNLP_df = pd.read_csv(CoreNLP_csv,encoding='utf-8',on_bad_lines='skip')
+    senna_df = pd.read_csv(senna_csv,encoding='utf-8',on_bad_lines='skip')
     open_ie_svo, open_ie_sv, senna_svo, senna_sv = set(), set(), set(), set()
 
     # S, V, O are in loc 0, 1, 2
@@ -220,7 +220,7 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputSVODi
     """
     columns = ['Tool', 'Subject (S)', 'Verb (V)', 'Object (O)', 'Negation', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document']
     combined_df = pd.DataFrame(columns=columns)
-    dfs = [(pd.read_csv(CoreNLP_svo), 'CoreNLP ++'), (pd.read_csv(senna_svo), 'Senna')]
+    dfs = [(pd.read_csv(CoreNLP_svo,encoding='utf-8',on_bad_lines='skip'), 'CoreNLP ++'), (pd.read_csv(senna_svo,encoding='utf-8',on_bad_lines='skip'), 'Senna')]
 
     for df, df_name in dfs:
         for i in range(len(df)):

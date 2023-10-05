@@ -61,7 +61,7 @@ if not os.path.isfile(ratings):
 	mb.showerror(title='File not found',
 				 message='The concreteness analysis routine expects a csv dictionary file "Concreteness_ratings_Brysbaert_et_al_BRM.csv" in a directory "lib" expected to be a subdirectory of the directory where the concreteness_analysis.py script is stored.\n\nPlease, check your lib directory and try again')
 	sys.exit()
-data = pd.read_csv(ratings)
+data = pd.read_csv(ratings,encoding='utf-8',on_bad_lines='skip')
 data_dict = {col: list(data[col]) for col in data.columns}
 
 

@@ -83,7 +83,7 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
             reader = csv.reader(x.replace('\0', '') for x in infile)
             headers = next(reader)
         header_indices = [i for i, item in enumerate(headers) if item]
-        ners = pd.read_csv(NER_fileName, usecols=[0,1],encoding='utf-8')
+        ners = pd.read_csv(NER_fileName, usecols=[0,1],encoding='utf-8',on_bad_lines='skip')
 
     articles, inputDir = text_generate(inputFilename, inputDir)
 
@@ -102,7 +102,7 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
                         if token in ['She','she','Her','her']:
                             people.append([token, 'Female', sentence, sentence_num+1,article_num+1,article[1]])
 
-    dict_df = pd.read_csv(dictionary_file)
+    dict_df = pd.read_csv(dictionary_file,encoding='utf-8',on_bad_lines='skip')
     for person in people:
         if len(person) == 5:
             temp = dict_df[dict_df['Name'] == person[0]]['Gender']
@@ -126,9 +126,9 @@ def SSA_annotate(year_state_var,firstName_entry_var,outputDir):
 
 # return a lst with the filename
 def SSA_annotate_help(year_state_var,firstName_entry_var,outputDir):
-    df1 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_state_yearOfBirth.csv')
+    df1 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_state_yearOfBirth.csv',encoding='utf-8',on_bad_lines='skip')
     target1 = df1[df1['Name'] == firstName_entry_var]
-    df2 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_yearOfBirth.csv')
+    df2 = pd.read_csv(GUI_IO_util.namesGender_libPath + os.sep + 'SS_yearOfBirth.csv',encoding='utf-8',on_bad_lines='skip')
     target2 = df2[df2['Name'] == firstName_entry_var]
 
 # STATE ---------------------------------------------------------
@@ -142,7 +142,7 @@ def SSA_annotate_help(year_state_var,firstName_entry_var,outputDir):
 
         group1.reset_index().to_csv(output_path, encoding='utf-8', index=False)
         ###########
-        q2 = pd.read_csv(output_path)
+        q2 = pd.read_csv(output_path,encoding='utf-8',on_bad_lines='skip')
         q2 = q2[['Name', 'Gender', 'Frequency', 'State']]
         q2 = q2.sort_values(by=['Frequency'],ascending=False)
         #print(q2)
@@ -156,7 +156,7 @@ def SSA_annotate_help(year_state_var,firstName_entry_var,outputDir):
 
         target2.to_csv(output_path, encoding='utf-8', index=False)
         ###########
-        q2 = pd.read_csv(output_path)
+        q2 = pd.read_csv(output_path,encoding='utf-8',on_bad_lines='skip')
         q2 = q2[['Name', 'Gender', 'Frequency', 'Year of birth']]
         q2 = q2.sort_values(by=['Frequency'],ascending=False)
         q2.to_csv(output_path, encoding='utf-8', index=False)
@@ -169,7 +169,7 @@ def SSA_annotate_help(year_state_var,firstName_entry_var,outputDir):
 
         target1.to_csv(output_path, encoding='utf-8', index=False)
         ###########
-        q2 = pd.read_csv(output_path)
+        q2 = pd.read_csv(output_path,encoding='utf-8',on_bad_lines='skip')
         q2 = q2[['Name', 'Gender', 'Frequency', 'Year of birth', 'State']]
         q2 = q2.sort_values(by=['Frequency'], ascending=False)
         q2.to_csv(output_path, encoding='utf-8', index=False)
@@ -222,6 +222,6 @@ def build_dictionary_state_year(source_file_path):
 
 
 def get_date():
-    df = pd.read_csv('../lib/namesGender/SS_state_year.csv')
+    df = pd.read_csv('../lib/namesGender/SS_state_year.csv',encoding='utf-8',on_bad_lines='skip')
     lastest_date = df.iloc[-2]['Year']
     return int(lastest_date)

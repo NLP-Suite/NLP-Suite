@@ -339,7 +339,7 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
     for j in range(len(filesToVisualize)):
             #02/27/2021; eliminate the value error when there's no information from certain annotators
         if filesToVisualize[j][-4:] == ".csv":
-            file_df = pd.read_csv(filesToVisualize[j])
+            file_df = pd.read_csv(filesToVisualize[j],encoding='utf-8',on_bad_lines='skip')
             if not file_df.empty:
                 # inputFilename is the original file
                 # outputFilename is the csv file containing the fields to be visualized

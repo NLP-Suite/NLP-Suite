@@ -179,7 +179,7 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 
 	inputIsCoNLL, inputIsGeocoded, withHeader, \
 		headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
-	input_df = pd.read_csv(inputFilename, encoding=encodingValue)
+	input_df = pd.read_csv(inputFilename, encoding=encodingValue, on_bad_lines='skip')
 	# input_df = input_df[['Location', 'Latitude', 'Longitude']]
 	input_df = input_df.reset_index()
 	for index, row in input_df.iterrows():
@@ -287,7 +287,7 @@ def geocode(window,locations, inputFilename, outputDir,
 
 	inputIsCoNLL, inputIsGeocoded, withHeader, \
 		headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
-	input_df = pd.read_csv(inputFilename, encoding=encodingValue)
+	input_df = pd.read_csv(inputFilename, encoding=encodingValue, on_bad_lines='skip')
 
 	startTime=IO_user_interface_util.timed_alert(window, 2000, "GIS geocoder", "Started geocoding locations via the online service '" + geocoder + "' at",
 												 True, '', True,'',True)

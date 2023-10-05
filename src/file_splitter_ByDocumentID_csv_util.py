@@ -10,7 +10,7 @@ import tkinter.messagebox as mb
 # should at least contain a column called 'Document ID'
 # the script would group by it and then save them separately
 def split_NLP_Suite_csv_output_by_document_id(inputFilename,outputDir):
-    df = pd.read_csv(inputFilename)
+    df = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
     head, tail = os.path.split(inputFilename)
     base_name = tail[:-4] + "_Document_"
     grouped = df.groupby(['Document ID'])

@@ -48,7 +48,7 @@ def sample_corpus_by_search_words_inFileName(window, inputDir, configFileName, k
 
 
 def sample_corpus_by_document_id(table, inputDir, outputDir):
-    data = pd.read_csv(table)
+    data = pd.read_csv(table,encoding='utf-8',on_bad_lines='skip')
     try:
         print(data['Document'])
     except:

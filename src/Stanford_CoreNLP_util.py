@@ -862,7 +862,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
     for j in range(len(filesToVisualize)):
         #02/27/2021; eliminate the value error when there's no information from certain annotators
         if filesToVisualize[j][-4:] == ".csv":
-            file_df = pd.read_csv(filesToVisualize[j])
+            file_df = pd.read_csv(filesToVisualize[j],encoding='utf-8',on_bad_lines='skip')
             if not file_df.empty:
                 outputFilename = filesToVisualize[j]
                 # when multiple annotators are selected (e.g., quote, gender, normalized-date)
@@ -1598,7 +1598,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         fn = kwargs["gender_filename"]
         # TODO MINO: properly read and save csv without additional row of headers
         if os.path.isfile(fn):
-            original_df = pd.read_csv(fn, encoding=language_encoding)
+            original_df = pd.read_csv(fn, encoding=language_encoding,on_bad_lines='skip')
             merge_df = pd.concat([original_df, merge_df], ignore_index=True)
         outputFilename = IO_csv_util.df_to_csv(GUI_util.window, merge_df, fn, columns, False, language_encoding)
         # merge_df.to_csv(fn, index=False, encoding=language_encoding)
@@ -1624,7 +1624,7 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         fn = kwargs["quote_filename"]
         # TODO MINO: properly read and save csv without additional row of headers
         if os.path.isfile(fn):
-            original_df = pd.read_csv(fn, encoding=language_encoding)
+            original_df = pd.read_csv(fn, encoding=language_encoding,on_bad_lines='skip')
             merge_df = pd.concat([original_df, merge_df], ignore_index=True)
         outputFilename = IO_csv_util.df_to_csv(GUI_util.window, merge_df, fn, columns, False, language_encoding)
         # merge_df.to_csv(fn, index=False, encoding=language_encoding)
@@ -2050,7 +2050,7 @@ def get_csv_column_unique_val_list(inputFilename, col):
     col (int)           : the column number of the desired colum
     returns (list)      : list of unique values in the csv file
     '''
-    data = pd.read_csv(inputFilename, encoding='utf-8')
+    data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
     return list(set(data.iloc[:col]))
 
 
@@ -2092,7 +2092,7 @@ def count_pronouns(json):
 
 def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, createCharts,chartPackage, option, corefed_pronouns, all_pronouns: int):
     return_files = []
-    df = pd.read_csv(inputFilename)
+    df = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
     if df.empty:
         return return_files
     # pronoun cases:

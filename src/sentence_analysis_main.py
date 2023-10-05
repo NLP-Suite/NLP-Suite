@@ -9,7 +9,7 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"sentence_analy
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
-import subprocess
+from subprocess import call
 
 import GUI_IO_util
 import IO_files_util
@@ -119,7 +119,7 @@ GUI_util.run_button.configure(command=run_script_command)
 #   just change the next statement to True or False IO_setup_display_brief=True
 IO_setup_display_brief=True
 GUI_width=GUI_IO_util.get_GUI_width(3)
-GUI_height=520 # height of GUI with full I/O display
+GUI_height=560 # height of GUI with full I/O display
 
 if IO_setup_display_brief:
     GUI_height = GUI_height - 80
@@ -227,13 +227,20 @@ extract_sentences_var=tk.IntVar()
 search_words_var=tk.StringVar()
 
 def clear(e):
-	visualize_bySentenceIndex_var.set(0)
-	visualize_sentence_structure_var.set(0)
-	extract_sentences_var.set(0)
-	visualize_bySentenceIndex_options_var.set('')
-	search_words_var.set('')
-	GUI_util.clear("Escape")
+    visualize_bySentenceIndex_var.set(0)
+    visualize_sentence_structure_var.set(0)
+    extract_sentences_var.set(0)
+    visualize_bySentenceIndex_options_var.set('')
+    search_words_var.set('')
+    GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
+
+style_analysis_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Style analysis (Open GUI)',command=lambda: call('python style_analysis_main.py', shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   style_analysis_button,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Click on the button to open the GUI")
 
 compute_sentence_length_checkbox = tk.Checkbutton(window, text='Compute sentence length', variable=compute_sentence_length_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,compute_sentence_length_checkbox)
@@ -247,10 +254,10 @@ text_readability_checkbox = tk.Checkbutton(window, text='Sentence/text readabili
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,text_readability_checkbox)
 
 def getScript(script):
-	global script_to_run, IO_values
-	script_to_run = ''
-	IO_values = ''
-	script_to_run, IO_values=IO_files_util.getScript(pydict,script)
+    global script_to_run, IO_values
+    script_to_run = ''
+    IO_values = ''
+    script_to_run, IO_values=IO_files_util.getScript(pydict,script)
 
 visualize_bySentenceIndex_options_var.trace('w', lambda x,y,z: getScript(visualize_bySentenceIndex_options_var.get()))
 
@@ -308,6 +315,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, click the button \'Style analysis\' if you wish to open the style analysis GUi where a large variety of style tools are available, not necessarily at the sentence level, but at the document level..'+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to compute the sentence lengths of your document(s).\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.'+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to run the sentence complexity algorithm to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure.\n\nThe Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.'+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to run the Python 3 sentence_text_readability function to compute various measures of text readability, also closely associated to the sentence clause structure.\n\n  12 readability score requires HIGHSCHOOL education;\n  16 readability score requires COLLEGE education;\n  18 readability score requires MASTER education;\n  24 readability score requires DOCTORAL education;\n  >24 readability score requires POSTDOC education.\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.\n\nIn OUTPUT, the script produces a txt file with readability scores for an entire text and a csv file with readability scores for each sentence in a text.'+GUI_IO_util.msg_Esc)

@@ -63,6 +63,98 @@ def process_date(search_wordsLists, temporal_aggregation):
         j += 1
     return columns_to_be_plotted_yAxis
 
+def process_year_option(files, dateFormat, itemsDelimiter, datePos, case_sensitive, search_word_list):
+    from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+    yearList = []
+    docIndex = 1
+    ngram_results = {}
+    print("Create file list -------------------------------------------------------------\n")
+    for file in files:  # iterate over each file
+        head, tail = os.path.split(file)
+        print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
+        docIndex += 1
+        date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
+        yearList.append(year)
+    yearList = sorted(np.unique(yearList))
+    for word in search_word_list:
+        ngram_results[word] = {}
+        for y in yearList:
+            ngram_results[word][y] = {"Search Word(s)": word,
+                                      "Frequency": 0}
+
+    # pprint.pprint(ngram_results)
+    # print()
+    docIndex = 1
+    print("\nProcess files for YEAR date option  -------------------------------------------------------------\n")
+    for file in files:  # iterate over each file
+        head, tail = os.path.split(file)
+        print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
+        docIndex += 1
+        # extract the date from the file name
+        date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
+        if date == '':
+            continue  # TODO: getDate warns user is this file has a bad date
+        year = int(year)
+        f = open(file, "r", encoding='utf-8', errors='ignore')
+        docText = f.read()
+        f.close()
+        if not case_sensitive:
+            docText = docText.lower()
+        tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
+        for collocationIndex in range(len(tokens_)):
+            token = tokens_[collocationIndex]
+            for search_word in search_word_list:
+                iterations = search_word.count(' ')
+                split_search_word = search_word.split(' ')
+                # split_search_word=str(split_search_word).
+                length_of_search_list = len(split_search_word)
+                checker = False
+                if iterations > 0:
+                    for i in range(length_of_search_list):
+                        if i == 0:
+                            if split_search_word[i] == token:
+                                checker = True
+                        else:
+                            if checker and (collocationIndex + i) < len(tokens_):
+                                if split_search_word[i] == tokens_[collocationIndex + i]:
+                                    checker = True
+                                else:
+                                    checker = False
+                    if checker:
+                        ngram_results[search_word][year]["Frequency"] += 1
+                else:
+                    if search_word == token:
+                        ngram_results[search_word][year]["Frequency"] += 1
+        return ngram_results
+
+def aggregate_by_number_of_years(yearList, byNumberOfYears, search_word_list):
+    # pprint.pprint(ngram_results)
+    curYear = yearList[0]
+    newYear = curYear + byNumberOfYears - 1
+    newYearStringList = []
+    newYearIntList = []
+    ngram_results = {}
+
+    while curYear < yearList[-1]:
+        yearChunk = str(curYear) + "-" + str(newYear)
+        newYearStringList.append(yearChunk)
+        newYearIntList.append((curYear, newYear))
+        curYear = newYear + 1
+        newYear = curYear + byNumberOfYears - 1
+    aggregated_ngram_results = {}
+    for word in search_word_list:
+        aggregated_ngram_results[word] = {}
+        for y in newYearStringList:
+            aggregated_ngram_results[word][y] = {"Search Word(s)": word,
+                                                 "Frequency": 0}
+        for year in yearList:
+            for i in range(len(newYearIntList)):
+                if newYearIntList[i][0] <= year <= newYearIntList[i][1]:
+                    aggregated_ngram_results[word][newYearStringList[i]]["Frequency"] += \
+                        ngram_results[word][year]["Frequency"]
+    ngram_results = aggregated_ngram_results
+    return ngram_results
+
 def run(inputDir="relative_path_here",
         outputDir="relative_path_here",
         configFileName='',
@@ -152,199 +244,123 @@ def run(inputDir="relative_path_here",
         else:
             search_word_list[i] = search_word_list[i].lstrip()
 
-    if (n_grams_viewer or CoOcc_Viewer) and byYear and dateOption:
         yearList = []
         docIndex = 1
-        print("Create file list -------------------------------------------------------------\n")
-        for file in files:  # iterate over each file
-            head, tail = os.path.split(file)
-            print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
-            docIndex += 1
-            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
-            yearList.append(year)
+
+# collect date info
+    print("\nProcessing files collecting date information\n")
+    for file in files:  # iterate over each file
+        head, tail = os.path.split(file)
+        print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
+        docIndex += 1
+        date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
+        yearList.append(year)
         yearList = sorted(np.unique(yearList))
-        for word in search_word_list:
-            ngram_results[word] = {}
-            for y in yearList:
+
+    # initialize the ngram_results dictionary
+    quarter_ngram_results = {}
+    for word in search_word_list:
+        ngram_results[word] = {}
+        quarter_ngram_results[word] = {}
+        for year in yearList:
+            if byYear:
                 ngram_results[word][y] = {"Search Word(s)": word,
                                           "Frequency": 0}
+            if byQuarter:
+                quarter_ngram_results[word][year] = {}
+                q1Sum, q2Sum, q3Sum, q4Sum = 0, 0, 0, 0
+                monthList = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+                quarter_ngram_results[word][year]["quarter 1"] = {"Search Word(s)": word,
+                                                                  "Frequency": 0}
+                quarter_ngram_results[word][year]["quarter 2"] = {"Search Word(s)": word,
+                                                                  "Frequency": 0}
+                quarter_ngram_results[word][year]["quarter 3"] = {"Search Word(s)": word,
+                                                                  "Frequency": 0}
+                quarter_ngram_results[word][year]["quarter 4"] = {"Search Word(s)": word,
+                                                                  "Frequency": 0}
 
-        # pprint.pprint(ngram_results)
-        # print()
-        docIndex = 1
-        print("\nProcess files for YEAR date option  -------------------------------------------------------------\n")
-        for file in files:  # iterate over each file
-            head, tail = os.path.split(file)
-            print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
-            docIndex += 1
-            # extract the date from the file name
-            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
-            if date == '':
-                continue  # TODO: getDate warns user is this file has a bad date
-            year = int(year)
-            f = open(file, "r", encoding='utf-8', errors='ignore')
-            docText = f.read()
-            f.close()
-            if not case_sensitive:
-                docText = docText.lower()
-            tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
-            for collocationIndex in range(len(tokens_)):
-                token = tokens_[collocationIndex]
-                for search_word in search_word_list:
-                    iterations = search_word.count(' ')
-                    split_search_word = search_word.split(' ')
-                    # split_search_word=str(split_search_word).
-                    length_of_search_list = len(split_search_word)
-                    checker = False
-                    if iterations > 0:
-                        for i in range(length_of_search_list):
-                            if i == 0:
-                                if split_search_word[i] == token:
+            if byMonth or byQuarter:
+                monthList = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+                ngram_results[word][str(year)] = {}
+                for m in monthList:
+                    ngram_results[word][str(year)][m] = {"Search Word(s)": word,
+                                                      "Frequency": 0}
+# iterate over each file, searching for words
+    print("\nProcessing files for search words\n")
+    docIndex = 1
+    for file in files:
+        head, tail = os.path.split(file)
+        print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
+        docIndex += 1
+        # extract the date from the file name
+        date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
+        if date == '':
+            continue  # TODO: getDate warns user is this file has a bad date
+
+        f = open(file, "r", encoding='utf-8', errors='ignore')
+        docText = f.read()
+        f.close()
+        if not case_sensitive:
+            docText = docText.lower()
+        tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
+        for collocationIndex in range(len(tokens_)):
+            token = tokens_[collocationIndex]
+            for search_word in search_word_list:
+                iterations = search_word.count(' ')
+                split_search_word = search_word.split(' ')
+                # split_search_word=str(split_search_word).
+                length_of_search_list = len(split_search_word)
+                checker = False
+                if iterations > 0:
+                    for i in range(length_of_search_list):
+                        if i == 0:
+                            if split_search_word[i] == token:
+                                checker = True
+                        else:
+                            if checker and (collocationIndex + i) < len(tokens_):
+                                if split_search_word[i] == tokens_[collocationIndex + i]:
                                     checker = True
-                            else:
-                                if checker and (collocationIndex + i) < len(tokens_):
-                                    if split_search_word[i] == tokens_[collocationIndex + i]:
-                                        checker = True
-                                    else:
-                                        checker = False
-                        if checker:
+                                else:
+                                    checker = False
+                    if checker:
+                        ngram_results[search_word][year]["Frequency"] += 1
+                else:
+                    if search_word == token:
+                        if byYear:
                             ngram_results[search_word][year]["Frequency"] += 1
-                    else:
-                        if search_word == token:
-                            ngram_results[search_word][year]["Frequency"] += 1
-
-# aggregate by groups of years
+                        if byMonth:
+                            ngram_results[search_word][str(year)][str(month).zfill(2)]["Frequency"] += 1
+                        if byQuarter:
+                            # q1Sum, q2Sum, q3Sum, q4Sum = 0, 0, 0, 0
+                            for word, yearDict in ngram_results.items():
+                                for year_template, monthDict in yearDict.items():
+                                    # if int(year_template)==year:
+                                    for month_template, freqDict in monthDict.items():
+                                        if 1 <= int(month_template) <= 3 and month==int(month_template):
+                                            q1Sum += 1 #freqDict["Frequency"]
+                                        if 4 <= int(month_template) <= 6 and month==int(month_template):
+                                            q2Sum += 1 # freqDict["Frequency"]
+                                        if 7 <= int(month_template) <= 9 and month==int(month_template):
+                                            q3Sum += 1 # freqDict["Frequency"]
+                                        if 10 <= int(month_template) <= 12 and month==int(month_template):
+                                            q4Sum += 1 # freqDict["Frequency"]
+                                    quarter_ngram_results[word][year]["quarter 1"] = {"Search Word(s)": word,
+                                                                                      "Frequency": q1Sum}
+                                    quarter_ngram_results[word][year]["quarter 2"] = {"Search Word(s)": word,
+                                                                                      "Frequency": q2Sum}
+                                    quarter_ngram_results[word][year]["quarter 3"] = {"Search Word(s)": word,
+                                                                                      "Frequency": q3Sum}
+                                    quarter_ngram_results[word][year]["quarter 4"] = {"Search Word(s)": word,
+                                                                                          "Frequency": q4Sum}
+                                ngram_results=quarter_ngram_results
 
         if byNumberOfYears > 1:
-            # pprint.pprint(ngram_results)
-            curYear = yearList[0]
-            newYear = curYear + byNumberOfYears - 1
-            newYearStringList = []
-            newYearIntList = []
-            while curYear < yearList[-1]:
-                yearChunk = str(curYear) + "-" + str(newYear)
-                newYearStringList.append(yearChunk)
-                newYearIntList.append((curYear, newYear))
-                curYear = newYear + 1
-                newYear = curYear + byNumberOfYears - 1
-            aggregated_ngram_results = {}
-            for word in search_word_list:
-                aggregated_ngram_results[word] = {}
-                for y in newYearStringList:
-                    aggregated_ngram_results[word][y] = {"Search Word(s)": word,
-                                                         "Frequency": 0}
-                for year in yearList:
-                    for i in range(len(newYearIntList)):
-                        if newYearIntList[i][0] <= year <= newYearIntList[i][1]:
-                            aggregated_ngram_results[word][newYearStringList[i]]["Frequency"] += \
-                                ngram_results[word][year]["Frequency"]
-            ngram_results = aggregated_ngram_results
-            # pprint.pprint(aggregated_ngram_results)
+            ngram_results=aggregate_by_number_of_years(yearList, byNumberOfYears, search_word_list)
 
-    if (n_grams_viewer or CoOcc_Viewer) and dateOption and (byMonth or byQuarter):
-        monthList = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-        yearList = []
+    coOcc_results_binary = {}
+    CoOcc_Viewer=False
+    if CoOcc_Viewer:
         docIndex = 1
-        print("\nProcess files for YEAR date option  -------------------------------------------------------------\n")
-        for file in files:  # iterate over each file
-            head, tail = os.path.split(file)
-            print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
-            docIndex += 1
-            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
-            yearList.append(year)
-        yearList = sorted(np.unique(yearList))
-
-        for word in search_word_list:
-            ngram_results[word] = {}
-            for y in yearList:
-                ngram_results[word][str(y)] = {}
-                for m in monthList:
-                    ngram_results[word][str(y)][m] = {"Search Word(s)": word,
-                                                      "Frequency": 0}
-        # pprint.pprint(ngram_results)
-        # print()
-        docIndex = 1
-        print("\nProcess files for date option -------------------------------------------------------------\n")
-        for file in files:  # iterate over each file
-            head, tail = os.path.split(file)
-            print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
-            docIndex += 1
-            # extract the date from the file name
-            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
-            if date == '':
-                continue  # TODO: getDate warns user is this file has a bad date
-            f = open(file, "r", encoding='utf-8', errors='ignore')
-            docText = f.read()
-            f.close()
-            if not case_sensitive:
-                docText = docText.lower()
-            tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
-            for collocationIndex in range(len(tokens_)):
-                token = tokens_[collocationIndex]
-                for search_word in search_word_list:
-                    iterations = search_word.count(' ')
-                    split_search_word = search_word.split(' ')
-                    # split_search_word=str(split_search_word).
-                    length_of_search_list = len(split_search_word)
-                    checker = False
-                    if iterations > 0:
-                        for i in range(length_of_search_list):
-                            if i == 0:
-                                if "Chinese" in language_list:
-                                    if split_search_word[i] in token:
-                                        checker = True
-                                else:
-                                    if split_search_word[i] == token:
-                                        checker = True
-                            else:
-                                if checker and (collocationIndex + i) < len(tokens_):
-                                    if split_search_word[i] == tokens_[collocationIndex + i]:
-                                        checker = True
-                                    else:
-                                        checker = False
-                        if checker:
-                            ngram_results[search_word][str(year)][str(month).zfill(2)]["Frequency"] += 1
-                    else:
-                        if "Chinese" in language_list:
-                            if search_word in token:
-                                ngram_results[search_word][str(year)][str(month).zfill(2)]["Frequency"] += 1
-                        else:
-                            if search_word == token:
-                                ngram_results[search_word][str(year)][str(month).zfill(2)]["Frequency"] += 1
-
-# aggregate by quarter
-        if byQuarter:
-            quarter_ngram_results = {}
-            for word, yearDict in ngram_results.items():
-                quarter_ngram_results[word] = {}
-                for year, monthDict in yearDict.items():
-                    q1Sum, q2Sum, q3Sum, q4Sum = 0, 0, 0, 0
-                    quarter_ngram_results[word][year] = {}
-                    for month, freqDict in monthDict.items():
-                        if 1 <= int(month) <= 3:
-                            q1Sum += freqDict["Frequency"]
-                        if 4 <= int(month) <= 6:
-                            q2Sum += freqDict["Frequency"]
-                        if 7 <= int(month) <= 9:
-                            q3Sum += freqDict["Frequency"]
-                        if 10 <= int(month) <= 12:
-                            q4Sum += freqDict["Frequency"]
-                    quarter_ngram_results[word][year]["quarter 1"] = {"Search Word(s)": word,
-                                                                      "Frequency": q1Sum}
-                    quarter_ngram_results[word][year]["quarter 2"] = {"Search Word(s)": word,
-                                                                      "Frequency": q2Sum}
-                    quarter_ngram_results[word][year]["quarter 3"] = {"Search Word(s)": word,
-                                                                      "Frequency": q3Sum}
-                    quarter_ngram_results[word][year]["quarter 4"] = {"Search Word(s)": word,
-                                                                      "Frequency": q4Sum}
-            # pprint.pprint(quarter_ngram_results)
-            ngram_results = quarter_ngram_results
-    if not CoOcc_Viewer:
-        # prepare co-occurrences results
-        coOcc_results_binary = {}
-    else:
-        docIndex = 1
-        coOcc_results_binary = {}
         docIndex = 1
         print("\nProcess files for co-occurrence option -------------------------------------------------------------\n")
         for file in files:  # iterate over each file
@@ -419,6 +435,7 @@ def run(inputDir="relative_path_here",
     NgramsFileName=''
     coOccFileName=''
 
+    n_grams_viewer=True
     if n_grams_viewer:
         if 'group' in temporal_aggregation:
             label='group_'+str(byNumberOfYears)
@@ -427,6 +444,7 @@ def run(inputDir="relative_path_here",
         NgramsFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                  'N-grams_' + label)
 
+    CoOcc_Viewer=True
     if CoOcc_Viewer:
         coOccFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'Co-Occ')
 
@@ -466,22 +484,22 @@ def run(inputDir="relative_path_here",
                 else:
                     filesToOpen.extend(outputFiles)
 
-    # plot co-occurrences -----------------------------------------------------------------------------
+# plot co-occurrences -----------------------------------------------------------------------------
 
     if CoOcc_Viewer:
         if createCharts and coOccFileName != '':
             import charts_util
             xlsxFilename = coOccFileName
             filesToOpen.append(coOccFileName)
-            if temp_fileName!='':
-                filesToOpen.append(temp_fileName)
+            # if temp_fileName!='':
+            #     filesToOpen.append(temp_fileName)
             chart_title = 'Co-Occurrences Viewer: ' + search_wordsLists
             if dateOption == 0:
                 xAxis = 'Document'
             else:
                 xAxis = temporal_aggregation
             hover_label = []
-            columns_to_be_plotted_byDoc = [[1, 2, 0]]
+            columns_to_be_plotted_byDoc = [[0, 1, 2]]
             freq_file = aggregate_YES_NO(xlsxFilename, ["Co-Occurrence"])
             outputFiles = charts_util.run_all(columns_to_be_plotted_byDoc, freq_file, outputDir,
                                            outputFileLabel='byDoc_',
@@ -532,7 +550,7 @@ def run(inputDir="relative_path_here",
 """
 def aggregate_YES_NO(inputFilename, column):
     cols = ["Document ID", "Document"] + column
-    df = pd.read_csv(inputFilename)
+    df = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
     df = df.replace('YES', 1)
     df = df.replace('NO', 0)
     # create a new data frame with Document ID, Document, and the sum of the column
@@ -587,9 +605,9 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
                 for year, monthDict in yearDict.items():
                     for month, freqDict in monthDict.items():
                         if temporal_aggregation == 'quarter':
-                            df = df.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month, "year-" + temporal_aggregation: year + "-Q" + month[-1]}, ignore_index=True)
+                            df = df.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month, "year-" + temporal_aggregation: str(year) + "-Q" + month[-1]}, ignore_index=True)
                         else:
-                            df = df.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month, "year-" + temporal_aggregation: year + "-" + month}, ignore_index=True)
+                            df = df.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month, "year-" + temporal_aggregation: str(year) + "-" + month}, ignore_index=True)
                 dfList.append(df)
             newdfCur = dfList[0].copy()
             newdf = newdfCur.copy()
@@ -609,11 +627,19 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
             newdf.rename(columns={'year_temp': 'year'}, inplace=True)
             newdf.rename(columns={'yearMonth_temp': 'year-' + temporal_aggregation}, inplace=True)
 
-        if coOccFileName!='':
-            temp_fileName=coOccFileName[:-4]+'_1.csv'
-            newdf.to_csv(temp_fileName, encoding='utf-8', index=False)
-        else:
+        if NgramsFileName!='':
             newdf.to_csv(NgramsFileName, encoding='utf-8', index=False)
+            # temp_fileName=NgramsFileName[:-4]+'_1.csv'
+            # newdf.to_csv(temp_fileName, encoding='utf-8', index=False)
+        # else:
+        #     newdf.to_csv(NgramsFileName, encoding='utf-8', index=False)
+
+    # if coOccFileName!='':
+    #     temp_fileName=coOccFileName[:-4]+'_1.csv'
+    #     newdf.to_csv(temp_fileName, encoding='utf-8', index=False)
+    # else:
+    #     newdf.to_csv(NgramsFileName, encoding='utf-8', index=False)
+
     if len(coOcc_results)>0:
         # with open(os.path.join(WCOFileName, outputDir), 'w', encoding='utf-8') as f:
         with open(coOccFileName, 'w', newline='', encoding='utf-8', errors='ignore') as f:
@@ -622,5 +648,12 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
             for label, res in coOcc_results.items():
                 writer.writerow([res["Search Word(s)"], res["Co-Occurrence"], res["Document ID"],
                                  IO_csv_util.dressFilenameForCSVHyperlink(res["Document"])])
+
+        # if coOccFileName!='':
+        #     newdf.to_csv(coOccFileName, encoding='utf-8', index=False)
+            # temp_fileName=coOccFileName[:-4]+'_1.csv'
+            # newdf.to_csv(temp_fileName, encoding='utf-8', index=False)
+        # else:
+        #     newdf.to_csv(coOccFileName, encoding='utf-8', index=False)
 
     return NgramsFileName, coOccFileName, temp_fileName

@@ -676,7 +676,7 @@ def pin_description(inputFilename, pnt, data, headers, geo_index, index_list,
 			if description_location_var_name == headers[a]:
 				location_num = a
 		# TODO MINO Pandas
-		data = pd.read_csv(inputFilename)
+		data = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
 		names = data['Location'].values.tolist()
 		description = data['Sentence'].values.tolist()
 		documents = data['Document'].apply(IO_csv_util.undressFilenameForCSVHyperlink)
