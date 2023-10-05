@@ -25,7 +25,7 @@ def runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_fiel
     # csv_file_field_list contains the column header of node1, edge, node2 (e.g., SVO), and, possibly, the field for dynamic network
     return Gephi_util.create_gexf(GUI_util.window, fileBase, outputDir, inputFilename,
                                   csv_file_field_list[0], csv_file_field_list[1],
-                                  csv_file_field_list[2], dynamic_network_field_var)
+                                  csv_file_field_list[2], dynamic_network_field_var, 'abnormal')
 
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles,
@@ -382,7 +382,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 relations_menu_var.set('Gephi')
 relations_menu = tk.OptionMenu(window, relations_menu_var, 'Gephi','Sankey')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    relations_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
                                    "Visualize relations (network graphs via Gephi or Sankey chart via Plotly)")
@@ -408,18 +408,18 @@ csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values) # relational
 csv_field_menu.configure(state='disabled')
 # place widget with hover-over info
 # visualization_csv_field_menu_pos
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    csv_field_menu,
                                    True, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
                                    "Select the three fields to be used for the network graph in the order node1, edge, node2 (e.g., SVO)")
 
 selected_csv_file_fields = tk.StringVar()
 
-missing_software_display_area = tk.Entry(width=GUI_IO_util.missing_software_display_area_width, state='disabled', textvariable=selected_csv_file_fields)
+selected_csv_fields_area = tk.Entry(width=GUI_IO_util.widget_width_medium, state='disabled', textvariable=selected_csv_file_fields)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
-                                               missing_software_display_area, True, False, True, False, 90,
-                                               GUI_IO_util.open_TIPS_x_coordinate, "The widget, always disabled, displays all the  selected csv file fields.")
+                                               selected_csv_fields_area, True, False, True, False, 90,
+                                               GUI_IO_util.open_reminders_x_coordinate, "The widget, always disabled, displays all the  selected csv file fields.")
 
 def display_selected_csv_fields():
     if csv_field_var.get() != '' and not csv_field_var.get() in csv_file_field_list:
@@ -502,7 +502,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    "The widgets on this line refer to the Gephi option only")
 
 csv_field_dynamic_network_lb = tk.Label(window, text='csv file field for dynamic graph')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                                csv_field_dynamic_network_lb, True)
 
 dynamic_network_field_menu = tk.OptionMenu(window, dynamic_network_field_var, *menu_values)
@@ -521,7 +521,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    "The widgets on this line refer to the Sankey option only")
 
 Sankey_limit1_lb = tk.Label(window, text='Variable 1 max')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                                Sankey_limit1_lb, True)
 
 Sankey_limit1_var = tk.IntVar()
@@ -577,7 +577,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 categorical_menu_var.set('Sunburst')
 categorical_menu = tk.OptionMenu(window, categorical_menu_var, 'Sunburst','Treemap')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    categorical_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
                                    "Visualize categorical data as sunburst chart or treemap chart via Plotly)")
@@ -632,12 +632,12 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 
 K_sent_begin_var.set('')
 K_sent_begin_lb = tk.Label(window, text='First K')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
                                                y_multiplier_integer, K_sent_begin_lb, True)
 
 K_sent_begin = tk.Entry(window, state='disabled', textvariable=K_sent_begin_var, width=3)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+70, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+70, y_multiplier_integer,
                                    K_sent_begin,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Enter the number of sentences at the beginning of each document to be used to visualize differences in the data\nThe option requires a Document ID and a Sentence ID field in the input file")

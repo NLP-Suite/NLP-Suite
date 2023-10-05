@@ -256,11 +256,11 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
     else:
         checklist = ['VB', 'VBD', 'VBG', 'VBN', 'VBP', 'VBZ']
     # read in the CoreNLP CoNLL table
-    connl = pd.read_csv(ConnlTable)
+    connl = pd.read_csv(ConnlTable,encoding='utf-8',on_bad_lines='skip')
     # read in the dictionary file to be used to filter CoNLL values
     # The file is expected to have 2 columns with headers: Word, WordNet Category
     try:
-        dict = pd.read_csv(wordnetDict)
+        dict = pd.read_csv(wordnetDict,encoding='utf-8',on_bad_lines='skip')
     except:
         mb.showwarning("Warning",
                        "The file \n\n" + wordnetDict + "\n\ndoes not have the expected 2 columns: Word, WordNet Category. You may have selected the wrong input file.\n\nPlease, select the right input file and try again.")
@@ -332,7 +332,7 @@ def get_case_initial_row(inputFilename,outputDir,check_column, firstLetterCapita
         str='Lower'
     outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'filter_' + str)
     filesToOpen.append(outputFilename)
-    data = pd.read_csv(inputFilename)
+    data = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
     if firstLetterCapitalized:
         regex = '^[A-Z].*'
     else:

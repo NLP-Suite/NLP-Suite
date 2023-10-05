@@ -475,7 +475,10 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
     # remove hyperlink before processing
     data.to_csv(inputFilename,encoding='utf-8', index=False)
     if 'Document' in headers:
-        removed_hyperlinks, inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
+        try:
+            removed_hyperlinks, inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
+        except:
+            pass
     data = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
     # TODO check if data is empty exit
     # fileNameType=fileNameType.replace('/','-')
@@ -520,10 +523,11 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                 # TODO Samir
                 print("Completing sentence index...")
                 charts_util.add_missing_IDs(outputFilename, outputFilename)
-            data.to_csv(outputFilename,encoding='utf-8', index=False)
-            filesToOpen.append(outputFilename)
-
-# PREVIOUS CODE
+        data.to_csv(outputFilename,encoding='utf-8', index=False)
+        filesToOpen.append(outputFilename)
+        columns_list=[[plot_cols[0], plot_cols[0] + ' Frequency']]
+        header="Frequency"
+        chart_title="Frequency Distribution of " + str(plot_cols[0])
 
  # aggregation by group_cols NO hover over ----------------------------------------
     elif len(plot_cols) != 0 and len(group_cols) != 0 and len(hover_col) == 0:
@@ -777,7 +781,10 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                                               column_xAxis_label_var=column_xAxis_label_var,
                                               hover_info_column_list=hover_over_header)
         else:
-            column_xAxis_label_var = group_cols[0]
+            if len(group_cols)>0:
+                column_xAxis_label_var = group_cols[0]
+            else:
+                column_xAxis_label_var = plot_cols[0]
             # see note above about the order of items in columns_to_be_plotted list
             #   the group_cols item must always be the last item in the columns_to_be_plotted list
             headers = IO_csv_util.get_csvfile_headers(outputFilename)

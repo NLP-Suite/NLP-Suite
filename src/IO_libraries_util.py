@@ -105,7 +105,7 @@ def install_all_Python_packages(window, calling_script, modules_to_try):
         message = "FATAL ERROR. Please, read carefully. The NLP Suite will exit.\n\nThe script '" + \
                   calling_script + "' needs to import the following modules:\n\n" + ', '.join(missingModules) + \
                   "\n\nPlease, in command prompt/terminal, type\n\nNLP\n\nif you have run STEP3-NLP environment. Otherwise type" + \
-                  "\n\nconda activate NLP\n\nEither command will activate the right NLP environment (NLP case sensitive) where to install the module. In the right NLP environment, type" + \
+                  "\n\nconda activate NLP\n\nEither command will activate the right NLP environment (NLP case sensitive) where to install the module.\n\nIF IN TERMINAL YOU SEE THE WORD (base) YOU ARE NOT IN THE NLP ENVIRONMENT.\n\nIn the right NLP environment, type" + \
                   "\n\npip install " + str(msg) + "\n\nto install the module, close the NLP Suite, and try again."
 
         if 'pygit2' in str(missingModules):

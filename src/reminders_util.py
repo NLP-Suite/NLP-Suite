@@ -405,7 +405,7 @@ def getReminders_list(scriptName,silent=False):
     title_options=[]
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
     try:
-        df = pd.read_csv(remindersFile)
+        df = pd.read_csv(remindersFile,encoding='utf-8',on_bad_lines='skip')
     except FileNotFoundError:
         if silent == False:
             mb.showwarning(title='Reminders file generated', message="The reminders.csv file saved in the reminders subdirectory was not found. If this is your first time running NLP Suite, do not worry. A default reminders.csv has been automatically generated for you.")
@@ -483,7 +483,7 @@ def checkReminder(scriptName, title_options=[], message='', triggered_by_GUI_eve
                 return None
     remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
     try:
-        df = pd.read_csv(remindersFile)
+        df = pd.read_csv(remindersFile,encoding='utf-8',on_bad_lines='skip')
     except FileNotFoundError:
         create_remindersFile()
         return checkReminder(scriptName, title_options, message, triggered_by_GUI_event)
@@ -554,7 +554,7 @@ def resetReminder(scriptName,title):
             return
         remindersFile = os.path.join(GUI_IO_util.remindersPath, 'reminders.csv')
         try:
-            df = pd.read_csv(remindersFile)
+            df = pd.read_csv(remindersFile,encoding='utf-8',on_bad_lines='skip')
             # get the row number of the routine that we are looking at
         except:
             mb.showwarning(title='Reminders file error',

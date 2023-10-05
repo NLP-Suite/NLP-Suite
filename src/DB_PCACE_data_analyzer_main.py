@@ -125,7 +125,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
         if nRecords > 1:  # including headers; file is empty
             import pandas as pd
 
-            df = pd.read_csv(outputFile)
+            df = pd.read_csv(outputFile,encoding='utf-8',on_bad_lines='skip')
             # Add a new empty column called 'data expression'
             df['Date expression'] = '1998-09-01'
             df['Normalized date'] = ''

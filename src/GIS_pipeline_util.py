@@ -178,7 +178,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                     changed_idx[i] = nom_df.at[i, 'Location']
                     changed = True
             if changed:
-                tmp_df = pd.read_csv(inputFilename)
+                tmp_df = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
                 for k,v in changed_idx.items():
                     tmp_df.at[k, 'Location'] = v
                 tmp_df = tmp_df.drop(drop_idx)

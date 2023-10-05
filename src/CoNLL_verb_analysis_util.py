@@ -330,7 +330,7 @@ def verb_tense_data_preparation(data):
 			dat.append(i+[tense_col])
 	verb_tense_stats = [['Verb Tense', 'Frequencies'],
 					['Gerundive', vbg_counter],
-					['Infinitive', vbg_counter],
+					['Infinitive', vb_counter],
 					['Past', vbd_counter],
 					['Past Principle/Passive', vbn_counter],
 					['Present', vbp_counter]]
