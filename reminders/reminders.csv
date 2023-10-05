@@ -266,3 +266,9 @@ NGrams_CoOccurrences_Viewer,subprocess.call(cmd) error,"subprocess.call(cmd) err
 If the VIEWER you are running exits with an error code about a file not found, most likely your selected INPUT & OUTPUT directory options are too long for Windows to handle.
 
 You may need to move your input and output folders so as to have a shorter path (e.g., desktop).",OFF
+Stanford_CoreNLP_coreference,Stanford CoreNLP coref merged files,"The Stanford CoreNLP coref annotator with a corpus of files in a directory in input will create a merged corefed file (with filenames embedded in <@# #@>) in output.
+
+Manual coreference resolution will not be available; depending upon the number of files merged, bringing the files into memory for manual editing may exceed memory capacity. You can always
+   1. manually edit the merged file anyway using the 'coreference_main' GUI;
+   2. split the merged file and then edit the individual coreferenced files, again, using the 'coreference_main' GUI.",OFF
+Stanford_CoreNLP,CoreNLP coreference timing,"Beware that CoreNLP coreference resolution on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop.",OFF

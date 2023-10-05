@@ -121,7 +121,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                             return
 
 
-                        file_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename,
+                        outputFiles, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename,
                                                                                            inputDir,
                                                                                            outputDir, openOutputFiles,
                                                                                            createCharts, chartPackage,
@@ -133,12 +133,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                             mb.showinfo("Coreference Resolution Error",
                                         "Since Stanford CoreNLP Co-Reference Resolution throws error, " +
                                         "and you either didn't choose manual Co-Reference Resolution or manual Co-Referenece Resolution fails as well, the process ends now.")
-                        filesToOpen.append(file_open)
+                        if outputFiles:
+                            if isinstance(outputFiles, str):
+                                filesToOpen.append(outputFiles)
+                            else:
+                                filesToOpen.extend(outputFiles)
                     else:
                         return
 
             if len(annotator)>0:
-                tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+                outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                                outputDir,
                                                                                openOutputFiles, createCharts, chartPackage,
                                                                                annotator, False, #'All POS',
@@ -149,17 +153,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                                date_position_var=date_position_var,
                                                                                single_quote_var = single_quote)
 
-                if tempOutputFiles == None:
+                if outputFiles == None:
                     return
                 if 'parser' in annotator:
                     reminders_util.checkReminder(scriptName,
                                                  reminders_util.title_options_CoreNLP_NER_tags,
                                                  reminders_util.message_CoreNLP_NER_tags,
                                                  True)
-                if isinstance(tempOutputFiles, str):
-                    filesToOpen.append(tempOutputFiles)
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(tempOutputFiles)
+                    filesToOpen.extend(outputFiles)
 
 # spaCy ---------------------------------------------------------------------------
     if package == 'spaCy':
@@ -204,7 +208,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         document_length_var = 1
         limit_sentence_length_var = 1000
 
-        tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir, outputDir,
+        outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                     openOutputFiles, createCharts, chartPackage,
                                                     [annotator], False,
                                                     language,
@@ -214,17 +218,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                     items_separator_var=items_separator_var,
                                                     date_position_var=date_position_var)
 
-        if tempOutputFiles == None:
+        if outputFiles == None:
             return
         if 'parser' in annotator:
             reminders_util.checkReminder(scriptName,
                                          reminders_util.title_options_CoreNLP_NER_tags,
                                          reminders_util.message_CoreNLP_NER_tags,
                                          True)
-        if isinstance(tempOutputFiles, str):
-            filesToOpen.append(tempOutputFiles)
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
         else:
-            filesToOpen.extend(tempOutputFiles)
+            filesToOpen.extend(outputFiles)
 
 # Stanza ---------------------------------------------------------------------------
 
@@ -269,7 +273,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         document_length_var = 1
         limit_sentence_length_var = 1000
-        tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputDir,
                                                       openOutputFiles,
                                                       createCharts, chartPackage,
@@ -281,12 +285,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                       items_separator_var=items_separator_var,
                                                       date_position_var=date_position_var)
 
-        if tempOutputFiles == None:
+        if outputFiles == None:
             return
-        if isinstance(tempOutputFiles, str):
-            filesToOpen.append(tempOutputFiles)
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
         else:
-            filesToOpen.extend(tempOutputFiles)
+            filesToOpen.extend(outputFiles)
             if 'parser' in annotator:
                 reminders_util.checkReminder(scriptName,
                                              reminders_util.title_options_CoreNLP_NER_tags,
