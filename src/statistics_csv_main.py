@@ -181,91 +181,6 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 
-# corpus_statistics_var.set(1)
-# corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute document(s) statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,corpus_statistics_checkbox,True)
-#
-# corpus_statistics_options_menu_var.set('*')
-# corpus_statistics_options_menu_lb = tk.Label(window, text='Statistics options')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
-#
-# corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_menu_var,
-#                                                 '*',
-#                                                'Compute frequencies of sentences, words, syllables, and top-20 words',
-#                                                'Compute sentence length',
-#                                                'Compute line length',
-#                                                )
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+370,y_multiplier_integer,corpus_statistics_options_menu, True)
-#
-# corpus_text_options_menu_var.set('')
-# corpus_options_menu_lb = tk.Label(window, text='Text options')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 600,y_multiplier_integer,corpus_options_menu_lb,True)
-# corpus_text_options_menu = tk.OptionMenu(window, corpus_text_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 700,y_multiplier_integer,corpus_text_options_menu)
-#
-# def activate_corpus_options(*args):
-#     if corpus_statistics_var.get()==True:
-#         corpus_statistics_options_menu.configure(state='normal')
-#         corpus_text_options_menu.configure(state='normal')
-#     else:
-#         corpus_statistics_options_menu.configure(state='disabled')
-#         corpus_text_options_menu.configure(state='disabled')
-# corpus_statistics_var.trace('w',activate_corpus_options)
-#
-# n_grams_var.set(0)
-# n_grams_checkbox = tk.Checkbutton(window, text='Compute N-grams', variable=n_grams_var, onvalue=1, offvalue=0)
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,n_grams_checkbox,True)
-#
-# n_grams_menu_lb = tk.Label(window, text='N-grams type')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+140,y_multiplier_integer,n_grams_menu_lb,True)
-# n_grams_menu_var.set('Word')
-# n_grams_menu = tk.OptionMenu(window, n_grams_menu_var, 'Character', 'Word','DEPREL','POSTAG')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,n_grams_menu)
-#
-# n_grams_options_menu_lb = tk.Label(window, text='N-grams options')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,n_grams_options_menu_lb,True)
-# n_grams_options_menu = tk.OptionMenu(window, n_grams_options_menu_var, 'Hapax legomena (unigrams)','Normalize n-grams', 'Exclude punctuation (word n-grams only)','By sentence index','End sentence/Begin sentence (word n-grams only)')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+140,y_multiplier_integer,n_grams_options_menu,True)
-#
-# add_n_grams_button = tk.Button(window, text='+', width=2,height=1,state='disabled',command=lambda: activate_n_grams_var())
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+500,y_multiplier_integer,add_n_grams_button, True)
-#
-# reset_n_grams_button = tk.Button(window, text='Reset ', width=5,height=1,state='disabled',command=lambda: reset_n_grams_list())
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+540,y_multiplier_integer,reset_n_grams_button,True)
-#
-# show_n_grams_button = tk.Button(window, text='Show', width=5,height=1,state='disabled',command=lambda: show_n_grams_list())
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+600,y_multiplier_integer,show_n_grams_button)
-#
-# def reset_n_grams_list():
-#     n_grams_list.clear()
-#     n_grams_options_menu_var.set('')
-#     n_grams_options_menu.configure(state='normal')
-#
-# def show_n_grams_list():
-#     if len(n_grams_list)==0:
-#         mb.showwarning(title='Warning', message='There are no currently selected n-grams options.')
-#     else:
-#         mb.showwarning(title='Warning', message='The currently selected n-grams options are:\n\n' + ','.join(n_grams_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
-#
-# def activate_n_grams_var():
-#     # Disable the + after clicking on it and enable the class menu
-#     add_n_grams_button.configure(state='disabled')
-#     n_grams_options_menu.configure(state='normal')
-#
-# def activate_n_grams_options(*args):
-#     if n_grams_options_menu_var.get()!='':
-#         n_grams_list.append(n_grams_options_menu_var.get())
-#         n_grams_options_menu.configure(state="disabled")
-#         add_n_grams_button.configure(state='normal')
-#         reset_n_grams_button.configure(state='normal')
-#         show_n_grams_button.configure(state='normal')
-#     else:
-#         add_n_grams_button.configure(state='disabled')
-#         reset_n_grams_button.configure(state='disabled')
-#         show_n_grams_button.configure(state='disabled')
-#         n_grams_options_menu.configure(state="normal")
-# n_grams_options_menu_var.trace('w',activate_n_grams_options)
-
 all_csv_stats_var.set(0)
 all_csv_field_checkbox = tk.Checkbutton(window, text='Compute statistics on all csv-file fields (numeric fields only)',
                                         variable=all_csv_stats_var, onvalue=1, offvalue=0,
@@ -279,7 +194,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "\nCount, Mean, Mode, Median, Standard deviation, Minimum, Maximum, Skewness, Kurtosis, 25% quantile, 50% quantile; 75% quantile")
 
 csv_field_freq_var.set(0)
-csv_field_checkbox = tk.Checkbutton(window, text='Compute frequencies of selected csv-file field',
+csv_field_checkbox = tk.Checkbutton(window, text='Compute frequencies of csv-file field(s)',
                                     variable=csv_field_freq_var, onvalue=1, offvalue=0,
                                     command=lambda: get_script_to_run('Compute frequencies of selected csv-file field'))
 # place widget with hover-over info
@@ -289,8 +204,43 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Tick the checkbox to compute the frequency of a selected csv field"
                                    "\nONLY ONE FIELD CAN BE SELECTED (although multiple group-by and hover-over fields can be selected)")
 
-menu_values = ['']
 
+def activate_viewer_options(*args):
+    if csv_field_var.get()!='':
+        if csv_field_var.get() in csv_field_list:
+            mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
+            return
+        if 'Partial match' in viewer_options_menu_var.get() or \
+                'Normalize' in viewer_options_menu_var.get() or \
+                'Scale' in viewer_options_menu_var.get():
+                mb.showwarning(title='Warning', message='The option is not available yet.\n\nSorry!')
+                return
+        # remove the case option, when a different one is selected
+        if 'insensitive' in viewer_options_menu_var.get() and 'sensitive' in str(viewer_options_list):
+            viewer_options_list.remove('Case sensitive (default)')
+        if 'sensitive' in viewer_options_menu_var.get() and 'insensitive' in str(viewer_options_list):
+            viewer_options_list.remove('Case insensitive')
+        viewer_options_list.append(viewer_options_menu_var.get())
+        viewer_options_menu.configure(state="disabled")
+        add_viewer_button.configure(state='normal')
+        reset_viewer_button.configure(state='normal')
+        show_viewer_button.configure(state='normal')
+    else:
+        add_viewer_button.configure(state='disabled')
+        reset_viewer_button.configure(state='disabled')
+        show_viewer_button.configure(state='disabled')
+        viewer_options_menu.configure(state="normal")
+
+activate_viewer_options()
+
+add_csv_field_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='normal',command=lambda: activate_viewer_options())
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate+20, y_multiplier_integer,
+                                               add_csv_field_button, True, False, False, False, 90,
+                                               GUI_IO_util.open_reminders_x_coordinate,
+                                               "Click on the + button to add another csv file field")
+
+menu_values = ['']
 reset_csv_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_csv_list())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.statistics_csv_reset_csv_button_pos, y_multiplier_integer,
