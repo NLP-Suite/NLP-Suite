@@ -286,8 +286,10 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                     # must split the file in case both path and filename contain the word LOCATION
                     head, tail = os.path.split(outputFiles[0])
                     tail = tail.replace('LOCATIONS', 'LOCATIONS_found')
+
                     # change the filename on the computer drive
-                    outputFiles[0]=os.rename(outputFiles[0], head+os.sep+tail)
+                    os.rename(outputFiles[0], head+os.sep+tail)
+                    outputFiles[0] = head+os.sep+tail
                     filesToOpen.extend(outputFiles)
 
     if not inputIsGeocoded:

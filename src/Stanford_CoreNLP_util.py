@@ -1294,7 +1294,7 @@ def process_json_coref(config_filename,documentID, document, sentenceID, json, *
                         'text']
 
     # when possessive pronouns are substituted by an antecedent noun, the noun must be followed by 's
-    #   unless the noun already has the gerundive 's
+    #   unless the noun already has the gerund 's
     #   Mary took her exam; Mary took Mary's exam
     def get_resolved(corenlp_output, sentenceID):
         """ get the "resolved" output as String """

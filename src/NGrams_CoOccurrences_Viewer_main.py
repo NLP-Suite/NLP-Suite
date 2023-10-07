@@ -296,8 +296,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occu
                                    "Enter the comma-separated words/collocations to be searched;\nfor N-grams each item in the list will be plotted separately; for Co-occurrences all items will be plotted together ")
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos,y_multiplier_integer,search_words_entry)
 
+def date_processing():
+    if CoOcc_Viewer_var.get() and date_options.get():
+        mb.showwarning(title='Warning',
+                       message='The current implementation of the Co-Occurrences Viewer does not process date information')
+
 date_options.set(0)
-date_options_checkbox = tk.Checkbutton(window, text='Date options', variable=date_options, onvalue=1, offvalue=0)
+date_options_checkbox = tk.Checkbutton(window, text='Date options', variable=date_options, onvalue=1, offvalue=0, command=lambda: date_processing())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,date_options_checkbox,True)
 
 # date_options_checkbox.configure(state='disabled')

@@ -34,7 +34,7 @@ dict_POSTAG = {'AFX': 'Affix', \
                'UH': 'Interjection', \
                'VB': 'Verb, base form', \
                'VBD': 'Verb, past tense', \
-               'VBG': 'Verb, gerundive or present participle', \
+               'VBG': 'Verb, gerund or present participle', \
                'VBN': 'Verb, past participle', \
                'VBP': 'Verb, non-3rd person singular present', \
                'VBZ': 'Verb, 3rd person singular present', \

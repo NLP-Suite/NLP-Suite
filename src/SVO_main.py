@@ -211,10 +211,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         inputFilename=''
 
 
-    # create an SVO-filtered subdirectory of the main output directory
+    # create an SVO_filtered subdirectory of the main output directory
     outputSVOFilterDir=''
     if filter_subjects or filter_verbs or filter_objects:
-        outputSVOFilterDir = outputSVODir + os.sep + 'SVO-filtered'
+        outputSVOFilterDir = outputSVODir + os.sep + 'SVO_filtered'
 
     if google_earth_var:
         # create a GIS subdirectory of the output directory
@@ -471,94 +471,101 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                  reminders_util.message_SVO_someone, True)
     # the SVO script can take in input a csv SVO file previously computed (in which case the filename will contain SVO_): inputFilename
     # results currently produced are in svo_result_list
+
+
     if ('SVO_' in inputFilename) or (len(svo_result_list) > 0):
-        # Gephi network graphs _________________________________________________
-        if gephi_var:
-            i = 0
-            # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
-            if inputFilename[-4:] == ".csv":
-                fileBase = os.path.basename(inputFilename)[0:-4]
-                nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue='utf-8')
-                if nRecords > 1:   # including headers; file is empty
-                    gexf_file = Gephi_util.create_gexf(window,fileBase, outputSVOSVODir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
-                                                       "Sentence ID")
-                    if gexf_file != None and gexf_file != '':
-                        filesToOpen.append(gexf_file)
-                else:
-                    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_result_list[0])
-                    if nRecords > 1:  # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(window,fileBase, inputFilename, svo_result_list[0],
-                                                           "Subject (S)", "Verb (V)", "Object (O)", "Sentence ID")
+        i = 0
+        for f in svo_result_list:
+            head, tail = os.path.split(svo_result_list[i])
+            tempOutputDir = head
+            # Gephi network graphs _________________________________________________
+            if gephi_var:
+                # i = 0
+                # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
+                if inputFilename[-4:] == ".csv":
+                    fileBase = os.path.basename(inputFilename)[0:-4]
+                    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue='utf-8')
+                    if nRecords > 1:   # including headers; file is empty
+                        gexf_file = Gephi_util.create_gexf(window,fileBase, outputSVOSVODir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
+                                                           "Sentence ID")
                         if gexf_file != None and gexf_file != '':
                             filesToOpen.append(gexf_file)
-            else:  # txt input file
-                for f in svo_result_list:
-                    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
-                    if nRecords > 1:  # including headers; file is empty
-                        # keep separate in case you want to export the 3 Gephi files
-                        #   (normal, lemma, filtered) to different folders
-                        #   now exported to the main SVO subdir
-                        if 'SVO_lemma' in svo_result_list[i]:
-                            # tempOutputDir = outputWNDir
-                            tempOutputDir = outputSVOSVODir
-                        elif 'SVO_filter' in svo_result_list[i]:
-                            # tempOutputDir = outputSVOFilterDir
-                            tempOutputDir = outputSVOSVODir
-                        else:
-                            tempOutputDir = outputSVOSVODir
-                        gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], tempOutputDir, f, "Subject (S)", "Verb (V)", "Object (O)",
-                                                           "Sentence ID")
-                        if "CoreNLP" in f or "SENNA_SVO" in f or "spaCy" in f or "Stanza" in f:
-                            if gexf_file!=None and gexf_file!='':
+                    else:
+                        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(svo_result_list[0])
+                        if nRecords > 1:  # including headers; file is empty
+                            gexf_file = Gephi_util.create_gexf(window,fileBase, inputFilename, svo_result_list[0],
+                                                               "Subject (S)", "Verb (V)", "Object (O)", "Sentence ID")
+                            if gexf_file != None and gexf_file != '':
                                 filesToOpen.append(gexf_file)
-                        if not save_intermediate_file:
-                            inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt',
-                                                                  silent=False,
-                                                                  configFileName=config_filename)
+                else:  # txt input file
+                    # for f in svo_result_list:
+                        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
+                        if nRecords > 1:  # including headers; file is empty
+                            # keep separate in case you want to export the 3 Gephi files
+                            #   (normal, lemma, filtered) to different folders
+                            #   now exported to the main SVO subdir
+                            # if 'SVO_lemma' in svo_result_list[i]:
+                            #     # tempOutputDir = outputSVOSVODir
+                            # elif 'SVO_filter' in svo_result_list[i]:
+                            #     # tempOutputDir = outputSVOSVODir
+                            # else:
+                            #     tempOutputDir = outputSVOSVODir
+                            # using Sentence ID as a proxy of a date variable to create a dynamic network graph
+                            gexf_file = Gephi_util.create_gexf(window,os.path.basename(f)[:-4], tempOutputDir, f, "Subject (S)", "Verb (V)", "Object (O)",
+                                                               "Sentence ID")
+                            if "CoreNLP" in f or "SENNA_SVO" in f or "spaCy" in f or "Stanza" in f:
+                                if gexf_file!=None and gexf_file!='':
+                                    filesToOpen.append(gexf_file)
+                            if not save_intermediate_file:
+                                inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt',
+                                                                      silent=False,
+                                                                      configFileName=config_filename)
 
-                            # gexf_files = [os.path.join(outputDir, f) for f in os.listdir(tempOutputDir) if
-                            gexf_files = [os.path.join(outputDir, f) for f in inputDocs if
-                                                        f.endswith('.gexf')]
-                            for f in gexf_files:
-                                if "CoreNLP" not in f and "SENNA_SVO" not in f and "spaCy" not in f and "Stanza" not in f: #CoreNLP accounts for both ++ and OpenIE
-                                    os.remove(f)
-                    i +=1
+                                # gexf_files = [os.path.join(outputDir, f) for f in os.listdir(tempOutputDir) if
+                                gexf_files = [os.path.join(outputDir, f) for f in inputDocs if
+                                                            f.endswith('.gexf')]
+                                for f in gexf_files:
+                                    if "CoreNLP" not in f and "SENNA_SVO" not in f and "spaCy" not in f and "Stanza" not in f: #CoreNLP accounts for both ++ and OpenIE
+                                        os.remove(f)
+                        # i +=1
 
-# wordcloud  _________________________________________________
+    # wordcloud  _________________________________________________
 
-        if wordcloud_var:
-            import wordclouds_util
-            i = 0
-            if inputFilename[-4:] == ".csv":
-                nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
-                if nRecords > 1:  # including headers; file is empty
-                    myfile = IO_files_util.openCSVFile(inputFilename, 'r')
-                    out_file = wordclouds_util.SVOWordCloud(myfile, inputFilename, outputSVOSVODir, "", prefer_horizontal=.9)
-                    myfile.close()
-                    filesToOpen.append(out_file)
-            else:
-                for f in svo_result_list:
+            if wordcloud_var:
+                import wordclouds_util
+                # i = 0
+                if inputFilename[-4:] == ".csv":
+                    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
+                    if nRecords > 1:  # including headers; file is empty
+                        myfile = IO_files_util.openCSVFile(inputFilename, 'r')
+                        outputFiles = wordclouds_util.SVOWordCloud(myfile, inputFilename, outputSVOSVODir, "", prefer_horizontal=.9)
+                        myfile.close()
+                        filesToOpen.append(outputFiles)
+                else:
+                    # for f in svo_result_list:
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
                     if nRecords > 1:  # including headers; file is empty
                         myfile = IO_files_util.openCSVFile(f, "r")
                         # keep separate in case you want to export the 3 Gephi files
                         #   (normal, lemma, filtered) to different folders
                         #   now exported to the main SVO subdir
-                        if 'SVO_lemma' in svo_result_list[i]:
-                            # tempOutputDir = outputWNDir
-                            tempOutputDir = outputSVOSVODir
-                        elif 'SVO_filter' in svo_result_list[i]:
-                            # tempOutputDir = outputSVOFilterDir
-                            tempOutputDir = outputSVOSVODir
-                        else:
-                            tempOutputDir = outputSVOSVODir
-                        out_file = wordclouds_util.SVOWordCloud(myfile, f, tempOutputDir, "", prefer_horizontal=.9)
+                        # if 'SVO_lemma' in svo_result_list[i]:
+                        #     # tempOutputDir = outputWNDir
+                        #     tempOutputDir = outputSVOSVODir
+                        # elif 'SVO_filter' in svo_result_list[i]:
+                        #     # tempOutputDir = outputSVOFilterDir
+                        #     tempOutputDir = outputSVOSVODir
+                        # else:
+                        #     tempOutputDir = outputSVOSVODir
+                        outputFiles = wordclouds_util.SVOWordCloud(myfile, f, tempOutputDir, "", prefer_horizontal=.9)
                         myfile.close()
                         if "CoreNLP" in f or "OpenIE" in f or "SENNA_SVO" in f or "spaCy" in f or "Stanza" in f:
-                            filesToOpen.append(out_file)
-                    i +=1
+                            filesToOpen.append(outputFiles)
+                    # i +=1
 
-# GIS maps _____________________________________________________
+            i += 1
+
+    # GIS maps _____________________________________________________
 
         if google_earth_var:
             # SENNA locations are not really geocodable locations
@@ -575,7 +582,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     area_var = ''
                     restrict = False
                     for location_filename in outputLocations:
-                        out_file = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
+                        outputFiles = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
                                      config_filename, location_filename, inputDir,
                                      outputGISDir,
                                      'Nominatim', 'Google Earth Pro & Google Maps', createCharts, chartPackage,
@@ -590,12 +597,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                      [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
                                      [1], [1]) # bold_var_list, italic_var_list
 
-                        if out_file!=None and out_file!='':
-                            if len(out_file) > 0:
+                        if outputFiles!=None and outputFiles!='':
+                            if len(outputFiles) > 0:
                                 # since out_file produced by KML is a list cannot use append
-                                filesToOpen = filesToOpen + out_file
+                                filesToOpen = filesToOpen + outputFiles
 
-# generate subset of files to be opened
+    # generate subset of files to be opened
 
     if openOutputFiles == True and len(filesToOpen) > 0:
         filesToOpenSubset = []
@@ -1034,7 +1041,7 @@ gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    gephi_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "When filtering subjects/verbs/objects, network graphs will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO-filtered subdirectories.\n"                                  
+                                   "When filtering subjects/verbs/objects, network graphs will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO_filtered subdirectories.\n"                                  
                                    "When lemmatizing, network graphs will also be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
 
 wordcloud_var.set(1)
@@ -1044,7 +1051,7 @@ wordcloud_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in wor
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    wordcloud_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "When filtering subjects/verbs/objects, wordclouds will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO-filtered subdirectories\n" 
+                                   "When filtering subjects/verbs/objects, wordclouds will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO_filtered subdirectories\n" 
                                    "When lemmatizing, wordclouds will also be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
 
 def check_NER(first_time=False):
@@ -1201,9 +1208,9 @@ readMe_message = "This set of Python 3 scripts extract automatically most of the
                  "\n\nIn OUTPUT, the scripts will produce tens of files (txt, csv, png, HTML, KML), depending upon the options selected. " \
                  "Given the large number of files produced, the output is organized in several subfolders:"\
                  "\nSVO, containing the main SVO csv files, along with the network graphs and wordclouds if these visualization options are selected. spaCy and Stanza also export the CoNLL table."\
-                 "\nSVO-lemma, containing all the csv files (and xlsx, if Excel charts are selected) for the LEMMATIZED SVO values" \
-                 "\nSVO-filtered, containing all the csv files (and xlsx, if Excel charts are selected) for the FILTERED and LEMMATIZED SVO values" \
-                 "\nSVO-form, containing all the csv files (and xlsx, if Excel charts are selected) for the SVO values UNLEMMATIZED (i.e., form values) and UNFILTERED for social actors and/or social actions" \
+                 "\nSVO_lemma, containing all the csv files (and xlsx, if Excel charts are selected) for the LEMMATIZED SVO values" \
+                 "\nSVO_filtered, containing all the csv files (and xlsx, if Excel charts are selected) for the FILTERED and LEMMATIZED SVO values" \
+                 "\nSVO_form, containing all the csv files (and xlsx, if Excel charts are selected) for the SVO values UNLEMMATIZED (i.e., form values) and UNFILTERED for social actors and/or social actions" \
                  "\nGIS, containing Google Earth Pro pin maps and Google Maps heat maps, if the mapping option is selected" \
                  "\WordNet, containing the nouns and/or verbs aggregated into WordNet top synset categories (e.g., 'run' into 'motion'), if any Lemmatizing options are selected"
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)

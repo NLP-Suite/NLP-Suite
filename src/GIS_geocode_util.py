@@ -392,7 +392,7 @@ def geocode(window,locations, inputFilename, outputDir,
 					date = item[6]
 			else:
 				itemToGeocode =item[0]
-				NER_Tag = item[3]
+				NER_Tag = item[2]
 				if NER_Tag == 'COUNTRY':
 					NER_Tag_nominatim = 'country'
 				elif NER_Tag == 'STATE_OR_PROVINCE':
@@ -401,7 +401,7 @@ def geocode(window,locations, inputFilename, outputDir,
 					NER_Tag_nominatim = 'city'
 
 				if datePresent:
-					date=item[2]
+					date=item[1]
 
 			# avoid repetition so as not to access the geocoder service several times for the same location;
 			# 	location already in list
