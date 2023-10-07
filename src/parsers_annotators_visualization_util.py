@@ -355,7 +355,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
         head, tail = os.path.split(outputDir)
         outputSVOUnFilterDir=head+os.sep+'SVO-form'
         if not os.path.isdir(outputSVOUnFilterDir):
-            outputSVOUnFilterDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO-form',
+            outputSVOUnFilterDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO_form',
                                                                         silent=True)
             if outputSVOUnFilterDir == '':
                 return

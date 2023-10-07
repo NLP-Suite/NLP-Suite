@@ -313,7 +313,7 @@ def verb_tense_data_preparation(data):
 		if(i[3] in verb_tense_list):
 			tense = i[3]
 			if(tense == 'VBG'):
-				tense_col = 'Gerundive'
+				tense_col = 'Gerund'
 				vbg_counter+=1
 			elif(tense == 'VBD'):
 				tense_col = 'Past'
@@ -329,7 +329,7 @@ def verb_tense_data_preparation(data):
 				vbp_counter+=1
 			dat.append(i+[tense_col])
 	verb_tense_stats = [['Verb Tense', 'Frequencies'],
-					['Gerundive', vbg_counter],
+					['Gerund', vbg_counter],
 					['Infinitive', vb_counter],
 					['Past', vbd_counter],
 					['Past Principle/Passive', vbn_counter],
@@ -341,7 +341,7 @@ def verb_tense_data_preparation(data):
 # def verb_tense_compute_frequencies(data, data_divided_sents):
 # 	global postag_counter
 # 	verb_future_list = []
-# 	verb_gerundive_list = []
+# 	verb_gerund_list = []
 # 	verb_infinitive_list = []
 # 	verb_past_list = []
 # 	verb_past_principle_list = []
@@ -350,7 +350,7 @@ def verb_tense_data_preparation(data):
 # 	form_list, postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
 # 	verb_tense_stats = [['Verb Tense', 'Frequencies'],
 # 				   # ['Future', postag_counter['VBD']],
-# 				   ['Gerundive', postag_counter['VBG']],
+# 				   ['Gerund', postag_counter['VBG']],
 # 				   ['Infinitive', postag_counter['VB']],
 # 				   ['Past', postag_counter['VBD']],
 # 				   ['Past Principle/Passive', postag_counter['VBN']],
@@ -368,7 +368,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	# form_list, postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
 	# verb_tense_stats = [['Verb Tense', 'Frequencies'],
 	# 			   # ['Future', postag_counter['VBD']],
-	# 			   ['Gerundive', postag_counter['VBG']],
+	# 			   ['Gerund', postag_counter['VBG']],
 	# 			   ['Infinitive', postag_counter['VB']],
 	# 			   ['Past', postag_counter['VBD']],
 	# 			   ['Past Principle/Passive', postag_counter['VBN']],

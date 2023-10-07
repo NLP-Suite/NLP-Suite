@@ -310,7 +310,7 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
     if lemmatize_s or lemmatize_v or lemmatize_o:
         head, tail = os.path.split(outputSVODir)
         # create an SVO-lemma subdirectory of the main output directory
-        outputSVOLemmaDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO-lemma',
+        outputSVOLemmaDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO_lemma',
                                                                     silent=True)
         if outputSVOLemmaDir == '':
             return
@@ -318,7 +318,7 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
         # create the lemma dict
         if filter_s or filter_v or filter_o:
             head, tail = os.path.split(outputSVODir)
-            outputSVOFilterDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO-filtered',
+            outputSVOFilterDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO_filter',
                                                                         silent=True)
             if outputSVOFilterDir == '':
                 return
@@ -362,7 +362,7 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
     if lemmatize_s or lemmatize_v or lemmatize_o:
         head, tail = os.path.split(svo_file_name)
         tail = tail.replace('NLP_SVO_', 'NLP_SVO_lemma_')
-        svo_lemma_file_name = os.path.join(outputSVODir, tail)
+        svo_lemma_file_name = os.path.join(outputSVOLemmaDir, tail)
         filesToOpen.append(svo_lemma_file_name)
         # save lemmatized file
         lemmatized_svo.to_csv(svo_lemma_file_name, encoding='utf-8', index=False)
@@ -393,7 +393,7 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
             outputDir, tail = os.path.split(svo_lemma_file_name)
             tail = tail.replace('NLP_SVO_lemma_', 'NLP_SVO_filter_'+ label)
             # svo_filtered_file_name = os.path.join(outputWNDir, tail)
-            svo_filter_file_name = os.path.join(outputSVODir, tail)
+            svo_filter_file_name = os.path.join(outputSVOFilterDir, tail)
             # save filtered file
             filesToOpen.append(svo_filter_file_name)
             # pd.DataFrame.from_dict(lemmatized_filtered_svo, orient='index').to_csv(svo_filter_file_name, encoding='utf-8',
@@ -464,7 +464,7 @@ def lemmatize_filter_svo_old(window,svo_file_name, filter_s, filter_v, filter_o,
     if lemmatize_s or lemmatize_v or lemmatize_o:
         head, tail = os.path.split(outputSVODir)
         # create an SVO-lemma subdirectory of the main output directory
-        outputSVOLemmaDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO-lemma',
+        outputSVOLemmaDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO_lemma',
                                                                     silent=True)
         if outputSVOLemmaDir == '':
             return
@@ -479,7 +479,7 @@ def lemmatize_filter_svo_old(window,svo_file_name, filter_s, filter_v, filter_o,
             #   rather than inside the SVO subdir
             head, tail = os.path.split(outputSVODir)
             # create an SVO-filtered subdirectory of the main output directory
-            outputSVOFilterDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO-filtered',
+            outputSVOFilterDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO_filter',
                                                                         silent=True)
             if outputSVOFilterDir == '':
                 return
