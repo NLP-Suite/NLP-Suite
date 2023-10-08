@@ -587,14 +587,18 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                     annotated = stannlp(currenttext)
                     for sent_id in range(len(annotated.sentences)):
                         for word in annotated.sentences[sent_id].words:
+                            print("--------------------word.text.lower()",word.text.lower())
+                            if word.text.lower() == "'s" or word.text.lower() == "’s" or word.text.lower() == "s":
+                                continue  # do not process the s of a saxon genitive
                             # RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, GREY for ADVERBS
                             #   YELLOW for anything else; no longer used
                             if lemmatize:
                                 word_str = word.lemma
                                 if word_str==None:
                                     word_str = word.text
-                            else:
                                 word_str = word.text
+                            else:
+                                pass
                             if exclude_stopwords:
                                 if word_str.lower() in stopwords: # STOPWORDS are all lowercase, so any exclusion will have to be converted
                                     continue  # do not process stopwords & punctuation marks
@@ -671,7 +675,8 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                              inputDir) + '\n\nFile(s) listed in command line. Please, make sure to check the file(s) content.')
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
+        head, scriptName = os.path.split(os.path.basename(__file__))
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
         filesToOpen = None
     return filesToOpen
 

@@ -62,7 +62,7 @@ def run(inputFilename, inputDir, outputDir,
 
 
     filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = \
-        config_util.get_date_options(temp_config_filename, config_input_output_numeric_options)
+        config_util.get_date_options(config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
     if package_display_area_value == '':
@@ -100,7 +100,7 @@ def run(inputFilename, inputDir, outputDir,
 
         # inputFilename and inputDir are the original txt files to be coreferenced
         # 2 items are returned: filename string and true/False for error
-        files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(temp_config_filename, inputFilename, inputDir,
+        files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
                                        outputCorefedDir,
                                        openOutputFiles, createCharts, chartPackage,
                                        language_var,
