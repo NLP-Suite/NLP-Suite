@@ -92,6 +92,18 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                                                                     bold_var, tagAnnotations, '.txt','WordNet_'+noun_verb)
 
     if extract_proper_nouns==1 or extract_improper_nouns==1:
+        import IO_csv_util
+        if csv_file!='':
+            headers=IO_csv_util.get_csvfile_headers(csv_file)
+        else:
+            mb.showerror(title='Option not available', message="You have selected to run the option 'Extract PROPER/IMPROPER nouns' but you have not selected a csv input file.\n\nPlease, select an INPUT csv file and try again.")
+            return
+        sel_col=''
+        # Word is the term used by other scripts; but the WordNet script uses Term; just in case we change that...
+        if 'Term' in headers:
+            sel_col='Term'
+        elif 'Word' in headers:
+            sel_col='Word'
         if noun_verb!='NOUN':
             mb.showerror(title='Option not available', message="You have selected to run the option 'Extract PROPER/IMPROPER nouns' with VERB.\n\nPlease, select NOUN and try again.")
             return
@@ -100,9 +112,9 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
             return
         check_column=0
         if extract_proper_nouns:
-            filesToOpen=knowledge_graphs_WordNet_util.get_case_initial_row(csv_file, outputDir,'Word', True)
+            filesToOpen=knowledge_graphs_WordNet_util.get_case_initial_row(csv_file, outputDir,sel_col, True)
         if extract_improper_nouns:
-            filesToOpen=knowledge_graphs_WordNet_util.get_case_initial_row(csv_file, outputDir,'Word', False)
+            filesToOpen=knowledge_graphs_WordNet_util.get_case_initial_row(csv_file, outputDir,sel_col, False)
 
     if aggregate_lemmatized_var==True:
 

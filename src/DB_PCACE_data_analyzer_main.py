@@ -192,7 +192,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
 
             if outputFile != None:
                 if len(outputFile) > 0:
-                    # since out_file produced by KML is a list cannot use append
+                    # since outputFile produced by KML is a list cannot use append
                     filesToOpen = filesToOpen + outputFile
 
 # actors ----------------------------------------------------------------------
