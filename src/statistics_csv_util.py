@@ -504,6 +504,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 
 # no aggregation by group_cols --------------------------------------------------------
     elif len(plot_cols) != 0 and len(group_cols) == 0:
+        plot_cols=['Victim Race','Victim Gender']
         for col in plot_cols:
             data = data[col].value_counts().to_frame().reset_index()
             hdr = [col, col + ' Frequency']

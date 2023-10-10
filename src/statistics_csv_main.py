@@ -206,30 +206,31 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 
 def activate_viewer_options(*args):
-    if csv_field_var.get()!='':
-        if csv_field_var.get() in csv_field_list:
-            mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
-            return
-        if 'Partial match' in viewer_options_menu_var.get() or \
-                'Normalize' in viewer_options_menu_var.get() or \
-                'Scale' in viewer_options_menu_var.get():
-                mb.showwarning(title='Warning', message='The option is not available yet.\n\nSorry!')
-                return
-        # remove the case option, when a different one is selected
-        if 'insensitive' in viewer_options_menu_var.get() and 'sensitive' in str(viewer_options_list):
-            viewer_options_list.remove('Case sensitive (default)')
-        if 'sensitive' in viewer_options_menu_var.get() and 'insensitive' in str(viewer_options_list):
-            viewer_options_list.remove('Case insensitive')
-        viewer_options_list.append(viewer_options_menu_var.get())
-        viewer_options_menu.configure(state="disabled")
-        add_viewer_button.configure(state='normal')
-        reset_viewer_button.configure(state='normal')
-        show_viewer_button.configure(state='normal')
-    else:
-        add_viewer_button.configure(state='disabled')
-        reset_viewer_button.configure(state='disabled')
-        show_viewer_button.configure(state='disabled')
-        viewer_options_menu.configure(state="normal")
+    print()
+    # if csv_field_var.get()!='':
+    #     if csv_field_var.get() in csv_field_list:
+    #         mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
+    #         return
+    #     if 'Partial match' in viewer_options_menu_var.get() or \
+    #             'Normalize' in viewer_options_menu_var.get() or \
+    #             'Scale' in viewer_options_menu_var.get():
+    #             mb.showwarning(title='Warning', message='The option is not available yet.\n\nSorry!')
+    #             return
+    #     # remove the case option, when a different one is selected
+    #     if 'insensitive' in viewer_options_menu_var.get() and 'sensitive' in str(viewer_options_list):
+    #         viewer_options_list.remove('Case sensitive (default)')
+    #     if 'sensitive' in viewer_options_menu_var.get() and 'insensitive' in str(viewer_options_list):
+    #         viewer_options_list.remove('Case insensitive')
+    #     viewer_options_list.append(viewer_options_menu_var.get())
+    #     viewer_options_menu.configure(state="disabled")
+    #     add_viewer_button.configure(state='normal')
+    #     reset_viewer_button.configure(state='normal')
+    #     show_viewer_button.configure(state='normal')
+    # else:
+    #     add_viewer_button.configure(state='disabled')
+    #     reset_viewer_button.configure(state='disabled')
+    #     show_viewer_button.configure(state='disabled')
+    #     viewer_options_menu.configure(state="normal")
 
 activate_viewer_options()
 
