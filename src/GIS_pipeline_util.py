@@ -90,8 +90,8 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
 
     filesToOpen=[]
 
-    split_locations_prefix="south, north, west, east, los, new, san, las, la, hong"
-    split_locations_suffix="city, island"
+    split_locations_prefix="south, north, North, west, east, los, new, san, las, la, hong, Soviet, People's, "
+    split_locations_suffix="city, island, province"
 
     # if datePresent:
     #     date, dateStr = IO_files_util.getDateFromFileName(inputFilename, dateFormat, dateDelimiter, int(datePosition))
