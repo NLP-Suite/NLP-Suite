@@ -1034,22 +1034,22 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                 word_list.append([subjectivity_score, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
 
-# SHORT WORDS --------------------------------------------------------------------------
+    # WORD LENGTH --------------------------------------------------------------------------
             for wordID, word in enumerate(filtered_words):
-                if processType=='' or "short" in processType.lower():
-                    header = ['Short words (<4 characters)', 'Word ID (in sentence)', 'Number of words in sentence', 'Sentence ID','Sentence','Document ID','Document']
-                    select_col = ['Short words (<4 characters)']
-                    fileLabel='short_words'
-                    fileLabel_byDocID = 'vowel_words_byDoc'
-                    columns_to_be_plotted_yAxis=['Short words (<4 characters)'] # bar chart
-                    chart_title_label = 'Frequency of Short Words (<4 Characters)'
-                    chart_title_byDocID='Frequency of Short Words by Document'
-                    chart_title_bySentID ='Frequency of Short Words by Sentence Index'
-                    column_xAxis_label = 'Short words (<4 characters)'
+                if processType=='' or "word length" in processType.lower():
+                    header = ['Word', 'Word length (in characters)', 'Word ID (in sentence)', 'Number of words in sentence', 'Sentence ID','Sentence','Document ID','Document']
+                    select_col = ['Word length']
+                    fileLabel='word_length'
+                    fileLabel_byDocID = 'word_length_byDoc'
+                    columns_to_be_plotted_yAxis=['Word length'] # bar chart
+                    chart_title_label = 'Frequency of Word Lengths (in Characters)'
+                    chart_title_byDocID='Frequency of Word Lengths (in Characters) by Document'
+                    chart_title_bySentID ='Frequency of Word Lengths (in Characters) by Sentence Index'
+                    column_xAxis_label = 'Word length (in characters)'
 
                     # exclude numbers from list
-                    if word and len(word) <= int(word_length) and word.isalpha():
-                        word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                    if word and word.isalpha():
+                        word_list.append([word, len(word), wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
     # INITIAL-CAPITAL WORDS --------------------------------------------------------------------------
 
@@ -1067,6 +1067,8 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                     if word and word and word[0].isupper():
                         word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID,
                                   IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        # word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID,
+                        #           IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
     # INITIAL-VOWEL WORDS --------------------------------------------------------------------------
 

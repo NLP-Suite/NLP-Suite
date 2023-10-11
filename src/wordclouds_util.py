@@ -594,10 +594,11 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                             #   YELLOW for anything else; no longer used
                             if lemmatize:
                                 word_str = word.lemma
+                                # if no lemma, use form value
                                 if word_str==None:
                                     word_str = word.text
-                                word_str = word.text
                             else:
+                                word_str = word.text
                                 pass
                             if exclude_stopwords:
                                 if word_str.lower() in stopwords: # STOPWORDS are all lowercase, so any exclusion will have to be converted
