@@ -375,7 +375,9 @@ def processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles,csvFie
         if len(csvField_color_list) != 0:
             # process csvField_color_list
             currenttext, color_to_words = processColorList(currenttext, color_to_words, csvField_color_list, myfile)
-            tempOutputfile = display_wordCloud_sep_color(inputFilename, outputDir, currenttext, color_to_words, transformed_image_mask, collocation, prefer_horizontal, bg_image = bg_image, bg_image_flag= bg_image_flag)
+            tempOutputfile=''
+            if currenttext!='':
+                tempOutputfile = display_wordCloud_sep_color(inputFilename, outputDir, currenttext, color_to_words, transformed_image_mask, collocation, prefer_horizontal, bg_image = bg_image, bg_image_flag= bg_image_flag)
     myfile.close()
     return tempOutputfile
 
@@ -637,7 +639,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                     tempOutputfile = display_wordCloud_sep_color(doc, inputDir, outputDir, textToProcess, color_to_words,
                                                                  transformed_image_mask, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
                 else:
-                    # when stopwords = '' stopwords will be INCLUDEED in the output visual
+                    # when stopwords = '' stopwords will be INCLUDED in the output visual
                     tempOutputfile=display_wordCloud(doc,inputDir,outputDir,textToProcess, doNotListIndividualFiles,transformed_image_mask, stopwords, collocation,prefer_horizontal, bg_image = img, bg_image_flag = use_contour_only , font = font, max_words = max_words)
                 filesToOpen.append(tempOutputfile)
                 # write an output txt file that can be used for internet wordclouds services
@@ -651,7 +653,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
         if differentPOS_differentColors:
             tempOutputfile=display_wordCloud_sep_color(doc, inputDir, outputDir, combinedtext, color_to_words, transformed_image_mask, collocation, prefer_horizontal,bg_image=img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
         else:
-            # when stopwords = '' stopwords will be INCLUDEED in the output visual
+            # when stopwords = '' stopwords will be INCLUDED in the output visual
             tempOutputfile=display_wordCloud(doc,inputDir,outputDir,combinedtext, doNotListIndividualFiles, transformed_image_mask, stopwords, collocation,prefer_horizontal, bg_image=img, bg_image_flag = use_contour_only, font = font, max_words = max_words)
         filesToOpen.append(tempOutputfile)
         # write an output txt file that can be used for internet wordclouds services

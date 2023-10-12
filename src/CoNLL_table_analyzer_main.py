@@ -181,7 +181,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                message="The CoNLL table is ill formed. You may have tinkered with it. Please, rerun the Stanford CoreNLP parser since many scripts rely on the CoNLL table.")
                 return
 
-        temp_outputDir, filesToOpen = CoNLL_table_search_util.search_CoNLL_table(inputFilename, outputDir,
+        temp_outputDir, filesToOpen = CoNLL_table_search_util.search_CoNLL_table(inputFilename, outputDir, config_filename,
                                           createCharts, chartPackage,
                                           all_CoNLL_records, searchField_kw, searchedCoNLLField,
                                           related_token_POSTAG=co_postag,

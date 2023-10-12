@@ -162,6 +162,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 
 	verb_voice_list, voice_stats, voice_pass, voice_aux, voice_act = voice_output(data_prep, data_divided_sents)
 	# output file names
+	# NVA Noun Verb Analysis
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice',
 																'list')
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
@@ -200,12 +201,26 @@ def verb_modality_data_preparation(data):
 	obl_row = []
 	will_row = []
 	can_row = []
+	# the modal value is taken from Halliday, An Introduction to Functional Grammar, Second Edition, London: Arnold. p. 362.
+	high_value_row = []
+	median_value_row = []
+	low_value_row = []
 	verb_postags = ['MD']
+	high_value_keywords = ['must', 'ought to', 'need', 'have to', 'be to']
+	median_value_keywords = ['will', 'would', 'shall', 'should']
+	low_value_keywords = ['may', 'might', 'can', 'could']
 	obligation_keywords = ['must', 'need', 'form', 'should', 'ought', 'shall']
 	will_would_keywords = ['will', 'would', 'll', '\'d']
 	can_may_keywords = ['can', 'could', 'may', 'might']
 
 	for i in data:
+		if(i[1] in high_value_keywords and i[3] in verb_postags):
+			high_value_row.append(i+["high_value_modals"])
+		if(i[1] in median_value_keywords and i[3] in verb_postags):
+			median_value_row.append(i+["median_value_modals"])
+		if(i[1] in low_value_keywords and i[3] in verb_postags):
+			low_value_row.append(i+["low_value_modals"])
+
 		if(i[1] in obligation_keywords and i[3] in verb_postags):
 			obl_row.append(i+["Obligation"])
 		elif(i[1] in will_would_keywords and i[3] in verb_postags):
@@ -217,8 +232,13 @@ def verb_modality_data_preparation(data):
 				  ['Obligation', len(obl_row)],
 				  ['Will/Would', len(will_row)],
 				  ['Can/May', len(can_row)]]
+	verb_modality_value_stats = [['Verb Modality Value', 'Frequencies'],
+				  ['High-value Modals', len(high_value_row)],
+				  ['Median-value Modals', len(median_value_row)],
+				  ['Low-value Modals', len(low_value_row)]]
+
 	dat = sorted(dat, key=lambda x: int(x[recordID_position]))
-	return dat, verb_modality_stats
+	return dat, verb_modality_stats, verb_modality_value_stats
 
 # modality compute frequencies of modality categories
 # def verb_modality_compute_categories(data, data_divided_sents):
@@ -264,16 +284,23 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 
 	filesToOpen = []  # Store all files that are to be opened once finished
 
-	obligation_list, modality_stats = verb_modality_data_preparation(data)
+	obligation_list, modality_stats, verb_modality_value_stats = verb_modality_data_preparation(data)
 	# output file names
+	# NVA Noun Verb Analysis
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
 															 'Verb Modality', 'list')
-	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
+	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'value',
 																   'Verb Modality', 'stats')
+	verb_modality_value_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
+																   'Verb Modality Value', 'stats')
 
 	df = pd.DataFrame(modality_stats)
 	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
 						  language_encoding='utf-8')
+	df = pd.DataFrame(verb_modality_value_stats)
+	IO_csv_util.df_to_csv(GUI_util.window, df, verb_modality_value_stats_file_name, headers=None, index=False,
+						  language_encoding='utf-8')
+
 	if createCharts == True:
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0, 1]]
@@ -284,6 +311,25 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 												   chart_type_list=['bar'],
 												   chart_title="Frequency Distribution of Verb Modality",
 												   column_xAxis_label_var='Verb modality',
+												   hover_info_column_list=[],
+												   count_var=count_var,
+												   complete_sid=False)  # TODO to be changed
+		# run_all returns a string; must use append
+		if outputFiles!=None:
+			if isinstance(outputFiles, str):
+				filesToOpen.append(outputFiles)
+			else:
+				filesToOpen.extend(outputFiles)
+
+		columns_to_be_plotted_xAxis=[]
+		columns_to_be_plotted_yAxis=[[0, 1]]
+		count_var = 0
+		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_modality_value_stats_file_name, outputDir,
+												   outputFileLabel='verb_mod_val',
+												   chartPackage=chartPackage,
+												   chart_type_list=['bar'],
+												   chart_title="Frequency Distribution of Halliday's Verb Modality Values",
+												   column_xAxis_label_var='Verb modality value',
 												   hover_info_column_list=[],
 												   count_var=count_var,
 												   complete_sid=False)  # TODO to be changed
@@ -377,6 +423,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	verb_tense_list, verb_tense_stats = verb_tense_data_preparation(data)
 
 	# output file names
+	# NVA Noun Verb Analysis
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Tense',
 															 'list')
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
