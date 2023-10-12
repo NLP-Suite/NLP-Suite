@@ -108,10 +108,14 @@ def get_headerValue_from_columnNumber(headers,column_number=0):
 # the function extracts all the UNIQUE values in a column of a csv file
 # the function is used, for instance, to create the values of a dropdown menu
 #   for an example, see annotator_GUI.py
-#   column_name is the header
-# returns a sorted list of DISTINCT values
-def get_csv_field_values(inputFilename, column_name):
-    unique_values = set()
+#   column_name is the string header
+# returns a sorted list of DISTINCT values or a string of comma-separated values (to be used, for instance, for a wordcloud)
+# since a set contains only unique values, it cannot be used as such to construct wordclouds images
+def get_csv_field_values(inputFilename, column_name, uniqueValues=True, returnList=True):
+    if uniqueValues:
+        unique_values = set()
+    else:
+        unique_values = ''
     if inputFilename == '' or column_name == '':
         return ['']
 
@@ -123,11 +127,15 @@ def get_csv_field_values(inputFilename, column_name):
         if col_num==None:
             return ['']
         for row in csvreader:
-            unique_values.add(row[col_num])
-        sorted_unique_values=sorted(unique_values)
-        # convert set to list; to obtain a string of values simply str(sorted_unique_values)
-        # the list is sorted with proper names, with capital initial first, then the improper names
-    return list(sorted_unique_values)
+            if uniqueValues:
+                unique_values.add(row[col_num])
+                # convert set to list; to obtain a string of values simply str(sorted_unique_values)
+                # the list is sorted with proper names, with capital initial first, then the improper names
+                sorted_unique_values = sorted(unique_values)
+                list(sorted_unique_values)
+            else:
+                unique_values = row[col_num] + ', ' + unique_values
+    return unique_values
 
 # get the number of records and columns of a csv file
 def GetNumberOf_Records_Columns_inCSVFile(inputFilename,encodingValue='utf-8'):

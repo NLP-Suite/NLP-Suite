@@ -381,7 +381,7 @@ def do_include_word(word: List[str], filters: List[CoNLLFilter]) -> bool:
 
 
 # Chen
-def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoNLL_records, form_of_token,
+def search_CoNLL_table(inputFilename, outputDir, config_filename, createCharts, chartPackage, CoNLL_records, form_of_token,
                        _field_='FORM',
                        related_token_POSTAG="*",
                        related_token_DEPREL="*",
@@ -597,6 +597,28 @@ def search_CoNLL_table(inputFilename, outputDir, createCharts, chartPackage, CoN
                                         'Searched Token/Word',
                                         'POS Tag of Searched Token/Word',
                                         'Co-occurring Token/Word', 'Sentence ID')
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
+        # wordclouds graphs _________________________________________________
+
+        import wordclouds_util
+        # run with all default values;
+        prefer_horizontal = .9
+        doNotListIndividualFiles = True
+        collocation = True
+        transformed_image_mask = []
+        stopwords = ''
+        column_name='Co-occurring Token/Word'
+        textToProcess = IO_csv_util.get_csv_field_values(outputFilename, column_name, uniqueValues=False, returnList=False)
+
+        outputFiles = wordclouds_util.display_wordCloud(outputFilename, '', outputDir, textToProcess, doNotListIndividualFiles,
+                              transformed_image_mask, stopwords, collocation, prefer_horizontal, bg_image=None,
+                              bg_image_flag=True, font=None, max_words=100)
+
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
