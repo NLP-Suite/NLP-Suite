@@ -247,7 +247,7 @@ parsers_annotators,CoNLL table analyzer,"The Stanford CoreNLP GUI will now open 
 In the 'CoNLL table analyzer' GUI you can:
 
   1. search the words contained in the CoNLL table (the one just created or a different one) by their syntactical properties and the type of relations to other words;
-  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words).",ON
+  2. compute frequency distributions of various types of linguistic objects: clauses, nouns, verbs, function words ('junk/stop' words).",OFF
 wordclouds,Python wordclouds,"You have selected to visualize words only horizontally in the wordclouds image. Some of the lower-frequency words may need to be dropped from the wordclouds image since there may not be enough room for their display.
 
 Combining horizontal and vertical displays maximizes the number of words visualized in the wordclouds image.",ON

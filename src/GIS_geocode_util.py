@@ -262,9 +262,7 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 def geocode(window,locations, inputFilename, outputDir,
 			locationColumnName,
 			geocoder,country_bias,area,restrict,
-			encodingValue,
-			split_locations_prefix='',
-			split_locations_suffix=''):
+			encodingValue):
 
 	if not IO_internet_util.check_internet_availability_warning('GIS geocoder'):
 		return '', '', '', ''  # empty output files
@@ -316,7 +314,7 @@ def geocode(window,locations, inputFilename, outputDir,
 		if inputIsCoNLL:
 			outputCsvLocationsOnly = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
 																	   'NER_locations', '', '', '', False, True)
-			locations = GIS_location_util.extract_NER_locations(window, inputFilename, encodingValue, split_locations_prefix, split_locations_suffix, datePresent)
+			locations = GIS_location_util.extract_NER_locations(window, inputFilename, encodingValue, datePresent)
 		else:
 			# locations is a list of names of locations
 			locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnName, encodingValue)
@@ -392,7 +390,11 @@ def geocode(window,locations, inputFilename, outputDir,
 					date = item[6]
 			else:
 				itemToGeocode =item[0]
-				NER_Tag = item[2]
+				if datePresent:
+					date = item[1]
+					NER_Tag = item[2]
+				else:
+					NER_Tag = item[1]
 				if NER_Tag == 'COUNTRY':
 					NER_Tag_nominatim = 'country'
 				elif NER_Tag == 'STATE_OR_PROVINCE':
@@ -400,14 +402,13 @@ def geocode(window,locations, inputFilename, outputDir,
 				elif NER_Tag == 'CITY':
 					NER_Tag_nominatim = 'city'
 
-				if datePresent:
-					date=item[1]
-
 			# avoid repetition so as not to access the geocoder service several times for the same location;
 			# 	location already in list
 			if itemToGeocode in distinctGeocodedList:
 				location = itemToGeocode
 				# TODO: special case for 'America': convert to 'United States'
+				if itemToGeocode == 'Soviet Union':
+					itemToGeocode = 'Russia'
 				if itemToGeocode == 'America':
 					itemToGeocode = 'United States'
 				if itemToGeocode in nonDistinctNotGeocodedList:
@@ -423,6 +424,8 @@ def geocode(window,locations, inputFilename, outputDir,
 				# TODO special case for 'America': convert to 'United States', so that 'United States' is appended to distinctGeocodedList
 				if itemToGeocode == 'America':
 					itemToGeocode = 'United States'
+				if itemToGeocode == 'Soviet Union':
+					itemToGeocode = 'Russia'
 				distinctGeocodedList.append(itemToGeocode)
 				if geocoder=='Nominatim':
 					NER_Tag_nominatim = ''
