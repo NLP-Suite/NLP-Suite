@@ -353,8 +353,12 @@ def verb_tense_data_preparation(data):
 	vbn_counter = 0
 	vbp_counter = 0
 	vb_counter = 0
-	verb_tense_list = ['VBG', 'VBD', 'VB', 'VBN', 'VBP']
+	vb_counter_future = 0
+	vb_counter_infinitive = 0
+	verb_tense_list = ['VBG', 'VBD', 'VB', 'VBN', 'VBP', 'MD'] # MD modal verb
 
+	aux = False
+	# data is the CoNLL table
 	for i in data:
 		if(i[3] in verb_tense_list):
 			tense = i[3]
@@ -364,9 +368,16 @@ def verb_tense_data_preparation(data):
 			elif(tense == 'VBD'):
 				tense_col = 'Past'
 				vbd_counter+=1
-			elif(tense == 'VB'):
-				tense_col = 'Infinitive'
-				vb_counter+=1
+			elif (tense == 'MD' and (i[1]=='will' or i[1]=='shall')):
+				aux = True #'aux' in i[6]
+			elif (tense == 'VB'):
+				if aux:
+					vb_counter_future += 1
+					tense_col = 'Future'
+					aux = False
+				else:
+					vb_counter_infinitive += 1
+					tense_col = 'Infinitive'
 			elif(tense == 'VBN'):
 				tense_col = 'Past Principle/Passive'
 				vbn_counter+=1
@@ -376,10 +387,11 @@ def verb_tense_data_preparation(data):
 			dat.append(i+[tense_col])
 	verb_tense_stats = [['Verb Tense', 'Frequencies'],
 					['Gerund', vbg_counter],
-					['Infinitive', vb_counter],
+					['Infinitive', vb_counter_infinitive],
 					['Past', vbd_counter],
 					['Past Principle/Passive', vbn_counter],
-					['Present', vbp_counter]]
+					['Present', vbp_counter],
+					['Future', vb_counter_future]]
 	dat = sorted(dat, key=lambda x: int(x[recordID_position]))
 	return dat, verb_tense_stats
 

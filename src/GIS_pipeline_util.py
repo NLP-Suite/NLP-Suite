@@ -90,9 +90,6 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
 
     filesToOpen=[]
 
-    split_locations_prefix="south, north, North, west, east, los, new, san, las, la, hong, Soviet, People's, "
-    split_locations_suffix="city, island, province"
-
     # if datePresent:
     #     date, dateStr = IO_files_util.getDateFromFileName(inputFilename, dateFormat, dateDelimiter, int(datePosition))
         # if date == '':
@@ -140,18 +137,19 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         outputCsvLocationsOnly = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
                                                                    'NER_locations', '', '', '', False, True)
         locations = GIS_location_util.extract_NER_locations(window, inputFilename, encodingValue,
-                                                            split_locations_prefix,
-                                                            split_locations_suffix,
                                                             datePresent)
     else:
         # locations is a list of names of locations
-        locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnNumber,encodingValue, datePresent, dateColumnNumber)
+        locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnNumber, encodingValue, datePresent, dateColumnNumber)
         if locations == None or len(locations) == 0:
             return
         if not inputIsGeocoded and geocoder == 'Nominatim':
             changed = False
-            # nom_df = pd.DataFrame(locations, columns=['Location', 'Date','NER']) if len(locations[0])==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0','NER'])
-            nom_df = pd.DataFrame(locations, columns=['Location', 'Date', 'NER']) if len(locations[0])==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0', 'NER'])
+            if datePresent:
+                nom_df = pd.DataFrame(locations, columns=['Location', 'Date', 'NER']) if len(locations[0])==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0', 'NER'])
+            else:
+                nom_df = pd.DataFrame(locations, columns=['Location', 'NER']) if \
+                    len(locations[0]) == 2 else pd.DataFrame(locations, columns=['Location', 'Index', '0', 'NER'])
             if nom_df is None:
                 return
             drop_idx = []
@@ -230,7 +228,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         kmloutputFilename = \
             GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
                 locationColumnName,geocoder,country_bias, area_var,restrict,
-                encodingValue,split_locations_prefix,split_locations_suffix)
+                encodingValue)
         if kmloutputFilename!='':
             filesToOpen.append(kmloutputFilename)
         if geocodedLocationsOutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection

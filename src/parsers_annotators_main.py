@@ -465,6 +465,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.parsers_annot
                                                "If you wish to change the NLP package used (spaCy, Stanford CoreNLP, Stanza) and their available parsers, use the Setup dropdown menu at the bottom of this GUI")
 
 CoNLL_table_analyzer_var.set(0)
+# CoNLL_table_analyzer_checkbox = tk.Checkbutton(window, text='CoNLL table analyzer', variable=CoNLL_table_analyzer_var,
+#                                                onvalue=1, offvalue=0, command=lambda: check_CoNLL_table())
 CoNLL_table_analyzer_checkbox = tk.Checkbutton(window, text='CoNLL table analyzer', variable=CoNLL_table_analyzer_var,
                                                onvalue=1, offvalue=0, command=lambda: check_CoNLL_table())
 # place widget with hover-over info
@@ -477,6 +479,16 @@ CoNLL_table_analyzer_checkbox_msg = tk.Label()
 CoNLL_table_analyzer_checkbox_msg.config(text="Open the CoNLL table analyzer GUI")
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.parsers_annotators_parser_open_CoNLL_pos, y_multiplier_integer,
                                                CoNLL_table_analyzer_checkbox_msg)
+
+def check_CoNLL_table(*args):
+    if CoNLL_table_analyzer_var.get() == 1:
+        CoNLL_table_analyzer_checkbox_msg.config(text="Open CoNLL table analyzer GUI")
+    else:
+        CoNLL_table_analyzer_checkbox_msg.config(text="Do NOT open CoNLL table analyzer GUI")
+CoNLL_table_analyzer_var.trace('w', check_CoNLL_table)
+
+check_CoNLL_table()
+
 
 # def activate_SentenceTable(*args):
 #     global parser_menu

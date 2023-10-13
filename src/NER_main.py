@@ -208,8 +208,6 @@ encoding_var=tk.StringVar()
 
 NER_tag_var = tk.StringVar()
 NER_entry_var = tk.StringVar()
-# NER_split_values_prefix_entry_var = tk.StringVar()
-# NER_split_values_suffix_entry_var = tk.StringVar()
 
 global coming_from_add, coming_from_reset
 coming_from_add = False
@@ -330,9 +328,6 @@ def add_NER_tag(coming_from_add, coming_from_reset):
             return
 
     if NER_tag_var.get().strip():
-    # if NER_entry_var.get().strip():
-        # NER_split_values_prefix_entry.configure(state="normal")
-        # NER_split_values_suffix_entry.configure(state="normal")
         if not('---' in NER_tag_var.get()):
             NER_list.append(NER_tag_var.get())
             if len(NER_list)==1:
@@ -342,28 +337,7 @@ def add_NER_tag(coming_from_add, coming_from_reset):
         # NER_menu.configure(state='disabled')
         add_NER_button.configure(state="normal")
         reset_NER_button.configure(state="normal")
-    # if coming_from_add:
 
-    # if 'spatial' in NER_tag_var.get() or 'CITY' in NER_tag_var.get() or 'COUNTRY' in NER_tag_var.get() or 'STATE_OR_PROVINCE' in NER_tag_var.get():
-        #     # GUI_IO_util.wordLists_libPath
-        #     prefs = ''
-        #     sufs = ''
-        #     prefsuf_table = pd.read_csv(os.path.join(GUI_IO_util.wordLists_libPath,"NER_prefix_suffix.csv"))
-        #     for p in prefsuf_table["Prefix"]:
-        #         # Make sure the value is not null because we may have more values in prefix than suffix, vice versa.
-        #         # When we have more vals in one column than the other, the result will be nulls in the shorter col
-        #         # to fill the gaps. We need to skip these.
-        #         if pd.notna(p):
-        #             prefs += p + ", "
-        #     for s in prefsuf_table["Suffix"]:
-        #         if pd.notna(s):
-        #             sufs += s + ", "
-    #         # We use [:-2] to trim off the trailing comma and space characters
-    #         NER_split_values_prefix_entry_var.set(prefs[:-2])
-    #         NER_split_values_suffix_entry_var.set(sufs[:-2])
-    # else:
-    #     NER_split_values_prefix_entry.configure(state="disabled")
-    #     NER_split_values_suffix_entry.configure(state="disabled")
 NER_tag_var.trace ('w',lambda x,y,z: add_NER_tag(coming_from_add, coming_from_reset))
 
 add_NER_tag(coming_from_add, coming_from_reset)
@@ -430,8 +404,6 @@ def clear_NER_list(coming_from_add, coming_from_reset):
         NER_entry_var.set(' ')
         NER_entry=''
         NER_tag_var.set(' ')
-        # NER_split_values_prefix_entry_var.set('')
-        # NER_split_values_suffix_entry_var.set('')
 
 activate_NER_Options(coming_from_add, coming_from_reset)
 
