@@ -22,6 +22,7 @@ import pandas as pd # TODO MINO GIS create kml record
 from datetime import datetime # TODO MINO GIS date option
 import dateutil
 
+import GUI_IO_util
 import GIS_location_util
 import GIS_file_check_util
 import IO_internet_util
@@ -30,6 +31,19 @@ import GIS_Google_pin_util # TODO MINO GIS create kml record
 import IO_csv_util # TODO MINO GIS create kml record
 
 filesToOpen = []
+
+multi_name_locations = pd.read_csv(os.path.join(GUI_IO_util.wordLists_libPath,"multi_name_locations.csv"))
+
+for index, row in multi_name_locations.iterrows():  # For every row in the ConLL
+	split_loc = row.split(', ')
+	for loc_name in row[0]: # "Location multiple names"
+		sn = row["Location single name"]
+		NER_tag = row["NER_Tag"]
+		NER_tag_nominatim  = row["NER_Tag_Nominatim"]
+	# trim off the trailing comma and space characters
+	# multi_name_location = multi_name_locations[:-2]
+	# multi_name_locations_list=[multi_name_locations, NER_tag]
+	# multi_name_locations_list=[multi_name_locations_list]
 
 # TODO
 # geocode(query, exactly_one=True, timeout=DEFAULT_SENTINEL, limit=None, addressdetails=False, language=False, geometry=None, extratags=False, country_codes=None, viewbox=None, bounded=None)
@@ -396,21 +410,35 @@ def geocode(window,locations, inputFilename, outputDir,
 				else:
 					NER_Tag = item[1]
 				if NER_Tag == 'COUNTRY':
-					NER_Tag_nominatim = 'country'
+					NER_Tag_Nominatim = 'country'
 				elif NER_Tag == 'STATE_OR_PROVINCE':
-					NER_Tag_nominatim = 'state'
+					NER_Tag_Nominatim = 'state'
 				elif NER_Tag == 'CITY':
-					NER_Tag_nominatim = 'city'
+					NER_Tag_Nominatim = 'city'
 
 			# avoid repetition so as not to access the geocoder service several times for the same location;
 			# 	location already in list
 			if itemToGeocode in distinctGeocodedList:
 				location = itemToGeocode
-				# TODO: special case for 'America': convert to 'United States'
-				if itemToGeocode == 'Soviet Union':
+				if itemToGeocode == 'Britain' or itemToGeocode == 'Great Britain' or itemToGeocode == 'United Kingdom' or itemToGeocode == 'UK' or itemToGeocode == 'U.K.' or itemToGeocode == 'United Kingdom of Great Britain and Northern Ireland':
+					itemToGeocode = 'United Kingdom'
+				if itemToGeocode == 'China' or itemToGeocode == 'PRC' or itemToGeocode == 'P.R.C.' or itemToGeocode == "People's Republic of China" or itemToGeocode == "Republic of China":
+					itemToGeocode = 'China'
+				if itemToGeocode == 'Europe' or itemToGeocode == 'European Union' or itemToGeocode == 'EU' or itemToGeocode == 'E.U.':
+					itemToGeocode = 'Europe'
+				if itemToGeocode == "Democratic People's Republic of Korea" or itemToGeocode == 'North Korea' or itemToGeocode == 'DPRK' or itemToGeocode == 'D.P.R.K.':
+					itemToGeocode = 'North Korea'
+				if itemToGeocode == "Republic of Korea" or itemToGeocode == 'South Korea' or itemToGeocode == 'ROK' or itemToGeocode == 'R.O.K.':
+					itemToGeocode = 'South Korea'
+				if itemToGeocode == 'USSR' or itemToGeocode == 'U.S.S.R.' or itemToGeocode == 'Soviet Union':
 					itemToGeocode = 'Russia'
-				if itemToGeocode == 'America':
+				if itemToGeocode == 'German Democratic Republic' or itemToGeocode == 'Germany':
+					itemToGeocode = 'Germany'
+				if itemToGeocode == 'United States of America' or itemToGeocode == 'America' or itemToGeocode == 'US' or itemToGeocode == 'U.S.' or itemToGeocode == 'U.S.A.' or itemToGeocode == 'USA':
 					itemToGeocode = 'United States'
+				if itemToGeocode == 'China' or itemToGeocode == 'Europe' or itemToGeocode == 'Germany' or itemToGeocode == 'North Korea' or itemToGeocode == 'South Korea' or itemToGeocode == 'Russia' or itemToGeocode == 'United Kingdom' or itemToGeocode == 'United States':
+					NER_Tag = 'COUNTRY'
+					NER_Tag_Nominatim = 'country'
 				if itemToGeocode in nonDistinctNotGeocodedList:
 					nonDistinctNotGeocodedList.append(itemToGeocode)
 					nonDistinctNotGeocodedFull.append((itemToGeocode,NER_Tag))
@@ -421,14 +449,34 @@ def geocode(window,locations, inputFilename, outputDir,
 					address = distinctGeocodedLocations[itemToGeocode][2]
 			else:
 				print("   Geocoding DISTINCT location: " + itemToGeocode)
-				# TODO special case for 'America': convert to 'United States', so that 'United States' is appended to distinctGeocodedList
-				if itemToGeocode == 'America':
-					itemToGeocode = 'United States'
-				if itemToGeocode == 'Soviet Union':
+				for index, row in multi_name_locations.iterrows():  # For every row in the ConLL
+					mn = row[1]
+					sn = row["Location single name"]
+					NER_tag = row["NER_Tag"]
+					NER_tag_nominatim = row["NER_Tag_Nominatim"]
+
+				if itemToGeocode == 'Britain' or itemToGeocode == 'Great Britain' or itemToGeocode == 'United Kingdom' or itemToGeocode == 'UK' or itemToGeocode == 'U.K.' or itemToGeocode == 'United Kingdom of Great Britain and Northern Ireland':
+					itemToGeocode = 'United Kingdom'
+				if itemToGeocode == 'China' or itemToGeocode == 'PRC' or itemToGeocode == 'P.R.C.' or itemToGeocode == "People's Republic of China" or itemToGeocode == "Republic of China":
+					itemToGeocode = 'China'
+				if itemToGeocode == 'Europe' or itemToGeocode == 'European Union' or itemToGeocode == 'EU' or itemToGeocode == 'E.U.':
+					itemToGeocode = 'Europe'
+				if itemToGeocode == "Democratic People's Republic of Korea" or itemToGeocode == 'North Korea' or itemToGeocode == 'DPRK' or itemToGeocode == 'D.P.R.K.':
+					itemToGeocode = 'North Korea'
+				if itemToGeocode == "Republic of Korea" or itemToGeocode == 'South Korea' or itemToGeocode == 'ROK' or itemToGeocode == 'R.O.K.':
+					itemToGeocode = 'South Korea'
+				if itemToGeocode == 'USSR' or itemToGeocode == 'U.S.S.R.' or itemToGeocode == 'Soviet Union':
 					itemToGeocode = 'Russia'
+				if itemToGeocode == 'German Democratic Republic' or itemToGeocode == 'Germany':
+					itemToGeocode = 'Germany'
+				if itemToGeocode == 'United States of America' or itemToGeocode == 'America' or itemToGeocode == 'US' or itemToGeocode == 'U.S.' or itemToGeocode == 'U.S.A.' or itemToGeocode == 'USA':
+					itemToGeocode = 'United States'
+				if itemToGeocode == 'China' or itemToGeocode == 'Europe' or itemToGeocode == 'Germany' or itemToGeocode == 'North Korea' or itemToGeocode == 'South Korea' or itemToGeocode == 'Russia' or itemToGeocode == 'United Kingdom' or itemToGeocode == 'United States':
+					NER_Tag = 'COUNTRY'
+					NER_Tag_Nominatim = 'country'
 				distinctGeocodedList.append(itemToGeocode)
 				if geocoder=='Nominatim':
-					NER_Tag_nominatim = ''
+					NER_Tag_Nominatim = ''
 					# CoreNLP NER tag for continents is often wrong and as a result Nominatim geocodes them wrongly
 					#	we should skip them, particularly when they are lowercase
 					# continents='Africa, Antarctica, Asia, Australia, Europe, Oceania, North America, South America'
@@ -440,8 +488,8 @@ def geocode(window,locations, inputFilename, outputDir,
 						itemToGeocode == 'Oceania' or \
 						itemToGeocode == 'North America' or \
 						itemToGeocode == 'South America':
-						NER_Tag_nominatim='continent'
-					location = nominatim_geocode(geolocator,loc=itemToGeocode,country_bias=country_bias,box_tuple=area,restrict=restrict,featuretype=NER_Tag_nominatim)
+						NER_Tag_Nominatim='continent'
+					location = nominatim_geocode(geolocator,loc=itemToGeocode,country_bias=country_bias,box_tuple=area,restrict=restrict,featuretype=NER_Tag_Nominatim)
 				else:
 					location = google_geocode(geolocator,itemToGeocode,country_bias)
 				# location is None when not found

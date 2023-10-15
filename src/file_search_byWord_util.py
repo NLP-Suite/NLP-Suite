@@ -47,6 +47,11 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                        "Started running the Word search function at",
                                         True, '', True, '', False)
 
+    result = mb.askyesno('Warning',
+                         'The search algorithm will write over any output file created by previous searches. You may wish to rename those files in the output directory and, if you checked the option of creating a subcorpus of files, rename the directory inside the input files directory.\n\nAre you sure you want to continue?')
+    if not result:
+        return
+
     filesToOpen=[]
     # each occurrence of a search keyword, it's file path will be stored in a set
     corpus_to_copy = set()
@@ -71,11 +76,12 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
             #   we should test
             #   if isinstance(search_keywords_list, str) convert to list
             search_list = search_list + ' ' + search_option
+
         # txt subsample files are exported as a folder inside the input folder
-        outputDir = os.path.join(inputDir, 'subcorpus_search')
-        if not os.path.exists(outputDir):
+        subCorpusDir = os.path.join(inputDir, 'subcorpus_search')
+        if not os.path.exists(subCorpusDir):
             try:
-                os.mkdir(outputDir)
+                os.mkdir(subCorpusDir)
             except Exception:
                 print(Exception)
 
@@ -301,33 +307,13 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
             else:
                 filesToOpen.extend(outputFiles)
 
-    # copy all the files in the set to the output directory
-    # if create_subcorpus_var:
-    #     if inputFilename!='':
-    #         head, tail = os.path.split(inputFilename)
-    #         # remove the extension
-    #         tail=tail[:-4]
-    #     elif inputDir!='':
-    #         head, tail = os.path.split(inputDir)
-    #     search_list=''
-    #     for search_option in search_keywords_list:
-    #         # Tony search_keywords_list is not a list but a string and every single character in the string is processed separately
-    #         #   we should test
-    #         #   if isinstance(search_keywords_list, str) convert to list
-    #         search_list = search_list + ' ' + search_option
-    #     # txt subsample files are exported as a folder inside the input folder
-    #     path = os.path.join(inputDir, 'subcorpus_search')
-    #     if not os.path.exists(path):
-    #         try:
-    #             os.mkdir(path)
-    #         except Exception:
-    #             print(Exception)
-        if len(corpus_to_copy) > 0:
-            for file in corpus_to_copy:
-                shutil.copy(file, outputDir)
-            mb.showwarning(title='Warning',message='The search function has created a subcorpus of the files containing the search word(s) "'
-                            + search_keywords_list + '" as a subdirectory called "subcorpus_search" of the input directory:\n\n'
-                            + outputDir + '\n\nA set of csv files have also been exported to the same directory.')
+    # when creating a subcorpus copy all the files in the set to the output directory
+    if create_subcorpus_var and len(corpus_to_copy) > 0:
+        for file in corpus_to_copy:
+            shutil.copy(file, subCorpusDir)
+        mb.showwarning(title='Warning',message='The search function has created a subcorpus of the files containing the search word(s) "'
+                        + search_keywords_list + '" as a subdirectory called "subcorpus_search" of the input directory:\n\n'
+                        + subCorpusDir + '\n\nA set of csv files have also been exported to the same directory.')
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the Search word function at',
                                        True, '', True, startTime,  False)
