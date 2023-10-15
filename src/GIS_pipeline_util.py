@@ -133,6 +133,11 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     # get locations
     # ------------------------------------------------------------------------------------
 
+    reminders_util.checkReminder(scriptName,
+                                 reminders_util.title_options_GIS_MWL,
+                                 reminders_util.message_GIS_MWL,
+                                 True)
+
     if inputIsCoNLL == True:
         outputCsvLocationsOnly = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'GIS',
                                                                    'NER_locations', '', '', '', False, True)

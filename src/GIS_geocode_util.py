@@ -34,12 +34,12 @@ filesToOpen = []
 
 multi_name_locations = pd.read_csv(os.path.join(GUI_IO_util.wordLists_libPath,"multi_name_locations.csv"))
 
-for index, row in multi_name_locations.iterrows():  # For every row in the ConLL
-	split_loc = row.split(', ')
-	for loc_name in row[0]: # "Location multiple names"
-		sn = row["Location single name"]
-		NER_tag = row["NER_Tag"]
-		NER_tag_nominatim  = row["NER_Tag_Nominatim"]
+# for index, row in multi_name_locations.iterrows():  # For every row in the ConLL
+# 	split_loc = row.split(', ')
+# 	for loc_name in row[0]: # "Location multiple names"
+# 		sn = row["Location single name"]
+# 		NER_tag = row["NER_Tag"]
+# 		NER_tag_nominatim = row["NER_Tag_Nominatim"]
 	# trim off the trailing comma and space characters
 	# multi_name_location = multi_name_locations[:-2]
 	# multi_name_locations_list=[multi_name_locations, NER_tag]
@@ -183,7 +183,7 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 		# if Google_API == '':
 		# 	return Google_API
 	kml = simplekml.Kml()
-	icon_url = GIS_Google_pin_util.pin_icon_select(['Pushpins'], ['red'])
+	icon_url = GIS_Google_pin_util.pin_icon_select('Pushpins', 'red')
 	kmloutputFilename = inputFilename.replace('.csv', '.kml')
 	head, tail = os.path.split(kmloutputFilename)
 	# when you are processing a csv file in input separately from the regular input file,
@@ -283,8 +283,8 @@ def geocode(window,locations, inputFilename, outputDir,
 
 	distinctGeocodedLocations= {}
 	distinctGeocodedList=[]
-	nonDistinctNotGeocodedList=[]
-	nonDistinctNotGeocodedFull=[]
+	notGeocodedList=[]
+	notGeocodedFull=[]
 	locationsNotFound=0
 	index=0
 
@@ -295,7 +295,7 @@ def geocode(window,locations, inputFilename, outputDir,
 
 	geolocator = get_geolocator(geocoder,Google_API)
 	kml = simplekml.Kml()
-	icon_url = GIS_Google_pin_util.pin_icon_select(['Pushpins'], ['red'])
+	icon_url = GIS_Google_pin_util.pin_icon_select('Pushpins', 'red')
 
 	inputIsCoNLL, inputIsGeocoded, withHeader, \
 		headers, datePresent, filenamePositionInCoNLLTable = GIS_file_check_util.CoNLL_checker(inputFilename)
@@ -419,7 +419,7 @@ def geocode(window,locations, inputFilename, outputDir,
 			# avoid repetition so as not to access the geocoder service several times for the same location;
 			# 	location already in list
 			if itemToGeocode in distinctGeocodedList:
-				location = itemToGeocode
+				# print("   Geocoding NON-DISTINCT location: " + itemToGeocode)
 				if itemToGeocode == 'Britain' or itemToGeocode == 'Great Britain' or itemToGeocode == 'United Kingdom' or itemToGeocode == 'UK' or itemToGeocode == 'U.K.' or itemToGeocode == 'United Kingdom of Great Britain and Northern Ireland':
 					itemToGeocode = 'United Kingdom'
 				if itemToGeocode == 'China' or itemToGeocode == 'PRC' or itemToGeocode == 'P.R.C.' or itemToGeocode == "People's Republic of China" or itemToGeocode == "Republic of China":
@@ -439,9 +439,9 @@ def geocode(window,locations, inputFilename, outputDir,
 				if itemToGeocode == 'China' or itemToGeocode == 'Europe' or itemToGeocode == 'Germany' or itemToGeocode == 'North Korea' or itemToGeocode == 'South Korea' or itemToGeocode == 'Russia' or itemToGeocode == 'United Kingdom' or itemToGeocode == 'United States':
 					NER_Tag = 'COUNTRY'
 					NER_Tag_Nominatim = 'country'
-				if itemToGeocode in nonDistinctNotGeocodedList:
-					nonDistinctNotGeocodedList.append(itemToGeocode)
-					nonDistinctNotGeocodedFull.append((itemToGeocode,NER_Tag))
+				if itemToGeocode in notGeocodedList:
+					notGeocodedList.append(itemToGeocode)
+					notGeocodedFull.append((itemToGeocode,NER_Tag))
 					lat = lng = 0 # TODO set 0 for lat and lng since itemToGeocode is in notGeocodedList
 				else:
 					lat = distinctGeocodedLocations[itemToGeocode][0]
@@ -449,12 +449,11 @@ def geocode(window,locations, inputFilename, outputDir,
 					address = distinctGeocodedLocations[itemToGeocode][2]
 			else:
 				print("   Geocoding DISTINCT location: " + itemToGeocode)
-				for index, row in multi_name_locations.iterrows():  # For every row in the ConLL
-					mn = row[1]
-					sn = row["Location single name"]
-					NER_tag = row["NER_Tag"]
-					NER_tag_nominatim = row["NER_Tag_Nominatim"]
-
+				# for index, row in multi_name_locations.iterrows():  # For every row in the ConLL
+				# 	mn = row[1]
+				# 	sn = row["Location single name"]
+				# 	NER_tag = row["NER_Tag"]
+				# 	NER_tag_nominatim = row["NER_Tag_Nominatim"]
 				if itemToGeocode == 'Britain' or itemToGeocode == 'Great Britain' or itemToGeocode == 'United Kingdom' or itemToGeocode == 'UK' or itemToGeocode == 'U.K.' or itemToGeocode == 'United Kingdom of Great Britain and Northern Ireland':
 					itemToGeocode = 'United Kingdom'
 				if itemToGeocode == 'China' or itemToGeocode == 'PRC' or itemToGeocode == 'P.R.C.' or itemToGeocode == "People's Republic of China" or itemToGeocode == "Republic of China":
@@ -500,8 +499,8 @@ def geocode(window,locations, inputFilename, outputDir,
 						lat, lng, address = 0, 0, " LOCATION NOT FOUND BY " + geocoder
 						locationsNotFound=locationsNotFound+1
 						geowriterNotFound.writerow([itemToGeocode, NER_Tag])
-						nonDistinctNotGeocodedList.append(itemToGeocode)
-						nonDistinctNotGeocodedFull.append((itemToGeocode,NER_Tag))
+						notGeocodedList.append(itemToGeocode)
+						notGeocodedFull.append((itemToGeocode,NER_Tag))
 						print(currRecord,"     LOCATION NOT FOUND BY " + geocoder,itemToGeocode)
 				else: #Google
 					try: #use a try/except in case requests do not give results
@@ -510,8 +509,8 @@ def geocode(window,locations, inputFilename, outputDir,
 						lat, lng, address = 0, 0, " LOCATION NOT FOUND BY " + geocoder
 						locationsNotFound=locationsNotFound+1
 						geowriterNotFound.writerow([itemToGeocode, NER_Tag])
-						nonDistinctNotGeocodedList.append(itemToGeocode)
-						nonDistinctNotGeocodedFull.append((itemToGeocode,NER_Tag))
+						notGeocodedList.append(itemToGeocode)
+						notGeocodedFull.append((itemToGeocode,NER_Tag))
 						print(currRecord,"     LOCATION NOT FOUND BY " + geocoder,itemToGeocode)
 				if lat!=0 and lng!=0:
 					distinctGeocodedLocations[itemToGeocode] = (lat, lng, address)
@@ -562,7 +561,7 @@ def geocode(window,locations, inputFilename, outputDir,
 					pnt.timespan.begin = GGPdateFormat
 					pnt.timespan.end = GGPdateFormat
 
-	[geowriterNotFoundNonDistinct.writerow([item[0], item[1]]) for item in nonDistinctNotGeocodedFull]
+	[geowriterNotFoundNonDistinct.writerow([item[0], item[1]]) for item in notGeocodedFull]
 	csvfile.close()
 	csvfileNotFound.close()
 	csvfileNotFoundNonDistinct.close()
