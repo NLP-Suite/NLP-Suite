@@ -242,7 +242,7 @@ def activate_fields(*args):
         item_separator.config(state='disabled')
         items_separator_var.set('_')
         sort_order.config(state='disabled')
-        sort_order_var.set('1, 2, 3, ...')
+        sort_order_var.set('1')
         # filename_embeds_date_var.set(0)
 
     if filename_embeds_date_var.get():
@@ -294,7 +294,7 @@ def set_default_options():
     if config_input_output_alphabetic_options[list_item][2] != '':
         sort_order_var.set(config_input_output_alphabetic_options[list_item][2])
     else:
-        sort_order_var.set('1, 2, 3, ...')  # default value
+        sort_order_var.set('1')  # default value
 
     # set item separator
     if config_input_output_alphabetic_options[list_item][3] != '':
@@ -336,15 +336,17 @@ sort_order_lb = tk.Label(window, text='Sort order ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, # date_position_lb_coordinate
                                                y_multiplier_integer, sort_order_lb, True)
 
-sort_order = tk.Entry(window, textvariable=sort_order_var, width=10)
+sort_order_menu = tk.OptionMenu(window,sort_order_var, 1,2,3,4,5,6,7,8,9)
+
+# sort_order = tk.Entry(window, textvariable=sort_order_var, width=10)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                GUI_IO_util.date_position_coordinate,
                                                y_multiplier_integer,
-                                               sort_order,
+                                               sort_order_menu,
                                                False, False, False, False, 90,
                                                GUI_IO_util.open_TIPS_x_coordinate,
-                                               'Enter the comma-separated order for sorting filenames, with multiple embedded items, when read into any NLP Suite algorithms.'
+                                               'Select the position in the filename for sorting filenames, with multiple embedded items, when read into any NLP Suite algorithms.'
                                                 '\nDefault order is alphabetical. When sorting by one item (e.g., a date in item position 3), enter 3 and the rest will be added automatically.'
                                                 '\nClick on the ?HELP button for more information.')
 
@@ -399,7 +401,7 @@ except:
 # else:
 #     date_position_var.set(2) # default value
 
-date_position_menu = tk.OptionMenu(window,date_position_var, 1,2,3,4,5)
+date_position_menu = tk.OptionMenu(window,date_position_var, 1,2,3,4,5,6,7,8,9)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                GUI_IO_util.date_position_coordinate,

@@ -365,8 +365,8 @@ def pin_icon_select(icon_type, icon_style):
 
 	# Shapes style
 	elif icon_type == "Shapes":
-		# 103 shapes in total, first 98 are in aplphabetic order of thier first letter
-		# last 5 are differnet weathers
+		# 103 shapes in total, first 98 are in alphabetic order of their first letter
+		# last 5 are different weathers
 		if icon_style == "airports":
 			icon_url = 'http://maps.google.com/mapfiles/kml/shapes/airports.png'
 		elif icon_style == "arrow-reverse":
