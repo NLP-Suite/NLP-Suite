@@ -167,6 +167,26 @@ def extract_NER_locations(window,conllFile,encodingValue,datePresent):
 	# do not sort locations so that you can check from wrong CoreNLP NER tag, e.g., South America as South = LOCATION, America = COUNTRY
 	return locList
 
+
+def save_location(datePresent, currLocation, row):
+	locList=[]
+	if datePresent:
+		try:
+			# NER Tag may not be present when an external input csv file of locations is passed
+			locList.append([currLocation, row["Date"], row["NER"]])
+		except:
+			locList.append([currLocation, row["Date"]])
+	else:
+		locList.append([currLocation, row["NER"]])
+	tempLocation = ''
+	# else:
+	# 	if datePresent == True:
+	# 		locList.append([row["Location"], row["Date"], row["NER"]])  # col 1 is the location (e.g., Italy)
+	# 	# locList.append(row[locationColumnNumber+1])  # append NER tag (e.g., COUNTRY)
+	# 	else:
+	# 		locList.append([row["Location"], row["NER"]])  # col 1 is the location (e.g., Italy)
+	return locList
+
 # called from GIS_Google_util
 #locationColumnNumber where locations are stored in the csv file; any changes to the columns will result in error
 def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumber,encodingValue, datePresent, dateColumnNumber):
@@ -186,47 +206,78 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 	if withHeader==True:
 
 		index=1 #skip header
-		tempLocation = ''
+		currLocation = ''
+		tokenEnd = 0
 		for index, row in dt.iterrows():
 			print("Processing record " + str(index+1)+"/"+str(count_row)+ " in csv file; location: " + str(row[locationColumnNumber]))
-
-			# # A blank value for the filename will be checked in Description to avoid displaying it
-			if str(row[locationColumnNumber]) != '' and str(row[locationColumnNumber]) != 'nan':
+			if str(row["Location"]) != '' and str(row["Location"]) != 'nan':
 				# LOCATION, CITY, STATE_OR_PROVINCE, COUNTRY are the location NER tags for CoreNLP
 				# GPE is location NER tag for spaCy and Stanza
-				if row[0] in multi_word_location_prefix and \
-						((row[1]=='LOCATION' or row[1]=='CITY' or row[1]=='STATE_OR_PROVINCE' or row[1]=='COUNTRY') or \
-							('GPE' in row[1])):
-					# the current location value (e.g., las) needs to be merged with the next row value (e.g., las vegas)
-					if tempLocation != '':  # we are on the next row
-						tempLocation = tempLocation + ' ' + row[0]  # col 1 is the FORM value
-					else:
-						tempLocation = row[0]
+				if (row["NER"]=='LOCATION' or  \
+					row["NER"]=='CITY' or  \
+					row["NER"]=='STATE_OR_PROVINCE' or \
+					row["NER"]=='COUNTRY') or \
+					('GPE' in row["NER"]):
+					# check next row
+					try:
+						nextrow = dt.iloc[index + 1]
+					except:
+						nextrow=row
+					if row["tokenEnd"]==nextrow["tokenBegin"]:
+						# the current location value (e.g., las) needs to be merged with the next row value (e.g., las vegas)
+						if currLocation != '':  # we are on the next row
+							currLocation = currLocation + ' ' + row["Location"]
+						else:
+							currLocation = row["Location"]
 						continue
-				else:
-					if tempLocation != '':  # we are on the next row
-						tempLocation = tempLocation + ' ' + row[0]  # col 1 is the FORM value
-
-				if tempLocation != '':  # we are on the next row
-					if datePresent == True:
-						try:
-							#NER Tag may not be present when an expernal input csv file of locations is passed
-							#locList.append([row[locationColumnNumber], row[dateColumnNumber], row['NER']])
-							locList.append([tempLocation, row[dateColumnNumber], row[locationColumnNumber + 1]])
-						except:
-							# locList.append([row[locationColumnNumber], row[dateColumnNumber]])
-							locList.append([tempLocation, row[dateColumnNumber]])
 					else:
-						locList.append([tempLocation,row[locationColumnNumber+1]])  # col 1 is the location (e.g., Italy)
-					tempLocation = ''
-				else:
-					if datePresent == True:
-						locList.append([row[locationColumnNumber], row[dateColumnNumber], row[locationColumnNumber+1]])  # col 1 is the location (e.g., Italy)
-							# locList.append(row[locationColumnNumber+1])  # append NER tag (e.g., COUNTRY)
-					else:
-						locList.append([row[locationColumnNumber],row[locationColumnNumber+1]])  # col 1 is the location (e.g., Italy)
+						if currLocation !='':
+							currLocation = currLocation + ' ' + row["Location"]
+							# currLocation = ''
+						else:
+							currLocation = row["Location"]
 
-				# 		# the code would break if no NER Tag is passed (e.g., from DB_PC-ACE)
+					locList.append(save_location(datePresent, currLocation, row)[0])
+					currLocation = ''
+
+			# if save_location and tempLocation != '':  # we are on the next row
+			# 	locList = save_location(tempLocation, datePresent, row, locList)
+			# 	if datePresent == True:
+			# 		try:
+			# 			#NER Tag may not be present when an expernal input csv file of locations is passed
+			# 			#locList.append([row[locationColumnNumber], row[dateColumnNumber], row['NER']])
+			# 			locList.append([tempLocation, row["Date"], row["NER"]])
+			# 		except:
+			# 			# locList.append([row[locationColumnNumber], row[dateColumnNumber]])
+			# 			locList.append([tempLocation, row["Date"]])
+			# 	else:
+			# 		locList.append([tempLocation,row["NER"]])  # col 1 is the location (e.g., Italy)
+			# 	tempLocation = ''
+			# else:
+			# 	if datePresent == True:
+			# 		locList.append([row["Location"], row["Date"], row["NER"]])  # col 1 is the location (e.g., Italy)
+			# 		# locList.append(row[locationColumnNumber+1])  # append NER tag (e.g., COUNTRY)
+			# 	else:
+			# 		locList.append([row["Location"],row["NER"]])  # col 1 is the location (e.g., Italy)
+
+		# # A blank value for the filename will be checked in Description to avoid displaying it
+		# if str(row[locationColumnNumber]) != '' and str(row[locationColumnNumber]) != 'nan':
+		# 	# LOCATION, CITY, STATE_OR_PROVINCE, COUNTRY are the location NER tags for CoreNLP
+		# 	# GPE is location NER tag for spaCy and Stanza
+		# 	if row[0] in multi_word_location_prefix and \
+		# 			((row[1]=='LOCATION' or row[1]=='CITY' or row[1]=='STATE_OR_PROVINCE' or row[1]=='COUNTRY') or \
+		# 				('GPE' in row[1])):
+		# 		# the current location value (e.g., las) needs to be merged with the next row value (e.g., las vegas)
+		# 		if tempLocation != '':  # we are on the next row
+		# 			tempLocation = tempLocation + ' ' + row[0]  # col 1 is the FORM value
+		# 		else:
+		# 			tempLocation = row[0]
+		# 			continue
+		# 	else:
+		# 		if tempLocation != '':  # we are on the next row
+		# 			tempLocation = tempLocation + ' ' + row[0]  # col 1 is the FORM value
+
+		# 		# the code would break if no NER Tag is passed (e.g., from DB_PC-ACE)
 				# 		try:
 				# 			locList.append([row[locationColumnNumber],[index],[0], row['NER']])
 				# 		except:
