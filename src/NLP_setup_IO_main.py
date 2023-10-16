@@ -235,13 +235,13 @@ if config_input_output_numeric_options[3] != 0: # output dir
 def activate_fields(*args):
     if filename_embeds_multiple_items_var.get():
         item_separator.config(state='normal')
-        sort_order.config(state='normal')
+        sort_order_menu.config(state='normal')
         date_checkbox.config(state='normal')
     else:
         # date_checkbox.config(state='disabled')
         item_separator.config(state='disabled')
         items_separator_var.set('_')
-        sort_order.config(state='disabled')
+        sort_order_menu.config(state='disabled')
         sort_order_var.set('1')
         # filename_embeds_date_var.set(0)
 
