@@ -413,7 +413,6 @@ def geocode(window,locations, inputFilename, outputDir,
 					multi_name_location = row[0]
 					multi_name_location = multi_name_location.split(', ')
 					for loc_name in multi_name_location: # "Location multiple names"
-					for loc_name in multi_name_location: # "Location multiple names"
 						if itemToGeocode==loc_name:
 							itemToGeocode = row["Location single name"]
 							NER_tag = row["NER_Tag"]
