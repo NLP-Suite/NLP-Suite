@@ -990,7 +990,7 @@ def display_setup_hover_over(y_multiplier_integer):
     hover_over_x_coordinate, hover_over_info = get_hover_over_info(package_display_area_value)
 
     # lay the setup widget
-    setup_menu_lb = tk.OptionMenu(window, setup_menu, "Setup NLP package and corpus language",
+    setup_menu_lb = tk.OptionMenu(window, setup_menu, "Setup preferences", "Setup NLP package (parsers & annotators) and corpus language",
                                   "Setup external software")
 
     if y_multiplier_integer_SV == 0:
@@ -1013,7 +1013,9 @@ def setup_parsers_annotators(y_multiplier_integer, scriptName):
 
     y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json, memory_var, document_length_var, limit_sentence_length_var = display_setup_hover_over(y_multiplier_integer)
 
-    if setup_menu.get()=='Setup NLP package and corpus language':
+    if setup_menu.get()=='Setup preferences':
+        mb.showwarning(title='Warning',message='The "Setup preferences" option is not available yet.\n\nSorry!')
+    if setup_menu.get()=='Setup NLP package (parsers & annotators) and corpus language':
         call("python NLP_setup_package_language_main.py", shell=True)
         # this will display the correct hover-over info after the python call, in case options were changed
         y_multiplier_integer, error, package, parsers, package_basics, language, package_display_area_value_new, encoding_var, export_json, memory_var, document_length_var, limit_sentence_length_var = display_setup_hover_over(y_multiplier_integer)

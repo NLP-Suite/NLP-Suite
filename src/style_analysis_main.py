@@ -78,6 +78,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
         case_sensitive = False
         ngrams_size = 3  # default number of ngrams
         excludePunctuation = False
+        excludeDeterminants = False
+        excludeStopwords = False
         bySentenceIndex_word_var = False
         bySentenceIndex_character_var = False
         if ngrams_menu_var == "Word":
@@ -92,6 +94,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
             frequency = None
         if 'punctuation' in str(ngrams_list):
             excludePunctuation = True
+        if 'determinants' in str(ngrams_list):
+            excludeDeterminants = True
+        if 'stopwords' in str(ngrams_list):
+            excludeStopwords = True
         if 'sentence index' in str(ngrams_list):
             if ngrams_menu_var == "Word":
                 bySentenceIndex_word_var = True
@@ -114,7 +120,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
             outputFiles = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, config_filename,
                                                               ngrams_size, normalize,
-                                                              excludePunctuation, 1, 0, openOutputFiles,
+                                                              excludePunctuation, excludeDeterminants, excludeStopwords, 1, 0, openOutputFiles,
                                                               createCharts, chartPackage,
 
                                                               bySentenceIndex_word_var)
@@ -554,7 +560,7 @@ def show_ngrams_list():
     if len(ngrams_list)==0:
         mb.showwarning(title='Warning', message='There are no currently selected n-grams options.')
     else:
-        mb.showwarning(title='Warning', message='The currently selected n-grams options are:\n\n' + ','.join(ngrams_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+        mb.showwarning(title='Warning', message='The currently selected n-grams options are:\n\n' + ',\n'.join(ngrams_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
 
 def activate_ngrams_analysis_var():
     # Disable the + after clicking on it and enable the class menu

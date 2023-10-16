@@ -500,7 +500,7 @@ def date_in_filename(document, **kwargs):
 
 # create locations file for GIS
 def visualize_GIS_maps_spaCy(svo_df):
-    loc_df = pd.DataFrame(columns=['Location', 'NER Tag', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
+    loc_df = pd.DataFrame(columns=['Location', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document'])
     for _,row in svo_df.iterrows():
         if isinstance(row['Location'], str):
             loc_list = row['Location'].split(';')

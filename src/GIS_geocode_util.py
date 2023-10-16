@@ -345,19 +345,19 @@ def geocode(window,locations, inputFilename, outputDir,
 	if inputIsCoNLL: #the filename, sentence, date were exported
 		if datePresent:
 			# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
-			geowriter.writerow(['Location','NER Tag','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document','Date'])
+			geowriter.writerow(['Location','NER','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document','Date'])
 		else:
 			# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
-			geowriter.writerow(['Location','NER Tag','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document'])
+			geowriter.writerow(['Location','NER','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document'])
 	else:
 		# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
 		if datePresent==True:
-			geowriter.writerow(['Location','NER Tag','Latitude','Longitude','Address', 'Date'])
+			geowriter.writerow(['Location','NER','Latitude','Longitude','Address', 'Date'])
 		else:
-			geowriter.writerow(['Location','NER Tag','Latitude', 'Longitude', 'Address'])
+			geowriter.writerow(['Location','NER','Latitude', 'Longitude', 'Address'])
 
-	geowriterNotFound.writerow(['Location','NER Tag'])
-	geowriterNotFoundNonDistinct.writerow(['Location','NER Tag'])
+	geowriterNotFound.writerow(['Location','NER'])
+	geowriterNotFoundNonDistinct.writerow(['Location','NER'])
 
 	# CYNTHIA
 	# ; added in SVO list of locations in SVO output (e.g., Los Angeles; New York; Washington)
