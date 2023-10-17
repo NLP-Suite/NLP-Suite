@@ -514,11 +514,11 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
 # frequency = 1 hapax
 
 def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, configFileName,
-                                  ngramsNumber=3,
-                                  normalize=False,
-                                  excludePunctuation=True, excludeDeterminants=True, excludeStopwords=True,
+                                  ngramsNumber,frequency,
+                                  normalize,
+                                  lemmatize=False, excludePunctuation=True, excludeDeterminants=True, excludeStopwords=True,
                                   wordgram=None,
-                                  frequency = 0, openOutputFiles=False,
+                                  openOutputFiles=False,
                                   createCharts=True, chartPackage='Excel', bySentenceID=None):
     # hapax have ngramsNumber = 1 and frequency = 1
 
@@ -607,8 +607,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumb
     # print(excludePunctuation)
     documents = [ngrams_util.readandsplit(i,excludePunctuation, excludeDeterminants, excludeStopWords,len(files)) for i in files]
     # we need to allow as many n-grams as the user selects in ngramsNumber 1-6
-    onegram_freq, bigram_freq, trigram_freq = ngrams_util.operate(documents,files,ngramsNumber)
-    results = [onegram_freq, bigram_freq, trigram_freq]
+    results = ngrams_util.operate(documents,files,int(ngramsNumber))
     filesToOpen = []
     for index,result in enumerate(results):
         corpus_ngramsList = result.values.tolist()
@@ -952,7 +951,6 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
             ngramsNumber = 1
             frequency = 0
         else:
-            ngramsNumber = 3  # TODO ROBY
             frequency = 0  # N-grams
         normalize = False
         excludePunctuation = True

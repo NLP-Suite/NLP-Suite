@@ -260,7 +260,6 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
             else:
                 chart_title = 'Frequency of Locations Found by ' + geocoder
 
-            #@@@
             outputFiles = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
@@ -282,6 +281,24 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                     # change the filename on the computer drive
                     os.rename(outputFiles[0], head+os.sep+tail)
                     outputFiles[0] = head+os.sep+tail
+                    filesToOpen.extend(outputFiles)
+
+            outputFiles = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
+                                                               outputDir,
+                                                               columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Country from Geocoder'],
+                                                               chart_title='Frequency of Countries Found by ' + geocoder,
+                                                               # count_var = 1 for columns of alphabetic values
+                                                               count_var=1, hover_label=[],
+                                                               outputFileNameType='', #'found',  # 'NER_tag_bar',
+                                                               column_xAxis_label='Country from ' + geocoder,
+                                                               groupByList=[],
+                                                               plotList=[],
+                                                               chart_title_label='')
+
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
                     filesToOpen.extend(outputFiles)
 
     if not inputIsGeocoded:

@@ -123,9 +123,9 @@ hereby
 herein
 hereupon
 hers
-herse"
+herself
 him
-himse"
+himself
 his
 how
 however
@@ -141,7 +141,7 @@ into
 is
 it
 its
-itse"
+itself
 keep
 last
 latter
@@ -165,7 +165,7 @@ move
 much
 must
 my
-myse"
+myself
 name
 namely
 neither

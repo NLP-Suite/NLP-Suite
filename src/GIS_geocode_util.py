@@ -345,16 +345,16 @@ def geocode(window,locations, inputFilename, outputDir,
 	if inputIsCoNLL: #the filename, sentence, date were exported
 		if datePresent:
 			# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
-			geowriter.writerow(['Location','NER','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document','Date'])
+			geowriter.writerow(['Location','NER','Latitude','Longitude','Address','Country from Geocoder','Sentence ID','Sentence','Document ID','Document','Date'])
 		else:
 			# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
-			geowriter.writerow(['Location','NER','Latitude','Longitude','Address','Sentence ID','Sentence','Document ID','Document'])
+			geowriter.writerow(['Location','NER','Latitude','Longitude','Address','Country from Geocoder','Sentence ID','Sentence','Document ID','Document'])
 	else:
 		# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
 		if datePresent==True:
-			geowriter.writerow(['Location','NER','Latitude','Longitude','Address', 'Date'])
+			geowriter.writerow(['Location','NER','Latitude','Longitude','Address','Country from Geocoder','Date'])
 		else:
-			geowriter.writerow(['Location','NER','Latitude', 'Longitude', 'Address'])
+			geowriter.writerow(['Location','NER','Latitude', 'Longitude', 'Address','Country from Geocoder',])
 
 	geowriterNotFound.writerow(['Location','NER'])
 	geowriterNotFoundNonDistinct.writerow(['Location','NER'])
@@ -428,6 +428,9 @@ def geocode(window,locations, inputFilename, outputDir,
 					lat = distinctGeocodedLocations[itemToGeocode][0]
 					lng = distinctGeocodedLocations[itemToGeocode][1]
 					address = distinctGeocodedLocations[itemToGeocode][2]
+					address = distinctGeocodedLocations[itemToGeocode][2]
+					address_list = address.split(',')
+					country_geocoder=address_list[-1]
 			else:
 				print("   Geocoding DISTINCT location: " + itemToGeocode)
 				for index, row in multi_name_locations.iterrows():  # For every row in the ConLL
@@ -462,7 +465,7 @@ def geocode(window,locations, inputFilename, outputDir,
 				# location is None when not found
 				if geocoder=='Nominatim':
 					try:
-						lat, lng, address = location.latitude, location.longitude, location.address
+						lat, lng, address  = location.latitude, location.longitude, location.address
 					except Exception as e:
 						lat, lng, address = 0, 0, " LOCATION NOT FOUND BY " + geocoder
 						locationsNotFound=locationsNotFound+1
@@ -485,18 +488,20 @@ def geocode(window,locations, inputFilename, outputDir,
 					lat = distinctGeocodedLocations[itemToGeocode][0]
 					lng = distinctGeocodedLocations[itemToGeocode][1]
 					address = distinctGeocodedLocations[itemToGeocode][2]
+					address_list = address.split(',')
+					country_geocoder=address_list[-1]
 			#print(currRecord + itemToGeocode + str(lat) + str(lng) + address+"\n")
 			if lat!=0 and lng!=0:
 				if inputIsCoNLL:
 					if datePresent:
-						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, sentenceID, sentence, documentID, document, date])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder, sentenceID, sentence, documentID, document, date])
 					else:
-						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, sentenceID, sentence, documentID, document])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder, sentenceID, sentence, documentID, document])
 				else:
 					if datePresent:
-						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, date])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder, date])
 					else:
-						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address])
+						geowriter.writerow([itemToGeocode, NER_Tag, lat, lng, address, country_geocoder])
 
 				# TODO MINO GIS create kml record
 				print("   Processing geocoded record for kml file for Google Earth Pro")
