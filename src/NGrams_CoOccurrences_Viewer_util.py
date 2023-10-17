@@ -31,7 +31,7 @@ def processSearchWords(inputStr):
         curWord = ""
         i = 0
         while i < len(inputStr):
-            if inputStr[i] == " ":
+            if inputStr[i] == ",":
                 if curWord != "":
                     word_list.append(curWord)
                 curWord = ""
