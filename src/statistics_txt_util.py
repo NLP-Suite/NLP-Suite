@@ -562,10 +562,10 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, confi
         else:
             bySentenceID=0
 
-    filesToOpen = new_get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, wordgram,
+    filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, wordgram,
                                 excludePunctuation, excludeDeterminants, excludeStopwords, frequency,
                                 bySentenceID,  createCharts, chartPackage)
-### to be changed!!!!!!!!!! or back???????????
+
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Word/Characters N-Grams at', True, '', True, startTime, False )
 
@@ -600,13 +600,14 @@ def process_hapax(ngramsList, frequency, excludePunctuation):
 # re-written by Roberto June 2022
 
 import ngrams_util
-def new_get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber=3, wordgram=1,
+def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber=3, wordgram=1,
     excludePunctuation=True, excludeDeterminants=True, excludeStopWords=True,
     frequency = None, bySentenceID=False, createCharts=True,chartPackage='Excel'):
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
     # print(excludePunctuation)
     documents = [ngrams_util.readandsplit(i,excludePunctuation, excludeDeterminants, excludeStopWords,len(files)) for i in files]
-    onegram_freq, bigram_freq, trigram_freq = ngrams_util.operate(documents,files)
+    # we need to allow as many n-grams as the user selects in ngramsNumber 1-6
+    onegram_freq, bigram_freq, trigram_freq = ngrams_util.operate(documents,files,ngramsNumber)
     results = [onegram_freq, bigram_freq, trigram_freq]
     filesToOpen = []
     for index,result in enumerate(results):

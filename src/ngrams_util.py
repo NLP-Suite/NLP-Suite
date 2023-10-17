@@ -59,11 +59,13 @@ def find_frequencies(sentences_ngrams, major_ngrams,files):
     df = pd.DataFrame(all_records)
     return df
 
-def operate(documents,files):
+def operate(documents,files, ngramsNumber):
+    # need to rename 1-grams, 2-grams, 3-grams, ... 6-grams
     onegram = []
     bigrams = []
     trigrams = []
     for document in documents:
+        # need to rename 1-grams, 2-grams, 3-grams, ... 6-grams
         onegram.extend(find_ngrams(document,1))
         bigrams.extend(find_ngrams(document, 2))
         trigrams.extend(find_ngrams(document, 3))

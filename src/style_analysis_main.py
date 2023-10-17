@@ -27,6 +27,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
     ngrams_analysis_var,
     ngrams_menu_var,
     ngrams_options_menu_var,
+    ngrams_size,
     corpus_statistics_var,
     corpus_statistics_options_menu_var,
     corpus_text_options_menu_var,
@@ -76,7 +77,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
         ngrams_character_var = False
         normalize = False
         case_sensitive = False
-        ngrams_size = 3  # default number of ngrams
         excludePunctuation = False
         excludeDeterminants = False
         excludeStopwords = False
@@ -399,6 +399,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 ngrams_analysis_var.get(),
                                 ngrams_menu_var.get(),
                                 ngrams_options_menu_var.get(),
+                                ngrams_size.get(),
                                 corpus_statistics_var.get(),
                                 corpus_statistics_options_menu_var.get(),
                                 corpus_text_options_menu_var.get(),
@@ -475,6 +476,7 @@ ngrams_list=[]
 ngrams_analysis_var= tk.IntVar()
 ngrams_menu_var= tk.StringVar()
 ngrams_options_menu_var= tk.StringVar()
+ngrams_size = tk.StringVar()
 
 bySentenceIndex_var=tk.IntVar()
 
@@ -533,14 +535,25 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                    False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
                                    "Select the N-grams type")
 
-ngrams_options_menu_lb = tk.Label(window, text='N-grams options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ngrams_options_menu_lb,True)
+ngrams_size.set(3)
+ngrams_number_menu_lb = tk.Label(window, text='N-grams')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ngrams_number_menu_lb,True)
+ngrams_number_menu = tk.OptionMenu(window, ngrams_size, 2, 3, 4, 5, 6)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+80, y_multiplier_integer,
+                                   ngrams_number_menu,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate+80,
+                                   "Select the number of N-grams to be computed.")
+
+ngrams_options_menu_lb = tk.Label(window, text='Options')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,ngrams_options_menu_lb,True)
 ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax legomena (once-occurring words/unigrams)','Normalize n-grams', 'Exclude punctuation (word n-grams only)','Exclude determinants/articles (word n-grams only)','Exclude ALL stopwords (word n-grams only)','By sentence index','Repetition of words (last K words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+70, y_multiplier_integer,
                                    ngrams_options_menu,
-                                   True, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Select the N-grams option; hit + button to add multiple options; Reset to start fresh; Show to display current selection.")
+
 
 add_ngrams_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_ngrams_analysis_var())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_add_ngrams_button_pos,y_multiplier_integer,add_ngrams_button, True)
