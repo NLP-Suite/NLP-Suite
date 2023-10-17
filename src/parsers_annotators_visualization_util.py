@@ -92,7 +92,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                outputDir,
                                columns_to_be_plotted_xAxis=[],
                                columns_to_be_plotted_yAxis=['NER'],
-                               chart_title='Frequency Distribution of NER Tags',
+                               chart_title='Frequency Distribution of NERs',
                                # count_var = 1 for columns of alphabetic values
                                count_var=1, hover_label=[],
                                outputFileNameType='NER-tag', #'NER_tag_bar',

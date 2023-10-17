@@ -324,7 +324,7 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
         if str(sort_order) =="nan":
             sort_order = "1"
             IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Warning',
-                        "Non fatal filename error: no sort order available. Error ignored. Files will be read without sorting.\nIf you wish to sort the input files in a specific oorder, you should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration' at the top of the GUI.\n\n", False,'',True,'',False)
+                        "No sort order available. Files will be read without sorting.\nIf you wish to sort the input files in a specific order, you should edit the filename settings using the button 'Setup INPUT/OUTPUT configuration' at the top of the GUI.\n\n", False,'',True,'',False)
 
         try:
             aa = float(sort_order)

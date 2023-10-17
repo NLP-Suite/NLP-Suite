@@ -153,8 +153,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
             if datePresent:
                 nom_df = pd.DataFrame(locations, columns=['Location', 'Date', 'NER']) if len(locations[0])==3 else pd.DataFrame(locations, columns=['Location', 'Index', '0', 'NER'])
             else:
-                nom_df = pd.DataFrame(locations, columns=['Location', 'NER']) if \
-                    len(locations[0]) == 2 else pd.DataFrame(locations, columns=['Location', 'Index', '0', 'NER'])
+                nom_df = pd.DataFrame(locations, columns=['Location', 'NER']) if len(locations[0])==2 else pd.DataFrame(locations, columns=['Location', 'Index', '0', 'NER'])
             if nom_df is None:
                 return
             drop_idx = []
@@ -168,16 +167,9 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                     row[0] == 'Australia' or \
                     row[0] == 'Europe' or \
                     row[0] == 'Oceania' or \
-                    row[0] == 'America') and \
-                    (nom_df.at[i - 1, 'Location'] == 'North' or \
-                    nom_df.at[i - 1, 'Location'] == 'South'):
+                    row[0] == 'America'):
                     nom_df.at[i, 'Location'] = nom_df.at[i-1, 'Location'] + ' ' + row[0]
                     drop_idx.append(i-1)
-                    changed_idx[i] = nom_df.at[i, 'Location']
-                    changed = True
-                # TODO special case for 'America' without 'North' or 'South' in front: convert it to 'United States'
-                elif row[0] == 'America':
-                    nom_df.at[i, 'Location'] = 'United States'
                     changed_idx[i] = nom_df.at[i, 'Location']
                     changed = True
             if changed:
@@ -221,10 +213,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
 
     geocodedLocationsOutputFilename=inputFilename
 
-    # RF
     kmloutputFilename = geocodedLocationsOutputFilename.replace('.csv', '.kml')
-
-    # RF
 
     if not inputIsGeocoded:
         geocodedLocationsOutputFilename, \
@@ -257,7 +246,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         IO_csv_util.list_to_csv(window, locations, outputCsvLocationsOnly)
 
     # the plot of locations frequencies is done in the CoreNLP_annotator_util
-    # the plot of location NER Tags frequencies is done in the function CoreNLP_annotator_util
+    # the plot of location NERs frequencies is done in the function CoreNLP_annotator_util
     # need to plot locations geocoded and not geocoded
 
     nRecordsFound, nColumns  = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(geocodedLocationsOutputFilename)
@@ -370,6 +359,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                                                                         geocoder, locationColumnName, '', '',
                                                                         False, True)
         coordList = []
+        nRecordsFound, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(geocodedLocationsOutputFilename)
         df = pd.read_csv(geocodedLocationsOutputFilename, encoding='utf-8', on_bad_lines='skip')
         if 'Latitude' in df and 'Longitude' in df:
             lat = df.Latitude

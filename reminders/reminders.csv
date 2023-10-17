@@ -280,3 +280,7 @@ Manual coreference resolution will not be available; depending upon the number o
 GIS_pipeline,GIS Multi-word Locations,"Parsers and NER annotators will export each token as a separate record. Thus, a multi-word location such as 'Republic of China' may end up beging geocoded separately as 'Republic of' as LOCATION and 'China' as COUNTRY. To avoid this problem and improve geocoding, you can edit the csv file multi_word_locations.csv in the lib/wordLists subdirectory.
 
 Similarly, locations known under different names (e.g., 'United States', 'US', 'USA'), can be all geocoded under a single name (e.g., 'United States'). The multiple name locations are listed in the csv file multi_name_locations.csv Again, you can edit that file to your specific needs and improve geocoding.",OFF
+GIS,Open Google Earth GUI,"You should tick the Open GUI checkbox ONLY if you wish to open the Google Earth Pro GUI.
+
+The Google Earth Pro GUI will provide a number of options to personalize a Google Earth Pro map. Press Run if you wish to open the Google Earth Pro GUI.",Yes
+GIS_pipeline,GIS Multi-name Locations,"Locations known under different names (e.g., 'United States', 'US', 'USA'), can be all geocoded under a single name (e.g., 'United States'). The multiple name locations are listed in the csv file multi_name_locations.csv.You can edit that file to your specific needs and improve geocoding.",OFF

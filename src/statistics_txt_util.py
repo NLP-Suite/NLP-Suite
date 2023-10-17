@@ -515,7 +515,9 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
 
 def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, configFileName,
                                   ngramsNumber=3,
-                                  normalize=False, excludePunctuation=True, wordgram=None,
+                                  normalize=False,
+                                  excludePunctuation=True, excludeDeterminants=True, excludeStopwords=True,
+                                  wordgram=None,
                                   frequency = 0, openOutputFiles=False,
                                   createCharts=True, chartPackage='Excel', bySentenceID=None):
     # hapax have ngramsNumber = 1 and frequency = 1
@@ -560,7 +562,8 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, confi
         else:
             bySentenceID=0
 
-    filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, wordgram, excludePunctuation, frequency,
+    filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, wordgram,
+                                excludePunctuation, excludeDeterminants, excludeStopwords, frequency,
                                 bySentenceID,  createCharts, chartPackage)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
@@ -569,34 +572,17 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, confi
     return filesToOpen
 
 
-# def process_punctuation(inputFilename, excludePunctuation, ngrams_list, ctr_sentence, documentID):
 def process_punctuation(inputFilename, inputDir, excludePunctuation, ngrams_list, ctr_document, documentID):
     ngrams_list = []
 
-    for item in ctr_document:
-        if not excludePunctuation:
-            char_flag = False
-            for char in item[0]:
-                if char in string.punctuation:
-                    punct = 'yes'
-                    char_flag = True
-                    break
-                else:
-                    continue
-            if not char_flag:
-                punct='no'
+    for item in ctr_document: # item is every token in the document
+        if item in string.punctuation and excludePunctuation:
+            continue
         if inputDir == '':
-            if not excludePunctuation:
-                ngrams_list.append([item, punct, ctr_document[item], documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)])
-            else:
-                ngrams_list.append([item, ctr_document[item], documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)])
+            ngrams_list.append([item, ctr_document[item], documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)])
         else:
-            if not excludePunctuation:
-                # insert 0 for corpus frequency to be updated at a later point
-                ngrams_list.append([item, punct, ctr_document[item], 0, documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)])
-            else:
-                # insert 0 for corpus frequency to be updated at a later point
-                ngrams_list.append([item, ctr_document[item], 0, documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)])
+            # insert 0 for corpus frequency to be updated at a later point
+            ngrams_list.append([item, ctr_document[item], 0, documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)])
     return ngrams_list
 
 # process the sentence ngramsList for frequency = 1 only (hapax legomena)
@@ -613,170 +599,205 @@ def process_hapax(ngramsList, frequency, excludePunctuation):
 
 # re-written by Roberto June 2022
 
-# return a list for each document
-def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber=3, wordgram=1, excludePunctuation=True, frequency = None, bySentenceID=False, createCharts=True,chartPackage='Excel'):
-
-    # the function combines each token with the next token in the list
-    def combine_tokens_in_ngrams(ngrams_list):
-        t = []
-        str = ''
-        for jgramlist in ngrams_list:
-            for word in jgramlist:
-                str += (word[0] + ' ')
-            str = str.strip()
-            t.append([str, jgramlist[0][1],jgramlist[0][2]])
-            str = ''
-        return t
-
-    if wordgram==0:
-        mb.showinfo(title='Warning', message='The computation of character n-grams is currently not available. Sorry!')
-        return
+import ngrams_util
+def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber=3, wordgram=1,
+    excludePunctuation=True, excludeDeterminants=True, excludeStopWords=True,
+    frequency = None, bySentenceID=False, createCharts=True,chartPackage='Excel'):
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
-    nFile=len(files)
-    if nFile==0:
-        return
-
-    if wordgram==1:
-        gram_type_label_short="Wd"
-        gram_type_label_full="Word"
-    else:
-        gram_type_label_short="Ch"
-        gram_type_label_full="Character"
-
+    # print(excludePunctuation)
+    documents = [ngrams_util.readandsplit(i,excludePunctuation, excludeDeterminants, excludeStopWords,len(files)) for i in files]
+    # we need to allow as many n-grams as the user selects in ngramsNumber 1-6
+    onegram_freq, bigram_freq, trigram_freq = ngrams_util.operate(documents,files,ngramsNumber)
+    results = [onegram_freq, bigram_freq, trigram_freq]
     filesToOpen = []
-
-    if frequency==1: # hapax
-        hapax_label="_hapax_"
-        hapax_header=" (hapax)"
-        ngramsNumber=1 # if hapax, there is no point computing higher-level n-grams
-    else:
-        hapax_label=""
-        hapax_header=""
-
-    gram = 1
-    while gram <= ngramsNumber:
-        container = []
-        documentID = 0
-        ngramsList = []
-        corpus_ngramsList = []
-        corpus_tokens = []
-        print("Processing " + gram_type_label_full + " n-grams " + str(gram) + "/" + str(ngramsNumber))
-        for file in files:
-            head, tail = os.path.split(file)
-            documentID += 1
-            Sentence_ID = 0
-            doc_ngramsList = []
-            print("   Processing file " + str(documentID) + "/" + str(nFile) + ' ' + tail)
-            text = (open(file, "r", encoding="utf-8", errors='ignore').read())
-
-# word ngrams ---------------------------------------------------------
-
-            if wordgram==1: # word ngrams
-                document_tokens=[]
-                from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
-                    lemmatize_stanza
-                for tk in word_tokenize_stanza(stanzaPipeLine(text)):
-                    document_tokens.append([tk, documentID, file])
-                corpus_tokens.append(document_tokens)
-
-                ngrams=[]
-                ngrams = [document_tokens[i:i+gram] for i in range(len(document_tokens)-(gram-1))]
-                # compute all ngrams, combining each token with the next token(s) and convert triple list to double list [[
-                ngrams = combine_tokens_in_ngrams([tk for tk in ngrams if same_document_check(tk)])
-                # the counter contains the frequency of each token in the document
-                ctr_document = collections.Counter(Extract(ngrams))
-                # process punctuation
-                document_ngramsList=process_punctuation(file, inputDir, excludePunctuation, ngrams, ctr_document, documentID)
-                # process hapax
-                document_ngramsList = process_hapax(document_ngramsList, frequency, excludePunctuation)
-
-                if len(ngrams)>1 and isinstance(ngrams[0], list):
-                    ngramsList.extend(ngrams)
-                else:
-                    ngramsList.append(ngrams)
-                if len(document_ngramsList)>1 and isinstance(document_ngramsList[0], list):
-                    corpus_ngramsList.extend(document_ngramsList)
-                else:
-                    corpus_ngramsList.append(document_ngramsList)
-        if excludePunctuation:
-            corpus_freq_pos = 2  # corpus frequency position
-        else:
-            corpus_freq_pos = 3  # corpus frequency position
-
-        if inputDir != '':
-            # n-grams frequencies must be computed by entire corpus
-            try:
-                # n-grams frequencies must be computed by entire corpus
-                ctr_corpus = collections.Counter(Extract(ngramsList))
-            except:
-                temp = Extract(ngramsList)
-                ctr_corpus = collections.Counter(Extract(temp))
-            # loop through the distinct values of every token in the corpus to get their frequencies
-            for item in ctr_corpus:
-                # loop through all values of the ngramsList organized by documents
-                #   so as to update the specific token for its corpus frequency
-                for ngrams in corpus_ngramsList:
-                    if ngrams[0]==item:
-                        corpus_freq = ctr_corpus[item]
-                        ngrams[corpus_freq_pos]=corpus_freq # compute n-grams corpus frequencies
-
-        # code breaks
-        # ngramsList = sorted(ngramsList, key=lambda x: x[1])
-
-        # insert headers
-        if excludePunctuation: # exclude punctuation header
-            if inputDir == '':
-                corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Frequency in Document',
-                                     'Document ID', 'Document'])
-            else:
-                corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Frequency in Document', 'Frequency in Corpus',
-                                             'Document ID', 'Document'])
-        else: # include punctuation header
-            if inputDir == '':
-                corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Punctuation',
-                                     'Frequency in Document',
-                                     'Document ID', 'Document'])
-            else:
-                corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Punctuation',
-                                             'Frequency in Document', 'Frequency in Corpus',
-                                             'Document ID', 'Document'])
-
-        columns_to_be_plotted_xAxis=[str(gram) + '-grams' + hapax_header]
-        if inputDir == '':
-            columns_to_be_plotted_yAxis=['Frequency in Document']
-        else:
-            columns_to_be_plotted_yAxis=['Frequency in Document', 'Frequency in Corpus']
-        # save output file after each n-gram value in the range
-        # code in next line breaks
-        # corpus_ngramsList = sorted(corpus_ngramsList, key=lambda x: x[1])
+    for index,result in enumerate(results):
+        corpus_ngramsList = result.values.tolist()
+        corpus_ngramsList.insert(0,[str(index+1)+'-grams', 'Frequency in Document', 'Frequency in Corpus', 'Document ID', 'Document'])
         csv_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                     'n-grams' + str(gram) + '_' + gram_type_label_short,
-                                                                     hapax_label + 'stats', '', '',
+                                                                     'n-grams' + str(index+1) + '_Word',
+                                                                     'stats', '', '',
                                                                      '', False, True)
         errorFound = IO_csv_util.list_to_csv(GUI_util.window, corpus_ngramsList, csv_outputFilename)
 
         if not errorFound:
             filesToOpen.append(csv_outputFilename)
+            columns_to_be_plotted_xAxis = [str(index+1) + '-grams']
+            if inputDir == '':
+                columns_to_be_plotted_yAxis = ['Frequency in Document']
+            else:
+                columns_to_be_plotted_yAxis = ['Frequency in Document', 'Frequency in Corpus']
             outputFiles = charts_util.visualize_chart(createCharts, chartPackage, csv_outputFilename,
-                                                               outputDir,
-                                                               columns_to_be_plotted_xAxis=columns_to_be_plotted_xAxis,
-                                                               columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                               chart_title='Frequency of ' + str(gram) + '-gram' + hapax_header,
-                                                               count_var=0, hover_label=[], #hover_label,
-                                                               # outputFileNameType='n-grams_'+str(gram), # +'_'+ tail,
-                                                               outputFileNameType='',
-                                                               column_xAxis_label=str(gram) + '-gram',
-                                                               groupByList=['Document'],
-                                                               plotList=['Frequency in Document'],
-                                                               chart_title_label=str(gram) + '-gram')
-            if outputFiles!=None:
+                                                      outputDir,
+                                                      columns_to_be_plotted_xAxis=columns_to_be_plotted_xAxis,
+                                                      columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
+                                                      chart_title='Frequency of ' + str(index+1) + '-gram' ,
+                                                      count_var=0, hover_label=[],  # hover_label,
+                                                      # outputFileNameType='n-grams_'+str(gram), # +'_'+ tail,
+                                                      outputFileNameType='',
+                                                      column_xAxis_label=str(index+1) + '-gram',
+                                                      groupByList=['Document'],
+                                                      plotList=['Frequency in Document'],
+                                                      chart_title_label=str(index+1) + '-gram')
+            if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
                     filesToOpen.extend(outputFiles)
-        gram += 1
-
     return filesToOpen
+# # return a list for each document
+# def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber=3, wordgram=1, excludePunctuation=True, frequency = None, bySentenceID=False, createCharts=True,chartPackage='Excel'):
+#
+#     # the function combines each token with the next token in the list
+#     def combine_tokens_in_ngrams(ngrams_list):
+#         t = []
+#         str = ''
+#         for jgramlist in ngrams_list:
+#             for word in jgramlist:
+#                 str += (word[0] + ' ')
+#             str = str.strip()
+#             t.append([str, jgramlist[0][1],jgramlist[0][2]])
+#             str = ''
+#         return t
+#
+#     if wordgram==0:
+#         mb.showinfo(title='Warning', message='The computation of character n-grams is currently not available. Sorry!')
+#         return
+#     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
+#     nFile=len(files)
+#     if nFile==0:
+#         return
+#
+#     if wordgram==1:
+#         gram_type_label_short="Wd"
+#         gram_type_label_full="Word"
+#     else:
+#         gram_type_label_short="Ch"
+#         gram_type_label_full="Character"
+#
+#     filesToOpen = []
+#
+#     if frequency==1: # hapax
+#         hapax_label="_hapax_"
+#         hapax_header=" (hapax)"
+#         ngramsNumber=1 # if hapax, there is no point computing higher-level n-grams
+#     else:
+#         hapax_label=""
+#         hapax_header=""
+#
+#     gram = 1
+#     while gram <= ngramsNumber:
+#         container = []
+#         documentID = 0
+#         ngramsList = []
+#         corpus_ngramsList = []
+#         corpus_tokens = []
+#         print("Processing " + gram_type_label_full + " n-grams " + str(gram) + "/" + str(ngramsNumber))
+#         for file in files:
+#             head, tail = os.path.split(file)
+#             documentID += 1
+#             Sentence_ID = 0
+#             doc_ngramsList = []
+#             print("   Processing file " + str(documentID) + "/" + str(nFile) + ' ' + tail)
+#             text = (open(file, "r", encoding="utf-8", errors='ignore').read())
+#
+# # word ngrams ---------------------------------------------------------
+#
+#             if wordgram==1: # word ngrams
+#                 document_tokens=[]
+#                 from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, \
+#                     lemmatize_stanza
+#                 for tk in word_tokenize_stanza(stanzaPipeLine(text)):
+#                     document_tokens.append([tk, documentID, file])
+#                 corpus_tokens.append(document_tokens)
+#
+#                 ngrams=[]
+#                 ngrams = [document_tokens[i:i+gram] for i in range(len(document_tokens)-(gram-1))]
+#                 # compute all ngrams, combining each token with the next token(s) and convert triple list to double list [[
+#                 ngrams = combine_tokens_in_ngrams([tk for tk in ngrams if same_document_check(tk)])
+#                 # the counter contains the frequency of each token in the document
+#                 ctr_document = collections.Counter(Extract(ngrams))
+#                 # process punctuation
+#                 document_ngramsList=process_punctuation(file, inputDir, excludePunctuation, ngrams, ctr_document, documentID)
+#                 # process hapax
+#                 document_ngramsList = process_hapax(document_ngramsList, frequency, excludePunctuation)
+#
+#                 if len(ngrams)>1 and isinstance(ngrams[0], list):
+#                     ngramsList.extend(ngrams)
+#                 else:
+#                     ngramsList.append(ngrams)
+#                 if len(document_ngramsList)>1 and isinstance(document_ngramsList[0], list):
+#                     corpus_ngramsList.extend(document_ngramsList)
+#                 else:
+#                     corpus_ngramsList.append(document_ngramsList)
+#         if excludePunctuation:
+#             corpus_freq_pos = 2  # corpus frequency position
+#         else:
+#             corpus_freq_pos = 3  # corpus frequency position
+#
+#         if inputDir != '':
+#             # n-grams frequencies must be computed by entire corpus
+#             try:
+#                 # n-grams frequencies must be computed by entire corpus
+#                 ctr_corpus = collections.Counter(Extract(ngramsList))
+#             except:
+#                 temp = Extract(ngramsList)
+#                 ctr_corpus = collections.Counter(Extract(temp))
+#             # loop through the distinct values of every token in the corpus to get their frequencies
+#             for item in ctr_corpus:
+#                 # loop through all values of the ngramsList organized by documents
+#                 #   so as to update the specific token for its corpus frequency
+#                 for ngrams in corpus_ngramsList:
+#                     if ngrams[0]==item:
+#                         corpus_freq = ctr_corpus[item]
+#                         ngrams[corpus_freq_pos]=corpus_freq # compute n-grams corpus frequencies
+#
+#         # code breaks
+#         # ngramsList = sorted(ngramsList, key=lambda x: x[1])
+#
+#         # insert headers
+#         if inputDir == '':
+#             corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Frequency in Document',
+#                                  'Document ID', 'Document'])
+#         else:
+#             corpus_ngramsList.insert(0, [str(gram) + '-grams' + hapax_header, 'Frequency in Document', 'Frequency in Corpus',
+#                                          'Document ID', 'Document'])
+#
+#         columns_to_be_plotted_xAxis=[str(gram) + '-grams' + hapax_header]
+#         if inputDir == '':
+#             columns_to_be_plotted_yAxis=['Frequency in Document']
+#         else:
+#             columns_to_be_plotted_yAxis=['Frequency in Document', 'Frequency in Corpus']
+#         # save output file after each n-gram value in the range
+#         # code in next line breaks
+#         # corpus_ngramsList = sorted(corpus_ngramsList, key=lambda x: x[1])
+#         csv_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+#                                                                      'n-grams' + str(gram) + '_' + gram_type_label_short,
+#                                                                      hapax_label + 'stats', '', '',
+#                                                                      '', False, True)
+#         errorFound = IO_csv_util.list_to_csv(GUI_util.window, corpus_ngramsList, csv_outputFilename)
+#
+#         if not errorFound:
+#             filesToOpen.append(csv_outputFilename)
+#             outputFiles = charts_util.visualize_chart(createCharts, chartPackage, csv_outputFilename,
+#                                                                outputDir,
+#                                                                columns_to_be_plotted_xAxis=columns_to_be_plotted_xAxis,
+#                                                                columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
+#                                                                chart_title='Frequency of ' + str(gram) + '-gram' + hapax_header,
+#                                                                count_var=0, hover_label=[], #hover_label,
+#                                                                # outputFileNameType='n-grams_'+str(gram), # +'_'+ tail,
+#                                                                outputFileNameType='',
+#                                                                column_xAxis_label=str(gram) + '-gram',
+#                                                                groupByList=['Document'],
+#                                                                plotList=['Frequency in Document'],
+#                                                                chart_title_label=str(gram) + '-gram')
+#             if outputFiles!=None:
+#                 if isinstance(outputFiles, str):
+#                     filesToOpen.append(outputFiles)
+#                 else:
+#                     filesToOpen.extend(outputFiles)
+#         gram += 1
+#
+#     return filesToOpen
 
 def tokenize(s):
     tokens = re.split(r"[^0-9A-Za-z\-'_]+", s)

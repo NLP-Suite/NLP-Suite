@@ -1,10 +1,11 @@
 Location multiple names,Location single name,NER_Tag,NER_Tag_Nominatim
 "United States of America, America, US, U.S., U.S.A., USA",United States,COUNTRY,country
 "China, PRC, P.R.C., People's Republic of China, Republic of China",China,COUNTRY,country
-"Russia, USSR, U.S.S.R., Soviet Union",Russia,COUNTRY,country
+"Russia, Russian Federation, USSR, U.S.S.R., Soviet Union, Union of Soviet Socialist Republics",Russia,COUNTRY,country
 "Europe, European Union, EU, E.U.",Europe,COUNTRY,country
 "Democratic People's Republic of Korea, North Korea, DPRK, D.P.R.K.",North Korea,COUNTRY,country
 "Republic of Korea, South Korea, ROK, R.O.K.",South Korea,COUNTRY,country
 "German Democratic Republic, Germany",Germany,COUNTRY,country
 "Britain, Great Britain, United Kingdom, UK, U.K., United Kingdom of Great Britain and Northern Ireland",United Kingdom,COUNTRY,country
-"Pekin, Beijing",Beijing,CITY,city
+"Peking, Beijing",Beijing,CITY,city
+"Straits, Strait",Taiwan Strait,LOCATION,

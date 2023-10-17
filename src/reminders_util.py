@@ -88,10 +88,9 @@ title_options_GIS_Nominatim = ['GIS Nominatim geocoder']
 message_GIS_Nominatim = "If the Nominatim geocoder service exits with the error 'too many requests', you can break up the csv location file and process each subfile for geocoding as normal csv files."
 
 # MWL Multi word locations and multi names locations
-title_options_GIS_MWL = ['GIS Multi-word Locations']
-message_GIS_MWL = "Parsers and NER annotators will export each token as a separate record. Thus, a multi-word location such as 'Republic of China' may end up beging geocoded separately as 'Republic of' as LOCATION and 'China' as COUNTRY. To avoid this problem and improve geocoding, you can edit the csv file multi_word_locations.csv in the lib/wordLists subdirectory." \
-                    "\n\nSimilarly, locations known under different names (e.g., 'United States', 'US', 'USA'), can be all geocoded under a single name (e.g., 'United States'). The multiple name locations are listed in the csv file multi_name_locations.csv " \
-                    "Again, you can edit that file to your specific needs and improve geocoding."
+title_options_GIS_MWL = ['GIS Multi-name Locations']
+message_GIS_MWL = "Locations known under different names (e.g., 'United States', 'US', 'USA'), can be all geocoded under a single name (e.g., 'United States'). The multiple name locations are listed in the csv file multi_name_locations.csv." \
+                    "You can edit that file to your specific needs and improve geocoding."
 
 title_options_Google_Earth_Pro_download = ['Google Earth Pro']
 message_Google_Earth_Pro_download = 'The GIS pipeline requires a copy of the FREEWARE Google Earth Pro installed on your machine in order to visualize the kml files produced for Google Earth Pro.\n\nYou can download and install the FREEWARE GOOGLE EARTH PRO for desktop at https://www.google.com/earth/versions/'

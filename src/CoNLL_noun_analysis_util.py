@@ -100,7 +100,7 @@ def noun_POSTAG_DEPREL_compute_frequencies(data, data_divided_sents):
 
     list_nouns_ner = data_preperation(data, ['COUNTRY','CITY','LOCATION','PERSON','ORGANIZATION','STATE_OR_PROVINCE'],
     ['COUNTRY','CITY','LOCATION','PERSON','ORGANIZATION','STATE_OR_PROVINCE'],4)
-    noun_ner_stats = [['Noun NER Tags', 'Frequencies'],
+    noun_ner_stats = [['Noun NERs', 'Frequencies'],
         ['COUNTRY', ner_counter['COUNTRY']],
         ['CITY', ner_counter['CITY']],
         ['LOCATION', ner_counter['LOCATION']],
@@ -207,8 +207,8 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
                                      outputFileLabel='Nouns_NER',
                                      chartPackage=chartPackage,
                                      chart_type_list=['bar'],
-                                     chart_title="Frequency Distribution of Nouns NER Tags",
-                                     column_xAxis_label_var='Nouns NER Tag',
+                                     chart_title="Frequency Distribution of Nouns NERs",
+                                     column_xAxis_label_var='Nouns NER',
                                      hover_info_column_list=[],
                                      count_var=count_var,
                                      complete_sid=False)  # TODO to be changed
