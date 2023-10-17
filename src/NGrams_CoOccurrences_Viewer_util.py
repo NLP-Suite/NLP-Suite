@@ -95,7 +95,7 @@ def aggregate_by_number_of_years(yearList, byNumberOfYears, search_word_list):
 def process_n_grams(search_word, ngram_results, quarter_ngram_results, year, month,
                     byNumberOfYears, byYear, byMonth, byQuarter, yearList):
     if byNumberOfYears > 1:
-        ngram_results = aggregate_by_number_of_years(yearList, byNumberOfYears, search_word_list)
+        ngram_results = aggregate_by_number_of_years(yearList, byNumberOfYears, search_word)
     if byYear:
         ngram_results[search_word][year]["Frequency"] += 1
     if byMonth:
@@ -265,18 +265,25 @@ def run(inputDir="relative_path_here",
         temporal_aggregation = ''
 
     files = IO_files_util.getFileList('', inputDir, ".txt", silent=False, configFileName=configFileName)  # get all input files
-    original_search_word = search_wordsLists + ""
-    search_word_list = search_wordsLists.split(',')
+
+    import IO_string_util
+    search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_list(search_wordsLists,
+                                                                                            case_sensitive)
+
+    original_search_word = search_keywords_str + ""
+    # search_word_list = search_wordsLists.split(',')
     ngram_results = {}
     _results = {}
-    for i in range(len(search_word_list)):
-        if not case_sensitive:
-            search_word_list[i] = search_word_list[i].lstrip().lower()
-        else:
-            search_word_list[i] = search_word_list[i].lstrip()
-
-        yearList = []
-        docIndex = 1
+    yearList = []
+    docIndex = 1
+    # for i in range(len(search_word_list)):
+    #     if not case_sensitive:
+    #         search_word_list[i] = search_word_list[i].lstrip().lower()
+    #     else:
+    #         search_word_list[i] = search_word_list[i].lstrip()
+    #
+    #     yearList = []
+    #     docIndex = 1
 
 # collect date info
     if dateOption:
@@ -298,7 +305,7 @@ def run(inputDir="relative_path_here",
     if n_grams_viewer:
     # initialize the ngram_results dictionary ------------------------------------------------------
         quarter_ngram_results = {}
-        for word in search_word_list:
+        for word in search_keywords_list:
             ngram_results[word] = {}
             quarter_ngram_results[word] = {}
             for y in yearList:
@@ -351,7 +358,7 @@ def run(inputDir="relative_path_here",
 
         ngram_results, quarter_ngram_results, coOcc_results = process_word_search(file,
                             n_grams_viewer, CoOcc_Viewer,
-                            tokens_, search_word_list,
+                            tokens_, search_keywords_list,
                             ngram_results, quarter_ngram_results, coOcc_results,
                             year, month,
                             byNumberOfYears, byYear, byMonth, byQuarter, yearList)
