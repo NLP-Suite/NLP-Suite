@@ -562,8 +562,8 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, confi
         else:
             bySentenceID=0
 
-    filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, wordgram,
-                                excludePunctuation, excludeDeterminants, excludeStopwords, frequency,
+    filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, frequency, wordgram,
+                                lemmatize, excludePunctuation, excludeDeterminants, excludeStopwords, frequency,
                                 bySentenceID,  createCharts, chartPackage)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
@@ -600,9 +600,10 @@ def process_punctuation(inputFilename, inputDir, excludePunctuation, ngrams_list
 # re-written by Roberto June 2022
 
 import ngrams_util
-def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber=3, wordgram=1,
-    excludePunctuation=True, excludeDeterminants=True, excludeStopWords=True,
-    frequency = None, bySentenceID=False, createCharts=True,chartPackage='Excel'):
+def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, frequency=None, wordgram=1,
+    lemmatize=False, excludePunctuation=True, excludeDeterminants=True, excludeStopWords=True,
+    bySentenceID=False, createCharts=True,chartPackage='Excel'):
+
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
     # print(excludePunctuation)
     documents = [ngrams_util.readandsplit(i,excludePunctuation, excludeDeterminants, excludeStopWords,len(files)) for i in files]
