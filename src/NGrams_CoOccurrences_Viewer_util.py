@@ -147,8 +147,8 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
                     break
         token = tokens_[collocationIndex]
         for search_word in search_word_list:
-            iterations = search_word.count(' ')
-            split_search_word = search_word.split(' ')
+            iterations = search_word.count(',')
+            split_search_word = search_word.split(',')
             # split_search_word=str(split_search_word).
             length_of_search_list = len(split_search_word)
             checker = False
