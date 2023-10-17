@@ -7,7 +7,28 @@ import stanza
 nlp = stanza.Pipeline(lang='en', processors='tokenize')
 global cnter
 cnter = 0
-def readandsplit(filename,excludePunctuation, excludeDeterminants, excludeStopWords, nFiles):
+
+#     if frequency==1: # hapax
+#         hapax_label="_hapax_"
+#         hapax_header=" (hapax)"
+#         ngramsNumber=1 # if hapax, there is no point computing higher-level n-grams
+#     else:
+#         hapax_label=""
+#         hapax_header=""
+
+def process_hapax(ngramsList, frequency, excludePunctuation):
+    if excludePunctuation:
+        freq_col = 1
+    else:
+        freq_col = 2
+    if frequency == 1:  # hapax
+        # for hapax legomena keep rows with frequency=1 only; exclude items with frequency>1, i.e. i[1] > 1
+        ngramsList_new=list(filter(lambda a: a[freq_col] == 1, ngramsList))
+        ngramsList=ngramsList_new
+    return ngramsList
+
+
+def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopWords, nFiles):
     global cnter
     head, tail = os.path.split(filename)
     Sentence_ID = 0

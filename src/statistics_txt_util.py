@@ -586,16 +586,16 @@ def process_punctuation(inputFilename, inputDir, excludePunctuation, ngrams_list
     return ngrams_list
 
 # process the sentence ngramsList for frequency = 1 only (hapax legomena)
-def process_hapax(ngramsList, frequency, excludePunctuation):
-    if excludePunctuation:
-        freq_col = 1
-    else:
-        freq_col = 2
-    if frequency == 1:  # hapax
-        # for hapax legomena keep rows with frequency=1 only; exclude items with frequency>1, i.e. i[1] > 1
-        ngramsList_new=list(filter(lambda a: a[freq_col] == 1, ngramsList))
-        ngramsList=ngramsList_new
-    return ngramsList
+# def process_hapax(ngramsList, frequency, excludePunctuation):
+#     if excludePunctuation:
+#         freq_col = 1
+#     else:
+#         freq_col = 2
+#     if frequency == 1:  # hapax
+#         # for hapax legomena keep rows with frequency=1 only; exclude items with frequency>1, i.e. i[1] > 1
+#         ngramsList_new=list(filter(lambda a: a[freq_col] == 1, ngramsList))
+#         ngramsList=ngramsList_new
+#     return ngramsList
 
 # re-written by Roberto June 2022
 

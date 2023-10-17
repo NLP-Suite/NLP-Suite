@@ -147,9 +147,9 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
                     break
         token = tokens_[collocationIndex]
         for search_word in search_word_list:
-            iterations = search_word.count(',')
-            split_search_word = search_word.split(',')
-            # split_search_word=str(split_search_word).
+            # splitting searched multi-word expressions, such as Hong Kong, Australian author, beautiful young princess
+            iterations = search_word.count(' ')
+            split_search_word = search_word.split(' ')
             length_of_search_list = len(split_search_word)
             checker = False
             if iterations > 0:
@@ -163,6 +163,10 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
                                 checker = True
                             else:
                                 checker = False
+                if n_grams_viewer and checker:
+                    ngram_results, quarter_ngram_results = process_n_grams(search_word, ngram_results, quarter_ngram_results, year, month,
+                                                    byNumberOfYears, byYear, byMonth, byQuarter, yearList)
+
             else:
                 if search_word == token:
                     # for now the date option only applies to n-grams but there is no reason to exclude co-occurrences
