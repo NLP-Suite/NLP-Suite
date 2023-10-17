@@ -158,13 +158,6 @@ def save_location(datePresent, currLocation, row):
 			locList.append([currLocation, row["Date"]])
 	else:
 		locList.append([currLocation, row["NER"]])
-	tempLocation = ''
-	# else:
-	# 	if datePresent == True:
-	# 		locList.append([row["Location"], row["Date"], row["NER"]])  # col 1 is the location (e.g., Italy)
-	# 	# locList.append(row[locationColumnNumber+1])  # append NER tag (e.g., COUNTRY)
-	# 	else:
-	# 		locList.append([row["Location"], row["NER"]])  # col 1 is the location (e.g., Italy)
 	return locList
 
 # called from GIS_Google_util
@@ -203,7 +196,7 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 						nextrow = dt.iloc[index + 1]
 					except:
 						nextrow=row
-					# spaCy and Stanza do not contain these headers
+					# spaCy and Stanza do not contain tokenEnd tokenBegin headers
 					try:
 						if row["tokenEnd"]==nextrow["tokenBegin"]:
 							# the current location value (e.g., las) needs to be merged with the next row value (e.g., las vegas)
@@ -224,7 +217,7 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 					locList.append(save_location(datePresent, currLocation, row)[0])
 					currLocation = ''
 
-		# 		# the code would break if no NER is passed (e.g., from DB_PC-ACE)
+				# the code would break if no NER is passed (e.g., from DB_PC-ACE)
 				# 		try:
 				# 			locList.append([row[locationColumnNumber],[index],[0], row['NER']])
 				# 		except:

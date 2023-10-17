@@ -284,3 +284,9 @@ GIS,Open Google Earth GUI,"You should tick the Open GUI checkbox ONLY if you wis
 
 The Google Earth Pro GUI will provide a number of options to personalize a Google Earth Pro map. Press Run if you wish to open the Google Earth Pro GUI.",Yes
 GIS_pipeline,GIS Multi-name Locations,"Locations known under different names (e.g., 'United States', 'US', 'USA'), can be all geocoded under a single name (e.g., 'United States'). The multiple name locations are listed in the csv file multi_name_locations.csv.You can edit that file to your specific needs and improve geocoding.",OFF
+file_splitter,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
+
+Your selected corpus language is English.
+Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
+
+You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",OFF

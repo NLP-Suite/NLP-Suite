@@ -63,6 +63,13 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     if nFile == 0:
         return
 
+    import IO_string_util
+    if 'insensitive' in str(search_options_list):
+        case_sensitive=False
+    else:
+        case_sensitive = True
+    search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_string_list(search_keywords_list, case_sensitive)
+
     if create_subcorpus_var:
         if inputFilename!='':
             head, tail = os.path.split(inputFilename)
@@ -71,11 +78,11 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         elif inputDir!='':
             head, tail = os.path.split(inputDir)
         search_list=''
-        for search_option in search_keywords_list:
-            # Tony search_keywords_list is not a list but a string and every single character in the string is processed separately
-            #   we should test
-            #   if isinstance(search_keywords_list, str) convert to list
-            search_list = search_list + ' ' + search_option
+        # for search_option in search_keywords_list:
+        #     # Tony search_keywords_list is not a list but a string and every single character in the string is processed separately
+        #     #   we should test
+        #     #   if isinstance(search_keywords_list, str) convert to list
+        #     search_list = search_list + ' ' + search_option
 
         # txt subsample files are exported as a folder inside the input folder
         subCorpusDir = os.path.join(inputDir, 'subcorpus_search')
@@ -98,13 +105,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
             search_within_sentence = True
         elif search_option == "Lemmatize":  # not available yet
             lemmatize = True
-
-    if not case_sensitive:
-        search_keywords_list = search_keywords_list.lower()
-    # search_keyword = search_keywords_list.split(' ')  #
-    search_keyword = search_keywords_list.split(',')
-    for w in range(len(search_keyword)):
-        search_keyword[w] = search_keyword[w].lstrip()
 
     nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'search')
@@ -140,6 +140,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     # search in sentence  -----------------------------------------------
             if search_within_sentence:
                 chart_title = 'Frequency Distribution of Search Words'
+                # the next clause takes long time to process even for small documents
                 sentences_ = nlp(docText).sentences
                 sentences = [sentence.text for sentence in sentences_]
                 sentence_index = 0
@@ -155,7 +156,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                     #     tokens_ = [token.text for token in sentences_[sentence_index-1].tokens]
 
                     frequency = 0
-                    for keyword in search_keyword:
+                    for keyword in search_keywords_list:
                         if keyword in sent:
                             if isFirstOcc:
                                 first_occurrence_index = sentence_index
@@ -198,7 +199,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                 #   when a single word is processed should tokenize
                 #       or the keyword "rent" would be found in rental, renting, etc.
                 #       unless a partial match is selected
-                for keyword in search_keyword:
+                for keyword in search_keywords_list:
                     # print("this is the key word", keyword)
                     iterations = keyword.count(' ')
                     tokenIndex = 0
@@ -286,7 +287,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     csvFile.close()
     if search_keywords_found == False:
         mb.showwarning(title='Search string(s) not found',
-                       message='The search keywords:\n\n   ' + search_keywords_list + '\n\nwere not found in your input document(s) with the following set of search options:\n\n  '+ str('\n  '.join(search_options_list)))
+                       message='The search keywords:\n\n   ' + search_keywords_str + '\n\nwere not found in your input document(s) with the following set of search options:\n\n  '+ str('\n  '.join(search_options_list)))
         outputFilename = ''
     else:
         filesToOpen.append(outputFilename)

@@ -31,7 +31,7 @@ def processSearchWords(inputStr):
         curWord = ""
         i = 0
         while i < len(inputStr):
-            if inputStr[i] == " ":
+            if inputStr[i] == ",":
                 if curWord != "":
                     word_list.append(curWord)
                 curWord = ""
@@ -95,7 +95,7 @@ def aggregate_by_number_of_years(yearList, byNumberOfYears, search_word_list):
 def process_n_grams(search_word, ngram_results, quarter_ngram_results, year, month,
                     byNumberOfYears, byYear, byMonth, byQuarter, yearList):
     if byNumberOfYears > 1:
-        ngram_results = aggregate_by_number_of_years(yearList, byNumberOfYears, search_word_list)
+        ngram_results = aggregate_by_number_of_years(yearList, byNumberOfYears, search_word)
     if byYear:
         ngram_results[search_word][year]["Frequency"] += 1
     if byMonth:
@@ -147,9 +147,9 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
                     break
         token = tokens_[collocationIndex]
         for search_word in search_word_list:
+            # splitting searched multi-word expressions, such as Hong Kong, Australian author, beautiful young princess
             iterations = search_word.count(' ')
             split_search_word = search_word.split(' ')
-            # split_search_word=str(split_search_word).
             length_of_search_list = len(split_search_word)
             checker = False
             if iterations > 0:
@@ -163,6 +163,10 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
                                 checker = True
                             else:
                                 checker = False
+                if n_grams_viewer and checker:
+                    ngram_results, quarter_ngram_results = process_n_grams(search_word, ngram_results, quarter_ngram_results, year, month,
+                                                    byNumberOfYears, byYear, byMonth, byQuarter, yearList)
+
             else:
                 if search_word == token:
                     # for now the date option only applies to n-grams but there is no reason to exclude co-occurrences
@@ -249,34 +253,31 @@ def run(inputDir="relative_path_here",
     if dateOption:
         if temporal_aggregation=='group of years':
             byNumberOfYears = number_of_years  # number of years in one aggregated chunk
-            byYear = True  # set to True if want to aggregate by years
+            byYear = True  # set to True if aggregating by years
             aggregateBy = 'year'
         elif temporal_aggregation=='year':
-            byYear = True  # set to True if want to aggregate by years
+            byYear = True  # set to True if aggregating by years
             aggregateBy = 'year'
         elif temporal_aggregation=='quarter':
-            byQuarter = True  # set to True if want to aggregate by years
+            byQuarter = True  # set to True if aggregating by years
             aggregateBy = 'quarter'
         elif temporal_aggregation=='month':
-            byMonth = True  # set to True if want to aggregate by years
+            byMonth = True  # set to True if aggregating by years
             aggregateBy = 'month'
     else:
         aggregateBy = ''
         temporal_aggregation = ''
 
     files = IO_files_util.getFileList('', inputDir, ".txt", silent=False, configFileName=configFileName)  # get all input files
-    original_search_word = search_wordsLists + ""
-    search_word_list = search_wordsLists.split(',')
-    ngram_results = {}
-    _results = {}
-    for i in range(len(search_word_list)):
-        if not case_sensitive:
-            search_word_list[i] = search_word_list[i].lstrip().lower()
-        else:
-            search_word_list[i] = search_word_list[i].lstrip()
 
-        yearList = []
-        docIndex = 1
+    import IO_string_util
+    search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_string_list(search_wordsLists,
+                                                                                            case_sensitive)
+
+    original_search_word = search_keywords_str
+    _results = {}
+    yearList = []
+    docIndex = 1
 
 # collect date info
     if dateOption:
@@ -298,7 +299,7 @@ def run(inputDir="relative_path_here",
     if n_grams_viewer:
     # initialize the ngram_results dictionary ------------------------------------------------------
         quarter_ngram_results = {}
-        for word in search_word_list:
+        for word in search_keywords_list:
             ngram_results[word] = {}
             quarter_ngram_results[word] = {}
             for y in yearList:
@@ -351,7 +352,7 @@ def run(inputDir="relative_path_here",
 
         ngram_results, quarter_ngram_results, coOcc_results = process_word_search(file,
                             n_grams_viewer, CoOcc_Viewer,
-                            tokens_, search_word_list,
+                            tokens_, search_keywords_list,
                             ngram_results, quarter_ngram_results, coOcc_results,
                             year, month,
                             byNumberOfYears, byYear, byMonth, byQuarter, yearList)
