@@ -68,7 +68,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         case_sensitive=False
     else:
         case_sensitive = True
-    search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_list(search_keywords_list, case_sensitive)
+    search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_string_list(search_keywords_list, case_sensitive)
 
     if create_subcorpus_var:
         if inputFilename!='':

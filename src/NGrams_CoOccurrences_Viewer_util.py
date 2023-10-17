@@ -249,16 +249,16 @@ def run(inputDir="relative_path_here",
     if dateOption:
         if temporal_aggregation=='group of years':
             byNumberOfYears = number_of_years  # number of years in one aggregated chunk
-            byYear = True  # set to True if want to aggregate by years
+            byYear = True  # set to True if aggregating by years
             aggregateBy = 'year'
         elif temporal_aggregation=='year':
-            byYear = True  # set to True if want to aggregate by years
+            byYear = True  # set to True if aggregating by years
             aggregateBy = 'year'
         elif temporal_aggregation=='quarter':
-            byQuarter = True  # set to True if want to aggregate by years
+            byQuarter = True  # set to True if aggregating by years
             aggregateBy = 'quarter'
         elif temporal_aggregation=='month':
-            byMonth = True  # set to True if want to aggregate by years
+            byMonth = True  # set to True if aggregating by years
             aggregateBy = 'month'
     else:
         aggregateBy = ''
@@ -267,23 +267,13 @@ def run(inputDir="relative_path_here",
     files = IO_files_util.getFileList('', inputDir, ".txt", silent=False, configFileName=configFileName)  # get all input files
 
     import IO_string_util
-    search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_list(search_wordsLists,
+    search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_string_list(search_wordsLists,
                                                                                             case_sensitive)
 
-    original_search_word = search_keywords_str + ""
-    # search_word_list = search_wordsLists.split(',')
-    ngram_results = {}
+    original_search_word = search_keywords_str
     _results = {}
     yearList = []
     docIndex = 1
-    # for i in range(len(search_word_list)):
-    #     if not case_sensitive:
-    #         search_word_list[i] = search_word_list[i].lstrip().lower()
-    #     else:
-    #         search_word_list[i] = search_word_list[i].lstrip()
-    #
-    #     yearList = []
-    #     docIndex = 1
 
 # collect date info
     if dateOption:
