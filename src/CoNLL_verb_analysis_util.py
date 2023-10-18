@@ -166,18 +166,18 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice',
 																'list')
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
-																	'Verb Voice', 'stats')
+																	'Verb Voice')
 
 	# convert list to dataframe and save
-	df = pd.DataFrame(voice_stats)
+	df = pd.DataFrame(verb_voice_list)
 	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
 						  language_encoding='utf-8')
 	if createCharts == True:
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0, 1]]
-		count_var = 0
+		count_var = 1
 		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
-												   outputFileLabel='verb_stats',
+												   outputFileLabel='verb',
 												   chartPackage=chartPackage,
 												   chart_type_list=['bar'],
 												   chart_title="Frequency Distribution of Verb Voice",
@@ -227,7 +227,8 @@ def verb_modality_data_preparation(data):
 			will_row.append(i+["Will/Would"])
 		elif(i[1] in can_may_keywords and i[3] in verb_postags):
 			can_row.append(i+["Can/May"])
-	dat = obl_row + will_row + can_row
+	verb_modality_value_list = high_value_row + median_value_row + low_value_row
+	verb_modality_list = obl_row + will_row + can_row
 	verb_modality_stats = [['Verb Modality', 'Frequencies'],
 				  ['Obligation', len(obl_row)],
 				  ['Will/Would', len(will_row)],
@@ -237,8 +238,9 @@ def verb_modality_data_preparation(data):
 				  ['Median-value Modals', len(median_value_row)],
 				  ['Low-value Modals', len(low_value_row)]]
 
-	dat = sorted(dat, key=lambda x: int(x[recordID_position]))
-	return dat, verb_modality_stats, verb_modality_value_stats
+	verb_modality_list = sorted(verb_modality_list, key=lambda x: int(x[recordID_position]))
+	verb_modality_value_list = sorted(verb_modality_value_list, key=lambda x: int(x[recordID_position]))
+	return verb_modality_list, verb_modality_stats, verb_modality_value_list, verb_modality_value_stats
 
 # modality compute frequencies of modality categories
 # def verb_modality_compute_categories(data, data_divided_sents):
@@ -253,20 +255,20 @@ def verb_modality_data_preparation(data):
 
 # 	try:
 # 		verb_postags = ['MD']
-# 		obligation_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in obligation_keywords)]
+# 		verb_modality_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in obligation_keywords)]
 # 		will_would_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in will_would_keywords)]
 # 		can_may_list = [tok[1] for tok in data if (tok[3] in verb_postags and tok[1] in can_may_keywords)]
 
 # 		verb_modality_list = [['Verb Modality', 'Frequencies'],
-# 					  ['Obligation', len(obligation_list)],
+# 					  ['Obligation', len(verb_modality_list)],
 # 					  ['Will/would', len(will_would_list)],
 # 					  ['Can/may', len(can_may_list)]]
 
-# 		obligation_counter = len(obligation_list)
+# 		obligation_counter = len(verb_modality_list)
 # 		will_would_counter = len(will_would_list)
 # 		can_may_counter = len(can_may_list)
 
-# 		return obligation_counter, will_would_counter, can_may_counter, obligation_list, will_would_list
+# 		return obligation_counter, will_would_counter, can_may_counter, verb_modality_list, will_would_list
 # 	except:
 # 		print("ERROR: INPUT MUST BE THE CoNLL TABLE CONTAINING THE SENTENCE ID. Program will exit.")
 # 		mb.showinfo("ERROR",
@@ -284,27 +286,24 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 
 	filesToOpen = []  # Store all files that are to be opened once finished
 
-	obligation_list, modality_stats, verb_modality_value_stats = verb_modality_data_preparation(data)
+	verb_modality_list, verb_modality_stats, verb_modality_value_list, verb_modality_value_stats = verb_modality_data_preparation(data)
 	# output file names
 	# NVA Noun Verb Analysis
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
-															 'Verb Modality', 'list')
-	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'value',
-																   'Verb Modality', 'stats')
+															 'Verb Modality list')
+	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
+																   'Verb Modality')
 	verb_modality_value_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
-																   'Verb Modality Value', 'stats')
+																   'Verb Modality Value')
 
-	df = pd.DataFrame(modality_stats)
+	df = pd.DataFrame(verb_modality_list)
 	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
-						  language_encoding='utf-8')
-	df = pd.DataFrame(verb_modality_value_stats)
-	IO_csv_util.df_to_csv(GUI_util.window, df, verb_modality_value_stats_file_name, headers=None, index=False,
 						  language_encoding='utf-8')
 
 	if createCharts == True:
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0, 1]]
-		count_var = 0
+		count_var = 1
 		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
 												   outputFileLabel='verb_mod',
 												   chartPackage=chartPackage,
@@ -321,9 +320,12 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 			else:
 				filesToOpen.extend(outputFiles)
 
+		df = pd.DataFrame(verb_modality_value_list)
+		IO_csv_util.df_to_csv(GUI_util.window, df, verb_modality_value_stats_file_name, headers=None, index=False,
+							  language_encoding='utf-8')
 		columns_to_be_plotted_xAxis=[]
-		columns_to_be_plotted_yAxis=[[0, 1]]
-		count_var = 0
+		columns_to_be_plotted_yAxis=[[0, 14]]
+		count_var = 1
 		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_modality_value_stats_file_name, outputDir,
 												   outputFileLabel='verb_mod_val',
 												   chartPackage=chartPackage,
@@ -439,16 +441,16 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Tense',
 															 'list')
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
-																   'Verb Tense', 'stats')
+																   'Verb Tense')
 
-	df = pd.DataFrame(verb_tense_stats)
+	df = pd.DataFrame(verb_tense_list)
 	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
 						  language_encoding='utf-8')
 
 	if createCharts == True:
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0,1]]
-		count_var=0
+		count_var=1
 		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
 														 outputFileLabel='verb_tense',
 														 chartPackage=chartPackage,
