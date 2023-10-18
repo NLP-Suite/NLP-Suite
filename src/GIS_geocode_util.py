@@ -430,7 +430,7 @@ def geocode(window,locations, inputFilename, outputDir,
 					address = distinctGeocodedLocations[itemToGeocode][2]
 					address = distinctGeocodedLocations[itemToGeocode][2]
 					address_list = address.split(',')
-					country_geocoder=address_list[-1]
+					country_geocoder=address_list[-1].strip()
 			else:
 				print("   Geocoding DISTINCT location: " + itemToGeocode)
 				for index, row in multi_name_locations.iterrows():  # For every row in the ConLL
@@ -489,7 +489,7 @@ def geocode(window,locations, inputFilename, outputDir,
 					lng = distinctGeocodedLocations[itemToGeocode][1]
 					address = distinctGeocodedLocations[itemToGeocode][2]
 					address_list = address.split(',')
-					country_geocoder=address_list[-1]
+					country_geocoder=address_list[-1].strip()
 			#print(currRecord + itemToGeocode + str(lat) + str(lng) + address+"\n")
 			if lat!=0 and lng!=0:
 				if inputIsCoNLL:

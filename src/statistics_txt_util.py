@@ -516,7 +516,7 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
 def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, configFileName,
                                   ngramsNumber,frequency,
                                   normalize,
-                                  lemmatize=False, excludePunctuation=True, excludeDeterminants=True, excludeStopwords=True,
+                                  lemmatize=False, excludePunctuation=True, excludeArticles=True, excludeStopwords=True,
                                   wordgram=None,
                                   openOutputFiles=False,
                                   createCharts=True, chartPackage='Excel', bySentenceID=None):
@@ -563,7 +563,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, confi
             bySentenceID=0
 
     filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, frequency, wordgram,
-                                lemmatize, excludePunctuation, excludeDeterminants, excludeStopwords, frequency,
+                                lemmatize, excludePunctuation, excludeArticles, excludeStopwords,
                                 bySentenceID,  createCharts, chartPackage)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
@@ -585,31 +585,41 @@ def process_punctuation(inputFilename, inputDir, excludePunctuation, ngrams_list
             ngrams_list.append([item, ctr_document[item], 0, documentID, IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)])
     return ngrams_list
 
-# process the sentence ngramsList for frequency = 1 only (hapax legomena)
-# def process_hapax(ngramsList, frequency, excludePunctuation):
-#     if excludePunctuation:
-#         freq_col = 1
-#     else:
-#         freq_col = 2
-#     if frequency == 1:  # hapax
-#         # for hapax legomena keep rows with frequency=1 only; exclude items with frequency>1, i.e. i[1] > 1
-#         ngramsList_new=list(filter(lambda a: a[freq_col] == 1, ngramsList))
-#         ngramsList=ngramsList_new
-#     return ngramsList
-
-# re-written by Roberto June 2022
 
 import ngrams_util
 def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, frequency=None, wordgram=1,
-    lemmatize=False, excludePunctuation=True, excludeDeterminants=True, excludeStopWords=True,
+    lemmatize=False, excludePunctuation=True, excludeArticles=True, excludeStopWords=True,
     bySentenceID=False, createCharts=True,chartPackage='Excel'):
 
+    compute_hapax = True
+    if frequency is None:
+        compute_hapax = False
+    #Frequency of hapax
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
     # print(excludePunctuation)
-    documents = [ngrams_util.readandsplit(i,excludePunctuation, excludeDeterminants, excludeStopWords,len(files)) for i in files]
+    documents = [ngrams_util.readandsplit(i,excludePunctuation, excludeArticles, excludeStopWords,len(files),lemmatize) for i in files]
     # we need to allow as many n-grams as the user selects in ngramsNumber 1-6
-    results = ngrams_util.operate(documents,files,int(ngramsNumber))
+
     filesToOpen = []
+
+    if compute_hapax:
+        results, hapax_results = ngrams_util.operate(documents,files,int(ngramsNumber),compute_hapax)
+        for index, hapax_result in enumerate(hapax_results):
+            hapax_result = hapax_result.values.tolist()
+            hapax_result.insert(0, [str(index + 1) + '-grams Hapax', 'Frequency in Document', 'Frequency in Corpus', 'Document ID',
+                        'Document'])
+            csv_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                         'n-grams' + str(index + 1) + '_Word_Hapax',
+                                                                         'stats', '', '',
+                                                                         '', False, True)
+            errorFound = IO_csv_util.list_to_csv(GUI_util.window, hapax_result, csv_outputFilename)
+            if not errorFound:
+                filesToOpen.append(csv_outputFilename)
+
+    else:
+        results = ngrams_util.operate(documents,files,int(ngramsNumber),compute_hapax)
+
+
     for index,result in enumerate(results):
         corpus_ngramsList = result.values.tolist()
         corpus_ngramsList.insert(0,[str(index+1)+'-grams', 'Frequency in Document', 'Frequency in Corpus', 'Document ID', 'Document'])

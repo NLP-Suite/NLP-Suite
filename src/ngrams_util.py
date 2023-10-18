@@ -4,10 +4,12 @@ import IO_csv_util
 import string
 punctuation = string.punctuation
 import stanza
-nlp = stanza.Pipeline(lang='en', processors='tokenize')
-global cnter
-cnter = 0
 
+global cnter
+global called
+global nlp
+cnter = 0
+called = 0
 
 #     if frequency==1: # hapax
 #         hapax_label="_hapax_"
@@ -53,8 +55,10 @@ def removestop(original_sentence):
     filtered_sentence = re.sub(dets_pattern, "", original_sentence, flags=re.IGNORECASE)
     final_sentence = filtered_sentence.strip()
     return final_sentence
-def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopWords, nFiles):
+def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopWords, nFiles,lemmatize):
     global cnter
+    global called
+    global nlp
     head, tail = os.path.split(filename)
     Sentence_ID = 0
     doc_ngramsList = []
@@ -73,9 +77,21 @@ def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopW
     # if excludeStopWords:
     #     words = excludeStopWords_list(words)
     #     filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
-    doc = nlp(''.join(out))
-    cnter +=1
-    return [token.text for sentence in doc.sentences for token in sentence.tokens]
+    if not lemmatize:
+        if not called:
+            nlp = stanza.Pipeline(lang='en', processors='tokenize')
+            called = 1
+        doc = nlp(''.join(out))
+        cnter += 1
+        return [token.text for sentence in doc.sentences for token in sentence.tokens]
+    else:
+        if not called:
+            nlp = stanza.Pipeline(lang='en', processors='tokenize,lemma')
+            called = 1
+        doc = nlp(''.join(out))
+        cnter += 1
+        return [token.lemma for sentence in doc.sentences for token in sentence.words]
+
 
 # Stanza typically runs VERY fast as long as we don't repeatedly invoke a call on its pipeline.
 # It seems to be allocating some cache that speeds it up.
@@ -116,7 +132,12 @@ def operateongram(documents,files,ngramsNumber):
     ngram_freq = find_frequencies(documents_ngram, ngrams, files)
     return ngram_freq
 
-def operate(documents, files, max_ngramsNumber):
+def hapax(data):
+    return data[data['Frequency in Corpus']==1]
+
+def operate(documents, files, max_ngramsNumber,compute_hapax):
+    if compute_hapax:
+        hapax_results = []
     ngram_freq_results = []
     for n in range(1, max_ngramsNumber + 1):
         ngram_freq = operateongram(documents, files, n)
@@ -124,5 +145,9 @@ def operate(documents, files, max_ngramsNumber):
         if n>3:
             print("When n>=4, your n-gram can be significantly slower.")
         ngram_freq_results.append(ngram_freq)
+        if compute_hapax:
+            hapax_results.append(hapax(ngram_freq))
+    if compute_hapax:
+        return ngram_freq_results, hapax_results
     return ngram_freq_results
 

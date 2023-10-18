@@ -21,6 +21,7 @@ import constants_util
 NGramsCoOccurrences implements the ability to generate NGram and CoOccurrences data
 """
 
+
 def processSearchWords(inputStr):
     word_list = []
     if inputStr.find("\"") == -1:
@@ -44,12 +45,13 @@ def processSearchWords(inputStr):
             i += 1
     return word_list
 
+
 def process_date(search_wordsLists, temporal_aggregation):
     # it will iterate through i = 0, 1, 2, …., n-1
     # this assumes the data are in this format: temporal_aggregation, frequency of search-word_1, frequency of search-word_2, ...
     i = 0
     j = 0
-    columns_to_be_plotted_yAxis=[]
+    columns_to_be_plotted_yAxis = []
     ngram_list = processSearchWords(search_wordsLists)
     ngram_list = ['-checkNGrams'] + ngram_list
     while i < (len(ngram_list) - 1):
@@ -92,6 +94,7 @@ def aggregate_by_number_of_years(yearList, byNumberOfYears, search_word_list):
     ngram_results = aggregated_ngram_results
     return ngram_results
 
+
 def process_n_grams(search_word, ngram_results, quarter_ngram_results, year, month,
                     byNumberOfYears, byYear, byMonth, byQuarter, yearList):
     if byNumberOfYears > 1:
@@ -123,28 +126,27 @@ def process_n_grams(search_word, ngram_results, quarter_ngram_results, year, mon
                                                                   "Frequency": q4Sum}
     return ngram_results, quarter_ngram_results
 
-def process_coOcc(file, search_word, search_word_list, coOcc_results):
-    co_occurrence_checker = True
-    for word in search_word_list:
-        if word not in list(coOcc_results.items())[0][1]['Search Word(s)']:  # list(coOcc_results.items())[1]:
-            co_occurrence_checker = False
-            break
-    if co_occurrence_checker:
-        coOcc_results[search_word] = 1
-        co_occurrence_checker = True
-        coOcc_results[file]["Co-Occurrence"] = "YES"
 
-    return coOcc_results, co_occurrence_checker
+# def process_coOcc(file, search_word, search_word_list, coOcc_results):
+#     return
+   # co_occurrence_checker = True
+   # co_occurrence_checker = True
+   # for word in search_word_list:
+   #     if word not in list(coOcc_results.items())[0][1]['Search Word(s)']:  # list(coOcc_results.items())[1]:
+   #         co_occurrence_checker = False
+    #        break
+   # if co_occurrence_checker:
+   #     coOcc_results[search_word] = 1
+   #     co_occurrence_checker = True
+   #     coOcc_results[file]["Co-Occurrence"] = "YES"
+
+    # return coOcc_results, co_occurrence_checker
 
 
 def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word_list,
                         ngram_results, quarter_ngram_results, coOcc_results, year, month,
                         byNumberOfYears, byYear, byMonth, byQuarter, yearList):
     for collocationIndex in range(len(tokens_)):
-        if CoOcc_Viewer:
-            if coOcc_results[file]["Co-Occurrence"] == "YES":
-                if not n_grams_viewer:
-                    break
         token = tokens_[collocationIndex]
         for search_word in search_word_list:
             # splitting searched multi-word expressions, such as Hong Kong, Australian author, beautiful young princess
@@ -163,24 +165,39 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
                                 checker = True
                             else:
                                 checker = False
+                                break
+                if checker:
+                    coOcc_results[file]['Co-Occurrence'][search_word] += 1
                 if n_grams_viewer and checker:
-                    ngram_results, quarter_ngram_results = process_n_grams(search_word, ngram_results, quarter_ngram_results, year, month,
-                                                    byNumberOfYears, byYear, byMonth, byQuarter, yearList)
+                    ngram_results, quarter_ngram_results = process_n_grams(search_word, ngram_results,
+                                                                           quarter_ngram_results, year, month,
+                                                                           byNumberOfYears, byYear, byMonth, byQuarter,
+                                                                           yearList)
 
             else:
                 if search_word == token:
                     # for now the date option only applies to n-grams but there is no reason to exclude co-occurrences
                     # if dateOption:
                     if n_grams_viewer:
-                        ngram_results, quarter_ngram_results = process_n_grams(search_word, ngram_results, quarter_ngram_results, year, month,
-                                                        byNumberOfYears, byYear, byMonth, byQuarter, yearList)
+                        ngram_results, quarter_ngram_results = process_n_grams(search_word, ngram_results,
+                                                                               quarter_ngram_results, year, month,
+                                                                               byNumberOfYears, byYear, byMonth,
+                                                                               byQuarter, yearList)
 
                     if CoOcc_Viewer:
-                        coOcc_results, co_occurrence_checker = process_coOcc(file, search_word, search_word_list, coOcc_results)
+                        coOcc_results[file]['Co-Occurrence'][search_word]+=1
+                        #coOcc_results, co_occurrence_checker = process_coOcc(file, search_word, search_word_list,
+                        #                                                     coOcc_results)
                         # do not skip the next record when running both n-grams and coOcc
-                        if co_occurrence_checker and not n_grams_viewer:
-                            break
+                        #if co_occurrence_checker and not n_grams_viewer:
+                        #    break
+    valuescheck = coOcc_results[file]['Co-Occurrence'].values()
+    if 0 in valuescheck:
+        coOcc_results[file]['Co-Occurrence-bool']="NO"
+    else:
+        coOcc_results[file]['Co-Occurrence-bool'] = "YES"
     return ngram_results, quarter_ngram_results, coOcc_results
+
 
 def run(inputDir="relative_path_here",
         outputDir="relative_path_here",
@@ -198,10 +215,9 @@ def run(inputDir="relative_path_here",
         itemsDelimiter="_",
         datePos=2,
         viewer_options_list=[]):
-
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
-                                       'Started running Words/Characters N-Grams VIEWER at',
-                                       True, '', True, '', False)
+                                                   'Started running Words/Characters N-Grams VIEWER at',
+                                                   True, '', True, '', False)
 
     from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
@@ -212,7 +228,7 @@ def run(inputDir="relative_path_here",
     lang_dict = dict(constants_util.languages)
     lang = ''
     lang_list = []
-    for k,v in lang_dict.items():
+    for k, v in lang_dict.items():
         if v == language_list[0]:
             lang = k
             lang_list.append(lang)
@@ -223,7 +239,8 @@ def run(inputDir="relative_path_here",
         else:
             stanzaPipeLine = stanza.Pipeline(lang=lang, processors='tokenize')
     except:
-        mb.showwarning(title='Warning', message='You must enter an integer value. The value ' + str(result[0]) + ' is not an integer.')
+        mb.showwarning(title='Warning',
+                       message='You must enter an integer value. The value ' + str(result[0]) + ' is not an integer.')
         return
     case_sensitive = False
     normalize = False
@@ -242,7 +259,6 @@ def run(inputDir="relative_path_here",
     if 'Lemmatize' in str(viewer_options_list):
         useLemma = True
 
-
     ################################## OPTIONS NEEDED TO BE ADDED TO GUI #################################################
 
     byNumberOfYears = 0
@@ -251,45 +267,46 @@ def run(inputDir="relative_path_here",
     byMonth = False
 
     if dateOption:
-        if temporal_aggregation=='group of years':
+        if temporal_aggregation == 'group of years':
             byNumberOfYears = number_of_years  # number of years in one aggregated chunk
             byYear = True  # set to True if aggregating by years
             aggregateBy = 'year'
-        elif temporal_aggregation=='year':
+        elif temporal_aggregation == 'year':
             byYear = True  # set to True if aggregating by years
             aggregateBy = 'year'
-        elif temporal_aggregation=='quarter':
+        elif temporal_aggregation == 'quarter':
             byQuarter = True  # set to True if aggregating by years
             aggregateBy = 'quarter'
-        elif temporal_aggregation=='month':
+        elif temporal_aggregation == 'month':
             byMonth = True  # set to True if aggregating by years
             aggregateBy = 'month'
     else:
         aggregateBy = ''
         temporal_aggregation = ''
 
-    files = IO_files_util.getFileList('', inputDir, ".txt", silent=False, configFileName=configFileName)  # get all input files
+    files = IO_files_util.getFileList('', inputDir, ".txt", silent=False,
+                                      configFileName=configFileName)  # get all input files
 
     import IO_string_util
     search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_string_list(search_wordsLists,
-                                                                                            case_sensitive)
+                                                                                                   case_sensitive)
 
     original_search_word = search_keywords_str
     _results = {}
     yearList = []
     docIndex = 1
 
-# collect date info
+    # collect date info
     if dateOption:
         print("\nProcessing files collecting date information\n")
         for file in files:  # iterate over each file
             head, tail = os.path.split(file)
             print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
             docIndex += 1
-            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
+            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter,
+                                                                                datePos)
             yearList.append(year)
             yearList = sorted(np.unique(yearList))
-
 
     # coOcc_results are initialized below because this dictionary needs the filename
     ngram_results = {}
@@ -297,7 +314,7 @@ def run(inputDir="relative_path_here",
     coOcc_results = {}
 
     if n_grams_viewer:
-    # initialize the ngram_results dictionary ------------------------------------------------------
+        # initialize the ngram_results dictionary ------------------------------------------------------
         quarter_ngram_results = {}
         for word in search_keywords_list:
             ngram_results[word] = {}
@@ -310,13 +327,13 @@ def run(inputDir="relative_path_here",
                     quarter_ngram_results[word][y] = {}
                     q1Sum, q2Sum, q3Sum, q4Sum = 0, 0, 0, 0
                     quarter_ngram_results[word][y]["quarter 1"] = {"Search Word(s)": word,
-                                                                      "Frequency": 0}
+                                                                   "Frequency": 0}
                     quarter_ngram_results[word][y]["quarter 2"] = {"Search Word(s)": word,
-                                                                      "Frequency": 0}
+                                                                   "Frequency": 0}
                     quarter_ngram_results[word][y]["quarter 3"] = {"Search Word(s)": word,
-                                                                      "Frequency": 0}
+                                                                   "Frequency": 0}
                     quarter_ngram_results[word][y]["quarter 4"] = {"Search Word(s)": word,
-                                                                      "Frequency": 0}
+                                                                   "Frequency": 0}
 
                 if byMonth or byQuarter:
                     monthList = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
@@ -332,8 +349,10 @@ def run(inputDir="relative_path_here",
         docIndex += 1
         # initialize the CoOcc_results dictionary
         if CoOcc_Viewer:
-            coOcc_results[file] = {}
-            coOcc_results[file] = {"Search Word(s)": original_search_word, "Co-Occurrence": "NO",
+            mps = {}
+            for x in search_keywords_list:
+                mps[x] = 0
+            coOcc_results[file] = {"Search Word(s)": original_search_word, "Co-Occurrence-bool": "", "Co-Occurrence": mps,
                                    "Document ID": docIndex,
                                    "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
         head, tail = os.path.split(file)
@@ -341,7 +360,7 @@ def run(inputDir="relative_path_here",
         # extract the date from the file name
         date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
         if date == '':
-            continue  # TODO: getDate warns user is this file has a bad date
+            pass# TODO: getDate warns user is this file has a bad date
 
         f = open(file, "r", encoding='utf-8', errors='ignore')
         docText = f.read()
@@ -351,35 +370,36 @@ def run(inputDir="relative_path_here",
         tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
 
         ngram_results, quarter_ngram_results, coOcc_results = process_word_search(file,
-                            n_grams_viewer, CoOcc_Viewer,
-                            tokens_, search_keywords_list,
-                            ngram_results, quarter_ngram_results, coOcc_results,
-                            year, month,
-                            byNumberOfYears, byYear, byMonth, byQuarter, yearList)
+                                                                                  n_grams_viewer, CoOcc_Viewer,
+                                                                                  tokens_, search_keywords_list,
+                                                                                  ngram_results, quarter_ngram_results,
+                                                                                  coOcc_results,
+                                                                                  year, month,
+                                                                                  byNumberOfYears, byYear, byMonth,
+                                                                                  byQuarter, yearList)
 
-    NgramsFileName=''
-    coOccFileName=''
+    NgramsFileName = ''
+    coOccFileName = ''
 
     if n_grams_viewer:
         if byQuarter:
             ngram_results = quarter_ngram_results
 
         if 'group' in temporal_aggregation:
-            label='group_'+str(byNumberOfYears)
+            label = 'group_' + str(byNumberOfYears)
         else:
-            label=temporal_aggregation
+            label = temporal_aggregation
         NgramsFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                  'N-grams_' + label)
 
     if CoOcc_Viewer:
         coOccFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'Co-Occ')
 
-# save the N-grams/Co-occurrence output files
+    # save the N-grams/Co-occurrence output files
     # pprint.pprint(coOcc_results)
     filesToOpen = save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateBy, temporal_aggregation)
 
-
-# plot Ngrams --------------------------------------------------------------------------
+    # plot Ngrams --------------------------------------------------------------------------
 
     if n_grams_viewer:
         import charts_util
@@ -396,18 +416,18 @@ def run(inputDir="relative_path_here",
             columns_to_be_plotted_yAxis = process_date(search_wordsLists, temporal_aggregation)
             hover_label = []
             outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
-                                                       'n-grams_viewer',
-                                                       chartPackage=chartPackage,
-                                                       chart_type_list=["line"],
-                                                       chart_title=chart_title, column_xAxis_label_var=xAxis,
-                                                       hover_info_column_list=hover_label)
-            if outputFiles!=None:
+                                              'n-grams_viewer',
+                                              chartPackage=chartPackage,
+                                              chart_type_list=["line"],
+                                              chart_title=chart_title, column_xAxis_label_var=xAxis,
+                                              hover_info_column_list=hover_label)
+            if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
                     filesToOpen.extend(outputFiles)
 
-# plot co-occurrences -----------------------------------------------------------------------------
+    # plot co-occurrences -----------------------------------------------------------------------------
 
     if CoOcc_Viewer:
         if createCharts and coOccFileName != '':
@@ -422,20 +442,20 @@ def run(inputDir="relative_path_here",
             columns_to_be_plotted_byDoc = [[1, 2]]
             freq_file = aggregate_YES_NO(xlsxFilename, ["Co-Occurrence"])
             outputFiles = charts_util.run_all(columns_to_be_plotted_byDoc, freq_file, outputDir,
-                                           outputFileLabel='byDoc',
-                                           # outputFileNameType + 'byDoc', #outputFileLabel,
-                                           chartPackage=chartPackage,
-                                           chart_type_list=['bar'],
-                                           chart_title=chart_title + '\nby Document',
-                                           column_xAxis_label_var='',
-                                           column_yAxis_label_var='Frequency',
-                                           hover_info_column_list=hover_label,
-                                           # count_var is set in the calling function
-                                           #     0 for numeric fields;
-                                           #     1 for non-numeric fields
-                                           count_var=0,
-                                           remove_hyperlinks=True)
-            if outputFiles!=None:
+                                              outputFileLabel='byDoc',
+                                              # outputFileNameType + 'byDoc', #outputFileLabel,
+                                              chartPackage=chartPackage,
+                                              chart_type_list=['bar'],
+                                              chart_title=chart_title + '\nby Document',
+                                              column_xAxis_label_var='',
+                                              column_yAxis_label_var='Frequency',
+                                              hover_info_column_list=hover_label,
+                                              # count_var is set in the calling function
+                                              #     0 for numeric fields;
+                                              #     1 for non-numeric fields
+                                              count_var=0,
+                                              remove_hyperlinks=True)
+            if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
@@ -459,18 +479,21 @@ def run(inputDir="relative_path_here",
             #     else:
             #         filesToOpen.extend(outputFiles)
 
-    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
-                                       'Finished running Words/Characters N-Grams VIEWER at', True, '', True, startTime, False)
-
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                       'Finished running Words/Characters N-Grams VIEWER at', True, '', True, startTime,
+                                       False)
 
     return filesToOpen
+
 
 """
     Instead of direct aggregation by document, take YES as 1 and NO as 0, and then sum it by document.
 """
+
+
 def aggregate_YES_NO(inputFilename, column):
     cols = ["Document ID", "Document"] + column
-    df = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
+    df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
     df = df.replace('YES', 1)
     df = df.replace('NO', 0)
     # create a new data frame with Document ID, Document, and the sum of the column
@@ -486,19 +509,19 @@ def aggregate_YES_NO(inputFilename, column):
     return newFilename
 
 
-
 """
     Saves the data passed in the expected format of `NGramsCoOccurrences.run()`
-    
+
     ngrams_results: dict
             The ngram results in the following format: {word : [word, date, file] }
         coOcc_results: dict
             The co-occurrence results in the following format: {combination : [combination, date, file] }
 """
 
+
 def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateBy, temporal_aggregation):
     filesToOpen = []
-    if len(ngram_results)>0:
+    if len(ngram_results) > 0:
         dfList = []  # create a list of dataframes: one df for one search word
         if aggregateBy == 'year':
             for word, yearDict in ngram_results.items():
@@ -525,9 +548,12 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
                 for year, monthDict in yearDict.items():
                     for month, freqDict in monthDict.items():
                         if temporal_aggregation == 'quarter':
-                            df = df.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month, "year-" + temporal_aggregation: str(year) + "-Q" + month[-1]}, ignore_index=True)
+                            df = df.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month,
+                                            "year-" + temporal_aggregation: str(year) + "-Q" + month[-1]},
+                                           ignore_index=True)
                         else:
-                            df = df.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month, "year-" + temporal_aggregation: str(year) + "-" + month}, ignore_index=True)
+                            df = df.append({word: freqDict["Frequency"], "year": year, temporal_aggregation: month,
+                                            "year-" + temporal_aggregation: str(year) + "-" + month}, ignore_index=True)
                 dfList.append(df)
             newdfCur = dfList[0].copy()
             newdf = newdfCur.copy()
@@ -547,19 +573,27 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
             newdf.rename(columns={'year_temp': 'year'}, inplace=True)
             newdf.rename(columns={'yearMonth_temp': 'year-' + temporal_aggregation}, inplace=True)
 
-        if NgramsFileName!='':
+        if NgramsFileName != '':
             newdf.to_csv(NgramsFileName, encoding='utf-8', index=False)
             filesToOpen.append(NgramsFileName)
 
-    if len(coOcc_results)>0:
+    if len(coOcc_results) > 0:
         # with open(os.path.join(WCOFileName, outputDir), 'w', encoding='utf-8') as f:
         with open(coOccFileName, 'w', newline='', encoding='utf-8', errors='ignore') as f:
             writer = csv.writer(f)
-            writer.writerow(["Search Word(s)", "Co-Occurrence", "Document ID", "Document"])
+            writer.writerow(["Search Word(s)", "Co-Occurrence", "Search Word 1 Frequency", "Search Word 2 Frequency", "Search Word 3 Frequency", "Search Word 4 Frequency","Search Word 5 Frequency", "Document ID", "Document"])
             for label, res in coOcc_results.items():
                 if isinstance(res, dict):
-                    writer.writerow([res["Search Word(s)"], res["Co-Occurrence"], res["Document ID"],
+                    d = list(res['Co-Occurrence'].values())
+                    if len(d)>=6:
+                        d = d[0:5]
+                    else:
+                        for i in range(5-len(d)):
+                            d.append("")
+
+                    writer.writerow([res["Search Word(s)"], res["Co-Occurrence-bool"], d[0],d[1],d[2],res["Document ID"],
                                      IO_csv_util.dressFilenameForCSVHyperlink(res["Document"])])
+
         filesToOpen.append(coOccFileName)
 
     return filesToOpen

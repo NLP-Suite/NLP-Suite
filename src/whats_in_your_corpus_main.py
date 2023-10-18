@@ -132,7 +132,7 @@ def run(inputFilename,inputDir, outputDir,
         file_checker_util.check_utf8_compliance(GUI_util.window, inputFilename, inputDir, outputDir,openOutputFiles,True)
 
     if ASCII_var==True:
-        result=file_cleaner_util.convert_quotes(GUI_util.window,inputFilename, inputDir, outputDir, config_filename)
+        result=file_cleaner_util.convert_2_ASCII(GUI_util.window,inputFilename, inputDir, outputDir, config_filename)
         if result==False:
             return
 
