@@ -131,16 +131,16 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
     noun_ner_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
                                                                  'NER_list')
     noun_postag_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
-                                                                     'POSTAG_stats')
+                                                                     'POSTAG')
     noun_deprel_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA','Noun',
-                                                                     'DEPREL_stats')
+                                                                     'DEPREL')
     noun_ner_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA','Noun',
-                                                                  'NER_stats')
+                                                                  'NER')
 
     # save csv files -------------------------------------------------------------------------------------------------
     # POS tags
 
-    df = pd.DataFrame(noun_postag_stats)
+    df = pd.DataFrame(noun_postag)
     IO_csv_util.df_to_csv(GUI_util.window, df, noun_postag_stats_file_name, headers=None, index=False,
                           language_encoding='utf-8')
 
@@ -149,13 +149,13 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
     # DepRel
 
-    df = pd.DataFrame(noun_deprel_stats)
+    df = pd.DataFrame(noun_deprel)
     IO_csv_util.df_to_csv(GUI_util.window, df, noun_deprel_stats_file_name, headers=None, index=False,
                           language_encoding='utf-8')
 
     # NER
 
-    df = pd.DataFrame(noun_ner_stats)
+    df = pd.DataFrame(noun_ner)
     IO_csv_util.df_to_csv(GUI_util.window, df, noun_ner_stats_file_name, headers=None, index=False,
                           language_encoding='utf-8')
 
@@ -168,7 +168,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
 
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0,1]]
-        count_var=0
+        count_var=1
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, noun_postag_stats_file_name, outputDir,
                                      outputFileLabel='Nouns_POS',
                                      chartPackage=chartPackage,

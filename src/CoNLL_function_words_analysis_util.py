@@ -51,7 +51,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
 
     #output file names
     function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Pronouns', 'list')
-    function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename,'',  outputDir, '.csv', 'FW', 'Pronouns', 'stats')
+    function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename,'',  outputDir, '.csv', 'FW', 'Pronouns')
     # filesToOpen.append(function_words_list_file_name)
     # not necessary to open stats since these stats are included in the pie chart
     # filesToOpen.append(function_words_stats_file_name)
@@ -71,7 +71,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
         pronouns_list = pronouns_data
 
         # convert list to dataframe
-        df = pd.DataFrame(pronouns_stats)
+        df = pd.DataFrame(pronouns_data)
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
                               language_encoding='utf-8')
         # filesToOpen.append(function_words_stats_file_name)
@@ -82,7 +82,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
         if createCharts==True:
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
-            count_var=0
+            count_var=1
             outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_pron',
                                                             chartPackage=chartPackage,
@@ -108,7 +108,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
 
     #output file names
     function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Prepositions', 'list')
-    function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Prepositions', 'stats')
+    function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Prepositions')
     # filesToOpen.append(function_words_list_file_name)
     # not necessary to open stats since these stats are included in the pie chart
     # filesToOpen.append(function_words_stats_file_name)
@@ -124,11 +124,11 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
             mb.showwarning(title='output file path error', message='Please check OUTPUT DIRECTORY PATH and try again')
             return filesToOpen
 
-        prepositions_list,prepositions_stats, preposition_data = stats_prepositions_output(data,data_divided_sents)
-        prepositions_list = preposition_data
+        prepositions_list,prepositions_stats, prepositions_data = stats_prepositions_output(data,data_divided_sents)
+        prepositions_list = prepositions_data
 
         # convert list to dataframe
-        df = pd.DataFrame(prepositions_stats)
+        df = pd.DataFrame(prepositions_data)
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
                               language_encoding='utf-8')
 
@@ -138,7 +138,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
         if createCharts==True:
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
-            count_var=0
+            count_var=1
             outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_prep',
                                                             chartPackage=chartPackage,
@@ -163,7 +163,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
 
     #output file names
     function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Articles', 'list')
-    function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Articles', 'stats')
+    function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Articles')
     # filesToOpen.append(function_words_list_file_name)
     # not necessary to open stats since these stats are included in the pie chart
     # filesToOpen.append(function_words_stats_file_name)
@@ -181,20 +181,20 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
             return filesToOpen
 
         # output files
-        article_list,article_stats,article_data =  stats_articles_output(data,data_divided_sents)
+        article_list,article_stats,article_data =  stats_determiners_articles_output(data,data_divided_sents)
         article_list = article_data
           # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
           #     "ARTICLES"])
 
         # convert list to dataframe
-        df = pd.DataFrame(article_stats)
+        df = pd.DataFrame(article_data)
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
                               language_encoding='utf-8')
 
         if createCharts==True:
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
-            count_var=0
+            count_var=1
             outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_article',
                                                             chartPackage=chartPackage,
@@ -217,7 +217,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
 
     #output file names
     function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Conjunctions', 'list')
-    function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Conjunctions', 'stats')
+    function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Conjunctions')
     # not necessary to open stats since these stats are included in the pie chart
     # filesToOpen.append(function_words_stats_file_name)
 
@@ -236,7 +236,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
         conjunction_list = conjunction_data
 
         # convert list to dataframe
-        df = pd.DataFrame(conjunction_stats)
+        df = pd.DataFrame(conjunction_data)
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
                               language_encoding='utf-8')
         # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
@@ -245,7 +245,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
         if createCharts==True:
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
-            count_var=0
+            count_var=1
             outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_conjunction',
                                                             chartPackage=chartPackage,
@@ -274,7 +274,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
 
     #output file names
     function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Auxiliaries', 'list')
-    function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Auxiliaries', 'stats')
+    function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Auxiliaries')
     # filesToOpen.append(function_words_list_file_name)
     # not necessary to open stats since these stats are included in the pie chart
     # filesToOpen.append(function_words_stats_file_name)
@@ -295,14 +295,14 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
           #     "AUXILIARIES"])
 
         # convert list to dataframe
-        df = pd.DataFrame(auxiliary_stats)
+        df = pd.DataFrame(auxiliary_data)
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
                               language_encoding='utf-8')
 
         if createCharts==True:
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
-            count_var=0
+            count_var=1
             outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_auxiliary',
                                                             chartPackage=chartPackage,
@@ -372,18 +372,33 @@ def stats_prepositions_output(data,data_divided_sents):
     prepositions_postag_stats = [['PREPOSITION ANALYSIS','FREQUENCY'],
            ['Preposition/subordinating conjunction',postag_counter['IN']]]
 
-    preposition_data = data_preperation(data, ["IN"], ['Preposition/subordinating conjunction'], 3)
+    prepositions_data = data_preperation(data, ["IN"], ['Preposition/subordinating conjunction'], 3)
 
-    return list_prepositions_postag, prepositions_postag_stats, preposition_data
+    return list_prepositions_postag, prepositions_postag_stats, prepositions_data
 
 
 #ARTICLES with output
-def stats_articles_output(data,data_divided_sents):
+def stats_determiners_articles_output(data,data_divided_sents):
+
+# Common kinds of determiners include:
+#   definite and indefinite articles (the, a),
+#   demonstratives (this, that),
+#   possessive determiners (my, their),
+#   cardinal numerals (one, two),
+#   quantifiers (many, both),
+#   distributive determiners (each, every)
+#   interrogative determiners (which, what)
+
+# Stanford CoreNLP does not include all these classes of determinerrs.
+# POS 'det' includes only articles, distributive, demonstartives (but that is typically tagged as IN) etc.
+# possessive are tagged as PRP$
+# numerals are tagged as NUMBER
+# interrogative are tagged as WDT
 
     list_articles_postag = []
     postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
     # must be sorted in descending order
-    articles_postag_stats = [['ARTICLE ANALYSIS','FREQUENCY'],
+    articles_postag_stats = [['DETERMINER/ARTICLE ANALYSIS','FREQUENCY'],
            ['Determiner/article (DT)',postag_counter['DT']]]
 
     article_data = data_preperation(data, ["DT"], ['Determiner/article (DT)'], 3)

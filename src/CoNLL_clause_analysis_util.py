@@ -147,13 +147,13 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
     clause_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'CA', 'Clause tags', 'list')
     # convert list to dataframe and save
     # headers=['Clause Tags','Frequencies']
-    df = pd.DataFrame(clausal_stats)
+    df = pd.DataFrame(clausal_list)
     IO_csv_util.df_to_csv(GUI_util.window, df, clausal_analysis_stats_file_name, headers=None, index=False, language_encoding='utf-8')
 
     if createCharts==True:
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0,1]]
-        count_var=0
+        count_var=1
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, clausal_analysis_stats_file_name, outputDir,
                                                         outputFileLabel='clausal_stats',
                                                         chartPackage=chartPackage,
