@@ -462,7 +462,7 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir, configFileName, op
 #   The character "%" is allowed but is interpreted as the start of a special escaped sequence.
 # Needs special handling https://stackoverflow.com/questions/6067673/urldecoder-illegal-hex-characters-in-escape-pattern-for-input-string
 # https://stackoverflow.com/questions/7395789/replacing-a-weird-single-quote-with-blank-string-in-python
-def convert_quotes(window,inputFilename, inputDir, outputDir, configFileName):
+def convert_2_ASCII(window,inputFilename, inputDir, outputDir, configFileName):
     import file_filename_util
     result=file_filename_util.backup_files(inputFilename, inputDir,"Convert non-ASCII quotes",".txt",configFileName)
     if result==False:
@@ -498,7 +498,7 @@ def convert_quotes(window,inputFilename, inputDir, outputDir, configFileName):
             # 	print("u\u201D")
             if (u"%" in fullText) or (u"\u2018" in fullText) or (u"\u2019" in fullText) or (u"\u201C" in fullText) or (u"\u201D" in fullText):
                 # u0027 apostrophe
-                fullText = str(fullText).replace("%", "percent")  # left single quote
+                fullText = str(fullText).replace("%", " percent")  # left single quote
                 fullText = str(fullText).replace(u"\u2018", u"\u0027")  # left single quote
                 fullText = str(fullText).replace(u"\u2019", u"\u0027")  # right single quote
                 fullText = str(fullText).replace(u"\u201C", '"') #left double quote

@@ -4,9 +4,12 @@ import IO_csv_util
 import string
 punctuation = string.punctuation
 import stanza
-nlp = stanza.Pipeline(lang='en', processors='tokenize')
+
 global cnter
+global called
+global nlp
 cnter = 0
+called = 0
 
 #     if frequency==1: # hapax
 #         hapax_label="_hapax_"
@@ -27,9 +30,35 @@ def process_hapax(ngramsList, frequency, excludePunctuation):
         ngramsList=ngramsList_new
     return ngramsList
 
+import re
+def removedt(original_sentence):
+    determiners = [
+        'a', 'all', 'an', 'another', 'any', 'both', 'each', 'either',
+        'every', 'half', 'neither', 'no', 'some', 'that', 'the',
+        'these', 'this', 'those'
+    ]
+    # from Stanford CoreNLP calculation
+    # Create a regex pattern for the determiners, case-insensitive
+    # The \b ensures the match is for whole words only, avoiding partial matches within words
+    dets_pattern = r'\b(?:' + '|'.join(map(re.escape, determiners)) + r')\b\s*'
+    # Remove determiners along with the following spaces
+    # We are using the \s* in the regex pattern to match zero or more whitespace characters following the determiner
+    filtered_sentence = re.sub(dets_pattern, "", original_sentence, flags=re.IGNORECASE)
+    # Stripping leading/trailing whitespace
+    final_sentence = filtered_sentence.strip()
+    return final_sentence
 
-def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopWords, nFiles):
+def removestop(original_sentence):
+    fin = open('../lib/wordLists/stopwords.txt', 'r')
+    stops = list(set(fin.read().splitlines()))
+    dets_pattern = r'\b(?:' + '|'.join(map(re.escape, stops)) + r')\b\s*'
+    filtered_sentence = re.sub(dets_pattern, "", original_sentence, flags=re.IGNORECASE)
+    final_sentence = filtered_sentence.strip()
+    return final_sentence
+def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopWords, nFiles,lemmatize):
     global cnter
+    global called
+    global nlp
     head, tail = os.path.split(filename)
     Sentence_ID = 0
     doc_ngramsList = []
@@ -38,16 +67,31 @@ def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopW
         out = f.read()
     if excludePunctuation:
         out = out.translate(str.maketrans('', '', punctuation))
+    if excludeDeterminants:
+        out = removedt(out)
+    if excludeStopWords:
+        out = removestop(out)
     # if excludeDeterminants:
     #     words = excludeStopWords_list(words)
     #     filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
     # if excludeStopWords:
     #     words = excludeStopWords_list(words)
     #     filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
+    if not lemmatize:
+        if not called:
+            nlp = stanza.Pipeline(lang='en', processors='tokenize')
+            called = 1
+        doc = nlp(''.join(out))
+        cnter += 1
+        return [token.text for sentence in doc.sentences for token in sentence.tokens]
+    else:
+        if not called:
+            nlp = stanza.Pipeline(lang='en', processors='tokenize,lemma')
+            called = 1
+        doc = nlp(''.join(out))
+        cnter += 1
+        return [token.lemma for sentence in doc.sentences for token in sentence.words]
 
-    doc = nlp(''.join(out))
-    cnter +=1
-    return [token.text for sentence in doc.sentences for token in sentence.tokens]
 
 # Stanza typically runs VERY fast as long as we don't repeatedly invoke a call on its pipeline.
 # It seems to be allocating some cache that speeds it up.
@@ -80,20 +124,30 @@ def find_frequencies(sentences_ngrams, major_ngrams,files):
     df = pd.DataFrame(all_records)
     return df
 
-def operate(documents,files, ngramsNumber):
-    # need to rename 1-grams, 2-grams, 3-grams, ... 6-grams
-    onegram = []
-    bigrams = []
-    trigrams = []
+def operateongram(documents,files,ngramsNumber):
+    ngrams = []
     for document in documents:
-        # need to rename 1-grams, 2-grams, 3-grams, ... 6-grams
-        onegram.extend(find_ngrams(document,1))
-        bigrams.extend(find_ngrams(document, 2))
-        trigrams.extend(find_ngrams(document, 3))
-    documents_onegram = [find_ngrams(document,1) for document in documents]
-    documents_bigrams = [find_ngrams(document, 2) for document in documents]
-    documents_trigrams = [find_ngrams(document, 3) for document in documents]
-    onegram_freq = find_frequencies(documents_onegram, onegram,files)
-    bigram_freq = find_frequencies(documents_bigrams, bigrams,files)
-    trigram_freq = find_frequencies(documents_trigrams, trigrams,files)
-    return onegram_freq,bigram_freq,trigram_freq
+        ngrams.extend(find_ngrams(document,ngramsNumber))
+    documents_ngram = [find_ngrams(document, ngramsNumber) for document in documents]
+    ngram_freq = find_frequencies(documents_ngram, ngrams, files)
+    return ngram_freq
+
+def hapax(data):
+    return data[data['Frequency in Corpus']==1]
+
+def operate(documents, files, max_ngramsNumber,compute_hapax):
+    if compute_hapax:
+        hapax_results = []
+    ngram_freq_results = []
+    for n in range(1, max_ngramsNumber + 1):
+        ngram_freq = operateongram(documents, files, n)
+        print(n,"gram of your corpus is complete.")
+        if n>3:
+            print("When n>=4, your n-gram can be significantly slower.")
+        ngram_freq_results.append(ngram_freq)
+        if compute_hapax:
+            hapax_results.append(hapax(ngram_freq))
+    if compute_hapax:
+        return ngram_freq_results, hapax_results
+    return ngram_freq_results
+
