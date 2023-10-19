@@ -581,19 +581,18 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
         # with open(os.path.join(WCOFileName, outputDir), 'w', encoding='utf-8') as f:
         with open(coOccFileName, 'w', newline='', encoding='utf-8', errors='ignore') as f:
             writer = csv.writer(f)
-            writer.writerow(["Search Word(s)", "Co-Occurrence", "Search Word 1 Frequency", "Search Word 2 Frequency", "Search Word 3 Frequency", "Search Word 4 Frequency","Search Word 5 Frequency", "Document ID", "Document"])
+            line = ["Search Word(s)", "Co-Occurrence"]
+            import re
+            words = next(iter(coOcc_results.items()))[1]['Search Word(s)']
+            line.extend([element + '_Frequency' for element in re.findall(r'[^,]+', words)])
+            line.extend(["Document ID", "Document"])
+            writer.writerow(line)
             for label, res in coOcc_results.items():
                 if isinstance(res, dict):
-                    d = list(res['Co-Occurrence'].values())
-                    if len(d)>=6:
-                        d = d[0:5]
-                    else:
-                        for i in range(5-len(d)):
-                            d.append("")
-
-                    writer.writerow([res["Search Word(s)"], res["Co-Occurrence-bool"], d[0],d[1],d[2],res["Document ID"],
-                                     IO_csv_util.dressFilenameForCSVHyperlink(res["Document"])])
-
+                    line = [res["Search Word(s)"], res["Co-Occurrence-bool"]]
+                    line.extend(list(res['Co-Occurrence'].values()))
+                    line.extend([res["Document ID"],IO_csv_util.dressFilenameForCSVHyperlink(res["Document"])])
+                    writer.writerow(line)
         filesToOpen.append(coOccFileName)
 
     return filesToOpen

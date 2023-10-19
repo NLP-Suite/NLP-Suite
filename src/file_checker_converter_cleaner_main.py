@@ -79,7 +79,7 @@ def run(inputFilename,inputDir, outputDir,
         # predict_encoding uses default first 20 lines
         if 'predict_encoding' in function_to_run or \
                 'check_utf8' in function_to_run or \
-                'convert_quotes' in function_to_run or \
+                'convert_2_ASCII' in function_to_run or \
                 'empty_file' in function_to_run or \
                 'find_replace' in function_to_run:
             func(GUI_util.window,inputFilename,inputDir,outputDir, config_filename)
@@ -178,7 +178,7 @@ pydict["Language detector"] = ["file_spell_checker_util.language_detection"]
 pydict["Predict encoding (via chardet)"] = ["file_checker_util.predict_encoding"]
 pydict["Spelling checker/Unusual words (via nltk)"] = ["file_spell_checker_util.nltk_unusual_words"]
 pydict["Spelling checker (via SpellChecker)"] = ["file_spell_checker_util.check_for_typo"]
-pydict["Change to ASCII non-ASCII apostrophes & quotes and % to percent"] = ["file_cleaner_util.convert_quotes"]
+pydict["Change to ASCII non-ASCII apostrophes & quotes and % to percent"] = ["file_cleaner_util.convert_2_ASCII"]
 pydict["Remove blank lines from text file(s)"] = ["file_cleaner_util.remove_blank_lines"]
 pydict["Remove all characters between a set of characters (e.g., []) from text file(s)"] = ["file_cleaner_util.remove_characters_between_characters"]
 pydict["Remove end-of-line typesetting hyphenation and join split parts"] = ["file_cleaner_util.remove_typeseting_hyphenation"]
