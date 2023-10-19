@@ -47,11 +47,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                        "Started running the Word search function at",
                                         True, '', True, '', False)
 
-    result = mb.askyesno('Warning',
-                         'The search algorithm will write over any output file created by previous searches. You may wish to rename those files in the output directory and, if you checked the option of creating a subcorpus of files, rename the directory inside the input files directory.\n\nAre you sure you want to continue?')
-    if not result:
-        return
-
     filesToOpen=[]
     # each occurrence of a search keyword, it's file path will be stored in a set
     corpus_to_copy = set()
@@ -78,11 +73,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         elif inputDir!='':
             head, tail = os.path.split(inputDir)
         search_list=''
-        # for search_option in search_keywords_list:
-        #     # Tony search_keywords_list is not a list but a string and every single character in the string is processed separately
-        #     #   we should test
-        #     #   if isinstance(search_keywords_list, str) convert to list
-        #     search_list = search_list + ' ' + search_option
 
         # txt subsample files are exported as a folder inside the input folder
         subCorpusDir = os.path.join(inputDir, 'subcorpus_search')
@@ -129,8 +119,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                 break
             if search_by_search_keywords:
                 output_dir_path = inputDir + os.sep + "search_result_csv"
-                # if not os.path.exists(output_dir_path):
-                #     os.mkdir(output_dir_path)
                 if file[-4:] != '.txt':
                     continue
             f = open(file, "r", encoding='utf-8', errors='ignore')
@@ -151,10 +139,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                     sentence_index += 1
                     if not case_sensitive:
                         sent = sent.lower()
-                    #     tokens_ = [token.text.lower() for token in sentences_[sentence_index-1].tokens]
-                    # else:
-                    #     tokens_ = [token.text for token in sentences_[sentence_index-1].tokens]
-
                     frequency = 0
                     for keyword in search_keywords_list:
                         if keyword in sent:
@@ -195,10 +179,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                 # words_ = word_tokenize(docText)  # the list of sentences in corpus
                 words_ = word_tokenize_stanza(stanzaPipeLine(docText))
                 wordCounter = collections.Counter(words_)
-                # TODO should check that a single word is processed rather than a collocation
-                #   when a single word is processed should tokenize
-                #       or the keyword "rent" would be found in rental, renting, etc.
-                #       unless a partial match is selected
                 for keyword in search_keywords_list:
                     # print("this is the key word", keyword)
                     iterations = keyword.count(' ')
@@ -376,10 +356,10 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
             outputDir_sentences = os.path.join(outputDir, "sentences_Dir_" + inputDirBase)
 
         # create a subdirectory in the output directory
-        outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_with_searchword', silent=True)
+        outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_with_searchword', silent=False)
         if outputDir_sentences_extract == '':
             return
-        outputDir_sentences_extract_wo_searchword = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_wo_searchword', silent=True)
+        outputDir_sentences_extract_wo_searchword = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_wo_searchword', silent=False)
         if outputDir_sentences_extract_wo_searchword == '':
             return
 
