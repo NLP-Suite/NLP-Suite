@@ -230,7 +230,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
 
         if '*' in vocabulary_analysis_menu_var or 'Hapax legomena' in vocabulary_analysis_menu_var:
             outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
-                                                                   openOutputFiles, createCharts, chartPackage,'Hapax legomena', language)
+                                                                   openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var, language)
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -550,7 +550,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 
 ngrams_options_menu_lb = tk.Label(window, text='Options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,ngrams_options_menu_lb,True)
-ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax legomena (once-occurring words/unigrams)','Lemmatize','Normalize n-grams', 'Exclude punctuation (word n-grams only)','Exclude articles (word n-grams only)','Exclude ALL stopwords (word n-grams only)','By sentence index','Repetition of words (last K words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
+ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax legomena (once-occurring words)','Hapax legomena (once-occurring unigrams)','Lemmatize','Normalize n-grams', 'Exclude punctuation (word n-grams only)','Exclude articles (word n-grams only)','Exclude ALL stopwords (word n-grams only)','By sentence index','Repetition of words (last K words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+70, y_multiplier_integer,
                                    ngrams_options_menu,
@@ -670,7 +670,8 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Vowel words',
                                          'Words with capital initial (proper nouns)',
                                          'Unusual words (via NLTK)',
-                                         'Hapax legomena (once-occurring words/unigrams)',
+                                         'Hapax legomena (once-occurring words)',
+                                         'Hapax legomena (once-occurring unigrams)',
                                          'Language detection',
                                          'Repetition: Words in first K and last K sentences',
                                          'Repetition: Last K words of a sentence/First K words of next sentence',

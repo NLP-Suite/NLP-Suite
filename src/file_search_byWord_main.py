@@ -49,6 +49,13 @@ def run(inputFilename,inputDir, outputDir,
             mb.showwarning(title='Input error', message='No search options have been selected.\n\nPlease, select a search option and try again.')
             return
 
+    # create a subdirectory of the output directory
+
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='word-search',
+                                                       silent=False)
+    if outputDir == '':
+        return
+
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Word/collocation search start',
                         'Started running Word/collocation search at', True,
                         'SEARCH options: ' + str(search_options_list)+'\nSEARCH words: '+search_keyword_values,

@@ -47,6 +47,8 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                        "Started running the Word search function at",
                                         True, '', True, '', False)
 
+
+
     filesToOpen=[]
     # each occurrence of a search keyword, it's file path will be stored in a set
     corpus_to_copy = set()

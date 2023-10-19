@@ -110,14 +110,15 @@ def find_frequencies(sentences_ngrams, major_ngrams,files):
         sent_freq = Counter(sentence_ngrams)
         for ngram, count in sent_freq.items():
             if ngram in major_freq:
-                record = {
-                    'ngram': ' '.join(ngram),
-                    'Frequency in Document': count,
-                    'Frequency in Corpus': major_freq[ngram],
-                    'Document ID': idx+1,
-                    'Document': IO_csv_util.dressFilenameForCSVHyperlink(files[idx])
-                }
-                all_records.append(record)
+                if ngram!=None:
+                    record = {
+                        'ngram': ' '.join(ngram),
+                        'Frequency in Document': count,
+                        'Frequency in Corpus': major_freq[ngram],
+                        'Document ID': idx+1,
+                        'Document': IO_csv_util.dressFilenameForCSVHyperlink(files[idx])
+                    }
+                    all_records.append(record)
 
     # Now, 'all_records' is a list of dictionaries, where each dictionary is a record
     # that can be directly used to create a DataFrame.

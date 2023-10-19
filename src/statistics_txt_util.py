@@ -956,6 +956,9 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
     if processType == '' or "N-grams" in processType or \
             "hapax" in processType.lower() or "unigrams" in processType.lower():
         if "hapax" in processType.lower():
+            hapax_words = False
+            if 'Hapax legomena (once-occurring words)' in processType.lower():
+                hapax_words=True
             ngramsNumber = 1
             frequency = 1  # hapax
         elif "unigrams" in processType.lower():
