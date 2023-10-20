@@ -5,10 +5,9 @@ import string
 punctuation = string.punctuation
 import stanza
 
-global cnter
 global called
 global nlp
-cnter = 0
+
 called = 0
 
 #     if frequency==1: # hapax
@@ -55,14 +54,14 @@ def removestop(original_sentence):
     filtered_sentence = re.sub(dets_pattern, "", original_sentence, flags=re.IGNORECASE)
     final_sentence = filtered_sentence.strip()
     return final_sentence
-def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopWords, nFiles,lemmatize):
-    global cnter
+def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopWords, nFiles,lemmatize,index):
+
     global called
     global nlp
     head, tail = os.path.split(filename)
     Sentence_ID = 0
     doc_ngramsList = []
-    print("   Processing file " + str(cnter+1) + "/" + str(nFiles) + ' ' + tail)
+    print("   Processing file " + str(index+1) + "/" + str(nFiles) + ' ' + tail)
     with open(filename,'r', encoding='utf_8', errors='ignore') as f:
         out = f.read()
     if excludePunctuation:
@@ -82,14 +81,12 @@ def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopW
             nlp = stanza.Pipeline(lang='en', processors='tokenize')
             called = 1
         doc = nlp(''.join(out))
-        cnter += 1
         return [token.text for sentence in doc.sentences for token in sentence.tokens]
     else:
         if not called:
             nlp = stanza.Pipeline(lang='en', processors='tokenize,lemma')
             called = 1
         doc = nlp(''.join(out))
-        cnter += 1
         return [token.lemma for sentence in doc.sentences for token in sentence.words]
 
 
@@ -110,15 +107,14 @@ def find_frequencies(sentences_ngrams, major_ngrams,files):
         sent_freq = Counter(sentence_ngrams)
         for ngram, count in sent_freq.items():
             if ngram in major_freq:
-                if ngram!=None:
-                    record = {
-                        'ngram': ' '.join(ngram),
-                        'Frequency in Document': count,
-                        'Frequency in Corpus': major_freq[ngram],
-                        'Document ID': idx+1,
-                        'Document': IO_csv_util.dressFilenameForCSVHyperlink(files[idx])
-                    }
-                    all_records.append(record)
+                record = {
+                    'ngram': ' '.join(ngram),
+                    'Frequency in Document': count,
+                    'Frequency in Corpus': major_freq[ngram],
+                    'Document ID': idx+1,
+                    'Document': IO_csv_util.dressFilenameForCSVHyperlink(files[idx])
+                }
+                all_records.append(record)
 
     # Now, 'all_records' is a list of dictionaries, where each dictionary is a record
     # that can be directly used to create a DataFrame.

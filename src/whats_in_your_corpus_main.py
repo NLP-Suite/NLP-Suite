@@ -305,7 +305,7 @@ def run(inputFilename,inputDir, outputDir,
                                                               ngramsNumber, normalize,
                                                               excludePunctuation, ngramType, frequency,
                                                               openOutputFiles, createCharts, chartPackage,
-                                                              bySentenceIndex_var)
+                                                              bySentenceIndex_var,False)
             if output != None:
                 if isinstance(output, str):
                     filesToOpen.append(output)

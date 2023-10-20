@@ -83,6 +83,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
         excludeStopwords = False
         bySentenceIndex_word_var = False
         bySentenceIndex_character_var = False
+        hapax = False ## added
         if ngrams_menu_var == "Word":
             ngrams_word_var = True
         else:
@@ -90,11 +91,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
         bySentenceIndex_character_var = False
         if 'Lemmatize' in str(ngrams_list):
             lemmatize = True
-        if 'Hapax' in str(ngrams_list):
-            ngrams_size = 1
+        frequency = None
+        if 'Hapax' in str(ngrams_list) and len(ngrams_list)==1:
             frequency = 1
-        else:
-            frequency = None
+      #      ngrams_size = 1
+     #       frequency = 1
+     #   else:
+     #       frequency = None
+
+
         if 'punctuation' in str(ngrams_list):
             excludePunctuation = True
         if 'articles' in str(ngrams_list):
@@ -137,7 +142,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
         if ngrams_character_var or bySentenceIndex_character_var:
             statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, config_filename,
-                                                              ngrams_size, normalize,
+                                                              ngrams_size, frequency, normalize,
                                                               excludePunctuation, 0, 0, openOutputFiles,
                                                               createCharts, chartPackage,
                                                               bySentenceIndex_character_var)
@@ -230,7 +235,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
 
         if '*' in vocabulary_analysis_menu_var or 'Hapax legomena' in vocabulary_analysis_menu_var:
             outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
-                                                                   openOutputFiles, createCharts, chartPackage,vocabulary_analysis_menu_var, language)
+                                                                   openOutputFiles, createCharts, chartPackage,'Hapax legomena', language)
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
