@@ -608,7 +608,7 @@ filename_label = tk.Entry(window, state='disabled', textvariable=filename_label_
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    filename_label,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "Enter the comma-separated label/part of a filename to be used to sample the corpus for visualization (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...)")
+                                   "Enter the comma-separated label/part of a filename to be used to sample the corpus for visualization (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...)\nThe filenames are expected to be stored in the column 'Document'")
 
 
 csv_field_categorical_lb = tk.Label(window, text='csv file field')

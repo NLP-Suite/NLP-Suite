@@ -1166,8 +1166,8 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
     result = []
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
-    if date_str!='':
-        print("Date in this file: ", date_str)
+    # if date_str!='':
+    #     print("Date in this file: ", date_str)
     # if filename_embeds_date_var:
     #     date, date_str = IO_files_util.getDateFromFileName(document, items_separator_var, date_position_var,
     #                                                        date_format)
@@ -1216,31 +1216,25 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
                         NER.append(temp)
                     else:
                         NER.append(temp)
-                result.append(temp)
 
-    #    disconnect the next lines because they are causing more problems than solutions
-    # index = 0
-    # while index < len(NER):
-    #     temp = NER[index]
-    #     if NER[index][1] == 'CITY':
-    #         if index < len(NER)-1: # NER[index + 1] would break the code
-    #             # check if a city is followed by EITHER state/province OR country e.g., Atlanta, Georgia or Atlanta, United States
-    #             if NER[index + 1][1] == 'STATE_OR_PROVINCE' or NER[index + 1][1] == 'COUNTRY':
-    #                 temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
-    #                 index = index + 1
-    #                 # check if a city and state/province are also followed by country e.g., Atlanta, Georgia, United States
-    #                 if index < len(NER) - 1:
-    #                     if NER[index + 1][1] == 'COUNTRY':
-    #                         temp[0] = temp[0] + ', ' + NER[index + 1][0]
-    #                         index = index + 1
-    #     elif NER[index][1] == 'STATE_OR_PROVINCE':
-    #         if index < len(NER)-1: # NER[index + 1] would break the code
-    #             # check if a state/province  is followed by a country e.g., Georgia, United States
-    #             if NER[index + 1][1] == 'COUNTRY':
-    #                 temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
-    #                 index = index + 1
-    #     result.append(temp)
-    #     index = index + 1
+    # check if a location is part of a multi-line location (e.g., Soviet Union, United States)
+    index = 0
+    currLocation = ''
+    same_location = False
+    while index <= len(NER):
+        if NER[index][1] == 'LOCATION' or NER[index][1] == 'CITY' or NER[index][1] == 'STATE_OR_PROVINCE' or NER[index][1] == 'COUNTRY':
+            if index < len(NER)-1:
+                if NER[index][2] == NER[index+1][3]:
+                    same_location = True
+            if same_location and currLocation != '':
+                currLocation = currLocation + ' ' + str(NER[index][0])
+            else:
+                currLocation = str(NER[index][0])
+            if same_location:
+                continue
+        result.append(currLocation)
+        index = index + 1
+
     return result
 
 def process_json_sentiment(config_filename,documentID, document, sentenceID, json, **kwargs):
