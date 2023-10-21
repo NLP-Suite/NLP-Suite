@@ -24,10 +24,6 @@ import config_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPackage,
-    ngrams_analysis_var,
-    ngrams_menu_var,
-    ngrams_options_menu_var,
-    ngrams_size,
     corpus_statistics_var,
     corpus_statistics_options_menu_var,
     corpus_text_options_menu_var,
@@ -63,84 +59,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
     outputDir_style=outputDir
 
     if (corpus_statistics_var==False and
-        ngrams_analysis_var == False and
         complexity_readability_analysis_var == False and
         vocabulary_analysis_var == False and
         gender_guesser_var==False):
         mb.showwarning('Warning','No options have been selected.\n\nPlease, select an option and try again.')
         return
 
-    # COMPUTE Ngrams ______________________________________________________________________________
-
-    if ngrams_analysis_var:
-        ngrams_word_var = False
-        ngrams_character_var = False
-        lemmatize=False
-        normalize = False
-        case_sensitive = False
-        excludePunctuation = False
-        excludeArticles = False
-        excludeStopwords = False
-        bySentenceIndex_word_var = False
-        bySentenceIndex_character_var = False
-        if ngrams_menu_var == "Word":
-            ngrams_word_var = True
-        else:
-            ngrams_character_var = True
-        bySentenceIndex_character_var = False
-        if 'Lemmatize' in str(ngrams_list):
-            lemmatize = True
-        if 'Hapax' in str(ngrams_list):
-            ngrams_size = 1
-            frequency = 1
-        else:
-            frequency = None
-        if 'punctuation' in str(ngrams_list):
-            excludePunctuation = True
-        if 'articles' in str(ngrams_list):
-            excludeArticles = True
-        if 'stopwords' in str(ngrams_list):
-            excludeStopwords = True
-        if 'sentence index' in str(ngrams_list):
-            if ngrams_menu_var == "Word":
-                bySentenceIndex_word_var = True
-            else:
-                bySentenceIndex_character_var = True
-
-        if '*' in str(ngrams_list) or 'POSTAG' in ngrams_menu_var or 'DEPREL' in str(ngrams_list) or 'NER' in str(ngrams_list):
-            mb.showwarning('Warning', 'The selected option is not available yet.\n\nSorry!')
-            if 'Repetition' in ngrams_menu_var:
-                mb.showwarning('Warning',
-                               'Do check out the repetition finder algorithm in the CoNLL Table Analyzer GUI.')
-            return
-
-        if ngrams_word_var or ngrams_character_var or bySentenceIndex_word_var or bySentenceIndex_character_var:
-            if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
-                return
-
-        # word n-grams
-        if ngrams_word_var or bySentenceIndex_word_var:
-            outputFiles = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, config_filename,
-                                                              ngrams_size, frequency, normalize,
-                                                              lemmatize, excludeArticles, excludeStopwords,
-                                                              1, 0, openOutputFiles,
-                                                              createCharts, chartPackage,
-                                                              bySentenceIndex_word_var)
-            if outputFiles!=None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
-
-        # character n-grams
-        if ngrams_character_var or bySentenceIndex_character_var:
-            statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                              outputDir, config_filename,
-                                                              ngrams_size, normalize,
-                                                              excludePunctuation, 0, 0, openOutputFiles,
-                                                              createCharts, chartPackage,
-                                                              bySentenceIndex_character_var)
 
 # corpus statistics --------------------------------------------------------------------
 
@@ -399,10 +323,6 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
-                                ngrams_analysis_var.get(),
-                                ngrams_menu_var.get(),
-                                ngrams_options_menu_var.get(),
-                                ngrams_size.get(),
                                 corpus_statistics_var.get(),
                                 corpus_statistics_options_menu_var.get(),
                                 corpus_text_options_menu_var.get(),
@@ -421,8 +341,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=640, # height at brief display
-                             GUI_height_full=680, # height at full display
+                             GUI_height_brief=560, # height at brief display
+                             GUI_height_full=600, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
@@ -454,17 +374,14 @@ inputFilename=GUI_util.inputFilename
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 def clear(e):
-    ngrams_checkbox.configure(state='normal')
     corpus_statistics_checkbox.configure(state='normal')
     complexity_readability_analysis_checkbox.configure(state='normal')
     vocabulary_analysis_checkbox.configure(state='normal')
 
-    ngrams_analysis_var.set(0)
     corpus_statistics_var.set(0)
     complexity_readability_analysis_var.set(0)
     vocabulary_analysis_var.set(0)
 
-    ngrams_options_menu_var.set('')
     corpus_statistics_options_menu_var.set('')
     corpus_text_options_menu_var.set('')
     complexity_readability_analysis_menu_var.set('')
@@ -476,10 +393,6 @@ window.bind("<Escape>", clear)
 # GUI CHANGES cut/paste special GUI widgets from GUI_util
 
 ngrams_list=[]
-ngrams_analysis_var= tk.IntVar()
-ngrams_menu_var= tk.StringVar()
-ngrams_options_menu_var= tk.StringVar()
-ngrams_size = tk.StringVar()
 
 bySentenceIndex_var=tk.IntVar()
 
@@ -503,7 +416,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-ngrams_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='N-Grams/Co-occurrences VIEWER (Open GUI)',command=lambda: call('python NGrams_CoOccurrences_Viewer_main.py', shell=True))
+ngrams_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='N-Grams & Co-occurrences (Open GUI)',command=lambda: call('python NGrams_CoOccurrences_main.py', shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    ngrams_button,
@@ -523,82 +436,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    spell_checker_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
-
-ngrams_analysis_var.set(0)
-ngrams_checkbox = tk.Checkbutton(window, text='Compute n-grams', variable=ngrams_analysis_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,ngrams_checkbox,True)
-
-ngrams_menu_var.set('Word')
-# ngrams_menu_lb = tk.Label(window, text='N-grams type')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_ngrams_menu_pos,y_multiplier_integer,ngrams_menu_lb,True)
-ngrams_menu = tk.OptionMenu(window, ngrams_menu_var, 'Character', 'Word') #,'DEPREL','POSTAG')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
-                                   ngrams_menu,
-                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
-                                   "Select the N-grams type")
-
-ngrams_size.set(3)
-ngrams_number_menu_lb = tk.Label(window, text='N-grams')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ngrams_number_menu_lb,True)
-ngrams_number_menu = tk.OptionMenu(window, ngrams_size, 2, 3, 4, 5, 6)
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+80, y_multiplier_integer,
-                                   ngrams_number_menu,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate+80,
-                                   "Select the number of N-grams to be computed.")
-
-ngrams_options_menu_lb = tk.Label(window, text='Options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,ngrams_options_menu_lb,True)
-ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax legomena (once-occurring words/unigrams)','Lemmatize','Normalize n-grams', 'Exclude punctuation (word n-grams only)','Exclude articles (word n-grams only)','Exclude ALL stopwords (word n-grams only)','By sentence index','Repetition of words (last K words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+70, y_multiplier_integer,
-                                   ngrams_options_menu,
-                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "Select the N-grams option; hit + button to add multiple options; Reset to start fresh; Show to display current selection.")
-
-
-add_ngrams_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_ngrams_analysis_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_add_ngrams_button_pos,y_multiplier_integer,add_ngrams_button, True)
-
-reset_ngrams_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_ngrams_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_reset_ngrams_button_pos,y_multiplier_integer,reset_ngrams_button,True)
-
-show_ngrams_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_ngrams_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_show_ngrams_button_pos,y_multiplier_integer,show_ngrams_button)
-
-def reset_ngrams_list():
-    ngrams_list.clear()
-    ngrams_options_menu_var.set('')
-    ngrams_options_menu.configure(state='normal')
-
-def show_ngrams_list():
-    if len(ngrams_list)==0:
-        mb.showwarning(title='Warning', message='There are no currently selected n-grams options.')
-    else:
-        mb.showwarning(title='Warning', message='The currently selected n-grams options are:\n\n' + ',\n'.join(ngrams_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
-
-def activate_ngrams_analysis_var():
-    # Disable the + after clicking on it and enable the class menu
-    add_ngrams_button.configure(state='disabled')
-    ngrams_options_menu.configure(state='normal')
-
-def activate_ngrams_options(*args):
-    if ngrams_options_menu_var.get()!='':
-        if ngrams_options_menu_var.get() in ngrams_list:
-            mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
-            return
-        ngrams_list.append(ngrams_options_menu_var.get())
-        ngrams_options_menu.configure(state="disabled")
-        add_ngrams_button.configure(state='normal')
-        reset_ngrams_button.configure(state='normal')
-        show_ngrams_button.configure(state='normal')
-    else:
-        add_ngrams_button.configure(state='disabled')
-        reset_ngrams_button.configure(state='disabled')
-        show_ngrams_button.configure(state='disabled')
-        ngrams_options_menu.configure(state="normal")
-ngrams_options_menu_var.trace('w',activate_ngrams_options)
 
 corpus_statistics_var.set(0)
 corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute document(s) statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0)
@@ -670,7 +507,8 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Vowel words',
                                          'Words with capital initial (proper nouns)',
                                          'Unusual words (via NLTK)',
-                                         'Hapax legomena (once-occurring words/unigrams)',
+                                         'Hapax legomena (once-occurring words)',
+                                         'Hapax legomena (once-occurring unigrams)',
                                          'Language detection',
                                          'Repetition: Words in first K and last K sentences',
                                          'Repetition: Last K words of a sentence/First K words of next sentence',
@@ -688,23 +526,13 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 gender_guesser_checkbox.configure(state='normal')
 
 def activate_options(*args):
-    if ngrams_analysis_var.get() == True:
-        corpus_statistics_checkbox.configure(state='disabled')
-        corpus_statistics_options_menu.configure(state='disabled')
-        complexity_readability_analysis_checkbox.configure(state='disabled')
-        vocabulary_analysis_checkbox.configure(state='disabled')
-        complexity_readability_analysis_menu.configure(state='disabled')
-        vocabulary_analysis_menu.configure(state='disabled')
-        gender_guesser_checkbox.configure(state='disabled')
-    elif corpus_statistics_var.get() == True:
-        ngrams_checkbox.configure(state='disabled')
+    if corpus_statistics_var.get() == True:
         corpus_statistics_options_menu.configure(state='normal')
         complexity_readability_analysis_checkbox.configure(state='disabled')
         vocabulary_analysis_checkbox.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
         gender_guesser_checkbox.configure(state='disabled')
     elif complexity_readability_analysis_var.get()==True:
-        ngrams_checkbox.configure(state='disabled')
         corpus_statistics_checkbox.configure(state='disabled')
         corpus_statistics_options_menu.configure(state='disabled')
         complexity_readability_analysis_menu.configure(state='normal')
@@ -712,7 +540,6 @@ def activate_options(*args):
         vocabulary_analysis_menu.configure(state='disabled')
         gender_guesser_checkbox.configure(state='disabled')
     elif vocabulary_analysis_var.get()==True:
-        ngrams_checkbox.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='normal')
         corpus_statistics_checkbox.configure(state='disabled')
         corpus_statistics_options_menu.configure(state='disabled')
@@ -720,7 +547,6 @@ def activate_options(*args):
         complexity_readability_analysis_menu.configure(state='disabled')
         gender_guesser_checkbox.configure(state='disabled')
     elif gender_guesser_var.get() == True:
-        ngrams_checkbox.configure(state='disabled')
         corpus_statistics_checkbox.configure(state='disabled')
         corpus_statistics_options_menu.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='disabled')
@@ -728,7 +554,6 @@ def activate_options(*args):
         complexity_readability_analysis_menu.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
     else:
-        ngrams_checkbox.configure(state='normal')
         corpus_statistics_checkbox.configure(state='normal')
         corpus_statistics_options_menu.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='normal')
@@ -738,7 +563,6 @@ def activate_options(*args):
         complexity_readability_analysis_menu.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
 
-ngrams_analysis_var.trace('w',activate_options)
 corpus_statistics_var.trace('w',activate_options)
 complexity_readability_analysis_var.trace('w',activate_options)
 vocabulary_analysis_var.trace('w',activate_options)
@@ -794,10 +618,6 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          'Please, click the button \'Nominalization\' if you wish to open the Nominalization GUI to analyze instances of nominalization (i.e., turning verbs into nouns - Latin nomen=noun).')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, click the button \'Spelling/grammar checker\' if you wish to open the Spelling/grammar checker GUI to check your corpus for spelling and/or grammar errors with several different NLP tools.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                'Please, tick the checkbox if you wish to compute N-grams.\n\nN-grams can be computed for character and word values. Use the dropdown menu to select the desired option.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word n-grams between 1 and 3.\n\nWhen n-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  'Please, use the dropdown menu to select different options for N-grams. Clisk the + button to select more options; the Reset button to start fresh; the Show button to visualize the options already selected.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates the following three files:\n  1. csv file of frequencies of the twenty most frequent words;\n  2. csv file of the following statistics for each column in the previous csv file and for each document in the corpus: Count, Mean, Mode, Median, Standard deviation, Minimum, Maximum, Skewness, Kurtosis, 25% quantile, 50% quantile; 75% quantile;\n  3. Excel line chart of the number of sentences and words for each document.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                 'Please, tick the checkbox if you wish to compute basic statistics on your corpus.\n\nUse the dropdown menu to select the desired option. Use the Text options dropdown menu to lemmatize words or exclude stopwords/punctuation.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word n-grams between 1 and 3.\n\nWhen n-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",

@@ -17,7 +17,7 @@ import IO_user_interface_util
 #if any column header contains just numbers the function will return FALSE
 def csvFile_has_header(file_path):
     is_header=False
-    if file_path=='':
+    if not os.path.exists(file_path):
         return is_header
     reader = csv.reader(open(file_path, "r",encoding='utf-8',errors='ignore'))
     i = next(reader)

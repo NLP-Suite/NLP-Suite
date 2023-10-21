@@ -345,6 +345,14 @@ def run(inputDir="relative_path_here",
     # iterate over each file, searching for words
     print("\nProcessing files for search words\n")
     docIndex = 0
+
+    #########NEW FILE##########
+    import hashfile
+    if hashfile.checkOut(outputDir):
+        hashmap = hashfile.getcache(outputDir)
+    else:
+        hashmap = {}
+
     for file in files:
         docIndex += 1
         # initialize the CoOcc_results dictionary
@@ -362,13 +370,19 @@ def run(inputDir="relative_path_here",
         if date == '':
             pass# TODO: getDate warns user is this file has a bad date
 
-        f = open(file, "r", encoding='utf-8', errors='ignore')
-        docText = f.read()
-        f.close()
-        if not case_sensitive:
-            docText = docText.lower()
-        tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
-
+###########################################################
+        if hashfile.calculate_checksum(file) in hashmap:
+            tokens_ = hashmap[hashfile.calculate_checksum(file)]
+        else:
+            f = open(file, "r", encoding='utf-8', errors='ignore')
+            docText = f.read()
+            f.close()
+            if not case_sensitive:
+                docText = docText.lower()
+            tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
+            hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)
+            hashfile.writehash(hashmap, outputDir)
+############################################################
         ngram_results, quarter_ngram_results, coOcc_results = process_word_search(file,
                                                                                   n_grams_viewer, CoOcc_Viewer,
                                                                                   tokens_, search_keywords_list,

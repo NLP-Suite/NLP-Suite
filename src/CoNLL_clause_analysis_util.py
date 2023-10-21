@@ -142,7 +142,8 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
     #clausal_stats = clause_compute_frequencies(data,data_divided_sents)
 
     clausal_stats, clausal_list = clause_data_preparation(data)
-
+    if len(clausal_list)==0:
+        return filesToOpen
     clausal_analysis_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'CA', 'Clause tags', 'stats')
     clause_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'CA', 'Clause tags', 'list')
     # convert list to dataframe and save

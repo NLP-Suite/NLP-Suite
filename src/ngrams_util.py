@@ -5,10 +5,9 @@ import string
 punctuation = string.punctuation
 import stanza
 
-global cnter
 global called
 global nlp
-cnter = 0
+
 called = 0
 
 #     if frequency==1: # hapax
@@ -31,6 +30,8 @@ def process_hapax(ngramsList, frequency, excludePunctuation):
     return ngramsList
 
 import re
+
+
 def removedt(original_sentence):
     determiners = [
         'a', 'all', 'an', 'another', 'any', 'both', 'each', 'either',
@@ -55,14 +56,14 @@ def removestop(original_sentence):
     filtered_sentence = re.sub(dets_pattern, "", original_sentence, flags=re.IGNORECASE)
     final_sentence = filtered_sentence.strip()
     return final_sentence
-def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopWords, nFiles,lemmatize):
-    global cnter
+def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopWords, nFiles,lemmatize,index):
+
     global called
     global nlp
     head, tail = os.path.split(filename)
     Sentence_ID = 0
     doc_ngramsList = []
-    print("   Processing file " + str(cnter+1) + "/" + str(nFiles) + ' ' + tail)
+    print("   Processing file " + str(index+1) + "/" + str(nFiles) + ' ' + tail)
     with open(filename,'r', encoding='utf_8', errors='ignore') as f:
         out = f.read()
     if excludePunctuation:
@@ -71,6 +72,7 @@ def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopW
         out = removedt(out)
     if excludeStopWords:
         out = removestop(out)
+
     # if excludeDeterminants:
     #     words = excludeStopWords_list(words)
     #     filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
@@ -82,15 +84,18 @@ def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopW
             nlp = stanza.Pipeline(lang='en', processors='tokenize')
             called = 1
         doc = nlp(''.join(out))
-        cnter += 1
+        if index + 1 == nFiles:
+            called = 0
         return [token.text for sentence in doc.sentences for token in sentence.tokens]
     else:
         if not called:
             nlp = stanza.Pipeline(lang='en', processors='tokenize,lemma')
             called = 1
         doc = nlp(''.join(out))
-        cnter += 1
+        if index + 1 == nFiles:
+            called = 0
         return [token.lemma for sentence in doc.sentences for token in sentence.words]
+
 
 
 # Stanza typically runs VERY fast as long as we don't repeatedly invoke a call on its pipeline.
@@ -130,24 +135,23 @@ def operateongram(documents,files,ngramsNumber):
         ngrams.extend(find_ngrams(document,ngramsNumber))
     documents_ngram = [find_ngrams(document, ngramsNumber) for document in documents]
     ngram_freq = find_frequencies(documents_ngram, ngrams, files)
+    print(ngramsNumber, "gram of your corpus is complete.")
     return ngram_freq
 
-def hapax(data):
-    return data[data['Frequency in Corpus']==1]
+def hapax(data,hapax_words):
+    if not hapax_words:
+        return data[data['Frequency in Corpus']==1]
+    else:
+        data = data[data['ngram'].str.contains(r'[a-zA-Z]', regex=True, na=False)]
+        return data[data['Frequency in Corpus']==1]
 
-def operate(documents, files, max_ngramsNumber,compute_hapax):
-    if compute_hapax:
-        hapax_results = []
+def operate(documents, files, max_ngramsNumber,hapax_words):
     ngram_freq_results = []
+    hapax_result = None
     for n in range(1, max_ngramsNumber + 1):
         ngram_freq = operateongram(documents, files, n)
-        print(n,"gram of your corpus is complete.")
-        if n>3:
-            print("When n>=4, your n-gram can be significantly slower.")
         ngram_freq_results.append(ngram_freq)
-        if compute_hapax:
-            hapax_results.append(hapax(ngram_freq))
-    if compute_hapax:
-        return ngram_freq_results, hapax_results
-    return ngram_freq_results
+        if n==1:
+            hapax_result = hapax(ngram_freq,hapax_words)
+    return ngram_freq_results, hapax_result
 
