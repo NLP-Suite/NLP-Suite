@@ -238,8 +238,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=640, # height at brief display
-                                                 GUI_height_full=680, # height at full display
+                                                 GUI_height_brief=680, # height at brief display
+                                                 GUI_height_full=720, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -273,6 +273,9 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 all_analyses = tk.StringVar()
 searchField_kw_var = tk.StringVar()
 searchedCoNLLField_var = tk.StringVar()
+k_words_var = tk.IntVar()
+before_K_words_var = tk.IntVar()
+after_K_words_var = tk.IntVar()
 postag_var = tk.StringVar()
 deprel_var = tk.StringVar()
 co_postag_var = tk.StringVar()
@@ -365,6 +368,44 @@ searchedCoNLLdescription_csv_field_menu_lb = tk.OptionMenu(window, searchedCoNLL
 searchedCoNLLdescription_csv_field_menu_lb.configure(width=GUI_IO_util.combobox_width, state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                                searchedCoNLLdescription_csv_field_menu_lb)
+
+k_words_var.set(0)
+k_words_checkbox = tk.Checkbutton(window, text="Before-After K words",
+                              variable=k_words_var, onvalue=1, offvalue=0, command = lambda: activate_all_options())
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate,
+                                               y_multiplier_integer,
+                                               k_words_checkbox, True, False, False, False, 90,
+                                               GUI_IO_util.labels_x_indented_coordinate,
+                                               "Tick the checkbox if you want to search the CoNLL table for the selected word and extract a number of words BEFORE and AFTER the search word")
+
+before_K_words_entry_lb = tk.Label(window,
+                                    text='Before K-words')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                               before_K_words_entry_lb, True)
+
+before_K_words_entry = tk.Entry(window, textvariable=before_K_words_var)
+before_K_words_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminders_x_coordinate+130,
+                                               y_multiplier_integer,
+                                               before_K_words_entry, True, False, False, False, 90,
+                                               GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos,
+                                               "Enter the number of words to be extracted BEFORE the selected search word")
+
+after_K_words_entry_lb = tk.Label(window,
+                                    text='After K-words')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
+                                               after_K_words_entry_lb, True)
+
+after_K_words_entry = tk.Entry(window, textvariable=after_K_words_var)
+after_K_words_entry.configure(width=GUI_IO_util.widget_width_extra_short, state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate+120,
+                                               y_multiplier_integer,
+                                               after_K_words_entry, False, False, False, False, 90,
+                                               GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos,
+                                               "Enter the number of words to be extracted AFTER the selected search word")
 
 # POSTAG variable
 postag_var.set('*')
@@ -495,6 +536,10 @@ k_sentences_checkbox.configure(state='normal')
 
 
 def activate_all_options():
+    # k words options
+    before_K_words_entry.configure(state='disabled')
+    after_K_words_entry.configure(state='disabled')
+
     # k sentences options
     Begin_K_sent_entry.configure(state='disabled')
     End_K_sent_entry.configure(state='disabled')
@@ -519,15 +564,33 @@ def activate_all_options():
                                      True)
     elif search_token_var.get()==True:
         all_analyses_checkbox.configure(state='disabled')
+        k_words_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
-
         entry_searchField_kw.configure(state='normal')
         searchedCoNLLdescription_csv_field_menu_lb.configure(state='normal')
         postag_menu_lb.configure(state='normal')
         deprel_menu_lb.configure(state='normal')
         co_postag_menu_lb.configure(state='normal')
         co_deprel_menu_lb.configure(state='normal')
+    elif k_words_var.get():
+        mb.showwarning(title='Warning',
+                       message="The option is not available yet. Try again soon.\n\nSorry!")
+        return
+        all_analyses_checkbox.configure(state='disabled')
+        searchToken_checkbox.configure(state='disabled')
+        entry_searchField_kw.configure(state='disabled')
+        before_K_words_entry.configure(state='normal')
+        after_K_words_entry.configure(state='normal')
+        searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
+        postag_menu_lb.configure(state='disabled')
+        deprel_menu_lb.configure(state='disabled')
+        co_postag_menu_lb.configure(state='disabled')
+        co_deprel_menu_lb.configure(state='disabled')
+        sentence_table_checkbox.configure(state='disabled')
+        k_sentences_checkbox.configure(state='disabled')
+        Begin_K_sent_entry.configure(state='disabled')
+        End_K_sent_entry.configure(state='disabled')
     elif compute_sentence_var.get():
         all_analyses_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
@@ -597,6 +660,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, tick the checbox to search the CoNLL table for a specific token/word. Enter the CASE SENSITIVE token (i.e., word) to be searched (enter * for any word). ENTER * TO SEARCH FOR ANY TOKEN/WORD. The EXACT word will be searched (e.g., if you enter 'American', any instances of 'America' will not be found).\n\nDO NOT USE QUOTES WHEN ENTERING A SEARCH TOKEN. n\nThe algorithm will search all the tokens related to this token in the CoNLL table. For example, if the the token wife is entered, the algorithm will search in each dependency tree (i.e., each sentence).\n\nIn OUTPUT the algorithm will produce several charts and a Gephi network graphs of the relationship between searched and co-occurring words." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, select the CoNLL field to be used for the search (FORM or LEMMA).\n\nFor example, if brother is entered as the searched token, and FORM is entered as search field, the algorithm will first search all occurrences of the FORM brother. Note that in this case brothers will NOT be considered. Otherwise, if LEMMA is entered as search field, the algorithm will search all occurences of the LEMMA brother. In this case, tokens with form brother and brothers will all be considered." + GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                  "Please, tick the checkbox if you wish to search the CoNLL table for a selected search word and extract a selected number of words appearing BEFORE and AFTER in a sentence." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, select POSTAG value for searched token (e.g., NN for noun; RETURN for ANY POSTAG value)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

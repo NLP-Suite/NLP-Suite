@@ -24,7 +24,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
     outputDir_style=outputDir
 
     if n_grams_var == True:
-        call("python NGrams_CoOccurrences_Viewer_main.py", shell=True)
+        call("python NGrams_CoOccurrences_main.py", shell=True)
         return
 
     if corpus_statistics_var:

@@ -151,8 +151,8 @@ def excludeStopWords_list(words):
     fin = open('../lib/wordLists/stopwords.txt', 'r')
     stop_words = set(fin.read().splitlines())
     # since stop_words are lowercase exclude initial-capital words (He, I)
-    words_excludeStopwords = [word for word in words if not word.lower() in stop_words]
-    words = words_excludeStopwords
+    words_excludeStopWords = [word for word in words if not word.lower() in stop_words]
+    words = words_excludeStopWords
     # exclude punctuation
     words_excludePunctuation = [word for word in words if not word in string.punctuation]
     words = words_excludePunctuation
@@ -516,7 +516,7 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
 def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, configFileName,
                                   ngramsNumber,frequency,hapax_words,
                                   normalize,
-                                  lemmatize=False, excludePunctuation=True, excludeArticles=True, excludeStopwords=True,
+                                  lemmatize=False, excludePunctuation=True, excludeArticles=True, excludeStopWords=False,
                                   wordgram=None,
                                   openOutputFiles=False,
                                   createCharts=True, chartPackage='Excel', bySentenceID=None):
@@ -556,7 +556,8 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, confi
             wordgram=0
 
     if bySentenceID==None:
-        result = mb.askyesno("By sentence index","Would you like to compute n-grams by sentence index?")
+        result = 0
+        #result = mb.askyesno("By sentence index","Would you like to compute n-grams by sentence index?")
         if result==True:
             bySentenceID=1
         else:
@@ -564,7 +565,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, confi
 
     filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, frequency, hapax_words,
                                 wordgram,
-                                lemmatize, excludePunctuation, excludeArticles, excludeStopwords,
+                                lemmatize, excludePunctuation, excludeArticles, excludeStopWords,
                                 bySentenceID,  createCharts, chartPackage)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
@@ -589,41 +590,26 @@ def process_punctuation(inputFilename, inputDir, excludePunctuation, ngrams_list
 
 import ngrams_util
 # hapax_words is True when the user selevcts too export ONLY words, False when hapax will also include numebrs, symbiols, etc.
-def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, frequency=None, hapax_words=True,
+def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, frequency=None, hapax_words=False,
     wordgram=1,
     lemmatize=False, excludePunctuation=True, excludeArticles=True, excludeStopWords=True,
     bySentenceID=False, createCharts=True,chartPackage='Excel'):
-
-    compute_hapax = True
-    if frequency is None:
-        compute_hapax = False
-    #Frequency of hapax
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
-    # print(excludePunctuation)
     documents = [ngrams_util.readandsplit(file,excludePunctuation, excludeArticles, excludeStopWords,len(files),lemmatize,index) for index,file in enumerate(files)]
-    # we need to allow as many n-grams as the user selects in ngramsNumber 1-6
-
+    # we allow as many n-grams as the user selects
     filesToOpen = []
-
-    if compute_hapax:
-
-        results, hapax_results = ngrams_util.operate(documents,files,int(ngramsNumber),compute_hapax)
-        for index, hapax_result in enumerate(hapax_results):
-            hapax_result = hapax_result.values.tolist()
-            hapax_result.insert(0, [str(index + 1) + '-grams Hapax', 'Frequency in Document', 'Frequency in Corpus', 'Document ID',
-                        'Document'])
-            csv_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                         'n-grams' + str(index + 1) + '_Word_Hapax',
-                                                                         'stats', '', '',
-                                                                         '', False, True)
-            errorFound = IO_csv_util.list_to_csv(GUI_util.window, hapax_result, csv_outputFilename)
-            if not errorFound:
-                filesToOpen.append(csv_outputFilename)
-            break # as we define hapax as only 1-gram hapax
-
-    else:
-        results = ngrams_util.operate(documents,files,int(ngramsNumber),compute_hapax)
-
+    results, hapax_result = ngrams_util.operate(documents, files, int(ngramsNumber),hapax_words)
+    if hapax_result is not None:
+        hapax_result = hapax_result.values.tolist()
+        hapax_result.insert(0, ['1-grams Hapax', 'Frequency in Document', 'Frequency in Corpus', 'Document ID',
+                    'Document'])
+        csv_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                     'n-grams' + str(1) + '_Word_Hapax',
+                                                                     'stats', '', '',
+                                                                     '', False, True)
+        errorFound = IO_csv_util.list_to_csv(GUI_util.window, hapax_result, csv_outputFilename)
+        if not errorFound:
+            filesToOpen.append(csv_outputFilename)
 
     for index,result in enumerate(results):
         corpus_ngramsList = result.values.tolist()
@@ -641,6 +627,9 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumb
                 columns_to_be_plotted_yAxis = ['Frequency in Document']
             else:
                 columns_to_be_plotted_yAxis = ['Frequency in Document', 'Frequency in Corpus']
+           # chartPackage = "Excel" ## I am too tired ... I don't know why -- Simon
+           # createCharts = 1
+            # this variable is not right....
             outputFiles = charts_util.visualize_chart(createCharts, chartPackage, csv_outputFilename,
                                                       outputDir,
                                                       columns_to_be_plotted_xAxis=columns_to_be_plotted_xAxis,
@@ -917,7 +906,9 @@ def print_results(window, words, class_word_list, header, inputFilename, outputD
 
 # called by sentence_analysis_main and style_analysis_main
 def process_words(window, configFileName, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
-    processType='', language='English', excludeStopWords=True,word_length=3):
+    processType='', language='English', excludeStopWords=True,word_length=3,excludePunctuation=True, excludeArticles=True,
+                                          wordgram=1,lemmatize=False
+                                          ):
     filesToOpen=[]
     documentID = 0
     multiple_punctuation=0
@@ -964,7 +955,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
             ngramsNumber = 1
             frequency = 1  # hapax
             hapax_words = False
-            if 'Hapax legomena (once-occurring words)' in processType.lower():
+            if 'hapax legomena (once-occurring words)' in processType.lower():
                 hapax_words = True
         elif "unigrams" in processType.lower():
             ngramsNumber = 1
@@ -976,11 +967,13 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
         wordgram = True
         bySentenceID = False
         tempOutputFiles = compute_character_word_ngrams(window, inputFilename, inputDir, outputDir, configFileName,
-                                                        ngramsNumber,
-                                                        normalize, excludePunctuation,
-                                                        wordgram, frequency, hapax_words,
-                                                        openOutputFiles, createCharts, chartPackage,
-                                                        bySentenceID)
+                                                        ngramsNumber, frequency, hapax_words,
+                                                        normalize,
+                                                        lemmatize, excludePunctuation, excludeArticles,
+                                                        excludeStopWords,
+                                                        wordgram,
+                                                        openOutputFiles,
+                                                        createCharts, chartPackage, bySentenceID)
         # Excel charts are generated in compute_character_word_ngrams; return to exit here
         return tempOutputFiles
 

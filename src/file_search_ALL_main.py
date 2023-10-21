@@ -75,7 +75,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_nGram_VIEWER_search_GUI_button = tk.Button(window, text='N-grams/co-occurrences searches (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: call("python NGrams_CoOccurrences_Viewer_main.py", shell=True))
+open_nGram_VIEWER_search_GUI_button = tk.Button(window, text='N-grams/co-occurrences searches (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: call("python NGrams_CoOccurrences_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_nGram_VIEWER_search_GUI_button,
