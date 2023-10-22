@@ -68,20 +68,20 @@ def create_output_directory(inputFilename, inputDir, outputDir, config_filename,
         # create output subdirectory
         outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                            label=annotator + "_CoreNLP",
-                                                           silent=True)
+                                                           silent=silent)
     else:
         # when coming from coref annotator, the outputDir will contain an unnecessary NLP_CoreNLP_coref_ string
         # if 'NLP_CoreNLP_coref_' in inputFilename:
         #     inputFilename = inputFilename.replace('NLP_CoreNLP_coref_', 'coref_')
         outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
                                                            label=annotator + "_CoreNLP",
-                                                           silent=True)
+                                                           silent=silent)
     # create a subdirectory of the output directory
     outputJsonDir=''
     if export_json_var:
         outputJsonDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
                                                                label='Json',
-                                                               silent=True)
+                                                               silent=silent)
     return outputDir, outputJsonDir
 
 def check_CoreNLP_available_languages(language):
@@ -191,6 +191,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                      document_length=90000,
                      sentence_length=1000, # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
                      export_json_toTxt = True,
+                     silent=False,
                      **kwargs):
 
     # These values can be zero if the setup has specified e.g., spaCy but in SVO or other annotators, the user selects to run CoreNLP
@@ -202,7 +203,6 @@ def CoreNLP_annotate(config_filename,inputFilename,
         sentence_length=100  # unless otherwise specified; sentence length limit does not seem to work for parsers only for NER and POS but then it is useless
 
 
-    silent=True
     start_time = time.time()
     speed_assessment = []#storing the information used for speed assessment
     speed_assessment_format = ['Document ID', 'Document','Time', 'Tokens to Annotate', 'Params', 'Number of Params']#the column titles of the csv output of speed assessment
@@ -1166,8 +1166,8 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
     result = []
     # get date string of this sub file
     date_str = date_in_filename(document, **kwargs)
-    if date_str!='':
-        print("Date in this file: ", date_str)
+    # if date_str!='':
+    #     print("Date in this file: ", date_str)
     # if filename_embeds_date_var:
     #     date, date_str = IO_files_util.getDateFromFileName(document, items_separator_var, date_position_var,
     #                                                        date_format)
@@ -1216,31 +1216,37 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
                         NER.append(temp)
                     else:
                         NER.append(temp)
-                result.append(temp)
 
-    #    disconnect the next lines because they are causing more problems than solutions
-    # index = 0
-    # while index < len(NER):
-    #     temp = NER[index]
-    #     if NER[index][1] == 'CITY':
-    #         if index < len(NER)-1: # NER[index + 1] would break the code
-    #             # check if a city is followed by EITHER state/province OR country e.g., Atlanta, Georgia or Atlanta, United States
-    #             if NER[index + 1][1] == 'STATE_OR_PROVINCE' or NER[index + 1][1] == 'COUNTRY':
-    #                 temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
-    #                 index = index + 1
-    #                 # check if a city and state/province are also followed by country e.g., Atlanta, Georgia, United States
-    #                 if index < len(NER) - 1:
-    #                     if NER[index + 1][1] == 'COUNTRY':
-    #                         temp[0] = temp[0] + ', ' + NER[index + 1][0]
-    #                         index = index + 1
-    #     elif NER[index][1] == 'STATE_OR_PROVINCE':
-    #         if index < len(NER)-1: # NER[index + 1] would break the code
-    #             # check if a state/province  is followed by a country e.g., Georgia, United States
-    #             if NER[index + 1][1] == 'COUNTRY':
-    #                 temp[0] = NER[index][0] + ', ' + NER[index + 1][0]
-    #                 index = index + 1
-    #     result.append(temp)
-    #     index = index + 1
+    # check if a location is part of a multi-line location (e.g., Soviet Union, United States)
+    index = 0
+    currLocation = ''
+    while index < len(NER):
+        # if NER[index][1] == 'LOCATION' or NER[index][1] == 'CITY' or NER[index][1] == 'STATE_OR_PROVINCE' or NER[index][1] == 'COUNTRY':
+        endToken_currenRow=NER[index][3]
+        try:
+            beginToken_nextRow=NER[index+1][2]
+        except:
+            beginToken_nextRow=None
+        if (endToken_currenRow == beginToken_nextRow) or (beginToken_nextRow==None): # and index!=0:
+            if currLocation != '':
+                currLocation = currLocation + ' ' + str(NER[index][0])
+            else:
+                currLocation = str(NER[index][0])
+            if beginToken_nextRow==None:
+                NER[index][0]=currLocation
+                result.append(NER[index])
+            index = index + 1
+            continue
+        else:
+            if currLocation != '':
+                currLocation = currLocation + ' ' + str(NER[index][0])
+            else:
+                currLocation = str(NER[index][0])
+        NER[index][0] = currLocation
+        result.append(NER[index])
+        currLocation=''
+        index = index + 1
+
     return result
 
 def process_json_sentiment(config_filename,documentID, document, sentenceID, json, **kwargs):

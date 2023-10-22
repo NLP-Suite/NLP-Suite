@@ -595,7 +595,26 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumb
     lemmatize=False, excludePunctuation=True, excludeArticles=True, excludeStopWords=True,
     bySentenceID=False, createCharts=True,chartPackage='Excel'):
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
-    documents = [ngrams_util.readandsplit(file,excludePunctuation, excludeArticles, excludeStopWords,len(files),lemmatize,index) for index,file in enumerate(files)]
+
+    import hashfile
+    o2 = os.path.dirname(outputDir)+'art'+str(excludeArticles)+'punc'+str(excludePunctuation)+'stp'+str(excludeStopWords)
+    if hashfile.checkOut(o2):
+        hashmap = hashfile.getcache(o2)
+    else:
+        hashmap = {}
+    documents = []
+    for index, file in enumerate(files):
+        if hashfile.calculate_checksum(file) in hashmap:
+            tokens_ = hashmap[hashfile.calculate_checksum(file)]
+            head, tail = os.path.split(file)
+            print(" cache auto:  Processing file " + str(index+1) + "/" + str(len(files)) + ' ' + tail )
+        else:
+            tokens_ = ngrams_util.readandsplit(file,excludePunctuation,
+                                                  excludeArticles, excludeStopWords,len(files),
+                                                  lemmatize,index)
+            hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)
+            hashfile.writehash(hashmap, o2)
+        documents.append(tokens_)
     # we allow as many n-grams as the user selects
     filesToOpen = []
     results, hapax_result = ngrams_util.operate(documents, files, int(ngramsNumber),hapax_words)

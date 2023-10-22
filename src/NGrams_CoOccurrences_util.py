@@ -150,6 +150,7 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
         token = tokens_[collocationIndex]
         for search_word in search_word_list:
             # splitting searched multi-word expressions, such as Hong Kong, Australian author, beautiful young princess
+
             iterations = search_word.count(' ')
             split_search_word = search_word.split(' ')
             length_of_search_list = len(split_search_word)
@@ -166,7 +167,7 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
                             else:
                                 checker = False
                                 break
-                if checker:
+                if checker and CoOcc_Viewer:
                     coOcc_results[file]['Co-Occurrence'][search_word] += 1
                 if n_grams_viewer and checker:
                     ngram_results, quarter_ngram_results = process_n_grams(search_word, ngram_results,
@@ -191,11 +192,12 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
                         # do not skip the next record when running both n-grams and coOcc
                         #if co_occurrence_checker and not n_grams_viewer:
                         #    break
-    valuescheck = coOcc_results[file]['Co-Occurrence'].values()
-    if 0 in valuescheck:
-        coOcc_results[file]['Co-Occurrence-bool']="NO"
-    else:
-        coOcc_results[file]['Co-Occurrence-bool'] = "YES"
+    if CoOcc_Viewer: #failed to consider this fact.... let's first make it work...
+        valuescheck = coOcc_results[file]['Co-Occurrence'].values()
+        if 0 in valuescheck:
+            coOcc_results[file]['Co-Occurrence-bool']="NO"
+        else:
+            coOcc_results[file]['Co-Occurrence-bool'] = "YES"
     return ngram_results, quarter_ngram_results, coOcc_results
 
 
@@ -214,7 +216,10 @@ def run(inputDir="relative_path_here",
         dateFormat="mm-dd-yyyy",
         itemsDelimiter="_",
         datePos=2,
-        viewer_options_list=[]):
+        viewer_options_list=[],ngrams_size=1,Ngrams_search_var=False,csv_file_var=None):
+
+
+
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
                                                    'Started running Words/Characters N-Grams VIEWER at',
                                                    True, '', True, '', False)
@@ -313,6 +318,66 @@ def run(inputDir="relative_path_here",
     quarter_ngram_results = {}
     coOcc_results = {}
 
+
+    # iterate over each file, searching for words
+    print("\nProcessing files for search words\n")
+    docIndex = 0
+
+    #########NEW FILE##########
+    import hashfile
+    if hashfile.checkOut(outputDir):
+        hashmap = hashfile.getcache(outputDir)
+    else:
+        hashmap = {}
+
+
+
+    search_words = []
+    if Ngrams_search_var:
+        if csv_file_var is None:
+            print("empty csv file, do again, this ought not to happen?!")
+            return
+        import pandas as pd
+        data = pd.read_csv(csv_file_var)
+        if 'gram' not in data.columns[0]:
+            mb.showwarning(title='Input file error',
+                           message='The selected csv file is not the expected csv N-grams file.\n\nThis file should contain a header with the word "gram".\n\nPlease, select the expected csv file and try again.')
+            return
+        words = search_keywords_list
+        l = []
+        for word in words:
+            if case_sensitive:
+                b = data[data[data.columns[0]].str.endswith(word)]
+            else:#.str.lower().str.endswith
+                b = data[data[data.columns[0]].str.lower().str.endswith(word.lower())]
+            pivot_df = b.pivot_table(
+                values='Frequency in Document',  # fill with frequencies
+                index='Document ID',  # rows are documents
+                columns=data.columns[0],  # columns are 2-grams
+                fill_value=0,  # fill missing values with 0
+                aggfunc='sum')  # use sum to aggregate entries
+            all_document_ids = range(min(data['Document ID']), max(
+                data['Document ID']) + 1)  # Replace with the actual range or list of your document IDs
+            pivot_df = pivot_df.reindex(all_document_ids, fill_value=0)
+            l.append(pivot_df)
+        combined_pivot_df = pd.concat(l, axis=1)
+
+        a_to_b_mapping = data.drop_duplicates(subset='Document ID').set_index('Document ID')['Document'].to_dict()
+        combined_pivot_df['Document ID'] = combined_pivot_df.index
+        combined_pivot_df['Document'] = combined_pivot_df.index.map(a_to_b_mapping)
+        # combined_pivot_df.insert(len(combined_pivot_df.columns)-1, 'Document ID', combined_pivot_df['Document ID'])
+        NgramsSearchFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
+                                                                 'N-grams_search')
+        combined_pivot_df.to_csv(NgramsSearchFileName, index=False)
+
+        return NgramsSearchFileName
+
+       # filtered_data.to_csv(output_csv_file, index=False)
+
+
+        # there are extremely big bugs in the later code. Return early to avoid problems
+       # return
+
     if n_grams_viewer:
         # initialize the ngram_results dictionary ------------------------------------------------------
         quarter_ngram_results = {}
@@ -342,16 +407,7 @@ def run(inputDir="relative_path_here",
                         ngram_results[word][str(y)][m] = {"Search Word(s)": word,
                                                           "Frequency": 0}
 
-    # iterate over each file, searching for words
-    print("\nProcessing files for search words\n")
-    docIndex = 0
 
-    #########NEW FILE##########
-    import hashfile
-    if hashfile.checkOut(outputDir):
-        hashmap = hashfile.getcache(outputDir)
-    else:
-        hashmap = {}
 
     for file in files:
         docIndex += 1

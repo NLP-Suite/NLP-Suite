@@ -290,7 +290,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                                                                # count_var = 1 for columns of alphabetic values
                                                                count_var=1, hover_label=[],
                                                                outputFileNameType='', #'found',  # 'NER_tag_bar',
-                                                               column_xAxis_label='Country from ' + geocoder,
+                                                               column_xAxis_label='Country found by ' + geocoder,
                                                                groupByList=[],
                                                                plotList=[],
                                                                chart_title_label='')

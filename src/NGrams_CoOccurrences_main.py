@@ -31,10 +31,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         ngrams_menu_var,
         ngrams_options_menu_var,
         ngrams_size,
+        search_words,
+        Ngrams_search_var,
+        csv_file_var,
         n_grams_viewer_var,
         CoOcc_Viewer_var,
-        search_words,
-        # language_list,
         date_options,
         temporal_aggregation_var,
         viewer_options_list):
@@ -60,6 +61,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
+    if Ngrams_compute_var==False and Ngrams_search_var==False and  n_grams_viewer_var==False and CoOcc_Viewer_var==False:
+        mb.showwarning(title='Warning',
+                       message='There are no options selected.\n\nPlease, select one of the available options and try again.')
+        return
+    if inputDir=='' and (n_grams_viewer_var==True or CoOcc_Viewer_var==True):
+        mb.showwarning(title='Warning',
+                       message='You have selected to run the Viewer option but... this option requires a directory of txt files in input. Your configuration specifies a single txt file in input.\n\nPlease, select a directory in input or deselect the Viewer option and try again.')
+        return
+
 
     if Ngrams_compute_var:
         ngrams_word_var = False
@@ -83,51 +93,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         frequency = None
         if 'Hapax' in str(ngrams_list) and len(ngrams_list)==1:
             frequency = 1
-
-
-    if n_grams_var==False and n_grams_viewer_var==False and CoOcc_Viewer_var==False:
-        mb.showwarning(title='Warning',
-                       message='There are no options selected.\n\nPlease, select one of the available options and try again.')
-        return
-    if inputDir=='' and (n_grams_viewer_var==True or CoOcc_Viewer_var==True):
-        mb.showwarning(title='Warning',
-                       message='You have selected to run the Viewer option but... this option requires a directory of txt files in input. Your configuration specifies a single txt file in input.\n\nPlease, select a directory in input or deselect the Viewer option and try again.')
-        return
-
-    if date_options:
-        new_date_format = date_format_var.replace('yyyy', '%Y').replace('mm', '%m').replace('dd', '%d')
-        for folder, subs, files in os.walk(inputDir):
-            for filename in files:
-                if not filename.endswith('.txt'):
-                    continue
-                filename = filename.replace('.txt', '')
-                total_file_number = total_file_number + 1
-                try:
-                    date_text = ''
-                    date_text = filename.split(items_separator_var)[date_position_var - 1]
-                except: # if a file in the folder has no date it will break the code
-                    pass
-                try:
-                    datetime.datetime.strptime(date_text, new_date_format)
-                except ValueError:
-                    error_file_number = error_file_number + 1
-                    error_filenames.append(IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(folder, filename+'.txt')))
-                    error_flag = True
-
-    if error_flag:
-        df = pd.DataFrame(error_filenames, columns=['File with date not in position ' + str(date_position_var)])
-        error_output = IO_files_util.generate_output_file_name('',inputDir, outputDir, '.csv',
-                                                         'Date_position_errors_file')
-        df.to_csv(error_output, encoding='utf-8', index=False)
-        mb.showwarning(title='Warning',
-                       message='There are ' + str(error_file_number) + ' files out of ' + str(
-                           total_file_number) + ' processed in the selected input directory with errors in either the date format or the date position. \n\nThe selected date format is '+
-                               str(date_format_var)+' and the selected date position is ' +
-                               str(date_position_var) + '.\n\nClick OK to open a csv file with a list of files with erroneous dates. Check carefully, both date format and date position. Any erroneous file will need to be fixed or removed from the input directory before processing. You may also simply need to select a different date format and/or date position.')
-        filesToOpen.append(error_output)
-        if openOutputFiles == True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
-        return
 
 
 # COMPUTE Ngrams ______________________________________________________________________________
@@ -192,10 +157,92 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                   createCharts, chartPackage,
                                                                   bySentenceIndex_character_var)
 
+    case_sensitive = False
+    normalize=False
+    scaleData=False
+    useLemma=False
+    fullInfo=False
+    if 'sensitive' in str(viewer_options_list):
+        case_sensitive = True
+    if 'insensitive' in str(viewer_options_list):
+        case_sensitive = False
+    if 'Normalize' in str(viewer_options_list):
+        normalize = True
+    if 'Scale' in str(viewer_options_list):
+        scaleData = True
+    if 'Lemmatize' in str(viewer_options_list):
+        useLemma = True
 
-# VIEWER ____________________________________________________________________________________________
+    # Search N-grams csv file ____________________________________________________________________________________________
+
+    if Ngrams_search_var:
+        outputFiles = NGrams_CoOccurrences_util.run(
+                inputDir,
+                outputDir,
+                config_filename,
+                createCharts, chartPackage,
+                n_grams_viewer_var,
+                CoOcc_Viewer_var,
+                search_words,
+                language_list,
+                useLemma,
+                date_options,
+                temporal_aggregation_var,
+                number_of_years,
+                date_format_var,
+                items_separator_var,
+                date_position_var,
+                viewer_options_list,
+                ngrams_size,Ngrams_search_var,csv_file_var)
+
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
+        if openOutputFiles == True:
+            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+
+    # VIEWER ____________________________________________________________________________________________
 
     if (n_grams_viewer_var or CoOcc_Viewer_var):
+
+        if date_options:
+            new_date_format = date_format_var.replace('yyyy', '%Y').replace('mm', '%m').replace('dd', '%d')
+            for folder, subs, files in os.walk(inputDir):
+                for filename in files:
+                    if not filename.endswith('.txt'):
+                        continue
+                    filename = filename.replace('.txt', '')
+                    total_file_number = total_file_number + 1
+                    try:
+                        date_text = ''
+                        date_text = filename.split(items_separator_var)[date_position_var - 1]
+                    except:  # if a file in the folder has no date it will break the code
+                        pass
+                    try:
+                        datetime.datetime.strptime(date_text, new_date_format)
+                    except ValueError:
+                        error_file_number = error_file_number + 1
+                        error_filenames.append(
+                            IO_csv_util.dressFilenameForCSVHyperlink(os.path.join(folder, filename + '.txt')))
+                        error_flag = True
+
+        if error_flag:
+            df = pd.DataFrame(error_filenames, columns=['File with date not in position ' + str(date_position_var)])
+            error_output = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
+                                                                   'Date_position_errors_file')
+            df.to_csv(error_output, encoding='utf-8', index=False)
+            mb.showwarning(title='Warning',
+                           message='There are ' + str(error_file_number) + ' files out of ' + str(
+                               total_file_number) + ' processed in the selected input directory with errors in either the date format or the date position. \n\nThe selected date format is ' +
+                                   str(date_format_var) + ' and the selected date position is ' +
+                                   str(date_position_var) + '.\n\nClick OK to open a csv file with a list of files with erroneous dates. Check carefully, both date format and date position. Any erroneous file will need to be fixed or removed from the input directory before processing. You may also simply need to select a different date format and/or date position.')
+            filesToOpen.append(error_output)
+            if openOutputFiles == True:
+                IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+            return
 
         if (n_grams_viewer_var ==True or CoOcc_Viewer_var==True) and (createCharts==False):
             mb.showwarning(title='Warning',
@@ -230,22 +277,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if outputDir == '':
             return
 
-        case_sensitive = False
-        normalize=False
-        scaleData=False
-        useLemma=False
-        fullInfo=False
-        if 'sensitive' in str(viewer_options_list):
-            case_sensitive = True
-        if 'insensitive' in str(viewer_options_list):
-            case_sensitive = False
-        if 'Normalize' in str(viewer_options_list):
-            normalize = True
-        if 'Scale' in str(viewer_options_list):
-            scaleData = True
-        if 'Lemmatize' in str(viewer_options_list):
-            useLemma = True
-
         if n_grams_viewer_var == 1 and len(search_words) > 0:
             if date_options == 0:
                 mb.showwarning(title='Warning',
@@ -258,7 +289,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                      True)
 
         # run VIEWER ------------------------------------------------------------------------------------
-        filesToOpen = NGrams_CoOccurrences_Viewer_util.run(
+        filesToOpen = NGrams_CoOccurrences_util.run(
                 inputDir,
                 outputDir,
                 config_filename,
@@ -274,7 +305,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 date_format_var,
                 items_separator_var,
                 date_position_var,
-                viewer_options_list)
+                viewer_options_list,
+                ngrams_size,Ngrams_search_var,csv_file_var)
 
         if openOutputFiles == True:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -290,9 +322,11 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_ma
                                  ngrams_menu_var.get(),
                                  ngrams_options_menu_var.get(),
                                  ngrams_size.get(),
+                                 search_words_var.get(),
+                                 Ngrams_search_var.get(),
+                                 csv_file_var.get(),
                                  n_grams_viewer_var.get(),
                                  CoOcc_Viewer_var.get(),
-                                 search_words_var.get(),
                                  date_options.get(),
                                  temporal_aggregation_var.get(),
                                  viewer_options_list)
@@ -404,6 +438,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
                                    "Select the N-grams option; hit + button to add multiple options; Reset to start fresh; Show to display current selection.")
 
 
+
 add_ngrams_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_Ngrams_compute_var())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_add_ngrams_button_pos,y_multiplier_integer,add_ngrams_button, True)
 
@@ -413,141 +448,32 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_reset_ngra
 show_ngrams_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_ngrams_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_show_ngrams_button_pos,y_multiplier_integer,show_ngrams_button)
 
-def not_available():
-    activate_allOptions()
-    if Ngrams_search_var.get():
-        mb.showwarning(title='Warning', message='The option is not available yet. Check back soon.\n\nSorry!')
-        return
-
-Ngrams_search_var.set(0)
-Ngrams_search_checkbox = tk.Checkbutton(window, text='Search N-grams results', variable=Ngrams_search_var, onvalue=1, offvalue=0, command=lambda: not_available())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,Ngrams_search_checkbox)
-
-
-
-def reset_ngrams_list():
-    ngrams_checkbox.configure(state='normal')
-    Ngrams_compute_var.set(0)
-    ngrams_options_menu_var.set('')
-    ngrams_list.clear()
-    ngrams_options_menu_var.set('')
-    ngrams_options_menu.configure(state='normal')
-
-def show_ngrams_list():
-    if len(ngrams_list)==0:
-        mb.showwarning(title='Warning', message='There are no currently selected N-grams options.')
-    else:
-        mb.showwarning(title='Warning', message='The currently selected N-grams options are:\n\n' + ',\n'.join(ngrams_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
-
-def activate_Ngrams_compute_var():
-    # Disable the + after clicking on it and enable the class menu
-    add_ngrams_button.configure(state='disabled')
-    ngrams_options_menu.configure(state='normal')
-
-def activate_ngrams_options(*args):
-    if ngrams_options_menu_var.get()!='':
-        if ngrams_options_menu_var.get() in ngrams_list:
-            mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
-            return
-        ngrams_list.append(ngrams_options_menu_var.get())
-        ngrams_options_menu.configure(state="disabled")
-        add_ngrams_button.configure(state='normal')
-        reset_ngrams_button.configure(state='normal')
-        show_ngrams_button.configure(state='normal')
-    else:
-        add_ngrams_button.configure(state='disabled')
-        reset_ngrams_button.configure(state='disabled')
-        show_ngrams_button.configure(state='disabled')
-        ngrams_options_menu.configure(state="normal")
-ngrams_options_menu_var.trace('w',activate_ngrams_options)
-
-n_grams_viewer_var.set(0)
-Ngrams_viewer_checkbox = tk.Checkbutton(window, text='N-grams VIEWER', variable=n_grams_viewer_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions() )
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   Ngrams_viewer_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "The N-grams VIEWER option requires in input file(s) with a date embedded in the filename")
-
-CoOcc_Viewer_var.set(0)
-CoOcc_viewer_checkbox = tk.Checkbutton(window, text='Co-Occurrences VIEWER', variable=CoOcc_Viewer_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos,y_multiplier_integer,CoOcc_viewer_checkbox)
-
 search_words_var.set('')
 search_words_lb = tk.Label(window, text='Search word(s)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,search_words_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,search_words_lb,True)
 search_words_entry = tk.Entry(window, textvariable=search_words_var)
 search_words_entry.configure(width=GUI_IO_util.widget_width_extra_long)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos, y_multiplier_integer,
                                    search_words_entry,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Enter the comma-separated words/collocations to be searched;\nfor N-grams each item in the list will be plotted separately; for Co-occurrences all items will be plotted together ")
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos,y_multiplier_integer,search_words_entry)
-
-def date_processing():
-    if CoOcc_Viewer_var.get() and date_options.get():
-        mb.showwarning(title='Warning',
-                       message='The current implementation of the Co-Occurrences Viewer does not process date information')
-
-date_options.set(0)
-date_options_checkbox = tk.Checkbutton(window, text='Date options', variable=date_options, onvalue=1, offvalue=0, command=lambda: date_processing())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,date_options_checkbox,True)
-
-# date_options_checkbox.configure(state='disabled')
-
-date_options_msg= tk.Label(window)
-date_options_msg.config(text="Date option OFF")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_date_options_pos,y_multiplier_integer,date_options_msg,True)
-
-temporal_aggregation_var.set('year')
-temporal_aggregation_lb = tk.Label(window,text='Aggregate by ')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos,y_multiplier_integer,temporal_aggregation_lb,True)
-
-temporal_aggregation_menu = tk.OptionMenu(window, temporal_aggregation_var, 'group of years', 'year', 'quarter','month') #,'day'
-temporal_aggregation_menu.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos,y_multiplier_integer,temporal_aggregation_menu)
-
-number_of_years=0
-
-def get_year_group(*args):
-    global number_of_years
-    if 'group' in temporal_aggregation_var.get():
-        # "Enter the FIND & REPLACE strings (CASE SENSITIVE)", 'Find', 2, '', 'Replace', '' , numberOfWidgets=1, defaultValue='', textCaption2='', defaultValue2=''
-        result = GUI_IO_util.enter_value_widget("Enter the number of years to aggregate by (e.g., 10, 23)","Enter value",1)
-        try:
-            number_of_years=int(result[0])
-            # if not isinstance(result[0], int):
-        except:
-            mb.showwarning(title='Warning', message='You must enter an integer value. The value ' + str(result[0]) + ' is not an integer.')
-            get_year_group()
-        return number_of_years
-temporal_aggregation_var.trace('w',get_year_group)
+                                   "Enter the comma-separated words/collocations to be searched by the options 'Search N-grams csv file' or the VIEWER;\nfor N-grams each item in the list will be plotted separately; for Co-occurrences all items will be plotted together ")
 
 
-def check_dateFields(*args):
-    if date_options.get() == 1:
-        date_options_msg.config(text="Date option ON")
-        temporal_aggregation_menu.config(state="normal")
-    else:
-        date_options_msg.config(text="Date option OFF")
-        temporal_aggregation_menu.config(state="disabled")
-date_options.trace('w',check_dateFields)
-
-add_viewer_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_viewer_var())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_add_viewer_button_pos,y_multiplier_integer,add_viewer_button, True)
-
-reset_viewer_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_viewer_options_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_reset_viewer_button_pos,y_multiplier_integer,reset_viewer_button,True)
-
-show_viewer_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_viewer_options_list())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_show_viewer_button_pos,y_multiplier_integer,show_viewer_button,True)
-
-viewer_menu_lb = tk.Label(window, text='VIEWER options')
+viewer_menu_lb = tk.Label(window, text='Search options')
 viewer_options_menu_var.set('Case sensitive (default)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,viewer_menu_lb,True)
 viewer_options_menu = tk.OptionMenu(window, viewer_options_menu_var, 'Case sensitive (default)', 'Case insensitive', 'Exact match (default)','Partial match','Normalize results','Scale results', 'Lemmatize words')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_viewer_options_menu_pos,y_multiplier_integer,viewer_options_menu)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_viewer_options_menu_pos,y_multiplier_integer,viewer_options_menu, True)
+
+add_viewer_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_viewer_var())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_add_ngrams_button_pos,y_multiplier_integer,add_viewer_button, True)
+
+reset_viewer_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_viewer_options_list())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_reset_ngrams_button_pos,y_multiplier_integer,reset_viewer_button,True)
+
+show_viewer_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_viewer_options_list())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_show_ngrams_button_pos,y_multiplier_integer,show_viewer_button,False)
 
 def reset_viewer_options_list():
     viewer_options_list.clear()
@@ -600,6 +526,149 @@ viewer_options_menu_var.trace('w',activate_viewer_options)
 
 activate_viewer_options()
 
+Ngrams_search_var.set(0)
+Ngrams_search_checkbox = tk.Checkbutton(window, text='Search N-grams csv file', variable=Ngrams_search_var, onvalue=1, offvalue=0, command=lambda: get_csv_file(window,'Select INPUT csv file', [("dictionary files", "*.csv")],True))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                    Ngrams_search_checkbox,
+                    True, False, True,False, 90,
+                    GUI_IO_util.labels_x_indented_coordinate, "Please, tick the checkbox to search for selected words in any output csv file produced by the 'Compute N-grams' algorithm.\nUpon clicking you will be prompted to select the N-grams csv file to be used.")
+
+csv_file_var = tk.StringVar()
+csv_file_var.set('')
+def get_csv_file(window,title,fileType,annotate):
+    if Ngrams_search_var.get()==False:
+        csv_file_var.set('')
+        Ngrams_viewer_checkbox.configure(state='normal')
+        CoOcc_viewer_checkbox.configure(state='normal')
+        return
+    Ngrams_viewer_checkbox.configure(state='disabled')
+    CoOcc_viewer_checkbox.configure(state='disabled')
+
+    if csv_file!='':
+        initialFolder=os.path.dirname(os.path.abspath(csv_file_var.get()))
+    else:
+        initialFolder = os.path.dirname(os.path.abspath(__file__))
+    filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
+
+    if len(filePath)>0:
+        nRecords, nColumns =IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
+        if nRecords==0:
+            mb.showwarning(title='Warning',
+                           message="The selected input csv file is empty.\n\nPlease, select a different file and try again.")
+            filePath=''
+        else:
+            csv_file_var.set(filePath)
+            # display_csv_file_options()
+    return filePath
+
+#setup a button to open Windows Explorer on the selected input directory
+openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,openInputFile_button,
+                    True, False, True,False, 90, GUI_IO_util.open_TIPS_x_coordinate, "Open INPUT csv N-grams file")
+
+csv_file=tk.Entry(window, width=GUI_IO_util.widget_width_long,textvariable=csv_file_var)
+csv_file.config(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+70, y_multiplier_integer,csv_file)
+
+def reset_ngrams_list():
+    Ngrams_compute_var.set(0)
+    ngrams_options_menu_var.set('')
+    ngrams_list.clear()
+    ngrams_options_menu_var.set('')
+    ngrams_options_menu.configure(state='normal')
+
+def show_ngrams_list():
+    if len(ngrams_list)==0:
+        mb.showwarning(title='Warning', message='There are no currently selected N-grams options.')
+    else:
+        mb.showwarning(title='Warning', message='The currently selected N-grams options are:\n\n' + ',\n'.join(ngrams_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+
+def activate_Ngrams_compute_var():
+    # Disable the + after clicking on it and enable the class menu
+    add_ngrams_button.configure(state='disabled')
+    ngrams_options_menu.configure(state='normal')
+
+def activate_ngrams_options(*args):
+    if ngrams_options_menu_var.get()!='':
+        if ngrams_options_menu_var.get() in ngrams_list:
+            mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
+            return
+        ngrams_list.append(ngrams_options_menu_var.get())
+        ngrams_options_menu.configure(state="disabled")
+        add_ngrams_button.configure(state='normal')
+        reset_ngrams_button.configure(state='normal')
+        show_ngrams_button.configure(state='normal')
+    else:
+        add_ngrams_button.configure(state='disabled')
+        reset_ngrams_button.configure(state='disabled')
+        show_ngrams_button.configure(state='disabled')
+        ngrams_options_menu.configure(state="normal")
+ngrams_options_menu_var.trace('w',activate_ngrams_options)
+
+n_grams_viewer_var.set(0)
+Ngrams_viewer_checkbox = tk.Checkbutton(window, text='N-grams VIEWER', variable=n_grams_viewer_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions() )
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                   Ngrams_viewer_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "The N-grams VIEWER option requires in input file(s) with a date embedded in the filename")
+
+CoOcc_Viewer_var.set(0)
+CoOcc_viewer_checkbox = tk.Checkbutton(window, text='Co-Occurrences VIEWER', variable=CoOcc_Viewer_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos,y_multiplier_integer,CoOcc_viewer_checkbox)
+
+
+def date_processing():
+    if CoOcc_Viewer_var.get() and date_options.get():
+        mb.showwarning(title='Warning',
+                       message='The current implementation of the Co-Occurrences Viewer does not process date information')
+
+date_options.set(0)
+date_options_checkbox = tk.Checkbutton(window, text='Date options', variable=date_options, onvalue=1, offvalue=0, command=lambda: date_processing())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_indented_coordinate,y_multiplier_integer,date_options_checkbox,True)
+
+# date_options_checkbox.configure(state='disabled')
+
+date_options_msg= tk.Label(window)
+date_options_msg.config(text="Date option OFF")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,date_options_msg,True)
+
+temporal_aggregation_var.set('year')
+temporal_aggregation_lb = tk.Label(window,text='Aggregate by ')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_temporal_aggregation_lb_pos,y_multiplier_integer,temporal_aggregation_lb,True)
+
+temporal_aggregation_menu = tk.OptionMenu(window, temporal_aggregation_var, 'group of years', 'year', 'quarter','month') #,'day'
+temporal_aggregation_menu.configure(state="disabled")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_temporal_aggregation_menu_pos,y_multiplier_integer,temporal_aggregation_menu)
+
+number_of_years=0
+
+def get_year_group(*args):
+    global number_of_years
+    if 'group' in temporal_aggregation_var.get():
+        # "Enter the FIND & REPLACE strings (CASE SENSITIVE)", 'Find', 2, '', 'Replace', '' , numberOfWidgets=1, defaultValue='', textCaption2='', defaultValue2=''
+        result = GUI_IO_util.enter_value_widget("Enter the number of years to aggregate by (e.g., 10, 23)","Enter value",1)
+        try:
+            number_of_years=int(result[0])
+            # if not isinstance(result[0], int):
+        except:
+            mb.showwarning(title='Warning', message='You must enter an integer value. The value ' + str(result[0]) + ' is not an integer.')
+            get_year_group()
+        return number_of_years
+temporal_aggregation_var.trace('w',get_year_group)
+
+
+def check_dateFields(*args):
+    if date_options.get() == 1:
+        date_options_msg.config(text="Date option ON")
+        temporal_aggregation_menu.config(state="normal")
+    else:
+        date_options_msg.config(text="Date option OFF")
+        temporal_aggregation_menu.config(state="disabled")
+date_options.trace('w',check_dateFields)
+
 def clear_n_grams_list():
     n_grams_list.clear()
 
@@ -607,6 +676,9 @@ def clear(e):
     n_grams_list.clear()
     search_words_var.set('')
     viewer_options_list.clear()
+    search_words_var.set('')
+    Ngrams_search_var.set(0)
+    csv_file_var.set('')
     viewer_options_menu_var.set('Case sensitive')
     temporal_aggregation_var.set('year')
     GUI_util.clear("Escape")
@@ -648,7 +720,7 @@ def activate_allOptions():
         date_options_checkbox.config(state='normal')
         viewer_options_menu.config(state='normal')
     else:
-        search_words_entry.configure(state='disabled')
+        # search_words_entry.configure(state='disabled')
         date_options_checkbox.config(state='disabled')
         viewer_options_menu.config(state='disabled')
 
@@ -696,8 +768,10 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                 'Please, tick the checkbox if you wish to compute N-grams.\n\nN-grams can be computed for character and word values. Use the dropdown menu to select the desired option.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word N-grams between 1 and 3.\n\nWhen N-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, use the dropdown menu to select different options for N-grams. Clisk the + button to select more options; the Reset button to start fresh; the Show button to visualize the options already selected.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates the following three files:\n  1. csv file of frequencies of the twenty most frequent words;\n  2. csv file of the following statistics for each column in the previous csv file and for each document in the corpus: Count, Mean, Mode, Median, Standard deviation, Minimum, Maximum, Skewness, Kurtosis, 25% quantile, 50% quantile; 75% quantile;\n  3. Excel line chart of the number of sentences and words for each document.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+        'Please, enter the comma-separated list of single words or collocations (i.e., sets of words such as coming out, beautiful sunny day) for which you want to know N-Grams/Co-occurrences statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                'Please, tick the checkbox if you wish to search the output csv files created by the "Compute N-grams" algorithms.')
+                                'Please, tick the checkbox if you wish to search the output csv files created by the "Compute N-grams" algorithms.\n\nYou will be prompted to select the type of csv file to be used for the search (bigram, trigram,...)')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
         'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer script.'\
         '\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer script.'\
@@ -707,8 +781,6 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         '\n\nFor both viewers, results will be visualized in Excel line plots.'\
         '\n\nFor N-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. '\
         'For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-        'Please, enter the comma-separated list of single words or collocations (i.e., sets of words such as coming out, beautiful sunny day) for which you want to know N-Grams/Co-occurrences statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
         'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences. ' \
             'YOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXS "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'\
