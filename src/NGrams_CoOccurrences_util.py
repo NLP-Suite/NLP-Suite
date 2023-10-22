@@ -216,7 +216,7 @@ def run(inputDir="relative_path_here",
         dateFormat="mm-dd-yyyy",
         itemsDelimiter="_",
         datePos=2,
-        viewer_options_list=[],ngrams_size=1):
+        viewer_options_list=[],ngrams_size=1,Ngrams_search_var=False,csv_file_var=None):
 
 
 
@@ -333,38 +333,27 @@ def run(inputDir="relative_path_here",
 
 
     search_words = []
-    if int(ngrams_size) >= 2 and n_grams_viewer:
-        ngrams_size = int(ngrams_size)
-        documents = []
-        for file in files:
-            if hashfile.calculate_checksum(file) in hashmap:
-                tokens_ = hashmap[hashfile.calculate_checksum(file)]
-            else:
-                f = open(file, "r", encoding='utf-8', errors='ignore')
-                docText = f.read()
-                f.close()
-                if not case_sensitive:
-                    docText = docText.lower()
-                tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
-                hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)
-                hashfile.writehash(hashmap, outputDir)
-            documents.append(tokens_)
-        import ngrams_util
+    if Ngrams_search_var:
+        if csv_file_var is None:
+            print("empty csv file, do again, this ought not to happen?!")
+            return
         import pandas as pd
-        data = ngrams_util.operateongram(documents, files, ngrams_size)
+        data = pd.read_csv(csv_file_var)
+        if 'gram' not in data.columns[0]:
+            mb.showwarning(title='Input file error',
+                           message='The selected csv file is not the expected csv N-grams file.\n\nThis file should contain a header with the word "gram".\n\nPlease, select the expected csv file and try again.')
+            return
         words = search_keywords_list
         l = []
-        def magic(file, dateFormat, itemsDelimiter, datePos):
-            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter,
-                                                                                datePos)
-            return date
-
         for word in words:
-            b = data[data['ngram'].str.endswith(word)]
+            if case_sensitive:
+                b = data[data[data.columns[0]].str.endswith(word)]
+            else:#.str.lower().str.endswith
+                b = data[data[data.columns[0]].str.lower().str.endswith(word.lower())]
             pivot_df = b.pivot_table(
                 values='Frequency in Document',  # fill with frequencies
                 index='Document ID',  # rows are documents
-                columns='ngram',  # columns are 2-grams
+                columns=data.columns[0],  # columns are 2-grams
                 fill_value=0,  # fill missing values with 0
                 aggfunc='sum')  # use sum to aggregate entries
             all_document_ids = range(min(data['Document ID']), max(
@@ -372,12 +361,17 @@ def run(inputDir="relative_path_here",
             pivot_df = pivot_df.reindex(all_document_ids, fill_value=0)
             l.append(pivot_df)
         combined_pivot_df = pd.concat(l, axis=1)
+
         a_to_b_mapping = data.drop_duplicates(subset='Document ID').set_index('Document ID')['Document'].to_dict()
-        combined_pivot_df['Document Where mapped'] = combined_pivot_df.index.map(a_to_b_mapping)
-        NgramsFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
-                                                                 'N-grams_' )
-        combined_pivot_df.to_csv(NgramsFileName)
-        return
+        combined_pivot_df['Document ID'] = combined_pivot_df.index
+        combined_pivot_df['Document'] = combined_pivot_df.index.map(a_to_b_mapping)
+        # combined_pivot_df.insert(len(combined_pivot_df.columns)-1, 'Document ID', combined_pivot_df['Document ID'])
+        NgramsSearchFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
+                                                                 'N-grams_search')
+        combined_pivot_df.to_csv(NgramsSearchFileName, index=False)
+
+        return NgramsSearchFileName
+
        # filtered_data.to_csv(output_csv_file, index=False)
 
 
