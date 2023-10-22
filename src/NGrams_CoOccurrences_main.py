@@ -31,10 +31,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         ngrams_menu_var,
         ngrams_options_menu_var,
         ngrams_size,
+        search_words,
+        Ngrams_search_var,
+        csv_file_var,
         n_grams_viewer_var,
         CoOcc_Viewer_var,
-        search_words,
-        # language_list,
         date_options,
         temporal_aggregation_var,
         viewer_options_list):
@@ -258,7 +259,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                      True)
 
         # run VIEWER ------------------------------------------------------------------------------------
-        filesToOpen = NGrams_CoOccurrences_Viewer_util.run(
+        filesToOpen = NGrams_CoOccurrences_util.run(
                 inputDir,
                 outputDir,
                 config_filename,
@@ -274,7 +275,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 date_format_var,
                 items_separator_var,
                 date_position_var,
-                viewer_options_list)
+                viewer_options_list,
+                ngrams_size)
 
         if openOutputFiles == True:
             IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -290,9 +292,11 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_ma
                                  ngrams_menu_var.get(),
                                  ngrams_options_menu_var.get(),
                                  ngrams_size.get(),
+                                 search_words_var.get(),
+                                 Ngrams_search_var.get(),
+                                 csv_file_var.get(),
                                  n_grams_viewer_var.get(),
                                  CoOcc_Viewer_var.get(),
-                                 search_words_var.get(),
                                  date_options.get(),
                                  temporal_aggregation_var.get(),
                                  viewer_options_list)
@@ -413,20 +417,76 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_reset_ngra
 show_ngrams_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_ngrams_list())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_show_ngrams_button_pos,y_multiplier_integer,show_ngrams_button)
 
-def not_available():
-    activate_allOptions()
-    if Ngrams_search_var.get():
-        mb.showwarning(title='Warning', message='The option is not available yet. Check back soon.\n\nSorry!')
-        return
+# def not_available():
+#     activate_allOptions()
+#     if Ngrams_search_var.get():
+#         mb.showwarning(title='Warning', message='The option is not available yet. Check back soon.\n\nSorry!')
+#         return
+
+search_words_var.set('')
+search_words_lb = tk.Label(window, text='Search word(s)')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,search_words_lb,True)
+search_words_entry = tk.Entry(window, textvariable=search_words_var)
+search_words_entry.configure(width=GUI_IO_util.widget_width_extra_long)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos, y_multiplier_integer,
+                                   search_words_entry,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Enter the comma-separated words/collocations to be searched by the options 'Search N-grams csv file' or the VIEWER;\nfor N-grams each item in the list will be plotted separately; for Co-occurrences all items will be plotted together ")
 
 Ngrams_search_var.set(0)
-Ngrams_search_checkbox = tk.Checkbutton(window, text='Search N-grams results', variable=Ngrams_search_var, onvalue=1, offvalue=0, command=lambda: not_available())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,Ngrams_search_checkbox)
+Ngrams_search_checkbox = tk.Checkbutton(window, text='Search N-grams csv file', variable=Ngrams_search_var, onvalue=1, offvalue=0, command=lambda: get_csv_file(window,'Select INPUT csv file', [("dictionary files", "*.csv")],True))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                    Ngrams_search_checkbox,
+                    True, False, True,False, 90,
+                    GUI_IO_util.labels_x_indented_coordinate, "Please, tick the checkbox to search for selected words in any output csv file produced by the 'Compute N-grams' algorithm.\nUpon clicking you will be prompted to select the N-grams csv file to be used.")
 
+# csv_Ngrams_var = tk.IntVar()
+# csv_Ngrams_var.set(2)
+# csv_Ngrams_menu = tk.OptionMenu(window, csv_Ngrams_var, 1,2,3,4,5,6,7,8,9,10)
+# # csv_Ngrams_menu.configure(state="disabled")
+# # place widget with hover-over info
+# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
+#                     csv_Ngrams_menu,
+#                     True, False, True,False, 90,
+#                     GUI_IO_util.open_TIPS_x_coordinate, "Please, use the dropdown meu to select the type of N-grams file you wish to analyze")
 
+csv_file_var = tk.StringVar()
+csv_file_var.set('')
+def get_csv_file(window,title,fileType,annotate):
+    if Ngrams_search_var.get()==False:
+        csv_file_var.set('')
+        return
+    #csv_file_var.set('')
+    if csv_file!='':
+        initialFolder=os.path.dirname(os.path.abspath(csv_file_var.get()))
+    else:
+        initialFolder = os.path.dirname(os.path.abspath(__file__))
+    filePath = tk.filedialog.askopenfilename(title = title, initialdir = initialFolder, filetypes = fileType)
+
+    if len(filePath)>0:
+        nRecords, nColumns =IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(filePath, 'utf-8')
+        if nRecords==0:
+            mb.showwarning(title='Warning',
+                           message="The selected input csv file is empty.\n\nPlease, select a different file and try again.")
+            filePath=''
+        else:
+            csv_file_var.set(filePath)
+            # display_csv_file_options()
+    return filePath
+
+#setup a button to open Windows Explorer on the selected input directory
+openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='', command=lambda: IO_files_util.openFile(window, csv_file_var.get()))
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,openInputFile_button,
+                    True, False, True,False, 90, GUI_IO_util.open_TIPS_x_coordinate, "Open INPUT csv N-grams file")
+
+csv_file=tk.Entry(window, width=GUI_IO_util.widget_width_long,textvariable=csv_file_var)
+csv_file.config(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+70, y_multiplier_integer,csv_file)
 
 def reset_ngrams_list():
-    ngrams_checkbox.configure(state='normal')
     Ngrams_compute_var.set(0)
     ngrams_options_menu_var.set('')
     ngrams_list.clear()
@@ -464,7 +524,7 @@ ngrams_options_menu_var.trace('w',activate_ngrams_options)
 n_grams_viewer_var.set(0)
 Ngrams_viewer_checkbox = tk.Checkbutton(window, text='N-grams VIEWER', variable=n_grams_viewer_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions() )
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    Ngrams_viewer_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "The N-grams VIEWER option requires in input file(s) with a date embedded in the filename")
@@ -473,17 +533,6 @@ CoOcc_Viewer_var.set(0)
 CoOcc_viewer_checkbox = tk.Checkbutton(window, text='Co-Occurrences VIEWER', variable=CoOcc_Viewer_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos,y_multiplier_integer,CoOcc_viewer_checkbox)
 
-search_words_var.set('')
-search_words_lb = tk.Label(window, text='Search word(s)')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,search_words_lb,True)
-search_words_entry = tk.Entry(window, textvariable=search_words_var)
-search_words_entry.configure(width=GUI_IO_util.widget_width_extra_long)
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos, y_multiplier_integer,
-                                   search_words_entry,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Enter the comma-separated words/collocations to be searched;\nfor N-grams each item in the list will be plotted separately; for Co-occurrences all items will be plotted together ")
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos,y_multiplier_integer,search_words_entry)
 
 def date_processing():
     if CoOcc_Viewer_var.get() and date_options.get():
@@ -607,6 +656,9 @@ def clear(e):
     n_grams_list.clear()
     search_words_var.set('')
     viewer_options_list.clear()
+    search_words_var.set('')
+    Ngrams_search_var.set(0)
+    csv_file_var.set('')
     viewer_options_menu_var.set('Case sensitive')
     temporal_aggregation_var.set('year')
     GUI_util.clear("Escape")
@@ -696,8 +748,10 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                 'Please, tick the checkbox if you wish to compute N-grams.\n\nN-grams can be computed for character and word values. Use the dropdown menu to select the desired option.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word N-grams between 1 and 3.\n\nWhen N-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, use the dropdown menu to select different options for N-grams. Clisk the + button to select more options; the Reset button to start fresh; the Show button to visualize the options already selected.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates the following three files:\n  1. csv file of frequencies of the twenty most frequent words;\n  2. csv file of the following statistics for each column in the previous csv file and for each document in the corpus: Count, Mean, Mode, Median, Standard deviation, Minimum, Maximum, Skewness, Kurtosis, 25% quantile, 50% quantile; 75% quantile;\n  3. Excel line chart of the number of sentences and words for each document.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+        'Please, enter the comma-separated list of single words or collocations (i.e., sets of words such as coming out, beautiful sunny day) for which you want to know N-Grams/Co-occurrences statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                'Please, tick the checkbox if you wish to search the output csv files created by the "Compute N-grams" algorithms.')
+                                'Please, tick the checkbox if you wish to search the output csv files created by the "Compute N-grams" algorithms.\n\nYou will be prompted to select the type of csv file to be used for the search (bigram, trigram,...)')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
         'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer script.'\
         '\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer script.'\
@@ -707,8 +761,6 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         '\n\nFor both viewers, results will be visualized in Excel line plots.'\
         '\n\nFor N-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. '\
         'For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-        'Please, enter the comma-separated list of single words or collocations (i.e., sets of words such as coming out, beautiful sunny day) for which you want to know N-Grams/Co-occurrences statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
         'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences. ' \
             'YOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXS "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'\

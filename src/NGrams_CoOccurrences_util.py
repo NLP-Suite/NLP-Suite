@@ -150,6 +150,7 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
         token = tokens_[collocationIndex]
         for search_word in search_word_list:
             # splitting searched multi-word expressions, such as Hong Kong, Australian author, beautiful young princess
+
             iterations = search_word.count(' ')
             split_search_word = search_word.split(' ')
             length_of_search_list = len(split_search_word)
@@ -166,7 +167,7 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
                             else:
                                 checker = False
                                 break
-                if checker:
+                if checker and CoOcc_Viewer:
                     coOcc_results[file]['Co-Occurrence'][search_word] += 1
                 if n_grams_viewer and checker:
                     ngram_results, quarter_ngram_results = process_n_grams(search_word, ngram_results,
@@ -191,11 +192,12 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
                         # do not skip the next record when running both n-grams and coOcc
                         #if co_occurrence_checker and not n_grams_viewer:
                         #    break
-    valuescheck = coOcc_results[file]['Co-Occurrence'].values()
-    if 0 in valuescheck:
-        coOcc_results[file]['Co-Occurrence-bool']="NO"
-    else:
-        coOcc_results[file]['Co-Occurrence-bool'] = "YES"
+    if CoOcc_Viewer: #failed to consider this fact.... let's first make it work...
+        valuescheck = coOcc_results[file]['Co-Occurrence'].values()
+        if 0 in valuescheck:
+            coOcc_results[file]['Co-Occurrence-bool']="NO"
+        else:
+            coOcc_results[file]['Co-Occurrence-bool'] = "YES"
     return ngram_results, quarter_ngram_results, coOcc_results
 
 
@@ -214,7 +216,10 @@ def run(inputDir="relative_path_here",
         dateFormat="mm-dd-yyyy",
         itemsDelimiter="_",
         datePos=2,
-        viewer_options_list=[]):
+        viewer_options_list=[],ngrams_size=1):
+
+
+
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
                                                    'Started running Words/Characters N-Grams VIEWER at',
                                                    True, '', True, '', False)
@@ -313,6 +318,72 @@ def run(inputDir="relative_path_here",
     quarter_ngram_results = {}
     coOcc_results = {}
 
+
+    # iterate over each file, searching for words
+    print("\nProcessing files for search words\n")
+    docIndex = 0
+
+    #########NEW FILE##########
+    import hashfile
+    if hashfile.checkOut(outputDir):
+        hashmap = hashfile.getcache(outputDir)
+    else:
+        hashmap = {}
+
+
+
+    search_words = []
+    if int(ngrams_size) >= 2 and n_grams_viewer:
+        ngrams_size = int(ngrams_size)
+        documents = []
+        for file in files:
+            if hashfile.calculate_checksum(file) in hashmap:
+                tokens_ = hashmap[hashfile.calculate_checksum(file)]
+            else:
+                f = open(file, "r", encoding='utf-8', errors='ignore')
+                docText = f.read()
+                f.close()
+                if not case_sensitive:
+                    docText = docText.lower()
+                tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
+                hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)
+                hashfile.writehash(hashmap, outputDir)
+            documents.append(tokens_)
+        import ngrams_util
+        import pandas as pd
+        data = ngrams_util.operateongram(documents, files, ngrams_size)
+        words = search_keywords_list
+        l = []
+        def magic(file, dateFormat, itemsDelimiter, datePos):
+            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter,
+                                                                                datePos)
+            return date
+
+        for word in words:
+            b = data[data['ngram'].str.endswith(word)]
+            pivot_df = b.pivot_table(
+                values='Frequency in Document',  # fill with frequencies
+                index='Document ID',  # rows are documents
+                columns='ngram',  # columns are 2-grams
+                fill_value=0,  # fill missing values with 0
+                aggfunc='sum')  # use sum to aggregate entries
+            all_document_ids = range(min(data['Document ID']), max(
+                data['Document ID']) + 1)  # Replace with the actual range or list of your document IDs
+            pivot_df = pivot_df.reindex(all_document_ids, fill_value=0)
+            l.append(pivot_df)
+        combined_pivot_df = pd.concat(l, axis=1)
+        a_to_b_mapping = data.drop_duplicates(subset='Document ID').set_index('Document ID')['Document'].to_dict()
+        combined_pivot_df['Document Where mapped'] = combined_pivot_df.index.map(a_to_b_mapping)
+        NgramsFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
+                                                                 'N-grams_' )
+        combined_pivot_df.to_csv(NgramsFileName)
+        return
+       # filtered_data.to_csv(output_csv_file, index=False)
+
+
+        # there are extremely big bugs in the later code. Return early to avoid problems
+       # return
+
     if n_grams_viewer:
         # initialize the ngram_results dictionary ------------------------------------------------------
         quarter_ngram_results = {}
@@ -342,16 +413,7 @@ def run(inputDir="relative_path_here",
                         ngram_results[word][str(y)][m] = {"Search Word(s)": word,
                                                           "Frequency": 0}
 
-    # iterate over each file, searching for words
-    print("\nProcessing files for search words\n")
-    docIndex = 0
 
-    #########NEW FILE##########
-    import hashfile
-    if hashfile.checkOut(outputDir):
-        hashmap = hashfile.getcache(outputDir)
-    else:
-        hashmap = {}
 
     for file in files:
         docIndex += 1
