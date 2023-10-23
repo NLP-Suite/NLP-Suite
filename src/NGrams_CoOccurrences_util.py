@@ -332,6 +332,9 @@ def run(inputDir="relative_path_here",
 
 
 
+    def transform(ngrm):
+        return ' '.join(ngrm.split(' ')[:-1])
+
     search_words = []
     if Ngrams_search_var:
         if csv_file_var is None:
@@ -345,11 +348,23 @@ def run(inputDir="relative_path_here",
             return
         words = search_keywords_list
         l = []
+        l_sankey = []
         for word in words:
-            if case_sensitive:
-                b = data[data[data.columns[0]].str.endswith(word)]
-            else:#.str.lower().str.endswith
-                b = data[data[data.columns[0]].str.lower().str.endswith(word.lower())]
+          #  if case_sensitive:
+            b = data[data[data.columns[0]].str.endswith(word)]
+            df2 = b.copy()
+            df2['ngram_descriptors'] = df2[data.columns[0]].apply(lambda x: transform(x))
+            df2['descriptees'] = word
+            expanded_rows = []
+            for _, row in df2.iterrows():
+                new_row = row.copy()
+                num_repetitions = int(row['Frequency in Document'])
+                for _ in range(num_repetitions):
+                    expanded_rows.append(new_row)
+            expanded_df = pd.DataFrame(expanded_rows)
+            l_sankey.append(expanded_df)
+       #     else:#.str.lower().str.endswith I do not think we go to this part ever...
+          #      b = data[data[data.columns[0]].str.lower().str.endswith(word.lower())]
             pivot_df = b.pivot_table(
                 values='Frequency in Document',  # fill with frequencies
                 index='Document ID',  # rows are documents
@@ -361,7 +376,7 @@ def run(inputDir="relative_path_here",
             pivot_df = pivot_df.reindex(all_document_ids, fill_value=0)
             l.append(pivot_df)
         combined_pivot_df = pd.concat(l, axis=1)
-
+        combined_saneky_df = pd.concat(l_sankey)
         a_to_b_mapping = data.drop_duplicates(subset='Document ID').set_index('Document ID')['Document'].to_dict()
         combined_pivot_df['Document ID'] = combined_pivot_df.index
         combined_pivot_df['Document'] = combined_pivot_df.index.map(a_to_b_mapping)
@@ -370,7 +385,14 @@ def run(inputDir="relative_path_here",
                                                                  'N-grams_search')
         combined_pivot_df.to_csv(NgramsSearchFileName, index=False)
 
-        return NgramsSearchFileName
+
+
+        NgramsSearchFileName2 = IO_files_util.generate_output_file_name('', inputDir, outputDir, '-Sankey.csv',
+                                                                       'N-grams_search')
+        combined_saneky_df.to_csv(NgramsSearchFileName2, index=False)
+        print('we are done with both Sankey handling and the regular searches!')
+
+        return [NgramsSearchFileName,NgramsSearchFileName2]
 
        # filtered_data.to_csv(output_csv_file, index=False)
 
