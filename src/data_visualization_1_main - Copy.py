@@ -36,8 +36,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         dynamic_network_field_var,
         Sankey_limit1_var, Sankey_limit2_var, Sankey_limit3_var,
         categorical_var,
-        csv_field_categorical_1_var,
-        search_values_1_var,
+        filename_label_var,
+        csv_field_categorical_var,
         K_sent_begin_var,
         K_sent_end_var,
         split_var,
@@ -131,24 +131,24 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             mb.showwarning("Warning",
                            "Please, use the dropdown menu to select one of the options for categorical data: Sunburst, treemap and try again.")
             return
-        if csv_field_categorical_1_var == '':
+        if filename_label_var == '':
             mb.showwarning("Warning",
-                           "The categorical data visualization functions require a set of comma-separated entries to be used in the search (could be parts of a filenames, if the Document field is selected).\n\nPlease, enter value(s) and try again.")
+                           "The categorical data visualization functions require a set of comma-separated entries in the 'Label/part in the filename to be used for visualization' widget.\n\nPlease, enter value(s) and try again.")
             return
 
         # interest pass a list [] of labels embedded in the filename, e.g. Book1, Book2, ... or Chinese, Arabian,...
         interest = []
         temp_interest=[]
-        interest = search_values_1_var.split(',')
+        interest = filename_label_var.split(',')
         for i in range(len(interest)):
             temp_interest.append(interest[i].lstrip())
         # label is a string that has the header field in the csv file to be used for display
-        label=csv_field_categorical_1_var
+        label=csv_field_categorical_var
 
 # Categorical data: Sunburst  --------------------------------------------------------------------------------
 
         if 'Sunburst' in categorical_menu_var.get():
-            if csv_field_categorical_1_var=='':
+            if csv_field_categorical_var=='':
                 mb.showwarning("Warning",
                                "The sunburst algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
                 return
@@ -209,13 +209,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 mb.showwarning("Warning",
                                "You have not entered a 'csv file field' required by the treemap algorithm.\n\nPlease, use the dropdown menu to select the csv file field containing categorical data and try again.")
                 return
-            if use_numerical_variable_var and csv_field_categorical_1_var=='':
+            if use_numerical_variable_var and csv_field_categorical_var=='':
                 mb.showwarning("Warning",
                                "The selected treemap option with the use of numerical data requires a variable containing the numerical data.\n\nPlease, select the csv file field containing the numerical data and try again.")
                 return
             #def Treemap(data,outputFilename,interest,var,extra_dimension_average,average_variable=None):
             outputFiles = charts_util.Treemap(inputFilename, outputFilename,
-                                                                   temp_interest, label, use_numerical_variable_var,csv_field_categorical_1_var)
+                                                                   temp_interest, label, use_numerical_variable_var,csv_field_categorical_var)
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -237,8 +237,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             dynamic_network_field_var.get(),
                             Sankey_limit1_var.get(), Sankey_limit2_var.get(), Sankey_limit3_var.get(),
                             categorical_var.get(),
-                            csv_field_categorical_1_var.get(),
-                            search_values_1_var.get(),
+                            filename_label_var.get(),
+                            csv_field_categorical_var.get(),
                             K_sent_begin_var.get(),
                             K_sent_end_var.get(),
                             split_var.get(),
@@ -303,10 +303,10 @@ def clear(e):
 
     case_sensitive_var.set(1)
     # for now always set to disabled
-    case_sensitive_checkbox.configure(state='disabled')
-    csv_field_categorical_1_var.set('')
-    csv_field_categorical_1_menu.configure(state='disabled')
-    search_values_1_var.set('')
+    case_sensitive_checkbox.configure(state='disabled',text="Case sensitive")
+    filename_label.configure(state='disabled')
+    filename_label_var.set('')
+    csv_field_categorical_var.set('')
     K_sent_begin_var.set('')
     K_sent_end_var.set('')
     K_sent_begin.configure(state='disabled')
@@ -329,13 +329,11 @@ selected_csv_file_fields_var = tk.StringVar()
 
 csv_field_var = tk.StringVar()
 dynamic_network_field_var = tk.StringVar()
-
 categorical_var = tk.IntVar()
 categorical_menu_var = tk.StringVar()
-search_values_1_var = tk.StringVar()
 case_sensitive_var = tk.IntVar()
-csv_field_categorical_1_var = tk.StringVar()
-search_values_1_var = tk.StringVar()
+filename_label_var = tk.StringVar()
+csv_field_categorical_var = tk.StringVar()
 K_sent_begin_var = tk.StringVar()
 K_sent_end_var = tk.StringVar()
 split_var = tk.IntVar()
@@ -389,22 +387,18 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
                                    False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
                                    "Visualize relations (network graphs via Gephi or Sankey chart via Plotly)")
 
-def get_csv_file_menu_vales():
-    global menu_values
-    if GUI_util.inputFilename.get() != '' and GUI_util.inputFilename.get()[-4:] == ".csv":
-        nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(GUI_util.inputFilename.get())
-        if IO_csv_util.csvFile_has_header(GUI_util.inputFilename.get()) == False:
-            menu_values = range(1, nColumns + 1)
-        else:
-            data, headers = IO_csv_util.get_csv_data(GUI_util.inputFilename.get(), True)
-            menu_values = headers
+if GUI_util.inputFilename.get() != '' and GUI_util.inputFilename.get()[-4:] == ".csv":
+    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(GUI_util.inputFilename.get())
+    if IO_csv_util.csvFile_has_header(GUI_util.inputFilename.get()) == False:
+        menu_values = range(1, nColumns + 1)
     else:
-        nColumns = 0
-        menu_values = " "
-    if nColumns == -1:
-        pass
-    return menu_values
-get_csv_file_menu_vales()
+        data, headers = IO_csv_util.get_csv_data(GUI_util.inputFilename.get(), True)
+        menu_values = headers
+else:
+    nColumns = 0
+    menu_values = " "
+if nColumns == -1:
+    pass
 
 csv_field_lb = tk.Label(window, text='csv file field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
@@ -451,14 +445,14 @@ add_button_var = tk.IntVar()
 add_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
                                 command=lambda: display_selected_csv_fields())
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate+20, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_add_button_pos, y_multiplier_integer,
                                    add_button,
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Click on the + button to add a selected csv field to the list of Gephy parameters (edge1, node, edge2)")
 
 reset_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset())
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate+55, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_reset_button_pos, y_multiplier_integer,
                                    reset_button,
                                    False, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
                                    "Click on the Reset button to clear the list of selected fields and start again")
@@ -467,6 +461,13 @@ def show_Gephi_options_list():
         mb.showwarning(title='Warning', message='There are no currently selected Gephi options.')
     else:
         mb.showwarning(title='Warning', message='The currently selected Gephi options are:\n\n  ' + '\n  '.join(csv_file_field_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+
+# show_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_Gephi_options_list())
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_show_button_pos, y_multiplier_integer,
+#                                    show_button,
+#                                    False, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
+#                                    "Click on the Show button to display the list of currently selected csv fields")
 
 def activate_csv_fields_selection(comingFromPlus=False):
     if csv_field_var.get() != '':
@@ -581,100 +582,46 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
                                    False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
                                    "Visualize categorical data as sunburst chart or treemap chart via Plotly)")
 
-# def activate_case_label(*args):
-#     if case_sensitive_var.get():
-#         case_sensitive_checkbox.configure(text="Case sensitive")
-#     else:
-#         case_sensitive_checkbox.configure(text="Case insensitive")
-# case_sensitive_var.trace('w',activate_case_label)
-
-csv_field_categorical_lb = tk.Label(window, text='Search field')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                               csv_field_categorical_lb, True)
-
-csv_field_categorical_1_menu = tk.OptionMenu(window, csv_field_categorical_1_var, *menu_values) # Sunburst
-csv_field_categorical_1_menu.configure(state='disabled')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
-                                   csv_field_categorical_1_menu,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Select the csv file field to be used to visualize specific data (e.g., 'Sentiment label' in a sentiment analysis csv output file)")
-
 case_sensitive_var.set(1)
-# text='Case sensitive'
-case_sensitive_checkbox = tk.Checkbutton(window, state='disabled', variable=case_sensitive_var,
+case_sensitive_checkbox = tk.Checkbutton(window, state='disabled',text='Case sensitive', variable=case_sensitive_var,
                                     onvalue=1, offvalue=0)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    case_sensitive_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Tick/untick the checkbox if you wish to process filename labels/parts as case sensitive or insensitive")
 
-# visualization_do_not_split_pos; visualization_csv_field2_lb_pos
-search_values_1_label_lb = tk.Label(window, text='Search values')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+30,
-                                               y_multiplier_integer, search_values_1_label_lb, True)
+def activate_case_label(*args):
+    if case_sensitive_var.get():
+        case_sensitive_checkbox.configure(text="Case sensitive")
+    else:
+        case_sensitive_checkbox.configure(text="Case insensitive")
+case_sensitive_var.trace('w',activate_case_label)
 
-search_values_1_var.set('')
-search_values_1 = tk.Entry(window, state='disabled', textvariable=search_values_1_var, width=GUI_IO_util.widget_width_short)
+filename_label_lb = tk.Label(window, text='Filename label/part')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
+                                               y_multiplier_integer, filename_label_lb, True)
+
+filename_label_var.set('')
+filename_label = tk.Entry(window, state='disabled', textvariable=filename_label_var, width=GUI_IO_util.widget_width_short)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
-                                   search_values_1,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                   filename_label,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Enter the comma-separated label/part of a filename to be used to sample the corpus for visualization (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...)\nThe filenames are expected to be stored in the column 'Document'")
 
-add_class_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_class_var())
+
+csv_field_categorical_lb = tk.Label(window, text='csv file field')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_csv_field2_lb_pos, y_multiplier_integer,
+                                               csv_field_categorical_lb, True)
+
+csv_field_categorical_menu = tk.OptionMenu(window, csv_field_categorical_var, *menu_values) # Sunburst
+csv_field_categorical_menu.configure(state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+20,
-                                               y_multiplier_integer,
-                                               add_class_button, True, False, False, False, 90,
-                                               GUI_IO_util.knowledge_plus_button,
-                                               "Click the + button to add another ontology class")
-
-def activate_class_var():
-    ontology_class.configure(state='normal')
-    if ontology_class_var.get()!='' or sub_class_entry_var.get()!='':
-        accept_DBpedia_YAGO_list()  # get current value and store into the dict
-        add_class_button.configure(state='normal')
-        show_class_color_button.configure(state='normal')
-    else:
-        add_class_button.configure(state='disabled')
-
-reset_class_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: clear_ontology_list())
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+55,
-                                               y_multiplier_integer,
-                                               reset_class_button, True, False, False, False, 90,
-                                               GUI_IO_util.knowledge_reset_button,
-                                               "Click the Reset button to clear all selected values")
-
-show_class_color_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_class_color_list())
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+105,
-                                               y_multiplier_integer,
-                                               show_class_color_button, False, False, False, False, 90,
-                                               GUI_IO_util.knowledge_show_button,
-                                               "Click the Show button to see all selected options")
-
-def show_class_color_list():
-    # accept_DBpedia_YAGO_list performs a final check to make sure that any selected ontology classes/sub-classes have not been left dangling
-    #   the same check is carried out in RUN
-
-    accept_DBpedia_YAGO_list()
-
-    if not color_map:
-        if color_palette_var.get()!='':
-            mb.showwarning(title='Warning',
-                       message='You have selected the color ' + color_palette_var.get() + ' for the ontology class ' + ontology_class_var.get() + '\n\nYou must press the + button to OK your selection.')
-        else:
-            mb.showwarning(title='Warning',
-                       message='There are no currently selected combinations of ontology class and color.')
-    else:
-        class_color_string = ""
-        for ont in color_map.keys():
-            class_color_string = class_color_string + ont + ":" + color_map[ont] + "\n"
-        # mb.showwarning(title='Warning', message='The currently selected combination of ontology classes and colors are:\n\n' + ','.join(ontology_color_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
-        mb.showwarning(title='Warning', message='The currently selected combination of ontology classes and colors are:\n\n' + class_color_string + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_do_not_split_pos, y_multiplier_integer,
+                                   csv_field_categorical_menu,
+                                   False, False, True, False, 90, GUI_IO_util.visualization_K_sent_end_pos,
+                                   "Select the csv file field to be used to visualize specific data (e.g., 'Sentiment label' in a sentiment analysis csv output file)")
 
 sunburst_lb = tk.Label(window, text='Sunburst parameters')
 # place widget with hover-over info
@@ -744,7 +691,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
                                    "Tick the checkbox if you wish to use a numerical variable to improve the treemap chart")
 
 
-csv_field_treemap_lb = tk.Label(window, text='Search field')
+csv_field_treemap_lb = tk.Label(window, text='csv file field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                csv_field_treemap_lb, True)
 
@@ -787,19 +734,23 @@ def changed_filename(tracedInputFile):
         m1.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
         m2.add_command(label=s, command=lambda value=s: dynamic_network_field_var.set(value))
 
-    m3 = csv_field_categorical_1_menu["menu"] # Sunburst
+    m3 = csv_field_categorical_menu["menu"] # Sunburst
     m3.delete(0, "end")
 
     for s in menu_values:
-        m3.add_command(label=s, command=lambda value=s: csv_field_categorical_1_var.set(value))
-    # if 'Document' in menu_values:
-    #     csv_field_categorical_1_var.set('Document')
+        m3.add_command(label=s, command=lambda value=s: csv_field_categorical_var.set(value))
 
-    m4 = csv_field_treemap_menu["menu"] # treemap
+    m4 = csv_field_categorical_menu["menu"]
     m4.delete(0, "end")
 
     for s in menu_values:
-        m4.add_command(label=s, command=lambda value=s: csv_field_treemap_var.set(value))
+        m4.add_command(label=s, command=lambda value=s: csv_field_categorical_var.set(value))
+
+    m5 = csv_field_treemap_menu["menu"] # treemap
+    m5.delete(0, "end")
+
+    for s in menu_values:
+        m5.add_command(label=s, command=lambda value=s: csv_field_treemap_var.set(value))
 
     clear("<Escape>")
 
@@ -824,8 +775,9 @@ def activate_visualization_options(*args):
 
     # categorical options
     categorical_menu.configure(state='disabled')
-    search_values_1.configure(state='disabled')
+    csv_field_categorical_menu.configure(state='disabled')
     case_sensitive_checkbox.configure(state='disabled')
+    filename_label.configure(state='disabled')
     K_sent_begin.configure(state='disabled')
     K_sent_end.configure(state='disabled')
     split_checkbox.configure(state='disabled')
@@ -855,19 +807,14 @@ def activate_visualization_options(*args):
             Sankey_limit3_menu.configure(state='normal')
 
     elif categorical_var.get(): # sunburst, treemap
-        # menu_values = get_csv_file_menu_vales()
-        # if 'Document' in menu_values:
-        #     csv_field_categorical_1_var.set('Document')
-
         # case_sensitive_checkbox.configure(state='normal')
         # for now always set to disabled
         categorical_menu.configure(state='normal')
-        # categorical_menu.configure(state='disabled') #for now only Document can be selected
         categorical_checkbox.configure(state='normal')
-        # csv_field_categorical_1_menu.configure(state='disabled') #for now only Document can be selected
         relations_checkbox.configure(state='disabled')
         case_sensitive_checkbox.configure(state='disabled')
-        search_values_1.configure(state='normal')
+        filename_label.configure(state='normal')
+        csv_field_categorical_menu.configure(state='normal')
 
         if categorical_menu_var.get()=='':
             K_sent_begin.configure(state='disabled')
@@ -876,10 +823,9 @@ def activate_visualization_options(*args):
             do_not_split_checkbox.configure(state='disabled')
 
             use_numerical_variable_checkbox.configure(state='disabled')
-            search_values_1.configure(state='disabled')
+            csv_field_categorical_menu.configure(state='disabled')
         elif categorical_menu_var.get()=='Sunburst':
-            csv_field_categorical_1_menu.configure(state='normal')
-            # csv_field_categorical_1_menu.configure(state='disabled') #for now only Document can be selected
+            csv_field_categorical_menu.configure(state='normal')
             K_sent_begin.configure(state='normal')
             K_sent_end.configure(state='normal')
             split_checkbox.configure(state='normal')
