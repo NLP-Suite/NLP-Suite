@@ -37,8 +37,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         Sankey_limit1_var, Sankey_limit2_var, Sankey_limit3_var,
         categorical_var,
         csv_file_categorical_field_list,
-        # csv_field_categorical_var,
-        # search_values_categorical_var,
+        max_rows_var,
+        color_var,
         K_sent_begin_var,
         K_sent_end_var,
         split_var,
@@ -144,12 +144,23 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
 
         # interest pass a list [] of labels embedded in the filename, e.g. Book1, Book2, ... or Chinese, Arabian,...
         interest = []
-        temp_interest=[]
-        interest = search_values_categorical_var.split(',')
-        for i in range(len(interest)):
-            temp_interest.append(interest[i].lstrip())
+        # temp_interest=[]
+        # interest = search_values_categorical_var.split(',')
+        # for i in range(len(interest)):
+        #     temp_interest.append(interest[i].lstrip())
         # label is a string that has the header field in the csv file to be used for display
         label=csv_field_categorical_var
+
+
+# Categorical data: colormap  --------------------------------------------------------------------------------
+
+        if 'Colormap' in categorical_menu_var.get():
+            if csv_field_categorical_var == '':
+                mb.showwarning("Warning",
+                               "The colormap algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
+                return
+            params = [max_rows_var, color_var]
+            outputFiles = charts_util.main_colormap(inputFilename, outputDir, csv_file_categorical_field_list, params)
 
 # Categorical data: Sunburst  --------------------------------------------------------------------------------
 
@@ -244,8 +255,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             Sankey_limit1_var.get(), Sankey_limit2_var.get(), Sankey_limit3_var.get(),
                             categorical_var.get(),
                             csv_file_categorical_field_list,
-                            # csv_field_categorical_var.get(),
-                            # search_values_categorical_var.get(),
+                            max_rows_var.get(),
+                            color_var.get(),
                             K_sent_begin_var.get(),
                             K_sent_end_var.get(),
                             split_var.get(),
@@ -347,6 +358,11 @@ search_values_categorical_var = tk.StringVar()
 case_sensitive_var = tk.IntVar()
 csv_field_categorical_var = tk.StringVar()
 search_values_categorical_var = tk.StringVar()
+
+max_rows_var = tk.IntVar()
+color_var = tk.IntVar()
+color_style_var = tk.StringVar()
+
 K_sent_begin_var = tk.StringVar()
 K_sent_end_var = tk.StringVar()
 split_var = tk.IntVar()
@@ -359,6 +375,8 @@ csv_file_categorical_field_string = ''
 csv_file_relational_field_list = []
 csv_file_categorical_field_list = []
 menu_values = []
+color_style_var_list=[]
+color_var_list=[]
 error = False
 
 open_GUI_lb = tk.Label(window, text='Open special visualization options GUI')
@@ -729,8 +747,53 @@ colormap_lb = tk.Label(window, text='Colormap parameters')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    colormap_lb,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "The widgets on this line refer to the colormap option only")
+
+max_rows_lb = tk.Label(window, text='Max no. of rows')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
+                                               y_multiplier_integer, max_rows_lb, True)
+
+max_rows_var.set(20)
+max_rows = tk.Entry(window, state='disabled', textvariable=max_rows_var, width=3)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_pos, y_multiplier_integer,
+                                   max_rows,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Enter the maximum number of rows to be shown in the chart (default = 20)")
+
+
+color_var.set(0)
+color_style_var_list.append("")
+color_var_list.append(0)
+color_checkbox = tk.Checkbutton(window, text='Color ', variable=color_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                   color_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Tick the checkbox to select the main color to be used for the cormap (default = orange, RGB = 255 166 0)")
+
+color_lb = tk.Label(window, text='RGB color code ')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 400, y_multiplier_integer,
+                                               color_lb, True)
+
+color_style_var.set("255 166 0")
+color_entry = tk.Entry(window, width=10, textvariable=color_style_var)
+color_entry.configure(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 500, y_multiplier_integer,
+                                               color_entry)
+
+def activate_color_palette(*args):
+    import tkinter.ttk as ttk
+    from tkcolorpicker import askcolor
+    if color_var.get() == 1:
+        style = ttk.Style(window)
+        style.theme_use('clam')
+        color_list = askcolor((255, 255, 0), window)
+        color_style = color_list[0]
+        color_style_var.set(color_style)
+color_var.trace('w', activate_color_palette)
+
 
 sunburst_lb = tk.Label(window, text='Sunburst parameters')
 # place widget with hover-over info
@@ -849,8 +912,8 @@ def changed_filename(tracedInputFile):
     for s in menu_values:
         m3.add_command(label=s, command=lambda value=s: csv_field_categorical_var.set(value))
     m3 = csv_field_categorical_menu["menu"]
-    if 'Document' in menu_values:
-        csv_field_categorical_var.set('Document')
+    # if 'Document' in menu_values:
+    #     csv_field_categorical_var.set('Document')
 
     m4 = csv_field_treemap_menu["menu"] # treemap
     m4.delete(0, "end")
@@ -881,8 +944,9 @@ def activate_visualization_options(*args):
 
     # categorical options
     csv_field_categorical_menu.configure(state='disabled')
-    # search_values_categorical.configure(state='disabled')
     case_sensitive_checkbox.configure(state='disabled')
+    max_rows.configure(state='disabled')
+    color_checkbox.configure(state='disabled')
     K_sent_begin.configure(state='disabled')
     K_sent_end.configure(state='disabled')
     split_checkbox.configure(state='disabled')
@@ -913,7 +977,7 @@ def activate_visualization_options(*args):
 
     elif categorical_var.get(): # sunburst, treemap
         menu_values = get_csv_file_menu_vales()
-        if 'Document' in menu_values:
+        if csv_field_categorical_var.get()=='' and 'Document' in menu_values:
             csv_field_categorical_var.set('Document')
 
         # case_sensitive_checkbox.configure(state='normal')
@@ -950,9 +1014,12 @@ def activate_visualization_options(*args):
             split_checkbox.configure(state='disabled')
             do_not_split_checkbox.configure(state='disabled')
             use_numerical_variable_checkbox.configure(state='disabled')
+
+        elif categorical_menu_var.get() == 'Colormap':
+            max_rows.configure(state='normal')
+            color_checkbox.configure(state='normal')
         elif categorical_menu_var.get()=='Sunburst':
             csv_field_categorical_menu.configure(state='normal')
-            # csv_field_categorical_menu.configure(state='disabled') #for now only Document can be selected
             K_sent_begin.configure(state='normal')
             K_sent_end.configure(state='normal')
             split_checkbox.configure(state='normal')
@@ -1025,10 +1092,10 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize relations between a set of elements, 3 elements in a network graph in Gephi (e.g, SVO) or 2 or 3 elements in a Plotly Sankey chart (e.g., SVO or SO).\n\n\n\nOptions become available in succession.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the csv file fields to be used to visualize relations.\n\nPress the + button to add successive fields until all 2 or 3 elements have been added (2 or 3 for Sankey, 3 for Gephi). For instance, in a Gephi graph, the first field selected is the first node; the second field selected is the edge; the third field selected is the second node (the selected fields will be displayed in the grayed out widget; make sure to press the + sign after the last selection).\n\nPress the 'reset_relational ' button to clear selected values and start fresh.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE GEPHI CHART ONLY.\n\nFor Gephi network graphs, once all three fields (node 1, edge, node 2) have been selected, the widget 'csv file field for dynamic graph' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID or Date) or ignore the option if the network should not be dynamic.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SANKEY CHART ONLY.\n\nPlease, using the dropdown menus, select the maximum number of values to be considered for each of the 2 or 3 elements in computing the interactive Sankey chart.\n\nWith too many values, Sankey charts become very messy.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SANKEY CHART ONLY.\n\nPlease, using the dropdown menus, select the maximum number of values to be considered for each of the 2 or 3 elements in computing the interactive Sankey chart.\n\nWith to many values, Sankey charts become very messy.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in an interactive sunburst or treemap chart.\n\nThe algorithm applies to categorical data rather than numerical data.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The widgets in this line are REQUIRED to run either the Sunburst or Treemap algorithms.\n\nPlease, enter at least two sets of combinations of csv file field and search values.\n\n   First, select the csv file field using the dropdown menu.\n   Second, enter the comma-separated search values to be used from that field to construct the chart.\n   Finally, click on + symbol to enter another combination of csv field and values (at least two combinations are required) (you can else press the Reset button to clear all selected values and start fresh, or the Show button too visualize the currently selected options). For a 'Document' csv file field, you can enter specific parts of a filename (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...). For an 'NER' csv file field, you can enter the tags 'PERSON' or 'LOCATION, COUNTRY, STATE_OR_PROVINCE, CITY'.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE COLORMAP OPTION ONLY.\n\nPlease, enter the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the checkbox 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.\n\nTick the checkbox 'Do NOT split documents' if you wish to visualize an entire document.\n\nThe three options are mutually exclusive.\n\nThe Sunburst algorithm uses the values in Document ID and Sentence ID to process First K and Last K sentences or to split a document in halves.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The widgets in this line are REQUIRED to run either the Sunburst or Treemap algorithms.\n\nPlease, enter at least two sets of combinations of csv file field and search values.\n\n   First, select the csv file field using the dropdown menu.\n\n   Second, enter the comma-separated search values to be used from that field to construct the chart. For a 'Document' csv file field, you can enter specific parts of a filename (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...). For an 'NER' csv file field, you can enter the tags 'PERSON' or 'LOCATION, COUNTRY, STATE_OR_PROVINCE, CITY'.\n\n   Finally, click on + symbol to enter another combination of csv field and values (at least two combinations are required) (you can else press the Reset button to clear all selected values and start fresh, or the Show button to visualize the currently selected options).\n\nALWAYS CLICK THE + SYMBOL AFTER HAVING ENTERED THE LAST COMBINATION.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE COLORMAP OPTION ONLY.\n\nPlease, enter the maximum number of rows to be displayed in the chart (default = 20).\n\nTick the 'Color' checkbox to select from the color palette the RGB color to be used for the chart (default color orange, RGB 255 166 0).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SUNBURST OPTION ONLY.\n\nPlease, enter the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the checkbox 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.\n\nTick the checkbox 'Do NOT split documents' if you wish to visualize an entire document.\n\nThe three options are mutually exclusive.\n\nThe Sunburst algorithm uses the values in Document ID and Sentence ID to process First K and Last K sentences or to split a document in halves.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE TREEMAP OPTION ONLY. THE FIELDS ARE OPTIONAL (i.e., not required to run the treemap algorithm). \n\nPlease, tick the checkbox if you wish to use the values of a numerical variable to improve the treemap chart.\n\nUse the dropdown menu to select the csv file numeric field to be used for plotting.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
