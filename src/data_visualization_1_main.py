@@ -36,8 +36,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         dynamic_network_field_var,
         Sankey_limit1_var, Sankey_limit2_var, Sankey_limit3_var,
         categorical_var,
-        csv_field_categorical_var,
-        search_values_categorical_var,
+        csv_file_categorical_field_list,
+        # csv_field_categorical_var,
+        # search_values_categorical_var,
         K_sent_begin_var,
         K_sent_end_var,
         split_var,
@@ -127,6 +128,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
 # Categorical data (sunburst or treemap) --------------------------------------------------------------------------------
 
     if categorical_var:
+        if len(csv_file_categorical_field_list)<2:
+            mb.showwarning("Warning",
+                           "You must have at least 2 sets of csv file field and search values to produce meaningful " + categorical_menu_var.get() + " charts.\n\nPlease, select another combination of csv file field and search values and try again.")
+            return
+
         if categorical_menu_var.get() == '':
             mb.showwarning("Warning",
                            "Please, use the dropdown menu to select one of the options for categorical data: Sunburst, treemap and try again.")
@@ -237,8 +243,9 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             dynamic_network_field_var.get(),
                             Sankey_limit1_var.get(), Sankey_limit2_var.get(), Sankey_limit3_var.get(),
                             categorical_var.get(),
-                            csv_field_categorical_var.get(),
-                            search_values_categorical_var.get(),
+                            csv_file_categorical_field_list,
+                            # csv_field_categorical_var.get(),
+                            # search_values_categorical_var.get(),
                             K_sent_begin_var.get(),
                             K_sent_end_var.get(),
                             split_var.get(),
@@ -348,6 +355,7 @@ do_not_split_var = tk.IntVar()
 use_numerical_variable_var = tk.IntVar()
 csv_field_treemap_var = tk.StringVar()
 
+csv_file_categorical_field_string = ''
 csv_file_relational_field_list = []
 csv_file_categorical_field_list = []
 menu_values = []
@@ -473,7 +481,7 @@ def show_Gephi_options_list():
     if len(csv_file_relational_field_list)==0:
         mb.showwarning(title='Warning', message='There are no currently selected Gephi options.')
     else:
-        mb.showwarning(title='Warning', message='The currently selected Gephi options are:\n\n  ' + '\n  '.join(csv_file_relational_field_list) + '\n\nPlease, press the reset_relational button (or ESCape) to start fresh.')
+        mb.showwarning(title='Warning', message='The currently selected Gephi options are:\n\n  ' + '\n  '.join(csv_file_relational_field_list) + '\n\nPlease, press the Reset button (or ESCape) to start fresh.')
 
 def activate_csv_fields_relational_selection(comingFromPlus=False):
     if csv_field_relational_var.get() != '':
@@ -595,13 +603,15 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
 #         case_sensitive_checkbox.configure(text="Case insensitive")
 # case_sensitive_var.trace('w',activate_case_label)
 
-def activate_csv_fields_categorical_selection(comingFromPlus=False):
+def activate_csv_fields_categorical_selection(*args):
+    global csv_file_categorical_field_string, comingFromPlus, search_values_categorical, csv_field_categorical_menu
     if csv_field_categorical_var.get()!='':
         if csv_field_categorical_var.get() in csv_file_categorical_field_list:
             mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
             return
         else:
-            csv_file_categorical_field_list.append(csv_field_categorical_var.get())
+            # csv_file_categorical_field_list.append(csv_field_categorical_var.get())
+            csv_file_categorical_field_string=csv_file_categorical_field_string + '|' + csv_field_categorical_var.get()
     if csv_field_categorical_var.get() != '':
         search_values_categorical.configure(state='normal')
         if comingFromPlus:
@@ -616,7 +626,7 @@ def activate_csv_fields_categorical_selection(comingFromPlus=False):
         csv_field_categorical_menu.config(state='normal')
         reset_button_categorical.config(state='disabled')
         # show_button.config(state='disabled')
-csv_field_categorical_var.trace('w', callback = lambda x,y,z: activate_csv_fields_categorical_selection())
+csv_field_categorical_var.trace('w', callback = lambda x,y,z: activate_csv_fields_categorical_selection(csv_file_categorical_field_string))
 
 csv_field_categorical_lb = tk.Label(window, text='Search field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
@@ -653,7 +663,21 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "Enter the comma-separated label/part of a filename to be used to sample the corpus for visualization (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...)\nThe filenames are expected to be stored in the column 'Document'")
 
-add_button_categorical = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,command=lambda: activate_visualization_options())
+def add_combination_csvField_searchValues():
+    global csv_file_categorical_field_string
+    if (not search_values_categorical_var.get()=='') and (search_values_categorical_var.get() in csv_file_categorical_field_string):
+        result = mb.askyesno('Warning',
+                                    'You have already entered the search value(s) "' + search_values_categorical_var.get() + '"\n\nAre you sure you want to use the same search values?')
+        if not result:
+            return
+
+    csv_file_categorical_field_string=csv_field_categorical_var.get()+'|'+search_values_categorical_var.get()
+    csv_file_categorical_field_list.append([csv_file_categorical_field_string])
+    search_values_categorical_var.set('')
+    csv_field_categorical_menu.focus_set()
+    activate_visualization_options()
+
+add_button_categorical = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,command=lambda: add_combination_csvField_searchValues())
 add_button_categorical.configure(state='disabled')
 
 # place widget with hover-over info
@@ -696,10 +720,7 @@ def show_categorical_list():
     #     class_color_string = ""
     #     for ont in color_map.keys():
     #         class_color_string = class_color_string + ont + ":" + color_map[ont] + "\n"
-        mb.showwarning(title='Warning', message='The currently selected combination of csv file field and search word are:\n\n' + str(csv_file_categorical_field_list) + '\n\nPlease, press the reset_relational button (or ESCape) to start fresh.')
-
-    #     mb.showwarning(title='Warning', message='The currently selected combination of ontology classes and colors are:\n\n' + ','.join(ontology_color_list) + '\n\nPlease, press the reset_relational button (or ESCape) to start fresh.')
-    #     mb.showwarning(title='Warning', message='The currently selected combination of ontology classes and colors are:\n\n' + class_color_string + '\n\nPlease, press the reset_relational button (or ESCape) to start fresh.')
+        mb.showwarning(title='Warning', message='The currently selected combination of csv file field and search word are:\n\n' + str(csv_file_categorical_field_list) + '\n\nPlease, press the Reset button (or ESCape) to start fresh.')
 
 sunburst_lb = tk.Label(window, text='Sunburst parameters')
 # place widget with hover-over info
