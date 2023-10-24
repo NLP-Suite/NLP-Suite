@@ -335,6 +335,8 @@ def run(inputDir="relative_path_here",
     def transform(ngrm):
         return ' '.join(ngrm.split(' ')[:-1])
 
+# search n-gram file --------------------------------------------------------------------
+
     search_words = []
     if Ngrams_search_var:
         if csv_file_var is None:
@@ -353,8 +355,8 @@ def run(inputDir="relative_path_here",
           #  if case_sensitive:
             b = data[data[data.columns[0]].str.endswith(word)]
             df2 = b.copy()
-            df2['ngram_descriptors'] = df2[data.columns[0]].apply(lambda x: transform(x))
-            df2['descriptees'] = word
+            df2['Searched word'] = df2[data.columns[0]].apply(lambda x: transform(x))
+            df2['Co-Occurring word'] = word
             expanded_rows = []
             for _, row in df2.iterrows():
                 new_row = row.copy()
@@ -385,14 +387,29 @@ def run(inputDir="relative_path_here",
                                                                  'N-grams_search')
         combined_pivot_df.to_csv(NgramsSearchFileName, index=False)
 
-
-
-        NgramsSearchFileName2 = IO_files_util.generate_output_file_name('', inputDir, outputDir, '-Sankey.csv',
+        NgramsSearchFileName_Sankey = IO_files_util.generate_output_file_name('', inputDir, outputDir, '-Sankey.csv',
                                                                        'N-grams_search')
-        combined_saneky_df.to_csv(NgramsSearchFileName2, index=False)
-        print('we are done with both Sankey handling and the regular searches!')
+        combined_saneky_df.to_csv(NgramsSearchFileName_Sankey, index=False)
+        # print('we are done with both Sankey handling and the regular searches!')
+        if createCharts:
+            import charts_util
+            headers=IO_csv_util.get_csvfile_headers(NgramsSearchFileName_Sankey)
+            Sankey_limit1_var=5
+            Sankey_limit2_var = 5
+            three_way_Sankey = False
+            var3 = None
+            Sankey_limit3_var = None
+            # we should check for larger n-grams
+            # if '2-grams' in headers:
 
-        return [NgramsSearchFileName,NgramsSearchFileName2]
+
+            output_label = ''
+            outputFilename = IO_files_util.generate_output_file_name(NgramsSearchFileName_Sankey, inputDir, outputDir,
+                                                                     '.html', output_label)
+            Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
+                                'Search word', Sankey_limit1_var, 'Co-Occurring word', Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
+
+        return [NgramsSearchFileName,NgramsSearchFileName_Sankey, Sankey_chart]
 
        # filtered_data.to_csv(output_csv_file, index=False)
 

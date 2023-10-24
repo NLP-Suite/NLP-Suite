@@ -27,7 +27,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if not IO_libraries_util.install_all_Python_packages(GUI_util.window, "Mallet Topic modeling",
+if not IO_libraries_util.install_all_Python_packages(GUI_util.window, "MALLET Topic modeling",
                                               ['os', 'tkinter.messagebox', 'subprocess']):
     sys.exit(0)
 
@@ -55,65 +55,65 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
     # del os.environ['MALLET_HOME']
 
     # check that the CoreNLPdir as been setup
-    MalletDir, existing_software_config, errorFound = IO_libraries_util.external_software_install(
+    MALLETDir, existing_software_config, errorFound = IO_libraries_util.external_software_install(
         'topic_modeling_mallet_util',
         'MALLET',
         '',
         silent=False, errorFound=False)
 
-    if MalletDir == None or MalletDir=='':
+    if MALLETDir == None or MALLETDir=='':
         return
 
-    MalletPath = ''
+    MALLETPath = ''
     try:
-        # if MALLET_HOME has been set up os.getenv returns the Mallet installation path
-        MalletPath = os.getenv('MALLET_HOME', 'MALLET_HOME')
-        if MalletPath == 'MALLET_HOME':
+        # if MALLET_HOME has been set up os.getenv returns the MALLET installation path
+        MALLETPath = os.getenv('MALLET_HOME', 'MALLET_HOME')
+        if MALLETPath == 'MALLET_HOME':
             # the env variable has not been setup
-            MalletPath = ''
+            MALLETPath = ''
             mb.showwarning(title='MALLET-HOME environment variable',
                            message='The value MALLET-HOME needed by MALLET to run was not found in the environment '
                                    'variables.\n\nThe MALLET_HOME value was added programmatically to your '
                                    'environment variables.\n\nTHIS IS A TEMPORARY FIX VALID FOR RUNNING THE MALLET AS '
                                    'LONG AS THIS GUI REMAINS OPEN. For a more permanent solution, please read the '
-                                   'TIPS on Mallet installation and setting Mallet environment variables.')
+                                   'TIPS on MALLET installation and setting MALLET environment variables.')
             # add environment variable
-            os.environ["MALLET_HOME"] = MalletDir
+            os.environ["MALLET_HOME"] = MALLETDir
         else:
-            MalletDir = MalletDir.replace("\\", "/")
-            MalletPath = MalletPath.replace("\\", "/")
-            if str(MalletPath).lower() != str(MalletDir).lower():
+            MALLETDir = MALLETDir.replace("\\", "/")
+            MALLETPath = MALLETPath.replace("\\", "/")
+            if str(MALLETPath).lower() != str(MALLETDir).lower():
                 # add updated environment variable
-                os.environ["MALLET_HOME"] = MalletDir
-                mb.showwarning(title='Mallet environment variable path update',
+                os.environ["MALLET_HOME"] = MALLETDir
+                mb.showwarning(title='MALLET environment variable path update',
                                message='The value MALLET-HOME in the environment variables was changed from\n\n  ' +
-                                       MalletPath + '\n\nto\n\n  ' + MalletDir)
+                                       MALLETPath + '\n\nto\n\n  ' + MALLETDir)
     except BaseException:
         mb.showwarning(title='MALLET-HOME environment variable',
-                       message='The value MALLET-HOME needed by Mallet to run was not found in the environment '
+                       message='The value MALLET-HOME needed by MALLET to run was not found in the environment '
                                'variables.\n\nThe MALLET_HOME value was added programmatically to your environment '
                                'variables.\n\nTHIS IS A TEMPORARY FIX VALID FOR RUNNING THE MALLET AS LONG AS THIS '
-                               'GUI REMAINS OPEN. For a more permanent solution, please read the TIPS on Mallet '
-                               'installation and setting Mallet environment variables.')
-        MalletDir = MalletDir.replace("\\", "/")
-        MalletPath = MalletPath.replace("\\", "/")
-        if str(MalletPath).lower() != str(MalletDir).lower():
+                               'GUI REMAINS OPEN. For a more permanent solution, please read the TIPS on MALLET '
+                               'installation and setting MALLET environment variables.')
+        MALLETDir = MALLETDir.replace("\\", "/")
+        MALLETPath = MALLETPath.replace("\\", "/")
+        if str(MALLETPath).lower() != str(MALLETDir).lower():
             # add environment variable
-            os.environ["MALLET_HOME"] = MalletDir
+            os.environ["MALLET_HOME"] = MALLETDir
 
     filesToOpen = []
 
-    MalletDir = MalletDir + os.sep + 'bin'
+    MALLETDir = MALLETDir + os.sep + 'bin'
 
     if ' ' in inputDir:
         mb.showerror(title='Input file error',
-                     message='The selected INPUT directory contains a blank (space) in the path. The Mallet code '
+                     message='The selected INPUT directory contains a blank (space) in the path. The MALLET code '
                              'cannot handle input/output paths that contain a space and will break.\n\nPlease, '
                              'place your input files in a directory with a path containing no spaces and try again.')
         return
     if ' ' in outputDir:
         mb.showerror(title='Output file error',
-                     message='The selected OUTPUT directory contains a blank (space) in the path. The Mallet code '
+                     message='The selected OUTPUT directory contains a blank (space) in the path. The MALLET code '
                              'cannot handle input/output paths that contain a space and will break.\n\nPlease, '
                              'select an output directory with a path containing no spaces and try again.')
         return
@@ -149,17 +149,17 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
             return
 
     """
-    All OUTPUT file names can be changed and Mallet will still run successfully
+    All OUTPUT file names can be changed and MALLET will still run successfully
     OUTPUT file names extensions for step two can be TXT or CSV
     """
     # output.mallet
-    TXTFiles_MalletFormatted_FileName = os.path.join(outputDir, "MalletFormatted_TXTFiles.mallet")
+    TXTFiles_MALLETFormatted_FileName = os.path.join(outputDir, "MALLETFormatted_TXTFiles.mallet")
     # output.csv or output.txt
-    Composition_FileName = os.path.join(outputDir, "NLP-Mallet_Output_Composition")
+    Composition_FileName = os.path.join(outputDir, "NLP-MALLET_Output_Composition")
     # keys.tsv or keys.txt
-    Keys_FileName = os.path.join(outputDir, "NLP-Mallet_Output_Keys.tsv")
+    Keys_FileName = os.path.join(outputDir, "NLP-MALLET_Output_Keys.tsv")
     # output.gz
-    Compressed_FileName = os.path.join(outputDir, "NLP-Mallet_Output_Compressed.gz")
+    Compressed_FileName = os.path.join(outputDir, "NLP-MALLET_Output_Compressed.gz")
 
     # filesToOpen.append(Composition_FileName+'.csv')
     # filesToOpen.append(Keys_FileName+'.csv')
@@ -179,31 +179,31 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
             (pairs sorted in descending PROPORTION order).
     """
 
-    # mb.showwarning(title="Mallet output files", message="The Python Mallet wrapper runs Mallet with default options. "
-    #                                                     "If you want to provide custom options, please run Mallet "
-    #                                                     "from the command prompt.\n\nThe NLP Mallet produces four "
-    #                                                     "files in output (refer to the Mallet TIPS file for what each"
+    # mb.showwarning(title="MALLET output files", message="The Python MALLET wrapper runs MALLET with default options. "
+    #                                                     "If you want to provide custom options, please run MALLET "
+    #                                                     "from the command prompt.\n\nThe NLP MALLET produces four "
+    #                                                     "files in output (refer to the MALLET TIPS file for what each"
     #                                                     " file contains):\n\n" +
-    #                                                     TXTFiles_MalletFormatted_FileName + "\n" +
+    #                                                     TXTFiles_MALLETFormatted_FileName + "\n" +
     #                                                     Composition_FileName + "\n" +
     #                                                     Keys_FileName + "\n" +
     #                                                     Compressed_FileName)
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
-                                                   'Started running Mallet Topic modeling at ', True,
+                                                   'Started running MALLET Topic modeling at ', True,
                                                    "Depending upon corpus size, computations may take a while... "
                                                    "Please, be patient...")
 
     # FIRST STEP
 
-    # The output file MalletFormatted_TXTFiles.mallet contains all corpus TXT files properly formatted for Mallet
+    # The output file MALLETFormatted_TXTFiles.mallet contains all corpus TXT files properly formatted for MALLET
     if platform == "win32":
-        subprocess.call([MalletDir + os.sep + 'mallet', 'import-dir', '--input', inputDir, '--output',
-                         TXTFiles_MalletFormatted_FileName, '--keep-sequence', '--remove-stopwords'], shell=True)
+        subprocess.call([MALLETDir + os.sep + 'mallet', 'import-dir', '--input', inputDir, '--output',
+                         TXTFiles_MALLETFormatted_FileName, '--keep-sequence', '--remove-stopwords'], shell=True)
     # linux # OS X
     elif platform == "linux" or platform == "linux2" or platform == "darwin":
-        subprocess.call([MalletDir + os.sep + 'mallet', 'import-dir', '--input', inputDir, '--output',
-                         TXTFiles_MalletFormatted_FileName, '--keep-sequence', '--remove-stopwords'])
+        subprocess.call([MALLETDir + os.sep + 'mallet', 'import-dir', '--input', inputDir, '--output',
+                         TXTFiles_MALLETFormatted_FileName, '--keep-sequence', '--remove-stopwords'])
 
     # SECOND STEP
     # The output file Composition_FileName is a tsv file indicating the breakdown, by percentage,
@@ -219,41 +219,41 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
     if platform == "win32":
         if OptimizeInterval:
             subprocess.call(
-                [MalletDir + os.sep + 'mallet', 'train-topics', '--input', TXTFiles_MalletFormatted_FileName,
+                [MALLETDir + os.sep + 'mallet', 'train-topics', '--input', TXTFiles_MALLETFormatted_FileName,
                  '--num-topics', str(numTopics), '--optimize-interval', str(numTopics), '--output-state',
                  Compressed_FileName, '--output-topic-keys', Keys_FileName, '--output-doc-topics',
                  Composition_FileName], shell=True)
         else:
             subprocess.call(
-                [MalletDir + os.sep + 'mallet', 'train-topics', '--input', TXTFiles_MalletFormatted_FileName,
+                [MALLETDir + os.sep + 'mallet', 'train-topics', '--input', TXTFiles_MALLETFormatted_FileName,
                  '--num-topics', str(numTopics), '--output-state', Compressed_FileName, '--output-topic-keys',
                  Keys_FileName, '--output-doc-topics', Composition_FileName], shell=True)
     elif platform == "linux" or platform == "linux2" or platform == "darwin":
         if OptimizeInterval:
             subprocess.call(
-                [MalletDir + os.sep + 'mallet', 'train-topics', '--input', TXTFiles_MalletFormatted_FileName,
+                [MALLETDir + os.sep + 'mallet', 'train-topics', '--input', TXTFiles_MALLETFormatted_FileName,
                  '--num-topics', str(numTopics), '--optimize-interval', str(numTopics), '--output-state',
                  Compressed_FileName, '--output-topic-keys', Keys_FileName, '--output-doc-topics',
                  Composition_FileName])
         else:
             subprocess.call(
-                [MalletDir + os.sep + 'mallet', 'train-topics', '--input', TXTFiles_MalletFormatted_FileName,
+                [MALLETDir + os.sep + 'mallet', 'train-topics', '--input', TXTFiles_MALLETFormatted_FileName,
                  '--num-topics', str(numTopics), '--output-state', Compressed_FileName, '--output-topic-keys',
                  Keys_FileName, '--output-doc-topics', Composition_FileName])
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
-                                       'Finished running Mallet Topic modeling at ', True, '', True, startTime)
+                                       'Finished running MALLET Topic modeling at ', True, '', True, startTime)
 
     # https://stackoverflow.com/questions/29759305/how-do-i-convert-a-tsv-to-csv
 
-    # convert to csv Mallet tsv output files
-    # read Mallet tab-delimited files; both Keys_FileName and Composition_FileName must be converted
+    # convert to csv MALLET tsv output files
+    # read MALLET tab-delimited files; both Keys_FileName and Composition_FileName must be converted
 
     if (not os.path.isfile(Keys_FileName)) and (not os.path.isfile(Composition_FileName)):
-        mb.showwarning(title='Mallet FATAL error',
-                       message='Mallet has not produced the expected Keys and Composition files. It looks like Mallet '
+        mb.showwarning(title='MALLET FATAL error',
+                       message='MALLET has not produced the expected Keys and Composition files. It looks like MALLET '
                                'did NOT run.\n\nPlease, make sure that you have edited properly the environment '
-                               'variables by reading the TIPS file for Mallet installation and setting Mallet '
+                               'variables by reading the TIPS file for MALLET installation and setting MALLET '
                                'environment variables.')
         return
     Keys_FileName = file_converter_util.tsv_converter(GUI_util.window, Keys_FileName, outputDir)
@@ -270,12 +270,12 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
             columns_to_be_plotted_yAxis.append([1, i])
 
         hover_label=[]
-        chart_title = 'Mallet Topics (Topic Contribution to Document)'
+        chart_title = 'MALLET Topics (Topic Contribution to Document)'
         xAxis = 'Document'
         yAxis = 'Topic weight in document'
 
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, Composition_FileName, outputDir,
-                                                  'Mallet_TM',
+                                                  'MALLET_TM',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   chart_title=chart_title,
@@ -293,17 +293,17 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0, 1]]
         hover_label=[2]
-        chart_title = 'Mallet Topics (Topic Weight by Topic)'
+        chart_title = 'MALLET Topics (Topic Weight by Topic)'
         xAxis = 'Topic #'
         yAxis = 'Topic weight'
 
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, Keys_FileName, outputDir,
-                                                  'Mallet_TM',
+                                                  'MALLET_TM',
                                                   chartPackage=chartPackage,
                                                   chart_type_list=["bar"],
                                                   chart_title=chart_title,
                                                   column_xAxis_label_var=xAxis,
-                                                  hover_info_column_list=hover_label,
+                                                  hover_info_column_list=[], #hover_label,
                                                   count_var=0,
                                                   column_yAxis_label_var=yAxis)
 
