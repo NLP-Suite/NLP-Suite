@@ -839,8 +839,8 @@ def changed_filename(tracedInputFile):
     for s in menu_values:
         m3.add_command(label=s, command=lambda value=s: csv_field_categorical_var.set(value))
     m3 = csv_field_categorical_menu["menu"]
-    # if 'Document' in menu_values:
-    #     csv_field_categorical_var.set('Document')
+    if 'Document' in menu_values:
+        csv_field_categorical_var.set('Document')
 
     m4 = csv_field_treemap_menu["menu"] # treemap
     m4.delete(0, "end")
@@ -902,9 +902,9 @@ def activate_visualization_options(*args):
             Sankey_limit3_menu.configure(state='normal')
 
     elif categorical_var.get(): # sunburst, treemap
-        # menu_values = get_csv_file_menu_vales()
-        # if 'Document' in menu_values:
-        #     csv_field_categorical_var.set('Document')
+        menu_values = get_csv_file_menu_vales()
+        if 'Document' in menu_values:
+            csv_field_categorical_var.set('Document')
 
         # case_sensitive_checkbox.configure(state='normal')
         # for now always set to disabled
