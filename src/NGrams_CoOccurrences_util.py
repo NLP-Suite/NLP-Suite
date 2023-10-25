@@ -394,8 +394,8 @@ def run(inputDir="relative_path_here",
         if createCharts:
             import charts_util
             headers=IO_csv_util.get_csvfile_headers(NgramsSearchFileName_Sankey)
-            Sankey_limit1_var=5
-            Sankey_limit2_var = 5
+            Sankey_limit1_var=12
+            Sankey_limit2_var=12
             three_way_Sankey = False
             var3 = None
             Sankey_limit3_var = None

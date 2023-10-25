@@ -38,7 +38,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         categorical_var,
         csv_file_categorical_field_list,
         max_rows_var,
-        color_var,
+        color_1_var,
+        color_2_var,
+        normalize_var,
         K_sent_begin_var,
         K_sent_end_var,
         split_var,
@@ -159,8 +161,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 mb.showwarning("Warning",
                                "The colormap algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
                 return
-            params = [max_rows_var, color_var]
+            params = [max_rows_var, color_1_var, color_2_var, normalize_var]
             outputFiles = charts_util.main_colormap(inputFilename, outputDir, csv_file_categorical_field_list, params)
+
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
 # Categorical data: Sunburst  --------------------------------------------------------------------------------
 
@@ -256,7 +264,9 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             categorical_var.get(),
                             csv_file_categorical_field_list,
                             max_rows_var.get(),
-                            color_var.get(),
+                            color_1_var.get(),
+                            color_2_var.get(),
+                            normalize_var.get(),
                             K_sent_begin_var.get(),
                             K_sent_end_var.get(),
                             split_var.get(),
@@ -360,8 +370,10 @@ csv_field_categorical_var = tk.StringVar()
 search_values_categorical_var = tk.StringVar()
 
 max_rows_var = tk.IntVar()
-color_var = tk.IntVar()
-color_style_var = tk.StringVar()
+color_1_var = tk.IntVar()
+color_2_var = tk.IntVar()
+color_1_style_var = tk.StringVar()
+color_2_style_var = tk.StringVar()
 
 K_sent_begin_var = tk.StringVar()
 K_sent_end_var = tk.StringVar()
@@ -375,8 +387,10 @@ csv_file_categorical_field_string = ''
 csv_file_relational_field_list = []
 csv_file_categorical_field_list = []
 menu_values = []
-color_style_var_list=[]
-color_var_list=[]
+color_1_style_var_list=[]
+color_2_style_var_list=[]
+color_1_var_list=[]
+color_2_var_list=[]
 error = False
 
 open_GUI_lb = tk.Label(window, text='Open special visualization options GUI')
@@ -667,7 +681,7 @@ case_sensitive_checkbox = tk.Checkbutton(window, state='disabled', variable=case
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    case_sensitive_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "Tick/untick the checkbox if you wish to process filename labels/parts as case sensitive or insensitive")
+                                   "Tick/untick the checkbox if you wish to process the search values as case sensitive or insensitive")
 
 # visualization_do_not_split_pos; visualization_csv_field2_lb_pos
 search_values_categorical_label_lb = tk.Label(window, text='Search values')
@@ -705,7 +719,7 @@ add_button_categorical.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+20,
                                                y_multiplier_integer,
                                                add_button_categorical, True, False, False, False, 90,
-                                               GUI_IO_util.knowledge_plus_button,
+                                               GUI_IO_util.run_button_x_coordinate,
                                                "Click the + button to add another csv field")
 
 def reset_categorical():
@@ -721,7 +735,7 @@ reset_button_categorical.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+55,
                                                y_multiplier_integer,
                                                reset_button_categorical, True, False, False, False, 90,
-                                               GUI_IO_util.knowledge_reset_button,
+                                               GUI_IO_util.run_button_x_coordinate,
                                                "Click the reset_relational button to clear all selected values")
 
 show_button_categorical = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,command=lambda: show_categorical_list())
@@ -730,7 +744,7 @@ show_button_categorical.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+105,
                                                y_multiplier_integer,
                                                show_button_categorical, False, False, False, False, 90,
-                                               GUI_IO_util.knowledge_show_button,
+                                               GUI_IO_util.run_button_x_coordinate,
                                                "Click the Show button to see all selected options")
 
 def show_categorical_list():
@@ -738,9 +752,9 @@ def show_categorical_list():
         mb.showwarning(title='Warning',
                    message='There are no currently selected combinations of csv file field and search words.')
     else:
-    #     class_color_string = ""
-    #     for ont in color_map.keys():
-    #         class_color_string = class_color_string + ont + ":" + color_map[ont] + "\n"
+    #     class_color_1_string = ""
+    #     for ont in color_1_map.keys():
+    #         class_color_1_string = class_color_1_string + ont + ":" + color_1_map[ont] + "\n"
         mb.showwarning(title='Warning', message='The currently selected combination of csv file field and search word are:\n\n' + str(csv_file_categorical_field_list) + '\n\nPlease, press the Reset button (or ESCape) to start fresh.')
 
 colormap_lb = tk.Label(window, text='Colormap parameters')
@@ -760,40 +774,85 @@ max_rows = tk.Entry(window, state='disabled', textvariable=max_rows_var, width=3
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_pos, y_multiplier_integer,
                                    max_rows,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Enter the maximum number of rows to be shown in the chart (default = 20)")
+                                   "Enter the maximum number of rows to be shown in the chart (default = 20).\nEach row will be displayed on the Y-axis as the most-frequent csv field values.")
 
-
-color_var.set(0)
-color_style_var_list.append("")
-color_var_list.append(0)
-color_checkbox = tk.Checkbutton(window, text='Color ', variable=color_var, onvalue=1, offvalue=0)
+color_1_var.set(0)
+color_1_style_var_list.append("")
+color_1_var_list.append(0)
+color_1_checkbox = tk.Checkbutton(window, text='Color ', variable=color_1_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
-                                   color_checkbox,
+                                   color_1_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Tick the checkbox to select the main color to be used for the cormap (default = orange, RGB = 255 166 0)")
+                                   "Tick the checkbox to select the the LIGHTER color (left to right) for less frequent occurrences to be used for the cormap (default = light blue, RGB = 135 207 236)")
 
-color_lb = tk.Label(window, text='RGB color code ')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 400, y_multiplier_integer,
-                                               color_lb, True)
+# color_1_lb = tk.Label(window, text='RGB color code ')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 400, y_multiplier_integer,
+#                                                color_1_lb, True)
 
-color_style_var.set("255 166 0")
-color_entry = tk.Entry(window, width=10, textvariable=color_style_var)
-color_entry.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 500, y_multiplier_integer,
-                                               color_entry)
+color_1_style_var.set("255 166 0")
+color_1_entry = tk.Entry(window, width=10, textvariable=color_1_style_var)
+color_1_entry.configure(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+110, y_multiplier_integer,
+                                               color_1_entry,True)
 
-def activate_color_palette(*args):
+def activate_color_1_palette(*args):
     import tkinter.ttk as ttk
     from tkcolorpicker import askcolor
-    if color_var.get() == 1:
+    if color_1_var.get() == 1:
         style = ttk.Style(window)
         style.theme_use('clam')
-        color_list = askcolor((255, 255, 0), window)
-        color_style = color_list[0]
-        color_style_var.set(color_style)
-color_var.trace('w', activate_color_palette)
+        color_1_list = askcolor((255, 255, 0), window)
+        color_1_style = color_1_list[0]
+        color_1_style_var.set(color_1_style)
+color_1_var.trace('w', activate_color_1_palette)
 
+
+def activate_color_2_palette(*args):
+    import tkinter.ttk as ttk
+    from tkcolorpicker import askcolor
+    if color_2_var.get() == 1:
+        style = ttk.Style(window)
+        style.theme_use('clam')
+        color_2_list = askcolor((255, 255, 0), window)
+        color_2_style = color_2_list[0]
+        color_2_style_var.set(color_2_style)
+color_2_var.trace('w', activate_color_2_palette)
+
+color_2_var.set(0)
+color_2_style_var_list.append("")
+color_2_var_list.append(0)
+color_2_checkbox = tk.Checkbutton(window, text='Color ', variable=color_2_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+                                   color_2_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Tick the checkbox to select the DARKER color (left to right) for more frequent occurrences to be used for the cormap (default = dark blue, RGB = 0 0 255)")
+
+# color_1_lb = tk.Label(window, text='RGB color code ')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 400, y_multiplier_integer,
+#                                                color_1_lb, True)
+
+color_2_style_var.set("255 166 0")
+color_2_entry = tk.Entry(window, width=10, textvariable=color_2_style_var)
+color_2_entry.configure(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+110, y_multiplier_integer,
+                                               color_2_entry, True)
+
+
+normalize_lb = tk.Label(window, text='Normalize')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
+                                               normalize_lb, True)
+
+normalize_var=tk.StringVar()
+normalize_var.set('No transform')
+normalize_menu = tk.OptionMenu(window, normalize_var, 'No transform','Min-Max','Z-score','Square root','Log','Ln')
+# normalize_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_do_not_split_pos, y_multiplier_integer,
+                                   normalize_menu,
+                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   "Select the type of data normalization, if any, to be used in displaying the results, thus making them more comparable")
 
 sunburst_lb = tk.Label(window, text='Sunburst parameters')
 # place widget with hover-over info
@@ -861,7 +920,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
                                    use_numerical_variable_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.visualization_K_sent_begin_pos,
                                    "Tick the checkbox if you wish to use a numerical variable to improve the treemap chart")
-
 
 csv_field_treemap_lb = tk.Label(window, text='Search field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
@@ -946,7 +1004,9 @@ def activate_visualization_options(*args):
     csv_field_categorical_menu.configure(state='disabled')
     case_sensitive_checkbox.configure(state='disabled')
     max_rows.configure(state='disabled')
-    color_checkbox.configure(state='disabled')
+    color_1_checkbox.configure(state='disabled')
+    color_2_checkbox.configure(state='disabled')
+    normalize_menu.configure(state='disabled')
     K_sent_begin.configure(state='disabled')
     K_sent_end.configure(state='disabled')
     split_checkbox.configure(state='disabled')
@@ -1017,7 +1077,9 @@ def activate_visualization_options(*args):
 
         elif categorical_menu_var.get() == 'Colormap':
             max_rows.configure(state='normal')
-            color_checkbox.configure(state='normal')
+            color_1_checkbox.configure(state='normal')
+            color_2_checkbox.configure(state='normal')
+            normalize_menu.configure(state='normal')
         elif categorical_menu_var.get()=='Sunburst':
             csv_field_categorical_menu.configure(state='normal')
             K_sent_begin.configure(state='normal')
