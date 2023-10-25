@@ -1649,3 +1649,217 @@ def timechart(data,outputFilename,var,date_format_var,cumulative,monthly=None,ye
     fig.write_html(outputFilename)
 
     return outputFilename
+
+# written by Simon Bian
+# September 2023
+
+def process_and_aggregate_data(data, **kwargs):
+    conditions = kwargs.get('where_column', {})  # WHERE conditions
+    agg_column = kwargs.get('groupby_column')  # GROUP BY column
+    select_columns = kwargs.get('select_column',[])  # SELECT columns
+    for col, value in conditions.items():
+        if isinstance(value, (list, tuple)):
+            data = data[data[col].isin(value)]
+        else:
+            data = data[data[col] == value]
+
+    if not select_columns:
+        select_columns = [col for col in data.columns if col != agg_column]
+        # If agg_column is not specified, we cannot proceed with grouping; handle this case as needed
+    if not agg_column:
+        raise ValueError("The 'groupby_column' parameter is required for aggregation.")
+        print("Due to exception in missing provided value, we have to return early")
+        return
+        # Group by the specified column along with select_columns and calculate the count
+    agg_data = data.groupby([agg_column, select_columns]).size().reset_index(name='Count')
+    # Pivot the table. If select_columns is empty, this will consider all other columns.
+    pivot_data = agg_data.pivot_table(index=select_columns, columns=agg_column, values='Count', fill_value=0)
+    return pivot_data
+
+
+def transform_data(pivot_data, transformation='min-max'):
+    if transformation == 'min-max':
+        min_val = pivot_data.min().min()
+        max_val = pivot_data.max().max()
+        return (pivot_data - min_val) / (max_val - min_val)
+    elif transformation == 'square-root':
+        return np.sqrt(pivot_data)
+    elif transformation == 'log':
+        return np.log1p(pivot_data)
+    elif transformation == 'z-score':
+        means = pivot_data.mean()
+        stds = pivot_data.std()
+        # Skip columns with std very close to zero
+        z_scores = pivot_data.subtract(means, axis='columns').divide(stds.where(stds > 1e-5, 1), axis='columns')
+        # Replace inf and -inf values with NaN for safety
+        z_scores.replace([np.inf, -np.inf], np.nan, inplace=True)
+        return z_scores
+    else:
+        return pivot_data  # return original data if no recognized transformation is given
+
+
+def visualize_data(data, top_n=60, figsize=(15, 10), y_label='Lemma', x_label='Document', normalize='log',
+                   color='YlOrBr', outputname='output_figure'):
+
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    numeric_data = data.select_dtypes(include=[np.number])
+    sorted_columns = numeric_data.columns.sort_values()
+    sorted_pivot_data = numeric_data[sorted_columns][::-1]
+    sorted_rows = numeric_data.sum(axis=1).sort_values(ascending=False).index
+    sorted_pivot_data = sorted_pivot_data.loc[sorted_rows]
+    transposed_data = sorted_pivot_data.head(top_n)
+    print("doing calculations...complete!")
+    plt.figure(figsize=figsize)
+    try:
+        sns.heatmap(transposed_data, annot=False, fmt='.2f', cmap=color, cbar_kws={'label': normalize})
+    except:
+        print("There is something wrong with the cmap, perhaps something is wrong, let's use default")
+        sns.heatmap(transposed_data, annot=False, fmt='.2f', cmap='YlOrBr', cbar_kws={'label': normalize})
+    ax = plt.gca()
+    ax.set_yticks(np.arange(len(transposed_data.index)))
+    ax.set_yticklabels(transposed_data.index)
+    ax.set_xticks(np.arange(len(transposed_data.columns)))
+    ax.set_xticklabels(transposed_data.columns, rotation=90)
+    ax.set_ylabel(y_label)
+    ax.set_xlabel(x_label)
+    ax.set_title(y_label + ' Frequency Visualization over ' + x_label + ' on a ' + normalize + ' Scale')
+    plt.savefig(outputname + '.png')
+    print(f"Data visualization saved as {outputname}.png.")
+    #plt.show() // we don't need to show it because we have that other option
+
+
+def extract_file_name(link_string):
+    import re
+    match = re.search(r'\/([^\/]+)\.txt', link_string)
+    return match.group(1) if match else link_string
+
+def renamedf(df):
+    raw_names = [extract_file_name(col) for col in df.columns]
+    sorted_names = sorted(raw_names)
+    df.columns = sorted_names
+
+# csv_file_categorical_field_list is a double list with each list containing the combination csv field & search values
+#   for example, [[Document | Mao, Deng, Xi][NER | PERSON][WORD|'']
+# params is a single lst with the max number of rows and RGB color, e.g., [20, 255 166 0]
+
+def read_filename_color(inputFilename):
+    try:
+        # print("Thank you. Data reading success.\n")
+        dataFrame = pd.read_csv(inputFilename)
+        # Displaying some basic statistics
+        #print(f"Number of Columns: {dataFrame.shape[1]}")
+        #print(f"Number of Rows: {dataFrame.shape[0]}\n")
+
+        #print(f"Column names: {dataFrame.columns.tolist()}\n")
+
+        # Display the datatypes
+        #print("Data types for each column:")
+        #print(dataFrame.dtypes, "\n")
+
+        # Checking for missing values
+        missing_values = dataFrame.isnull().sum()
+        if missing_values.any():
+            print("Number of missing values for each column:")
+            print(missing_values[missing_values > 0], "\n")
+        else:
+            print("There are no missing values in the dataset.\n")
+        return dataFrame
+        # Display summary statistics for numeric columns
+       # choice = input("Would you like summary statistics for numeric columns? (y/n): ").strip().lower()
+       # if choice == 'y':
+       #     print("\nSummary Statistics:")
+       #     print(dataFrame.describe())
+
+        # Display top 5 rows
+       # choice = input("\nWould you like to see the first 5 rows of the data? (y/n): ").strip().lower()
+       # if choice == 'y':
+       #     print(dataFrame.head())
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return 0
+
+def get_transformation_choice(choice = 5):
+    transformations = {
+        1: 'min-max',
+        2: 'square-root',
+        3: 'log',
+        4: 'z-score',
+        5: None
+    }
+    return transformations.get(choice, None)
+
+def further_group(df,major_parm, small_prm):
+    ## majro_parm = str, small_prm = list of string to be regexed against a
+    ## as we need to check suffix of string for GROUP BY
+    col = df[major_parm].value_counts().index.tolist()
+    mps_suffix = {}
+    for i in col:
+        for j in small_prm:
+            if re.search('.*'+str(j)+'.*',str(i)):
+                mps_suffix[str(i)] = str(j)
+    df['Real_'+major_parm] = df[major_parm].map(mps_suffix)
+
+def sql_commands(s, dataFrame):
+    '''
+    In sql, we all know the famous quote, SELECT * FROM any_sort_of_datatable WHERE * GROUP BY *
+    This command is in effect doing that.
+    The  WHERE command, in which you know at which point ROWS you'd like to filter fow
+    The  GROUP BY command, in which COLUMN's FIELDS you know you would like to aggregate the RESULT upon
+    The SELECT command, in which you know which COLUMNS you'd like to present to the viewers
+    The return is, in essence, a pythonic database searching command that achieves this effect
+    '''
+    WHERE_s = s[1:-1]
+    GROUPBY_s = s[0][0].split('|')
+    GROUPBY = GROUPBY_s[0]
+    add = GROUPBY_s[1]
+    if add:
+        all_values = add.split(', ')
+        further_group(dataFrame,GROUPBY,all_values)
+        print("I have detected your all_values contain some string, and I map them accordingly")
+        GROUPBY = 'Real_' + GROUPBY
+    SELECT = s[-1][0].replace("|", "")
+    WHERE = {}
+    if WHERE_s:
+        for condition in WHERE_s:
+            cmd = condition[0].split('|')
+            mtc = cmd[1].split(', ')
+            WHERE[cmd[0]] = mtc
+    return WHERE, GROUPBY, SELECT
+
+import numpy as np
+from matplotlib.colors import LinearSegmentedColormap
+def interpolate_colors(color1, color2, num_colors):
+    color1,color2 = [x/255. for x in color1], [x/255. for x in color2]
+    return [np.array(color1) * (1 - ratio) + np.array(color2) * ratio for ratio in np.linspace(0, 1, num_colors)]
+def cmaps(start_color, end_color):
+    colors = interpolate_colors(start_color, end_color, 256)
+    cmap_custom = LinearSegmentedColormap.from_list("custom", colors, N=256)
+    try:
+        return cmap_custom
+    except:
+        return 'YlOrBr'
+
+def main_colormap(inputFilename, outputDir, csv_file_categorical_field_list, params):
+    dataFrame = read_filename_color(inputFilename)
+    WHERE, GROUPBY, SELECT = sql_commands(csv_file_categorical_field_list, dataFrame)
+    step1 = process_and_aggregate_data(dataFrame, where_column=WHERE, groupby_column=GROUPBY, select_column=SELECT)
+   # val = 1 #get_transformation_choice(), but we will connect it....
+    step2 = transform_data(step1) # There needs to be a GUI to allow transformation, but...
+    # We proceed with default instead perhaps...
+    if GROUPBY == 'Document':
+        renamedf(step2) # We rename to file relative location, not absolute location
+    try:
+        cmap = cmaps(eval(params[1]), eval(params[2]))
+    except:
+        cmap = cmaps((135, 207, 236),(0, 0, 255))
+    import IO_files_util
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
+                                                             '.colormetric')
+    visualize_data(step2,outputname=outputFilename, color = cmap, top_n=params[0], normalize = params[-1]) # There is no GUI yet...
+
+    return outputFilename
+

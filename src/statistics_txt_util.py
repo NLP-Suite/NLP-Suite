@@ -970,10 +970,10 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
     # process separately outside the loop through documents which is carried out inside compute_character_word_ngrams
     if processType == '' or "N-grams" in processType or \
             "hapax" in processType.lower() or "unigrams" in processType.lower():
+        hapax_words = False
         if "hapax" in processType.lower():
             ngramsNumber = 1
             frequency = 1  # hapax
-            hapax_words = False
             if 'hapax legomena (once-occurring words)' in processType.lower():
                 hapax_words = True
         elif "unigrams" in processType.lower():

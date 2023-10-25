@@ -18,26 +18,29 @@ import IO_csv_util
 import IO_files_util
 import charts_util
 
-def runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var):
+def runGephi(inputFilename, outputDir, csv_file_relational_field_list, dynamic_network_field_var):
     import Gephi_util
 
     fileBase = os.path.basename(inputFilename)[0:-4]
-    # csv_file_field_list contains the column header of node1, edge, node2 (e.g., SVO), and, possibly, the field for dynamic network
+    # csv_file_relational_field_list contains the column header of node1, edge, node2 (e.g., SVO), and, possibly, the field for dynamic network
     return Gephi_util.create_gexf(GUI_util.window, fileBase, outputDir, inputFilename,
-                                  csv_file_field_list[0], csv_file_field_list[1],
-                                  csv_file_field_list[2], dynamic_network_field_var, 'abnormal')
+                                  csv_file_relational_field_list[0], csv_file_relational_field_list[1],
+                                  csv_file_relational_field_list[2], dynamic_network_field_var, 'abnormal')
 
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles,
         relations_var,
         relations_menu_var,
-        csv_field_var,
-        csv_file_field_list,
+        csv_field_relational_var,
+        csv_file_relational_field_list,
         dynamic_network_field_var,
         Sankey_limit1_var, Sankey_limit2_var, Sankey_limit3_var,
         categorical_var,
-        csv_field_categorical_1_var,
-        search_values_1_var,
+        csv_file_categorical_field_list,
+        max_rows_var,
+        color_1_style_var,
+        color_2_style_var,
+        normalize_var,
         K_sent_begin_var,
         K_sent_end_var,
         split_var,
@@ -88,11 +91,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
 # Gephi  --------------------------------------------------------------------------------
 
         if relations_menu_var=='Gephi':
-            if len(csv_file_field_list)!=3:
+            if len(csv_file_relational_field_list)!=3:
                 mb.showwarning("Warning",
                                "You must select three csv fields to be used in the computation of the network graph, in the order of node, edge, node (e.g., Subject, Verb, Object).\n\nIf you wish to create a dynamic network graph you can select a fourth field to be used as the dynamic index (e.g., Sentence ID or Date).")
                 return
-            outputFiles = runGephi(inputFilename, outputDir, csv_file_field_list, dynamic_network_field_var)
+            outputFiles = runGephi(inputFilename, outputDir, csv_file_relational_field_list, dynamic_network_field_var)
 
             if outputFiles != None:
                 if isinstance(outputFiles, str):
@@ -103,20 +106,20 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
 # Sankey  --------------------------------------------------------------------------------
 
         if relations_menu_var=='Sankey':
-            if len(csv_file_field_list)!=2 and len(csv_file_field_list)!=3:
+            if len(csv_file_relational_field_list)!=2 and len(csv_file_relational_field_list)!=3:
                 mb.showwarning("Warning",
                                "You must select 2 or 3 csv fields to be used in the computation of a Sankey chart (e.g., Subject, Verb, Object or Subject, Object).\n\nMAKE SURE TO CLICK ON THE + BUTTON AFTER THE LAST SELECTION. CLICK ON THE SHOW BUTTON TO SEE THE CURRENT SELECTION.")
                 return
-            if len(csv_file_field_list)==3:
+            if len(csv_file_relational_field_list)==3:
                 three_way_Sankey=True
-                var3=csv_file_field_list[2]
+                var3=csv_file_relational_field_list[2]
                 # Sankey_limit3_var
             else:
                 three_way_Sankey = False
                 var3=None
                 Sankey_limit3_var=None
             outputFiles = charts_util.Sankey(inputFilename, outputFilename,
-                                csv_file_field_list[0], Sankey_limit1_var, csv_file_field_list[1], Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
+                                csv_file_relational_field_list[0], Sankey_limit1_var, csv_file_relational_field_list[1], Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -127,28 +130,50 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
 # Categorical data (sunburst or treemap) --------------------------------------------------------------------------------
 
     if categorical_var:
+        if len(csv_file_categorical_field_list)<2:
+            mb.showwarning("Warning",
+                           "You must have at least 2 sets of csv file field and search values to produce meaningful " + categorical_menu_var.get() + " charts.\n\nPlease, select another combination of csv file field and search values and try again.")
+            return
+
         if categorical_menu_var.get() == '':
             mb.showwarning("Warning",
                            "Please, use the dropdown menu to select one of the options for categorical data: Sunburst, treemap and try again.")
             return
-        if csv_field_categorical_1_var == '':
+        if csv_field_categorical_var == '':
             mb.showwarning("Warning",
                            "The categorical data visualization functions require a set of comma-separated entries to be used in the search (could be parts of a filenames, if the Document field is selected).\n\nPlease, enter value(s) and try again.")
             return
 
         # interest pass a list [] of labels embedded in the filename, e.g. Book1, Book2, ... or Chinese, Arabian,...
         interest = []
-        temp_interest=[]
-        interest = search_values_1_var.split(',')
-        for i in range(len(interest)):
-            temp_interest.append(interest[i].lstrip())
+        # temp_interest=[]
+        # interest = search_values_categorical_var.split(',')
+        # for i in range(len(interest)):
+        #     temp_interest.append(interest[i].lstrip())
         # label is a string that has the header field in the csv file to be used for display
-        label=csv_field_categorical_1_var
+        label=csv_field_categorical_var
+
+
+# Categorical data: colormap  --------------------------------------------------------------------------------
+
+        if 'Colormap' in categorical_menu_var.get():
+            if csv_field_categorical_var == '':
+                mb.showwarning("Warning",
+                               "The colormap algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
+                return
+            params = [max_rows_var, color_1_style_var, color_2_style_var, normalize_var]
+            outputFiles = charts_util.main_colormap(inputFilename, outputDir, csv_file_categorical_field_list, params)
+
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
 # Categorical data: Sunburst  --------------------------------------------------------------------------------
 
         if 'Sunburst' in categorical_menu_var.get():
-            if csv_field_categorical_1_var=='':
+            if csv_field_categorical_var=='':
                 mb.showwarning("Warning",
                                "The sunburst algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
                 return
@@ -209,13 +234,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 mb.showwarning("Warning",
                                "You have not entered a 'csv file field' required by the treemap algorithm.\n\nPlease, use the dropdown menu to select the csv file field containing categorical data and try again.")
                 return
-            if use_numerical_variable_var and csv_field_categorical_1_var=='':
+            if use_numerical_variable_var and csv_field_categorical_var=='':
                 mb.showwarning("Warning",
                                "The selected treemap option with the use of numerical data requires a variable containing the numerical data.\n\nPlease, select the csv file field containing the numerical data and try again.")
                 return
             #def Treemap(data,outputFilename,interest,var,extra_dimension_average,average_variable=None):
             outputFiles = charts_util.Treemap(inputFilename, outputFilename,
-                                                                   temp_interest, label, use_numerical_variable_var,csv_field_categorical_1_var)
+                                                                   temp_interest, label, use_numerical_variable_var,csv_field_categorical_var)
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -232,13 +257,16 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             relations_var.get(),
                             relations_menu_var.get(),
-                            csv_field_var.get(),
-                            csv_file_field_list,
+                            csv_field_relational_var.get(),
+                            csv_file_relational_field_list,
                             dynamic_network_field_var.get(),
                             Sankey_limit1_var.get(), Sankey_limit2_var.get(), Sankey_limit3_var.get(),
                             categorical_var.get(),
-                            csv_field_categorical_1_var.get(),
-                            search_values_1_var.get(),
+                            csv_file_categorical_field_list,
+                            max_rows_var.get(),
+                            color_1_style_var.get(),
+                            color_2_style_var.get(),
+                            normalize_var.get(),
                             K_sent_begin_var.get(),
                             K_sent_end_var.get(),
                             split_var.get(),
@@ -255,8 +283,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=600, # height at brief display
-                             GUI_height_full=680, # height at full display
+                             GUI_height_brief=640, # height at brief display
+                             GUI_height_full=720, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -288,7 +316,6 @@ input_main_dir_path=GUI_util.input_main_dir_path
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 def clear(e):
-    reset()
     open_GUI_var.set('')
     relations_menu_var.set('Gephi')
     categorical_menu_var.set('Sunburst')
@@ -304,9 +331,9 @@ def clear(e):
     case_sensitive_var.set(1)
     # for now always set to disabled
     case_sensitive_checkbox.configure(state='disabled')
-    csv_field_categorical_1_var.set('')
-    csv_field_categorical_1_menu.configure(state='disabled')
-    search_values_1_var.set('')
+    csv_field_categorical_var.set('')
+    csv_field_categorical_menu.configure(state='disabled')
+    search_values_categorical_var.set('')
     K_sent_begin_var.set('')
     K_sent_end_var.set('')
     K_sent_begin.configure(state='disabled')
@@ -316,6 +343,10 @@ def clear(e):
     do_not_split_var.set(0)
     do_not_split_checkbox.configure(state='disabled')
     csv_field_treemap_var.set('')
+
+    reset_relational()
+    reset_categorical()
+
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -327,15 +358,23 @@ Gephi_var = tk.IntVar()
 Sankey_var = tk.IntVar()
 selected_csv_file_fields_var = tk.StringVar()
 
-csv_field_var = tk.StringVar()
+csv_field_relational_var = tk.StringVar()
 dynamic_network_field_var = tk.StringVar()
 
+csv_field_categorical_var = tk.StringVar()
 categorical_var = tk.IntVar()
 categorical_menu_var = tk.StringVar()
-search_values_1_var = tk.StringVar()
+search_values_categorical_var = tk.StringVar()
 case_sensitive_var = tk.IntVar()
-csv_field_categorical_1_var = tk.StringVar()
-search_values_1_var = tk.StringVar()
+csv_field_categorical_var = tk.StringVar()
+search_values_categorical_var = tk.StringVar()
+
+max_rows_var = tk.IntVar()
+color_1_var = tk.IntVar()
+color_2_var = tk.IntVar()
+color_1_style_var = tk.StringVar()
+color_2_style_var = tk.StringVar()
+
 K_sent_begin_var = tk.StringVar()
 K_sent_end_var = tk.StringVar()
 split_var = tk.IntVar()
@@ -344,8 +383,14 @@ do_not_split_var = tk.IntVar()
 use_numerical_variable_var = tk.IntVar()
 csv_field_treemap_var = tk.StringVar()
 
-csv_file_field_list = []
+csv_file_categorical_field_string = ''
+csv_file_relational_field_list = []
+csv_file_categorical_field_list = []
 menu_values = []
+color_1_style_var_list=[]
+color_2_style_var_list=[]
+color_1_var_list=[]
+color_2_var_list=[]
 error = False
 
 open_GUI_lb = tk.Label(window, text='Open special visualization options GUI')
@@ -410,12 +455,12 @@ csv_field_lb = tk.Label(window, text='csv file field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                csv_field_lb, True)
 
-csv_field_menu = tk.OptionMenu(window, csv_field_var, *menu_values) # relational
-csv_field_menu.configure(state='disabled')
+csv_field_relational_menu = tk.OptionMenu(window, csv_field_relational_var, *menu_values) # relational
+csv_field_relational_menu.configure(state='disabled')
 # place widget with hover-over info
 # visualization_csv_field_menu_pos
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
-                                   csv_field_menu,
+                                   csv_field_relational_menu,
                                    True, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
                                    "Select the three fields to be used for the network graph in the order node1, edge, node2 (e.g., SVO)")
 
@@ -428,67 +473,69 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
                                                GUI_IO_util.open_reminders_x_coordinate, "The widget, always disabled, displays all the  selected csv file fields.")
 
 def display_selected_csv_fields():
-    if csv_field_var.get() != '' and not csv_field_var.get() in csv_file_field_list:
-        csv_file_field_list.append(csv_field_var.get())
-        new_missing_software_string=', '.join(csv_file_field_list)
+    if csv_field_relational_var.get() != '' and not csv_field_relational_var.get() in csv_file_relational_field_list:
+        csv_file_relational_field_list.append(csv_field_relational_var.get())
+        new_missing_software_string=', '.join(csv_file_relational_field_list)
         selected_csv_file_fields.set(new_missing_software_string.lstrip())
     else:
         mb.showwarning(title='Warning',
-                       message='The option "' + csv_field_var.get() + '" has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
-        csv_field_menu.configure(state='normal')
-    selected_csv_file_fields_var.set(str(csv_file_field_list))
-    activate_csv_fields_selection(True)
+                       message='The option "' + csv_field_relational_var.get() + '" has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
+        csv_field_relational_menu.configure(state='normal')
+    selected_csv_file_fields_var.set(str(csv_file_relational_field_list))
+    activate_csv_fields_relational_selection(True)
 
 
-def reset():
-    csv_file_field_list.clear()
-    csv_field_var.set('')
+def reset_relational():
+    csv_file_relational_field_list.clear()
+    csv_field_relational_var.set('')
     selected_csv_file_fields.set('')
     dynamic_network_field_var.set('')
     selected_csv_file_fields_var.set('')
 
-add_button_var = tk.IntVar()
-add_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, state='disabled',
+add_button_relational_var = tk.IntVar()
+add_button_relational = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1,
                                 command=lambda: display_selected_csv_fields())
+add_button_relational.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate+20, y_multiplier_integer,
-                                   add_button,
+                                   add_button_relational,
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Click on the + button to add a selected csv field to the list of Gephy parameters (edge1, node, edge2)")
 
-reset_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset())
+reset_button_relational = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: reset_relational())
+reset_button_relational.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.close_button_x_coordinate+55, y_multiplier_integer,
-                                   reset_button,
+                                   reset_button_relational,
                                    False, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
-                                   "Click on the Reset button to clear the list of selected fields and start again")
+                                   "Click on the reset_relational button to clear the list of selected fields and start again")
 def show_Gephi_options_list():
-    if len(csv_file_field_list)==0:
+    if len(csv_file_relational_field_list)==0:
         mb.showwarning(title='Warning', message='There are no currently selected Gephi options.')
     else:
-        mb.showwarning(title='Warning', message='The currently selected Gephi options are:\n\n  ' + '\n  '.join(csv_file_field_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+        mb.showwarning(title='Warning', message='The currently selected Gephi options are:\n\n  ' + '\n  '.join(csv_file_relational_field_list) + '\n\nPlease, press the Reset button (or ESCape) to start fresh.')
 
-def activate_csv_fields_selection(comingFromPlus=False):
-    if csv_field_var.get() != '':
+def activate_csv_fields_relational_selection(comingFromPlus=False):
+    if csv_field_relational_var.get() != '':
         if comingFromPlus:
-            csv_field_menu.config(state='normal')
+            csv_field_relational_menu.config(state='normal')
         else:
-            csv_field_menu.config(state='disabled')
-        add_button.config(state='normal')
-        reset_button.config(state='normal')
+            csv_field_relational_menu.config(state='disabled')
+        add_button_relational.config(state='normal')
+        reset_button_relational.config(state='normal')
         # show_button.config(state='normal')
-        if len(csv_file_field_list) == 3:
-            csv_field_menu.configure(state='disabled')
+        if len(csv_file_relational_field_list) == 3:
+            csv_field_relational_menu.configure(state='disabled')
             dynamic_network_field_menu.config(state='normal')
             if dynamic_network_field_var.get()=='':
-                mb.showwarning(title='Warning', message='You have selected the maximum number of fields (3) to visualize relations.\n\nPress the "Show" button to display your selection. Press the "Reset" button to clear your selection and start again.')
+                mb.showwarning(title='Warning', message='You have selected the maximum number of fields (3) to visualize relations.\n\nPress the "Show" button to display your selection. Press the "reset_relational" button to clear your selection and start again.')
     else:
-        csv_field_menu.config(state='normal')
+        csv_field_relational_menu.config(state='normal')
         dynamic_network_field_menu.config(state='normal')
-        reset_button.config(state='disabled')
+        reset_button_relational.config(state='disabled')
         # show_button.config(state='disabled')
-csv_field_var.trace('w', callback = lambda x,y,z: activate_csv_fields_selection())
-dynamic_network_field_var.trace('w', callback = lambda x,y,z: activate_csv_fields_selection())
+csv_field_relational_var.trace('w', callback = lambda x,y,z: activate_csv_fields_relational_selection())
+dynamic_network_field_var.trace('w', callback = lambda x,y,z: activate_csv_fields_relational_selection())
 
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 # GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
@@ -562,7 +609,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
                                    "Select the maximum number of categories for variable 3")
 
 
-# activate_csv_fields_selection()
+# activate_csv_fields_relational_selection()
 
 # split
 categorical_checkbox = tk.Checkbutton(window, text='Visualize categorical data', variable=categorical_var,
@@ -573,13 +620,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Tick the checkbox if you wish to visualize categorical data in interactive sunburst or treemap charts")
 
-categorical_menu_var.set('Sunburst')
-categorical_menu = tk.OptionMenu(window, categorical_menu_var, 'Sunburst','Treemap')
+csv_field_categorical_var.set('Sunburst')
+csv_field_categorical_menu = tk.OptionMenu(window, categorical_menu_var, 'Colormap', 'Sunburst', 'Treemap')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
-                                   categorical_menu,
+                                   csv_field_categorical_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
-                                   "Visualize categorical data as sunburst chart or treemap chart via Plotly)")
+                                   "Visualize categorical data as colormap chart, sunburst chart, or treemap chart)")
 
 # def activate_case_label(*args):
 #     if case_sensitive_var.get():
@@ -588,15 +635,41 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
 #         case_sensitive_checkbox.configure(text="Case insensitive")
 # case_sensitive_var.trace('w',activate_case_label)
 
+def activate_csv_fields_categorical_selection(comingFromPlus = True):
+    global csv_file_categorical_field_string, search_values_categorical, csv_field_categorical_menu
+    if csv_field_categorical_var.get()!='':
+        if csv_field_categorical_var.get() in csv_file_categorical_field_list:
+            mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
+            return
+        else:
+            # csv_file_categorical_field_list.append(csv_field_categorical_var.get())
+            csv_file_categorical_field_string=csv_file_categorical_field_string + '|' + csv_field_categorical_var.get()
+    if csv_field_categorical_var.get() != '':
+        search_values_categorical.configure(state='normal')
+        if comingFromPlus:
+            csv_field_categorical_menu.config(state='normal')
+        else:
+            csv_field_categorical_menu.config(state='disabled')
+        add_button_categorical.config(state='normal')
+        reset_button_categorical.config(state='normal')
+        # show_button.config(state='normal')
+    else:
+        search_values_categorical.configure(state='disabled')
+        csv_field_categorical_menu.config(state='normal')
+        reset_button_categorical.config(state='disabled')
+        # show_button.config(state='disabled')
+    activate_visualization_options()
+categorical_menu_var.trace('w', callback = lambda x,y,z: activate_csv_fields_categorical_selection())
+
 csv_field_categorical_lb = tk.Label(window, text='Search field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                csv_field_categorical_lb, True)
 
-csv_field_categorical_1_menu = tk.OptionMenu(window, csv_field_categorical_1_var, *menu_values) # Sunburst
-csv_field_categorical_1_menu.configure(state='disabled')
+csv_field_categorical_menu = tk.OptionMenu(window, csv_field_categorical_var, *menu_values) # Sunburst
+csv_field_categorical_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
-                                   csv_field_categorical_1_menu,
+                                   csv_field_categorical_menu,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Select the csv file field to be used to visualize specific data (e.g., 'Sentiment label' in a sentiment analysis csv output file)")
 
@@ -608,73 +681,177 @@ case_sensitive_checkbox = tk.Checkbutton(window, state='disabled', variable=case
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    case_sensitive_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "Tick/untick the checkbox if you wish to process filename labels/parts as case sensitive or insensitive")
+                                   "Tick/untick the checkbox if you wish to process the search values as case sensitive or insensitive")
 
 # visualization_do_not_split_pos; visualization_csv_field2_lb_pos
-search_values_1_label_lb = tk.Label(window, text='Search values')
+search_values_categorical_label_lb = tk.Label(window, text='Search values')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+30,
-                                               y_multiplier_integer, search_values_1_label_lb, True)
+                                               y_multiplier_integer, search_values_categorical_label_lb, True)
 
-search_values_1_var.set('')
-search_values_1 = tk.Entry(window, state='disabled', textvariable=search_values_1_var, width=GUI_IO_util.widget_width_short)
+search_values_categorical_var.set('')
+search_values_categorical = tk.Entry(window, state='disabled', textvariable=search_values_categorical_var, width=GUI_IO_util.widget_width_short)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
-                                   search_values_1,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "Enter the comma-separated label/part of a filename to be used to sample the corpus for visualization (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...)\nThe filenames are expected to be stored in the column 'Document'")
+                                   search_values_categorical,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Enter the comma-separated search values to be used to sample the corpus for visualization.\nFor a 'Document' csv file field, you can enter specific parts of a filename (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...).\nFor an 'NER' csv file field, you can enter the tags 'PERSON' or 'LOCATION, COUNTRY, STATE_OR_PROVINCE, CITY'")
 
-add_class_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_class_var())
+def add_combination_csvField_searchValues():
+    comingFromPlus=True
+    global csv_file_categorical_field_string
+    if (not search_values_categorical_var.get()=='') and (search_values_categorical_var.get() in csv_file_categorical_field_string):
+        result = mb.askyesno('Warning',
+                                    'You have already entered the search value(s) "' + search_values_categorical_var.get() + '"\n\nAre you sure you want to use the same search values?')
+        if not result:
+            return
+
+    csv_file_categorical_field_string=csv_field_categorical_var.get()+'|'+search_values_categorical_var.get()
+    csv_file_categorical_field_list.append([csv_file_categorical_field_string])
+    search_values_categorical_var.set('')
+    csv_field_categorical_menu.focus_set()
+    activate_visualization_options()
+    comingFromPlus=False
+
+add_button_categorical = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,command=lambda: add_combination_csvField_searchValues())
+add_button_categorical.configure(state='disabled')
+
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+20,
                                                y_multiplier_integer,
-                                               add_class_button, True, False, False, False, 90,
-                                               GUI_IO_util.knowledge_plus_button,
-                                               "Click the + button to add another ontology class")
+                                               add_button_categorical, True, False, False, False, 90,
+                                               GUI_IO_util.run_button_x_coordinate,
+                                               "Click the + button to add another csv field")
 
-def activate_class_var():
-    ontology_class.configure(state='normal')
-    if ontology_class_var.get()!='' or sub_class_entry_var.get()!='':
-        accept_DBpedia_YAGO_list()  # get current value and store into the dict
-        add_class_button.configure(state='normal')
-        show_class_color_button.configure(state='normal')
-    else:
-        add_class_button.configure(state='disabled')
+def reset_categorical():
+    csv_file_categorical_field_list.clear()
+    csv_field_categorical_var.set('')
+    selected_csv_file_fields.set('')
+    selected_csv_file_fields_var.set('')
+    search_values_categorical_var.set('')
 
-reset_class_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,state='disabled',command=lambda: clear_ontology_list())
+reset_button_categorical = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,command=lambda: reset_categorical())
+reset_button_categorical.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+55,
                                                y_multiplier_integer,
-                                               reset_class_button, True, False, False, False, 90,
-                                               GUI_IO_util.knowledge_reset_button,
-                                               "Click the Reset button to clear all selected values")
+                                               reset_button_categorical, True, False, False, False, 90,
+                                               GUI_IO_util.run_button_x_coordinate,
+                                               "Click the reset_relational button to clear all selected values")
 
-show_class_color_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,state='disabled',command=lambda: show_class_color_list())
+show_button_categorical = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width,height=1,command=lambda: show_categorical_list())
+show_button_categorical.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.close_button_x_coordinate+105,
                                                y_multiplier_integer,
-                                               show_class_color_button, False, False, False, False, 90,
-                                               GUI_IO_util.knowledge_show_button,
+                                               show_button_categorical, False, False, False, False, 90,
+                                               GUI_IO_util.run_button_x_coordinate,
                                                "Click the Show button to see all selected options")
 
-def show_class_color_list():
-    # accept_DBpedia_YAGO_list performs a final check to make sure that any selected ontology classes/sub-classes have not been left dangling
-    #   the same check is carried out in RUN
-
-    accept_DBpedia_YAGO_list()
-
-    if not color_map:
-        if color_palette_var.get()!='':
-            mb.showwarning(title='Warning',
-                       message='You have selected the color ' + color_palette_var.get() + ' for the ontology class ' + ontology_class_var.get() + '\n\nYou must press the + button to OK your selection.')
-        else:
-            mb.showwarning(title='Warning',
-                       message='There are no currently selected combinations of ontology class and color.')
+def show_categorical_list():
+    if len(csv_file_categorical_field_list)==0:
+        mb.showwarning(title='Warning',
+                   message='There are no currently selected combinations of csv file field and search words.')
     else:
-        class_color_string = ""
-        for ont in color_map.keys():
-            class_color_string = class_color_string + ont + ":" + color_map[ont] + "\n"
-        # mb.showwarning(title='Warning', message='The currently selected combination of ontology classes and colors are:\n\n' + ','.join(ontology_color_list) + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
-        mb.showwarning(title='Warning', message='The currently selected combination of ontology classes and colors are:\n\n' + class_color_string + '\n\nPlease, press the RESET button (or ESCape) to start fresh.')
+    #     class_color_1_string = ""
+    #     for ont in color_1_map.keys():
+    #         class_color_1_string = class_color_1_string + ont + ":" + color_1_map[ont] + "\n"
+        mb.showwarning(title='Warning', message='The currently selected combination of csv file field and search word are:\n\n' + str(csv_file_categorical_field_list) + '\n\nPlease, press the Reset button (or ESCape) to start fresh.')
+
+colormap_lb = tk.Label(window, text='Colormap parameters')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                   colormap_lb,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "The widgets on this line refer to the colormap option only")
+
+max_rows_lb = tk.Label(window, text='Max no. of rows')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
+                                               y_multiplier_integer, max_rows_lb, True)
+
+max_rows_var.set(20)
+max_rows = tk.Entry(window, state='disabled', textvariable=max_rows_var, width=3)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_filename_label_pos, y_multiplier_integer,
+                                   max_rows,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Enter the maximum number of rows to be shown in the chart (default = 20).\nEach row will be displayed on the Y-axis as the most-frequent csv field values.")
+
+color_1_var.set(0)
+color_1_style_var_list.append("")
+color_1_var_list.append(0)
+color_1_checkbox = tk.Checkbutton(window, text='Color ', variable=color_1_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                   color_1_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Tick the checkbox to select the the LIGHTER color (left to right) for less frequent occurrences to be used for the cormap (default = light blue, RGB = 135 207 236)")
+
+# color_1_lb = tk.Label(window, text='RGB color code ')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 400, y_multiplier_integer,
+#                                                color_1_lb, True)
+
+color_1_style_var.set("135, 207, 236")
+color_1_entry = tk.Entry(window, width=10, textvariable=color_1_style_var)
+color_1_entry.configure(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+70, y_multiplier_integer,
+                                               color_1_entry,True)
+
+def activate_color_1_palette(*args):
+    import tkinter.ttk as ttk
+    from tkcolorpicker import askcolor
+    if color_1_var.get() == 1:
+        style = ttk.Style(window)
+        style.theme_use('clam')
+        color_1_list = askcolor((135, 207, 236), window)
+        color_1_style = color_1_list[0]
+        color_1_style_var.set(color_1_style)
+color_1_var.trace('w', activate_color_1_palette)
+
+
+def activate_color_2_palette(*args):
+    import tkinter.ttk as ttk
+    from tkcolorpicker import askcolor
+    if color_2_var.get() == 1:
+        style = ttk.Style(window)
+        style.theme_use('clam')
+        color_2_list = askcolor((0, 0, 255), window)
+        color_2_style = color_2_list[0]
+        color_2_style_var.set(color_2_style)
+color_2_var.trace('w', activate_color_2_palette)
+
+color_2_var.set(0)
+color_2_style_var_list.append("")
+color_2_var_list.append(0)
+color_2_checkbox = tk.Checkbutton(window, text='Color ', variable=color_2_var, onvalue=1, offvalue=0)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
+                                   color_2_checkbox,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Tick the checkbox to select the DARKER color (left to right) for more frequent occurrences to be used for the cormap (default = dark blue, RGB = 0 0 255)")
+
+# color_1_lb = tk.Label(window, text='RGB color code ')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 400, y_multiplier_integer,
+#                                                color_1_lb, True)
+
+color_2_style_var.set("0, 0, 255")
+color_2_entry = tk.Entry(window, width=10, textvariable=color_2_style_var)
+color_2_entry.configure(state='disabled')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+70, y_multiplier_integer,
+                                               color_2_entry, True)
+
+normalize_lb = tk.Label(window, text='Normalize')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
+                                               normalize_lb, True)
+
+normalize_var=tk.StringVar()
+normalize_var.set('No transform')
+normalize_menu = tk.OptionMenu(window, normalize_var, 'No transform','Min-Max','Z-score','Square root','Log','Ln')
+# normalize_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_do_not_split_pos, y_multiplier_integer,
+                                   normalize_menu,
+                                   False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   "Select the type of data normalization, if any, to be used in displaying the results, thus making them more comparable")
 
 sunburst_lb = tk.Label(window, text='Sunburst parameters')
 # place widget with hover-over info
@@ -743,7 +920,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
                                    True, False, True, False, 90, GUI_IO_util.visualization_K_sent_begin_pos,
                                    "Tick the checkbox if you wish to use a numerical variable to improve the treemap chart")
 
-
 csv_field_treemap_lb = tk.Label(window, text='Search field')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                                csv_field_treemap_lb, True)
@@ -778,22 +954,23 @@ def changed_filename(tracedInputFile):
         menu_values.clear()
         # mb.showwarning("Warning",
         #                "The selected input option is not a csv file.\n\nThe visualization algorithms behind this GUI expect in input a csv file.\n\nPlease, select a csv file in input and try again.")
-    m1 = csv_field_menu["menu"] # relational
+    m1 = csv_field_relational_menu["menu"] # relational
     m2 = dynamic_network_field_menu["menu"]
     m1.delete(0, "end")
     m2.delete(0, "end")
 
     for s in menu_values:
-        m1.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
+        m1.add_command(label=s, command=lambda value=s: csv_field_relational_var.set(value))
         m2.add_command(label=s, command=lambda value=s: dynamic_network_field_var.set(value))
 
-    m3 = csv_field_categorical_1_menu["menu"] # Sunburst
+    m3 = csv_field_categorical_menu["menu"] # Sunburst
     m3.delete(0, "end")
 
     for s in menu_values:
-        m3.add_command(label=s, command=lambda value=s: csv_field_categorical_1_var.set(value))
+        m3.add_command(label=s, command=lambda value=s: csv_field_categorical_var.set(value))
+    m3 = csv_field_categorical_menu["menu"]
     # if 'Document' in menu_values:
-    #     csv_field_categorical_1_var.set('Document')
+    #     csv_field_categorical_var.set('Document')
 
     m4 = csv_field_treemap_menu["menu"] # treemap
     m4.delete(0, "end")
@@ -816,16 +993,19 @@ def activate_visualization_options(*args):
 
     # relations options
     relations_menu.configure(state='disabled')
-    csv_field_menu.configure(state='disabled')
+    csv_field_relational_menu.configure(state='disabled')
     dynamic_network_field_menu.configure(state='disabled')
     Sankey_limit1_menu.configure(state='disabled')
     Sankey_limit2_menu.configure(state='disabled')
     Sankey_limit3_menu.configure(state='disabled')
 
     # categorical options
-    categorical_menu.configure(state='disabled')
-    search_values_1.configure(state='disabled')
+    csv_field_categorical_menu.configure(state='disabled')
     case_sensitive_checkbox.configure(state='disabled')
+    max_rows.configure(state='disabled')
+    color_1_checkbox.configure(state='disabled')
+    color_2_checkbox.configure(state='disabled')
+    normalize_menu.configure(state='disabled')
     K_sent_begin.configure(state='disabled')
     K_sent_end.configure(state='disabled')
     split_checkbox.configure(state='disabled')
@@ -835,7 +1015,7 @@ def activate_visualization_options(*args):
         relations_menu.configure(state='normal')
         relations_checkbox.configure(state='normal')
         categorical_checkbox.configure(state='disabled')
-        csv_field_menu.configure(state='normal')
+        csv_field_relational_menu.configure(state='normal')
         dynamic_network_field_menu.configure(state='normal')
         dynamic_network_field_menu.configure(state='disabled') # delete this line when date issue solved
 
@@ -855,31 +1035,52 @@ def activate_visualization_options(*args):
             Sankey_limit3_menu.configure(state='normal')
 
     elif categorical_var.get(): # sunburst, treemap
-        # menu_values = get_csv_file_menu_vales()
-        # if 'Document' in menu_values:
-        #     csv_field_categorical_1_var.set('Document')
+        menu_values = get_csv_file_menu_vales()
+        if csv_field_categorical_var.get()=='' and 'Document' in menu_values:
+            csv_field_categorical_var.set('Document')
 
         # case_sensitive_checkbox.configure(state='normal')
         # for now always set to disabled
-        categorical_menu.configure(state='normal')
+
+        csv_field_categorical_menu.configure(state='normal')
         # categorical_menu.configure(state='disabled') #for now only Document can be selected
         categorical_checkbox.configure(state='normal')
-        # csv_field_categorical_1_menu.configure(state='disabled') #for now only Document can be selected
+        # csv_field_categorical_menu.configure(state='disabled') #for now only Document can be selected
         relations_checkbox.configure(state='disabled')
         case_sensitive_checkbox.configure(state='disabled')
-        search_values_1.configure(state='normal')
+
+        if csv_field_categorical_var.get()=='':
+            # search_values_categorical.configure(state='disabled')
+            add_button_categorical.configure(state='normal')
+            reset_button_categorical.configure(state='normal')
+            show_button_categorical.configure(state='normal')
+            # add_button_categorical.configure(state='disabled')
+            # reset_button_categorical.configure(state='disabled')
+            # show_button_categorical.configure(state='disabled')
+        else:
+            show_button_categorical.configure(state='normal')
+            #     search_values_categorical.configure(state='normal')
+            #     if search_values_categorical_var.get()!='':
+        #         add_button_categorical.configure(state='normal')
+        #         reset_button_categorical.configure(state='normal')
+        #         show_button_categorical.configure(state='normal')
+
+            search_values_categorical.configure(state='normal')
 
         if categorical_menu_var.get()=='':
             K_sent_begin.configure(state='disabled')
             K_sent_end.configure(state='disabled')
             split_checkbox.configure(state='disabled')
             do_not_split_checkbox.configure(state='disabled')
-
             use_numerical_variable_checkbox.configure(state='disabled')
-            search_values_1.configure(state='disabled')
+
+        elif categorical_menu_var.get() == 'Colormap':
+            max_rows.configure(state='normal')
+            color_1_checkbox.configure(state='normal')
+            color_2_checkbox.configure(state='normal')
+            normalize_menu.configure(state='normal')
         elif categorical_menu_var.get()=='Sunburst':
-            csv_field_categorical_1_menu.configure(state='normal')
-            # csv_field_categorical_1_menu.configure(state='disabled') #for now only Document can be selected
+            csv_field_categorical_menu.configure(state='normal')
             K_sent_begin.configure(state='normal')
             K_sent_end.configure(state='normal')
             split_checkbox.configure(state='normal')
@@ -915,7 +1116,8 @@ def activate_visualization_options(*args):
 activate_visualization_options()
 
 relations_menu_var.trace('w',activate_visualization_options)
-categorical_menu_var.trace('w',activate_visualization_options)
+csv_field_relational_var.trace('w',activate_visualization_options)
+# csv_field_categorical_var.trace('w',activate_visualization_options)
 K_sent_begin_var.trace('w',activate_visualization_options)
 K_sent_end_var.trace('w',activate_visualization_options)
 
@@ -936,7 +1138,7 @@ TIPS_options='Network Graphs (via Gephi)', 'Specialized visualization tools 1', 
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
-    # resetAll = "\n\nPress the RESET button to clear all selected values, and start fresh."
+    # reset_relationalAll = "\n\nPress the reset_relational button to clear all selected values, and start fresh."
     # plusButton = "\n\nPress the + buttons, when available, to add a new field."
     # OKButton = "\n\nPress the OK button, when available, to accept the selections made, then press the RUN button to process the query."
     if not IO_setup_display_brief:
@@ -949,11 +1151,12 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the GUI you wish to open for specialized data visualization options: Excel charts, geographic maps in Google Earth Pro, HTML file, wordclouds.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize relations between a set of elements, 3 elements in a network graph in Gephi (e.g, SVO) or 2 or 3 elements in a Plotly Sankey chart (e.g., SVO or SO).\n\n\n\nOptions become available in succession.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the csv file fields to be used to visualize relations.\n\nPress the + button to add successive fields until all 2 or 3 elements have been added (2 or 3 for Sankey, 3 for Gephi). For instance, in a Gephi graph, the first field selected is the first node; the second field selected is the edge; the third field selected is the second node (the selected fields will be displayed in the grayed out widget; make sure to press the + sign after the last selection).\n\nPress the 'Reset ' button to clear selected values and start fresh.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the csv file fields to be used to visualize relations.\n\nPress the + button to add successive fields until all 2 or 3 elements have been added (2 or 3 for Sankey, 3 for Gephi). For instance, in a Gephi graph, the first field selected is the first node; the second field selected is the edge; the third field selected is the second node (the selected fields will be displayed in the grayed out widget; make sure to press the + sign after the last selection).\n\nPress the 'reset_relational ' button to clear selected values and start fresh.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE GEPHI CHART ONLY.\n\nFor Gephi network graphs, once all three fields (node 1, edge, node 2) have been selected, the widget 'csv file field for dynamic graph' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID or Date) or ignore the option if the network should not be dynamic.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SANKEY CHART ONLY.\n\nPlease, using the dropdown menus, select the maximum number of values to be considered for each of the 2 or 3 elements in computing the interactive Sankey chart.\n\nWith too many values, Sankey charts become very messy.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SANKEY CHART ONLY.\n\nPlease, using the dropdown menus, select the maximum number of values to be considered for each of the 2 or 3 elements in computing the interactive Sankey chart.\n\nWith to many values, Sankey charts become very messy.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in an interactive sunburst or treemap chart.\n\nThe algorithm applies to categorical data rather than numerical data.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, enter the comma-separated labels/parts of a filename to be used to separate fields in the filename (e.g., in the filename, Harry Potter_Book1_1, Harry Potter_Book2_3, ..., Harry Potter_Book4_1... you could enter Book1, Book3 to sample the files to be used for visualization.\n\nThe number of distinct labels/parts of filename should be small (e.g., the 7 Harry Potter books).\n\nThe widgets in this line are REQUIRED to run either the Sunburst or Treemap algorithms.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The widgets in this line are REQUIRED to run either the Sunburst or Treemap algorithms.\n\nPlease, enter at least two sets of combinations of csv file field and search values.\n\n   First, select the csv file field using the dropdown menu.\n\n   Second, enter the comma-separated search values to be used from that field to construct the chart. For a 'Document' csv file field, you can enter specific parts of a filename (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...). For an 'NER' csv file field, you can enter the tags 'PERSON' or 'LOCATION, COUNTRY, STATE_OR_PROVINCE, CITY'.\n\n   Finally, click on + symbol to enter another combination of csv field and values (at least two combinations are required) (you can else press the Reset button to clear all selected values and start fresh, or the Show button to visualize the currently selected options).\n\nALWAYS CLICK THE + SYMBOL AFTER HAVING ENTERED THE LAST COMBINATION.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE COLORMAP OPTION ONLY.\n\nPlease, enter the maximum number of rows to be displayed in the chart (default = 20).\n\nTick the 'Color' checkbox to select from the color palette the RGB color to be used for the chart (default color orange, RGB 255 166 0).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SUNBURST OPTION ONLY.\n\nPlease, enter the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the checkbox 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.\n\nTick the checkbox 'Do NOT split documents' if you wish to visualize an entire document.\n\nThe three options are mutually exclusive.\n\nThe Sunburst algorithm uses the values in Document ID and Sentence ID to process First K and Last K sentences or to split a document in halves.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE TREEMAP OPTION ONLY. THE FIELDS ARE OPTIONAL (i.e., not required to run the treemap algorithm). \n\nPlease, tick the checkbox if you wish to use the values of a numerical variable to improve the treemap chart.\n\nUse the dropdown menu to select the csv file numeric field to be used for plotting.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)

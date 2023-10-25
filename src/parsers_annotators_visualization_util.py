@@ -472,6 +472,27 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                 else:
                     filesToOpen.extend(outputFiles)
 
+
+            headers=IO_csv_util.get_csvfile_headers(outputFilename)
+            Sankey_limit1_var=12
+            Sankey_limit2_var = 12
+            three_way_Sankey = False
+            var3 = None
+            Sankey_limit3_var = None
+
+            output_label = 'sankey'
+            import IO_files_util
+            outputFilename_sankey = IO_files_util.generate_output_file_name(outputFilename, inputDir, outputDir,
+                                                                     '.html', output_label)
+            outputFiles = charts_util.Sankey(outputFilename, outputFilename_sankey,
+                                'Pronoun', Sankey_limit1_var, 'Referent', Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
+
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
     return filesToOpen
 
 # the gender annotator displays results in an html file
