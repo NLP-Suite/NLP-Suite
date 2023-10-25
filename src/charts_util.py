@@ -1656,13 +1656,23 @@ def timechart(data,outputFilename,var,date_format_var,cumulative,monthly=None,ye
 def process_and_aggregate_data(data, **kwargs):
     conditions = kwargs.get('where_column', {})  # WHERE conditions
     agg_column = kwargs.get('groupby_column')  # GROUP BY column
-    select_columns = kwargs.get('select_column')  # SELECT columns
+    select_columns = kwargs.get('select_column',[])  # SELECT columns
     for col, value in conditions.items():
         if isinstance(value, (list, tuple)):
             data = data[data[col].isin(value)]
         else:
             data = data[data[col] == value]
+
+    if not select_columns:
+        select_columns = [col for col in data.columns if col != agg_column]
+        # If agg_column is not specified, we cannot proceed with grouping; handle this case as needed
+    if not agg_column:
+        raise ValueError("The 'groupby_column' parameter is required for aggregation.")
+        print("Due to exception in missing provided value, we have to return early")
+        return
+        # Group by the specified column along with select_columns and calculate the count
     agg_data = data.groupby([agg_column, select_columns]).size().reset_index(name='Count')
+    # Pivot the table. If select_columns is empty, this will consider all other columns.
     pivot_data = agg_data.pivot_table(index=select_columns, columns=agg_column, values='Count', fill_value=0)
     return pivot_data
 
@@ -1781,23 +1791,43 @@ def get_transformation_choice(choice = 5):
         5: None
     }
     return transformations.get(choice, None)
-def sql_commands(s):
+
+def further_group(df,major_parm, small_prm):
+    ## majro_parm = str, small_prm = list of string to be regexed against a
+    ## as we need to check suffix of string for GROUP BY
+    col = df[major_parm].value_counts().index.tolist()
+    mps_suffix = {}
+    for i in col:
+        for j in small_prm:
+            if re.search('.*'+str(j)+'.*',str(i)):
+                mps_suffix[str(i)] = str(j)
+    df['Real_'+major_parm] = df[major_parm].map(mps_suffix)
+
+def sql_commands(s, dataFrame):
     '''
     In sql, we all know the famous quote, SELECT * FROM any_sort_of_datatable WHERE * GROUP BY *
     This command is in effect doing that.
-    The donde is the WHERE command, in which you know at which point ROWS you'd like to filter fow
-    The grupo is the GROUP BY command, in which COLUMN's FIELDS you know you would like to aggregate the RESULT upon
-    The desde is the SELECT command, in which you know which COLUMNS you'd like to present to the viewers
+    The  WHERE command, in which you know at which point ROWS you'd like to filter fow
+    The  GROUP BY command, in which COLUMN's FIELDS you know you would like to aggregate the RESULT upon
+    The SELECT command, in which you know which COLUMNS you'd like to present to the viewers
     The return is, in essence, a pythonic database searching command that achieves this effect
     '''
-    WHERE_s = s[:-2]
-    GROUPBY = s[-2][0].replace("|", "")
+    WHERE_s = s[1:-1]
+    GROUPBY_s = s[0][0].split('|')
+    GROUPBY = GROUPBY_s[0]
+    add = GROUPBY_s[1]
+    if add:
+        all_values = add.split(', ')
+        further_group(dataFrame,GROUPBY,all_values)
+        print("I have detected your all_values contain some string, and I map them accordingly")
+        GROUPBY = 'Real_' + GROUPBY
     SELECT = s[-1][0].replace("|", "")
     WHERE = {}
-    for condition in WHERE_s:
-        cmd = condition[0].split('|')
-        mtc = cmd[1].split(', ')
-        WHERE[cmd[0]] = mtc
+    if WHERE_s:
+        for condition in WHERE_s:
+            cmd = condition[0].split('|')
+            mtc = cmd[1].split(', ')
+            WHERE[cmd[0]] = mtc
     return WHERE, GROUPBY, SELECT
 
 import numpy as np
@@ -1815,16 +1845,21 @@ def cmaps(start_color, end_color):
 
 def main_colormap(inputFilename, outputDir, csv_file_categorical_field_list, params):
     dataFrame = read_filename_color(inputFilename)
-    WHERE, GROUPBY, SELECT = sql_commands(csv_file_categorical_field_list)
+    WHERE, GROUPBY, SELECT = sql_commands(csv_file_categorical_field_list, dataFrame)
     step1 = process_and_aggregate_data(dataFrame, where_column=WHERE, groupby_column=GROUPBY, select_column=SELECT)
-    val = 1 #get_transformation_choice(), but we will connect it....
+   # val = 1 #get_transformation_choice(), but we will connect it....
     step2 = transform_data(step1) # There needs to be a GUI to allow transformation, but...
     # We proceed with default instead perhaps...
     if GROUPBY == 'Document':
         renamedf(step2) # We rename to file relative location, not absolute location
-    filename = outputDir+os.sep+"Colormetric.png"
-    cmap = cmaps((255, 0, 0), (0, 0, 255)) # I am waiting for two parameters to passed in
-    visualize_data(step2,outputname=filename, color = cmap, top_n=params[0]) # There is no GUI yet...
+    try:
+        cmap = cmaps(eval(params[1]), eval(params[2]))
+    except:
+        cmap = cmaps((135, 207, 236),(0, 0, 255))
+    import IO_files_util
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
+                                                             '.colormetric')
+    visualize_data(step2,outputname=outputFilename, color = cmap, top_n=params[0], normalize = params[-1]) # There is no GUI yet...
 
-    return [filename]
+    return outputFilename
 

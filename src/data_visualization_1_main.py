@@ -790,10 +790,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 400, y_multiplier_integer,
 #                                                color_1_lb, True)
 
-color_1_style_var.set("255 166 0")
+color_1_style_var.set("135, 207, 236")
 color_1_entry = tk.Entry(window, width=10, textvariable=color_1_style_var)
 color_1_entry.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+110, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+70, y_multiplier_integer,
                                                color_1_entry,True)
 
 def activate_color_1_palette(*args):
@@ -802,7 +802,7 @@ def activate_color_1_palette(*args):
     if color_1_var.get() == 1:
         style = ttk.Style(window)
         style.theme_use('clam')
-        color_1_list = askcolor((255, 255, 0), window)
+        color_1_list = askcolor((135, 207, 236), window)
         color_1_style = color_1_list[0]
         color_1_style_var.set(color_1_style)
 color_1_var.trace('w', activate_color_1_palette)
@@ -814,7 +814,7 @@ def activate_color_2_palette(*args):
     if color_2_var.get() == 1:
         style = ttk.Style(window)
         style.theme_use('clam')
-        color_2_list = askcolor((255, 255, 0), window)
+        color_2_list = askcolor((0, 0, 255), window)
         color_2_style = color_2_list[0]
         color_2_style_var.set(color_2_style)
 color_2_var.trace('w', activate_color_2_palette)
@@ -833,12 +833,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_c
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 400, y_multiplier_integer,
 #                                                color_1_lb, True)
 
-color_2_style_var.set("255 166 0")
+color_2_style_var.set("0, 0, 255")
 color_2_entry = tk.Entry(window, width=10, textvariable=color_2_style_var)
 color_2_entry.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+110, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+70, y_multiplier_integer,
                                                color_2_entry, True)
-
 
 normalize_lb = tk.Label(window, text='Normalize')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
