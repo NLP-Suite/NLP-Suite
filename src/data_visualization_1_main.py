@@ -38,8 +38,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         categorical_var,
         csv_file_categorical_field_list,
         max_rows_var,
-        color_1_var,
-        color_2_var,
+        color_1_style_var,
+        color_2_style_var,
         normalize_var,
         K_sent_begin_var,
         K_sent_end_var,
@@ -161,7 +161,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 mb.showwarning("Warning",
                                "The colormap algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
                 return
-            params = [max_rows_var, color_1_var, color_2_var, normalize_var]
+            params = [max_rows_var, color_1_style_var, color_2_style_var, normalize_var]
             outputFiles = charts_util.main_colormap(inputFilename, outputDir, csv_file_categorical_field_list, params)
 
             if outputFiles != None:
@@ -264,8 +264,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             categorical_var.get(),
                             csv_file_categorical_field_list,
                             max_rows_var.get(),
-                            color_1_var.get(),
-                            color_2_var.get(),
+                            color_1_style_var.get(),
+                            color_2_style_var.get(),
                             normalize_var.get(),
                             K_sent_begin_var.get(),
                             K_sent_end_var.get(),

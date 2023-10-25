@@ -249,9 +249,7 @@ def convert_Excel_to_csv(inputFilename,outputDir, headers=None):
     # Write the dataframe object
     # into csv file
     outputFilename=outputDir + os.sep + "Test.csv"
-    read_file.to_csv(outputFilename, encoding='utf-8',
-                     index=None,
-                     header=True)
+    read_file.to_csv(outputFilename, encoding='utf-8', index=None, header=True)
 
     # read csv file and convert into a dataframe object
     df = pd.DataFrame(pd.read_csv(outputFilename, encoding='utf-8', on_bad_lines='skip'))
