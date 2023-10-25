@@ -66,7 +66,7 @@ def run(inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPa
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label=knowledge_graphs_var,
-                                                       silent=True)
+                                                       silent=False)
     if outputDir == '':
         return
 

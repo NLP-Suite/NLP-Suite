@@ -5,7 +5,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"data_visualization.py",['os','tkinter'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"data_visualization__main.py",['os','tkinter'])==False:
     sys.exit(0)
 
 import os
@@ -784,7 +784,7 @@ color_1_checkbox = tk.Checkbutton(window, text='Color ', variable=color_1_var, o
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    color_1_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Tick the checkbox to select the the LIGHTER color (left to right) for less frequent occurrences to be used for the cormap (default = light blue, RGB = 135 207 236)")
+                                   "Tick the checkbox to select the LIGHTER color (left to right) for less frequent occurrences to be used for the cormap (default = light blue, RGB = 135 207 236)")
 
 # color_1_lb = tk.Label(window, text='RGB color code ')
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu + 400, y_multiplier_integer,

@@ -289,8 +289,12 @@ def run(inputDir="relative_path_here",
         aggregateBy = ''
         temporal_aggregation = ''
 
-    files = IO_files_util.getFileList('', inputDir, ".txt", silent=False,
+    inputDocs = IO_files_util.getFileList('', inputDir, ".txt", silent=False,
                                       configFileName=configFileName)  # get all input files
+    nDocs=len(inputDocs)
+    if nDocs==0:
+        return
+
 
     import IO_string_util
     search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_string_list(search_wordsLists,
@@ -304,9 +308,9 @@ def run(inputDir="relative_path_here",
     # collect date info
     if dateOption:
         print("\nProcessing files collecting date information\n")
-        for file in files:  # iterate over each file
+        for file in inputDocs:  # iterate over each file
             head, tail = os.path.split(file)
-            print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
+            print("Processing file " + str(docIndex) + "/" + str(nDocs) + ' ' + tail)
             docIndex += 1
             date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter,
                                                                                 datePos)
@@ -448,7 +452,7 @@ def run(inputDir="relative_path_here",
 
 
 
-    for file in files:
+    for file in inputDocs:
         docIndex += 1
         # initialize the CoOcc_results dictionary
         if CoOcc_Viewer:
@@ -459,7 +463,7 @@ def run(inputDir="relative_path_here",
                                    "Document ID": docIndex,
                                    "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
         head, tail = os.path.split(file)
-        print("Processing file " + str(docIndex) + "/" + str(len(files)) + ' ' + tail)
+        print("Processing file " + str(docIndex) + "/" + str(nDocs) + ' ' + tail)
         # extract the date from the file name
         date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter, datePos)
         if date == '':

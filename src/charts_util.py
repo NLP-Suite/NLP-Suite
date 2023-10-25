@@ -8,7 +8,7 @@ import GUI_util
 import IO_libraries_util
 
 if IO_libraries_util.install_all_Python_packages(GUI_util.window, "charts_util",
-                                          ['csv', 'os','collections','openpyxl', 'pandas', 'numpy',  'plotly', 're', 'tkinter']) == False:
+                                          ['csv', 'os','collections','re', 'tkinter', 'openpyxl', 'pandas', 'numpy', 'matplotlib', 'plotly', 'seaborn']) == False:
     sys.exit(0)
 
 import plotly
