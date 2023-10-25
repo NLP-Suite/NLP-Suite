@@ -359,7 +359,7 @@ def run(inputDir="relative_path_here",
           #  if case_sensitive:
             b = data[data[data.columns[0]].str.endswith(word)]
             df2 = b.copy()
-            df2['Searched word'] = df2[data.columns[0]].apply(lambda x: transform(x))
+            df2['Search word'] = df2[data.columns[0]].apply(lambda x: transform(x))
             df2['Co-Occurring word'] = word
             expanded_rows = []
             for _, row in df2.iterrows():

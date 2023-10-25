@@ -1209,6 +1209,9 @@ def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,
             finalframe=data[data[var1].isin(list(set(tempframe['index'])))]
         except:
             finalframe=data[data[var1].isin(list(set(tempframe.index)))]
+        if len(finalframe)==0:
+            mb.showwarning(title='Warning',message='The dataframe is empty')
+            return
         tempframe2=pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
         finalframe=finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
         finalframe=finalframe.reset_index(drop=True)
@@ -1238,6 +1241,9 @@ def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,
             finalframe=data[data[var1].isin(list(set(tempframe['index'])))]
         except:
             finalframe=data[data[var1].isin(list(set(tempframe.index)))]
+        if len(finalframe)==0:
+            mb.showwarning(title='Warning',message='The dataframe is empty')
+            return
         tempframe2=pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
         finalframe=finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
         finalframe=finalframe.reset_index(drop=True)
