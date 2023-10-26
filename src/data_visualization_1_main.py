@@ -178,38 +178,38 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                                "The sunburst algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
                 return
 
-            if (K_sent_begin_var!='' and K_sent_end_var!='') or  split_var:
-                # these options require a Document ID and Sentence ID fields
-                headers = IO_csv_util.get_csvfile_headers(inputFilename)
-                if not 'Document ID' in headers or not 'Sentence ID' in headers:
-                    mb.showwarning("Warning",
-                                   "The 'First K' 'Last K' or 'Split documents in equal halves' options of the sunburst algorithm require a csv file in input with 'Document ID' and 'Sentence ID' fields'. Your csv file does not contain these fields.\n\nPlease, select a different csv file or use the 'Do NOT split documents' option and try again.")
-                    return
-            if K_sent_begin_var=='' and K_sent_end_var=='' and split_var==False and do_not_split_var==False:
-                mb.showwarning("Warning",
-                               "The sunburst algorithm requires a selection of Begin/End K sentences or Split documents in equal halves or Do not split documents.\n\nPlease, make a selection and try again.")
-                return
-            # check that K_sent_begin_var and K_sent_end_var values are numeric
-            if split_var==False and do_not_split_var==False:
-                try:
-                    if type(int(K_sent_begin_var))!= int:
-                        int_K_sent_begin_var = int(K_sent_begin_var)
-                        pass
-                except:
-                    mb.showwarning("Warning",
-                                   "The value entered for Begin K sentences MUST be a numeric integer.\n\nPlease, enter a numeric value and try again.")
-                    return
-                try:
-                    if type(int(K_sent_end_var))!= int:
-                        int_K_sent_end_var = int(K_sent_end_var)
-                        pass
-                except:
-                    mb.showwarning("Warning",
-                                   "The value entered for End K sentences MUST be a numeric integer.\n\nPlease, enter a numeric value and try again.")
-                    return
-            else:
-                int_K_sent_begin_var=None
-                int_K_sent_end_var=None
+            # if (K_sent_begin_var!='' and K_sent_end_var!='') or  split_var:
+            #     # these options require a Document ID and Sentence ID fields
+            #     headers = IO_csv_util.get_csvfile_headers(inputFilename)
+            #     if not 'Document ID' in headers or not 'Sentence ID' in headers:
+            #         mb.showwarning("Warning",
+            #                        "The 'First K' 'Last K' or 'Split documents in equal halves' options of the sunburst algorithm require a csv file in input with 'Document ID' and 'Sentence ID' fields'. Your csv file does not contain these fields.\n\nPlease, select a different csv file or use the 'Do NOT split documents' option and try again.")
+            #         return
+            # if K_sent_begin_var=='' and K_sent_end_var=='' and split_var==False and do_not_split_var==False:
+            #     mb.showwarning("Warning",
+            #                    "The sunburst algorithm requires a selection of Begin/End K sentences or Split documents in equal halves or Do not split documents.\n\nPlease, make a selection and try again.")
+            #     return
+            # # check that K_sent_begin_var and K_sent_end_var values are numeric
+            # if split_var==False and do_not_split_var==False:
+            #     try:
+            #         if type(int(K_sent_begin_var))!= int:
+            #             int_K_sent_begin_var = int(K_sent_begin_var)
+            #             pass
+            #     except:
+            #         mb.showwarning("Warning",
+            #                        "The value entered for Begin K sentences MUST be a numeric integer.\n\nPlease, enter a numeric value and try again.")
+            #         return
+            #     try:
+            #         if type(int(K_sent_end_var))!= int:
+            #             int_K_sent_end_var = int(K_sent_end_var)
+            #             pass
+            #     except:
+            #         mb.showwarning("Warning",
+            #                        "The value entered for End K sentences MUST be a numeric integer.\n\nPlease, enter a numeric value and try again.")
+            #         return
+            # else:
+            #     int_K_sent_begin_var=None
+            #     int_K_sent_end_var=None
 
             # # interest pass a list [] of labels embedded in the filename, e.g. Book1, Book2, ... or Chinese, Arabian,...
             # interest = []
@@ -219,8 +219,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             #     temp_interest.append(interest[i].lstrip())
             # # label is a string that has the header field in the csv file to be used for display
             # label=csv_field_categorical_var
-            outputFiles = charts_util.Sunburst(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
-                                            do_not_split_var, int_K_sent_begin_var, int_K_sent_end_var, split_var)
+            outputFiles = charts_util.Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list, 1)
+
+            #### USED
+        #    outputFiles = charts_util.Sunburst(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
+        #                                    do_not_split_var, int_K_sent_begin_var, int_K_sent_end_var, split_var)
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -239,8 +242,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                                "The selected treemap option with the use of numerical data requires a variable containing the numerical data.\n\nPlease, select the csv file field containing the numerical data and try again.")
                 return
             #def Treemap(data,outputFilename,interest,var,extra_dimension_average,average_variable=None):
-            outputFiles = charts_util.Treemap(inputFilename, outputFilename,
-                                                                   temp_interest, label, use_numerical_variable_var,csv_field_categorical_var)
+
+            outputFiles = charts_util.Sunburst_Treemap(inputFilename, outputFilename, outputDir,
+                                                       csv_file_categorical_field_list, 0)
+            # 0 - Treemap, 1 - Sunburst, lazy boolean for shortening the code in charts_util
+
+            # outputFiles = charts_util.Treemap(inputFilename, outputFilename,
+          #                                                         temp_interest, label, use_numerical_variable_var,csv_field_categorical_var)
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)

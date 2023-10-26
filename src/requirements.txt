@@ -15,7 +15,7 @@ pygit2
 spacy
 stanza
 #
-pandas
+pandas==1.5.2
 numpy
 #
 #used to parse arguments that are passed to a script via command line
