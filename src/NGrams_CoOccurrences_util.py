@@ -359,7 +359,7 @@ def run(inputDir="relative_path_here",
           #  if case_sensitive:
             b = data[data[data.columns[0]].str.endswith(word)]
             df2 = b.copy()
-            df2['Searched word'] = df2[data.columns[0]].apply(lambda x: transform(x))
+            df2['Search word'] = df2[data.columns[0]].apply(lambda x: transform(x))
             df2['Co-Occurring word'] = word
             expanded_rows = []
             for _, row in df2.iterrows():
@@ -391,15 +391,15 @@ def run(inputDir="relative_path_here",
                                                                  'N-grams_search')
         combined_pivot_df.to_csv(NgramsSearchFileName, index=False)
 
-        NgramsSearchFileName_Sankey = IO_files_util.generate_output_file_name('', inputDir, outputDir, '-Sankey.csv',
+        NgramsSearchFileName_Sankey = IO_files_util.generate_output_file_name('', inputDir, outputDir, '_Sankey.csv',
                                                                        'N-grams_search')
         combined_saneky_df.to_csv(NgramsSearchFileName_Sankey, index=False)
         # print('we are done with both Sankey handling and the regular searches!')
         if createCharts:
             import charts_util
             headers=IO_csv_util.get_csvfile_headers(NgramsSearchFileName_Sankey)
-            Sankey_limit1_var=12
-            Sankey_limit2_var=12
+            Sankey_limit1_var=15
+            Sankey_limit2_var=15
             three_way_Sankey = False
             var3 = None
             Sankey_limit3_var = None

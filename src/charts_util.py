@@ -1132,6 +1132,10 @@ def multiple_barchart(datalist,outputFilename,var,ntopchoices):
     newDatalist=[]
     for i in tempdatalist:
         newDatalist.append(pd.DataFrame(i[var].value_counts()).reset_index().rename(columns={'index':var,var:'Frequency'}).head(ntopchoices))
+    # if len(finalframe) == 0:
+    #     mb.showwarning(title='Warning',
+    #                    message='The dataframe computed by the Sankey flowchart is empty.\n\nIt is likely that you are using a version of pandas > 1.5.2. If so, in command line please, pip unistall pandas and pip install pandas==1.5.2')
+    #     return
     fig=make_subplots(rows=2,cols=int(len(datalist)/2)+len(datalist)%2)
     cols=1
     for i in range(0,len(newDatalist)):
@@ -1208,6 +1212,10 @@ def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,
         try:
             finalframe=data[data[var1].isin(list(set(tempframe['index'])))]
         except:
+            if len(finalframe) == 0:
+                mb.showwarning(title='Warning',
+                               message='The dataframe computed by the Sankey flowchart is empty.\n\nIt is likely that you are using a version of pandas > 1.5.2. If so, in command line please, pip unistall pandas and pip install pandas==1.5.2')
+                return
             finalframe=data[data[var1].isin(list(set(tempframe.index)))]
         tempframe2=pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
         finalframe=finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
@@ -1237,6 +1245,10 @@ def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,
         try:
             finalframe=data[data[var1].isin(list(set(tempframe['index'])))]
         except:
+            if len(finalframe) == 0:
+                mb.showwarning(title='Warning',
+                               message='The dataframe computed by the Sankey flowchart is empty.\n\nIt is likely that you are using a version of pandas > 1.5.2. If so, in command line please, pip unistall pandas and pip install pandas==1.5.2')
+                return
             finalframe=data[data[var1].isin(list(set(tempframe.index)))]
         tempframe2=pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
         finalframe=finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
@@ -1372,6 +1384,10 @@ def Sunburst(data, outputFilename, outputDir, case_sensitive, interest, label,be
                     intermediatedata1=tempdata[tempdata['Document ID']==i]
                     intermediatedata2=intermediatedata1[intermediatedata1['Sentence ID']>(len(intermediatedata1)-last_sentences)]
                     tempdata1=pd.concat([tempdata1,intermediatedata2]).reset_index().drop(columns={'index'}) #all observations with last n sentences
+                    if len(tempdata1) == 0:
+                        mb.showwarning(title='Warning',
+                                       message='The dataframe computed by theSunburst chart algorithm is empty.\n\nIt is likely that you are using a version of pandas > 1.5.2. If so, in command line please, pip unistall pandas and pip install pandas==1.5.2')
+                        return
 
                 list2=list(np.repeat('End',len(tempdata1)-len(list1))) #List repeating 'End'
                 finallist=list1+list2 #Create a vector defining if the sentence is at the beginning or the end
@@ -1830,6 +1846,36 @@ def sql_commands(s, dataFrame):
             WHERE[cmd[0]] = mtc
     return WHERE, GROUPBY, SELECT
 
+def special_sql_commands(s, dataFrame):
+    '''
+    THIS IS FOR sunburst / treemaps only
+    For the first parameter, it should be fixed to be partial match or none
+    For all other parameters, it should be fixed to fixed match or none
+    Example:
+        Given: NY_1_piggy, NY_2_bank, NY_3_piggy, NY_2_bank
+        Entering piggy would yield partial match: NY_1_piggy, NY_3_piggy aggregates
+        .............. would yield fixed match: None. Only if entering NY_1_piggy would yield crrect
+    Example2:
+        In NER, entering O would yield partial match: PERSON, ORGANIZATION, IDEOLOGY, O....
+        Entering O would yield fixed match: O only.
+    '''
+    WHERE_s = s[1:]
+    GROUPBY_s = s[0][0].split('|')
+    GROUPBY = GROUPBY_s[0]
+    add = GROUPBY_s[1]
+    if add:
+        all_values = add.split(', ')
+        further_group(dataFrame,GROUPBY,all_values)
+        print("I have detected your all_values contain some string, and I map them accordingly")
+        GROUPBY = 'Real_' + GROUPBY
+    WHERE = {}
+    if WHERE_s:
+        for condition in WHERE_s:
+            cmd = condition[0].split('|')
+            mtc = cmd[1].split(', ')
+            WHERE[cmd[0]] = mtc
+    return WHERE, GROUPBY
+
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 def interpolate_colors(color1, color2, num_colors):
@@ -1863,3 +1909,35 @@ def main_colormap(inputFilename, outputDir, csv_file_categorical_field_list, par
 
     return outputFilename
 
+def select_and_counting(df, select_and_count):
+    grouped = df.groupby(select_and_count).size()
+    counts_df = grouped.reset_index(name='values')
+    new_df = pd.merge(df,counts_df,on=select_and_count,how='left')
+    return new_df
+    # This one tells us for each word, how many times it appear
+    # THIS IS FOR SUNBURST ? TREE MAP
+
+def where_data(data, **kwargs):
+    conditions = kwargs.get('where_column', {})  # WHERE conditions
+    for col, value in conditions.items():
+        if value == '' or value == ['']:
+            continue
+        if isinstance(value, (list, tuple)):
+            data = data[data[col].isin(value)]
+    # THIS FUNCTION IS DOING: SELECT FROM DATA WHERE cond_1, cond_2, ... con_n for ** kwargs
+    return data
+# THIS IS AN ABBREVIATED VERSION FOR The sunburst / treemap
+def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list,suntree):
+    data = pd.read_csv(inputFilename)
+    WHERE, GROUPBY = special_sql_commands(csv_file_categorical_field_list, data)
+    data = where_data(data, where_column=WHERE)
+    select_and_count = [GROUPBY]
+    select_and_count.extend(list(WHERE.keys()))
+    df = select_and_counting(data, select_and_count)
+    df_grouped = df.groupby(select_and_count).size().reset_index(name='counts')
+    if suntree:
+        fig = px.sunburst(df_grouped, path=select_and_count, values='counts')  # Ensure the hierarchy levels are correct
+    else:
+        fig = px.treemap(df_grouped, path=select_and_count, values='counts')
+    fig.write_html(outputFilename)
+    return outputFilename
