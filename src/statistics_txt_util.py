@@ -32,7 +32,7 @@ import stanza
 
 # Sentence Complexity
 import tree
-import node_sentence_complexity as Node
+import sentence_complexity_node_util as Node
 
 # from gensim.utils import lemmatize
 from itertools import groupby

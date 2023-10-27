@@ -329,6 +329,10 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
                                       lemmatize, nounsOnly, run_Mallet, openOutputFiles,createCharts, chartPackage):
     global filesToOpen
     filesToOpen=[]
+    if pd.__version__[0]=='2':
+        mb.showwarning(title='Warning',
+                       message='Gensim is incompatible with a version of pandas higher than 2.0\n\nIn command line, please, pip unistall pandas and pip install pandas==1.5.2.\n\nMake sure you are in the right NLP environment by typing conda activate NLP')
+        return
 
     numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
     if numFiles == 0:

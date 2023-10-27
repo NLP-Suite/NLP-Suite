@@ -1126,16 +1126,18 @@ def complete_sentence_index(file_path):
 #var is variable of choice
 #ntopchoices is the n max values
 def multiple_barchart(datalist,outputFilename,var,ntopchoices):
+
+    if pd.__version__[0]=='2':
+        mb.showwarning(title='Warning',
+                       message='The multiple_barchart algorithm is incompatible with a version of pandas higher than 2.0\n\nIn command line, please, pip unistall pandas and pip install pandas==1.5.2.\n\nMake sure you are in the right NLP environment by typing conda activate NLP')
+        return
+
     tempdatalist=[]
     for i in datalist:
         tempdatalist.append(pd.read_csv(i, encoding='utf-8', on_bad_lines='skip'))
     newDatalist=[]
     for i in tempdatalist:
         newDatalist.append(pd.DataFrame(i[var].value_counts()).reset_index().rename(columns={'index':var,var:'Frequency'}).head(ntopchoices))
-    # if len(finalframe) == 0:
-    #     mb.showwarning(title='Warning',
-    #                    message='The dataframe computed by the Sankey flowchart is empty.\n\nIt is likely that you are using a version of pandas > 1.5.2. If so, in command line please, pip unistall pandas and pip install pandas==1.5.2')
-    #     return
     fig=make_subplots(rows=2,cols=int(len(datalist)/2)+len(datalist)%2)
     cols=1
     for i in range(0,len(newDatalist)):
@@ -1198,6 +1200,12 @@ def boxplot(data,outputFilename,var,points,bycategory=None,category=None,color=N
 #All these recommendations are for performance
 #three_way_Sankey is a boolean variable that dictates whether the returned Sankey is 2way or 3way. True for 3 variables, false for 2 variables
 def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,var3=None,lengthvar3=None):
+
+    if pd.__version__[0]=='2':
+        mb.showwarning(title='Warning',
+                       message='The Sankey algorithm is incompatible with a version of pandas higher than 2.0\n\nIn command line, please, pip unistall pandas and pip install pandas==1.5.2.\n\nMake sure you are in the right NLP environment by typing conda activate NLP')
+        return
+
     if type(data)==str:
         data=pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
 
@@ -1245,11 +1253,10 @@ def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,
         try:
             finalframe=data[data[var1].isin(list(set(tempframe['index'])))]
         except:
-            if len(finalframe) == 0:
-                mb.showwarning(title='Warning',
-                               message='The dataframe computed by the Sankey flowchart is empty.\n\nIt is likely that you are using a version of pandas > 1.5.2. If so, in command line please, pip unistall pandas and pip install pandas==1.5.2')
-                return
-            finalframe=data[data[var1].isin(list(set(tempframe.index)))]
+            mb.showwarning(title='Warning',
+                           message='The dataframe computed by the Sankey flowchart is empty.\n\nIt is likely that you are using a version of pandas > 1.5.2. If so, in command line please, pip unistall pandas and pip install pandas==1.5.2')
+            return
+            finalframe=tempframe #data[data[var1].isin(list(set(tempframe['count'])))]
         tempframe2=pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
         finalframe=finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
         finalframe=finalframe.reset_index(drop=True)
@@ -1453,19 +1460,30 @@ def Treemap(data,outputFilename,interest,csv_file_field,extra_dimension_average,
 
 def timechart(data,outputFilename,var,date_format_var,cumulative,monthly=None,yearly=None):
 #convert csv to pandas
+    headers = IO_csv_util.get_csvfile_headers(data)
+    if 'Date' in headers:
+        date_field = 'Date'
+    elif 'Document' in headers:
+        date_field = 'Document'
+    else:
+        mb.showwarning(title="Warning", message="The time mapper algorithm requires a csv input file with either a Date or a Document field in the headers.\n\nPlease, select the expected csv file and try again.")
+        return
     if type(data)==str:
         data=pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
     date=[]
     year=[]
     month=[]
     day=[]
+
+
+
     if date_format_var=='yyyy':#creates year variable based on yyyy format
         for i in range(0,len(data['Document'])):
-            year.append(re.search('\d{4}',data['Document'][i])[0])
+            year.append(re.search('\d{4}',data[date_field][i])[0])
             data['year']=year
     elif date_format_var=='mm-yyyy': #creates year and month variable in yyyy-mm format
         for i in range(0,len(data['Document'])):
-            date.append(re.search('\d.*\d',data['Document'][i])[0])
+            date.append(re.search('\d.*\d',data[date_field][i])[0])
         for i in range(0,len(data['Document'])):
             year.append(re.search('\d{4}',date[i])[0])
         for i in range(0,len(data['Document'])):
@@ -1473,43 +1491,43 @@ def timechart(data,outputFilename,var,date_format_var,cumulative,monthly=None,ye
         data['year']=year
         data['month']=month
     elif date_format_var=='yyyy-mm': #creates year and month variable in yyyy-mm format
-        for i in range(0,len(data['Document'])):
-            date.append(re.search('\d.*\d',data['Document'][i])[0])
-        for i in range(0,len(data['Document'])):
+        for i in range(0,len(data[date_field])):
+            date.append(re.search('\d.*\d',data[date_field][i])[0])
+        for i in range(0,len(data[date_field])):
             year.append(re.search('\d{4}',date[i])[0])
-        for i in range(0,len(data['Document'])):
+        for i in range(0,len(data[date_field])):
             month.append(year[i]+'-'+date[i][-2:])
         data['year']=year
         data['month']=month
     elif date_format_var=='dd-mm-yyyy':#creates year,month and day variable in yyyy-mm-dd format
-        for i in range(0,len(data['Document'])):
-            date.append(re.search('\d.*\d',data['Document'][i])[0])
-        for i in range(0,len(data['Document'])):
+        for i in range(0,len(data[date_field])):
+            date.append(re.search('\d.*\d',data[date_field][i])[0])
+        for i in range(0,len(data[date_field])):
             year.append(re.search('\d{4}',date[i])[0])
-        for i in range(0,en(data['Document'])):
+        for i in range(0,en(data[date_field])):
             month.append(year[i]+'-'+date[i][3:5])
-        for i in range(0,len(data['Document'])):
+        for i in range(0,len(data[date_field])):
             day.append(month[i]+'-'+date[i][0:2])
         data['day']=day
         data['year']=year
         data['month']=month
     elif date_format_var=='mm-dd-yyyy':#creates year,month and day variable in yyyy-mm-dd format
-        for i in range(0,len(data['Document'])):
+        for i in range(0,len(data[date_field])):
             try:
-                date.append(re.search('\d.*\d',data['Document'][i])[0])
+                date.append(re.search('\d.*\d',data[date_field][i])[0])
             except:
                 continue
-        for i in range(0,len(data['Document'])):
+        for i in range(0,len(data[date_field])):
             try:
                 year.append(re.search('\d{4}',date[i])[0])
             except:
                 continue
-        for i in range(0,len(data['Document'])):
+        for i in range(0,len(data[date_field])):
             try:
                 month.append(year[i]+'-'+date[i][0:2])
             except:
                 continue
-        for i in range(0,len(data['Document'])):
+        for i in range(0,len(data[date_field])):
             try:
                 day.append(month[i]+'-'+date[i][3:5])
             except:
@@ -1518,23 +1536,23 @@ def timechart(data,outputFilename,var,date_format_var,cumulative,monthly=None,ye
         data['month']=month
         data['day']=day
     elif date_format_var=='yyyy-mm-dd':#creates year,month and day variable in yyyy-mm-dd format
-        for i in range(0,len(data['Document'])):
-            date.append(re.search('\d.*\d',data['Document'][i])[0])
-        for i in range(0,len(data['Document'])):
+        for i in range(0,len(data[date_field])):
+            date.append(re.search('\d.*\d',data[date_field][i])[0])
+        for i in range(0,len(data[date_field])):
             year.append(re.search('\d{4}',date[i])[0])
-        for i in range(0,len(data['Document'])):
+        for i in range(0,len(data[date_field])):
             month.append(year[i]+'-'+date[i][5:7])
         data['year']=year
         data['month']=month
         data['day']=date
     elif date_format_var=='yyyy-dd-mm':#creates year,month and day variable in yyyy-mm-dd format
-        for i in range(0,len(data['Document'])):
-            date.append(re.search('\d.*\d',data['Document'][i])[0])
-        for i in range(0,len(data['Document'])):
+        for i in range(0,len(data[date_field])):
+            date.append(re.search('\d.*\d',data[date_field][i])[0])
+        for i in range(0,len(data[date_field])):
             year.append(re.search('\d{4}',date[i])[0])
-        for i in range(0,len(data['Document'])):
+        for i in range(0,len(data[date_field])):
             month.append(year[i]+'-'+date[i][-2:])
-        for i in range(0,len(data['Document'])):
+        for i in range(0,len(data[date_field])):
             day.append(month[i]+'-'+date[i][5:7])
         data['year']=year
         data['month']=month

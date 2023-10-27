@@ -547,7 +547,7 @@ YAGO_ontology_class_menu= 'BioChemEntity','Gene','MolecularEntity','Taxon','Bran
 NLP_Suite_visualization_tools_menu = 'Excel charts', 'Geographic maps: From texts to maps via Google Earth Pro and Google Maps', \
 'Geographic maps: From csv file to maps via Google Earth Pro and Google Maps', 'Geographic distances between locations', \
 'HTML annotator - dictionary, gender, DBpedia, YAGO, WordNet - (All options GUI)', \
-                                    "Animated time-dependent bar plot (Plotly)", "Boxplot", "Multiple bar charts", "Network graphs (Gephi)", \
+                                    "Animated time-dependent bar plot (Plotly)", "Boxplot", "Colormap chart", "Multiple bar charts", "Network graphs (Gephi)", \
                                     "Sankey flowchart (Plotly)", "Sunburst pie chart (Plotly)", "Treemap (Plotly)", \
                                     'Sentence visualization: Dependency tree viewer (png graphs)', 'Wordclouds (ALL options GUI)'
 
@@ -581,7 +581,7 @@ NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample c
 'File merger (file content)',\
 'File splitter (file content)',\
 'File splitter (file name)', \
-'File search (file content for n-grams & co-occurrences; N-grams viewer)', \
+'File search (file content for n-grams & co-occurrences)', \
 'File search (file content for words/collocations)',\
 'File-type converter (csv, docx, pdf, rtf --> txt)', \
 'Find non-related documents', \
@@ -603,7 +603,7 @@ NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample c
 # 'Spelling checker (via pyspellchecker)',
 # 'Spelling checker (via textblob)')
 
-NLP_Suite_corpus_tools_menu = 'Co-Occurrences viewer', 'N-grams viewer', \
+NLP_Suite_corpus_tools_menu = 'Co-Occurrences VIEWER', 'N-grams VIEWER', \
 'Shape of stories', 'Similarities between documents (via Python difflib)', \
 'Similarities between documents (via Java Lucene)', 'Topic modeling (via MALLET & Gensim)'
 
@@ -645,8 +645,8 @@ NLP_Suite_corpus_document_tools_menu = \
 '', \
 'Style analysis (ALL options GUI)', \
 'Language detection', \
-'N-grams (word & character)', \
-'N-grams/co-occurrences viewer', \
+'N-grams', \
+'N-grams/co-occurrences VIEWER', \
 'Nominalization', \
 'Sentence complexity', \
 'Sentence/text readability (via textstat)', \
@@ -659,7 +659,7 @@ NLP_Suite_corpus_document_tools_menu = \
 '', \
 'Search (ALL options GUI)', \
 'Search CoNLL table', \
-'Search text file(s) for n-grams & co-occurrences (N-grams viewer)', \
+'Search text file(s) for n-grams & co-occurrences', \
 'Search text file(s) for words/collocations', \
 
 
