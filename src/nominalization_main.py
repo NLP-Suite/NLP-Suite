@@ -32,7 +32,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
         config_filename = scriptName.replace('main.py', 'config.csv')
 
     import nominalization_util
-    outputFiles = nominalization_util.nominalization(inputFilename,inputDir, outputDir, config_filename, openOutputFiles,createCharts,chartPackage,doNotListIndividualFiles, check_ending)
+    outputFiles = nominalization_util.nominalization(inputFilename,inputDir, outputDir, config_filename, config_input_output_numeric_options, openOutputFiles,createCharts,chartPackage,doNotListIndividualFiles, check_ending)
 
     if outputFiles!=None:
         if isinstance(outputFiles, str):
