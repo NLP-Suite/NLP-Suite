@@ -343,6 +343,7 @@ def run(inputDir="relative_path_here",
 
     search_words = []
     if Ngrams_search_var:
+        filesToOpen=[]
         if csv_file_var is None:
             print("empty csv file, do again, this ought not to happen?!")
             return
@@ -391,11 +392,57 @@ def run(inputDir="relative_path_here",
                                                                  'N-grams_search')
         combined_pivot_df.to_csv(NgramsSearchFileName, index=False)
 
-        NgramsSearchFileName_Sankey = IO_files_util.generate_output_file_name('', inputDir, outputDir, '_Sankey.csv',
-                                                                       'N-grams_search')
-        combined_saneky_df.to_csv(NgramsSearchFileName_Sankey, index=False)
         # print('we are done with both Sankey handling and the regular searches!')
         if createCharts:
+            if data.columns[0]=='1-grams':
+                inputFilename = NgramsSearchFileName
+                # inputFilename=outputFilename_byDocument
+                # these variables are used in charts_util.visualize_chart
+                headers = IO_csv_util.get_csvfile_headers(inputFilename)
+                groupBy = []
+                X_axis_label = ''
+                if 'Date' in headers:
+                    X_axis_label = 'Date'
+                    groupBy = ['Date']
+                else:
+                    if 'Document' in headers:
+                        X_axis_label = 'Document'
+                        groupBy = ['Document']
+                doc_pos = IO_csv_util.get_columnNumber_from_headerValue(headers, X_axis_label, inputFilename)
+
+                columns_to_be_plotted_yAxis=[]
+                title_string=''
+                for word in words:
+                    title_string = title_string + word + ', '
+                    word_pos = IO_csv_util.get_columnNumber_from_headerValue(headers, word, inputFilename)
+                    columns_to_be_plotted_yAxis.append([doc_pos, word_pos])
+                # remove last ,
+                title_string=title_string.rstrip()[:-1]
+                import charts_util
+                outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+                                                  outputFileLabel='search',
+                                                  chartPackage=chartPackage,
+                                                  chart_type_list=['line'],
+                                                  chart_title='Frequency Distribution of Search Word(s) by ' + X_axis_label + '\n' + title_string,
+                                                  hover_info_column_list=[],
+                                                  column_xAxis_label_var=X_axis_label,
+                                                  count_var=0)
+
+                if outputFiles != None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
+
+                return filesToOpen
+
+            if data.columns[0] != '2-grams':
+                return filesToOpen # Sankey works with 2-grams only
+
+            NgramsSearchFileName_Sankey = IO_files_util.generate_output_file_name('', inputDir, outputDir,
+                                                                                  '_Sankey.csv',
+                                                                                  'N-grams_search')
+            combined_saneky_df.to_csv(NgramsSearchFileName_Sankey, index=False)
             import charts_util
             headers=IO_csv_util.get_csvfile_headers(NgramsSearchFileName_Sankey)
             Sankey_limit1_var=15
@@ -412,8 +459,8 @@ def run(inputDir="relative_path_here",
                                                                      '.html', output_label)
             Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
                                 'Search word', Sankey_limit1_var, 'Co-Occurring word', Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
-
-        return [NgramsSearchFileName,NgramsSearchFileName_Sankey, Sankey_chart]
+            filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
+        return filesToOpen
 
        # filtered_data.to_csv(output_csv_file, index=False)
 

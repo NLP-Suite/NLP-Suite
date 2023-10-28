@@ -797,7 +797,7 @@ def get_data_to_be_plotted_with_counts(inputFilename,withHeader_var,headers,colu
                 column_list = [i[1] for i in data_list[k]]
             except IndexError:
                 continue
-            counts = Counter(column_list).most_common()
+            counts = list(Counter(column_list).most_common())
             if len(headers) > 0:
                 id_name_num = columns_to_be_plotted[k][0]
                 id_name = headers[id_name_num]

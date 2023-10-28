@@ -56,8 +56,7 @@ def removeart(original_sentence):
 # Distributives: all, both, half, either, neither, each, every
 # Difference words: other, another
 # Pre - determiners: such, what, rather, quite
-
-# Numbers : one, ten, thirty.
+# Numbers: one, ten, thirty.
 
 # determiners typically include numbers such as one, two, three,... but we cannot list them all and should use a function
 def removedt(original_sentence):
