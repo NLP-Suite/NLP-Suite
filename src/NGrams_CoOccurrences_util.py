@@ -221,7 +221,7 @@ def run(inputDir="relative_path_here",
 
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
-                                                   'Started running Words/Characters N-Grams VIEWER at',
+                                                   'Started running Words/Characters N-Grams at',
                                                    True, '', True, '', False)
 
     from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
@@ -593,7 +593,7 @@ def run(inputDir="relative_path_here",
             #         filesToOpen.extend(outputFiles)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                       'Finished running Words/Characters N-Grams VIEWER at', True, '', True, startTime,
+                                       'Finished running Words/Characters N-Grams at', True, '', True, startTime,
                                        False)
 
     return filesToOpen

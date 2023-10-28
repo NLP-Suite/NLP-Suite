@@ -589,7 +589,7 @@ def process_punctuation(inputFilename, inputDir, excludePunctuation, ngrams_list
     return ngrams_list
 
 
-import ngrams_util
+import NGrams_util
 # hapax_words is True when the user selevcts too export ONLY words, False when hapax will also include numebrs, symbiols, etc.
 def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, frequency=None, hapax_words=False,
     wordgram=1,
@@ -610,7 +610,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumb
             head, tail = os.path.split(file)
             print(" cache auto:  Processing file " + str(index+1) + "/" + str(len(files)) + ' ' + tail )
         else:
-            tokens_ = ngrams_util.readandsplit(file,excludePunctuation,
+            tokens_ = NGrams_util.readandsplit(file,excludePunctuation,
                                                   excludeArticles, excludeDeterminers, excludeStopWords,len(files),
                                                   lemmatize,index)
             hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)
@@ -618,7 +618,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumb
         documents.append(tokens_)
     # we allow as many n-grams as the user selects
     filesToOpen = []
-    results, hapax_result = ngrams_util.operate(documents, files, int(ngramsNumber),hapax_words)
+    results, hapax_result = NGrams_util.operate(documents, files, int(ngramsNumber),hapax_words)
     if hapax_result is not None:
         hapax_result = hapax_result.values.tolist()
         hapax_result.insert(0, ['1-grams Hapax', 'Frequency in Document', 'Frequency in Corpus', 'Document ID',
