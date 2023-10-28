@@ -160,7 +160,7 @@ def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_
                             deriv_str = str([deriv][0])[7:-2].split('.')[3]
                         if word=='lights':
                             print('wrong')
-                        print('   NOUN:', word, ' VERB:',deriv_str)
+                        print('   NOUN/NOMINALIZED VERB:', word, ' VERB:',deriv_str)
                         try:
                             deriv_str = str(deriv[0])[7:-2].split('.')[3]
                         except:
@@ -222,8 +222,12 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, config_in
     filesToOpen = []  # Store all files that are to be opened once finished
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='NOM',
-                                                       silent=False)
+    if check_ending:
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='NOM',
+                                                           silent=False)
+    else:
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='NOM_ALL',
+                                                           silent=False)
     if outputDir == '':
         return
 
@@ -266,12 +270,11 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, config_in
     # refresh the headers
 
     counter_nominalized_list = []
-    counter_noun_list = []
+    nominalized_verbs_list = []
     result_all_documents = []
     result_true_false_each_noun_all_documents=[]
 
     counter_nominalized_list.append(['Noun/Nominalized Verb', 'Frequency'])
-    # counter_noun_list.append(['Noun/Nominalized Verb', 'Frequency'])
 
     # list all verbs as TRUE/FALSE if nominalized
     if filename_embeds_date_var:

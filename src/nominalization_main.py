@@ -106,8 +106,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                y_multiplier_integer,
                                                check_nom_verb_ending_checkbox, False, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
-                                               "The checkbox, when ticked, checks nominalized verbs (i.e., nouns) for the typical ending of nominalized verbs:\
-                                               \nnent, ing, ion, ance, ence")
+                                               "The checkbox, when ticked, checks nominalized verbs (i.e., nouns) for the typical ending of nominalized verbs (nnent, ing, ion, ance, ence)\n" \
+                                               "and for the values listed in the nominalized-verbs-list.csv in the lib/wordList subdirectory that users can edit")
 
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,check_nom_verb_ending_checkbox)
 
@@ -129,7 +129,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, untick the checkbox if you do not want to check nominalized verbs for their typical ending (e.g., ing, ion; see TIPS file).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, untick the checkbox if you do not want to check nominalized verbs for their typical ending (e.g., ing, ion; see TIPS file).\n\nWhen the checkbox is ticked, nomanilized verbs will also be checked against the values listed in the nominalized-verbs-list.csv in the lib/wordList subdirectory that users can edit.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1

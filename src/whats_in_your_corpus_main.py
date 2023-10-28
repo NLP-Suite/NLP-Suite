@@ -296,14 +296,19 @@ def run(inputFilename,inputDir, outputDir,
             ngramsNumber=3
             frequency=0
             normalize = False
-            excludePunctuation = False
+            excludePunctuation = True
+            excludeArticles = True
+            excludeDeterminers = False
+            excludeStopWords = False
             bySentenceIndex_var=False
 
             # n-grams
             output = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, config_filename,
                                                               ngramsNumber, normalize,
-                                                              excludePunctuation, ngramType, frequency,
+                                                              excludePunctuation, excludeArticles,
+                                                              excludeDeterminers, excludeStopWords,
+                                                              ngramType, frequency,
                                                               openOutputFiles, createCharts, chartPackage,
                                                               bySentenceIndex_var,False)
             if output != None:

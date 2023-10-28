@@ -100,17 +100,25 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if Ngrams_compute_var:
         # create a subdirectory of the output directory
 
-        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='N-grams',
-                                                           silent=False)
-        if outputDir == '':
-            return
+        excludePunctuation  = False
+        excludeArticles  = False
+        excludeDeterminers = False
+        excludeStopWords = False
+
+        # done in statistics_txt_util
+        # outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='N-grams',
+        #                                                    silent=False)
+        # if outputDir == '':
+        #     return
 
         if 'punctuation' in str(ngrams_list):
             excludePunctuation = True
         if 'articles' in str(ngrams_list):
             excludeArticles = True
+        if 'determiners' in str(ngrams_list):
+            excludeDeterminers = True
         if 'stopwords' in str(ngrams_list):
-            excludeStopwords = True
+            excludeStopWords = True
         if 'sentence index' in str(ngrams_list):
             if ngrams_menu_var == "Word":
                 bySentenceIndex_word_var = True
@@ -128,8 +136,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             import statistics_txt_util
             if ngrams_word_var or bySentenceIndex_word_var:
                 hapax_words = True  # set it temporarily to True since we default to compute it every time
-                excludeStopWords = excludeStopwords
-                wordgram = 6  # ??? I don't know....
+                wordgram = ngrams_word_var # true r false depending upon whether n-grams are for word or character
                 bySentenceID = bySentenceIndex_word_var
                 outputFiles = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename,
                                                                                 inputDir, outputDir, config_filename,
@@ -137,6 +144,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                                 normalize,
                                                                                 lemmatize, excludePunctuation,
                                                                                 excludeArticles,
+                                                                                excludeDeterminers,
                                                                                 excludeStopWords,
                                                                                 wordgram,
                                                                                 openOutputFiles,
@@ -153,7 +161,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                                   outputDir, config_filename,
                                                                   ngrams_size, frequency, normalize,
-                                                                  excludePunctuation, 0, 0, openOutputFiles,
+                                                                  excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords, openOutputFiles,
                                                                   createCharts, chartPackage,
                                                                   bySentenceIndex_character_var)
 
@@ -267,7 +275,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if search_words == '' and (n_grams_viewer_var == True or CoOcc_Viewer_var == True):
             mb.showwarning(title='Warning',
-                           message="You have selected to run a Viewer but you have not entered any search strings in the Search widget.\n\nPlease, enter search values  and try again.")
+                           message="You have selected to run a VIEWER but you have not entered any search strings in the Search widget.\n\nPlease, enter search values  and try again.")
             return
 
         # create a subdirectory of the output directory
@@ -338,8 +346,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=600, # height at brief display
-                                                 GUI_height_full=650, # height at full display
+                                                 GUI_height_brief=560, # height at brief display
+                                                 GUI_height_full=610, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1) # to be added for full display
@@ -430,7 +438,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 
 ngrams_options_menu_lb = tk.Label(window, text='Options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,ngrams_options_menu_lb,True)
-ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax legomena (once-occurring words)','Hapax legomena (once-occurring unigrams)','Lemmatize','Normalize N-grams', 'Exclude punctuation (word N-grams only)','Exclude articles (word N-grams only)','Exclude ALL stopwords (word N-grams only)','By sentence index','Repetition of words (last K words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
+ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax legomena (once-occurring words)','Hapax legomena (once-occurring unigrams)','Lemmatize','Normalize N-grams', 'Exclude punctuation (word N-grams only)','Exclude articles (word N-grams only)','Exclude determiners (word N-grams only)','Exclude ALL stopwords (word N-grams only)','By sentence index','Repetition of words (last K words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+70, y_multiplier_integer,
                                    ngrams_options_menu,
@@ -674,13 +682,18 @@ def clear_n_grams_list():
 
 def clear(e):
     n_grams_list.clear()
+    Ngrams_compute_var.set(0)
+    n_grams_var.set(0)
     search_words_var.set('')
     viewer_options_list.clear()
     search_words_var.set('')
     Ngrams_search_var.set(0)
     csv_file_var.set('')
+    n_grams_viewer_var.set(0)
+    CoOcc_Viewer_var.set(0)
     viewer_options_menu_var.set('Case sensitive')
     temporal_aggregation_var.set('year')
+    activate_allOptions()
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -705,6 +718,7 @@ def activate_allOptions():
         Ngrams_search_checkbox.configure(state='disabled')
         Ngrams_viewer_checkbox.configure(state='disabled')
         CoOcc_viewer_checkbox.configure(state='disabled')
+        search_words_entry.configure(state='disabled')
 
     if Ngrams_search_var.get():
         Ngrams_compute_checkbox.configure(state='disabled')
@@ -725,13 +739,6 @@ def activate_allOptions():
         viewer_options_menu.config(state='disabled')
 
 activate_allOptions()
-
-open_GUI_Ngrams_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Compute N-grams (Open GUI)',command=lambda: call("python style_analysis_main.py", shell=True))
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   open_GUI_Ngrams_button,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click on the button to open the GUI")
 
 open_GUI_search_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Search words/collocations (Open GUI)',command=lambda: call("python file_search_byWord_main.py", shell=True))
 # place widget with hover-over info
@@ -790,8 +797,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
             'For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
         'Please, use the dropdown menu to select various options that can be applied to the VIEWER. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nYou can make your searches CASE SENSITIVE.\n\nYou can NORMALIZE results. Only works for N-Grams. Formula: search word frequency / total number of all words e.g: word "nurse" occurs once in year 1892, and year 1892 has a total of 1000 words. Then the normalized frequency will be 1/1000.\n\nYou can SCALE results. Only works for N-Grams. It applies the min-max normalization to frequency of search words. After the min-max normalization is done, each column of data (i.e., each search word) will fall in the same range.\n\nYou can LEMMATIZE words for your searches (e.g., be instead of being, is, was). The routine relies on the Stanford CoreNLP for lemmatizing words.\n\nFinally, you can select to display minimal information or full information.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-        'Please, click on the button to open the GUI where you can compute N-grams.')
+    # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+    #     'Please, click on the button to open the GUI where you can compute N-grams.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
         'Please, click on the button to open a GUI with more options for word/collocation searches.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)

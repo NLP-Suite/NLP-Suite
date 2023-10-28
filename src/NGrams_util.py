@@ -32,12 +32,37 @@ def process_hapax(ngramsList, frequency, excludePunctuation):
 import re
 
 
+def removeart(original_sentence):
+    fin = open('../lib/wordLists/articles.txt', 'r')
+    articles = list(set(fin.read().splitlines()))
+    # from Stanford CoreNLP calculation
+    # Create a regex pattern for the determiners, case-insensitive
+    # The \b ensures the match is for whole words only, avoiding partial matches within words
+    dets_pattern = r'\b(?:' + '|'.join(map(re.escape, articles)) + r')\b\s*'
+    # Remove determiners along with the following spaces
+    # We are using the \s* in the regex pattern to match zero or more whitespace characters following the determiner
+    filtered_sentence = re.sub(dets_pattern, "", original_sentence, flags=re.IGNORECASE)
+    # Stripping leading/trailing whitespace
+    final_sentence = filtered_sentence.strip()
+    return final_sentence
+
+
+# ENGLISH DETERMINERS:
+# Definite article: the.
+# Indefinite articles: a, an.
+# Demonstratives: this, that, these, those.
+# Pronouns and possessive determiners: my, your, his, her, its, our, their.
+# Quantifiers: all, few, little, much, many, lot, most, some, any, enough, several.
+# Distributives: all, both, half, either, neither, each, every
+# Difference words: other, another
+# Pre - determiners: such, what, rather, quite
+# Numbers: one, ten, thirty.
+
+# determiners typically include numbers such as one, two, three,... but we cannot list them all and should use a function
 def removedt(original_sentence):
-    determiners = [
-        'a', 'all', 'an', 'another', 'any', 'both', 'each', 'either',
-        'every', 'half', 'neither', 'no', 'some', 'that', 'the',
-        'these', 'this', 'those'
-    ]
+    fin = open('../lib/wordLists/determiners.txt', 'r')
+    determiners = list(set(fin.read().splitlines()))
+
     # from Stanford CoreNLP calculation
     # Create a regex pattern for the determiners, case-insensitive
     # The \b ensures the match is for whole words only, avoiding partial matches within words
@@ -56,7 +81,7 @@ def removestop(original_sentence):
     filtered_sentence = re.sub(dets_pattern, "", original_sentence, flags=re.IGNORECASE)
     final_sentence = filtered_sentence.strip()
     return final_sentence
-def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopWords, nFiles,lemmatize,index):
+def readandsplit(filename, excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords, nFiles,lemmatize,index):
 
     global called
     global nlp
@@ -68,17 +93,13 @@ def readandsplit(filename, excludePunctuation, excludeDeterminants, excludeStopW
         out = f.read()
     if excludePunctuation:
         out = out.translate(str.maketrans('', '', punctuation))
-    if excludeDeterminants:
+    if excludeArticles:
+        out = removeart(out)
+    if excludeDeterminers:
         out = removedt(out)
     if excludeStopWords:
         out = removestop(out)
 
-    # if excludeDeterminants:
-    #     words = excludeStopWords_list(words)
-    #     filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
-    # if excludeStopWords:
-    #     words = excludeStopWords_list(words)
-    #     filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
     if not lemmatize:
         if not called:
             nlp = stanza.Pipeline(lang='en', processors='tokenize')

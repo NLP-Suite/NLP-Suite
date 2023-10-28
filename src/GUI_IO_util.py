@@ -1160,7 +1160,8 @@ def Dialog2Display(title: str):
 def message_box_widget(window, message_title, message_text, buttonType='OK', timeout=3000):
     global yes_no_button
     yes_no_button = ""
-    return yes_no_button
+    if not 'Started' in message_text and not 'Finished' in message_text:
+        return yes_no_button
     if buttonType != 'OK':
         message_title = 'Reminder: ' + message_title
     global top_message
