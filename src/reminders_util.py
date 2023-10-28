@@ -344,6 +344,9 @@ message_CoreNLP_NER_timing = "Beware that the CoreNLP NER annotator on the 296 f
 title_options_CoreNLP_POS_timing = ['CoreNLP POS annotator timing']
 message_CoreNLP_POS_timing = "Beware that the CoreNLP POS annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 2 minutes on a standard laptop."
 
+title_options_date_embedded = ['Date embedded in filename']
+message_date_embedded = "The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.\n\nThis is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary"
+
 title_options_GIS_timing = ['GIS timing']
 message_GIS_timing = "Beware that geocoding some 30,000 locations via Nominatim and preparing the KML file for map visualization in Goodgle Earth Pro takes approximately 15 minutes on a standard laptop."
 

@@ -24,7 +24,7 @@ IO_libraries_util.import_nltk_resource(GUI_util.window,'taggers/averaged_percept
 # check punkt
 IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
 # check WordNet
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
+# IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
 from nltk.corpus import wordnet as wn
 
 # from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
@@ -48,6 +48,8 @@ import IO_csv_util
 import IO_user_interface_util
 import charts_util
 import GUI_IO_util
+import config_util
+
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
@@ -70,7 +72,7 @@ def check_word_for_nominalization(word,nominalized_verbs_list):
             skip_record = False
             break
     return skip_record
-def nominalized_verb_detection(docID,doc,sent,check_ending,nominalized_verbs_list):
+def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_verbs_list):
 
     first_section = re.compile("^(.+?)\.")
     noun_cnt = Counter()
@@ -168,7 +170,10 @@ def nominalized_verb_detection(docID,doc,sent,check_ending,nominalized_verbs_lis
                             skip_record = check_word_for_nominalization(word,nominalized_verbs_list)
                             if skip_record:
                                 continue
-                        result_true_false_each_noun.append([word, deriv_str, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        if dateStr != '':
+                            result_true_false_each_noun.append([word, deriv_str, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), dateStr])
+                        else:
+                            result_true_false_each_noun.append([word, deriv_str, docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
                         verbs.append(deriv_str)
                         true_word.append(word)
                         noun_cnt[word] += 1
@@ -188,25 +193,31 @@ def nominalized_verb_detection(docID,doc,sent,check_ending,nominalized_verbs_lis
         nomi_sen.append(nomi_sen_)
         nomi_sen_ = ""
     for i in range(sen_id+1):
-        #['Document ID', 'Document', 'Sentence ID', 'Sentence', 'Number of words in sentence', 'Nominalized verbs','Number of nominalizations in sentence', 'Percentage of nominalizations in sentence'])
         if word_count[i]>0:
-            # result_specific_document.append([docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), i+1, sentence[i], word_count[i], nomi_sen[i], nomi_count[i],
-                              #                  100.0*nomi_count[i]/word_count[i]])
 
             if nomi_count[i]>0:
-                result_specific_document.append([word_count[i], nomi_sen[i], nomi_count[i], 100.0 * nomi_count[i] / word_count[i],
-                           i + 1, sentence[i], docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                if dateStr!='':
+                    result_specific_document.append([word_count[i], nomi_sen[i], nomi_count[i], 100.0 * nomi_count[i] / word_count[i],
+                               i + 1, sentence[i], docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), dateStr])
+                else:
+                    result_specific_document.append(
+                        [word_count[i], nomi_sen[i], nomi_count[i], 100.0 * nomi_count[i] / word_count[i],
+                         i + 1, sentence[i], docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
         else:
             # result_specific_document.append([docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), i+1, sentence[i], word_count[i], nomi_sen[i], nomi_count[i]])
             if nomi_count[i]>0:
-                result_specific_document.append(
-                    [word_count[i], nomi_sen[i], nomi_count[i], sentence[i], docID, IO_csv_util.dressFilenameForCSVHyperlink(doc) ])
+                if dateStr!='':
+                    result_specific_document.append(
+                        [word_count[i], nomi_sen[i], nomi_count[i], sentence[i], docID, IO_csv_util.dressFilenameForCSVHyperlink(doc), dateStr])
+                else:
+                    result_specific_document.append(
+                        [word_count[i], nomi_sen[i], nomi_count[i], sentence[i], docID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
     # print(result_specific_document)
     # result_true_false_each_noun contains a list of each word TRUE/FALSE values for nominalization for the document processed
     # result_specific_document contains a list of docID, docName, sentence... for the document processed
     return result_true_false_each_noun, result_specific_document, noun_cnt, nominalized_cnt
 
-def nominalization(inputFilename,inputDir, outputDir, config_filename, openOutputFiles,createCharts,chartPackage,doNotListIndividualFiles, check_ending):
+def nominalization(inputFilename,inputDir, outputDir, config_filename, config_input_output_numeric_options, openOutputFiles,createCharts,chartPackage, check_ending):
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -238,18 +249,59 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, openOutpu
     #add all into a sum
     result_dir = []
     docID=0
+
+    outputFilename_TRUE_FALSE = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'NOM', '_nom_verb')
+
+    outputFilename_nom_verb_frequencies=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'NOM', 'nom_verb_freq')
+
+    # outputFilename_bySentenceIndex = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
+    #                                                                          '.csv', 'NOM', 'freq_by_sent')
+
+    outputFilename_nom_verb_freq_bySentence = IO_files_util.generate_output_file_name(inputFilename,
+                                                                    inputDir, outputDir, '.csv', 'NOM', 'freq_bySent')
+
+    # get the date options from filename
+    filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(config_filename, config_input_output_numeric_options)
+
+    # refresh the headers
+
+    counter_nominalized_list = []
+    counter_noun_list = []
     result_all_documents = []
     result_true_false_each_noun_all_documents=[]
-    counter_nominalized_list = []
-    counter_nominalized_list.append(['Nominalized verb', 'Frequency'])
-    counter_noun_list = []
-    counter_noun_list.append(['Noun', 'Frequency'])
+
+    counter_nominalized_list.append(['Noun/Nominalized Verb', 'Frequency'])
+    # counter_noun_list.append(['Noun/Nominalized Verb', 'Frequency'])
+
+    # list all verbs as TRUE/FALSE if nominalized
+    if filename_embeds_date_var:
+        result_true_false_each_noun_all_documents.append(["Noun/Nominalized Verb", "Verb", "Document ID",
+                                                             "Document", "Date"])
+    else:
+        result_true_false_each_noun_all_documents.append(["Noun/Nominalized Verb", "Verb", "Document ID",
+                                                             "Document"])
+
+    if filename_embeds_date_var:
+        result_all_documents.append(['Number of Words in Sentence', 'Nouns/Nominalized Verbs',
+                                        'Number of Nominalizations in Sentence',
+                                        'Percentage of Nominalizations in Sentence', 'Sentence ID', 'Sentence',
+                                        'Document ID', 'Document', "Date"])
+    else:
+        result_all_documents.append(['Number of Words in Sentence', 'Nouns/Nominalized Verbs',
+                                        'Number of Nominalizations in Sentence',
+                                        'Percentage of Nominalizations in Sentence', 'Sentence ID', 'Sentence',
+                                        'Document ID', 'Document'])
 
     # build dictionary of nominalized verbs not ending with the standard ending (e.g., attack, assault)
     if check_ending:
         nominalized_verbs_list = pd.read_csv(os.path.join(GUI_IO_util.wordLists_libPath, "nominalized-verbs-list.csv"))
 
     for doc in inputDocs:
+
+        dateStr = ''
+        if filename_embeds_date_var:
+            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(doc, date_format_var, items_separator_var,
+                                                     date_position_var, errMsg=True)
 
         docID=docID+1
         head, tail = os.path.split(doc)
@@ -258,146 +310,70 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, openOutpu
         fin = open(doc, 'r',encoding='utf-8',errors='ignore')
         # result_true_false_each_noun contains for each word the False/True nominalization boolean
         # result_specific_document contains the sentence and nominalized values for a specific document
-        result_true_false_each_noun, result_specific_document, noun_cnt, nominalized_cnt = nominalized_verb_detection(docID,doc,fin.read(),check_ending, nominalized_verbs_list)
+        result_true_false_each_noun, result_specific_document, noun_cnt, nominalized_cnt = nominalized_verb_detection(docID,doc,dateStr, fin.read(),check_ending, nominalized_verbs_list)
         # result_all_documents contains the sentence and nominalized values for all documents
         result_all_documents.extend(result_specific_document)
         result_true_false_each_noun_all_documents.extend(result_true_false_each_noun)
         fin.close()
 
-        if len(inputDir) > 0:
-            fname = os.path.basename(os.path.normpath(inputDir))+"_dir"
-        else:
-            fname=doc
+        IO_csv_util.list_to_csv(GUI_util.window, result_all_documents,
+                                outputFilename_nom_verb_freq_bySentence)  # outputFilename_bySentenceIndex)
+        filesToOpen.append(outputFilename_nom_verb_freq_bySentence)
 
+        # export individual nouns/nominalized verbs
+        IO_csv_util.list_to_csv(GUI_util.window,result_true_false_each_noun_all_documents, outputFilename_TRUE_FALSE)
+        filesToOpen.append(outputFilename_TRUE_FALSE)
 
-        if len(inputDir) == 0 or doNotListIndividualFiles == False:
-            counter_nominalized_list = []
-            counter_noun_list = []
-
-            outputFilename_bySentenceIndex = IO_files_util.generate_output_file_name(fname, '', outputDir,
-                                                                                  '.csv', 'NOM', 'sent')
-
-            # refresh the headers
-            counter_nominalized_list.insert(0,['Nominalized verb', 'Frequency'])
-            counter_noun_list.insert(0,['Noun', 'Frequency'])
-
-            result_specific_document.insert(0, ['Number of words in sentence', 'Nominalized verbs',
-                               'Number of nominalizations in sentence',
-                               'Percentage of nominalizations in sentence',
-                               'Sentence ID', 'Sentence', 'Document ID', 'Document'])
-
-            # compute frequency of most common nominalized verbs
-            for word, freq in nominalized_cnt.most_common():
-                counter_nominalized_list.append([word, freq])
-
-            # compute frequency of most common nouns
-            for word, freq in noun_cnt.most_common():
-                counter_noun_list.append([word, freq])
-
-            head, fname=os.path.split(doc)
-            fname=fname[:-4]
-
-            outputFilename_noun_frequencies = IO_files_util.generate_output_file_name(fname, inputDir, outputDir, '.csv', 'NOM',
-                                                                            'noun_freq')
-            filesToOpen.append(outputFilename_noun_frequencies)
-            outputFilename_nominalized_frequencies = IO_files_util.generate_output_file_name(fname,
-                                                                            inputDir, outputDir, '.csv', 'NOM',
-                                                                             'verb_nom__freq')
-
-
-            filesToOpen.append(outputFilename_nominalized_frequencies)
-
-            # export nominalized verbs frequencies
-            IO_csv_util.list_to_csv(GUI_util.window,counter_nominalized_list,outputFilename_nominalized_frequencies)
-
-            # export nouns
-            IO_csv_util.list_to_csv(GUI_util.window,counter_noun_list, outputFilename_noun_frequencies)
-
-            outputFilename_TRUE_FALSE = IO_files_util.generate_output_file_name(fname + '_TRUE_FALSE', '', outputDir,
-                                                                           '.csv', 'NOM')
-
-            # TODO this leads to a huge file when processing a directory; comment for now
-            filesToOpen.append(outputFilename_TRUE_FALSE)
-            # this will export both True and False
-            # list_to_csv(outputFilename_TRUE_FALSE, result_true_false_each_noun)
-            result_true_false_each_noun_all_documents.insert(0, ["Noun/Nominalized Verb", "Verb", "Document ID", "Document"])
-            IO_csv_util.list_to_csv(GUI_util.window,result_true_false_each_noun_all_documents, outputFilename_TRUE_FALSE)
-
-            IO_csv_util.list_to_csv(GUI_util.window,result_specific_document,outputFilename_bySentenceIndex)
-            filesToOpen.append(outputFilename_bySentenceIndex)
-
-    if len(inputDir)>0 and doNotListIndividualFiles == True:
-        outputFilename_byDocument = IO_files_util.generate_output_file_name(fname, '', outputDir,
-                                                                            '.csv', 'NOM', 'verbs_byDoc')
-
-        outputFilename_bySentenceIndex = IO_files_util.generate_output_file_name(fname, '', outputDir,
-                                                                                 '.csv', 'NOM', 'sent')
-        outputFilename_TRUE_FALSE_dir = IO_files_util.generate_output_file_name(fname + '_TRUE_FALSE', '', outputDir, '.csv', 'NOM')
-        outputFilename_dir_noun_frequencies=IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM', 'noun_freq', '', '', '', False, True)
-        # outputFilename_dir_nominalized_frequencies=IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM', 'nominal_freq', '', '', '', False, True)
-        outputFilename_dir_nominalized_frequencies=IO_files_util.generate_output_file_name(fname, '', outputDir, '.csv', 'NOM', 'nominal_freq')
-
-        result_all_documents.insert(0, ['Number of words in sentence', 'Nominalized verbs',
-                           'Number of nominalizations in sentence', 'Percentage of nominalizations in sentence','Sentence ID', 'Sentence', 'Document ID', 'Document'])
-        IO_csv_util.list_to_csv(GUI_util.window,result_all_documents, outputFilename_bySentenceIndex)
-        filesToOpen.append(outputFilename_bySentenceIndex)
-
-        # list all verbs as TRUE/FALSE if nominalized
-        # TODO  this leads to a huge file when processing a directory; comment for now
-        result_true_false_each_noun_all_documents.insert(0, ["Noun/Nominalized Verb", "Verb", "Document ID", "Document"])
-        IO_csv_util.list_to_csv(GUI_util.window,result_true_false_each_noun_all_documents, outputFilename_TRUE_FALSE_dir)
-        filesToOpen.append(outputFilename_TRUE_FALSE_dir)
-
-        counter_noun_list = []
-        counter_noun_list.append(['Noun','Frequency'])
-        for word, freq in noun_cnt.most_common():
-            counter_noun_list.append([word, freq])
-        IO_csv_util.list_to_csv(GUI_util.window,counter_noun_list, outputFilename_dir_noun_frequencies)
-        filesToOpen.append(outputFilename_dir_noun_frequencies)
-
-        counter_nominalized_list = []
-        counter_nominalized_list.append(['Nominalized verb','Frequency'])
+        # compute frequency of most common nouns/nominalized verbs
         for word, freq in nominalized_cnt.most_common():
             counter_nominalized_list.append([word, freq])
-        IO_csv_util.list_to_csv(GUI_util.window, counter_nominalized_list,outputFilename_dir_nominalized_frequencies)
-        filesToOpen.append(outputFilename_dir_nominalized_frequencies)
+        IO_csv_util.list_to_csv(GUI_util.window, counter_nominalized_list,outputFilename_nom_verb_frequencies)
+        filesToOpen.append(outputFilename_nom_verb_frequencies)
 
-        if createCharts == True:
-            # bar chart of nominalized verbs
 
-            inputFilename = outputFilename_dir_nominalized_frequencies
+    if createCharts == True:
+        # bar chart of nominalized verbs
+
+        inputFilename = outputFilename_nom_verb_frequencies
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[0, 1]]
+
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+                                                         outputFileLabel='NOM_verb',
+                                                         chartPackage=chartPackage,
+                                                         chart_type_list=['bar'],
+                                                         chart_title='Frequency Distribution of Nouns/Nominalized Verbs',
+                                                         column_xAxis_label_var='Noun/Nominalized verb',
+                                                         hover_info_column_list=[],
+                                                         count_var=0)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
+
+
+    if inputDir!='':
+    # line chart of frequencies of nominalized verbs by document or date
+
             columns_to_be_plotted_xAxis=[]
-            columns_to_be_plotted_yAxis=[[0, 1]]
 
-            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
-                                                             outputFileLabel='NOM_verb',
-                                                             chartPackage=chartPackage,
-                                                             chart_type_list=['bar'],
-                                                             chart_title='Frequency Distribution of Nominalized Verbs',
-                                                             column_xAxis_label_var='Nominalized verb',
-                                                             hover_info_column_list=[],
-                                                             count_var=0)
-            if outputFiles!=None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
-
-# line chart of frequencies of nominalized verbs by document or date
-
-            columns_to_be_plotted_xAxis=[]
-            columns_to_be_plotted_yAxis=[[0, 3]]
-
-            inputFilename=outputFilename_TRUE_FALSE_dir
+            inputFilename=outputFilename_TRUE_FALSE
             # inputFilename=outputFilename_byDocument
             # these variables are used in charts_util.visualize_chart
             headers = IO_csv_util.get_csvfile_headers (inputFilename)
+            groupBy = []
+            X_axis_label=''
             if 'Date' in headers:
+                columns_to_be_plotted_yAxis = [[0, 4]]
+                X_axis_label = 'Date'
                 groupBy=['Date']
-            elif 'Document' in headers:
-                groupBy=['Document']
             else:
-                groupBy = []
+                if 'Document' in headers:
+                    X_axis_label = 'Document'
+                    groupBy=['Document']
+                    columns_to_be_plotted_yAxis = [[0, 3]]
 
             # column_xAxis_label='Nominalized verb'
             # columns_to_be_plotted_xAxis=[]
@@ -419,29 +395,10 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, openOutpu
                                                              outputFileLabel='NOM_verb',
                                                              chartPackage=chartPackage,
                                                              chart_type_list=['line'],
-                                                             chart_title='Frequency Distribution of Nominalized Verbs by Document',
+                                                             chart_title='Frequency Distribution of Nouns/Nominalized Verbs by ' + X_axis_label,
                                                              hover_info_column_list=[],
-                                                             column_xAxis_label_var='Document',
+                                                             column_xAxis_label_var=X_axis_label,
                                                              count_var=1)
-
-            if outputFiles!=None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
-
-            inputFilename = outputFilename_dir_noun_frequencies
-            columns_to_be_plotted_xAxis=[]
-            columns_to_be_plotted_yAxis=[[0, 1]]
-
-            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
-                                                             outputFileLabel='NOM_noun',
-                                                             chartPackage=chartPackage,
-                                                             chart_type_list=['bar'],
-                                                             chart_title='Frequency Distribution of Nouns',
-                                                             column_xAxis_label_var='Noun',
-                                                             hover_info_column_list=[],
-                                                             count_var=0)
 
             if outputFiles!=None:
                 if isinstance(outputFiles, str):

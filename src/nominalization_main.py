@@ -22,7 +22,7 @@ import GUI_IO_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPackage,doNotListIndividualFiles, check_ending):
+def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPackage, check_ending):
 
     filesToOpen = []
 
@@ -32,7 +32,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
         config_filename = scriptName.replace('main.py', 'config.csv')
 
     import nominalization_util
-    outputFiles = nominalization_util.nominalization(inputFilename,inputDir, outputDir, config_filename, openOutputFiles,createCharts,chartPackage,doNotListIndividualFiles, check_ending)
+    outputFiles = nominalization_util.nominalization(inputFilename,inputDir, outputDir, config_filename, config_input_output_numeric_options, openOutputFiles,createCharts,chartPackage,check_ending)
 
     if outputFiles!=None:
         if isinstance(outputFiles, str):
@@ -51,7 +51,6 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
-                                doNotCreateIntermediateFiles_var.get(),
                                 check_nom_verb_ending_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -64,8 +63,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=320, # height at brief display
-                             GUI_height_full=400, # height at full display
+                             GUI_height_brief=280, # height at brief display
+                             GUI_height_full=360, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -97,14 +96,7 @@ input_main_dir_path=GUI_util.input_main_dir_path
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
-doNotCreateIntermediateFiles_var = tk.IntVar() #when an entire directory is processed; could lead to an enourmus number of output files
-doNotCreateIntermediateFiles_var.set(1)
-
 check_nom_verb_ending_var = tk.IntVar()
-
-doNotCreateIntermediateFiles_checkbox = tk.Checkbutton(window, variable=doNotCreateIntermediateFiles_var, onvalue=1, offvalue=0)
-doNotCreateIntermediateFiles_checkbox.config(text="Do NOT produce intermediate csv files when processing all txt files in a directory")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,doNotCreateIntermediateFiles_checkbox)
 
 check_nom_verb_ending_var.set(1)
 check_nom_verb_ending_checkbox = tk.Checkbutton(window, variable=check_nom_verb_ending_var, onvalue=1, offvalue=0)
@@ -118,20 +110,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coor
                                                \nnent, ing, ion, ance, ence")
 
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,check_nom_verb_ending_checkbox)
-
-def changeLabel_nomin(*args):
-    if doNotCreateIntermediateFiles_var.get()==1:
-        doNotCreateIntermediateFiles_checkbox.config(text="Do NOT produce intermediate csv files when processing all txt files in a directory")
-    else:
-        doNotCreateIntermediateFiles_checkbox.config(text="Produce intermediate csv files when processing all txt files in a directory")
-doNotCreateIntermediateFiles_var.trace('w',changeLabel_nomin)
-
-def turnOff_doNotCreateIntermediateFiles_checkbox(*args):
-    if len(input_main_dir_path.get())>0:
-        doNotCreateIntermediateFiles_checkbox.config(state='normal')
-    else:
-        doNotCreateIntermediateFiles_checkbox.config(state='disabled')
-GUI_util.input_main_dir_path.trace('w',turnOff_doNotCreateIntermediateFiles_checkbox)
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -151,8 +129,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, untick the checkbox if you want to create intermediate csv files for every txt file in a directory when processing all the txt files in a directory.\n\nWARNING! Unticking the checkbox may result in a very large number of intermediate files (3 csv/xlsx files for every txt file in the directory).")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, untick the checkbox if you want to create intermediate csv files for every txt file in a directory when processing all the txt files in a directory.\n\nWARNING! Unticking the checkbox may result in a very large number of intermediate files (3 csv/xlsx files for every txt file in the directory).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, untick the checkbox if you do not want to check nominalized verbs for their typical ending (e.g., ing, ion; see TIPS file).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
 
     return y_multiplier_integer -1
