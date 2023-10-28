@@ -434,9 +434,15 @@ def open_directory_removing_date_from_directory(window,inputDir, open):
 
 # returns date, dateStr
 def getDateFromFileName(file_name, date_format='mm-dd-yyyy', sep='_', date_field_position=2, errMsg=True):
+
     # configFile_basename is the filename w/o the full path
     file_name = ntpath.basename(file_name)
     x = file_name
+
+    reminders_util.checkReminder(file_name,
+                                 reminders_util.title_options_date_embedded,
+                                 reminders_util.message_date_embedded,
+                                 False)
     # must assign or you get an error in return
     date = ''
     month=''
@@ -468,30 +474,30 @@ def getDateFromFileName(file_name, date_format='mm-dd-yyyy', sep='_', date_field
             if date_format == 'mm-dd-yyyy':
                 # date = datetime.datetime.strptime(raw_date, '%m-%d-%Y').date()
                 date = datetime.strptime(raw_date, '%m-%d-%Y').date()
-                dateStr = date.strftime('%m-%d-%Y')
-                month=dateStr[0:2]
-                day=dateStr[3:5]
-                year=dateStr[-4:]
+                dateStr = date.strftime('%Y-%m-%d')
+                month=dateStr[5:7]
+                day=dateStr[8:10]
+                year=dateStr[:4]
             elif date_format == 'dd-mm-yyyy':
                 # date = datetime.datetime.strptime(raw_date, '%d-%m-%Y').date()
                 date = datetime.strptime(raw_date, '%d-%m-%Y').date()
-                dateStr = date.strftime('%d-%m-%Y')
-                month=dateStr[3:5]
-                day=dateStr[0:2]
-                year=dateStr[-4:]
+                dateStr = date.strftime('%Y-%m-%d') # '%d-%m-%Y'
+                month=dateStr[5:7]
+                day=dateStr[8:10]
+                year=dateStr[:4]
             elif date_format == 'yyyy-mm-dd':
                 # date = datetime.datetime.strptime(raw_date, '%Y-%m-%d').date()
                 date = datetime.strptime(raw_date, '%Y-%m-%d').date()
-                dateStr = date.strftime('%Y-%m-%d')
+                dateStr = date.strftime('%Y-%m-%d') # '%Y-%m-%d'
                 month=dateStr[5:7]
                 day=dateStr[8:10]
                 year=dateStr[:4]
             elif date_format == 'yyyy-dd-mm':
                 # date = datetime.datetime.strptime(raw_date, '%Y-%d-%m').date()
                 date = datetime.strptime(raw_date, '%Y-%d-%m').date()
-                dateStr = date.strftime('%Y-%d-%m')
-                month=dateStr[8:10]
-                day=dateStr[5:7]
+                dateStr = date.strftime('%Y-%m-%d') # '%Y-%d-%m'
+                month=dateStr[5:7]
+                day=dateStr[8:10]
                 year=dateStr[:4]
             elif date_format == 'yyyy-mm':
                 # date = datetime.datetime.strptime(raw_date, '%Y-%m').date()
