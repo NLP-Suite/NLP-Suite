@@ -33,7 +33,8 @@ import re
 
 
 def removeart(original_sentence):
-    articles = ['a', 'an', 'the']
+    fin = open('../lib/wordLists/articles.txt', 'r')
+    articles = list(set(fin.read().splitlines()))
     # from Stanford CoreNLP calculation
     # Create a regex pattern for the determiners, case-insensitive
     # The \b ensures the match is for whole words only, avoiding partial matches within words
