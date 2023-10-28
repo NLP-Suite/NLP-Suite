@@ -109,6 +109,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             excludePunctuation = True
         if 'articles' in str(ngrams_list):
             excludeArticles = True
+        if 'determiners' in str(ngrams_list):
+            excludeDeterminers = True
         if 'stopwords' in str(ngrams_list):
             excludeStopwords = True
         if 'sentence index' in str(ngrams_list):
@@ -129,7 +131,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             if ngrams_word_var or bySentenceIndex_word_var:
                 hapax_words = True  # set it temporarily to True since we default to compute it every time
                 excludeStopWords = excludeStopwords
-                wordgram = 6  # ??? I don't know....
+                wordgram = ngrams_word_var # true r false depending upon whether n-grams are for word or character
                 bySentenceID = bySentenceIndex_word_var
                 outputFiles = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename,
                                                                                 inputDir, outputDir, config_filename,
@@ -137,6 +139,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                                 normalize,
                                                                                 lemmatize, excludePunctuation,
                                                                                 excludeArticles,
+                                                                                excludeDeterminers,
                                                                                 excludeStopWords,
                                                                                 wordgram,
                                                                                 openOutputFiles,
@@ -153,7 +156,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                                   outputDir, config_filename,
                                                                   ngrams_size, frequency, normalize,
-                                                                  excludePunctuation, 0, 0, openOutputFiles,
+                                                                  excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords, openOutputFiles,
                                                                   createCharts, chartPackage,
                                                                   bySentenceIndex_character_var)
 
@@ -430,7 +433,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 
 ngrams_options_menu_lb = tk.Label(window, text='Options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,ngrams_options_menu_lb,True)
-ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax legomena (once-occurring words)','Hapax legomena (once-occurring unigrams)','Lemmatize','Normalize N-grams', 'Exclude punctuation (word N-grams only)','Exclude articles (word N-grams only)','Exclude ALL stopwords (word N-grams only)','By sentence index','Repetition of words (last K words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
+ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax legomena (once-occurring words)','Hapax legomena (once-occurring unigrams)','Lemmatize','Normalize N-grams', 'Exclude punctuation (word N-grams only)','Exclude articles (word N-grams only)','Exclude determiners (word N-grams only)','Exclude ALL stopwords (word N-grams only)','By sentence index','Repetition of words (last K words of a sentence/first N words of next sentence)','Repetition of words across sentences (special ngrams)')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+70, y_multiplier_integer,
                                    ngrams_options_menu,
