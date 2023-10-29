@@ -1206,8 +1206,11 @@ def Sankey(data,outputFilename,var1,lengthvar1,var2,lengthvar2,three_way_Sankey,
         return
 
     if type(data)==str:
-        data=pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
-
+        try:
+            data=pd.read_csv(data, encoding='utf-8', on_bad_lines='skip')
+        except:
+            mb.showwarning(title='Warning', message='The input file ' + data + ' is empty.\n\nNo Sankey flowchart can be produced.\n\nPlease, check your input file and try again.')
+            return
     if type(data[var1][0])!=str or type(data[var2][0])!=str:
         mb.showwarning("Warning",
                    "All csv file fields should be CATEGORICAL for a Sankey flowchart.\n\nPlease, select categorical field(s) (i.e., fields with string values), rather than continuous numeric field(s), and try again.")

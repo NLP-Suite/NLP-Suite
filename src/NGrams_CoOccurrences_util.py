@@ -201,7 +201,7 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
     return ngram_results, quarter_ngram_results, coOcc_results
 
 
-def run(inputDir="relative_path_here",
+def NGrams_search_VIEWER(inputDir="relative_path_here",
         outputDir="relative_path_here",
         configFileName='',
         createCharts=True, chartPackage='Excel',
@@ -263,8 +263,6 @@ def run(inputDir="relative_path_here",
         scaleData = True
     if 'Lemmatize' in str(viewer_options_list):
         useLemma = True
-
-    ################################## OPTIONS NEEDED TO BE ADDED TO GUI #################################################
 
     byNumberOfYears = 0
     byYear = False
@@ -391,8 +389,10 @@ def run(inputDir="relative_path_here",
         NgramsSearchFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                  'N-grams_search')
         combined_pivot_df.to_csv(NgramsSearchFileName, index=False)
-
-        # print('we are done with both Sankey handling and the regular searches!')
+        # Simon you need to test that the search words were not found in the dataframe
+        # if :
+        #     mb.showwarning(title='Warning', message='There are no instances of your search word(s) in the selected input file')
+        #     return
         if createCharts:
             inputFilename = NgramsSearchFileName
             if data.columns[0]=='1-grams':
@@ -436,7 +436,7 @@ def run(inputDir="relative_path_here",
 
                 return filesToOpen
 
-            if data.columns[0] != '2-grams':
+            if data.columns[0] == '2-grams':
 
                 NgramsSearchFileName_Sankey = IO_files_util.generate_output_file_name('', inputDir, outputDir,
                                                                                       '_Sankey.csv',
@@ -466,7 +466,7 @@ def run(inputDir="relative_path_here",
                 # and visualize with a Gephi chart or a Sankey chart and wordcloud
 
             # SIMON for anything bigger we should simply get the -K +K words and wordclouds
-            if data.columns[0]=='3-grams':
+            if data.columns[0]=='4-grams': # or more
                 print("SIMON")
 
         return filesToOpen

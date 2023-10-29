@@ -184,7 +184,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # Search N-grams csv file ____________________________________________________________________________________________
 
     if Ngrams_search_var:
-        outputFiles = NGrams_CoOccurrences_util.run(
+        outputFiles = NGrams_CoOccurrences_util.NGrams_search_VIEWER(
                 inputDir,
                 outputDir,
                 config_filename,
@@ -297,7 +297,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                      True)
 
         # run VIEWER ------------------------------------------------------------------------------------
-        filesToOpen = NGrams_CoOccurrences_util.run(
+        filesToOpen = NGrams_CoOccurrences_util.NGrams_search_VIEWER(
                 inputDir,
                 outputDir,
                 config_filename,
