@@ -2,6 +2,14 @@
 # given a comma-separated string in input, the function returns two variables:
 #   a string with cleaned separated values (i.e., no extra blanks) and a list [] of elements from the cleaned string
 
+def convert_list_to_string(input_string):
+    output_string = ''
+    for el in input_string:
+        output_string = output_string + el + ', '
+    # remove last ,
+    output_string = output_string.rstrip()[:-1]
+    return output_string
+
 def process_comma_separated_string_list(keywords, case_sensitive=True):
     if not case_sensitive:
         keywords = keywords.lower()

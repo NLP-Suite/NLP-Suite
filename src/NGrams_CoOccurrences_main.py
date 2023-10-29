@@ -138,7 +138,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 hapax_words = True  # set it temporarily to True since we default to compute it every time
                 wordgram = ngrams_word_var # true r false depending upon whether n-grams are for word or character
                 bySentenceID = bySentenceIndex_word_var
-                outputFiles = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename,
+                outputFiles, outputDir = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename,
                                                                                 inputDir, outputDir, config_filename,
                                                                                 ngrams_size, frequency, hapax_words,
                                                                                 normalize,
@@ -156,14 +156,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 else:
                     filesToOpen.extend(outputFiles)
 
-            # character n-grams
-            if ngrams_character_var or bySentenceIndex_character_var:
-                statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                                  outputDir, config_filename,
-                                                                  ngrams_size, frequency, normalize,
-                                                                  excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords, openOutputFiles,
-                                                                  createCharts, chartPackage,
-                                                                  bySentenceIndex_character_var)
+            # # character n-grams
+            # if ngrams_character_var or bySentenceIndex_character_var:
+            #     statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
+            #                                                       outputDir, config_filename,
+            #                                                       ngrams_size, frequency, normalize,
+            #                                                       excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords, openOutputFiles,
+            #                                                       createCharts, chartPackage,
+            #                                                       bySentenceIndex_character_var)
+
+# The following sett of options apply to both search and viewer
 
     case_sensitive = False
     normalize=False
@@ -208,9 +210,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
-
-        if openOutputFiles == True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
     # VIEWER ____________________________________________________________________________________________
 
@@ -316,8 +315,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 viewer_options_list,
                 ngrams_size,Ngrams_search_var,csv_file_var)
 
-        if openOutputFiles == True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+    if openOutputFiles == True:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
