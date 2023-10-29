@@ -464,8 +464,35 @@ search_words_entry.configure(width=GUI_IO_util.widget_width_extra_long)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos, y_multiplier_integer,
                                    search_words_entry,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Enter the comma-separated words/collocations to be searched by the options 'Search N-grams csv file' or the VIEWER;\nfor N-grams each item in the list will be plotted separately; for Co-occurrences all items will be plotted together ")
+
+minus_K_lb = tk.Label(window, text='-K')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,1050,y_multiplier_integer,minus_K_lb,True)
+
+minus_K_words_var = tk.IntVar()
+plus_K_words_var = tk.IntVar()
+
+minus_K_words_var.set(0)
+minus_K_words_entry = tk.Entry(window, textvariable=minus_K_words_var) #extract_sentences_search_words_var)
+minus_K_words_entry.configure(width=3, state='disabled')
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
+                    minus_K_words_entry, True, False, True, False,
+                    90, GUI_IO_util.watch_videos_x_coordinate,
+                    "Enter the number of words preceding the search word to be extracted, for context, together with the search sentences")
+
+plus_K_lb = tk.Label(window, text='+K')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,1140,y_multiplier_integer,plus_K_lb,True)
+
+plus_K_words_var.set(0)
+plus_K_words_entry = tk.Entry(window, textvariable=plus_K_words_var) #extract_sentences_search_words_var)
+plus_K_words_entry.configure(width=3, state='disabled')
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window, 1170, y_multiplier_integer,
+                    plus_K_words_entry, False, False, True, False,
+                    90, GUI_IO_util.watch_videos_x_coordinate,
+                    "Enter the number of words following the search word to be extracted, for context, together with the search sentences")
 
 
 viewer_menu_lb = tk.Label(window, text='Search options')

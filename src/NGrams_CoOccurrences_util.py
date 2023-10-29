@@ -394,8 +394,8 @@ def run(inputDir="relative_path_here",
 
         # print('we are done with both Sankey handling and the regular searches!')
         if createCharts:
+            inputFilename = NgramsSearchFileName
             if data.columns[0]=='1-grams':
-                inputFilename = NgramsSearchFileName
                 # inputFilename=outputFilename_byDocument
                 # these variables are used in charts_util.visualize_chart
                 headers = IO_csv_util.get_csvfile_headers(inputFilename)
@@ -437,29 +437,38 @@ def run(inputDir="relative_path_here",
                 return filesToOpen
 
             if data.columns[0] != '2-grams':
-                return filesToOpen # Sankey works with 2-grams only
 
-            NgramsSearchFileName_Sankey = IO_files_util.generate_output_file_name('', inputDir, outputDir,
-                                                                                  '_Sankey.csv',
-                                                                                  'N-grams_search')
-            combined_saneky_df.to_csv(NgramsSearchFileName_Sankey, index=False)
-            import charts_util
-            headers=IO_csv_util.get_csvfile_headers(NgramsSearchFileName_Sankey)
-            Sankey_limit1_var=15
-            Sankey_limit2_var=15
-            three_way_Sankey = False
-            var3 = None
-            Sankey_limit3_var = None
-            # we should check for larger n-grams
-            # if '2-grams' in headers:
+                NgramsSearchFileName_Sankey = IO_files_util.generate_output_file_name('', inputDir, outputDir,
+                                                                                      '_Sankey.csv',
+                                                                                      'N-grams_search')
+                combined_saneky_df.to_csv(NgramsSearchFileName_Sankey, index=False)
+                import charts_util
+                headers=IO_csv_util.get_csvfile_headers(NgramsSearchFileName_Sankey)
+                Sankey_limit1_var=15
+                Sankey_limit2_var=15
+                three_way_Sankey = False
+                var3 = None
+                Sankey_limit3_var = None
+                # we should check for larger n-grams
+                # if '2-grams' in headers:
 
 
-            output_label = ''
-            outputFilename = IO_files_util.generate_output_file_name(NgramsSearchFileName_Sankey, inputDir, outputDir,
-                                                                     '.html', output_label)
-            Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
-                                'Search word', Sankey_limit1_var, 'Co-Occurring word', Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
-            filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
+                output_label = ''
+                outputFilename = IO_files_util.generate_output_file_name(NgramsSearchFileName_Sankey, inputDir, outputDir,
+                                                                         '.html', output_label)
+                Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
+                                    'Search word', Sankey_limit1_var, 'Co-Occurring word', Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
+                filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
+
+            if data.columns[0]=='3-grams':
+                print("SIMON")
+                # Simon we should do the same as bigram search with -1 +1
+                # and visualize with a Gephi chart or a Sankey chart and wordcloud
+
+            # SIMON for anything bigger we should simply get the -K +K words and wordclouds
+            if data.columns[0]=='3-grams':
+                print("SIMON")
+
         return filesToOpen
 
        # filtered_data.to_csv(output_csv_file, index=False)
