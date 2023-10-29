@@ -32,6 +32,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         ngrams_options_menu_var,
         ngrams_size,
         search_words,
+        minus_K_words_var,
+        plus_K_words_var,
         Ngrams_search_var,
         csv_file_var,
         n_grams_viewer_var,
@@ -194,6 +196,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 n_grams_viewer_var,
                 CoOcc_Viewer_var,
                 search_words,
+                minus_K_words_var,
+                plus_K_words_var,
                 language_list,
                 useLemma,
                 date_options,
@@ -330,6 +334,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_ma
                                  ngrams_options_menu_var.get(),
                                  ngrams_size.get(),
                                  search_words_var.get(),
+                                 minus_K_words_var.get(),
+                                 plus_K_words_var.get(),
                                  Ngrams_search_var.get(),
                                  csv_file_var.get(),
                                  n_grams_viewer_var.get(),
@@ -713,6 +719,8 @@ def clear(e):
     search_words_var.set('')
     viewer_options_list.clear()
     search_words_var.set('')
+    minus_K_words_var.set(0),
+    plus_K_words_var.set(0),
     Ngrams_search_var.set(0)
     csv_file_var.set('')
     n_grams_viewer_var.set(0)
