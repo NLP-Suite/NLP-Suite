@@ -138,7 +138,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 hapax_words = True  # set it temporarily to True since we default to compute it every time
                 wordgram = ngrams_word_var # true r false depending upon whether n-grams are for word or character
                 bySentenceID = bySentenceIndex_word_var
-                outputFiles = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename,
+                outputFiles, outputDir = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename,
                                                                                 inputDir, outputDir, config_filename,
                                                                                 ngrams_size, frequency, hapax_words,
                                                                                 normalize,
@@ -156,14 +156,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 else:
                     filesToOpen.extend(outputFiles)
 
-            # character n-grams
-            if ngrams_character_var or bySentenceIndex_character_var:
-                statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
-                                                                  outputDir, config_filename,
-                                                                  ngrams_size, frequency, normalize,
-                                                                  excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords, openOutputFiles,
-                                                                  createCharts, chartPackage,
-                                                                  bySentenceIndex_character_var)
+            # # character n-grams
+            # if ngrams_character_var or bySentenceIndex_character_var:
+            #     statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
+            #                                                       outputDir, config_filename,
+            #                                                       ngrams_size, frequency, normalize,
+            #                                                       excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords, openOutputFiles,
+            #                                                       createCharts, chartPackage,
+            #                                                       bySentenceIndex_character_var)
+
+# The following sett of options apply to both search and viewer
 
     case_sensitive = False
     normalize=False
@@ -184,7 +186,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # Search N-grams csv file ____________________________________________________________________________________________
 
     if Ngrams_search_var:
-        outputFiles = NGrams_CoOccurrences_util.run(
+        outputFiles = NGrams_CoOccurrences_util.NGrams_search_VIEWER(
                 inputDir,
                 outputDir,
                 config_filename,
@@ -208,9 +210,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
-
-        if openOutputFiles == True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
     # VIEWER ____________________________________________________________________________________________
 
@@ -297,7 +296,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                      True)
 
         # run VIEWER ------------------------------------------------------------------------------------
-        filesToOpen = NGrams_CoOccurrences_util.run(
+        filesToOpen = NGrams_CoOccurrences_util.NGrams_search_VIEWER(
                 inputDir,
                 outputDir,
                 config_filename,
@@ -316,8 +315,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 viewer_options_list,
                 ngrams_size,Ngrams_search_var,csv_file_var)
 
-        if openOutputFiles == True:
-            IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+    if openOutputFiles == True:
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
 
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
@@ -464,8 +463,35 @@ search_words_entry.configure(width=GUI_IO_util.widget_width_extra_long)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos, y_multiplier_integer,
                                    search_words_entry,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Enter the comma-separated words/collocations to be searched by the options 'Search N-grams csv file' or the VIEWER;\nfor N-grams each item in the list will be plotted separately; for Co-occurrences all items will be plotted together ")
+
+minus_K_lb = tk.Label(window, text='-K')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,1050,y_multiplier_integer,minus_K_lb,True)
+
+minus_K_words_var = tk.IntVar()
+plus_K_words_var = tk.IntVar()
+
+minus_K_words_var.set(0)
+minus_K_words_entry = tk.Entry(window, textvariable=minus_K_words_var) #extract_sentences_search_words_var)
+minus_K_words_entry.configure(width=3, state='disabled')
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
+                    minus_K_words_entry, True, False, True, False,
+                    90, GUI_IO_util.watch_videos_x_coordinate,
+                    "Enter the number of words preceding the search word to be extracted, for context, together with the search sentences")
+
+plus_K_lb = tk.Label(window, text='+K')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,1140,y_multiplier_integer,plus_K_lb,True)
+
+plus_K_words_var.set(0)
+plus_K_words_entry = tk.Entry(window, textvariable=plus_K_words_var) #extract_sentences_search_words_var)
+plus_K_words_entry.configure(width=3, state='disabled')
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window, 1170, y_multiplier_integer,
+                    plus_K_words_entry, False, False, True, False,
+                    90, GUI_IO_util.watch_videos_x_coordinate,
+                    "Enter the number of words following the search word to be extracted, for context, together with the search sentences")
 
 
 viewer_menu_lb = tk.Label(window, text='Search options')

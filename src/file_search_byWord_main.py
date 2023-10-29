@@ -381,7 +381,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window, 1170, y_multiplier_integer,
                     90, GUI_IO_util.watch_videos_x_coordinate,
                     "Enter the number of words following the search word to be extracted, for context, together with the search sentences")
 
-open_GUI_button = tk.Button(window, text='Open GUI for N-grams/co-occurrences VIEWER',command=lambda: call("python NGrams_CoOccurrences_main.py", shell=True))
+open_GUI_button = tk.Button(window, text='N-grams/Co-occurrences (Open GUI) ',command=lambda: call("python NGrams_CoOccurrences_main.py", shell=True))
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,open_GUI_button)
 
 def activate_allOptions(*args):

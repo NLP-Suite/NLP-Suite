@@ -303,7 +303,7 @@ def run(inputFilename,inputDir, outputDir,
             bySentenceIndex_var=False
 
             # n-grams
-            output = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
+            outputFiles, outputDir = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, config_filename,
                                                               ngramsNumber, normalize,
                                                               excludePunctuation, excludeArticles,
@@ -311,11 +311,11 @@ def run(inputFilename,inputDir, outputDir,
                                                               ngramType, frequency,
                                                               openOutputFiles, createCharts, chartPackage,
                                                               bySentenceIndex_var,False)
-            if output != None:
+            if outputFiles != None:
                 if isinstance(output, str):
-                    filesToOpen.append(output)
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
     # wordclouds --------------------------------------------------------------
 
