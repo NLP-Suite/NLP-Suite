@@ -337,30 +337,32 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
     def transform(ngram):
         return ' '.join(ngram.split(' ')[:-1])
 
-    def extract_context(ngram_str, target_word):
+    def extract_context(ngram_str, target_word, minus_K_words_var, plus_K_words_var):
         words = ngram_str.split(' ')
         target_index = words.index(target_word)
-        return ' '.join(words[:target_index]), ' '.join(words[target_index + 1:])
+        start_index = max(target_index - minus_K_words_var, 0)  # Ensure the start index isn't negative.
+        end_index = min(target_index + plus_K_words_var + 1,
+                        len(words))  # Ensure the end index doesn't exceed the length of the list.
+        words_before = words[start_index:target_index]
+        words_after = words[target_index + 1:end_index]
+        context_before = ' '.join(words_before)
+        context_after = ' '.join(words_after)
+        return context_before, context_after
 
-    def is_word_not_first_or_last(ngram, word):
+    def is_word_in_custom_range(ngram, word, minus_K_words_var, plus_K_words_var):
         words = ngram.split(' ')
-        return word in words[1:-1]
-
-    def extract_context(ngram_str, target_word):
-        words = ngram_str.split(' ')
-        target_index = words.index(target_word)
-        return ' '.join(words[:target_index]), ' '.join(words[target_index + 1:])
-
-    def is_word_not_first_or_last(ngram, word, ngram_size):
-        words = ngram.split(' ')
-        if ngram_size >=3:
-            return word in words[1:-1]
-        return word == words[-1]
+        # Check the input parameters, i comment it out for now because we don't know the design
+       # if minus_K_words_var < 0 or plus_K_words_var < 0 or (minus_K_words_var + plus_K_words_var) > len(words):
+       #     raise ValueError("Invalid range variables: minus_K_words_var and plus_K_words_var")
+        start_index = minus_K_words_var # you need abs() if the minus is a negative value, i don't know the design, yet
+        end_index = len(words) - plus_K_words_var
+        subrange = words[start_index:end_index]  # Extract the subrange
+        return word in subrange  # Check if the word is within the subrange.
 
     def process_ngrams(data, word):
         column_name = data.columns[0]
         ngram_size = int(column_name.split('-')[0])  # Extracting the size of the n-gram from the column name
-        filtered_data = data[data[column_name].apply(lambda x: is_word_not_first_or_last(x, word,ngram_size))].copy()
+        filtered_data = data[data[column_name].apply(lambda x: is_word_in_custom_range(x, word,ngram_size, minus_K_words_var, plus_K_words_var))].copy()
         initial_filter_data = filtered_data.copy()
         if filtered_data.empty:
             print("No data rows with the specified conditions.")

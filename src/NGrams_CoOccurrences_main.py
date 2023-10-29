@@ -480,7 +480,7 @@ plus_K_words_var = tk.IntVar()
 
 minus_K_words_var.set(0)
 minus_K_words_entry = tk.Entry(window, textvariable=minus_K_words_var) #extract_sentences_search_words_var)
-minus_K_words_entry.configure(width=3, state='disabled')
+minus_K_words_entry.configure(width=3, state='normal')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
                     minus_K_words_entry, True, False, True, False,
@@ -492,7 +492,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,1140,y_multiplier_integer,pl
 
 plus_K_words_var.set(0)
 plus_K_words_entry = tk.Entry(window, textvariable=plus_K_words_var) #extract_sentences_search_words_var)
-plus_K_words_entry.configure(width=3, state='disabled')
+plus_K_words_entry.configure(width=3, state='normal')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window, 1170, y_multiplier_integer,
                     plus_K_words_entry, False, False, True, False,
@@ -736,6 +736,8 @@ n_grams_list=[]
 def activate_allOptions():
     Ngrams_compute_checkbox.configure(state='normal')
     Ngrams_search_checkbox.configure(state='normal')
+    minus_K_words_entry.configure(width=3, state='normal')
+    plus_K_words_entry.configure(width=3, state='normal')
     Ngrams_viewer_checkbox.configure(state='normal')
     CoOcc_viewer_checkbox.configure(state='normal')
     search_words_entry.configure(state='normal')
@@ -753,8 +755,11 @@ def activate_allOptions():
         Ngrams_viewer_checkbox.configure(state='disabled')
         CoOcc_viewer_checkbox.configure(state='disabled')
         search_words_entry.configure(state='disabled')
-
+        minus_K_words_entry.configure(width=3, state='disabled')
+        plus_K_words_entry.configure(width=3, state='disabled')
     if Ngrams_search_var.get():
+        minus_K_words_entry.configure(width=3, state='normal')
+        plus_K_words_entry.configure(width=3, state='normal')
         Ngrams_compute_checkbox.configure(state='disabled')
         Ngrams_viewer_checkbox.configure(state='disabled')
         CoOcc_viewer_checkbox.configure(state='disabled')
