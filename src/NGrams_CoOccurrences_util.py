@@ -352,17 +352,18 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
     def is_word_in_custom_range(ngram, word, minus_K_words_var, plus_K_words_var):
         words = ngram.split(' ')
         # Check the input parameters, i comment it out for now because we don't know the design
-       # if minus_K_words_var < 0 or plus_K_words_var < 0 or (minus_K_words_var + plus_K_words_var) > len(words):
-       #     raise ValueError("Invalid range variables: minus_K_words_var and plus_K_words_var")
+        if minus_K_words_var < 0 or plus_K_words_var < 0 or (minus_K_words_var + plus_K_words_var) > len(words)-1:
+            mb.showwarning(title='Warning',message='The sum of -K and +K values should be < than the n-grams value (so, a 4-ngrams can only have a combination of -K + K values less or equal to 3).')
+            return
         start_index = minus_K_words_var # you need abs() if the minus is a negative value, i don't know the design, yet
         end_index = len(words) - plus_K_words_var
         subrange = words[start_index:end_index]  # Extract the subrange
         return word in subrange  # Check if the word is within the subrange.
 
-    def process_ngrams(data, word):
+    def process_ngrams(data, word, minus_K_words_var, plus_K_words_var):
         column_name = data.columns[0]
         ngram_size = int(column_name.split('-')[0])  # Extracting the size of the n-gram from the column name
-        filtered_data = data[data[column_name].apply(lambda x: is_word_in_custom_range(x, word,ngram_size, minus_K_words_var, plus_K_words_var))].copy()
+        filtered_data = data[data[column_name].apply(lambda x: is_word_in_custom_range(x, word, minus_K_words_var, plus_K_words_var))].copy()
         initial_filter_data = filtered_data.copy()
         if filtered_data.empty:
             print("No data rows with the specified conditions.")
@@ -371,9 +372,10 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
             filtered_data['Search word'] = filtered_data[column_name].apply(transform)
             filtered_data['Co-Occurring word'] = word
         else:
-            filtered_data['Words before target'], filtered_data['Words after target'] = zip(
-                *filtered_data[column_name].apply(lambda x: extract_context(x, word)))
-            filtered_data['Co-Occurring word'] = word
+            filtered_data['Words to the left'], filtered_data['Words to the right'] = zip(
+                *filtered_data[column_name].apply(
+                    lambda x: extract_context(x, word, minus_K_words_var, plus_K_words_var)))
+            filtered_data['Search word'] = word
         return initial_filter_data,filtered_data
 
     # search n-gram file --------------------------------------------------------------------
@@ -393,7 +395,7 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
         l = []
         l_sankey = []
         for word in words:
-            b, df2 = process_ngrams(data, word)
+            b, df2 = process_ngrams(data, word, minus_K_words_var, plus_K_words_var)
             expanded_rows = []
             for _, row in df2.iterrows():
                 new_row = row.copy()
@@ -402,8 +404,6 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
                     expanded_rows.append(new_row)
             expanded_df = pd.DataFrame(expanded_rows)
             l_sankey.append(expanded_df)
-       #     else:#.str.lower().str.endswith I do not think we go to this part ever...
-     #      b = data[data[data.columns[0]].str.lower().str.endswith(word.lower())]
             pivot_df = b.pivot_table(
                 values='Frequency in Document',  # fill with frequencies
                 index='Document ID',  # rows are documents
@@ -484,43 +484,27 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
                 headers=IO_csv_util.get_csvfile_headers(NgramsSearchFileName_Sankey)
                 Sankey_limit1_var=15
                 Sankey_limit2_var=15
-                three_way_Sankey = False
-                var3 = None
-                Sankey_limit3_var = None
-                # we should check for larger n-grams
-                # if '2-grams' in headers:
                 output_label = ''
+
                 outputFilename = IO_files_util.generate_output_file_name(NgramsSearchFileName_Sankey, inputDir, outputDir,
                                                                          '.html', output_label)
                 if ngram_size==2:
+                    three_way_Sankey = False
+                    var3 = None
+                    Sankey_limit3_var = None
                     Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
                                                       'Search word', Sankey_limit1_var, 'Co-Occurring word',
                                                       Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
                     filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
                 else:
+                    three_way_Sankey = True
                     Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
-                                                      'Words before target', 5, 'Words after target',
-                                                      10, 1, "Co-Occurring word", 20)
+                                                      'Words to the left', 5, 'Search word',
+                                                      10, 1, "Words to the right", 20)
                     filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
                     pass
 
-            #if data.columns[0]=='3-grams':
-                # INCORRECT POSITION, revert to upper lines. SHOULD NOT DUPLICATE CODE.
-                # Simon we should do the same as bigram search with -1 +1
-                # and visualize with a Gephi chart or a Sankey chart and wordcloud
-
-            # SIMON for anything bigger we should simply get the -K +K words and wordclouds\
-            # INCORRECT POSITION, revert to upper lines. SHOULD NOT DUPLICATE CODE.
-            #if data.columns[0]=='4-grams': # or more
-            #    print("SIMON")
-
         return filesToOpen
-
-       # filtered_data.to_csv(output_csv_file, index=False)
-
-
-        # there are extremely big bugs in the later code. Return early to avoid problems
-       # return
 
     if n_grams_viewer:
         # initialize the ngram_results dictionary ------------------------------------------------------

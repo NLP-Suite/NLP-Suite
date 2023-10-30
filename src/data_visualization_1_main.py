@@ -119,7 +119,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 var3=None
                 Sankey_limit3_var=None
             outputFiles = charts_util.Sankey(inputFilename, outputFilename,
-                                csv_file_relational_field_list[0], Sankey_limit1_var, csv_file_relational_field_list[1], Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
+                                csv_file_relational_field_list[0], Sankey_limit1_var, csv_file_relational_field_list[1],
+                                             Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)

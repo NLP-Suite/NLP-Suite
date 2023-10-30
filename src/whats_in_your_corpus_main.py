@@ -109,7 +109,7 @@ def run(inputFilename,inputDir, outputDir,
     if (utf8_var==False and \
         ASCII_var == False and \
         corpus_statistics_var==False and \
-        ((wordclouds_var == False) or (wordclouds_var == True and open_wordclouds_GUI_var==False)) and \
+        wordclouds_var == False and \
         ((topics_var==False) or (topics_var==True and topics_Mallet_var==False and topics_Gensim_var==False and open_tm_GUI_var==False)) and \
         what_else_var==False and \
         ((GIS_var == False) or (GIS_var == True and open_GIS_GUI_var == False)) and \

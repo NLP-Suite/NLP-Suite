@@ -412,8 +412,8 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                         #   when a single word is processed should tokenize
                         #       or the keyword "rent" would be found in rental, renting, etc.
                         #       unless a partial match is selected
-                        textToProcess = textToProcess + sentence
                         if keyword in sentence:
+                            textToProcess = textToProcess + sentence
                             wordFound = True
                             nextSentence = True
                             n_sentences_extract += 1
@@ -461,10 +461,11 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                        "\n\nPlease, check the output subdirectories for filenames ending with _extract_with_searchword.txt and _extract_wo_searchword.txt.")
 
         # write to text file textToProcess
-        outputFilenameTxt = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'search')
+        outputFilenameTxt = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'search_single_text')
         filesToOpen.append(outputFilenameTxt)
         outputTxtFile = open(outputFilenameTxt, "w")
         outputTxtFile.write(textToProcess)
+        outputTxtFile.close()
 
         import wordclouds_util
 
@@ -483,7 +484,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
         doNotListIndividualFiles = True
         collocation = True
         import wordclouds_util
-        outputFiles = wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selectedImage="",
+        outputFiles = wordclouds_util.python_wordCloud(outputFilenameTxt, '', outputDir, configFileName, selectedImage="",
                                                   use_contour_only=use_contour_only,
                                                   prefer_horizontal=prefer_horizontal, font=font, max_words=max_words,
                                                   lemmatize=lemmatize, exclude_stopwords=exclude_stopwords,
@@ -493,14 +494,16 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                                                   csvField_color_list=csvField_color_list,
                                                   doNotListIndividualFiles=doNotListIndividualFiles,
                                                   openOutputFiles=False, collocation=collocation)
-        if output != None:
+        if outputFiles != None:
             if isinstance(outputFiles, str):
-                filesToOpen.append(ooutputFiles)
+                filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
 
-        IO_files_util.openExplorer(window, outputDir_sentences_extract)
+        # delete the search-text file from the main output directory since it is stored by wordcloud in the wordcloud subdir
+        os.remove(outputFilenameTxt)
 
+        IO_files_util.openExplorer(window, outputDir_sentences_extract)
 
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the Word search with extraction function at',
                                            True, '', True, startTime,  False)
