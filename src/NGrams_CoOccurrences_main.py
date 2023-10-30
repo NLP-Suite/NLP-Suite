@@ -32,6 +32,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         ngrams_options_menu_var,
         ngrams_size,
         search_words,
+        minus_K_words_var,
+        plus_K_words_var,
         Ngrams_search_var,
         csv_file_var,
         n_grams_viewer_var,
@@ -194,6 +196,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 n_grams_viewer_var,
                 CoOcc_Viewer_var,
                 search_words,
+                minus_K_words_var,
+                plus_K_words_var,
                 language_list,
                 useLemma,
                 date_options,
@@ -330,6 +334,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_ma
                                  ngrams_options_menu_var.get(),
                                  ngrams_size.get(),
                                  search_words_var.get(),
+                                 minus_K_words_var.get(),
+                                 plus_K_words_var.get(),
                                  Ngrams_search_var.get(),
                                  csv_file_var.get(),
                                  n_grams_viewer_var.get(),
@@ -474,7 +480,7 @@ plus_K_words_var = tk.IntVar()
 
 minus_K_words_var.set(0)
 minus_K_words_entry = tk.Entry(window, textvariable=minus_K_words_var) #extract_sentences_search_words_var)
-minus_K_words_entry.configure(width=3, state='disabled')
+minus_K_words_entry.configure(width=3, state='normal')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
                     minus_K_words_entry, True, False, True, False,
@@ -486,7 +492,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,1140,y_multiplier_integer,pl
 
 plus_K_words_var.set(0)
 plus_K_words_entry = tk.Entry(window, textvariable=plus_K_words_var) #extract_sentences_search_words_var)
-plus_K_words_entry.configure(width=3, state='disabled')
+plus_K_words_entry.configure(width=3, state='normal')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window, 1170, y_multiplier_integer,
                     plus_K_words_entry, False, False, True, False,
@@ -713,6 +719,8 @@ def clear(e):
     search_words_var.set('')
     viewer_options_list.clear()
     search_words_var.set('')
+    minus_K_words_var.set(0),
+    plus_K_words_var.set(0),
     Ngrams_search_var.set(0)
     csv_file_var.set('')
     n_grams_viewer_var.set(0)
@@ -728,6 +736,8 @@ n_grams_list=[]
 def activate_allOptions():
     Ngrams_compute_checkbox.configure(state='normal')
     Ngrams_search_checkbox.configure(state='normal')
+    minus_K_words_entry.configure(width=3, state='normal')
+    plus_K_words_entry.configure(width=3, state='normal')
     Ngrams_viewer_checkbox.configure(state='normal')
     CoOcc_viewer_checkbox.configure(state='normal')
     search_words_entry.configure(state='normal')
@@ -745,8 +755,11 @@ def activate_allOptions():
         Ngrams_viewer_checkbox.configure(state='disabled')
         CoOcc_viewer_checkbox.configure(state='disabled')
         search_words_entry.configure(state='disabled')
-
+        minus_K_words_entry.configure(width=3, state='disabled')
+        plus_K_words_entry.configure(width=3, state='disabled')
     if Ngrams_search_var.get():
+        minus_K_words_entry.configure(width=3, state='normal')
+        plus_K_words_entry.configure(width=3, state='normal')
         Ngrams_compute_checkbox.configure(state='disabled')
         Ngrams_viewer_checkbox.configure(state='disabled')
         CoOcc_viewer_checkbox.configure(state='disabled')

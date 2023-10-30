@@ -644,9 +644,11 @@ NLP_Suite_corpus_document_tools_menu = \
 'Style analysis tools -----------------------------------------------------------------------------------', \
 '', \
 'Style analysis (ALL options GUI)', \
+'Co-Occurrences', \
 'Language detection', \
 'N-grams', \
-'N-grams/co-occurrences VIEWER', \
+'N-grams search', \
+'N-grams/Co-Occurrences VIEWER', \
 'Nominalization', \
 'Sentence complexity', \
 'Sentence/text readability (via textstat)', \

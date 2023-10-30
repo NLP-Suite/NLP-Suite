@@ -109,7 +109,7 @@ def run(inputFilename,inputDir, outputDir,
     if (utf8_var==False and \
         ASCII_var == False and \
         corpus_statistics_var==False and \
-        ((wordclouds_var == False) or (wordclouds_var == True and open_wordclouds_GUI_var==False)) and \
+        wordclouds_var == False and \
         ((topics_var==False) or (topics_var==True and topics_Mallet_var==False and topics_Gensim_var==False and open_tm_GUI_var==False)) and \
         what_else_var==False and \
         ((GIS_var == False) or (GIS_var == True and open_GIS_GUI_var == False)) and \
@@ -338,12 +338,12 @@ def run(inputFilename,inputDir, outputDir,
             doNotListIndividualFiles = True
             collocation = True
             import wordclouds_util
-            output=wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, config_filename, selectedImage="", use_contour_only=use_contour_only, prefer_horizontal=prefer_horizontal, font=font, max_words=max_words, lemmatize=lemmatize, exclude_stopwords=exclude_stopwords, exclude_punctuation=exclude_punctuation, lowercase=lowercase, differentPOS_differentColors=differentPOS_differentColors, differentColumns_differentColors=differentColumns_differentColors, csvField_color_list=csvField_color_list, doNotListIndividualFiles=doNotListIndividualFiles,openOutputFiles=False, collocation=collocation)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            outputFiles=wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, config_filename, selectedImage="", use_contour_only=use_contour_only, prefer_horizontal=prefer_horizontal, font=font, max_words=max_words, lemmatize=lemmatize, exclude_stopwords=exclude_stopwords, exclude_punctuation=exclude_punctuation, lowercase=lowercase, differentPOS_differentColors=differentPOS_differentColors, differentColumns_differentColors=differentColumns_differentColors, csvField_color_list=csvField_color_list, doNotListIndividualFiles=doNotListIndividualFiles,openOutputFiles=False, collocation=collocation)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
 # topic modeling ---------------------------------------------------------------------------------
     if topics_var==True:

@@ -384,6 +384,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                 text = inputFile.read().replace("\n", " ")
             outputFilename_extract = os.path.join(outputDir_sentences_extract,tail[:-4]) + "_extract_with_searchword.txt"
             outputFilename_extract_wo_searchword = os.path.join(outputDir_sentences_extract_wo_searchword,tail[:-4]) + "_extract_wo_searchword.txt"
+            textToProcess=''
             with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
                     outputFilename_extract_wo_searchword, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_wo_searchword:
                 sentences_tokens = sent_tokenize_stanza(stanzaPipeLine(text), False)
@@ -391,6 +392,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                 n_sentences_extract = 0
                 n_sentences_extract_wo_searchword = 0
                 sentence_index = 0
+
                 for sentence in sentences:
                     if len(sentence) == 0:
                         sentence_index += 1
@@ -411,6 +413,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                         #       or the keyword "rent" would be found in rental, renting, etc.
                         #       unless a partial match is selected
                         if keyword in sentence:
+                            textToProcess = textToProcess + sentence
                             wordFound = True
                             nextSentence = True
                             n_sentences_extract += 1
@@ -419,7 +422,6 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                             #print(new_sentences)
                             outputFile_extract.write(' '.join(new_sentences) + "\n")  # write out original sentence
                             file_extract_written = True
-
                     # if none of the words in wordList are found in a sentence
                     #   write the sentence to the extract_wo_searchword file
                     if wordFound == False:
@@ -458,10 +460,52 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                        "Files were written to the subdirectories " + outputDir_sentences_extract + " and " + outputDir_sentences_extract_wo_searchword + " of the output directory." +
                        "\n\nPlease, check the output subdirectories for filenames ending with _extract_with_searchword.txt and _extract_wo_searchword.txt.")
 
-        IO_files_util.openExplorer(window, outputDir_sentences_extract)
+        # write to text file textToProcess
+        outputFilenameTxt = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'search_single_text')
+        filesToOpen.append(outputFilenameTxt)
+        outputTxtFile = open(outputFilenameTxt, "w")
+        outputTxtFile.write(textToProcess)
+        outputTxtFile.close()
 
+        import wordclouds_util
+
+        # run with all default values;
+        use_contour_only = False
+        max_words = 100
+        font = 'Default'
+        prefer_horizontal = .9
+        lemmatize = False
+        exclude_stopwords = True
+        exclude_punctuation = True
+        lowercase = False
+        differentPOS_differentColors = False
+        differentColumns_differentColors = False
+        csvField_color_list = []
+        doNotListIndividualFiles = True
+        collocation = True
+        import wordclouds_util
+        outputFiles = wordclouds_util.python_wordCloud(outputFilenameTxt, '', outputDir, configFileName, selectedImage="",
+                                                  use_contour_only=use_contour_only,
+                                                  prefer_horizontal=prefer_horizontal, font=font, max_words=max_words,
+                                                  lemmatize=lemmatize, exclude_stopwords=exclude_stopwords,
+                                                  exclude_punctuation=exclude_punctuation, lowercase=lowercase,
+                                                  differentPOS_differentColors=differentPOS_differentColors,
+                                                  differentColumns_differentColors=differentColumns_differentColors,
+                                                  csvField_color_list=csvField_color_list,
+                                                  doNotListIndividualFiles=doNotListIndividualFiles,
+                                                  openOutputFiles=False, collocation=collocation)
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
+        # delete the search-text file from the main output directory since it is stored by wordcloud in the wordcloud subdir
+        os.remove(outputFilenameTxt)
+
+        IO_files_util.openExplorer(window, outputDir_sentences_extract)
 
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the Word search with extraction function at',
                                            True, '', True, startTime,  False)
 
-
+        return filesToOpen
