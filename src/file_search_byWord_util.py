@@ -413,15 +413,15 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                         #       or the keyword "rent" would be found in rental, renting, etc.
                         #       unless a partial match is selected
                         if keyword in sentence:
-                            textToProcess = textToProcess + sentence
                             wordFound = True
                             nextSentence = True
                             n_sentences_extract += 1
                             # TODO should process -K +K options for sentences
                             new_sentences = find_k_adjacent_elements(sentences,sentenceSV,plus_K_var,minus_K_var)
-                            #print(new_sentences)
                             outputFile_extract.write(' '.join(new_sentences) + "\n")  # write out original sentence
                             file_extract_written = True
+                            # create a string containing all the searched sentences so that they can be displayed ina wordcloud
+                            textToProcess = textToProcess + ' '.join(new_sentences) + "\n"
                     # if none of the words in wordList are found in a sentence
                     #   write the sentence to the extract_wo_searchword file
                     if wordFound == False:
@@ -460,6 +460,9 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                        "Files were written to the subdirectories " + outputDir_sentences_extract + " and " + outputDir_sentences_extract_wo_searchword + " of the output directory." +
                        "\n\nPlease, check the output subdirectories for filenames ending with _extract_with_searchword.txt and _extract_wo_searchword.txt.")
 
+        if textToProcess=='':
+            mb.showwarning(title='Warning',message='There are no sentences in your input document(s) containing the selected search word(s).')
+            return
         # write to text file textToProcess
         outputFilenameTxt = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'search_single_text')
         filesToOpen.append(outputFilenameTxt)
@@ -500,12 +503,9 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
             else:
                 filesToOpen.extend(outputFiles)
 
-        # delete the search-text file from the main output directory since it is stored by wordcloud in the wordcloud subdir
-        os.remove(outputFilenameTxt)
-
         IO_files_util.openExplorer(window, outputDir_sentences_extract)
 
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the Word search with extraction function at',
                                            True, '', True, startTime,  False)
 
-        return filesToOpen
+    return filesToOpen

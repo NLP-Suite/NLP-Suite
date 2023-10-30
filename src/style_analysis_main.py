@@ -24,9 +24,6 @@ import config_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPackage,
-    corpus_statistics_var,
-    corpus_statistics_options_menu_var,
-    corpus_text_options_menu_var,
     complexity_readability_analysis_var,
     complexity_readability_analysis_menu_var,
     vocabulary_analysis_var,
@@ -58,49 +55,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
     openOutputFilesSV=openOutputFiles
     outputDir_style=outputDir
 
-    if (corpus_statistics_var==False and
-        complexity_readability_analysis_var == False and
+    if (complexity_readability_analysis_var == False and
         vocabulary_analysis_var == False and
         gender_guesser_var==False):
         mb.showwarning('Warning','No options have been selected.\n\nPlease, select an option and try again.')
         return
 
-
-# corpus statistics --------------------------------------------------------------------
-
-    if corpus_statistics_var:
-        stopwords_var = False
-        lemmatize_var = False
-        if corpus_text_options_menu_var=='*':
-            stopwords_var=True
-            lemmatize_var=True
-        if 'Lemmatize' in corpus_text_options_menu_var:
-            lemmatize_var=True
-        if 'stopwords' in corpus_text_options_menu_var:
-            stopwords_var=True
-        if "*" in corpus_statistics_options_menu_var or 'frequencies' in corpus_statistics_options_menu_var:
-            outputFiles=statistics_txt_util.compute_corpus_statistics(window,inputFilename,inputDir,outputDir,config_filename,False,createCharts, chartPackage, stopwords_var, lemmatize_var)
-            if outputFiles!=None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
-        if "Compute sentence length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
-            outputFiles = statistics_txt_util.compute_sentence_length(inputFilename, inputDir, outputDir, config_filename, createCharts, chartPackage)
-            if outputFiles!=None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
-
-        if "Compute line length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
-            outputFiles=statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir,
-                                                          False, createCharts, chartPackage)
-            if outputFiles!=None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
 
 # complexity_readability    ---------------------------------------------------------------------
 
@@ -323,9 +283,6 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
-                                corpus_statistics_var.get(),
-                                corpus_statistics_options_menu_var.get(),
-                                corpus_text_options_menu_var.get(),
                                 complexity_readability_analysis_var.get(),
                                 complexity_readability_analysis_menu_var.get(),
                                 vocabulary_analysis_var.get(),
@@ -341,8 +298,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=560, # height at brief display
-                             GUI_height_full=600, # height at full display
+                             GUI_height_brief=520, # height at brief display
+                             GUI_height_full=560, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
@@ -374,16 +331,9 @@ inputFilename=GUI_util.inputFilename
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 def clear(e):
-    corpus_statistics_checkbox.configure(state='normal')
-    complexity_readability_analysis_checkbox.configure(state='normal')
-    vocabulary_analysis_checkbox.configure(state='normal')
-
-    corpus_statistics_var.set(0)
     complexity_readability_analysis_var.set(0)
     vocabulary_analysis_var.set(0)
 
-    corpus_statistics_options_menu_var.set('')
-    corpus_text_options_menu_var.set('')
     complexity_readability_analysis_menu_var.set('')
     vocabulary_analysis_menu_var.set('')
 
@@ -404,10 +354,6 @@ gender_guesser_var=tk.IntVar()
 complexity_readability_analysis_menu_var=tk.StringVar()
 vocabulary_analysis_menu_var=tk.StringVar()
 ngrams_menu_var=tk.StringVar()
-
-corpus_statistics_var = tk.IntVar()
-corpus_statistics_options_menu_var = tk.StringVar()
-corpus_text_options_menu_var = tk.StringVar()
 
 CoNLL_table_analysis_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='CoNLL table analysis (Open GUI)',command=lambda: call('python CoNLL_table_analyzer_main.py', shell=True))
 # place widget with hover-over info
@@ -436,43 +382,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    spell_checker_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
-
-corpus_statistics_var.set(0)
-corpus_statistics_checkbox = tk.Checkbutton(window,text="Compute document(s) statistics", variable=corpus_statistics_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,corpus_statistics_checkbox,True)
-
-corpus_statistics_options_menu_var.set('*')
-# corpus_statistics_options_menu_lb = tk.Label(window, text='Statistics options')
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,corpus_statistics_options_menu_lb,True)
-
-corpus_statistics_options_menu = tk.OptionMenu(window,corpus_statistics_options_menu_var,
-                                                '*',
-                                               'Compute frequencies of sentences, words, syllables, and top-20 words',
-                                               'Compute sentence length',
-                                               'Compute line length',
-                                               )
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
-                                   corpus_statistics_options_menu,
-                                   True, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
-                                   "Select the statistics option for your document(s) (* for all); widget disabled until checkbox ticked.")
-
-# y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_corpus_statistics_options_menu_pos,y_multiplier_integer,corpus_statistics_options_menu, True)
-
-corpus_text_options_menu_var.set('')
-corpus_options_menu_lb = tk.Label(window, text='Text options')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_corpus_text_options_menu_lb_pos,y_multiplier_integer,corpus_options_menu_lb,True)
-corpus_text_options_menu = tk.OptionMenu(window, corpus_text_options_menu_var, '*','Lemmatize words', 'Exclude stopwords & punctuation')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_corpus_options_menu_men_pos,y_multiplier_integer,corpus_text_options_menu)
-
-def activate_corpus_options(*args):
-    if corpus_statistics_var.get()==True:
-        corpus_statistics_options_menu.configure(state='normal')
-        corpus_text_options_menu.configure(state='normal')
-    else:
-        corpus_statistics_options_menu.configure(state='disabled')
-        corpus_text_options_menu.configure(state='disabled')
-corpus_statistics_var.trace('w',activate_corpus_options)
 
 complexity_readability_analysis_var.set(0)
 complexity_readability_analysis_checkbox = tk.Checkbutton(window, text='Complexity/readability analysis', variable=complexity_readability_analysis_var, onvalue=1, offvalue=0)
@@ -526,36 +435,22 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 gender_guesser_checkbox.configure(state='normal')
 
 def activate_options(*args):
-    if corpus_statistics_var.get() == True:
-        corpus_statistics_options_menu.configure(state='normal')
-        complexity_readability_analysis_checkbox.configure(state='disabled')
-        vocabulary_analysis_checkbox.configure(state='disabled')
-        vocabulary_analysis_menu.configure(state='disabled')
-        gender_guesser_checkbox.configure(state='disabled')
-    elif complexity_readability_analysis_var.get()==True:
-        corpus_statistics_checkbox.configure(state='disabled')
-        corpus_statistics_options_menu.configure(state='disabled')
+    if complexity_readability_analysis_var.get()==True:
         complexity_readability_analysis_menu.configure(state='normal')
         vocabulary_analysis_checkbox.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
         gender_guesser_checkbox.configure(state='disabled')
     elif vocabulary_analysis_var.get()==True:
         vocabulary_analysis_menu.configure(state='normal')
-        corpus_statistics_checkbox.configure(state='disabled')
-        corpus_statistics_options_menu.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='disabled')
         complexity_readability_analysis_menu.configure(state='disabled')
         gender_guesser_checkbox.configure(state='disabled')
     elif gender_guesser_var.get() == True:
-        corpus_statistics_checkbox.configure(state='disabled')
-        corpus_statistics_options_menu.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='disabled')
         vocabulary_analysis_checkbox.configure(state='disabled')
         complexity_readability_analysis_menu.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
     else:
-        corpus_statistics_checkbox.configure(state='normal')
-        corpus_statistics_options_menu.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='normal')
         vocabulary_analysis_checkbox.configure(state='normal')
         vocabulary_analysis_menu_var.set('*')
@@ -563,7 +458,6 @@ def activate_options(*args):
         complexity_readability_analysis_menu.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
 
-corpus_statistics_var.trace('w',activate_options)
 complexity_readability_analysis_var.trace('w',activate_options)
 vocabulary_analysis_var.trace('w',activate_options)
 gender_guesser_var.trace('w',activate_options)
@@ -618,8 +512,6 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                                          'Please, click the button \'Nominalization\' if you wish to open the Nominalization GUI to analyze instances of nominalization (i.e., turning verbs into nouns - Latin nomen=noun).')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, click the button \'Spelling/grammar checker\' if you wish to open the Spelling/grammar checker GUI to check your corpus for spelling and/or grammar errors with several different NLP tools.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                'Please, tick the checkbox if you wish to compute basic statistics on your corpus.\n\nUse the dropdown menu to select the desired option. Use the Text options dropdown menu to lemmatize words or exclude stopwords/punctuation.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word n-grams between 1 and 3.\n\nWhen n-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, tick the \'Complexlexity\readability analysis\' checkbox if you wish to analyze the complexity or readability of sentences and documents.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Sentence complexity to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure. The Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\nTHE SENTENCE COMPLEXITY ALGORITHM IS BASED ON STANZA.\n\n   2. Text readability to compute various measures of text readability.\n 12 readability score requires HIGHSCHOOL education;\n 16 readability score requires COLLEGE education;\n 18 readability score requires MASTER education;\n 24 readability score requires DOCTORAL education;\n >24 readability score requires POSTDOC education.\n\nTHE TEXT READABILITY ALGORITHM IS BASED ON TEXSTAT.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",

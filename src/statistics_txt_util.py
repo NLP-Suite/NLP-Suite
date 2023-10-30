@@ -168,7 +168,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
 
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='corpus_stats',
-                                                       silent=True)
+                                                       silent=False)
     if outputDir == '':
         return
 
@@ -332,8 +332,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
 
         # if openOutputFiles==True:
         #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen)
-    return filesToOpen
-
+    return filesToOpen, outputDir
 
 def Extract(lst):
     return [item[0] for item in lst]
