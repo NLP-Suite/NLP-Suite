@@ -73,12 +73,15 @@ def run(inputFilename,inputDir, outputDir,
                             createCharts, chartPackage)
 
     if extract_sentences_var:
-        file_search_byWord_util.search_extract_sentences(window, inputFilename, inputDir, outputDir, config_filename,
+        outputFiles = file_search_byWord_util.search_extract_sentences(window, inputFilename, inputDir, outputDir, config_filename,
                                                  extract_sentences_search_words_var_str, search_options_list,
                                                  minus_K_sentences_var, plus_K_sentences_var,
                                                  createCharts, chartPackage)
-        extract_sentences_search_words_var.set('')
-        extract_sentences_search_words_entry.configure(state='disabled')
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
 
     if openOutputFiles == True:
