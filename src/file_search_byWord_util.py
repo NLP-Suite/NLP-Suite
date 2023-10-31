@@ -15,7 +15,7 @@ import GUI_util
 import IO_libraries_util
 
 if IO_libraries_util.install_all_Python_packages(GUI_util.window, "file_search_byWord_util.py",
-                                          ['os', 'tkinter','stanza']) == False:
+                                          ['os', 'tkinter','stanza', 're']) == False:
     sys.exit(0)
 
 import os
@@ -25,6 +25,7 @@ import tkinter.messagebox as mb
 import stanza
 # from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import collections
+import re
 
 import IO_user_interface_util
 import IO_files_util
@@ -319,6 +320,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
         from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
         case_sensitive = False
+        word_match = False
         lemmatize = False
         search_keywords_found = False
         search_within_sentence = False
@@ -327,10 +329,12 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                 case_sensitive = True
             if search_option == 'Case insensitive':
                     case_sensitive = False
-            elif search_option == "Search within sentence (default)":
+            if search_option == "Search within sentence (default)":
                 search_within_sentence = True
-            elif search_option == "Lemmatize":  # not available yet
+            if search_option == "Lemmatize":  # not available yet
                 lemmatize = True
+            if search_option == "Exact match":
+                word_match = True
 
         # Win/Mac may use different quotation, we replace any directional quotes to straight ones
         right_double = u"\u201C"  # “
@@ -375,6 +379,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
         nDocsExtractOutput = 0
         nDocsExtractMinusOutput = 0
 
+        textToProcess = ''
         for doc in inputDocs:
             wordFound = False
             fileID = fileID + 1
@@ -384,7 +389,6 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                 text = inputFile.read().replace("\n", " ")
             outputFilename_extract = os.path.join(outputDir_sentences_extract,tail[:-4]) + "_extract_with_searchword.txt"
             outputFilename_extract_wo_searchword = os.path.join(outputDir_sentences_extract_wo_searchword,tail[:-4]) + "_extract_wo_searchword.txt"
-            textToProcess=''
             with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
                     outputFilename_extract_wo_searchword, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_wo_searchword:
                 sentences_tokens = sent_tokenize_stanza(stanzaPipeLine(text), False)
@@ -412,6 +416,11 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                         #   when a single word is processed should tokenize
                         #       or the keyword "rent" would be found in rental, renting, etc.
                         #       unless a partial match is selected
+
+                        # using Stanza would be more accurate but slower
+                        # if keyword in word_tokenize_stanza(stanzaPipeLine(sentence.lower())):
+                        if word_match:
+                            sentence = re.findall(r'\b\w+\b', sentence)
                         if keyword in sentence:
                             wordFound = True
                             nextSentence = True

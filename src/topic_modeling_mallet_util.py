@@ -270,7 +270,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
             columns_to_be_plotted_yAxis.append([1, i])
 
         hover_label=[]
-        chart_title = 'MALLET Topics (Topic Contribution to Document)'
+        chart_title = 'MALLET Topics\nTopic Contribution to Document'
         xAxis = 'Document'
         yAxis = 'Topic weight in document'
 

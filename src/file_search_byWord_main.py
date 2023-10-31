@@ -49,6 +49,11 @@ def run(inputFilename,inputDir, outputDir,
             mb.showwarning(title='Input error', message='No search options have been selected.\n\nPlease, select a search option and try again.')
             return
 
+    if search_options_menu_var.get()!='' and not search_options_menu_var.get() in str(search_options_list) :
+         result = mb.askyesno(title="Warning",message="There is a search value '" + str(search_options_menu_var.get()) + "' that has not been added (using the + button) to the csv file fields to be processed.\n\nAre you sure you want to continue?")
+         if result == False: # No
+            return
+
     # create a subdirectory of the output directory
 
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='word-search',
@@ -219,7 +224,7 @@ def activate_search_options(*args):
             search_options_list.remove('Case sensitive (default)')
         if 'sensitive' in search_options_menu_var.get() and 'insensitive' in str(search_options_list):
             search_options_list.remove('Case insensitive')
-        if search_options_menu_var.get()=='Lemmatize' or search_options_menu_var.get()=='Exact match':
+        if search_options_menu_var.get()=='Lemmatize':
             mb.showwarning(title='Warning', message='The option is not available yet.\n\nSorry!')
             # search_options_menu_var.set('')
             if len(search_options_list) > 0:

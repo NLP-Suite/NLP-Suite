@@ -298,8 +298,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=520, # height at brief display
-                             GUI_height_full=560, # height at full display
+                             GUI_height_brief=560, # height at brief display
+                             GUI_height_full=600, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
@@ -353,16 +353,22 @@ gender_guesser_var=tk.IntVar()
 # CoNLL_table_analysis_menu_var=tk.StringVar()
 complexity_readability_analysis_menu_var=tk.StringVar()
 vocabulary_analysis_menu_var=tk.StringVar()
-ngrams_menu_var=tk.StringVar()
 
-CoNLL_table_analysis_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='CoNLL table analysis (Open GUI)',command=lambda: call('python CoNLL_table_analyzer_main.py', shell=True))
+spell_checker_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Spelling/grammar checker (Open GUI)',command=lambda: call('python file_spell_checker_main.py', shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   CoNLL_table_analysis_button,
+                                   spell_checker_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-ngrams_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='N-Grams & Co-occurrences (Open GUI)',command=lambda: call('python NGrams_CoOccurrences_main.py', shell=True))
+corpus_statistics_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Corpus statitics (Open GUI)',command=lambda: call('python statistics_txt_main.py', shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   corpus_statistics_button,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Click on the button to open the GUI")
+
+ngrams_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='N-Grams & Co-Occurrences (Open GUI)',command=lambda: call('python NGrams_CoOccurrences_main.py', shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    ngrams_button,
@@ -376,10 +382,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-spell_checker_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Spelling/grammar checker (Open GUI)',command=lambda: call('python file_spell_checker_main.py', shell=True))
+
+CoNLL_table_analysis_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='CoNLL table analysis (Open GUI)',command=lambda: call('python CoNLL_table_analyzer_main.py', shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   spell_checker_button,
+                                   CoNLL_table_analysis_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
@@ -407,7 +414,10 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 # y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,vocabulary_analysis_lb,True)
 vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*',
                                          'Vocabulary (via unigrams) - List of all words/tokens in input document(s)',
+                                         'Vocabulary (via Hapax legomena, once-occurring words)',
+                                         'Vocabulary (via Hapax legomena, once-occurring unigrams)',
                                          'Vocabulary (via Stanza multilanguage lemmatizer) - List of all words/tokens in input document(s)',
+                                         'Vocabulary (via NLTK unusual words)',
                                          'Vocabulary richness (word type/token ratio or Yule’s K)',
                                          'Abstract/concrete vocabulary',
                                          'Objectivity/subjectivity (via spaCy)',
@@ -415,9 +425,6 @@ vocabulary_analysis_menu = tk.OptionMenu(window,vocabulary_analysis_menu_var,'*'
                                          'Word length',
                                          'Vowel words',
                                          'Words with capital initial (proper nouns)',
-                                         'Unusual words (via NLTK)',
-                                         'Hapax legomena (once-occurring words)',
-                                         'Hapax legomena (once-occurring unigrams)',
                                          'Language detection',
                                          'Repetition: Words in first K and last K sentences',
                                          'Repetition: Last K words of a sentence/First K words of next sentence',
@@ -505,13 +512,15 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         'Please, click the button \'CoNLL table analysis\' if you wish to open the CoNLL table analyzer GUI to analyze various items in the CoNLL table, such as\n\n   1. Clause\n   2. Noun\n   3. Verb\n   4. Function words\n   5. DEPREL\n   6. POSTAG\n   7. NER\n\nYou will also be able to run specialized functions such as\n\n   1. CoNLL table searches\n   2. K sentences analyzer')
+                                                         'Please, click the button \'Spelling/grammar checker\' if you wish to open the Spelling/grammar checker GUI to check your corpus for spelling and/or grammar errors with several different NLP tools.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         'Please, click the button \'N-Grams\' if you wish to open the N-Grams GUI to analyze n-grams (1, 2, 3) present in your corpus.')
+                                                         'Please, click the button \'Corpus statistics\' if you wish to open the Corpus statistics GUI to compute various measures, such as sentence, syllable, and words frequencies by document')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, click the button \'N-Grams\' if you wish to open the N-Grams GUI to compute and analyze n-grams (1, 2, 3, ...) (and co-occurrences) present in your corpus.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, click the button \'Nominalization\' if you wish to open the Nominalization GUI to analyze instances of nominalization (i.e., turning verbs into nouns - Latin nomen=noun).')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         'Please, click the button \'Spelling/grammar checker\' if you wish to open the Spelling/grammar checker GUI to check your corpus for spelling and/or grammar errors with several different NLP tools.')
+                                                         'Please, click the button \'CoNLL table analysis\' if you wish to open the CoNLL table analyzer GUI to analyze various items in the CoNLL table, such as\n\n   1. Clause\n   2. Noun\n   3. Verb\n   4. Function words\n   5. DEPREL\n   6. POSTAG\n   7. NER\n\nYou will also be able to run specialized functions such as\n\n   1. CoNLL table searches\n   2. K sentences analyzer')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, tick the \'Complexlexity\readability analysis\' checkbox if you wish to analyze the complexity or readability of sentences and documents.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Sentence complexity to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure. The Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\nTHE SENTENCE COMPLEXITY ALGORITHM IS BASED ON STANZA.\n\n   2. Text readability to compute various measures of text readability.\n 12 readability score requires HIGHSCHOOL education;\n 16 readability score requires COLLEGE education;\n 18 readability score requires MASTER education;\n 24 readability score requires DOCTORAL education;\n >24 readability score requires POSTDOC education.\n\nTHE TEXT READABILITY ALGORITHM IS BASED ON TEXSTAT.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",

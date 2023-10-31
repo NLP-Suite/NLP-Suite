@@ -155,7 +155,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         label=csv_field_categorical_var
 
 
-# Categorical data: colormap  --------------------------------------------------------------------------------
+# Sunburst & Treemap
+
+        if 'Sunburst' in categorical_menu_var.get() or 'Treemap' in categorical_menu_var.get():
+            if csv_field_categorical_var!='' and not csv_field_categorical_var in csv_file_categorical_field_list :
+                result = mb.askyesno(title="Warning",message="There is a search value '" + str(csv_field_categorical_var.get()) + "' that has not been added (using the + button) to the csv file fields to be processed.\n\nAre you sure you want to continue?")
+                if result == False: # No
+                    return
+
+        # Categorical data: colormap  --------------------------------------------------------------------------------
 
         if 'Colormap' in categorical_menu_var.get():
             if csv_field_categorical_var == '':
@@ -179,47 +187,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                                "The sunburst algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
                 return
 
-            # if (K_sent_begin_var!='' and K_sent_end_var!='') or  split_var:
-            #     # these options require a Document ID and Sentence ID fields
-            #     headers = IO_csv_util.get_csvfile_headers(inputFilename)
-            #     if not 'Document ID' in headers or not 'Sentence ID' in headers:
-            #         mb.showwarning("Warning",
-            #                        "The 'First K' 'Last K' or 'Split documents in equal halves' options of the sunburst algorithm require a csv file in input with 'Document ID' and 'Sentence ID' fields'. Your csv file does not contain these fields.\n\nPlease, select a different csv file or use the 'Do NOT split documents' option and try again.")
-            #         return
-            # if K_sent_begin_var=='' and K_sent_end_var=='' and split_var==False and do_not_split_var==False:
-            #     mb.showwarning("Warning",
-            #                    "The sunburst algorithm requires a selection of Begin/End K sentences or Split documents in equal halves or Do not split documents.\n\nPlease, make a selection and try again.")
-            #     return
-            # # check that K_sent_begin_var and K_sent_end_var values are numeric
-            # if split_var==False and do_not_split_var==False:
-            #     try:
-            #         if type(int(K_sent_begin_var))!= int:
-            #             int_K_sent_begin_var = int(K_sent_begin_var)
-            #             pass
-            #     except:
-            #         mb.showwarning("Warning",
-            #                        "The value entered for Begin K sentences MUST be a numeric integer.\n\nPlease, enter a numeric value and try again.")
-            #         return
-            #     try:
-            #         if type(int(K_sent_end_var))!= int:
-            #             int_K_sent_end_var = int(K_sent_end_var)
-            #             pass
-            #     except:
-            #         mb.showwarning("Warning",
-            #                        "The value entered for End K sentences MUST be a numeric integer.\n\nPlease, enter a numeric value and try again.")
-            #         return
-            # else:
-            #     int_K_sent_begin_var=None
-            #     int_K_sent_end_var=None
-
-            # # interest pass a list [] of labels embedded in the filename, e.g. Book1, Book2, ... or Chinese, Arabian,...
-            # interest = []
-            # temp_interest=[]
-            # interest = filename_label_var.split(',')
-            # for i in range(len(interest)):
-            #     temp_interest.append(interest[i].lstrip())
-            # # label is a string that has the header field in the csv file to be used for display
-            # label=csv_field_categorical_var
             outputFiles = charts_util.Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list, 1)
 
             #### USED
@@ -703,8 +670,7 @@ search_values_categorical = tk.Entry(window, state='disabled', textvariable=sear
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                    search_values_categorical,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Enter the comma-separated search values to be used to sample the corpus for visualization.\nFor a 'Document' csv file field, you can enter specific parts of a filename (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...).\nFor an 'NER' csv file field, you can enter the tags 'PERSON' or 'LOCATION, COUNTRY, STATE_OR_PROVINCE, CITY'")
-
+                                   "Enter the comma-separated search values to be used to sample the corpus for visualization.\nIf you select 'Document' as csv file field, you can enter specific parts of a filename (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...).\nIf you select 'NER' as csv file field in an input CoNLL table, you can enter the tags 'PERSON' or 'LOCATION, COUNTRY, STATE_OR_PROVINCE, CITY'")
 def add_combination_csvField_searchValues():
     comingFromPlus=True
     global csv_file_categorical_field_string
@@ -1164,7 +1130,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE GEPHI CHART ONLY.\n\nFor Gephi network graphs, once all three fields (node 1, edge, node 2) have been selected, the widget 'csv file field for dynamic graph' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID or Date) or ignore the option if the network should not be dynamic.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SANKEY CHART ONLY.\n\nPlease, using the dropdown menus, select the maximum number of values to be considered for each of the 2 or 3 elements in computing the interactive Sankey chart.\n\nWith to many values, Sankey charts become very messy.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in an interactive sunburst or treemap chart.\n\nThe algorithm applies to categorical data rather than numerical data.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The widgets in this line are REQUIRED to run either the Sunburst or Treemap algorithms.\n\nPlease, enter at least two sets of combinations of csv file field and search values.\n\n   First, select the csv file field using the dropdown menu.\n\n   Second, enter the comma-separated search values to be used from that field to construct the chart. For a 'Document' csv file field, you can enter specific parts of a filename (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...). For an 'NER' csv file field, you can enter the tags 'PERSON' or 'LOCATION, COUNTRY, STATE_OR_PROVINCE, CITY'.\n\n   Finally, click on + symbol to enter another combination of csv field and values (at least two combinations are required) (you can else press the Reset button to clear all selected values and start fresh, or the Show button to visualize the currently selected options).\n\nALWAYS CLICK THE + SYMBOL AFTER HAVING ENTERED THE LAST COMBINATION.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The widgets in this line are REQUIRED to run either the Sunburst or Treemap algorithms.\n\nPlease, enter at least two sets of combinations of csv file field and search values.\n\n   First, select the csv file field using the dropdown menu.\n\n   Second, enter the comma-separated search values to be used from that field to construct the chart.\n   For instance, if you select 'Document' as csv file field, you can enter specific parts of a filename (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...).\n   If you select 'NER' as csv file field in an input CoNLL table, you can enter the tags 'PERSON' or 'LOCATION', 'COUNTRY', 'STATE_OR_PROVINCE', 'CITY'.\n\n   Finally, click on + symbol to enter another combination of csv field and values (at least two combinations are required) (you can else press the Reset button to clear all selected values and start fresh, or the Show button to visualize the currently selected options).\n\nALWAYS CLICK THE + SYMBOL AFTER HAVING ENTERED THE LAST COMBINATION.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE COLORMAP OPTION ONLY.\n\nPlease, enter the maximum number of rows to be displayed in the chart (default = 20).\n\nTick the 'Color' checkbox to select from the color palette the RGB color to be used for the chart (default color orange, RGB 255 166 0).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SUNBURST OPTION ONLY.\n\nPlease, enter the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the checkbox 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.\n\nTick the checkbox 'Do NOT split documents' if you wish to visualize an entire document.\n\nThe three options are mutually exclusive.\n\nThe Sunburst algorithm uses the values in Document ID and Sentence ID to process First K and Last K sentences or to split a document in halves.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE TREEMAP OPTION ONLY. THE FIELDS ARE OPTIONAL (i.e., not required to run the treemap algorithm). \n\nPlease, tick the checkbox if you wish to use the values of a numerical variable to improve the treemap chart.\n\nUse the dropdown menu to select the csv file numeric field to be used for plotting.")
