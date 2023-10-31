@@ -158,7 +158,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
 # Sunburst & Treemap
 
         if 'Sunburst' in categorical_menu_var.get() or 'Treemap' in categorical_menu_var.get():
-            if csv_field_categorical_var!='' and not csv_field_categorical_var in csv_file_categorical_field_list :
+            if csv_field_categorical_var.get()!='' and not csv_field_categorical_var.get() in str(csv_file_categorical_field_list):
                 result = mb.askyesno(title="Warning",message="There is a search value '" + str(csv_field_categorical_var.get()) + "' that has not been added (using the + button) to the csv file fields to be processed.\n\nAre you sure you want to continue?")
                 if result == False: # No
                     return

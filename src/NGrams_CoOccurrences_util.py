@@ -475,7 +475,6 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
                 return filesToOpen
 
             else:
-
                 NgramsSearchFileName_Sankey = IO_files_util.generate_output_file_name('', inputDir, outputDir,
                                                                                       '_Sankey.csv',
                                                                                       'N-grams_search')
@@ -494,6 +493,22 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
                     Sankey_limit3_var = None
                     Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
                                                       'Search word', Sankey_limit1_var, 'Co-Occurring word',
+                                                      Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
+                    filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
+                elif plus_K_words_var==0:
+                    three_way_Sankey = False
+                    var3 = None
+                    Sankey_limit3_var = None
+                    Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
+                                                      'Search word', Sankey_limit1_var, 'Words to the left',
+                                                      Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
+                    filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
+                elif minus_K_words_var==0:
+                    three_way_Sankey = False
+                    var3 = None
+                    Sankey_limit3_var = None
+                    Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
+                                                      'Search word', Sankey_limit1_var, 'Words to the right',
                                                       Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
                     filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
                 else:
