@@ -89,15 +89,18 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     lemmatize = False
     search_keywords_found = False
     search_within_sentence = False
+    word_match = False
     for search_option in search_options_list:
         if search_option == 'Case sensitive (default)':
             case_sensitive = True
         if search_option == 'Case insensitive':
-                case_sensitive = False
-        elif search_option == "Search within sentence (default)":
+            case_sensitive = False
+        if search_option == "Search within sentence (default)":
             search_within_sentence = True
-        elif search_option == "Lemmatize":  # not available yet
+        if search_option == "Lemmatize":  # not available yet
             lemmatize = True
+        if search_option == "Exact match":
+            word_match = True
 
     nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'search')
@@ -135,15 +138,19 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                 sentences_ = nlp(docText).sentences
                 sentences = [sentence.text for sentence in sentences_]
                 sentence_index = 0
-                for sent in sentences:
-                    if len(sent) == 0:
+                for sentence in sentences:
+                    if len(sentence) == 0:
                         sentence_index += 1
                         continue
                     sentence_index += 1
                     if not case_sensitive:
-                        sent = sent.lower()
+                        sentence = sentence.lower()
                     frequency = 0
                     for keyword in search_keywords_list:
+                        if word_match:
+                            sent = re.findall(r'\b\w+\b', sentence)
+                        else:
+                            sent = sentence
                         if keyword in sent:
                             if isFirstOcc:
                                 first_occurrence_index = sentence_index
@@ -161,13 +168,13 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                     form = search_keywords_list
                                     writer.writerow(
                                         [keyword, form, first_occurrence_index, len(sentences_), document_percent_position, frequency,
-                                        sentence_index, sent,
+                                        sentence_index, sentence,
                                         docIndex,
                                         IO_csv_util.dressFilenameForCSVHyperlink(file)])
                                 else:
                                     writer.writerow(
                                         [keyword, '', first_occurrence_index, len(sentences_), document_percent_position, frequency,
-                                        sentence_index, sent,
+                                        sentence_index, sentence,
                                         docIndex,
                                         IO_csv_util.dressFilenameForCSVHyperlink(file)])
                         else:
