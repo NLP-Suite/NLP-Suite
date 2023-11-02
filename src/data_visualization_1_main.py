@@ -632,7 +632,7 @@ def activate_csv_fields_categorical_selection(comingFromPlus = True):
     else:
         search_values_categorical.configure(state='disabled')
         csv_field_categorical_menu.config(state='normal')
-        reset_button_categorical.config(state='disabled')
+        # reset_button_categorical.config(state='disabled')
         # show_button.config(state='disabled')
     activate_visualization_options()
 categorical_menu_var.trace('w', callback = lambda x,y,z: activate_csv_fields_categorical_selection())
