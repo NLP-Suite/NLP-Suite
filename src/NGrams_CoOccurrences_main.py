@@ -281,12 +281,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                            message="You have selected to run a VIEWER but you have not entered any search strings in the Search widget.\n\nPlease, enter search values  and try again.")
             return
 
-        # create a subdirectory of the output directory
-
-        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='N-grams VIEWER',
-                                                           silent=False)
-        if outputDir == '':
-            return
+        # # create a subdirectory of the output directory
+        #
+        # outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='N-grams VIEWER',
+        #                                                    silent=False)
+        # if outputDir == '':
+        #     return
 
         if n_grams_viewer_var == 1 and len(search_words) > 0:
             if date_options == 0:

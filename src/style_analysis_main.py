@@ -24,8 +24,8 @@ import config_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPackage,
-    style_GUIs_var,
-    style_GUIs_menu_var,
+    extra_GUIs_var,
+    extra_GUIs_menu_var,
     complexity_readability_analysis_var,
     complexity_readability_analysis_menu_var,
     vocabulary_analysis_var,
@@ -57,20 +57,20 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
     openOutputFilesSV=openOutputFiles
     outputDir_style=outputDir
 
-    if style_GUIs_var and style_GUIs_menu_var!='':
-        if 'Spelling' in style_GUIs_menu_var:
+    if extra_GUIs_var and extra_GUIs_menu_var!='':
+        if 'Spelling' in extra_GUIs_menu_var:
             call('python file_spell_checker_main.py', shell=True)
-        if 'statistics' in style_GUIs_menu_var:
+        if 'statistics' in extra_GUIs_menu_var:
             call('python statistics_txt_main.py', shell=True)
-        if 'N-grams' in style_GUIs_menu_var:
+        if 'N-grams' in extra_GUIs_menu_var:
             call('python NGrams_CoOccurrences_main.py', shell=True)
-        if 'Nominalization' in style_GUIs_menu_var:
+        if 'Nominalization' in extra_GUIs_menu_var:
             call('python nominalization_main.py', shell=True)
-        if 'CoNLL' in style_GUIs_menu_var:
+        if 'CoNLL' in extra_GUIs_menu_var:
             call('python CoNLL_table_analyzer_main.py', shell=True)
 
 
-    if (style_GUIs_var == False and complexity_readability_analysis_var == False and
+    if (extra_GUIs_var == False and complexity_readability_analysis_var == False and
         vocabulary_analysis_var == False and
         gender_guesser_var==False):
         mb.showwarning('Warning','No options have been selected.\n\nPlease, select an option and try again.')
@@ -298,8 +298,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
-                                style_GUIs_var.get(),
-                                style_GUIs_menu_var.get(),
+                                extra_GUIs_var.get(),
+                                extra_GUIs_menu_var.get(),
                                 complexity_readability_analysis_var.get(),
                                 complexity_readability_analysis_menu_var.get(),
                                 vocabulary_analysis_var.get(),
@@ -349,8 +349,8 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 
 def clear(e):
 
-    style_GUIs_var.set(0)
-    style_GUIs_menu_var.set('')
+    extra_GUIs_var.set(0)
+    extra_GUIs_menu_var.set('')
 
     complexity_readability_analysis_var.set(0)
     vocabulary_analysis_var.set(0)
@@ -368,8 +368,8 @@ ngrams_list=[]
 
 bySentenceIndex_var=tk.IntVar()
 
-style_GUIs_var = tk.IntVar()
-style_GUIs_menu_var = tk.StringVar()
+extra_GUIs_var = tk.IntVar()
+extra_GUIs_menu_var = tk.StringVar()
 complexity_readability_analysis_var=tk.IntVar()
 vocabulary_analysis_var=tk.IntVar()
 gender_guesser_var=tk.IntVar()
@@ -378,17 +378,17 @@ gender_guesser_var=tk.IntVar()
 complexity_readability_analysis_menu_var=tk.StringVar()
 vocabulary_analysis_menu_var=tk.StringVar()
 
-style_GUIs_var.set(0)
-style_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for style analysis ', variable=style_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
-# style_GUIs_checkbox.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,style_GUIs_checkbox,True)
+extra_GUIs_var.set(0)
+extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for style analysis ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+# extra_GUIs_checkbox.configure(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
-style_GUIs_menu_var.set('')
-style_GUIs_menu = tk.OptionMenu(window,style_GUIs_menu_var,'Spelling/grammar checker','Corpus statistics','N-grams & Co-Occurrences','Nominalization','CoNLL table analyzer')
-style_GUIs_menu.configure(state='disabled')
+extra_GUIs_menu_var.set('')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Spelling/grammar checker (Open GUI)','Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)','Nominalization (Open GUI)','CoNLL table analyzer (Open GUI)')
+extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
-                                   style_GUIs_menu,
+                                   extra_GUIs_menu,
                                    False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
                                    "Select the complexity/readability analysis you wish to perform (* for all); widget disabled until checkbox ticked.")
 
@@ -443,16 +443,16 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 gender_guesser_checkbox.configure(state='normal')
 
 def activate_all_options(*args):
-    style_GUIs_checkbox.configure(state='normal')
-    style_GUIs_menu.configure(state='disabled')
+    extra_GUIs_checkbox.configure(state='normal')
+    extra_GUIs_menu.configure(state='disabled')
     complexity_readability_analysis_checkbox.configure(state='normal')
     complexity_readability_analysis_menu.configure(state='disabled')
     vocabulary_analysis_checkbox.configure(state='normal')
     vocabulary_analysis_menu.configure(state='disabled')
     gender_guesser_checkbox.configure(state='normal')
-    if style_GUIs_var.get():
-        # style_GUIs_checkbox.configure(state='normal')
-        style_GUIs_menu.configure(state='normal')
+    if extra_GUIs_var.get():
+        # extra_GUIs_checkbox.configure(state='normal')
+        extra_GUIs_menu.configure(state='normal')
         complexity_readability_analysis_checkbox.configure(state='disabled')
         complexity_readability_analysis_menu.configure(state='disabled')
         vocabulary_analysis_checkbox.configure(state='disabled')
@@ -461,21 +461,21 @@ def activate_all_options(*args):
     # place widget with hover-over info
     if complexity_readability_analysis_var.get()==True:
         complexity_readability_analysis_menu.configure(state='normal')
-        style_GUIs_checkbox.configure(state='disabled')
-        style_GUIs_menu.configure(state='disabled')
+        extra_GUIs_checkbox.configure(state='disabled')
+        extra_GUIs_menu.configure(state='disabled')
         vocabulary_analysis_checkbox.configure(state='disabled')
         vocabulary_analysis_menu.configure(state='disabled')
         gender_guesser_checkbox.configure(state='disabled')
     if vocabulary_analysis_var.get()==True:
         vocabulary_analysis_menu.configure(state='normal')
-        style_GUIs_checkbox.configure(state='disabled')
-        style_GUIs_menu.configure(state='disabled')
+        extra_GUIs_checkbox.configure(state='disabled')
+        extra_GUIs_menu.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='disabled')
         complexity_readability_analysis_menu.configure(state='disabled')
         gender_guesser_checkbox.configure(state='disabled')
     if gender_guesser_var.get() == True:
-        style_GUIs_checkbox.configure(state='disabled')
-        style_GUIs_menu.configure(state='disabled')
+        extra_GUIs_checkbox.configure(state='disabled')
+        extra_GUIs_menu.configure(state='disabled')
         complexity_readability_analysis_checkbox.configure(state='disabled')
         complexity_readability_analysis_menu.configure(state='disabled')
         vocabulary_analysis_checkbox.configure(state='disabled')
@@ -524,7 +524,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                       GUI_IO_util.msg_IO_setup)
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-                                                         'Please, tick the \'Open more GUIs\' checkbox if you wish to see and select the range of other available tools suitable for stylistic analysis.')
+                                                         'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of other available tools suitable for stylistic analysis.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, tick the \'Complexity\readability analysis\' checkbox if you wish to analyze the complexity or readability of sentences and documents.\n\nUse the dropdown menu to select the type of analysis to run.\n\n   1. Sentence complexity to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure. The Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\nTHE SENTENCE COMPLEXITY ALGORITHM IS BASED ON STANZA.\n\n   2. Text readability to compute various measures of text readability.\n 12 readability score requires HIGHSCHOOL education;\n 16 readability score requires COLLEGE education;\n 18 readability score requires MASTER education;\n 24 readability score requires DOCTORAL education;\n >24 readability score requires POSTDOC education.\n\nTHE TEXT READABILITY ALGORITHM IS BASED ON TEXSTAT.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",

@@ -298,7 +298,11 @@ def remove_hyperlinks(inputFilename):
         print("Error: failed to read the csv file named: "+inputFilename)
         return False, ''
     # data = pd.read_csv(inputFilename)
-    document = data['Document']
+    try:
+        document = data['Document']
+    except:
+        no_hyperlink_filename=inputFilename
+        return True, no_hyperlink_filename
     new_document = []
     for i in document:
         try:

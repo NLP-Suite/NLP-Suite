@@ -42,15 +42,17 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
     # if we need to remove the hyperlinks, we need to make a temporary data for plotting
     if remove_hyperlinks:
         remove_hyperlinks,inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
-
     try:
         data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
     except pd.errors.ParserError:
         data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip', sep='delimiter')
     except:
-        print("Error: failed to read the csv file named: "+inputFilename)
+        print("Error: failed to read the csv file : "+inputFilename)
         return
-
+    # print on X-axis the filename w/o path
+    # head, tail = os.path.split(inputFilename)
+    # inputFilenameSV=inputFilename
+    # inputFilename = tail
     headers = data.columns.tolist()
     file_list = []
     for j in range(0,len(chart_type_list)):
@@ -61,7 +63,10 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
         x_cols = headers[cols_to_plot[j][0]]
         y_cols = headers[cols_to_plot[j][1]]
         if i == 'bar':
+            if 'by Document' in chart_title:
+                print()
             if len(chart_type_list) < len(cols_to_plot):
+                # data['Document']
                 fig = plot_multi_bar_chart_px(data, chart_title, cols_to_plot)
                 file_list.append(save_chart(fig,outputDir,chart_title,static_flag,column_xAxis_label,column_yAxis_label))
                 break
@@ -136,6 +141,8 @@ def save_chart(fig, outputDir, chart_title, static_flag, x_label = '', y_label =
 #If not call the get_frequencies function to get the frequencies of the categorical variables in x_label column
 def plot_bar_chart_px(x_label, fileName, chart_title, height = ''):
     data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
+    if 'by Document' in chart_title:
+        print()
     if height == '':
         height = x_label+"_count"
         data = get_frequencies(data, x_label)
