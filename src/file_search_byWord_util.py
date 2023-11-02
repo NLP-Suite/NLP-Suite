@@ -15,7 +15,7 @@ import GUI_util
 import IO_libraries_util
 
 if IO_libraries_util.install_all_Python_packages(GUI_util.window, "file_search_byWord_util.py",
-                                          ['os', 'tkinter','stanza']) == False:
+                                          ['os', 'tkinter','stanza', 're']) == False:
     sys.exit(0)
 
 import os
@@ -25,6 +25,7 @@ import tkinter.messagebox as mb
 import stanza
 # from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import collections
+import re
 
 import IO_user_interface_util
 import IO_files_util
@@ -39,8 +40,23 @@ def find_k_adjacent_elements(s, sv, kplus,kminus):
     after_k = s[idx+1:min(n, idx+kplus+1)]
     return prior_k + [sv] + after_k
 
+def find_EVERY_k_adjacent_elements(s, sv, kplus,kminus):
+    #plus_K_var,minus_K_var
+    n = len(s)
+    #idx = s.index(sv)
+    lefti = []
+    midi = []
+    riight = []
+    for idx in range(len(s)):
+        if s[idx]==sv:
+            prior_k = s[max(0, idx-kminus):idx]
+            after_k = s[idx+1:min(n, idx+kplus+1)]
+            lefti.append(' '.join(prior_k))
+            riight.append(' '.join(after_k))
+            midi.append(sv)
+    return lefti,midi, riight
 def search_sentences_documents(inputFilename, inputDir, outputDir, configFileName,
-        search_by_dictionary, search_by_search_keywords, search_keywords_list,
+        search_by_dictionary, search_by_search_keywords, minus_K_words_var, plus_K_words_var, search_keywords_list,
         create_subcorpus_var, search_options_list, lang, createCharts, chartPackage):
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
@@ -88,137 +104,246 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     lemmatize = False
     search_keywords_found = False
     search_within_sentence = False
+    word_match = False
     for search_option in search_options_list:
         if search_option == 'Case sensitive (default)':
             case_sensitive = True
         if search_option == 'Case insensitive':
-                case_sensitive = False
-        elif search_option == "Search within sentence (default)":
+            case_sensitive = False
+        if search_option == "Search within sentence (default)":
             search_within_sentence = True
-        elif search_option == "Lemmatize":  # not available yet
+        if search_option == "Lemmatize":  # not available yet
             lemmatize = True
+        if search_option == "Exact match":
+            word_match = True
 
     nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'search')
     docIndex = 0
     first_occurrence_index = -1
     csvExist = os.path.exists(outputFilename)
-    with open(outputFilename, "a", newline="", encoding='utf-8', errors='ignore') as csvFile:
-        writer = csv.writer(csvFile)
-        if csvExist:
-            csvFile.truncate(0)
-            writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position in document",
-                             "Frequency of occurrence", "Sentence ID", "Sentence", "Document ID", "Document"])
-        else:
-            writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position in document",
-                             "Frequency of occurrence", "Sentence ID", "Sentence", "Document ID", "Document"])
+
+    with open(outputFilename, 'w') as f:
+        f.write("Minus K Value of Words, Searched Word, Plus K Value of Words, Document\n")
+    outputtxtFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'search')
+    with open(outputtxtFilename, 'w') as f:
+        f.write('') # just flushing it
+    if plus_K_words_var or minus_K_words_var:
+        outputFiles = []
+        # Use my logic when we have +- k because the csv is complicated to modify
         for file in files:
-            isFirstOcc = True
-            docIndex += 1
-            _, tail = os.path.split(file)
-            print("Processing file " + str(docIndex) + "/" + str(nFile) + ' ' + tail)
-            if search_by_dictionary:
-                break
-            if search_by_search_keywords:
-                output_dir_path = inputDir + os.sep + "search_result_csv"
-                if file[-4:] != '.txt':
-                    continue
             f = open(file, "r", encoding='utf-8', errors='ignore')
             docText = f.read()
             f.close()
+            words_ = word_tokenize_stanza(stanzaPipeLine(docText))
+            for keyword in search_keywords_list:
+                left, mid, right = find_EVERY_k_adjacent_elements(words_, keyword, plus_K_words_var,
+                                                                  minus_K_words_var)
+            with open(outputFilename,'a') as f:
+                for i in range(len(mid)):
+                    a = [left[i],mid[i],right[i],file]
+                    f.write(','.join(a)+"\n")
+            with open(outputtxtFilename,'a') as f:
+                for i in range(len(mid)):
+                    a = [left[i],right[i]] # If you would like to retain, just follow the 4 lines above and you can do that.
+                    # i.e. left[i], mid[i], right[i]
+                    f.write(' '.join(a)) # this would be the basis for wordclouds
+            outputFiles = [outputFilename,outputtxtFilename]
+       # with open(outputtxtFilename, 'r') as f:
+       #     q = ''.join(f.readlines())
+        import wordclouds_util
+        if createCharts:
+            use_contour_only = False
+            max_words = 100
+            font = 'Default'
+            prefer_horizontal = .9
+            lemmatize = False
+            exclude_stopwords = True
+            exclude_punctuation = True
+            lowercase = False
+            differentPOS_differentColors = False
+            differentColumns_differentColors = False
+            csvField_color_list = []
+            doNotListIndividualFiles = True
+            collocation = True
+            import wordclouds_util
+            outputFiles2 = wordclouds_util.python_wordCloud(outputtxtFilename, '', outputDir, configFileName,
+                                                           selectedImage="",
+                                                           use_contour_only=use_contour_only,
+                                                           prefer_horizontal=prefer_horizontal, font=font,
+                                                           max_words=max_words,
+                                                           lemmatize=lemmatize, exclude_stopwords=exclude_stopwords,
+                                                           exclude_punctuation=exclude_punctuation, lowercase=lowercase,
+                                                           differentPOS_differentColors=differentPOS_differentColors,
+                                                           differentColumns_differentColors=differentColumns_differentColors,
+                                                           csvField_color_list=csvField_color_list,
+                                                           doNotListIndividualFiles=doNotListIndividualFiles,
+                                                           openOutputFiles=False, collocation=collocation)
+            outputFiles.extend(outputFiles2)
+            return outputFiles
+        else:
+            return outputFiles
 
-    # search in sentence  -----------------------------------------------
-            if search_within_sentence:
-                chart_title = 'Frequency Distribution of Search Words'
-                # the next clause takes long time to process even for small documents
-                sentences_ = nlp(docText).sentences
-                sentences = [sentence.text for sentence in sentences_]
-                sentence_index = 0
-                for sent in sentences:
-                    if len(sent) == 0:
-                        sentence_index += 1
+    if (not (minus_K_words_var and plus_K_words_var)):
+        with open(outputFilename, "a", newline="", encoding='utf-8', errors='ignore') as csvFile:
+            writer = csv.writer(csvFile)
+            if csvExist:
+                csvFile.truncate(0)
+                writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position in document",
+                                 "Frequency of occurrence", "Sentence ID", "Sentence", "Document ID", "Document"])
+            else:
+                writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position in document",
+                                 "Frequency of occurrence", "Sentence ID", "Sentence", "Document ID", "Document"])
+
+            for file in files:
+                isFirstOcc = True
+                docIndex += 1
+                _, tail = os.path.split(file)
+                print("Processing file " + str(docIndex) + "/" + str(nFile) + ' ' + tail)
+                if search_by_dictionary:
+                    break
+                if search_by_search_keywords:
+                    output_dir_path = inputDir + os.sep + "search_result_csv"
+                    if file[-4:] != '.txt':
                         continue
-                    sentence_index += 1
-                    if not case_sensitive:
-                        sent = sent.lower()
-                    frequency = 0
-                    for keyword in search_keywords_list:
-                        if keyword in sent:
-                            if isFirstOcc:
-                                first_occurrence_index = sentence_index
-                                isFirstOcc = False
-                            frequency += 1
+                f = open(file, "r", encoding='utf-8', errors='ignore')
+                docText = f.read()
+                f.close()
 
-                            if frequency == 0:
-                                        document_percent_position = 0
-                                        continue
+        # search in sentence  -----------------------------------------------
+                if search_within_sentence:
+                    chart_title = 'Frequency Distribution of Search Words'
+                    # the next clause takes long time to process even for small documents
+                    sentences_ = nlp(docText).sentences
+                    sentences = [sentence.text for sentence in sentences_]
+                    sentence_index = 0
+
+
+
+
+                    for sentence in sentences:
+                        if len(sentence) == 0:
+                            sentence_index += 1
+                            continue
+                        sentence_index += 1
+                        if not case_sensitive:
+                            sentence = sentence.lower()
+                        frequency = 0
+                        for keyword in search_keywords_list:
+
+
+
+                            if word_match:
+                                sent = re.findall(r'\b\w+\b', sentence)
                             else:
-                                search_keywords_found = True
-                                corpus_to_copy.add(file)
-                                document_percent_position = round((sentence_index / len(sentences_)), 2)
+                                sent = sentence
+                            if keyword in sent:
+                                if isFirstOcc:
+                                    first_occurrence_index = sentence_index
+                                    isFirstOcc = False
+                                frequency += 1
+
+                                if frequency == 0:
+                                            document_percent_position = 0
+                                            continue
+                                else:
+                                    search_keywords_found = True
+                                    corpus_to_copy.add(file)
+                                    document_percent_position = round((sentence_index / len(sentences_)), 2)
+                                    if lemmatize:
+                                        form = search_keywords_list
+                                        writer.writerow(
+                                            [keyword, form, first_occurrence_index, len(sentences_), document_percent_position, frequency,
+                                            sentence_index, sentence,
+                                            docIndex,
+                                            IO_csv_util.dressFilenameForCSVHyperlink(file)])
+                                    else:
+                                        writer.writerow(
+                                            [keyword, '', first_occurrence_index, len(sentences_), document_percent_position, frequency,
+                                            sentence_index, sentence,
+                                            docIndex,
+                                            IO_csv_util.dressFilenameForCSVHyperlink(file)])
+                            else:
+                                continue
+
+        # search in document, regardless of sentence -----------------------------------------------
+
+                else: # search in document, regardless of sentence
+                    chart_title = 'Frequency Distribution of Documents with Search Words'
+                    if not case_sensitive:
+                        docText = docText.lower()
+                    # words_ = word_tokenize(docText)  # the list of sentences in corpus
+                    words_ = word_tokenize_stanza(stanzaPipeLine(docText))
+                    wordCounter = collections.Counter(words_)
+                    for keyword in search_keywords_list:
+
+                        # print("this is the key word", keyword)
+                        iterations = keyword.count(' ')
+                        tokenIndex = 0
+                        frequency = 0
+                        if iterations > 0:
+                            wordIndex = 0
+                            for word in words_:
+                                wordIndex += 1
+                                checker = False
+                                partsOfWord = keyword.split(' ')
+                                for i in range(iterations + 1):
+                                    if i == 0:
+                                        if partsOfWord[i] == word:
+                                            checker = True
+                                    else:
+                                        if checker and (wordIndex - 1 + i) < len(words_):
+                                            if partsOfWord[i] == words_[wordIndex - 1 + i]:
+                                                # print("yes")
+                                                checker = True
+                                            else:
+                                                checker = False
+                                if checker:
+                                    search_keywords_found = True
+                                    # count the number of documents, not of searched word occurrences
+                                    corpus_to_copy.add(file)
+                                    frequency += 1
+                            if frequency > 0:
                                 if lemmatize:
                                     form = search_keywords_list
                                     writer.writerow(
-                                        [keyword, form, first_occurrence_index, len(sentences_), document_percent_position, frequency,
-                                        sentence_index, sent,
-                                        docIndex,
-                                        IO_csv_util.dressFilenameForCSVHyperlink(file)])
+                                        [keyword, form, "N/A", "N/A", "N/A", frequency,
+                                        "N/A", "N/A",
+                                         docIndex,
+                                         IO_csv_util.dressFilenameForCSVHyperlink(file)])
                                 else:
                                     writer.writerow(
-                                        [keyword, '', first_occurrence_index, len(sentences_), document_percent_position, frequency,
-                                        sentence_index, sent,
-                                        docIndex,
-                                        IO_csv_util.dressFilenameForCSVHyperlink(file)])
-                        else:
-                            continue
-
-    # search in document, regardless of sentence -----------------------------------------------
-
-            else: # search in document, regardless of sentence
-                chart_title = 'Frequency Distribution of Documents with Search Words'
-                if not case_sensitive:
-                    docText = docText.lower()
-                # words_ = word_tokenize(docText)  # the list of sentences in corpus
-                words_ = word_tokenize_stanza(stanzaPipeLine(docText))
-                wordCounter = collections.Counter(words_)
-                for keyword in search_keywords_list:
-                    # print("this is the key word", keyword)
-                    iterations = keyword.count(' ')
-                    tokenIndex = 0
-                    frequency = 0
-                    if iterations > 0:
-                        wordIndex = 0
-                        for word in words_:
-                            wordIndex += 1
-                            checker = False
-                            partsOfWord = keyword.split(' ')
-                            for i in range(iterations + 1):
-                                if i == 0:
-                                    if partsOfWord[i] == word:
-                                        checker = True
+                                        [keyword, '', "N/A", "N/A", "N/A", frequency,
+                                         "N/A", "N/A",
+                                         docIndex,
+                                         IO_csv_util.dressFilenameForCSVHyperlink(file)])
+                            else:
+                                if lemmatize:
+                                    form = search_keywords_list
+                                    writer.writerow(
+                                        [keyword, form, "N/A", "N/A", "N/A", "NOT FOUND",
+                                         "N/A", "N/A",
+                                         docIndex,
+                                         IO_csv_util.dressFilenameForCSVHyperlink(file)])
                                 else:
-                                    if checker and (wordIndex - 1 + i) < len(words_):
-                                        if partsOfWord[i] == words_[wordIndex - 1 + i]:
-                                            # print("yes")
-                                            checker = True
-                                        else:
-                                            checker = False
-                            if checker:
-                                search_keywords_found = True
-                                # count the number of documents, not of searched word occurrences
-                                corpus_to_copy.add(file)
-                                frequency += 1
-                        if frequency > 0:
+                                    writer.writerow(
+                                        [keyword, '', "N/A", "N/A", "N/A", "NOT FOUND",
+                                         "N/A", "N/A",
+                                         docIndex,
+                                         IO_csv_util.dressFilenameForCSVHyperlink(file)])
+                        elif keyword in list(wordCounter.keys()):
+                            search_keywords_found = True
+                            corpus_to_copy.add(file)
                             if lemmatize:
                                 form = search_keywords_list
                                 writer.writerow(
-                                    [keyword, form, "N/A", "N/A", "N/A", frequency,
+                                    [keyword, form, "N/A", "N/A", "N/A", wordCounter[keyword],
                                     "N/A", "N/A",
                                      docIndex,
                                      IO_csv_util.dressFilenameForCSVHyperlink(file)])
                             else:
                                 writer.writerow(
-                                    [keyword, '', "N/A", "N/A", "N/A", frequency,
+                                    [keyword, '', "N/A", "N/A", "N/A", wordCounter[keyword],
                                      "N/A", "N/A",
                                      docIndex,
                                      IO_csv_util.dressFilenameForCSVHyperlink(file)])
@@ -233,40 +358,10 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                             else:
                                 writer.writerow(
                                     [keyword, '', "N/A", "N/A", "N/A", "NOT FOUND",
-                                     "N/A", "N/A",
+                                    "N/A", "N/A",
                                      docIndex,
                                      IO_csv_util.dressFilenameForCSVHyperlink(file)])
-                    elif keyword in list(wordCounter.keys()):
-                        search_keywords_found = True
-                        corpus_to_copy.add(file)
-                        if lemmatize:
-                            form = search_keywords_list
-                            writer.writerow(
-                                [keyword, form, "N/A", "N/A", "N/A", wordCounter[keyword],
-                                "N/A", "N/A",
-                                 docIndex,
-                                 IO_csv_util.dressFilenameForCSVHyperlink(file)])
-                        else:
-                            writer.writerow(
-                                [keyword, '', "N/A", "N/A", "N/A", wordCounter[keyword],
-                                 "N/A", "N/A",
-                                 docIndex,
-                                 IO_csv_util.dressFilenameForCSVHyperlink(file)])
-                    else:
-                        if lemmatize:
-                            form = search_keywords_list
-                            writer.writerow(
-                                [keyword, form, "N/A", "N/A", "N/A", "NOT FOUND",
-                                 "N/A", "N/A",
-                                 docIndex,
-                                 IO_csv_util.dressFilenameForCSVHyperlink(file)])
-                        else:
-                            writer.writerow(
-                                [keyword, '', "N/A", "N/A", "N/A", "NOT FOUND",
-                                "N/A", "N/A",
-                                 docIndex,
-                                 IO_csv_util.dressFilenameForCSVHyperlink(file)])
-    csvFile.close()
+        csvFile.close()
     if search_keywords_found == False:
         mb.showwarning(title='Search string(s) not found',
                        message='The search keywords:\n\n   ' + search_keywords_str + '\n\nwere not found in your input document(s) with the following set of search options:\n\n  '+ str('\n  '.join(search_options_list)))
@@ -295,7 +390,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         for file in corpus_to_copy:
             shutil.copy(file, subCorpusDir)
         mb.showwarning(title='Warning',message='The search function has created a subcorpus of the files containing the search word(s) "'
-                        + search_keywords_list + '" as a subdirectory called "subcorpus_search" of the input directory:\n\n'
+                        + str(search_keywords_list) + '" as a subdirectory called "subcorpus_search" of the input directory:\n\n'
                         + subCorpusDir + '\n\nA set of csv files have also been exported to the same directory.')
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the Search word function at',
@@ -319,6 +414,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
         from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
         case_sensitive = False
+        word_match = False
         lemmatize = False
         search_keywords_found = False
         search_within_sentence = False
@@ -327,10 +423,12 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                 case_sensitive = True
             if search_option == 'Case insensitive':
                     case_sensitive = False
-            elif search_option == "Search within sentence (default)":
+            if search_option == "Search within sentence (default)":
                 search_within_sentence = True
-            elif search_option == "Lemmatize":  # not available yet
+            if search_option == "Lemmatize":  # not available yet
                 lemmatize = True
+            if search_option == "Exact match":
+                word_match = True
 
         # Win/Mac may use different quotation, we replace any directional quotes to straight ones
         right_double = u"\u201C"  # “
@@ -375,6 +473,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
         nDocsExtractOutput = 0
         nDocsExtractMinusOutput = 0
 
+        textToProcess = ''
         for doc in inputDocs:
             wordFound = False
             fileID = fileID + 1
@@ -384,7 +483,6 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                 text = inputFile.read().replace("\n", " ")
             outputFilename_extract = os.path.join(outputDir_sentences_extract,tail[:-4]) + "_extract_with_searchword.txt"
             outputFilename_extract_wo_searchword = os.path.join(outputDir_sentences_extract_wo_searchword,tail[:-4]) + "_extract_wo_searchword.txt"
-            textToProcess=''
             with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
                     outputFilename_extract_wo_searchword, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_wo_searchword:
                 sentences_tokens = sent_tokenize_stanza(stanzaPipeLine(text), False)
@@ -412,6 +510,11 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                         #   when a single word is processed should tokenize
                         #       or the keyword "rent" would be found in rental, renting, etc.
                         #       unless a partial match is selected
+
+                        # using Stanza would be more accurate but slower
+                        # if keyword in word_tokenize_stanza(stanzaPipeLine(sentence.lower())):
+                        if word_match:
+                            sentence = re.findall(r'\b\w+\b', sentence)
                         if keyword in sentence:
                             wordFound = True
                             nextSentence = True

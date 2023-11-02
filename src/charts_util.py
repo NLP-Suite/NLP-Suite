@@ -1955,6 +1955,7 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
     select_and_count.extend(list(WHERE.keys()))
     df = select_and_counting(data, select_and_count)
     df_grouped = df.groupby(select_and_count).size().reset_index(name='counts')
+    # df_grouped.head(5)
     if suntree:
         fig = px.sunburst(df_grouped, path=select_and_count, values='counts')  # Ensure the hierarchy levels are correct
     else:

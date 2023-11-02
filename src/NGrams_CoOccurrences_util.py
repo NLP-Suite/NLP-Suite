@@ -351,10 +351,6 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
 
     def is_word_in_custom_range(ngram, word, minus_K_words_var, plus_K_words_var):
         words = ngram.split(' ')
-        # Check the input parameters, i comment it out for now because we don't know the design
-        if minus_K_words_var < 0 or plus_K_words_var < 0 or (minus_K_words_var + plus_K_words_var) > len(words)-1:
-            mb.showwarning(title='Warning',message='The sum of -K and +K values should be < than the n-grams value (so, a 4-ngrams can only have a combination of -K + K values less or equal to 3).')
-            return
         start_index = minus_K_words_var # you need abs() if the minus is a negative value, i don't know the design, yet
         end_index = len(words) - plus_K_words_var
         subrange = words[start_index:end_index]  # Extract the subrange
@@ -391,6 +387,13 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
             mb.showwarning(title='Input file error',
                            message='The selected csv file is not the expected csv N-grams file.\n\nThis file should contain a header with the word "gram".\n\nPlease, select the expected csv file and try again.')
             return
+
+        # Check the input parameters, i comment it out for now because we don't know the design
+        if minus_K_words_var < 0 or plus_K_words_var < 0 or (minus_K_words_var + plus_K_words_var) > int(data.columns[0][0]) - 1:
+            mb.showwarning(title='Warning',
+                           message='The sum of -K and +K values should be < than the n-grams value (so, a 4-ngrams can only have a combination of -K + K values less or equal to 3).')
+            return
+
         words = search_keywords_list
         l = []
         l_sankey = []
@@ -475,15 +478,48 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
                 return filesToOpen
 
             else:
-
                 NgramsSearchFileName_Sankey = IO_files_util.generate_output_file_name('', inputDir, outputDir,
                                                                                       '_Sankey.csv',
                                                                                       'N-grams_search')
+                NgramsSearchFileName_txt = IO_files_util.generate_output_file_name('', inputDir, outputDir,
+                                                                                      '_frequencies.txt',
+                                                                                      'N-grams_search')
                 combined_saneky_df.to_csv(NgramsSearchFileName_Sankey, index=False)
+                combined_saneky_df[combined_saneky_df.columns[0]].to_csv(NgramsSearchFileName_txt,index = False)
+                use_contour_only = False
+                max_words = 100
+                font = 'Default'
+                prefer_horizontal = .9
+                lemmatize = False
+                exclude_stopwords = True
+                exclude_punctuation = True
+                lowercase = False
+                differentPOS_differentColors = False
+                differentColumns_differentColors = False
+                csvField_color_list = []
+                doNotListIndividualFiles = True
+                collocation = True
+                import wordclouds_util
+                outputFiles2 = wordclouds_util.python_wordCloud(NgramsSearchFileName_txt, '', outputDir, configFileName,
+                                                                selectedImage="",
+                                                                use_contour_only=use_contour_only,
+                                                                prefer_horizontal=prefer_horizontal, font=font,
+                                                                max_words=max_words,
+                                                                lemmatize=lemmatize,
+                                                                exclude_stopwords=exclude_stopwords,
+                                                                exclude_punctuation=exclude_punctuation,
+                                                                lowercase=lowercase,
+                                                                differentPOS_differentColors=differentPOS_differentColors,
+                                                                differentColumns_differentColors=differentColumns_differentColors,
+                                                                csvField_color_list=csvField_color_list,
+                                                                doNotListIndividualFiles=doNotListIndividualFiles,
+                                                                openOutputFiles=False, collocation=collocation)
+                filesToOpen.extend(outputFiles2)
                 import charts_util
                 headers=IO_csv_util.get_csvfile_headers(NgramsSearchFileName_Sankey)
-                Sankey_limit1_var=15
-                Sankey_limit2_var=15
+                Sankey_limit1_var=30
+                Sankey_limit2_var=30
+                Sankey_limit3_var=30
                 output_label = ''
 
                 outputFilename = IO_files_util.generate_output_file_name(NgramsSearchFileName_Sankey, inputDir, outputDir,
@@ -496,11 +532,27 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
                                                       'Search word', Sankey_limit1_var, 'Co-Occurring word',
                                                       Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
                     filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
+                elif plus_K_words_var==0:
+                    three_way_Sankey = False
+                    var3 = None
+                    Sankey_limit3_var = None
+                    Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
+                                                      'Search word', Sankey_limit1_var, 'Words to the left',
+                                                      Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
+                    filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
+                elif minus_K_words_var==0:
+                    three_way_Sankey = False
+                    var3 = None
+                    Sankey_limit3_var = None
+                    Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
+                                                      'Search word', Sankey_limit1_var, 'Words to the right',
+                                                      Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
+                    filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
                 else:
                     three_way_Sankey = True
-                    Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
-                                                      'Words to the left', 5, 'Search word',
-                                                      10, 1, "Words to the right", 20)
+                    Sankey_chart=charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
+                                       'Words to the left', Sankey_limit1_var, 'Words to the right',
+                                       Sankey_limit2_var, 0, "Search word", Sankey_limit3_var)
                     filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
                     pass
 

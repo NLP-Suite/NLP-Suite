@@ -1217,34 +1217,39 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
                     else:
                         NER.append(temp)
 
-    # check if a location is part of a multi-line location (e.g., Soviet Union, United States)
+    # check if an NER tag is part of a multi-line tag (e.g., for locations, Soviet Union, United States; for PERSON Mao Zedung)
     index = 0
-    currLocation = ''
+    # NER[index][1] contains the tag value, e.g., PERSON, CITY, ...
+    currNERtag = ''
     while index < len(NER):
-        # if NER[index][1] == 'LOCATION' or NER[index][1] == 'CITY' or NER[index][1] == 'STATE_OR_PROVINCE' or NER[index][1] == 'COUNTRY':
         endToken_currenRow=NER[index][3]
+        NERtag_currenRow = NER[index][1]
         try:
             beginToken_nextRow=NER[index+1][2]
+            NERtag_nextRow = NER[index+1][1]
         except:
             beginToken_nextRow=None
-        if (endToken_currenRow == beginToken_nextRow) or (beginToken_nextRow==None): # and index!=0:
-            if currLocation != '':
-                currLocation = currLocation + ' ' + str(NER[index][0])
+            NERtag_nextRow = None
+        # the NER values but have the same beginning/ending values AND be of the same tag type (e.g., PERSON)
+        if ((endToken_currenRow == beginToken_nextRow) or (beginToken_nextRow==None)) and \
+                (NERtag_currenRow==NERtag_nextRow):
+            if currNERtag != '':
+                currNERtag = currNERtag + ' ' + str(NER[index][0])
             else:
-                currLocation = str(NER[index][0])
+                currNERtag = str(NER[index][0])
             if beginToken_nextRow==None:
-                NER[index][0]=currLocation
+                NER[index][0]=currNERtag
                 result.append(NER[index])
             index = index + 1
             continue
         else:
-            if currLocation != '':
-                currLocation = currLocation + ' ' + str(NER[index][0])
+            if currNERtag != '':
+                currNERtag = currNERtag + ' ' + str(NER[index][0])
             else:
-                currLocation = str(NER[index][0])
-        NER[index][0] = currLocation
+                currNERtag = str(NER[index][0])
+        NER[index][0] = currNERtag
         result.append(NER[index])
-        currLocation=''
+        currNERtag=''
         index = index + 1
 
     return result
