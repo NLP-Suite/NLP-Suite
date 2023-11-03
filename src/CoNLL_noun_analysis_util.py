@@ -165,7 +165,6 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
     if createCharts == True:
 
         # bar charts -----------------------------------------------------------------------------------------------
-
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0,1]]
         count_var=1

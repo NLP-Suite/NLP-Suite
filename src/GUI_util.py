@@ -1149,7 +1149,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        "Select the package you wish to use to visualize charts: Excel or Plotly (dynamic/static)")
 
         # TODO chart type widget (same as setup)
-        charts_type_options = ['Bar chart','Line chart','Pie chart', 'Scatter plot', 'Box plot', 'Sankey plot', 'Treemap']
+        charts_type_options = ['_________________ Excel & plotLy options', 'Bar chart','Bubble chart','Line chart','Pie chart', 'Radar chart', 'Scatter plot', '_________________ Open GUI', 'Box plot', 'Colormap', 'Sankey flowchart', 'Sunburst chart', 'Treemap chart']
         charts_type_options_widget.set('Bar chart')
         charts_type_menu_lb = tk.OptionMenu(window,charts_type_options_widget,*charts_type_options)
         # place widget with hover-over info
@@ -1159,6 +1159,25 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        True,False,False,False,90,
                                                        GUI_IO_util.open_setup_x_coordinate,
                                                        "The selection of specific chart types is still under development.\nCharts are currently automatically visualized as bar or line charts.")
+        def open_GUI(*args):
+            if 'Box' in charts_type_options_widget.get():
+                call('python data_visualization_2_main.py', shell=True)
+            if 'Colormap' in charts_type_options_widget.get():
+                call('python data_visualization_1_main.py', shell=True)
+            if 'Sankey' in charts_type_options_widget.get():
+                call('python data_visualization_1_main.py', shell=True)
+            if 'Sunburst' in charts_type_options_widget.get():
+                call('python data_visualization_1_main.py', shell=True)
+            if 'Treemap' in charts_type_options_widget.get():
+                call('python data_visualization_1_main.py', shell=True)
+            if '_____________' in charts_type_options_widget.get():
+                # set to default value
+                charts_type_options_widget.set('Bar chart')
+            if 'Bubble' in charts_type_options_widget.get() and 'Plotly' in charts_package_options_widget.get():
+                mb.showwarning(title='Warning',message='The Bubble chart is currently not supported in the NLP Suite.\n\nCheck back soon!')
+                # set to default value
+                charts_type_options_widget.set('Bar chart')
+        charts_type_options_widget.trace('w', open_GUI)
 
         # if not 'data_manipulation_main.py' in scriptName and not not 'data_visualization_1_main.py' in scriptName :
         data_tools_options = ['Corpus sampling', 'Data manipulation', 'Data statistics', 'Data visualization 1', 'Data visualization 2']
