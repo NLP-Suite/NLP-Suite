@@ -42,15 +42,17 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
     # if we need to remove the hyperlinks, we need to make a temporary data for plotting
     if remove_hyperlinks:
         remove_hyperlinks,inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
-
     try:
         data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
     except pd.errors.ParserError:
         data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip', sep='delimiter')
     except:
-        print("Error: failed to read the csv file named: "+inputFilename)
+        print("Error: failed to read the csv file : "+inputFilename)
         return
-
+    # print on X-axis the filename w/o path
+    # head, tail = os.path.split(inputFilename)
+    # inputFilenameSV=inputFilename
+    # inputFilename = tail
     headers = data.columns.tolist()
     file_list = []
     for j in range(0,len(chart_type_list)):
@@ -60,27 +62,34 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
         fig = None
         x_cols = headers[cols_to_plot[j][0]]
         y_cols = headers[cols_to_plot[j][1]]
-        if i == 'bar':
+        if i.lower() == 'bar':
+            # SIMON
+            if 'by Document' in chart_title:
+                print()
             if len(chart_type_list) < len(cols_to_plot):
+                # SIMON must replace the document values values in data under the Document column
+                # using tail values in head, tail = os.path.split(data['Document'])
                 fig = plot_multi_bar_chart_px(data, chart_title, cols_to_plot)
                 file_list.append(save_chart(fig,outputDir,chart_title,static_flag,column_xAxis_label,column_yAxis_label))
                 break
             else:
+                # SIMON
                 fig = plot_bar_chart_px(x_cols,inputFilename,chart_title,y_cols)
-        elif i == 'pie':
+        elif i.lower() == 'pie':
             fig = plot_pie_chart_px(x_cols,inputFilename,chart_title,y_cols)
         #elif(i == 'scatter' or i == 'radar'):
-        elif i == 'scatter':
+        elif i.lower() == 'scatter':
             fig = plot_scatter_chart_px(x_cols,y_cols,inputFilename,chart_title)
-        elif i == 'radar':
+        elif i.lower() == 'radar':
             fig = plot_radar_chart_px(x_cols,y_cols,inputFilename,chart_title)
-        elif i == 'line':
+        elif i.lower() == 'line':
             #plot_multi_line_chart_w_slider_px(fileName, chart_title, col_to_be_ploted, series_label_list = NULL)
             fig = plot_multi_line_chart_w_slider_px(inputFilename,chart_title,cols_to_plot)
             file_list.append(save_chart(fig,outputDir,chart_title,static_flag,column_xAxis_label,column_yAxis_label))
             break
         else:
-            print('Chart type not supported '+i+'! Skipped and continue with next chart.')
+            print(i+ ' chart currently not supported in the NLP Suite. Check back soon!')
+            continue
         file_list.append(save_chart(fig,outputDir,chart_title,static_flag,column_xAxis_label,column_yAxis_label))
     #remove the temporary file
     if remove_hyperlinks:
@@ -136,6 +145,9 @@ def save_chart(fig, outputDir, chart_title, static_flag, x_label = '', y_label =
 #If not call the get_frequencies function to get the frequencies of the categorical variables in x_label column
 def plot_bar_chart_px(x_label, fileName, chart_title, height = ''):
     data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
+    # SIMON
+    if 'by Document' in chart_title:
+        print()
     if height == '':
         height = x_label+"_count"
         data = get_frequencies(data, x_label)
@@ -178,7 +190,7 @@ def plot_scatter_chart_px(x_label, y_label, fileName, chart_title):
 #r_label indicates the column name of the value of the feature from the data    CANNOT BE A DISCRETE VARIABLE
 #the output file would be a html file with hover over effect names by the chart title
 #null value will cause an unclosed shape. This function default removes all rows contaning null values
-def plot_radar_chart_px(theta_label, fileName, chart_title, r_label = None):
+def plot_radar_chart_px(theta_label, r_label, fileName, chart_title):
     data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
     if r_label is None:
         r_label = theta_label+"_count"

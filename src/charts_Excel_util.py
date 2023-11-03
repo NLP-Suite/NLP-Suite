@@ -121,36 +121,36 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                        second_y_var=0,
                        second_yAxis_label=''):
     #TODO perhaps all these different imports can be consolidated into a single import?
-    if 'pie' in chart_type_list:
+    if 'pie' in str(chart_type_list).lower():
         from openpyxl.chart import (
                 PieChart,
                 ProjectedPieChart,
                 Reference,
         )
-    if 'bar' in chart_type_list:
+    if 'bar' in str(chart_type_list).lower():
         from openpyxl.chart import (
                 BarChart,
                 Series,
                 Reference,
         )
-    if 'line' in chart_type_list:
+    if 'line' in str(chart_type_list).lower():
         from openpyxl.chart import (
             LineChart,
             Reference,
             Series,
         )
-    if 'scatter' in chart_type_list:
+    if 'scatter' in str(chart_type_list).lower():
         from openpyxl.chart import (
                 ScatterChart,
                 Reference,
                 Series,
         )
-    if 'radar' in chart_type_list:
+    if 'radar' in str(chart_type_list).lower():
         from openpyxl.chart import (
                 RadarChart,
                 Reference,
         )
-    if 'bubble' in chart_type_list:
+    if 'bubble' in str(chart_type_list).lower():
         from openpyxl.chart import (
                 BubbleChart,
                 Series,
@@ -379,22 +379,24 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
 
         #openpyxl only allows a maximum of 2 y axes with different scales
         if second_y_var==0: #we are NOT plotting with 2 y axes with different scales
+            chartName=''
             if len(chart_type_list)==0:
                 mb.showwarning(title='Chart type error', message="No chart type was specified (e.g., line, bubble). The chart could not be created.\n\nPlease, select a chart type and try again!")
                 return
-            if chart_type_list[0]=="bar":
+            if str(chart_type_list[0]).lower()=="bar":
                 chartName = BarChart()
-            elif chart_type_list[0]=="bubble":
+            elif str(chart_type_list[0]).lower()=="bubble":
                 chartName = BubbleChart()
-            elif chart_type_list[0]=="line":
+            elif str(chart_type_list[0]).lower()=="line":
                 chartName = LineChart()
-            elif chart_type_list[0]=="pie":
+            elif str(chart_type_list[0]).lower()=="pie":
                 chartName = PieChart()
-            elif chart_type_list[0]=="radar":
+            elif str(chart_type_list[0]).lower()=="radar":
                 chartName = RadarChart()
-            elif chart_type_list[0]=="scatter":
+            elif str(chart_type_list[0]).lower()=="scatter":
                 chartName = ScatterChart()
-
+            else:
+                return
             # Excel allows to group a series value by another series values (e.g., Form or Lemma values by POS or NER tags)
             #   two x-axis labels will be created
             #   https://www.extendoffice.com/documents/excel/2715-excel-chart-group-axis-labels.html

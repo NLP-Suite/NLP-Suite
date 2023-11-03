@@ -31,6 +31,8 @@ import spaCy_util
 # 1: included 0: not included
 
 def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
+        extra_GUIs_var,
+        extra_GUIs_menu_var,
         manual_Coref, open_GUI,
         parser_var,
         parser_menu_var,
@@ -63,6 +65,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = \
         config_util.get_date_options(config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
+
+    if extra_GUIs_var and extra_GUIs_menu_var!='':
+        if 'checking' in extra_GUIs_menu_var:
+            call('python file_checker_converter_cleaner_main.py', shell=True)
+        elif 'coref' in extra_GUIs_menu_var:
+            call('python coreference_main.py', shell=True)
 
     if parser_var == 0 and CoNLL_table_analyzer_var == 1:
         mb.showinfo("Warning", "You have selected to open the CoNLL table analyser GUI. This option expects to run the parser first.\n\nPlease, tick the CoreNLP parser checkbox and try again.")
@@ -333,6 +341,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
                                  GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_package_options_widget.get(),
+                                 extra_GUIs_var.get(),
+                                 extra_GUIs_menu_var.get(),
                                  manual_Coref_var.get(),
                                  open_GUI_var.get(),
                                  parser_var.get(),
@@ -368,8 +378,8 @@ head, scriptName = os.path.split(os.path.basename(__file__))
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=440, # height at brief display
-                             GUI_height_full=520, # height at full display
+                             GUI_height_brief=400, # height at brief display
+                             GUI_height_full=480, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -402,6 +412,8 @@ language_list = []
 CoreNLP_gender_annotator_var = tk.IntVar()
 split_files_var = tk.IntVar()
 quote_extractor_var = tk.IntVar()
+extra_GUIs_var = tk.IntVar()
+extra_GUIs_menu_var = tk.StringVar()
 manual_Coref_var = tk.IntVar()
 open_GUI_var = tk.IntVar()
 parser_var = tk.IntVar()
@@ -418,23 +430,36 @@ y_multiplier_integer_SV=0 # used to set the parser widget on the proper GUI line
 y_multiplier_integer_SV1=0 # used to set the quote_var widget and coref widget on the proper GUI line
 
 def open_GUI(param):
-    if 'preprocess' in param:
-        call('python file_checker_converter_cleaner_main.py',shell=True)
-    else:
-        call('python coreference_main.py',shell=True)
+    if extra_GUIs_var.get():
+        extra_GUIs_menu.configure(state='normal')
 
-pre_processing_button = tk.Button(window, width=GUI_IO_util.widget_width_medium, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: open_GUI('preprocess'))
+extra_GUIs_var.set(0)
+extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for pre-processing ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: open_GUI(extra_GUIs_menu_var.get()))
+# extra_GUIs_checkbox.configure(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
+
+extra_GUIs_menu_var.set('')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'File checking & cleaning (Open GUI)','Coreference resolution (Open GUI)')
+extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   pre_processing_button,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click on the button to open the GUI")
-coreference_button = tk.Button(window, width=GUI_IO_util.widget_width_medium, text='Coreference resolution (Open GUI)',command=lambda: open_GUI('coref'))
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   coreference_button,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click on the button to open the GUI")
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   extra_GUIs_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select the complexity/readability analysis you wish to perform (* for all); widget disabled until checkbox ticked.")
+
+
+# pre_processing_button = tk.Button(window, width=GUI_IO_util.widget_width_medium, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: open_GUI('preprocess'))
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+#                                    pre_processing_button,
+#                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+#                                    "Click on the button to open the GUI")
+# coreference_button = tk.Button(window, width=GUI_IO_util.widget_width_medium, text='Coreference resolution (Open GUI)',command=lambda: open_GUI('coref'))
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+#                                    coreference_button,
+#                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+#                                    "Click on the button to open the GUI")
 
 y_multiplier_integer_SV=y_multiplier_integer
 
@@ -654,18 +679,14 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                   GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, click on the 'Pre-processing tools' button to open the GUI where you will be able to perform a variety of\n   file checking options (e.g., utf-8 encoding compliance of your corpus or sentence length);\n   file cleaning options (e.g., convert non-ASCII apostrophes & quotes and % to percent).\n\nNon utf-8 compliant texts are likely to lead to code breakdown in various algorithms.\n\nASCII apostrophes & quotes (the slanted punctuation symbols of Microsoft Word), will not break any code but they will display in a csv document as weird characters.\n\n% signs will lead to code breakdon of Stanford CoreNLP.\n\nSentences without an end-of-sentence marker (. ! ?) in Stanford CoreNLP will be processed together with the next sentence, potentially leading to very long sentences.\n\nSentences longer than 70 or 100 words may pose problems to Stanford CoreNLP (the average sentence length of modern English is 20 words). Please, read carefully the TIPS_NLP_Stanford CoreNLP memory issues.pdf.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, click on the 'Coreference resolution' button to open the GUI where you will be able to perform coreference resolution of your input document(s).")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of available tools suitable for pre processing.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to use the Stanford CoreNLP parser to obtain a CoNLL table (CoNLL U format).\n\nThe CoNLL table is the basis of many of the NLP analyses: noun & verb analysis, function words, clause analysis, query CoNLL.\n\nYou have a choice between two types of papers:\n   1. the recommended default Probabilistic Context Free Grammar (PCFG) parser;\n   2. a Neural-network dependency parser.\n\nThe neural network approach is more accurate but much slower.\n\nIn output the scripts produce a CoNLL table with the following 9 fields: ID, FORM, LEMMA, POSTAG, NER (23 classes), HEAD, DEPREL, DEPS, CLAUSAL TAGS (the neural-network parser does not produce clausal tags).\n\nThe following fields will be automatically added to the standard 9 fields of a CoNLL table (CoNLL U format): RECORD NUMBER, DOCUMENT ID, SENTENCE ID, DOCUMENT (INPUT filename), DATE (if the filename embeds a date).\n\nIf you suspect that CoreNLP may have given faulty results for some sentences, you can test those sentences directly on the Stanford CoreNLP website at https://corenlp.run")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick/untick the checkbox if you want to open (or not) the CoNLL table analyzer GUI to analyze the Stanford CoreNLP parser results contained in the CoNLL table.\n\nThe CoNLL table analyzer is available only for the Stanford CoreNLP parser and not for the other parsers (BERT, spaCy, Stanza).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select one of the many other annotators available through Stanford CoreNLP: Coreference pronominal resolution, DepRel, POS, NER (Named Entity Recognition), NER normalized date. gender, quote, and sentiment analysis.\n\nANNOTATORS MARKED AS NEURAL NETWORK ARE MORE ACCURATE, BUT SLOW AND REQUIRE A GREAT DEAL OF MEMORY.\n\n1.  PRONOMINAL co-reference resolution refers to such cases as 'John said that he would...'; 'he' would be substituted by 'John'. CoreNLP can resolve other cases but the algorithm here is restricted to pronominal resolution.\n\nThe co-reference resolution checkbox is disabled when selected an entire directory in input. The co-reference resolution algorithm is a memory hog. You may not have enough memory on your machine.\n\nTick the checkbox Manually edit coreferenced document if you wish to resolve manually cases of unresolved or wrongly resolved coreferences. MANUAL EDITING REQUIRES A LOT OF MEMORY SINCE BOTH ORIGINAL AND CO-REFERENCED FILE ARE BROUGHT IN MEMORY. DEPENDING UPON FILE SIZES, YOU MAY NOT HAVE ENOUGH MEMORY FOR THIS STEP.\n\nTick the Open GUI checkbox to open the specialized GUI for pronominal coreference resolution.\n\n2.  The CoreNLP NER annotator recognizes the following NER values:\n  named (PERSON, LOCATION, ORGANIZATION, MISC);\n  numerical (MONEY, NUMBER, ORDINAL, PERCENT);\n  temporal (DATE, TIME, DURATION, SET).\n  In addition, via regexner, the following entity classes are tagged: EMAIL, URL, CITY, STATE_OR_PROVINCE, COUNTRY, NATIONALITY, RELIGION, (job) TITLE, IDEOLOGY, CRIMINAL_CHARGE, CAUSE_OF_DEATH.\n\n3.  The NER NORMALIZED DATE annotator extracts standard dates from text in the yyyy-mm-dd format (e.g., 'the day before Christmas' extracted as 'xxxx-12-24').\n\n4.  The CoreNLP coref GENDER annotator extracts the gender of both first names and personal pronouns (he, him, his, she, her, hers) using a neural network approach. This annotator requires a great deal of memory. So, please, adjust the memory allowing as much memory as you can afford.\n\n5.  The CoreNLP QUOTE annotator extracts quotes from text and attributes the quote to the speaker. The default CoreNLP parameter is DOUBLE quotes. If you want to process both DOUBLE and SINGLE quotes, plase tick the checkbox 'Include single quotes.'\n\n6.  The SENTIMENT ANALYSIS annotator computes the sentiment values (negative, neutral, positive) of each sentence in a text.\n\n6.  The OpenIE (Open Information Extraction) annotator extracts  open-domain relation triples, representing a subject, a relation, and the object of the relation.\n\n\n\nIn INPUT the algorithms expect a single txt file or a directory of txt files.\n\nIn OUTPUT the algorithms will produce a number of csv files  and Excel charts. The Gender annotator will also produce an html file with male tags displayed in blue and female tags displayed in red. The Coreference annotator will produce txt-format copies of the same input txt files but co-referenced.\n\Select * to run Gender annotator (Neural Network), Normalized NER date, and Quote/dialogue annotator (Neural Network).")
-    # y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-    #                               "Please, tick the checkbox if you want to open the GUI to run other parsers and annotatators available in the NLP Suite: spaCy & Stanza. Use the dropdown menu to select the GUI you wish to open.\n\nBoth spaCy and Stanza use neural networks for all their parsers and annotators. spcaCy is also lighting fast.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

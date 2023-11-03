@@ -57,8 +57,7 @@ def run(inputFilename,inputDir, outputDir,
             return
 
     # create a subdirectory of the output directory
-
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='word-search',
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search',
                                                        silent=False)
     if outputDir == '':
         return

@@ -58,6 +58,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     error_flag = False
     ngrams_word_var = True
 
+    if csv_file_var!='':
+        result = mb.askokcancel("Warning",
+                       "This is a reminder that you are now running the N-grams search with the csv input file\n\n"+csv_file_var+'\n\nPress Cancel then Esc to clear the csv file widget if you do not wish to run the N-grams search.')
+        if result == False:
+            return
+
     # get the date options from filename
     filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
@@ -279,13 +285,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if search_words == '' and (n_grams_viewer_var == True or CoOcc_Viewer_var == True):
             mb.showwarning(title='Warning',
                            message="You have selected to run a VIEWER but you have not entered any search strings in the Search widget.\n\nPlease, enter search values  and try again.")
-            return
-
-        # create a subdirectory of the output directory
-
-        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='N-grams VIEWER',
-                                                           silent=False)
-        if outputDir == '':
             return
 
         if n_grams_viewer_var == 1 and len(search_words) > 0:

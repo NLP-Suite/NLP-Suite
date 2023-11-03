@@ -220,6 +220,18 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
         datePos=2,
         viewer_options_list=[],ngrams_size=1,Ngrams_search_var=False,csv_file_var=None):
 
+    if n_grams_viewer or CoOcc_Viewer:
+        # create a subdirectory of the output directory
+        outputDir = IO_files_util.make_output_subdirectory('', inputDir, outputDir, label='N-grams VIEWER',
+                                                           silent=False)
+        if outputDir == '':
+            return
+    else:
+        # create a subdirectory of the output directory
+        outputDir = IO_files_util.make_output_subdirectory(csv_file_var, inputDir, outputDir, label='N-grams search',
+                                                           silent=False)
+        if outputDir == '':
+            return
 
 
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
@@ -398,7 +410,11 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
         l = []
         l_sankey = []
         for word in words:
-            b, df2 = process_ngrams(data, word, minus_K_words_var, plus_K_words_var)
+            try:
+                b, df2 = process_ngrams(data, word, minus_K_words_var, plus_K_words_var)
+            except:
+                mb.showwarning(title='Warning',message='The selected input file does not contain the word "' + word +'".')
+                return
             expanded_rows = []
             for _, row in df2.iterrows():
                 new_row = row.copy()
