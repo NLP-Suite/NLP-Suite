@@ -388,7 +388,7 @@ def activate_plus3(*args):
 csv_groupBy_field_var.trace('w', activate_plus3)
 
 
-def activate_allOptions(menu_values, from_csv_field_freq_var=False):
+def activate_all_options(menu_values, from_csv_field_freq_var=False):
     if inputFilename.get()[-4:] == '.txt':
         # corpus_statistics_checkbox.configure(state='normal')
         all_csv_field_checkbox.configure(state='disabled')
@@ -458,12 +458,12 @@ def activate_allOptions(menu_values, from_csv_field_freq_var=False):
     #     n_grams_menu.configure(state='disabled')
     #     n_grams_options_menu.configure(state='disabled')
 
-# corpus_statistics_var.trace('w', lambda x, y, z: activate_allOptions(menu_values))
-all_csv_stats_var.trace('w', lambda x, y, z: activate_allOptions(menu_values))
-csv_field_freq_var.trace('w', lambda x, y, z: activate_allOptions(menu_values, True))
-# n_grams_var.trace('w', lambda x, y, z: activate_allOptions(menu_values))
+# corpus_statistics_var.trace('w', lambda x, y, z: activate_all_options(menu_values))
+all_csv_stats_var.trace('w', lambda x, y, z: activate_all_options(menu_values))
+csv_field_freq_var.trace('w', lambda x, y, z: activate_all_options(menu_values, True))
+# n_grams_var.trace('w', lambda x, y, z: activate_all_options(menu_values))
 
-activate_allOptions(menu_values)
+activate_all_options(menu_values)
 
 
 # the first call is placed at the buttom of this script so that all widgets would have been dispayed
@@ -483,7 +483,7 @@ def changed_filename(*args):
             m.add_command(label=s, command=lambda value=s: csv_field_var.set(value))
             m1.add_command(label=s, command=lambda value=s: csv_hover_over_field_var.set(value))
             m2.add_command(label=s, command=lambda value=s: csv_groupBy_field_var.set(value))
-    activate_allOptions(menu_values)
+    activate_all_options(menu_values)
 
 # at the bottom of the script after laying out the GUI
 # inputFilename.trace('w',changed_filename)

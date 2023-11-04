@@ -169,7 +169,7 @@ merge_subdir_var.set(0)
 merge_subdir_checkbox = tk.Checkbutton(window, text='Process subdirectories', variable=merge_subdir_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,merge_subdir_checkbox)
 
-def activate_allOptions(*args):
+def activate_all_options(*args):
 	merge_save_fileName_checkbox.configure(state='normal')
 	merge_subdir_checkbox.configure(state="normal")
 	merge_embed_filenames_inStringSeparators_checkbox.configure(state="disabled")
@@ -190,14 +190,14 @@ def activate_allOptions(*args):
 		merge_embed_filenames_inStringSeparators_var.set(0)
 
 
-merge_embed_filenames_inStringSeparators_var.trace('w',activate_allOptions)
-merge_embed_filenames_inStringSeparators_var.trace('w',activate_allOptions)
-merge_embed_subdir_name_var.trace('w',activate_allOptions)
-merge_save_fileName_var.trace('w',activate_allOptions)
-merge_embed_subdir_name_var.trace('w',activate_allOptions)
-merge_subdir_var.trace('w',activate_allOptions)
+merge_embed_filenames_inStringSeparators_var.trace('w',activate_all_options)
+merge_embed_filenames_inStringSeparators_var.trace('w',activate_all_options)
+merge_embed_subdir_name_var.trace('w',activate_all_options)
+merge_save_fileName_var.trace('w',activate_all_options)
+merge_embed_subdir_name_var.trace('w',activate_all_options)
+merge_subdir_var.trace('w',activate_all_options)
 
-activate_allOptions()
+activate_all_options()
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

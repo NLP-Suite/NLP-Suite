@@ -68,7 +68,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
             call('python nominalization_main.py', shell=True)
         if 'CoNLL' in extra_GUIs_menu_var:
             call('python CoNLL_table_analyzer_main.py', shell=True)
-
+        if 'WordNet' in extra_GUIs_menu_var:
+            call('python knowledge_graphs_WordNet_main.py', shell=True)
 
     if (extra_GUIs_var == False and complexity_readability_analysis_var == False and
         vocabulary_analysis_var == False and
@@ -384,13 +385,13 @@ extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for style anal
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Spelling/grammar checker (Open GUI)','Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)','Nominalization (Open GUI)','CoNLL table analyzer (Open GUI)')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Spelling/grammar checker (Open GUI)','Corpus statistics (Open GUI)','N-grams & Co-Occurrences (Open GUI)','Nominalization (Open GUI)','CoNLL table analyzer (Open GUI)','WordNet (Open GUI)')
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    extra_GUIs_menu,
                                    False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
-                                   "Select the complexity/readability analysis you wish to perform (* for all); widget disabled until checkbox ticked.")
+                                   "Select other related types of analysis you wish to perform")
 
 complexity_readability_analysis_var.set(0)
 complexity_readability_analysis_checkbox = tk.Checkbutton(window, text='Complexity/readability analysis', variable=complexity_readability_analysis_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())

@@ -362,6 +362,18 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     # map
     # ------------------------------------------------------------------------------------
 
+    if 'folium' in mapping_package:
+        import GIS_folium_map_util
+        folium_pinmap_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,
+                                                                                  outputDir, '.html', 'GIS_pin',
+                                                                                  geoName, locationColumnName, '',
+                                                                                  '',
+                                                                                  False, True)
+        folium_heatmap_outputFilename=folium_pinmap_outputFilename.replace('pin','heat')
+        outputFiles = GIS_folium_map_util.run(geocodedLocationsOutputFilename, folium_pinmap_outputFilename, folium_heatmap_outputFilename)
+        filesToOpen.extend(outputFiles)
+
+
     # ------------------------------------------------------------------------------------
     # Google Earth Pro (geocoding above produces the GEP map)
     # ------------------------------------------------------------------------------------

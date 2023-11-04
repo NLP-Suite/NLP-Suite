@@ -67,7 +67,7 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
             if 'by Document' in chart_title:
                 print()
             if len(chart_type_list) < len(cols_to_plot):
-                # SIMON must replace the document values values in data under the Document column
+                # SIMON must replace the document values in data under the Document column
                 # using tail values in head, tail = os.path.split(data['Document'])
                 fig = plot_multi_bar_chart_px(data, chart_title, cols_to_plot)
                 file_list.append(save_chart(fig,outputDir,chart_title,static_flag,column_xAxis_label,column_yAxis_label))

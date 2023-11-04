@@ -184,10 +184,9 @@ def run(inputFilename,
     #
     # ----------------------------------------------------------------------------------------------------------------------------------------------
 
-    if GIS_package_var == 'Google Earth Pro & Google Maps' or GIS_package_var == 'Google Maps' or GIS_package_var == 'Google Earth Pro':
+    if 'folium' in GIS_package_var or GIS_package_var == 'Google Earth Pro & Google Maps' or GIS_package_var == 'Google Maps' or GIS_package_var == 'Google Earth Pro':
         # if GIS_package_var=='Google Earth Pro': # check installation
-
-        # locationColumnName where locations to be geocoded (or geocoded) are stored in the csv file;
+            # locationColumnName where locations to be geocoded (or geocoded) are stored in the csv file;
         #   any changes to the columns will result in error
         # outputFiles includes both kml file and Google Earth files
         outputFiles = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
@@ -304,7 +303,8 @@ def clear(e):
     geocode_locations_var.set(1)
     geocode_locations_checkbox.configure(state='normal')
     map_locations_var.set(1)
-    GIS_package_var.set('Google Earth Pro & Google Maps')
+    # GIS_package_var.set('Google Earth Pro & Google Maps')
+    GIS_package_var.set('Python folium pin map & heatmap')
     geocoder_var.set('Nominatim')
     country_bias_var.set('')
     area_var.set('e.g., (34.98527, -85.59790), (30.770444, -81.521974)')
@@ -406,8 +406,8 @@ def display_csv_file_options():
     for s in menu_values:
         m.add_command(label=s, command=lambda value=s: location_menu_var.set(value))
     if GIS_package2_var.get() == False:
-        GIS_package_var.set('Google Earth Pro & Google Maps')
-
+        # GIS_package_var.set('Google Earth Pro & Google Maps')
+        GIS_package_var.set('Python folium pin map & heatmap')
     cannotRun, NER_extractor, geocode_locations, location_menu = check_csv_file_headers(csv_file_var.get())
 
     return cannotRun
@@ -587,7 +587,8 @@ geocode_locations_var.trace('w',activate_geocoder)
 def call_reminders(*args):
     if map_locations_var.get()==True:
         if GIS_package_var.get()!='':
-            GIS_package_var.set('Google Earth Pro & Google Maps')
+            # GIS_package_var.set('Google Earth Pro & Google Maps')
+            GIS_package_var.set('Python folium pin map & heatmap')
     else:
         GIS_package_var.set('')
     if display_csv_file_options():
@@ -597,8 +598,8 @@ map_locations_var.trace('w',call_reminders)
 GIS_package_lb = tk.Label(window, text='Software')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.label_columns,y_multiplier_integer,GIS_package_lb,True)
 
-GIS_package_var.set('Google Earth Pro & Google Maps')
-GIS_package = tk.OptionMenu(window,GIS_package_var,'Google Earth Pro & Google Maps','Google Earth Pro','Google Maps','QGIS','Tableau','TimeMapper')
+GIS_package_var.set('Python folium pin map & heatmap')
+GIS_package = tk.OptionMenu(window,GIS_package_var,'Python folium pin map & heatmap','Google Earth Pro & Google Maps','Google Earth Pro','Google Maps','QGIS','Tableau','TimeMapper')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer,GIS_package,True)
 
 GIS_package2_var.set(0)
@@ -633,7 +634,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x
 
 def activate_Google_API_Google_Maps(*args):
     global GIS_package2_checkbox
-    if not 'Google' in GIS_package_var.get() and len(GIS_package_var.get())>0:
+    if not 'folium' in GIS_package_var.get() and not 'Google' in GIS_package_var.get() and len(GIS_package_var.get())>0:
         GIS_package_var.set('')
         mb.showwarning(title='Warning',
                        message="The selected software option is not available yet. Sorry!\n\nSelect any of the Google options and try again.")
