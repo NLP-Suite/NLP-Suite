@@ -813,7 +813,9 @@ def setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent, o
     #   2. temp_config_filename, either as default or GUI-specific config
 
     missing_IO=''
-    if not 'package_language' in scriptName:
+    # GUIs with _ALL_ in the scriptName are designated as having a set of clickable buttons for various options but have no run options
+    #   so no IO info should be displayed
+    if not '_ALL_' in scriptName and not 'package_language' in scriptName:
         missing_IO = display_IO_setup(window, IO_setup_display_brief, temp_config_filename,
                                       config_input_output_numeric_options, scriptName, silent)
         if missing_IO!='':
@@ -1149,7 +1151,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        "Select the package you wish to use to visualize charts: Excel or Plotly (dynamic/static)")
 
         # TODO chart type widget (same as setup)
-        charts_type_options = ['_________________ Excel & plotLy options', 'Bar chart','Bubble chart','Line chart','Pie chart', 'Radar chart', 'Scatter plot', '_________________ Open GUI', 'Box plot', 'Colormap', 'Sankey flowchart', 'Sunburst chart', 'Treemap chart']
+        charts_type_options = ['_________________ Excel & plotLy options', 'Bar chart','Bubble chart','Line chart','Pie chart', 'Radar chart', 'Scatter plot', '_________________ Open GUI', 'Box plot', 'Colormap', 'Sankey flowchart', 'Sunburst chart', 'Treemap chart', 'Wordcloud']
         charts_type_options_widget.set('Bar chart')
         charts_type_menu_lb = tk.OptionMenu(window,charts_type_options_widget,*charts_type_options)
         # place widget with hover-over info
@@ -1170,6 +1172,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                 call('python data_visualization_1_main.py', shell=True)
             if 'Treemap' in charts_type_options_widget.get():
                 call('python data_visualization_1_main.py', shell=True)
+            if 'Wordcloud' in charts_type_options_widget.get():
+                call('python wordclouds_main.py', shell=True)
             if '_____________' in charts_type_options_widget.get():
                 # set to default value
                 charts_type_options_widget.set('Bar chart')
@@ -1336,8 +1340,6 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        run_button, True, False, False, False, 90,
                                                        GUI_IO_util.open_setup_x_coordinate,
                                                        'Click on the button to run the algorithm(s) behind the selected option(s)')
-        # GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate, y_multiplier_integer,
-        #                         run_button, False, False, True)
 
     # TODO CLOSE button
     def _close_window():

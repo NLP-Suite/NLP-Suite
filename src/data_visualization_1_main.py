@@ -292,7 +292,8 @@ input_main_dir_path=GUI_util.input_main_dir_path
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
 def clear(e):
-    open_GUI_var.set('')
+    extra_GUIs_var.set(0)
+    extra_GUIs_menu_var.set('')
     relations_menu_var.set('Gephi')
     categorical_menu_var.set('Sunburst')
 
@@ -327,7 +328,10 @@ def clear(e):
 window.bind("<Escape>", clear)
 
 
-open_GUI_var = tk.StringVar()
+extra_GUIs_var = tk.IntVar()
+extra_GUIs_menu_var = tk.StringVar()
+
+# open_GUI_var = tk.StringVar()
 relations_var = tk.IntVar()
 relations_menu_var = tk.StringVar()
 Gephi_var = tk.IntVar()
@@ -369,33 +373,50 @@ color_1_var_list=[]
 color_2_var_list=[]
 error = False
 
-open_GUI_lb = tk.Label(window, text='Open special visualization options GUI')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               open_GUI_lb, True)
 
-open_GUI_menu = tk.OptionMenu(window, open_GUI_var, 'Excel charts (Open GUI)','Geographic maps: From texts to maps (Open GUI)',"Geographic maps: Google Earth Pro (Open GUI)", 'HTML annotator (Open GUI)','Wordclouds (Open GUI)')
-# open_GUI_menu.configure(state='disabled')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
-                                   open_GUI_menu,
-                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Open a GUI for special visualization options: Excel charts, geographic maps (from texts to maps), geographic maps (Google Earth Pro), HTML, wordclouds")
+# open_GUI_lb = tk.Label(window, text='Open special visualization options GUI')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+#                                                open_GUI_lb, True)
+#
+# open_GUI_menu = tk.OptionMenu(window, open_GUI_var, 'Excel charts (Open GUI)','Geographic maps: From texts to maps (Open GUI)',"Geographic maps: Google Earth Pro (Open GUI)", 'HTML annotator (Open GUI)','Wordclouds (Open GUI)')
+# # open_GUI_menu.configure(state='disabled')
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+#                                    open_GUI_menu,
+#                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+#                                    "Open a GUI for special visualization options: Excel charts, geographic maps (from texts to maps), geographic maps (Google Earth Pro), HTML, wordclouds")
 
 def open_GUI(*args):
-    if 'Excel' in open_GUI_var.get():
+    if 'Boxplot' in extra_GUIs_menu_var.get() or 'Time' in extra_GUIs_menu_var.get() or 'Multiple' in extra_GUIs_menu_var.get():
+        call("python data_visualization_1_main.py", shell=True)
+    if 'Excel' in extra_GUIs_menu_var.get():
         call("python charts_Excel_main.py", shell=True)
-    elif 'texts to maps' in open_GUI_var.get():
+    elif 'texts to maps' in extra_GUIs_menu_var.get():
         call("python GIS_main.py", shell=True)
-    elif 'Google Earth' in open_GUI_var.get():
+    elif 'Google Earth' in extra_GUIs_menu_var.get():
         call("python GIS_Google_Earth_main.py", shell=True)
-    elif 'HTML' in open_GUI_var.get():
+    elif 'HTML' in extra_GUIs_menu_var.get():
         call("python html_annotator_main.py", shell = True)
-    elif 'Wordclouds' in open_GUI_var.get():
+    elif 'Wordclouds' in extra_GUIs_menu_var.get():
         call("python wordclouds_main.py", shell=True)
-open_GUI_var.trace('w',open_GUI)
+extra_GUIs_menu_var.trace('w',open_GUI)
+
+
+extra_GUIs_var.set(0)
+extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
+
+extra_GUIs_menu_var.set('')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Boxplot', 'Time mapper', 'Multiple bar charts', 'Excel', 'texts to maps', 'Google Earth', 'HTML', 'Wordclouds')
+extra_GUIs_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   extra_GUIs_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select other related types of analysis you wish to perform")
 
 relations_checkbox = tk.Checkbutton(window, text='Visualize relations', variable=relations_var,
-                                    onvalue=1, command=lambda:activate_visualization_options(()))
+                                    onvalue=1, command=lambda:activate_all_options(()))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    relations_checkbox,
@@ -589,7 +610,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
 
 # split
 categorical_checkbox = tk.Checkbutton(window, text='Visualize categorical data', variable=categorical_var,
-                                    onvalue=1, command=lambda:activate_visualization_options(()))
+                                    onvalue=1, command=lambda:activate_all_options(()))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    categorical_checkbox,
@@ -634,7 +655,7 @@ def activate_csv_fields_categorical_selection(comingFromPlus = True):
         csv_field_categorical_menu.config(state='normal')
         # reset_button_categorical.config(state='disabled')
         # show_button.config(state='disabled')
-    activate_visualization_options()
+    activate_all_options()
 categorical_menu_var.trace('w', callback = lambda x,y,z: activate_csv_fields_categorical_selection())
 
 csv_field_categorical_lb = tk.Label(window, text='Search field')
@@ -684,7 +705,7 @@ def add_combination_csvField_searchValues():
     csv_file_categorical_field_list.append([csv_file_categorical_field_string])
     search_values_categorical_var.set('')
     csv_field_categorical_menu.focus_set()
-    activate_visualization_options()
+    activate_all_options()
     comingFromPlus=False
 
 add_button_categorical = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,command=lambda: add_combination_csvField_searchValues())
@@ -703,6 +724,9 @@ def reset_categorical():
     selected_csv_file_fields.set('')
     selected_csv_file_fields_var.set('')
     search_values_categorical_var.set('')
+    if csv_field_categorical_var.get() == '' and 'Document' in menu_values:
+        csv_field_categorical_var.set('Document')
+
 
 reset_button_categorical = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width,height=1,command=lambda: reset_categorical())
 reset_button_categorical.configure(state='disabled')
@@ -860,7 +884,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders
 
 split_var.set(0)
 split_checkbox = tk.Checkbutton(window, state='disabled',text='Split documents in equal halves', variable=split_var,
-                                    onvalue=1, command=lambda: activate_visualization_options())
+                                    onvalue=1, command=lambda: activate_all_options())
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_split_pos, y_multiplier_integer,
                                    split_checkbox,
@@ -869,7 +893,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
 
 do_not_split_var.set(0)
 do_not_split_checkbox = tk.Checkbutton(window, state='disabled', text='Do NOT split documents', variable=do_not_split_var,
-                 onvalue=1, command=lambda: activate_visualization_options())
+                 onvalue=1, command=lambda: activate_all_options())
 do_not_split_checkbox.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_do_not_split_pos, y_multiplier_integer,
@@ -957,15 +981,17 @@ def changed_filename(tracedInputFile):
 
 # changed_filename(GUI_util.inputFilename.get())
 
-def activate_visualization_options(*args):
+def activate_all_options(*args):
     if error:
         relations_checkbox.configure(state='disabled')
         categorical_checkbox.configure(state='disabled')
         return
 
+    extra_GUIs_checkbox.configure(state='normal')
     relations_checkbox.configure(state='normal')
     categorical_checkbox.configure(state='normal')
 
+    extra_GUIs_menu.configure(state='disabled')
     # relations options
     relations_menu.configure(state='disabled')
     csv_field_relational_menu.configure(state='disabled')
@@ -985,8 +1011,14 @@ def activate_visualization_options(*args):
     K_sent_end.configure(state='disabled')
     split_checkbox.configure(state='disabled')
     do_not_split_checkbox.configure(state='disabled')
+    search_values_categorical.configure(state='disabled')
 
-    if relations_var.get():
+    if extra_GUIs_var.get():
+        extra_GUIs_menu.configure(state='normal')
+        relations_checkbox.configure(state='disabled')
+        categorical_checkbox.configure(state='disabled')
+    elif relations_var.get():
+        extra_GUIs_checkbox.configure(state='disabled')
         relations_menu.configure(state='normal')
         relations_checkbox.configure(state='normal')
         categorical_checkbox.configure(state='disabled')
@@ -994,7 +1026,10 @@ def activate_visualization_options(*args):
         dynamic_network_field_menu.configure(state='normal')
         dynamic_network_field_menu.configure(state='disabled') # delete this line when date issue solved
 
-        if relations_menu_var.get() == '':
+        if extra_GUIs_var:
+            extra_GUIs_menu.configure(state='normal')
+
+        elif relations_menu_var.get() == '':
             dynamic_network_field_menu.configure(state='disabled')
         elif relations_menu_var.get() == 'Gephi':
             dynamic_network_field_menu.configure(state='normal')
@@ -1010,6 +1045,8 @@ def activate_visualization_options(*args):
             Sankey_limit3_menu.configure(state='normal')
 
     elif categorical_var.get(): # sunburst, treemap
+        search_values_categorical.configure(state='normal')
+        extra_GUIs_checkbox.configure(state='disabled')
         menu_values = get_csv_file_menu_vales()
         if csv_field_categorical_var.get()=='' and 'Document' in menu_values:
             csv_field_categorical_var.set('Document')
@@ -1088,13 +1125,13 @@ def activate_visualization_options(*args):
             K_sent_end.configure(state='disabled')
             do_not_split_checkbox.configure(state='disabled')
 
-activate_visualization_options()
+activate_all_options()
 
-relations_menu_var.trace('w',activate_visualization_options)
-csv_field_relational_var.trace('w',activate_visualization_options)
-# csv_field_categorical_var.trace('w',activate_visualization_options)
-K_sent_begin_var.trace('w',activate_visualization_options)
-K_sent_end_var.trace('w',activate_visualization_options)
+relations_menu_var.trace('w',activate_all_options)
+csv_field_relational_var.trace('w',activate_all_options)
+# csv_field_categorical_var.trace('w',activate_all_options)
+K_sent_begin_var.trace('w',activate_all_options)
+K_sent_end_var.trace('w',activate_all_options)
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -1143,6 +1180,6 @@ readMe_message="The Python 3 script provides access to different GUIs to be used
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
-activate_visualization_options()
+activate_all_options()
 
 GUI_util.window.mainloop()

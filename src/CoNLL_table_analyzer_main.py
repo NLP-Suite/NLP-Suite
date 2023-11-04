@@ -46,13 +46,29 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     filesToOpen = []  # Store all files that are to be opened once finished
     outputFiles = []
 
-    if all_analyses_var.get() == False and\
+    if extra_GUIs_var.get() == False and \
+        all_analyses_var.get() == False and\
         search_token_var.get() == False and\
         compute_sentence_var.get() == False and \
         k_sentences_var.get() == False:
             mb.showwarning(title='No option selected',
                        message="No option has been selected.\n\nPlease, select an option by ticking a checkbox and try again.")
             return
+
+    if extra_GUIs_var.get():
+        if 'Data manipulation' in extra_GUIs_menu_var.get():
+            call("python data_manipulation_main.py", shell=True)
+        elif 'Style' in extra_GUIs_menu_var.get():
+            call("python style_analysis_main.py", shell=True)
+        if 'Ngrams searches' in extra_GUIs_menu_var.get():
+            call("python NGrams_CoOccurrences_main.py", shell=True)
+        if 'Word searches' in extra_GUIs_menu_var.get():
+            call("python file_search_byWord_main.py", shell=True)
+        if 'Wordnet' in extra_GUIs_menu_var.get():
+            call("python knowledge_graphs_WordNet_main.py", shell=True)
+
+# Ngrams searches & VIEWER','Word searches
+
 
     if search_token_var.get() and searchField_kw=='e.g.: father':
         mb.showwarning(title='Search error',
@@ -270,6 +286,8 @@ inputFilename = GUI_util.inputFilename
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
+extra_GUIs_var = tk.IntVar()
+extra_GUIs_menu_var = tk.StringVar()
 all_analyses = tk.StringVar()
 searchField_kw_var = tk.StringVar()
 searchedCoNLLField_var = tk.StringVar()
@@ -326,6 +344,20 @@ def custom_sort(s):
     else:
         return 10
 
+
+extra_GUIs_var.set(0)
+extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+# extra_GUIs_checkbox.configure(state='disabled')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
+
+extra_GUIs_menu_var.set('')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Ngrams searches & VIEWER','Word searches','Wordnet searches','Data manipulation GUI for more options on querying the CoNLL table','Style analysis')
+extra_GUIs_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   extra_GUIs_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select other related types of analysis you wish to perform")
 
 all_analyses_var = tk.IntVar()
 all_analyses_checkbox = tk.Checkbutton(window, state='disabled', variable = all_analyses_var, text='Clause, noun, verb, function word',
@@ -513,22 +545,6 @@ sentence_table_checkbox = tk.Checkbutton(window, text='Compute sentence table', 
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                sentence_table_checkbox)
 
-extract_fromCoNLL = tk.Button(window, text='Extract other fields/data from CoNLL table (Open GUI)', command = lambda: call("python data_manipulation_main.py", shell=True))
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
-    y_multiplier_integer,
-    extract_fromCoNLL,
-    True, False, False, False, 90, GUI_IO_util.read_button_x_coordinate,
-    "Click on the button to open the Data manipulation GUI where you can use the function 'Extract field(s) from csv file' with several options for complex data queries of csv files (in this case, a CoNLL table).")
-
-compute_Ngrams = tk.Button(window, text='Compute Ngrams (Open GUI)', command = lambda: call("python style_analysis_main.py", shell=True))
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
-    y_multiplier_integer,
-    compute_Ngrams,
-    False, False, False, False, 90, GUI_IO_util.read_button_x_coordinate,
-    "Click on the button to open the Style analysis GUI where you can compute Ngrams, with various options for excluding puntuations, determinants/articles, stopwords.")
-
 all_analyses_checkbox.configure(state='normal')
 searchToken_checkbox.configure(state='normal')
 sentence_table_checkbox.configure(state='normal')
@@ -536,15 +552,33 @@ k_sentences_checkbox.configure(state='normal')
 
 
 def activate_all_options():
-    # k words options
+    extra_GUIs_checkbox.configure(state='normal')
+    extra_GUIs_menu.configure(state='disabled')
+    all_analyses_checkbox.configure(state='normal')
+    all_analyses_menu.configure(state='disabled')
+    searchToken_checkbox.configure(state='normal')
+    sentence_table_checkbox.configure(state='normal')
+    k_sentences_checkbox.configure(state='normal')
     before_K_words_entry.configure(state='disabled')
     after_K_words_entry.configure(state='disabled')
+    sentence_table_checkbox.configure(state='normal')
+
+
+    # search tokens
+
+    entry_searchField_kw.configure(state='disabled')
+    searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
+    postag_menu_lb.configure(state='disabled')
+    deprel_menu_lb.configure(state='disabled')
+    co_postag_menu_lb.configure(state='disabled')
+    co_deprel_menu_lb.configure(state='disabled')
 
     # k sentences options
     Begin_K_sent_entry.configure(state='disabled')
     End_K_sent_entry.configure(state='disabled')
 
     if error:
+        extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
         all_analyses_menu.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
@@ -552,8 +586,16 @@ def activate_all_options():
         sentence_table_checkbox.configure(state='disabled')
         k_sentences_checkbox.configure(state='disabled')
         return
-    if all_analyses_var.get():
+    if extra_GUIs_var.get():
+        extra_GUIs_menu.configure(state='normal')
+        all_analyses_checkbox.configure(state='disabled')
+        searchToken_checkbox.configure(state='disabled')
+        k_words_checkbox.configure(state='disabled')
+        sentence_table_checkbox.configure(state='disabled')
+        k_sentences_checkbox.configure(state='disabled')
+    elif all_analyses_var.get():
         all_analyses_menu.configure(state='normal')
+        extra_GUIs_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
@@ -563,6 +605,7 @@ def activate_all_options():
                                      reminders_util.message_CoreNLP_nn_parser,
                                      True)
     elif search_token_var.get()==True:
+        extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
         k_words_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
@@ -577,6 +620,7 @@ def activate_all_options():
         mb.showwarning(title='Warning',
                        message="The option is not available yet. Try again soon.\n\nSorry!")
         return
+        extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='disabled')
@@ -592,6 +636,7 @@ def activate_all_options():
         Begin_K_sent_entry.configure(state='disabled')
         End_K_sent_entry.configure(state='disabled')
     elif compute_sentence_var.get():
+        extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
         entry_searchField_kw.configure(state='disabled')
@@ -600,7 +645,9 @@ def activate_all_options():
         deprel_menu_lb.configure(state='disabled')
         co_postag_menu_lb.configure(state='disabled')
         co_deprel_menu_lb.configure(state='disabled')
+        k_sentences_checkbox.configure(state='disabled')
     elif k_sentences_var.get():
+        extra_GUIs_checkbox.configure(state='disabled')
         all_analyses_checkbox.configure(state='disabled')
         searchToken_checkbox.configure(state='disabled')
         sentence_table_checkbox.configure(state='disabled')
@@ -614,6 +661,8 @@ def activate_all_options():
         Begin_K_sent_entry.configure(state='normal')
         End_K_sent_entry.configure(state='normal')
     else:
+        extra_GUIs_checkbox.configure(state='normal')
+        extra_GUIs_menu.configure(state='disabled')
         all_analyses_checkbox.configure(state='normal')
         all_analyses_menu.configure(state='disabled')
         searchToken_checkbox.configure(state='normal')
@@ -654,6 +703,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of other available tools suitable for searches and style analysis.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox to analyze the CoNLL table for different types of clauses (e.g., noun-phrase, NP, verb phrase, VP), nouns (singular, plural, proper nouns, subject and object), verbs (modality, tense, voice), and functions words (or junk/stop words) (e.g., articles/determinants, auxiliaries, conjunctions, prepositions, pronouns).\n\nThe Stanford CoreNLP neural network parser does NOT produce clausal tags (only the PCFG parser - Probabilistic Context Free Grammar)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -674,8 +725,6 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, tick the checkbox if you wish to run the repetition finder to compute counts and proportions of nouns, verbs, adjectives, and proper nouns across selected K beginnning and ending sentences." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to compute a sentence table with various sentence statistics.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Click the button to open the Data manipulation GUI for more options on querying the CoNLL table." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

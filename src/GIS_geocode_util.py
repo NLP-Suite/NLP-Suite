@@ -234,7 +234,7 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 				description = description + "\n" + "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>"
 			pnt.description = description
 		except:
-			print(location)
+			print("Error processing ", location.upper(), ". No sentence available for description field.")
 		# TODO MINO GIS date option
 		if datePresent:
 			try:

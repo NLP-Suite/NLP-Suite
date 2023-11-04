@@ -346,7 +346,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_co
 
 disaggregate_var.set(0)
 disaggregate_checkbox = tk.Checkbutton(window, text='Zoom IN/DOWN to find related words', variable=disaggregate_var,
-                                    onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get()))
+                                    onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                              disaggregate_checkbox,
@@ -437,7 +437,7 @@ def clear_keyword_list():
     wordNet_keyword_list.clear()
     keyWord_var.set('')
     keyWord_entry_var.set('')
-    activate_allOptions(noun_verb_menu_var.get())
+    activate_all_options(noun_verb_menu_var.get())
 
 def accept_WordNet_list():
     global wordNet_keyword_list
@@ -463,12 +463,12 @@ def add_wordNet_keyword(*args):
         keyWord_menu.configure(state="disabled")
         # keyWord_entry.configure(state="disabled")
         # wordNet_keyword_list.append(keyWord_var.get())
-        activate_allOptions(noun_verb_menu_var.get())
+        activate_all_options(noun_verb_menu_var.get())
 keyWord_var.trace('w', add_wordNet_keyword)
 keyWord_entry_var.trace('w', add_wordNet_keyword)
 
 annotate_file_var.set(0)
-annotate_file_checkbox = tk.Checkbutton(window, text='Annotate corpus (using WordNet csv output file from Zoom IN/DOWN)', variable=annotate_file_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get(), True))
+annotate_file_checkbox = tk.Checkbutton(window, text='Annotate corpus (using WordNet csv output file from Zoom IN/DOWN)', variable=annotate_file_var, onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get(), True))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                              annotate_file_checkbox,
@@ -478,7 +478,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 
 extract_proper_nouns_var.set(0)
 extract_proper_nouns_checkbox = tk.Checkbutton(window, text='Extract PROPER nouns (using WordNet csv output file from Zoom IN/DOWN)',
-                                               variable=extract_proper_nouns_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get()))
+                                               variable=extract_proper_nouns_var, onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                              extract_proper_nouns_checkbox,
@@ -489,7 +489,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 
 extract_improper_nouns_var.set(0)
 extract_improper_nouns_checkbox = tk.Checkbutton(window, text='Extract IMPROPER nouns  (using WordNet csv output file from Zoom IN/DOWN)',
-                                                 variable=extract_improper_nouns_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get()))
+                                                 variable=extract_improper_nouns_var, onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_menu_pos, y_multiplier_integer,
                                              extract_improper_nouns_checkbox,
@@ -499,7 +499,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_keyWord_
 
 aggregate_lemmatized_var.set(0)
 aggregate_lemmatized_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP (classify/aggregate lemmatized words in csv file)', variable=aggregate_lemmatized_var,
-                                   onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get()))
+                                   onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                              aggregate_lemmatized_checkbox,
@@ -510,7 +510,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 
 extract_nouns_verbs_from_CoNLL_var.set(0)
 extract_nouns_verbs_from_CoNLL_checkbox = tk.Checkbutton(window, text='Extract nouns & verbs from CoNLL table (for Zoom OUT/UP)',
-                                              variable=extract_nouns_verbs_from_CoNLL_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get()))
+                                              variable=extract_nouns_verbs_from_CoNLL_var, onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                              extract_nouns_verbs_from_CoNLL_checkbox,
@@ -521,7 +521,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 
 aggregate_POS_var.set(0)
 aggregate_POS_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP (classify/aggregate input text document(s) by CoreNLP NOUN & VERB POS tags and WordNet NOUN & VERB synsets)', variable=aggregate_POS_var,
-                                    onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get()))
+                                    onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                              aggregate_POS_checkbox,
@@ -536,7 +536,7 @@ aggregate_bySentenceID_var.set(0)
 #                                                 variable=aggregate_bySentenceID_var, onvalue=1, offvalue=0,
 #                                                 command=lambda: getDictFile())
 aggregate_bySentenceID_checkbox = tk.Checkbutton(window, text='Zoom OUT/UP by Sentence ID',
-                                                variable=aggregate_bySentenceID_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions(noun_verb_menu_var.get()))
+                                                variable=aggregate_bySentenceID_var, onvalue=1, offvalue=0, command=lambda: activate_all_options(noun_verb_menu_var.get()))
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                              aggregate_bySentenceID_checkbox,
@@ -566,7 +566,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.WordNet_OK_but
 
 asked = False
 
-def activate_allOptions(noun_verb, fromaggregate=False):
+def activate_all_options(noun_verb, fromaggregate=False):
     global asked
     # all options FALSE
     # GUI_util.select_inputFilename_button.configure(state="disabled")
@@ -746,7 +746,7 @@ def activate_allOptions(noun_verb, fromaggregate=False):
         else:
             asked = False
 
-activate_allOptions(noun_verb_menu_var.get())
+activate_all_options(noun_verb_menu_var.get())
 
 # set menu values
 def setNounVerbMenu(*args):

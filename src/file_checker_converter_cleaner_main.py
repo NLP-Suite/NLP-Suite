@@ -263,13 +263,13 @@ clean_menu.configure(width=GUI_IO_util.widget_width_long)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu,y_multiplier_integer,clean_menu)
 
 
-def activate_allOptions(*args):
+def activate_all_options(*args):
     global menu_option
     check_menu.configure(state='normal')
     convert_menu.configure(state='normal')
     clean_menu.configure(state='normal')
 
-activate_allOptions()
+activate_all_options()
 
 def getScript(script):
     global menu_option, script_to_run, function_to_run
@@ -295,12 +295,12 @@ def getScript(script):
         return
     script_to_run, function_to_run=val[0].split(".", 1)
 
-    activate_allOptions()
+    activate_all_options()
 check_tools_var.trace('w',lambda x,y,z: getScript(check_tools_var.get()))
 convert_tools_var.trace('w',lambda x,y,z: getScript(convert_tools_var.get()))
 clean_tools_var.trace('w',lambda x,y,z: getScript(clean_tools_var.get()))
 
-activate_allOptions()
+activate_all_options()
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'

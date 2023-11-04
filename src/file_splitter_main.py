@@ -297,7 +297,7 @@ split_mergedFile_separator_entry_end = tk.Entry(window, width=GUI_IO_util.widget
 split_mergedFile_var.set(0)
 split_mergedFile_checkbox = tk.Checkbutton(window,
                                            text='Split a merged file with filename embedded in separator strings',
-                                           state='normal', variable=split_mergedFile_var, onvalue=1, offvalue=0, command=lambda:activate_allOptions())
+                                           state='normal', variable=split_mergedFile_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                split_mergedFile_checkbox, True)
 
@@ -334,7 +334,7 @@ y_multiplier_integer = y_multiplier_integer + 1
 
 docLength_var.set(0)
 docLength_checkbox = tk.Checkbutton(window, text='Split by number of words', variable=docLength_var, onvalue=1,
-                                    offvalue=0, command=lambda: activate_allOptions())
+                                    offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                docLength_checkbox, True)
 
@@ -377,7 +377,7 @@ getDocLength()
 
 extract_BME_K_sentences_var.set(0) # Beginning Middle and End
 extract_BME_K_sentences_checkbox = tk.Checkbutton(window, text='Split by Beginning-Middle-End K-sentences (extract sentences)',
-                                            variable=extract_BME_K_sentences_var, onvalue=1, offvalue=0, command=lambda:activate_allOptions())
+                                            variable=extract_BME_K_sentences_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                extract_BME_K_sentences_checkbox, True)
 
@@ -421,7 +421,7 @@ def getTOCFile():
 
 TOC_var.set(0)
 TOC_checkbox = tk.Checkbutton(window, text='Split using Table of Contents (TOC)', variable=TOC_var, onvalue=1,
-                              offvalue=0, command=lambda: activate_allOptions())
+                              offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                TOC_checkbox, True)
 
@@ -432,7 +432,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 
 keyword_var.set(0)
 keyword_checkbox = tk.Checkbutton(window, text='Split by word(s)', variable=keyword_var, onvalue=1, offvalue=0,
-                                  command=lambda: activate_allOptions())
+                                  command=lambda: activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                keyword_checkbox, True)
 
@@ -461,7 +461,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_
 
 extract_sentences_var.set(0)
 extract_sentences_checkbox = tk.Checkbutton(window, text='Split by word(s) (extract sentences)',
-                                            variable=extract_sentences_var, onvalue=1, offvalue=0, command=lambda:activate_allOptions())
+                                            variable=extract_sentences_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                extract_sentences_checkbox, True)
 
@@ -519,13 +519,13 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 
 blankLine_var.set(0)
 blankLine_checkbox = tk.Checkbutton(window, text='Split by an empty blank line', variable=blankLine_var, onvalue=1,
-                                    offvalue=0, command=lambda:activate_allOptions())
+                                    offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                blankLine_checkbox)
 
 number_var.set(0)
 number_checkbox = tk.Checkbutton(window, text='Split by a line that starts with a number (like a bullet point)',
-                                 variable=number_var, onvalue=1, offvalue=0, command=lambda:activate_allOptions())
+                                 variable=number_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                number_checkbox, True)
 # post_num is the string behind each number
@@ -544,11 +544,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.file_splitter_
 
 split_csv_by_documentID_var.set(0)
 split_csv_by_documentID_checkbox = tk.Checkbutton(window, text='Split csv merged file into separate files by Document ID',
-                                 variable=split_csv_by_documentID_var, onvalue=1, offvalue=0, command=lambda:activate_allOptions())
+                                 variable=split_csv_by_documentID_var, onvalue=1, offvalue=0, command=lambda:activate_all_options())
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                                split_csv_by_documentID_checkbox)
 
-def activate_allOptions(*args):
+def activate_all_options(*args):
     global menu_option
     split_mergedFile_separator_entry_begin.configure(state="disabled")
     split_mergedFile_separator_entry_end.configure(state="disabled")
@@ -722,7 +722,7 @@ def activate_allOptions(*args):
         blankLine_checkbox.configure(state='disabled')
         split_csv_by_documentID_checkbox.configure(state='disabled')
 
-activate_allOptions()
+activate_all_options()
 
 
 def changed_filename(*args):

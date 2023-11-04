@@ -64,12 +64,20 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if result == False:
             return
 
+    if extra_GUIs_var.get() and extra_GUIs_menu_var.get()!='':
+        if 'CoNLL' in extra_GUIs_menu_var.get():
+            call('python CoNLL_table_analyzer_main.py', shell=True)
+        if 'WordNet' in extra_GUIs_menu_var.get():
+            call('python knowledge_graphs_WordNet_main.py', shell=True)
+        if 'Word search' in extra_GUIs_menu_var.get():
+            call("python file_search_byWord_main.py", shell=True)
+
     # get the date options from filename
     filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
-    if Ngrams_compute_var==False and Ngrams_search_var==False and  n_grams_viewer_var==False and CoOcc_Viewer_var==False:
+    if extra_GUIs_var.get() == False and Ngrams_compute_var==False and Ngrams_search_var==False and  n_grams_viewer_var==False and CoOcc_Viewer_var==False:
         mb.showwarning(title='Warning',
                        message='There are no options selected.\n\nPlease, select one of the available options and try again.')
         return
@@ -411,13 +419,28 @@ temporal_aggregation_var=tk.StringVar()
 
 viewer_options_menu_var=tk.StringVar()
 
+extra_GUIs_var = tk.IntVar()
+extra_GUIs_menu_var = tk.StringVar()
 normalize = tk.IntVar()
 scaleData = tk.IntVar()
 useLemma = tk.IntVar()
 fullInfo = tk.IntVar()
 
+extra_GUIs_var.set(0)
+extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
+
+extra_GUIs_menu_var.set('')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Word searches','Wordnet searches','Style analysis')
+extra_GUIs_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   extra_GUIs_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select other related types of analysis you wish to perform")
+
 Ngrams_compute_var.set(0)
-Ngrams_compute_checkbox = tk.Checkbutton(window, text='Compute N-grams', variable=Ngrams_compute_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions())
+Ngrams_compute_checkbox = tk.Checkbutton(window, text='Compute N-grams', variable=Ngrams_compute_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,Ngrams_compute_checkbox,True)
 
 ngrams_menu_var.set('Word')
@@ -647,7 +670,7 @@ def activate_ngrams_options(*args):
 ngrams_options_menu_var.trace('w',activate_ngrams_options)
 
 n_grams_viewer_var.set(0)
-Ngrams_viewer_checkbox = tk.Checkbutton(window, text='N-grams VIEWER', variable=n_grams_viewer_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions() )
+Ngrams_viewer_checkbox = tk.Checkbutton(window, text='N-grams VIEWER', variable=n_grams_viewer_var, onvalue=1, offvalue=0, command=lambda: activate_all_options() )
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    Ngrams_viewer_checkbox,
@@ -655,7 +678,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    "The N-grams VIEWER option requires in input file(s) with a date embedded in the filename")
 
 CoOcc_Viewer_var.set(0)
-CoOcc_viewer_checkbox = tk.Checkbutton(window, text='Co-Occurrences VIEWER', variable=CoOcc_Viewer_var, onvalue=1, offvalue=0, command=lambda: activate_allOptions())
+CoOcc_viewer_checkbox = tk.Checkbutton(window, text='Co-Occurrences VIEWER', variable=CoOcc_Viewer_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos,y_multiplier_integer,CoOcc_viewer_checkbox)
 
 
@@ -712,6 +735,9 @@ def clear_n_grams_list():
     n_grams_list.clear()
 
 def clear(e):
+    extra_GUIs_checkbox.configure(state='normal')
+    extra_GUIs_var.set(0)
+    extra_GUIs_menu_var.set('')
     n_grams_list.clear()
     Ngrams_compute_var.set(0)
     n_grams_var.set(0)
@@ -726,13 +752,15 @@ def clear(e):
     CoOcc_Viewer_var.set(0)
     viewer_options_menu_var.set('Case sensitive')
     temporal_aggregation_var.set('year')
-    activate_allOptions()
+    activate_all_options()
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
 n_grams_list=[]
 
-def activate_allOptions():
+def activate_all_options():
+    extra_GUIs_checkbox.configure(state='normal')
+    extra_GUIs_menu.configure(state='disabled')
     Ngrams_compute_checkbox.configure(state='normal')
     Ngrams_search_checkbox.configure(state='normal')
     minus_K_words_entry.configure(width=3, state='normal')
@@ -749,7 +777,19 @@ def activate_allOptions():
         mb.showwarning(title='Warning',message='The N-grams VIEWER option requires file(s) with a date embedded in the filename.\n\nYour current ' + input_label + ' selection does not show the Date option (THE DATE OPTION IS SET IN THE I/O SETUP GUI; CLICK THE "Setup INPUT/OUTPUT configuration" BUTTON TO OPEN THE GUI).\n\nPlease, select a different Input configuration or run the Co-Occurrences VIEWER option instead that does not require a date embedded in filenames.')
         n_grams_viewer_var.set(0)
 
+    if extra_GUIs_var.get():
+        extra_GUIs_menu.configure(state='normal')
+        Ngrams_compute_checkbox.configure(state='disabled')
+        Ngrams_search_checkbox.configure(state='disabled')
+        Ngrams_viewer_checkbox.configure(state='disabled')
+        CoOcc_viewer_checkbox.configure(state='disabled')
+        search_words_entry.configure(state='disabled')
+        minus_K_words_entry.configure(width=3, state='disabled')
+        plus_K_words_entry.configure(width=3, state='disabled')
+
     if Ngrams_compute_var.get():
+        extra_GUIs_checkbox.configure(state='disabled')
+        extra_GUIs_menu.configure(state='disabled')
         Ngrams_search_checkbox.configure(state='disabled')
         Ngrams_viewer_checkbox.configure(state='disabled')
         CoOcc_viewer_checkbox.configure(state='disabled')
@@ -757,6 +797,8 @@ def activate_allOptions():
         minus_K_words_entry.configure(width=3, state='disabled')
         plus_K_words_entry.configure(width=3, state='disabled')
     if Ngrams_search_var.get():
+        extra_GUIs_checkbox.configure(state='disabled')
+        extra_GUIs_menu.configure(state='disabled')
         minus_K_words_entry.configure(width=3, state='normal')
         plus_K_words_entry.configure(width=3, state='normal')
         Ngrams_compute_checkbox.configure(state='disabled')
@@ -764,6 +806,8 @@ def activate_allOptions():
         CoOcc_viewer_checkbox.configure(state='disabled')
 
     if n_grams_viewer_var.get() or CoOcc_Viewer_var.get():
+        extra_GUIs_checkbox.configure(state='disabled')
+        extra_GUIs_menu.configure(state='disabled')
         Ngrams_viewer_checkbox.configure(state='normal')
         CoOcc_viewer_checkbox.configure(state='normal')
         Ngrams_compute_checkbox.configure(state='disabled')
@@ -776,14 +820,14 @@ def activate_allOptions():
         date_options_checkbox.config(state='disabled')
         viewer_options_menu.config(state='disabled')
 
-activate_allOptions()
+activate_all_options()
 
-open_GUI_search_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Search words/collocations (Open GUI)',command=lambda: call("python file_search_byWord_main.py", shell=True))
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   open_GUI_search_button,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click on the button to open the GUI")
+# open_GUI_search_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Search words/collocations (Open GUI)',command=lambda: call("python file_search_byWord_main.py", shell=True))
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+#                                    open_GUI_search_button,
+#                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+#                                    "Click on the button to open the GUI")
 
 videos_lookup = {'N grams Co Occurrences VIEWER':'https://www.youtube.com/watch?v=67YejULroIo'}
 videos_options='N grams Co Occurrences VIEWER'
@@ -809,6 +853,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     else:
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+                                                         'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of other available tools suitable for stylistic analysis.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                 'Please, tick the checkbox if you wish to compute N-grams.\n\nN-grams can be computed for character and word values. Use the dropdown menu to select the desired option.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates a set of csv files each containing word N-grams between 1 and 3.\n\nWhen N-grams are computed by sentence index, the sentence displayed in output is always the first occurring sentence.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -837,8 +883,6 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         'Please, use the dropdown menu to select various options that can be applied to the VIEWER. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nYou can make your searches CASE SENSITIVE.\n\nYou can NORMALIZE results. Only works for N-Grams. Formula: search word frequency / total number of all words e.g: word "nurse" occurs once in year 1892, and year 1892 has a total of 1000 words. Then the normalized frequency will be 1/1000.\n\nYou can SCALE results. Only works for N-Grams. It applies the min-max normalization to frequency of search words. After the min-max normalization is done, each column of data (i.e., each search word) will fall in the same range.\n\nYou can LEMMATIZE words for your searches (e.g., be instead of being, is, was). The routine relies on the Stanford CoreNLP for lemmatizing words.\n\nFinally, you can select to display minimal information or full information.')
     # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
     #     'Please, click on the button to open the GUI where you can compute N-grams.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-        'Please, click on the button to open a GUI with more options for word/collocation searches.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 

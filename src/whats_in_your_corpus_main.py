@@ -944,7 +944,7 @@ def activate_Gensim(*args):
             open_GUI_checkbox.configure(state='disabled')
 topics_Gensim_var.trace('w',activate_Gensim)
 
-def activate_allOptions(*args):
+def activate_all_options(*args):
     if open_tm_GUI_var.get()==True:
         corpus_statistics_var.set(0)
         corpus_statistics_checkbox.configure(state='disabled')
@@ -959,7 +959,7 @@ def activate_allOptions(*args):
         topics_Mallet_checkbox.configure(state='normal')
         topics_Gensim_checkbox.configure(state='normal')
         what_else_checkbox.configure(state='normal')
-open_tm_GUI_var.trace('w',activate_allOptions)
+open_tm_GUI_var.trace('w',activate_all_options)
 
 # language options
 language_var_lb = tk.Label(window, text='Language')
