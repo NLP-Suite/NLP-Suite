@@ -45,15 +45,40 @@ def run(inputFilename, outputDir, openOutputFiles,
                        message='The visualization algorithms require a "csv file field for visualization" variable.\n\nPlease, use the dropdown menu to select a field for anylysis and try again.')
         return
 
-    if csv_field_var == '':
+    if extra_GUIs_var==False and csv_field_var == '':
         mb.showwarning("Warning",
                        "No csv file field to be used for visualization has been selected.\n\nPlease, use the dropdown menu of the 'csv file field for visualization' widget to select the desired field and try again.")
         return
 
-    if visualizations_menu_var=='':
+    if extra_GUIs_var==False and visualizations_menu_var=='':
         mb.showwarning(title="Warning",
                        message="No visualization option has been selected.\n\nPlease, use the dropdown menu of the 'Visualization options' widget to select the desired option and try again.")
         return
+
+# Excel/plotLy charts --------------------------------------------------------------------------------
+    if 'Excel' in visualizations_menu_var or 'Plotly' in visualizations_menu_var:
+        columns_to_be_plotted_xAxis=[]
+        headers = IO_csv_util.get_csvfile_headers(inputFilename)
+        col_num = IO_csv_util.get_columnNumber_from_headerValue(headers, csv_field_var, inputFilename)
+
+        columns_to_be_plotted_yAxis=[[col_num,col_num]]
+        count_var=1
+        chart_type_list = [GUI_util.charts_type_options_widget.get().split(' ')[0]]
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+                                                        outputFileLabel='',
+                                                        chartPackage=GUI_util.charts_package_options_widget.get(),
+                                                        chart_type_list=chart_type_list,
+                                                        chart_title="Frequency Distribution of " + csv_field_var,
+                                                        column_xAxis_label_var=csv_field_var,
+                                                        hover_info_column_list=[],
+                                                        count_var=count_var,
+                                                        complete_sid=False)  # TODO to be changed
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
 
 # boxplots --------------------------------------------------------------------------------
 
@@ -177,7 +202,9 @@ def clear(e):
     reset_all_values()
 window.bind("<Escape>", clear)
 
-open_GUI_var = tk.StringVar()
+extra_GUIs_var = tk.IntVar()
+extra_GUIs_menu_var = tk.StringVar()
+
 visualizations_menu_var = tk.StringVar()
 
 csv_field_var = tk.StringVar()
@@ -195,30 +222,33 @@ file_menu_values = []
 menu_values = []
 error = False
 
-open_GUI_lb = tk.Label(window, text='Open special visualization options GUI')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                               open_GUI_lb, True)
+extra_GUIs_var.set(0)
+extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: open_GUI())
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
-open_GUI_menu = tk.OptionMenu(window, open_GUI_var, 'Excel charts (Open GUI)','Geographic maps (Open GUI)','HTML annotator (Open GUI)', 'Visualize categorical, network, temporal data', 'Wordclouds (Open GUI)')
-# open_GUI_menu.configure(state='disabled')
+extra_GUIs_menu_var.set('')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Excel charts (Open GUI)','Geographic maps (Open GUI)','HTML annotator (Open GUI)', 'Visualize categorical, network, temporal data', 'Wordclouds (Open GUI)')
+extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
-                                   open_GUI_menu,
-                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   'Open a GUI for special visualization options: Excel charts, geographic maps, HTML, wordclouds')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+                                   extra_GUIs_menu,
+                                   False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
+                                   "Select other related types of analysis you wish to perform")
 
 def open_GUI(*args):
-    if 'Excel' in open_GUI_var.get():
+    if extra_GUIs_var:
+        extra_GUIs_menu.configure(state='normal')
+    if 'Excel' in extra_GUIs_menu_var.get():
         call("python charts_Excel_main.py", shell=True)
-    elif 'Geographic' in open_GUI_var.get():
+    elif 'Geographic' in extra_GUIs_menu_var.get():
         call("python GIS_main.py", shell=True)
-    elif 'HTML' in open_GUI_var.get():
+    elif 'HTML' in extra_GUIs_menu_var.get():
         call("python html_annotator_main.py", shell = True)
-    elif 'Visualize categorical, network, temporal data' in open_GUI_var.get():
+    elif 'Visualize categorical, network, temporal data' in extra_GUIs_menu_var.get():
         call("python data_visualization_1_main.py", shell=True)
-    elif 'Wordclouds' in open_GUI_var.get():
+    elif 'Wordclouds' in extra_GUIs_menu_var.get():
         call("python wordclouds_main.py", shell=True)
-open_GUI_var.trace('w',open_GUI)
+extra_GUIs_menu_var.trace('w',open_GUI)
 
 if GUI_util.inputFilename.get() != '' and GUI_util.inputFilename.get()[-4:] == ".csv":
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(GUI_util.inputFilename.get())
@@ -254,7 +284,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 
 visualizations_menu_var.set('')
-visualizations_menu = tk.OptionMenu(window, visualizations_menu_var, 'Boxplots','Comparative bar charts','Time mapper')
+visualizations_menu = tk.OptionMenu(window, visualizations_menu_var, 'Boxplots','Comparative bar charts','Time mapper','Excel/plotLy chart')
 # select_time_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -360,7 +390,8 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_inde
                                                "Click the + button to add another csv file")
 
 def reset_all_values():
-    open_GUI_var.set('')
+    extra_GUIs_var.set(0)
+    extra_GUIs_menu_var.set('')
     visualizations_menu_var.set('')
     csv_files_list.clear()
     split_data_byCategory_var.set(0)

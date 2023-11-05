@@ -293,6 +293,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
         # hover_label=['Document']
         hover_label=[]
         #@@@
+        # when plotting kurtosis, skweness, etc. ALWAYS use Excel bar charts
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, outputFilename, outputDir,
                                                   outputFileLabel='',
                                                   chartPackage=chartPackage,

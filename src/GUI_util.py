@@ -1151,7 +1151,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        "Select the package you wish to use to visualize charts: Excel or Plotly (dynamic/static)")
 
         # TODO chart type widget (same as setup)
-        charts_type_options = ['_________________ Excel & plotLy options', 'Bar chart','Bubble chart','Line chart','Pie chart', 'Radar chart', 'Scatter plot', '_________________ Open GUI', 'Box plot', 'Colormap', 'Sankey flowchart', 'Sunburst chart', 'Treemap chart', 'Wordcloud']
+        charts_type_options = ['_________________ Excel & plotLy options', 'Bar chart','Bubble chart','Line chart','Pie chart', 'Radar chart', 'Scatter plot', '_________________ Open GUI', 'Box plot (Open GUI)', 'Colormap (Open GUI)', 'Sankey flowchart (Open GUI)', 'Sunburst chart (Open GUI)', 'Treemap chart (Open GUI)', 'Wordcloud (Open GUI)']
         charts_type_options_widget.set('Bar chart')
         charts_type_menu_lb = tk.OptionMenu(window,charts_type_options_widget,*charts_type_options)
         # place widget with hover-over info

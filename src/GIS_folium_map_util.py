@@ -1,3 +1,6 @@
+# written by Roberto Franzosi
+# November 2023
+
 import sys
 import GUI_util
 import IO_libraries_util

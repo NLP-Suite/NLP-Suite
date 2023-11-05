@@ -652,6 +652,8 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             static_flag = False
         # TODO Tony when plotting bar charts with documents in the X-axis we need to remove the path and just keep the tail
         #   or the display is too messy; it works well with Excel
+        if 'Kurtosis' in chart_title:
+            chart_type_list=["Bar"]
         Plotly_outputFilename = charts_plotly_util.create_plotly_chart(inputFilename = inputFilename,
                                                                         outputDir = outputDir,
                                                                         chart_title = chart_title,

@@ -319,7 +319,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                                column_xAxis_label='Sentiment score',
                                                                groupByList=['Document'],
                                                                plotList=['Sentiment score'],
-                                                               chart_title_label='Sentiment Statistics')
+                                                               chart_title_label='Sentiment Score Statistics')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -337,7 +337,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                                                column_xAxis_label='Sentiment label',
                                                                groupByList=['Document'],
                                                                plotList=['Sentiment label'],
-                                                               chart_title_label='Sentiment Statistics')
+                                                               chart_title_label='Sentiment Label Statistics')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)

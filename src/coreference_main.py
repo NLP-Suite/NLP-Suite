@@ -85,7 +85,7 @@ def run(inputFilename, inputDir, outputDir,
             mb.showwarning(title='Language',message='The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.')
             return
 
-        label = 'CoreNLP_coref'
+        label = 'coref_CoreNLP'
         if inputFilename != '':
             inputBaseName = os.path.basename(inputFilename)[0:-4]  # without .txt
         else:
@@ -94,7 +94,7 @@ def run(inputFilename, inputDir, outputDir,
 
         # create a subdirectory of the output directory
         outputCorefedDir = IO_files_util.make_output_subdirectory('', '', outputCorefDir, '',
-                                                            silent=True)
+                                                            silent=False)
         if outputCorefedDir == '':
             return
 

@@ -413,11 +413,11 @@ videos_options='NER extractor'
 TIPS_lookup = {'Stanford CoreNLP supported languages':'TIPS_NLP_Stanford CoreNLP supported languages.pdf',
                'Stanford CoreNLP performance & accuracy':'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf',
                'Stanford CoreNLP memory issues': 'TIPS_NLP_Stanford CoreNLP memory issues.pdf',
-               'NER (Named Entity Recognition)':'TIPS_NLP_NER (Named Entity Recognition).pdf',
+               'CoreNLP NER (Named Entity Recognition)':'TIPS_NLP_CoreNLP_NER (Named Entity Recognition).pdf',
                'NER tags across packages':'TIPS_NLP_NER tags across packages.pdf',
                'csv files - Problems & solutions':'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
-TIPS_options='NER (Named Entity Recognition)','NER tags across packages','csv files - Problems & solutions','Statistical measures','Stanford CoreNLP supported languages','Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues'
+TIPS_options='CoreNLP NER (Named Entity Recognition)','NER tags across packages','csv files - Problems & solutions','Statistical measures','Stanford CoreNLP supported languages','Stanford CoreNLP performance & accuracy','Stanford CoreNLP memory issues'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
