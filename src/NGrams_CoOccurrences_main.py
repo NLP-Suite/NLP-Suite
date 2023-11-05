@@ -315,6 +315,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 n_grams_viewer_var,
                 CoOcc_Viewer_var,
                 search_words,
+                minus_K_words_var,
+                plus_K_words_var,
                 language_list,
                 useLemma,
                 date_options,

@@ -77,7 +77,6 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
                 fig = plot_bar_chart_px(x_cols,inputFilename,chart_title,y_cols)
         elif i.lower() == 'pie':
             fig = plot_pie_chart_px(x_cols,inputFilename,chart_title,y_cols)
-        #elif(i == 'scatter' or i == 'radar'):
         elif i.lower() == 'scatter':
             fig = plot_scatter_chart_px(x_cols,y_cols,inputFilename,chart_title)
         elif i.lower() == 'radar':

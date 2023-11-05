@@ -61,6 +61,10 @@ def run(inputDir, outputDir, openOutputFiles,createCharts,chartPackage, num_topi
         Gensim_var,
         remove_stopwords_var, lemmatize_var, nounsOnly_var, Gensim_MALLET_var):
 
+    if not MALLET_var and not Gensim_var:
+        mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options (MALLET or Gensim) and try again.')
+        return
+
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
     else:
