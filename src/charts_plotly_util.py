@@ -63,17 +63,15 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
         x_cols = headers[cols_to_plot[j][0]]
         y_cols = headers[cols_to_plot[j][1]]
         if i.lower() == 'bar':
-            # SIMON
-            if 'by Document' in chart_title:
-                print()
             if len(chart_type_list) < len(cols_to_plot):
-                # SIMON must replace the document values in data under the Document column
-                # using tail values in head, tail = os.path.split(data['Document'])
+                # remove the path from the filename
+                def do(x):
+                    return os.path.split(x)[1].replace('")', '')
+                data ['Document'] = data['Document'].apply(do)
                 fig = plot_multi_bar_chart_px(data, chart_title, cols_to_plot)
                 file_list.append(save_chart(fig,outputDir,chart_title,static_flag,column_xAxis_label,column_yAxis_label))
                 break
             else:
-                # SIMON
                 fig = plot_bar_chart_px(x_cols,inputFilename,chart_title,y_cols)
         elif i.lower() == 'pie':
             fig = plot_pie_chart_px(x_cols,inputFilename,chart_title,y_cols)
@@ -144,9 +142,6 @@ def save_chart(fig, outputDir, chart_title, static_flag, x_label = '', y_label =
 #If not call the get_frequencies function to get the frequencies of the categorical variables in x_label column
 def plot_bar_chart_px(x_label, fileName, chart_title, height = ''):
     data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
-    # SIMON
-    if 'by Document' in chart_title:
-        print()
     if height == '':
         height = x_label+"_count"
         data = get_frequencies(data, x_label)

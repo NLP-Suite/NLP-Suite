@@ -63,8 +63,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                        "Started running the Word search function at",
                                         True, '', True, '', False)
 
-
-
     filesToOpen=[]
     # each occurrence of a search keyword, it's file path will be stored in a set
     corpus_to_copy = set()
@@ -124,14 +122,14 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     csvExist = os.path.exists(outputFilename)
 
     with open(outputFilename, 'w') as f:
-        f.write("Minus K Value of Words, Searched Word, Plus K Value of Words, Document\n")
+        f.write("Minus K Value of Words, Searched Word, Plus K Value of Words, Document ID, Document\n")
     outputtxtFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'search')
     with open(outputtxtFilename, 'w') as f:
         f.write('') # just flushing it
     if plus_K_words_var or minus_K_words_var:
         outputFiles = []
         # Use my logic when we have +- k because the csv is complicated to modify
-        for file in files:
+        for index, file in enumerate(files):
             f = open(file, "r", encoding='utf-8', errors='ignore')
             docText = f.read()
             f.close()
@@ -141,7 +139,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                                                   minus_K_words_var)
             with open(outputFilename,'a') as f:
                 for i in range(len(mid)):
-                    a = [left[i],mid[i],right[i],file]
+                    a = [left[i],mid[i],right[i], str(index+1), IO_csv_util.dressFilenameForCSVHyperlink(file)]
                     f.write(','.join(a)+"\n")
             with open(outputtxtFilename,'a') as f:
                 for i in range(len(mid)):
