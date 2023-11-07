@@ -37,14 +37,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         Sankey_limit1_var, Sankey_limit2_var, Sankey_limit3_var,
         categorical_var,
         csv_file_categorical_field_list,
+        fixed_param_var,
+        rate_param_var,
+        base_param_var,
         max_rows_var,
         color_1_style_var,
         color_2_style_var,
         normalize_var,
-        K_sent_begin_var,
-        K_sent_end_var,
-        split_var,
-        do_not_split_var,
+        # K_sent_begin_var,
+        # K_sent_end_var,
+        # split_var,
+        # do_not_split_var,
         use_numerical_variable_var,
         csv_field_treemap_var):
 
@@ -55,8 +58,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         config_filename = scriptName.replace('main.py', 'config.csv')
 
     filesToOpen = []
-    int_K_sent_begin_var=None
-    int_K_sent_end_var=None
+    # int_K_sent_begin_var=None
+    # int_K_sent_end_var=None
 
     if relations_var==False and categorical_var == False:
         mb.showwarning("Warning",
@@ -239,14 +242,17 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             Sankey_limit1_var.get(), Sankey_limit2_var.get(), Sankey_limit3_var.get(),
                             categorical_var.get(),
                             csv_file_categorical_field_list,
+                            fixed_param_var.get(),
+                            rate_param_var.get(),
+                            base_param_var.get(),
                             max_rows_var.get(),
                             color_1_style_var.get(),
                             color_2_style_var.get(),
                             normalize_var.get(),
-                            K_sent_begin_var.get(),
-                            K_sent_end_var.get(),
-                            split_var.get(),
-                            do_not_split_var.get(),
+                            # K_sent_begin_var.get(),
+                            # K_sent_end_var.get(),
+                            # split_var.get(),
+                            # do_not_split_var.get(),
                             use_numerical_variable_var.get(),
                             csv_field_treemap_var.get())
 
@@ -311,22 +317,25 @@ def clear(e):
     csv_field_categorical_var.set('')
     csv_field_categorical_menu.configure(state='disabled')
     search_values_categorical_var.set('')
-    K_sent_begin_var.set('')
-    K_sent_end_var.set('')
-    K_sent_begin.configure(state='disabled')
-    K_sent_end.configure(state='disabled')
-    split_var.set(0)
-    split_checkbox.configure(state='disabled')
-    do_not_split_var.set(0)
-    do_not_split_checkbox.configure(state='disabled')
+    # K_sent_begin_var.set('')
+    # K_sent_end_var.set('')
+    # K_sent_begin.configure(state='disabled')
+    # K_sent_end.configure(state='disabled')
+    # split_var.set(0)
+    # split_checkbox.configure(state='disabled')
+    # do_not_split_var.set(0)
+    # do_not_split_checkbox.configure(state='disabled')
     csv_field_treemap_var.set('')
 
     reset_relational()
     reset_categorical()
 
+    fixed_param_var.set(50)
+    rate_param_var.set(3)
+    base_param_var.set(40)
+    activate_filtering_options()
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
-
 
 extra_GUIs_var = tk.IntVar()
 extra_GUIs_menu_var = tk.StringVar()
@@ -348,6 +357,12 @@ search_values_categorical_var = tk.StringVar()
 case_sensitive_var = tk.IntVar()
 csv_field_categorical_var = tk.StringVar()
 search_values_categorical_var = tk.StringVar()
+filter_options_var = tk.StringVar()
+fixed_param_var = tk.StringVar()
+rate_param_var = tk.StringVar()
+base_param_var = tk.StringVar()
+
+selected_csv_file_fields = tk.StringVar()
 
 max_rows_var = tk.IntVar()
 color_1_var = tk.IntVar()
@@ -355,10 +370,10 @@ color_2_var = tk.IntVar()
 color_1_style_var = tk.StringVar()
 color_2_style_var = tk.StringVar()
 
-K_sent_begin_var = tk.StringVar()
-K_sent_end_var = tk.StringVar()
-split_var = tk.IntVar()
-do_not_split_var = tk.IntVar()
+# K_sent_begin_var = tk.StringVar()
+# K_sent_end_var = tk.StringVar()
+# split_var = tk.IntVar()
+# do_not_split_var = tk.IntVar()
 
 use_numerical_variable_var = tk.IntVar()
 csv_field_treemap_var = tk.StringVar()
@@ -460,8 +475,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
                                    csv_field_relational_menu,
                                    True, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
                                    "Select the three fields to be used for the network graph in the order node1, edge, node2 (e.g., SVO)")
-
-selected_csv_file_fields = tk.StringVar()
 
 selected_csv_fields_area = tk.Entry(width=GUI_IO_util.widget_width_medium, state='disabled', textvariable=selected_csv_file_fields)
 # place widget with hover-over info
@@ -756,6 +769,76 @@ def show_categorical_list():
     #         class_color_1_string = class_color_1_string + ont + ":" + color_1_map[ont] + "\n"
         mb.showwarning(title='Warning', message='The currently selected combination of csv file field and search word are:\n\n' + str(csv_file_categorical_field_list) + '\n\nPlease, press the Reset button (or ESCape) to start fresh.')
 
+
+filter_lb = tk.Label(window, text='Filtering options')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,
+                                               y_multiplier_integer, filter_lb, True)
+
+filter_options_var.set('No filtering')
+filter_options_menu = tk.OptionMenu(window, filter_options_var, 'No filtering', 'Fixed parameter', 'Propagating parameter')
+filter_options_menu.configure(state='disabled')
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
+                                   filter_options_menu,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Select the type of filtering to be used in processing larger volumes of data which would make the charts unreadable")
+
+
+fixed_param_lb = tk.Label(window, text='Fixed')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
+                                               y_multiplier_integer, fixed_param_lb, True)
+
+fixed_param_var.set(50)
+fixed_param = tk.Entry(window, state='disabled', textvariable=fixed_param_var, width=3)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+50, y_multiplier_integer,
+                                   fixed_param,
+                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   "Enter the FIXED parameter value in a typical range 50-100 (default = 50)\n"
+                                    "Available only when selecting the 'Fixed parameter' filtering option")
+
+rate_param_lb = tk.Label(window, text='Rate')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,
+                                               y_multiplier_integer, rate_param_lb, True)
+
+rate_param_var.set(3)
+rate_param = tk.Entry(window, state='disabled', textvariable=rate_param_var, width=3)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+40, y_multiplier_integer,
+                                   rate_param,
+                                   True, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
+                                   "Enter the RATE parameter value in a typical range 3-20 (default = 3)\n"
+                                    "Available only when selecting the 'Propagating parameter' filtering option")
+
+# Option 2: Rate-Propagating Parameter Filtering: 2 values Rate filtering 3 value Base filtering value def = 40
+
+base_param_lb = tk.Label(window, text='Base')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate,
+                                               y_multiplier_integer, base_param_lb, True)
+
+base_param_var.set(40)
+base_param = tk.Entry(window, state='disabled', textvariable=base_param_var, width=3)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate+40, y_multiplier_integer,
+                                   base_param,
+                                   False, False, True, False, 90, GUI_IO_util.open_setup_x_coordinate,
+                                   "Enter the BASE parameter value in a typical range 50-100 (default = 40)\n"
+                                    "Available only when selecting the 'Propagating parameter' filtering option")
+
+def activate_filtering_options(*args):
+    fixed_param.configure(state='disabled')
+    rate_param.configure(state='disabled')
+    base_param.configure(state='disabled')
+    if not categorical_var.get():
+        return
+    if 'Fixed' in filter_options_var.get():
+        fixed_param.configure(state='normal')
+    if 'Propagating' in filter_options_var.get():
+        rate_param.configure(state='normal')
+        base_param.configure(state='normal')
+
+filter_options_var.trace('w',activate_filtering_options)
+
 colormap_lb = tk.Label(window, text='Colormap parameters')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
@@ -852,54 +935,54 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
                                    False, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
                                    "Select the type of data normalization, if any, to be used in displaying the results, thus making them more comparable")
 
-sunburst_lb = tk.Label(window, text='Sunburst parameters')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                   sunburst_lb,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "The widgets on this line refer to the sunburst option only")
-
-K_sent_begin_var.set('')
-K_sent_begin_lb = tk.Label(window, text='First K')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
-                                               y_multiplier_integer, K_sent_begin_lb, True)
-
-K_sent_begin = tk.Entry(window, state='disabled', textvariable=K_sent_begin_var, width=3)
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+70, y_multiplier_integer,
-                                   K_sent_begin,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "Enter the number of sentences at the beginning of each document to be used to visualize differences in the data\nThe option requires a Document ID and a Sentence ID field in the input file")
-
-K_sent_end_var.set('')
-K_sent_end_lb = tk.Label(window, text='Last K')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
-                                               y_multiplier_integer, K_sent_end_lb, True)
-K_sent_end = tk.Entry(window, state='disabled',textvariable=K_sent_end_var, width=3)
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+70, y_multiplier_integer,
-                                   K_sent_end,
-                                   True, False, True, False, 90, GUI_IO_util.visualization_K_sent_end_lb_pos,
-                                   "Enter the number of sentences at the end of each document to be used to visualize differences in the data\nThe option requires a Document ID and a Sentence ID field in the input file")
-
-split_var.set(0)
-split_checkbox = tk.Checkbutton(window, state='disabled',text='Split documents in equal halves', variable=split_var,
-                                    onvalue=1, command=lambda: activate_all_options())
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_split_pos, y_multiplier_integer,
-                                   split_checkbox,
-                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
-                                   "Tick the checkbox if you wish to visualize differences in the data by splitting each document in two halves\nThe option requires a Document ID and a Sentence ID field in the input file")
-
-do_not_split_var.set(0)
-do_not_split_checkbox = tk.Checkbutton(window, state='disabled', text='Do NOT split documents', variable=do_not_split_var,
-                 onvalue=1, command=lambda: activate_all_options())
-do_not_split_checkbox.configure(state='disabled')
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_do_not_split_pos, y_multiplier_integer,
-                                   do_not_split_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.visualization_split_pos,
-                                   "Tick the checkbox if you wish to visualize the entire data")
+# sunburst_lb = tk.Label(window, text='Sunburst parameters')
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+#                                    sunburst_lb,
+#                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+#                                    "The widgets on this line refer to the sunburst option only")
+#
+# K_sent_begin_var.set('')
+# K_sent_begin_lb = tk.Label(window, text='First K')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
+#                                                y_multiplier_integer, K_sent_begin_lb, True)
+#
+# K_sent_begin = tk.Entry(window, state='disabled', textvariable=K_sent_begin_var, width=3)
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+70, y_multiplier_integer,
+#                                    K_sent_begin,
+#                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+#                                    "Enter the number of sentences at the beginning of each document to be used to visualize differences in the data\nThe option requires a Document ID and a Sentence ID field in the input file")
+#
+# K_sent_end_var.set('')
+# K_sent_end_lb = tk.Label(window, text='Last K')
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
+#                                                y_multiplier_integer, K_sent_end_lb, True)
+# K_sent_end = tk.Entry(window, state='disabled',textvariable=K_sent_end_var, width=3)
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate+70, y_multiplier_integer,
+#                                    K_sent_end,
+#                                    True, False, True, False, 90, GUI_IO_util.visualization_K_sent_end_lb_pos,
+#                                    "Enter the number of sentences at the end of each document to be used to visualize differences in the data\nThe option requires a Document ID and a Sentence ID field in the input file")
+#
+# split_var.set(0)
+# split_checkbox = tk.Checkbutton(window, state='disabled',text='Split documents in equal halves', variable=split_var,
+#                                     onvalue=1, command=lambda: activate_all_options())
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_split_pos, y_multiplier_integer,
+#                                    split_checkbox,
+#                                    True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+#                                    "Tick the checkbox if you wish to visualize differences in the data by splitting each document in two halves\nThe option requires a Document ID and a Sentence ID field in the input file")
+#
+# do_not_split_var.set(0)
+# do_not_split_checkbox = tk.Checkbutton(window, state='disabled', text='Do NOT split documents', variable=do_not_split_var,
+#                  onvalue=1, command=lambda: activate_all_options())
+# do_not_split_checkbox.configure(state='disabled')
+# # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_do_not_split_pos, y_multiplier_integer,
+#                                    do_not_split_checkbox,
+#                                    False, False, True, False, 90, GUI_IO_util.visualization_split_pos,
+#                                    "Tick the checkbox if you wish to visualize the entire data")
 
 treemap_lb = tk.Label(window, text='Treemap parameters')
 # place widget with hover-over info
@@ -1003,14 +1086,15 @@ def activate_all_options(*args):
     # categorical options
     csv_field_categorical_menu.configure(state='disabled')
     case_sensitive_checkbox.configure(state='disabled')
+    filter_options_menu.configure(state='disabled')
     max_rows.configure(state='disabled')
     color_1_checkbox.configure(state='disabled')
     color_2_checkbox.configure(state='disabled')
     normalize_menu.configure(state='disabled')
-    K_sent_begin.configure(state='disabled')
-    K_sent_end.configure(state='disabled')
-    split_checkbox.configure(state='disabled')
-    do_not_split_checkbox.configure(state='disabled')
+    # K_sent_begin.configure(state='disabled')
+    # K_sent_end.configure(state='disabled')
+    # split_checkbox.configure(state='disabled')
+    # do_not_split_checkbox.configure(state='disabled')
     search_values_categorical.configure(state='disabled')
 
     if extra_GUIs_var.get():
@@ -1078,12 +1162,13 @@ def activate_all_options(*args):
         #         show_button_categorical.configure(state='normal')
 
             search_values_categorical.configure(state='normal')
+            filter_options_menu.configure(state='normal')
 
         if categorical_menu_var.get()=='':
-            K_sent_begin.configure(state='disabled')
-            K_sent_end.configure(state='disabled')
-            split_checkbox.configure(state='disabled')
-            do_not_split_checkbox.configure(state='disabled')
+            # K_sent_begin.configure(state='disabled')
+            # K_sent_end.configure(state='disabled')
+            # split_checkbox.configure(state='disabled')
+            # do_not_split_checkbox.configure(state='disabled')
             use_numerical_variable_checkbox.configure(state='disabled')
 
         elif categorical_menu_var.get() == 'Colormap':
@@ -1093,45 +1178,45 @@ def activate_all_options(*args):
             normalize_menu.configure(state='normal')
         elif categorical_menu_var.get()=='Sunburst':
             csv_field_categorical_menu.configure(state='normal')
-            K_sent_begin.configure(state='normal')
-            K_sent_end.configure(state='normal')
-            split_checkbox.configure(state='normal')
-            do_not_split_checkbox.configure(state='normal')
-            if K_sent_begin_var.get() != '' or K_sent_end_var.get() != '':
-                split_checkbox.configure(state='disabled')
-                do_not_split_checkbox.configure(state='disabled')
-            if do_not_split_var.get():
-                K_sent_begin.configure(state='disabled')
-                K_sent_end.configure(state='disabled')
-                split_checkbox.configure(state='disabled')
-            if split_var.get():
-                K_sent_begin.configure(state='disabled')
-                K_sent_end.configure(state='disabled')
-                do_not_split_checkbox.configure(state='disabled')
+            # K_sent_begin.configure(state='normal')
+            # K_sent_end.configure(state='normal')
+            # split_checkbox.configure(state='normal')
+            # do_not_split_checkbox.configure(state='normal')
+            # if K_sent_begin_var.get() != '' or K_sent_end_var.get() != '':
+            #     split_checkbox.configure(state='disabled')
+            #     do_not_split_checkbox.configure(state='disabled')
+            # if do_not_split_var.get():
+            #     K_sent_begin.configure(state='disabled')
+            #     K_sent_end.configure(state='disabled')
+            #     split_checkbox.configure(state='disabled')
+            # if split_var.get():
+            #     K_sent_begin.configure(state='disabled')
+            #     K_sent_end.configure(state='disabled')
+            #     do_not_split_checkbox.configure(state='disabled')
             csv_field_treemap_var.set('')
             csv_field_treemap_menu.configure(state='disabled')
 
         elif categorical_menu_var.get()=='Treemap':
-            K_sent_begin.configure(state='disabled')
-            K_sent_end.configure(state='disabled')
-            split_checkbox.configure(state='disabled')
-            do_not_split_checkbox.configure(state='disabled')
+            # K_sent_begin.configure(state='disabled')
+            # K_sent_end.configure(state='disabled')
+            # split_checkbox.configure(state='disabled')
+            # do_not_split_checkbox.configure(state='disabled')
 
             use_numerical_variable_checkbox.configure(state='normal')
             csv_field_treemap_menu.configure(state='normal')
 
-        if split_var.get():
-            K_sent_begin.configure(state='disabled')
-            K_sent_end.configure(state='disabled')
-            do_not_split_checkbox.configure(state='disabled')
+        # if split_var.get():
+        #     K_sent_begin.configure(state='disabled')
+        #     K_sent_end.configure(state='disabled')
+        #     do_not_split_checkbox.configure(state='disabled')
 
 activate_all_options()
 
 relations_menu_var.trace('w',activate_all_options)
 csv_field_relational_var.trace('w',activate_all_options)
 # csv_field_categorical_var.trace('w',activate_all_options)
-K_sent_begin_var.trace('w',activate_all_options)
-K_sent_end_var.trace('w',activate_all_options)
+# K_sent_begin_var.trace('w',activate_all_options)
+# K_sent_end_var.trace('w',activate_all_options)
 
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
@@ -1166,10 +1251,19 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the csv file fields to be used to visualize relations.\n\nPress the + button to add successive fields until all 2 or 3 elements have been added (2 or 3 for Sankey, 3 for Gephi). For instance, in a Gephi graph, the first field selected is the first node; the second field selected is the edge; the third field selected is the second node (the selected fields will be displayed in the grayed out widget; make sure to press the + sign after the last selection).\n\nPress the 'reset_relational ' button to clear selected values and start fresh.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE GEPHI CHART ONLY.\n\nFor Gephi network graphs, once all three fields (node 1, edge, node 2) have been selected, the widget 'csv file field for dynamic graph' will become available. When available, select a field to be used for dynamic networks (e.g., the Sentence ID or Date) or ignore the option if the network should not be dynamic.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SANKEY CHART ONLY.\n\nPlease, using the dropdown menus, select the maximum number of values to be considered for each of the 2 or 3 elements in computing the interactive Sankey chart.\n\nWith to many values, Sankey charts become very messy.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in an interactive sunburst or treemap chart.\n\nThe algorithm applies to categorical data rather than numerical data.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in interactive charts (e.g., sunburst or treemap).\n\nThe algorithm applies to categorical data rather than numerical data.")
+    # search line
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The widgets in this line are REQUIRED to run either the Sunburst or Treemap algorithms.\n\nPlease, enter at least two sets of combinations of csv file field and search values.\n\n   First, select the csv file field using the dropdown menu.\n\n   Second, enter the comma-separated search values to be used from that field to construct the chart.\n   For instance, if you select 'Document' as csv file field, you can enter specific parts of a filename (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...).\n   If you select 'NER' as csv file field in an input CoNLL table, you can enter the tags 'PERSON' or 'LOCATION', 'COUNTRY', 'STATE_OR_PROVINCE', 'CITY'.\n\n   Finally, click on + symbol to accept the current combination of csv field and values (at least two combinations are required) (you can also press the Reset button to clear all selected values and start fresh, or the Show button to visualize the currently selected options). After clicking + you can enter another combination or click on RUN to obtain the chart.\n\nALWAYS CLICK THE + SYMBOL AFTER HAVING ENTERED THE LAST COMBINATION.")
+    # filtering line
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The widgets in this line refer to the Sunburst or Treemap algorithms.\n\nThe options allow you to filter data when too many data values would simply make the charts unreadable.\n\n"
+                        "'No filtering' is the default option. Start with this option, then, if necessary, try filtering."
+                        "\n   Select the 'Fixed parameter' option and see whether the chart improves, perhaps varying the parameter value."
+                        "\n   Select the 'Propagating parameter' option to use different filters for each layer of seletected csv file field, and see whether the chart improves, perhaps varying the parameter values.")
+    # colormap line
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE COLORMAP OPTION ONLY.\n\nPlease, enter the maximum number of rows to be displayed in the chart (default = 20).\n\nTick the 'Color' checkbox to select from the color palette the RGB color to be used for the chart (default color orange, RGB 255 166 0).")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SUNBURST OPTION ONLY.\n\nPlease, enter the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the checkbox 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.\n\nTick the checkbox 'Do NOT split documents' if you wish to visualize an entire document.\n\nThe three options are mutually exclusive.\n\nThe Sunburst algorithm uses the values in Document ID and Sentence ID to process First K and Last K sentences or to split a document in halves.")
+    # OLD line
+    # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SUNBURST OPTION ONLY.\n\nPlease, enter the number of sentences at the beginning and at the end of a document to be used to visualize specific sentences.\n\nTick the checkbox 'Split documents in equal halves' if you wish to visualize the data for the first and last half of the documents in your corpus, rather than for begin and end sentences.\n\nTick the checkbox 'Do NOT split documents' if you wish to visualize an entire document.\n\nThe three options are mutually exclusive.\n\nThe Sunburst algorithm uses the values in Document ID and Sentence ID to process First K and Last K sentences or to split a document in halves.")
+    # treemap line
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE TREEMAP OPTION ONLY. THE FIELDS ARE OPTIONAL (i.e., not required to run the treemap algorithm). \n\nPlease, tick the checkbox if you wish to use the values of a numerical variable to improve the treemap chart.\n\nUse the dropdown menu to select the csv file numeric field to be used for plotting.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1

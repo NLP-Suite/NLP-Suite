@@ -508,8 +508,9 @@ minus_K_words_entry.configure(width=3, state='normal')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
                     minus_K_words_entry, True, False, True, False,
-                    90, GUI_IO_util.watch_videos_x_coordinate,
-                    "Enter the number of words preceding the search word to be extracted, for context, together with the search sentences")
+                    90, GUI_IO_util.open_TIPS_x_coordinate,
+                    "Enter the number of words preceding the search word to be extracted, for context, together with the search sentences\n"
+                    "The option does not apply to N-grams VIEWER or Co-Occurrences VIEWER")
 
 plus_K_lb = tk.Label(window, text='+K')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,1140,y_multiplier_integer,plus_K_lb,True)
@@ -520,8 +521,9 @@ plus_K_words_entry.configure(width=3, state='normal')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window, 1170, y_multiplier_integer,
                     plus_K_words_entry, False, False, True, False,
-                    90, GUI_IO_util.watch_videos_x_coordinate,
-                    "Enter the number of words following the search word to be extracted, for context, together with the search sentences")
+                    90, GUI_IO_util.open_TIPS_x_coordinate,
+                    "Enter the number of words following the search word to be extracted, for context, together with the search sentences\n"
+                    "The option does not apply to N-grams VIEWER or Co-Occurrences VIEWER")
 
 
 viewer_menu_lb = tk.Label(window, text='Search options')

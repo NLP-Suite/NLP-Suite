@@ -55,6 +55,18 @@ def find_EVERY_k_adjacent_elements(s, sv, kplus,kminus):
             riight.append(' '.join(after_k))
             midi.append(sv)
     return lefti,midi, riight
+
+
+def csv_escape(input_string):
+    # Check if the string contains a comma, newline, or double quote
+    if ',' in input_string or '\n' in input_string or '"' in input_string:
+        # Escape double quotes by replacing one double quote with two
+        escaped_string = input_string.replace('"', '""')
+        # Enclose the string in double quotes
+        return f'"{escaped_string}"'
+    else:
+        # Return the string unchanged if it doesn't contain any special characters
+        return input_string
 def search_sentences_documents(inputFilename, inputDir, outputDir, configFileName,
         search_by_dictionary, search_by_search_keywords, minus_K_words_var, plus_K_words_var, search_keywords_list,
         create_subcorpus_var, search_options_list, lang, createCharts, chartPackage):
@@ -139,13 +151,13 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                                                   minus_K_words_var)
             with open(outputFilename,'a') as f:
                 for i in range(len(mid)):
-                    a = [left[i],mid[i],right[i], str(index+1), IO_csv_util.dressFilenameForCSVHyperlink(file)]
+                    a = [csv_escape(left[i]),csv_escape(mid[i]),csv_escape(right[i]), str(index+1), IO_csv_util.dressFilenameForCSVHyperlink(file)]
                     f.write(','.join(a)+"\n")
             with open(outputtxtFilename,'a') as f:
                 for i in range(len(mid)):
                     a = [left[i],right[i]] # If you would like to retain, just follow the 4 lines above and you can do that.
-                    # i.e. left[i], mid[i], right[i]
-                    f.write(' '.join(a)) # this would be the basis for wordclouds
+                    # this would be the basis for wordclouds
+                    f.write(' '.join(a) + "\n")
             outputFiles = [outputFilename,outputtxtFilename]
        # with open(outputtxtFilename, 'r') as f:
        #     q = ''.join(f.readlines())

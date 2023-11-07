@@ -60,14 +60,16 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
         x_cols = []
         y_cols = ''
         fig = None
+
+        # remove the path from the filename
+        def do(x):
+            return os.path.split(x)[1].replace('")', '')
+
+        data['Document'] = data['Document'].apply(do)
         x_cols = headers[cols_to_plot[j][0]]
         y_cols = headers[cols_to_plot[j][1]]
         if i.lower() == 'bar':
             if len(chart_type_list) < len(cols_to_plot):
-                # remove the path from the filename
-                def do(x):
-                    return os.path.split(x)[1].replace('")', '')
-                data ['Document'] = data['Document'].apply(do)
                 fig = plot_multi_bar_chart_px(data, chart_title, cols_to_plot)
                 file_list.append(save_chart(fig,outputDir,chart_title,static_flag,column_xAxis_label,column_yAxis_label))
                 break

@@ -1951,6 +1951,40 @@ def where_data(data, **kwargs):
             data = data[data[col].isin(value)]
     # THIS FUNCTION IS DOING: SELECT FROM DATA WHERE cond_1, cond_2, ... con_n for ** kwargs
     return data
+
+
+# def transform(df,prt,nms):
+#     nms = int(nms)
+#     top_X_items = list(df[prt].value_counts()[0:nms].keys())
+#     df = df[df[prt].isin(top_X_items)]
+#     return df
+#
+# for col in df.columns:
+#     if col!='counts':
+#         df = transform(df, col, 50) # fixed parameter, Parameter_ only, option 1
+# # Method two
+# import pandas as pd
+# df = pd.read_csv("Example input.csv")
+
+# def transform(df,prt,nms):
+#     nms = int(nms)
+#     top_X_items = list(df[prt].value_counts()[0:nms].keys())
+#     df = df[df[prt].isin(top_X_items)]
+#     return df
+#
+# rt = 3 # rate of change, Parameters _ 1, option 2
+# base = 40 # base_rate, Paramters _ 2, option 2
+#
+# for col in df.columns:
+#     if col!='counts':
+#         df = transform(df, col, base)
+#         base = base * rt
+
+# Option 1: Fixed Parameter Filtering 50-100 (default 50)
+# Option 2: Rate-Propagating Parameter Filtering: 2 values Rate filtering 3 value Base filtering value def = 40
+# Option 3: No filter at all
+
+
 # THIS IS AN ABBREVIATED VERSION FOR The sunburst / treemap
 def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list,suntree):
     data = pd.read_csv(inputFilename)
