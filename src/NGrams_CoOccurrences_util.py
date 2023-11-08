@@ -228,7 +228,7 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
             return
     else:
         # create a subdirectory of the output directory
-        outputDir = IO_files_util.make_output_subdirectory(csv_file_var, inputDir, outputDir, label='N-grams search',
+        outputDir = IO_files_util.make_output_subdirectory(csv_file_var, inputDir, outputDir, label='search_N-grams',
                                                            silent=False)
         if outputDir == '':
             return

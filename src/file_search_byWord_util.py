@@ -479,10 +479,11 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
             outputDir_sentences = os.path.join(outputDir, "sentences_Dir_" + inputDirBase)
 
         # create a subdirectory in the output directory
-        outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_with_searchword', silent=False)
+        # should be silent because the user has already agreed to overwrite an existing upper directory
+        outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_with_searchword', silent=True)
         if outputDir_sentences_extract == '':
             return
-        outputDir_sentences_extract_wo_searchword = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_wo_searchword', silent=False)
+        outputDir_sentences_extract_wo_searchword = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_wo_searchword', silent=True)
         if outputDir_sentences_extract_wo_searchword == '':
             return
 
