@@ -815,7 +815,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
                                        'Started running language detection algorithms at',
                                                  True, '', True, '', True)
 
-    # Stanza's multilingual pipeline needs to load only once, therefore called outside the for-loop
+# Stanza's multilingual pipeline needs to load only once, therefore called outside the for-loop
     from stanza.pipeline.multilingual import MultilingualPipeline
     try:
         nlp_stanza = MultilingualPipeline()

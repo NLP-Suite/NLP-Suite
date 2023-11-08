@@ -682,7 +682,7 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
     opened_folder_label = ''
 
     if nFiles > 10:
-        wayTooMany = "\n\nWAY TOO MANY TO BE OPENED AUTOMATICALLY. The files are"
+        wayTooMany = "\n\nWAY TOO MANY TO BE OPENED AUTOMATICALLY."
 
     if nFiles == 1:
         file_singular_plural='file'
@@ -694,7 +694,7 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
     if nSubDirs==1:
         label = " exported to the subfolder:\n\n" + temp_outputDir
     elif nSubDirs > 1:
-        label = " organized in " + str(nSubDirs) + " different subfolders:\n\n" + subDirs
+        label = "  The files are organized in " + str(nSubDirs) + " different subfolders:\n\n" + subDirs
 
     if nSubDirs > 0:
         opened_folder_label = "\n\nFor your convenience, the NLP Suite will place you in this output subdirectory."

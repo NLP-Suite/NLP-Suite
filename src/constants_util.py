@@ -569,6 +569,7 @@ NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample c
 '', \
 '-----------------------------------------------------------------------------------------', \
 '', \
+'File checker (A pre-processing pipeline)', \
 'File checker (file content)', \
 'File checker (file content utf-8 encoding)', \
 'File checker (file name)', \

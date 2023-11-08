@@ -71,6 +71,12 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         search_by_dictionary, search_by_search_keywords, minus_K_words_var, plus_K_words_var, search_keywords_list,
         create_subcorpus_var, search_options_list, lang, createCharts, chartPackage):
 
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search_word',
+                                                       silent=False)
+    if outputDir == '':
+        return
+
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        "Started running the Word search function at",
                                         True, '', True, '', False)
@@ -414,31 +420,38 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                                                   minus_K_var, plus_K_var, createCharts, chartPackage):
     if not (isinstance(minus_K_var, int) and isinstance(plus_K_var, int) and minus_K_var >= 0 and plus_K_var >= 0):
         mb.showwarning(title="Warning",message="Invalid input for -K or +K widgets.\n\nThe values must be positive integer numbers.\n\nPlease, enter positive integers and try again.")
-    else:
-        filesToOpen=[]
-        inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
-        Ndocs = len(inputDocs)
-        if Ndocs == 0:
-            return
+        return
 
-        from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+    filesToOpen=[]
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
+    Ndocs = len(inputDocs)
+    if Ndocs == 0:
+        return
 
-        case_sensitive = False
-        word_match = False
-        lemmatize = False
-        search_keywords_found = False
-        search_within_sentence = False
-        for search_option in search_options_list:
-            if search_option == 'Case sensitive (default)':
-                case_sensitive = True
-            if search_option == 'Case insensitive':
-                    case_sensitive = False
-            if search_option == "Search within sentence (default)":
-                search_within_sentence = True
-            if search_option == "Lemmatize":  # not available yet
-                lemmatize = True
-            if search_option == "Exact match":
-                word_match = True
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search_sent_extract',
+                                                       silent=False)
+    if outputDir == '':
+        return
+
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+
+    case_sensitive = False
+    word_match = False
+    lemmatize = False
+    search_keywords_found = False
+    search_within_sentence = False
+    for search_option in search_options_list:
+        if search_option == 'Case sensitive (default)':
+            case_sensitive = True
+        if search_option == 'Case insensitive':
+                case_sensitive = False
+        if search_option == "Search within sentence (default)":
+            search_within_sentence = True
+        if search_option == "Lemmatize":  # not available yet
+            lemmatize = True
+        if search_option == "Exact match":
+            word_match = True
 
         # Win/Mac may use different quotation, we replace any directional quotes to straight ones
         right_double = u"\u201C"  # “
