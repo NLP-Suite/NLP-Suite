@@ -37,6 +37,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         Sankey_limit1_var, Sankey_limit2_var, Sankey_limit3_var,
         categorical_var,
         csv_file_categorical_field_list,
+        filter_options_var,
         fixed_param_var,
         rate_param_var,
         base_param_var,
@@ -190,7 +191,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                                "The sunburst algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
                 return
 
-            outputFiles = charts_util.Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list, 1)
+            outputFiles = charts_util.Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list, 1,  fixed_param_var, rate_param_var, base_param_var, filter_options_var)
 
             #### USED
         #    outputFiles = charts_util.Sunburst(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
@@ -242,6 +243,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             Sankey_limit1_var.get(), Sankey_limit2_var.get(), Sankey_limit3_var.get(),
                             categorical_var.get(),
                             csv_file_categorical_field_list,
+                            filter_options_var.get(),
                             fixed_param_var.get(),
                             rate_param_var.get(),
                             base_param_var.get(),
@@ -550,7 +552,7 @@ dynamic_network_field_var.trace('w', callback = lambda x,y,z: activate_csv_field
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 # GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
-Gephi_lb = tk.Label(window, text='Gephi parameters')
+Gephi_lb = tk.Label(window, text='Gephi parameters', foreground="red",font=("Courier", 12, "bold"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    Gephi_lb,
@@ -569,7 +571,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Select the field to be used for a dynamic network graph (e.g., Sentence ID, Date) if you wish to compute a dynamic network graph.\nTHE OPTION IS CURRENTLY DISABLED.")
 
-Sankey_lb = tk.Label(window, text='Sankey parameters')
+Sankey_lb = tk.Label(window, text='Sankey parameters',foreground="red",font=("Courier", 12, "bold"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    Sankey_lb,
@@ -839,7 +841,7 @@ def activate_filtering_options(*args):
 
 filter_options_var.trace('w',activate_filtering_options)
 
-colormap_lb = tk.Label(window, text='Colormap parameters')
+colormap_lb = tk.Label(window, text='Colormap parameters',foreground="red",font=("Courier", 12, "bold"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    colormap_lb,
@@ -984,7 +986,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
 #                                    False, False, True, False, 90, GUI_IO_util.visualization_split_pos,
 #                                    "Tick the checkbox if you wish to visualize the entire data")
 
-treemap_lb = tk.Label(window, text='Treemap parameters')
+treemap_lb = tk.Label(window, text='Treemap parameters',foreground="red",font=("Courier", 12, "bold"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    treemap_lb,

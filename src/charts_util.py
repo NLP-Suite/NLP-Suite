@@ -1953,32 +1953,30 @@ def where_data(data, **kwargs):
     return data
 
 
-# def transform(df,prt,nms):
-#     nms = int(nms)
-#     top_X_items = list(df[prt].value_counts()[0:nms].keys())
-#     df = df[df[prt].isin(top_X_items)]
-#     return df
-#
-# for col in df.columns:
-#     if col!='counts':
-#         df = transform(df, col, 50) # fixed parameter, Parameter_ only, option 1
-# # Method two
-# import pandas as pd
-# df = pd.read_csv("Example input.csv")
+def fixed_transform_helper(df,prt,nms):
+     nms = int(nms)
+     top_X_items = list(df[prt].value_counts()[0:nms].keys())
+     df = df[df[prt].isin(top_X_items)]
+     return df
 
-# def transform(df,prt,nms):
-#     nms = int(nms)
-#     top_X_items = list(df[prt].value_counts()[0:nms].keys())
-#     df = df[df[prt].isin(top_X_items)]
-#     return df
-#
-# rt = 3 # rate of change, Parameters _ 1, option 2
-# base = 40 # base_rate, Paramters _ 2, option 2
-#
-# for col in df.columns:
-#     if col!='counts':
-#         df = transform(df, col, base)
-#         base = base * rt
+def fixed_transform(df,fixed_value):
+    for col in df.columns:
+        if col != 'counts':
+            df = fixed_transform_helper(df, col, fixed_value)
+    return df
+
+def rate_prop_helper(df,prt,nms):
+    nms = int(nms)
+    top_X_items = list(df[prt].value_counts()[0:nms].keys())
+    df = df[df[prt].isin(top_X_items)]
+    return df
+
+def rate_prop(df, rt, base):
+    for col in df.columns:
+        if col != 'counts':
+            df = rate_prop_helper(df, col, base)
+            base = base * rt
+    return df
 
 # Option 1: Fixed Parameter Filtering 50-100 (default 50)
 # Option 2: Rate-Propagating Parameter Filtering: 2 values Rate filtering 3 value Base filtering value def = 40
@@ -1986,7 +1984,9 @@ def where_data(data, **kwargs):
 
 
 # THIS IS AN ABBREVIATED VERSION FOR The sunburst / treemap
-def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list,suntree):
+def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list,suntree, fixed_param_var, rate_param_var, base_param_var, filter_options_var):
+    print(fixed_param_var, rate_param_var, base_param_var, filter_options_var)
+    print("======")
     data = pd.read_csv(inputFilename)
     WHERE, GROUPBY = special_sql_commands(csv_file_categorical_field_list, data)
     data = where_data(data, where_column=WHERE)
@@ -1995,6 +1995,13 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
     df = select_and_counting(data, select_and_count)
     df_grouped = df.groupby(select_and_count).size().reset_index(name='counts')
     # df_grouped.head(5)
+    if filter_options_var=='Fixed parameter':
+        df_grouped = fixed_transform(df_grouped, int(fixed_param_var))
+        print("OK Fixed parameter applied")
+    if filter_options_var =='Propagating parameter':
+        df_grouped = rate_prop(df_grouped, int(rate_param_var), int(base_param_var))
+        print("OK Propagating parameter applied")
+    print(df_grouped)
     if suntree:
         fig = px.sunburst(df_grouped, path=select_and_count, values='counts')  # Ensure the hierarchy levels are correct
     else:
