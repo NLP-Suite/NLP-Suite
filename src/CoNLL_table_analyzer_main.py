@@ -211,6 +211,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 # -----------------------------------------------------------------------------------------------------------------------------
 
     if WordNet_var.get():
+        # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
+        outputDir_SV = outputDir
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_WordNet',
+                                                           silent=False)
+        if outputDir == '':
+            return
+
         import pandas as pd
         df = pd.read_csv(inputFilename)
         df_nouns = df[df['POS'].isin(['NN', 'NNPS', 'NNP', 'NNS'])][['Lemma', 'POS']]
@@ -245,6 +252,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 filesToOpen.append(output)
             else:
                 filesToOpen.extend(output)
+
+        outputDir=outputDir_SV
 
 # -----------------------------------------------------------------------------------------------------------------------------
     if compute_sentence_var.get():
@@ -762,12 +771,13 @@ TIPS_lookup = {'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'Noun Analysis': 'TIPS_NLP_Noun Analysis.pdf', 'Verb Analysis': 'TIPS_NLP_Verb Analysis.pdf',
                'Function Words Analysis': 'TIPS_NLP_Function Words Analysis.pdf',
                'Nominalization': 'TIPS_NLP_Nominalization.pdf', 'NLP Searches': "TIPS_NLP_NLP Searches.pdf",
+               'WordNet': 'TIPS_NLP_WordNet.pdf',
                'Excel Charts': 'TIPS_NLP_Excel Charts.pdf',
                'Excel Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                 'Statistical measures':'TIPS_NLP_Statistical measures.pdf',
                'Network Graphs (via Gephi)': 'TIPS_NLP_Gephi network graphs.pdf'}
-TIPS_options = 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'English Language Benchmarks', 'Style Analysis', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'Nominalization', 'NLP Searches', 'Excel Charts', 'Excel Enabling Macros', 'Excel smoothing data series', 'Statistical measures', 'Network Graphs (via Gephi)'
+TIPS_options = 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'English Language Benchmarks', 'Style Analysis', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'Nominalization', 'WordNet', 'NLP Searches', 'Excel Charts', 'Excel Enabling Macros', 'Excel smoothing data series', 'Statistical measures', 'Network Graphs (via Gephi)'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -800,7 +810,8 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "Please, select POSTAG value for token co-occurring in the same sentence (e.g., NN for noun; RETURN for ANY POSTAG value).\n\n" \
                                   "Select DEPREL value for token co-occurring in the same sentence (e.g., DEPREL nsubjpass for passive nouns that are subjects; RETURN for ANY DEPREL value)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to aggregate nouns and verbs in the CoNLL table (POS NN* and POS VB*) via WordNet." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox if you wish to aggregate nouns and verbs in the CoNLL table (POS NN* and POS VB*) via WordNet." \
+                                  "\n\nCAVEAT: For VERBS, the 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies."+ GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run the repetition finder to compute counts and proportions of nouns, verbs, adjectives, and proper nouns across selected K beginnning and ending sentences." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

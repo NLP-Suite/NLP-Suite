@@ -38,6 +38,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         csv_file_var,
         n_grams_viewer_var,
         CoOcc_Viewer_var,
+        within_sentence_co_occurrence_search_var,
         date_options,
         temporal_aggregation_var,
         viewer_options_list):
@@ -349,6 +350,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_ma
                                  csv_file_var.get(),
                                  n_grams_viewer_var.get(),
                                  CoOcc_Viewer_var.get(),
+                                 within_sentence_co_occurrence_search_var.get(),
                                  date_options.get(),
                                  temporal_aggregation_var.get(),
                                  viewer_options_list)
@@ -683,8 +685,17 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 
 CoOcc_Viewer_var.set(0)
 CoOcc_viewer_checkbox = tk.Checkbutton(window, text='Co-Occurrences VIEWER', variable=CoOcc_Viewer_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos,y_multiplier_integer,CoOcc_viewer_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_CoOcc_Viewer_pos,y_multiplier_integer,CoOcc_viewer_checkbox, True)
 
+
+within_sentence_co_occurrence_search_var = tk.IntVar()
+within_sentence_co_occurrence_search_var.set(0)
+within_sentence_co_occurrence_search_checkbox = tk.Checkbutton(window, text='Co-Occurrence within sentence (Default: within document)', variable=within_sentence_co_occurrence_search_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+# # place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+                                   within_sentence_co_occurrence_search_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+                                   "Tick the checkbox to search co-occurring words within sentence, rather than within document (defalt: within document)")
 
 def date_processing():
     if CoOcc_Viewer_var.get() and date_options.get():
@@ -754,6 +765,7 @@ def clear(e):
     csv_file_var.set('')
     n_grams_viewer_var.set(0)
     CoOcc_Viewer_var.set(0)
+    within_sentence_co_occurrence_search_var.set(0)
     viewer_options_menu_var.set('Case sensitive')
     temporal_aggregation_var.set('year')
     activate_all_options()

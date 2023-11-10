@@ -552,7 +552,7 @@ dynamic_network_field_var.trace('w', callback = lambda x,y,z: activate_csv_field
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 # GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
-Gephi_lb = tk.Label(window, text='Gephi parameters', foreground="red",font=("Courier", 12, "bold"))
+Gephi_lb = tk.Label(window, text='Gephi', foreground="red",font=("Courier", 12, "bold"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    Gephi_lb,
@@ -571,7 +571,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Select the field to be used for a dynamic network graph (e.g., Sentence ID, Date) if you wish to compute a dynamic network graph.\nTHE OPTION IS CURRENTLY DISABLED.")
 
-Sankey_lb = tk.Label(window, text='Sankey parameters',foreground="red",font=("Courier", 12, "bold"))
+Sankey_lb = tk.Label(window, text='Sankey',foreground="red",font=("Courier", 12, "bold"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    Sankey_lb,
@@ -841,7 +841,7 @@ def activate_filtering_options(*args):
 
 filter_options_var.trace('w',activate_filtering_options)
 
-colormap_lb = tk.Label(window, text='Colormap parameters',foreground="red",font=("Courier", 12, "bold"))
+colormap_lb = tk.Label(window, text='Colormap',foreground="red",font=("Courier", 12, "bold"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    colormap_lb,
@@ -986,7 +986,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.visualization_
 #                                    False, False, True, False, 90, GUI_IO_util.visualization_split_pos,
 #                                    "Tick the checkbox if you wish to visualize the entire data")
 
-treemap_lb = tk.Label(window, text='Treemap parameters',foreground="red",font=("Courier", 12, "bold"))
+treemap_lb = tk.Label(window, text='Treemap',foreground="red",font=("Courier", 12, "bold"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    treemap_lb,

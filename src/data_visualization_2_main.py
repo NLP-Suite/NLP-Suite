@@ -31,7 +31,19 @@ def run(inputFilename, outputDir, openOutputFiles,
         time_var,
         cumulative_var):
 
-
+    print(inputFilename, outputDir, openOutputFiles,
+        visualizations_menu_var,
+        csv_field_visualization_var,
+        X_axis_var,
+        csv_field_Y_axis_list,
+        points_var,
+        split_data_byCategory_var,
+        csv_field_boxplot_var,
+        csv_field_boxplot_color_var,
+        csv_files_list,
+        date_format_var,
+        time_var,
+        cumulative_var)
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
     else:
@@ -58,6 +70,9 @@ def run(inputFilename, outputDir, openOutputFiles,
 
 # Excel/plotLy charts --------------------------------------------------------------------------------
     if 'Excel' in visualizations_menu_var or 'Plotly' in visualizations_menu_var:
+
+        ## I am intersted only in two columns or more for now...
+
         columns_to_be_plotted_xAxis=[]
         headers = IO_csv_util.get_csvfile_headers(inputFilename)
         col_num = IO_csv_util.get_columnNumber_from_headerValue(headers, csv_field_visualization_var, inputFilename)
@@ -73,7 +88,7 @@ def run(inputFilename, outputDir, openOutputFiles,
                                                         column_xAxis_label_var=csv_field_visualization_var,
                                                         hover_info_column_list=[],
                                                         count_var=count_var,
-                                                        complete_sid=False)  # TODO to be changed
+                                                        complete_sid=False, csv_field_Y_axis_list=csv_field_Y_axis_list, X_axis_var = X_axis_var)  # TODO to be changed
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -149,7 +164,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             visualizations_menu_var.get(),
                             csv_field_visualization_var.get(),
                             X_axis_var.get(),
-                            csv_field_Y_axis_list.get(),
+                            csv_field_Y_axis_list,
                             points_var.get(),
                             split_data_byCategory_var.get(),
                             csv_field_boxplot_var.get(),
@@ -340,9 +355,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_
 
 def add_csv_file_Y_axis():
     if Y_axis_var.get()!='':
-        if Y_axis_var.get() in csv_field_Y_axis_list:
-            mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
-            return
+        pass
+        #if Y_axis_var.get() in csv_field_Y_axis_list:
+        #    mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
+        #    return
     csv_field_Y_axis_list.append(Y_axis_var.get())
 
 # add another Y-axis
