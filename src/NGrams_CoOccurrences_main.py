@@ -43,10 +43,32 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         temporal_aggregation_var,
         viewer_options_list):
 
+
+
+
+
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
     else:
         config_filename = scriptName.replace('main.py', 'config.csv')
+
+    if within_sentence_co_occurrence_search_var:
+        print("OK executing efficient solution for sentence cooccurence...")
+        print("Cannot use old method because too slow and improper")
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Stanza', 'Co-reference_within_sentence')
+        print(outputFilename)
+        NGrams_CoOccurrences_util.get_all_dataframe_for_sentence_cooccur(inputFilename,
+                                                                         inputDir, search_words.split(', '),
+                                                                    config_filename, outputDir, outputFilename)
+        filesToOpen = outputFilename
+        if openOutputFiles == True:
+            pass
+            mb.showwarning(title='Execution complete',
+                       message='Execution complete. For safety reason you should go to output Directory to open the file by yourself')
+
+            #IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+        return
+
 
     # print(date_options, temporal_aggregation_var, date_format, items_separator_var, date_position_var)
     filesToOpen = []

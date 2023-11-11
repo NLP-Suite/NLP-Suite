@@ -404,7 +404,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             #   e.g., a bar chart for Form  or Lemma values and a bar or line chart for POS tags
             #   https://openpyxl.readthedocs.io/en/latest/charts/secondary.html
 
-            if chart_type_list[0]=="line" or chart_type_list[0]=="bar" or chart_type_list[0]=="bubble" or chart_type_list[0]=="scatter":
+            if chart_type_list[0].lower()=="line" or chart_type_list[0].lower()=="bar" or chart_type_list[0].lower()=="bubble" or chart_type_list[0].lower()=="scatter":
 
                 if len(column_xAxis_label)>0:
                     chartName.x_axis.title = str(column_xAxis_label)+insertLines
@@ -423,7 +423,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 data = Reference(ws, min_col=i*2+2, min_row=2, max_row=1+num_label)
                 hover_over_values = Reference(ws,min_col=i*2+1, min_row=2,max_row=1+num_label)
 
-                if chart_type_list[0]=="line" or chart_type_list[0]=="bar" or chart_type_list[0]=="bubble" or chart_type_list[0]=="scatter":
+                if chart_type_list[0].lower()=="line" or chart_type_list[0].lower()=="bar" or chart_type_list[0].lower()=="bubble" or chart_type_list[0].lower()=="scatter":
                     if len(series_label_list) > 0 and len(series_label_list[i]) > 0:
                         chartName.series.append(Series(data, title=series_label_list[i]))
                     else:
@@ -441,13 +441,15 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                         # chartName.series.append(Series(data)) will still display Series 1
                         # LEGEND
                         # chartName.legend(legendEntry=())
+                        # chartName.add_data(data,titles_from_data=False)
+                        # test for n > 1 but... no matter how this is exported it still displays the legend oon the right; see comments above
                         chartName.series.append(Series(data, title=title_series[0]))
                     chartName.set_categories(hover_over_values)
                 else:
                     chartName.add_data(data,titles_from_data=False)
                     chartName.set_categories(hover_over_values)
                 chartName.title = chart_title
-                if chart_type_list[0]=="line" or chart_type_list[0]=="bar" or chart_type_list[0]=="bubble" or chart_type_list[0]=="scatter":
+                if chart_type_list[0].lower()=="line" or chart_type_list[0].lower()=="bar" or chart_type_list[0].lower()=="bubble" or chart_type_list[0].lower()=="scatter":
                     # https://stackoverflow.com/questions/35010050/setting-x-axis-label-to-bottom-in-openpyxl
                     chartName.x_axis.tickLblPos = "low"
                     chartName.x_axis.tickLblSkip = 1 # changing to 2 would skip every other label; 3 every 3; etc.
@@ -462,24 +464,24 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                 mb.showwarning(title='Number of series error', message="When creating a chart with two y axis, you can ONLY choose two series of data. Here more than two series of data were specified. The chart could not be created.\n\nPlease, select a new pair of series and try again!")
                 return
 
-            if chart_type_list[0]=="bar":
+            if chart_type_list[0].lower()=="bar":
                 chartName1 = BarChart()
-            elif chart_type_list[0]=="bubble":
+            elif chart_type_list[0].lower()=="bubble":
                 chartName1 = BubbleChart()
-            elif chart_type_list[0]=="line":
+            elif chart_type_list[0].lower()=="line":
                 chartName1 = LineChart()
-            elif chart_type_list[0]=="scatter":
+            elif chart_type_list[0].lower()=="scatter":
                 chartName1 = ScatterChart()
             else:
                 mb.showwarning(title='Chart type 1 error', message="Wrong chart type selected. Only bar, bubble, line and scatter chart are allowed to have y axis")
 
-            if chart_type_list[1]=="bar":
+            if chart_type_list[1].lower()=="bar":
                 chartName2 = BarChart()
-            elif chart_type_list[1]=="bubble":
+            elif chart_type_list[1].lower()=="bubble":
                 chartName2 = BubbleChart()
-            elif chart_type_list[1]=="line":
+            elif chart_type_list[1].lower()=="line":
                 chartName2 = LineChart()
-            elif chart_type_list[1]=="scatter":
+            elif chart_type_list[1].lower()=="scatter":
                 chartName2 = ScatterChart()
             else:
                 mb.showwarning(title='Chart type 2 error', message="Wrong chart type selected. Only bar, bubble, line and scatter chart are allowed to have y axis")
@@ -541,7 +543,7 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
             chartName2.y_axis.axId = 200
             # Display y-axis of the second chart on the right by setting it to cross the x-axis at its maximum
             chartName1.y_axis.crosses = "max"
-            if chart_type_list[0]=="line" or chart_type_list[0]=="bar" or chart_type_list[0]=="bubble" or chart_type_list[0]=="scatter":
+            if chart_type_list[0].lower()=="line" or chart_type_list[0].lower()=="bar" or chart_type_list[0].lower()=="bubble" or chart_type_list[0].lower()=="scatter":
                 # https://stackoverflow.com/questions/35010050/setting-x-axis-label-to-bottom-in-openpyxl
                 chartName1.x_axis.tickLblPos = "low"
                 chartName1.x_axis.tickLblSkip = 1  # changing to 2 would skip every other label; 3 every 3; etc.

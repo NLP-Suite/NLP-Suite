@@ -20,7 +20,48 @@ import constants_util
 """
 NGramsCoOccurrences implements the ability to generate NGram and CoOccurrences data
 """
+import hashfile
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+def is_subset(A, B):
+    A = ' '.join(A).split(' ')
+    return all(element in B for element in A)
 
+def one_text_res(sentences, targets, doc_index, doc_name):
+    results = []
+    for sent in sentences:
+        if is_subset(targets, word_tokenize_stanza(stanzaPipeLine(sent))):
+            results.append((sent, sentences.index(sent), doc_index, doc_name))
+    return pd.DataFrame(results, columns=['Sentence', 'Sentence ID',
+                                          'Document ID', 'Document'])
+
+def readfile(doc):
+    with open(doc, "r", encoding="utf-8", errors="ignore") as f:
+        fullText = f.read()
+        fullText = fullText.replace('\n', ' ')
+    return fullText
+def get_all_dataframe_for_sentence_cooccur(inputFilename, inputDir, targets,
+                                           configFileName, outputDir, outputFilename):
+    files = IO_files_util.getFileList(inputFilename, inputDir,
+                                      '.txt', silent=False, configFileName=configFileName)
+    o2 = os.path.dirname(outputDir+"Sentence")
+    hashmap = hashfile.getcache(o2) if hashfile.checkOut(o2) else {}
+    all_results = pd.DataFrame() # Initialize an empty DataFrame to store all results
+    for index, file in enumerate(files):
+        checksum = hashfile.calculate_checksum(file)
+        head, tail = os.path.split(file)
+        if checksum in hashmap:
+            sentences = hashmap[checksum]
+            print(f" cache auto:  Processing file {index + 1}/{len(files)} {tail}")
+        else:
+            print(f" producing cache:  Processing file {index + 1}/{len(files)} {tail}")
+            sentences = sent_tokenize_stanza(stanzaPipeLine(readfile(file)))
+            hashfile.storehash(hashmap, checksum, sentences)
+            hashfile.writehash(hashmap, o2)
+        df = one_text_res(sentences, targets, index, IO_csv_util.dressFilenameForCSVHyperlink(file))
+        all_results = pd.concat([all_results, df]) # Append the results to the all_results DataFrame
+    all_results.to_csv(outputFilename,index=False)
+    print("Generation complete. Done!")
+    return all_results
 
 def processSearchWords(inputStr):
     word_list = []
