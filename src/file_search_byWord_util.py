@@ -55,15 +55,37 @@ def find_EVERY_k_adjacent_elements(s, sv, kplus,kminus):
             riight.append(' '.join(after_k))
             midi.append(sv)
     return lefti,midi, riight
+
+
+def csv_escape(input_string):
+    # Check if the string contains a comma, newline, or double quote
+    if ',' in input_string or '\n' in input_string or '"' in input_string:
+        # Escape double quotes by replacing one double quote with two
+        escaped_string = input_string.replace('"', '""')
+        # Enclose the string in double quotes
+        return f'"{escaped_string}"'
+    else:
+        # Return the string unchanged if it doesn't contain any special characters
+        return input_string
 def search_sentences_documents(inputFilename, inputDir, outputDir, configFileName,
         search_by_dictionary, search_by_search_keywords, minus_K_words_var, plus_K_words_var, search_keywords_list,
         create_subcorpus_var, search_options_list, lang, createCharts, chartPackage):
+    hashOutputDir = outputDir
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search_word',
+                                                       silent=False)
+    if outputDir == '':
+        return
+    import hashfile
+    if hashfile.checkOut(hashOutputDir):
+        hashmap = hashfile.getcache(hashOutputDir)
+    else:
+        hashmap = {}
+    print("done loading hasmap")
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        "Started running the Word search function at",
                                         True, '', True, '', False)
-
-
 
     filesToOpen=[]
     # each occurrence of a search keyword, it's file path will be stored in a set
@@ -124,30 +146,43 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     csvExist = os.path.exists(outputFilename)
 
     with open(outputFilename, 'w') as f:
-        f.write("Minus K Value of Words, Searched Word, Plus K Value of Words, Document\n")
+        f.write("Minus K Value of Words, Searched Word, Plus K Value of Words, Document ID, Document\n")
     outputtxtFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'search')
     with open(outputtxtFilename, 'w') as f:
         f.write('') # just flushing it
+
+
+
+
     if plus_K_words_var or minus_K_words_var:
         outputFiles = []
+
         # Use my logic when we have +- k because the csv is complicated to modify
-        for file in files:
-            f = open(file, "r", encoding='utf-8', errors='ignore')
-            docText = f.read()
-            f.close()
-            words_ = word_tokenize_stanza(stanzaPipeLine(docText))
+        for index, file in enumerate(files):
+            import hashfile
+            if hashfile.calculate_checksum(file) in hashmap:
+                words_ = hashmap[hashfile.calculate_checksum(file)]
+                print('using cache...')
+            else:
+                f = open(file, "r", encoding='utf-8', errors='ignore')
+                docText = f.read()
+                f.close()
+                words_ = word_tokenize_stanza(stanzaPipeLine(docText))
+                hashmap[hashfile.calculate_checksum(file)] = words_
+                hashfile.writehash(hashmap,hashOutputDir)
+                print("creating cache...")
             for keyword in search_keywords_list:
                 left, mid, right = find_EVERY_k_adjacent_elements(words_, keyword, plus_K_words_var,
                                                                   minus_K_words_var)
             with open(outputFilename,'a') as f:
                 for i in range(len(mid)):
-                    a = [left[i],mid[i],right[i],file]
+                    a = [csv_escape(left[i]),csv_escape(mid[i]),csv_escape(right[i]), str(index+1), IO_csv_util.dressFilenameForCSVHyperlink(file)]
                     f.write(','.join(a)+"\n")
             with open(outputtxtFilename,'a') as f:
                 for i in range(len(mid)):
                     a = [left[i],right[i]] # If you would like to retain, just follow the 4 lines above and you can do that.
-                    # i.e. left[i], mid[i], right[i]
-                    f.write(' '.join(a)) # this would be the basis for wordclouds
+                    # this would be the basis for wordclouds
+                    f.write(' '.join(a) + "\n")
             outputFiles = [outputFilename,outputtxtFilename]
        # with open(outputtxtFilename, 'r') as f:
        #     q = ''.join(f.readlines())
@@ -214,8 +249,26 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                 if search_within_sentence:
                     chart_title = 'Frequency Distribution of Search Words'
                     # the next clause takes long time to process even for small documents
-                    sentences_ = nlp(docText).sentences
-                    sentences = [sentence.text for sentence in sentences_]
+
+                    import hashfile
+                    import json
+                    import hashlib
+
+                    if hashfile.calculate_checksum(file)+"Sentences" in hashmap:
+                        sentences = hashmap[hashfile.calculate_checksum(file)+"Sentences"]
+                        len_sentences_ = hashmap[hashfile.calculate_checksum(file)+"lenSentences"]
+                        print('using cache...')
+                    else:
+                        sentences_ = nlp(docText).sentences
+                        sentences = [sentence.text for sentence in sentences_]
+                        len_sentences_ = len(sentences_)
+                        hashmap[hashfile.calculate_checksum(file)+"Sentences"] = sentences
+                        hashmap[hashfile.calculate_checksum(file) + "lenSentences"] = len(sentences_)
+                        hashfile.writehash(hashmap, hashOutputDir)
+                        print("creating cache...")
+
+                    #sentences_ = nlp(docText).sentences
+
                     sentence_index = 0
 
 
@@ -249,17 +302,17 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                 else:
                                     search_keywords_found = True
                                     corpus_to_copy.add(file)
-                                    document_percent_position = round((sentence_index / len(sentences_)), 2)
+                                    document_percent_position = round((sentence_index / len_sentences_), 2)
                                     if lemmatize:
                                         form = search_keywords_list
                                         writer.writerow(
-                                            [keyword, form, first_occurrence_index, len(sentences_), document_percent_position, frequency,
+                                            [keyword, form, first_occurrence_index, len_sentences_, document_percent_position, frequency,
                                             sentence_index, sentence,
                                             docIndex,
                                             IO_csv_util.dressFilenameForCSVHyperlink(file)])
                                     else:
                                         writer.writerow(
-                                            [keyword, '', first_occurrence_index, len(sentences_), document_percent_position, frequency,
+                                            [keyword, '', first_occurrence_index, len_sentences_, document_percent_position, frequency,
                                             sentence_index, sentence,
                                             docIndex,
                                             IO_csv_util.dressFilenameForCSVHyperlink(file)])
@@ -270,10 +323,25 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
 
                 else: # search in document, regardless of sentence
                     chart_title = 'Frequency Distribution of Documents with Search Words'
-                    if not case_sensitive:
-                        docText = docText.lower()
+
                     # words_ = word_tokenize(docText)  # the list of sentences in corpus
-                    words_ = word_tokenize_stanza(stanzaPipeLine(docText))
+                    import hashfile
+                    if hashfile.calculate_checksum(file)+"case"+str(case_sensitive) in hashmap:
+                        words_ = hashmap[hashfile.calculate_checksum(file)]
+                        print('using cache...')
+                    else:
+                        f = open(file, "r", encoding='utf-8', errors='ignore')
+                        docText = f.read()
+                        if not case_sensitive:
+                            docText = docText.lower()
+                        f.close()
+                        words_ = word_tokenize_stanza(stanzaPipeLine(docText))
+                        hashmap[hashfile.calculate_checksum(file)+"case"+str(case_sensitive)] = words_
+                        hashfile.writehash(hashmap, hashOutputDir)
+                        print("creating cache...")
+
+
+                  #  words_ = word_tokenize_stanza(stanzaPipeLine(docText))
                     wordCounter = collections.Counter(words_)
                     for keyword in search_keywords_list:
 
@@ -404,31 +472,46 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                                                   minus_K_var, plus_K_var, createCharts, chartPackage):
     if not (isinstance(minus_K_var, int) and isinstance(plus_K_var, int) and minus_K_var >= 0 and plus_K_var >= 0):
         mb.showwarning(title="Warning",message="Invalid input for -K or +K widgets.\n\nThe values must be positive integer numbers.\n\nPlease, enter positive integers and try again.")
+        return
+
+    hashOutputDir = outputDir
+    import hashfile
+    if hashfile.checkOut(hashOutputDir):
+        hashmap = hashfile.getcache(hashOutputDir)
     else:
-        filesToOpen=[]
-        inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
-        Ndocs = len(inputDocs)
-        if Ndocs == 0:
-            return
+        hashmap = {}
+    print("done loading hasmap")
 
-        from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+    filesToOpen=[]
+    inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
+    Ndocs = len(inputDocs)
+    if Ndocs == 0:
+        return
 
-        case_sensitive = False
-        word_match = False
-        lemmatize = False
-        search_keywords_found = False
-        search_within_sentence = False
-        for search_option in search_options_list:
-            if search_option == 'Case sensitive (default)':
-                case_sensitive = True
-            if search_option == 'Case insensitive':
-                    case_sensitive = False
-            if search_option == "Search within sentence (default)":
-                search_within_sentence = True
-            if search_option == "Lemmatize":  # not available yet
-                lemmatize = True
-            if search_option == "Exact match":
-                word_match = True
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search_sent_extract',
+                                                       silent=False)
+    if outputDir == '':
+        return
+
+    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+
+    case_sensitive = False
+    word_match = False
+    lemmatize = False
+    search_keywords_found = False
+    search_within_sentence = False
+    for search_option in search_options_list:
+        if search_option == 'Case sensitive (default)':
+            case_sensitive = True
+        if search_option == 'Case insensitive':
+                case_sensitive = False
+        if search_option == "Search within sentence (default)":
+            search_within_sentence = True
+        if search_option == "Lemmatize":  # not available yet
+            lemmatize = True
+        if search_option == "Exact match":
+            word_match = True
 
         # Win/Mac may use different quotation, we replace any directional quotes to straight ones
         right_double = u"\u201C"  # “
@@ -456,10 +539,11 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
             outputDir_sentences = os.path.join(outputDir, "sentences_Dir_" + inputDirBase)
 
         # create a subdirectory in the output directory
-        outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_with_searchword', silent=False)
+        # should be silent because the user has already agreed to overwrite an existing upper directory
+        outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_with_searchword', silent=True)
         if outputDir_sentences_extract == '':
             return
-        outputDir_sentences_extract_wo_searchword = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_wo_searchword', silent=False)
+        outputDir_sentences_extract_wo_searchword = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_wo_searchword', silent=True)
         if outputDir_sentences_extract_wo_searchword == '':
             return
 
@@ -473,6 +557,14 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
         nDocsExtractOutput = 0
         nDocsExtractMinusOutput = 0
 
+        outputFilenameCSV = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                    'search_sent_extract')
+
+        print(inputDir, outputDir)
+
+        with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore') as f:
+            f.write('Search Word, Sentence ID, Relative position in document, Sentence, Document ID, Document\n')
+
         textToProcess = ''
         for doc in inputDocs:
             wordFound = False
@@ -485,8 +577,18 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
             outputFilename_extract_wo_searchword = os.path.join(outputDir_sentences_extract_wo_searchword,tail[:-4]) + "_extract_wo_searchword.txt"
             with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
                     outputFilename_extract_wo_searchword, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_wo_searchword:
-                sentences_tokens = sent_tokenize_stanza(stanzaPipeLine(text), False)
-                sentences = [s.text for s in sentences_tokens]
+
+                import hashfile
+                if hashfile.calculate_checksum(doc) + "doc" in hashmap:
+                    sentences = hashmap[hashfile.calculate_checksum(doc)+"doc"]
+                    print('using cache...')
+                else:
+                    sentences_tokens = sent_tokenize_stanza(stanzaPipeLine(text), False)
+                    sentences = [s.text for s in sentences_tokens]
+                    hashmap[hashfile.calculate_checksum(doc) + "doc"] = sentences
+                    hashfile.writehash(hashmap, hashOutputDir)
+                    print("creating cache...")
+
                 n_sentences_extract = 0
                 n_sentences_extract_wo_searchword = 0
                 sentence_index = 0
@@ -515,7 +617,19 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                         # if keyword in word_tokenize_stanza(stanzaPipeLine(sentence.lower())):
                         if word_match:
                             sentence = re.findall(r'\b\w+\b', sentence)
+                            sentencecopy = sentence
+                        else:
+                            sentencecopy = sentence
                         if keyword in sentence:
+                            with open(outputFilenameCSV,'a',encoding='utf-8',errors='ignore') as f:
+                                f.write(keyword+','+
+                                        str(sentences.index(sentencecopy))+','+
+                                        str(sentences.index(sentencecopy)/len(sentences))+','+
+                                        str(csv_escape(''.join(sentencecopy)))+','+
+                                        str(inputDocs.index(doc))+','+
+                                        IO_csv_util.dressFilenameForCSVHyperlink(doc)+
+                                        '\n')
+
                             wordFound = True
                             nextSentence = True
                             n_sentences_extract += 1
@@ -600,12 +714,12 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
                                                   csvField_color_list=csvField_color_list,
                                                   doNotListIndividualFiles=doNotListIndividualFiles,
                                                   openOutputFiles=False, collocation=collocation)
+        
         if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
-
         IO_files_util.openExplorer(window, outputDir_sentences_extract)
 
         IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the Word search with extraction function at',

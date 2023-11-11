@@ -624,6 +624,9 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 #   e.g. [3, 4] DISPLAYS NER as X axis and Frequency_NER as Y axis
 
 #   plotList is the list of fields to be plotted
+
+
+
 def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             chartPackage, chart_type_list,chart_title, column_xAxis_label_var,
             hover_info_column_list=[],
@@ -632,7 +635,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             column_yAxis_field_list = [],
             reverse_column_position_for_series_label=False,
             series_label_list=[], second_y_var=0,second_yAxis_label='',
-            complete_sid = False, remove_hyperlinks=False):
+            complete_sid = False, remove_hyperlinks=False, csv_field_Y_axis_list = [], X_axis_var = []):
 
     # get the chart type from the GUI user selection
     chart_type_list = [GUI_util.charts_type_options_widget.get().split(' ')[0]]
@@ -662,7 +665,8 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
                                                                         column_xAxis_label = column_xAxis_label_var,
                                                                         column_yAxis_label = column_yAxis_label_var,
                                                                         remove_hyperlinks = remove_hyperlinks,
-                                                                        static_flag = static_flag)
+                                                                        static_flag = static_flag,
+                                                                       csv_field_Y_axis_list = csv_field_Y_axis_list, X_axis_var = X_axis_var)
         return Plotly_outputFilename
     data_to_be_plotted = prepare_data_to_be_plotted_inExcel(inputFilename,
                                 columns_to_be_plotted,
@@ -1951,8 +1955,42 @@ def where_data(data, **kwargs):
             data = data[data[col].isin(value)]
     # THIS FUNCTION IS DOING: SELECT FROM DATA WHERE cond_1, cond_2, ... con_n for ** kwargs
     return data
+
+
+def fixed_transform_helper(df,prt,nms):
+     nms = int(nms)
+     top_X_items = list(df[prt].value_counts()[0:nms].keys())
+     df = df[df[prt].isin(top_X_items)]
+     return df
+
+def fixed_transform(df,fixed_value):
+    for col in df.columns:
+        if col != 'counts':
+            df = fixed_transform_helper(df, col, fixed_value)
+    return df
+
+def rate_prop_helper(df,prt,nms):
+    nms = int(nms)
+    top_X_items = list(df[prt].value_counts()[0:nms].keys())
+    df = df[df[prt].isin(top_X_items)]
+    return df
+
+def rate_prop(df, rt, base):
+    for col in df.columns:
+        if col != 'counts':
+            df = rate_prop_helper(df, col, base)
+            base = base * rt
+    return df
+
+# Option 1: Fixed Parameter Filtering 50-100 (default 50)
+# Option 2: Rate-Propagating Parameter Filtering: 2 values Rate filtering 3 value Base filtering value def = 40
+# Option 3: No filter at all
+
+
 # THIS IS AN ABBREVIATED VERSION FOR The sunburst / treemap
-def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list,suntree):
+def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list,suntree, fixed_param_var, rate_param_var, base_param_var, filter_options_var):
+    print(fixed_param_var, rate_param_var, base_param_var, filter_options_var)
+    print("======")
     data = pd.read_csv(inputFilename)
     WHERE, GROUPBY = special_sql_commands(csv_file_categorical_field_list, data)
     data = where_data(data, where_column=WHERE)
@@ -1960,7 +1998,16 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
     select_and_count.extend(list(WHERE.keys()))
     df = select_and_counting(data, select_and_count)
     df_grouped = df.groupby(select_and_count).size().reset_index(name='counts')
+
+    df_grouped.to_csv(outputDir+os.sep+"Output_Csv_intermediate.csv",index=False)
     # df_grouped.head(5)
+    if filter_options_var=='Fixed parameter':
+        df_grouped = fixed_transform(df_grouped, int(fixed_param_var))
+        print("OK Fixed parameter applied")
+    if filter_options_var =='Propagating parameter':
+        df_grouped = rate_prop(df_grouped, int(rate_param_var), int(base_param_var))
+        print("OK Propagating parameter applied")
+    print(df_grouped)
     if suntree:
         fig = px.sunburst(df_grouped, path=select_and_count, values='counts')  # Ensure the hierarchy levels are correct
     else:

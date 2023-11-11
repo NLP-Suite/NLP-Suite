@@ -38,7 +38,8 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
                         column_xAxis_label='',
                         column_yAxis_label='',
                         remove_hyperlinks=True,
-                        static_flag=False):
+                        static_flag=False,
+                        csv_field_Y_axis_list = [], X_axis_var = []):
     # if we need to remove the hyperlinks, we need to make a temporary data for plotting
     if remove_hyperlinks:
         remove_hyperlinks,inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
@@ -60,20 +61,95 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
         x_cols = []
         y_cols = ''
         fig = None
-        x_cols = headers[cols_to_plot[j][0]]
-        y_cols = headers[cols_to_plot[j][1]]
+
+        # remove the path from the filename
+        def do(x):
+            return os.path.split(x)[1].replace('")', '')
+
+        try:
+            data['Document'] = data['Document'].apply(do)
+        except:
+            pass
+        if not csv_field_Y_axis_list:
+            x_cols = headers[cols_to_plot[j][0]]
+            y_cols = headers[cols_to_plot[j][1]]
+        else:
+            y_cols = csv_field_Y_axis_list
+            x_cols = X_axis_var
+
+            if i.lower()=='bar':
+                fig = px.bar(data, x=x_cols, y=y_cols,title = 'Frequency Distribution of '+x_cols)
+                file_list.append(
+                    save_chart(fig, outputDir, 'Frequency Distribution of '+x_cols, static_flag, x_cols))
+            elif i.lower()=='pie':
+                if not x_cols:
+                    df2 = data[y_cols].value_counts()
+                    fig = px.pie(df2, values=df2.values, names=list(df2.index))
+                    #fig = plot_pie_chart_px(x_cols,inputFilename,chart_title,y_cols)
+                    file_list.append(
+                        save_chart(fig, outputDir, 'Pie chart of '+y_cols[0] + "no x grouping", static_flag, x_cols))
+                else:
+                    html_template = """
+                    <html>
+                    <head>
+                    <style>
+                        .container {{
+                            display: flex;
+                            flex-wrap: wrap;
+                            align-items: center;
+                            justify-content: center;
+                        }}
+                        .chart {{
+                            margin: 10px;
+                        }}
+                    </style>
+                    </head>
+                    <body>
+                    <div class="container">
+                        {charts}
+                    </div>
+                    </body>
+                    </html>
+                    """
+
+                    chart_htmls = []
+
+                    for chart_name in list(data[x_cols].value_counts().keys()):
+                        df2 = data[data[x_cols] == chart_name][y_cols[0]].value_counts()
+                        fig = px.pie(df2, values=df2.values, names=df2.index, title=chart_name)
+                        chart_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
+                        chart_htmls.append(f'<div class="chart">{chart_html}</div>')
+                    final_html = html_template.format(charts=''.join(chart_htmls))
+                    with open(outputDir+os.sep+'Pie chart of '+y_cols[0] + "no x grouping.html", 'w') as file:
+                        file.write(final_html)
+
+            elif i.lower()=='scatter':
+                fig = px.scatter(data, x=x_cols, y=y_cols, title='Frequency Distribution of ' + x_cols)
+                file_list.append(
+                    save_chart(fig, outputDir, 'Frequency Distribution of ' + x_cols, static_flag, x_cols))
+            elif i.lower()=='line':
+                fig = px.line(data, x=x_cols, y=y_cols, title='Frequency Distribution of ' + x_cols)
+                file_list.append(
+                    save_chart(fig, outputDir, 'Frequency Distribution of ' + x_cols, static_flag, x_cols))
+            elif i.lower()=='bubble':
+                fig = px.scatter(data, x=x_cols, y=y_cols[0],
+                                 size=y_cols[1], color=y_cols[2])
+                file_list.append(
+                    save_chart(fig, outputDir, 'Bubble Chart of ' + x_cols, static_flag, x_cols))
+
+            else:
+                print("Bad for now!")
+
+            if len(file_list) == 1:
+                return file_list[0]
+            return file_list
+
         if i.lower() == 'bar':
-            # SIMON
-            if 'by Document' in chart_title:
-                print()
             if len(chart_type_list) < len(cols_to_plot):
-                # SIMON must replace the document values in data under the Document column
-                # using tail values in head, tail = os.path.split(data['Document'])
                 fig = plot_multi_bar_chart_px(data, chart_title, cols_to_plot)
                 file_list.append(save_chart(fig,outputDir,chart_title,static_flag,column_xAxis_label,column_yAxis_label))
                 break
             else:
-                # SIMON
                 fig = plot_bar_chart_px(x_cols,inputFilename,chart_title,y_cols)
         elif i.lower() == 'pie':
             fig = plot_pie_chart_px(x_cols,inputFilename,chart_title,y_cols)
@@ -144,9 +220,6 @@ def save_chart(fig, outputDir, chart_title, static_flag, x_label = '', y_label =
 #If not call the get_frequencies function to get the frequencies of the categorical variables in x_label column
 def plot_bar_chart_px(x_label, fileName, chart_title, height = ''):
     data = pd.read_csv(fileName, encoding='utf-8', on_bad_lines='skip')
-    # SIMON
-    if 'by Document' in chart_title:
-        print()
     if height == '':
         height = x_label+"_count"
         data = get_frequencies(data, x_label)

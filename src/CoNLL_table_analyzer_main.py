@@ -48,7 +48,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
     if extra_GUIs_var.get() == False and \
         all_analyses_var.get() == False and\
-        search_token_var.get() == False and\
+        search_token_var.get() == False and \
+        WordNet_var.get() == False and \
         compute_sentence_var.get() == False and \
         k_sentences_var.get() == False:
             mb.showwarning(title='No option selected',
@@ -207,10 +208,59 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         if len(filesToOpen)>0:
             outputDir = temp_outputDir
 
+# -----------------------------------------------------------------------------------------------------------------------------
+
+    if WordNet_var.get():
+        # create a subdirectory of the output directory; should create a subdir with increasing number to avoid writing ver
+        outputDir_SV = outputDir
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename, '', outputDir, label='CoNLL_WordNet',
+                                                           silent=False)
+        if outputDir == '':
+            return
+
+        import pandas as pd
+        df = pd.read_csv(inputFilename)
+        df_nouns = df[df['POS'].isin(['NN', 'NNPS', 'NNP', 'NNS'])][['Lemma', 'POS']]
+        inputFilename_nouns = outputDir + os.sep + "CoNLL_nouns_forWordNet.csv"
+        df_nouns.to_csv(inputFilename_nouns, index=False) # , header=None
+        df_verbs = df[df['POS'].isin(['VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ'])][['Lemma', 'POS']]
+        inputFilename_verbs = outputDir + os.sep + "CoNLL_verbs_forWordNet.csv"
+        df_verbs.to_csv(inputFilename_verbs, index=False) # , header=None
+
+        filesToOpen.append(inputFilename_nouns)
+        filesToOpen.append(inputFilename_verbs)
+
+        # the WordNet installation directory is now checked in aggregate_GoingUP
+        WordNetDir = ''
+        import knowledge_graphs_WordNet_util
+        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, inputFilename_nouns, outputDir,
+                                                                 config_filename, 'NOUN',
+                                                                 openOutputFiles, createCharts, chartPackage,
+                                                                 language_var='English')
+        if output != None:
+            if isinstance(output, str):
+                filesToOpen.append(output)
+            else:
+                filesToOpen.extend(output)
+
+        output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, inputFilename_verbs, outputDir,
+                                                                 config_filename, 'VERB',
+                                                                 openOutputFiles, createCharts, chartPackage,
+                                                                 language_var='English')
+        if output != None:
+            if isinstance(output, str):
+                filesToOpen.append(output)
+            else:
+                filesToOpen.extend(output)
+
+        outputDir=outputDir_SV
+
+# -----------------------------------------------------------------------------------------------------------------------------
     if compute_sentence_var.get():
         tempOutputFile = CoNLL_util.compute_sentence_table(inputFilename, outputDir)
         filesToOpen.append(tempOutputFile)
 
+# -----------------------------------------------------------------------------------------------------------------------------
     if k_sentences_var.get():
         if Begin_K_sent_var==0 or End_K_sent_var==0:
             mb.showwarning(title='Warning',
@@ -318,6 +368,7 @@ postag_menu = '*', 'JJ* - Any adjective', 'NN* - Any noun', 'VB* - Any verb', *s
 deprel_menu = '*', *sorted([k + " - " + v for k, v in Stanford_CoreNLP_tags_util.dict_DEPREL.items()])
 
 def clear(e):
+    extra_GUIs_var.set(0)
     all_analyses_var.set(0)
     all_analyses_checkbox.configure(state='normal')
     all_analyses_menu.configure(state='disabled')
@@ -329,6 +380,9 @@ def clear(e):
     co_postag_var.set('*')
     co_postag_var.set('*')
     co_deprel_var.set('*')
+    WordNet_var.set(0)
+    k_sentences_var.set(0)
+    compute_sentence_var.set(0)
     activate_all_options()
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
@@ -439,56 +493,71 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_
                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos,
                                                "Enter the number of words to be extracted AFTER the selected search word")
 
+
+search_token_lb = tk.Label(window, text='Searched token')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                               search_token_lb, True)
+
 # POSTAG variable
 postag_var.set('*')
-POS_lb = tk.Label(window, text='POSTAG of searched token')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+POS_lb = tk.Label(window, text='POSTAG')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+140, y_multiplier_integer,
                                                POS_lb, True)
 
 postag_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = postag_var)
 postag_menu_lb['values'] = postag_menu
 postag_menu_lb.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
-                                               postag_menu_lb)
+                                               postag_menu_lb,True)
 
 # DEPREL variable
 
 deprel_var.set('*')
-DEPREL_lb = tk.Label(window, text='DEPREL of searched token')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+DEPREL_lb = tk.Label(window, text='DEPREL')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                                DEPREL_lb, True)
 
 deprel_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = deprel_var)
 deprel_menu_lb['values'] = deprel_menu
 deprel_menu_lb.configure(state='disabled')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+70, y_multiplier_integer,
                                                deprel_menu_lb)
 
 # Co-Occurring POSTAG menu
+CoOc_lb = tk.Label(window, text='Co-occurring tokens')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                               CoOc_lb, True)
 
 co_postag_var.set('*')
 
-POSTAG_CoOc_lb = tk.Label(window, text='POSTAG of co-occurring tokens')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+POSTAG_CoOc_lb = tk.Label(window, text='POSTAG')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+140, y_multiplier_integer,
                                                POSTAG_CoOc_lb, True)
 
 co_postag_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = co_postag_var)
 co_postag_menu_lb['values'] = postag_menu
 co_postag_menu_lb.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
-                                               co_postag_menu_lb)
+                                               co_postag_menu_lb, True)
 
 co_deprel_menu = '*','acl - clausal modifier of noun (adjectival clause)', 'acl:relcl - relative clause modifier', 'acomp - adjectival complement', 'advcl - adverbial clause modifier', 'advmod - adverbial modifier', 'agent - agent', 'amod - adjectival modifier', 'appos - appositional modifier', 'arg - argument', 'aux - auxiliary', 'auxpass - passive auxiliary', 'case - case marking', 'cc - coordinating conjunction', 'ccomp - clausal complement with internal subject', 'cc:preconj - preconjunct','compound - compound','compound:prt - phrasal verb particle','conj - conjunct','cop - copula conjunction','csubj - clausal subject','csubjpass - clausal passive subject','dep - unspecified dependency','det - determiner','det:predet - predeterminer','discourse - discourse element','dislocated - dislocated element','dobj - direct object','expl - expletive','foreign - foreign words','goeswith - goes with','iobj - indirect object','list - list','mark - marker','mod - modifier','mwe - multi-word expression','name - name','neg - negation modifier','nn - noun compound modifier','nmod - nominal modifier','nmod:npmod - noun phrase as adverbial modifier','nmod:poss - possessive nominal modifier','nmod:tmod - temporal modifier','nummod - numeric modifier','npadvmod - noun phrase adverbial modifier','nsubj - nominal subject','nsubjpass - passive nominal subject','num - numeric modifier','number - element of compound number','parataxis - parataxis','pcomp - prepositional complement','pobj - object of a preposition','poss - possession modifier', 'possessive - possessive modifier','preconj - preconjunct','predet - predeterminer','prep - prepositional modifier','prepc - prepositional clausal modifier','prt - phrasal verb particle','punct - punctuation','quantmod - quantifier phrase modifier','rcmod - relative clause modifier','ref - referent','remnant - remnant in ellipsis','reparandum - overridden disfluency','ROOT - root','sdep - semantic dependent','subj - subject','tmod - temporal modifier','vmod - reduced non-finite verbal modifier','vocative - vocative','xcomp - clausal complement with external subject','xsubj - controlling subject','# - #'
 
 co_deprel_var.set('*')
-DEPREL_CoOc_lb = tk.Label(window, text='DEPREL of co-occurring tokens')
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+DEPREL_CoOc_lb = tk.Label(window, text='DEPREL')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
                                                DEPREL_CoOc_lb, True)
 
 co_deprel_menu_lb = ttk.Combobox(window, width = GUI_IO_util.combobox_width, textvariable = co_deprel_var)
 co_deprel_menu_lb['values'] = deprel_menu
 co_deprel_menu_lb.configure(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,co_deprel_menu_lb)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate+70
+                                             , y_multiplier_integer,co_deprel_menu_lb)
+
+WordNet_var = tk.IntVar()
+WordNet_checkbox = tk.Checkbutton(window, state='disabled', variable=WordNet_var,  text='WordNet classification of Nouns & Verbs', onvalue=1,
+                                  offvalue=0, command = lambda:  activate_all_options())
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,
+                                                    y_multiplier_integer, WordNet_checkbox)
 
 def changed_filename(tracedInputFile):
     global error
@@ -557,6 +626,7 @@ def activate_all_options():
     all_analyses_checkbox.configure(state='normal')
     all_analyses_menu.configure(state='disabled')
     searchToken_checkbox.configure(state='normal')
+    WordNet_checkbox.configure(state='normal')
     sentence_table_checkbox.configure(state='normal')
     k_sentences_checkbox.configure(state='normal')
     before_K_words_entry.configure(state='disabled')
@@ -572,6 +642,7 @@ def activate_all_options():
     deprel_menu_lb.configure(state='disabled')
     co_postag_menu_lb.configure(state='disabled')
     co_deprel_menu_lb.configure(state='disabled')
+    WordNet_checkbox.configure(state='disabled')
 
     # k sentences options
     Begin_K_sent_entry.configure(state='disabled')
@@ -616,6 +687,23 @@ def activate_all_options():
         deprel_menu_lb.configure(state='normal')
         co_postag_menu_lb.configure(state='normal')
         co_deprel_menu_lb.configure(state='normal')
+    elif WordNet_var.get():
+        WordNet_checkbox.configure(state='normal')
+
+        extra_GUIs_checkbox.configure(state='disabled')
+        all_analyses_checkbox.configure(state='disabled')
+        k_words_checkbox.configure(state='disabled')
+        searchToken_checkbox.configure(state='disabled')
+        entry_searchField_kw.configure(state='disabled')
+        searchedCoNLLdescription_csv_field_menu_lb.configure(state='disabled')
+        postag_menu_lb.configure(state='disabled')
+        deprel_menu_lb.configure(state='disabled')
+        co_postag_menu_lb.configure(state='disabled')
+        co_deprel_menu_lb.configure(state='disabled')
+        sentence_table_checkbox.configure(state='disabled')
+        k_sentences_checkbox.configure(state='disabled')
+        Begin_K_sent_entry.configure(state='disabled')
+        End_K_sent_entry.configure(state='disabled')
     elif k_words_var.get():
         mb.showwarning(title='Warning',
                        message="The option is not available yet. Try again soon.\n\nSorry!")
@@ -666,6 +754,7 @@ def activate_all_options():
         all_analyses_checkbox.configure(state='normal')
         all_analyses_menu.configure(state='disabled')
         searchToken_checkbox.configure(state='normal')
+        WordNet_checkbox.configure(state='normal')
         sentence_table_checkbox.configure(state='normal')
         k_sentences_checkbox.configure(state='normal')
 
@@ -682,12 +771,13 @@ TIPS_lookup = {'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'Noun Analysis': 'TIPS_NLP_Noun Analysis.pdf', 'Verb Analysis': 'TIPS_NLP_Verb Analysis.pdf',
                'Function Words Analysis': 'TIPS_NLP_Function Words Analysis.pdf',
                'Nominalization': 'TIPS_NLP_Nominalization.pdf', 'NLP Searches': "TIPS_NLP_NLP Searches.pdf",
+               'WordNet': 'TIPS_NLP_WordNet.pdf',
                'Excel Charts': 'TIPS_NLP_Excel Charts.pdf',
                'Excel Enabling Macros': 'TIPS_NLP_Excel Enabling macros.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                 'Statistical measures':'TIPS_NLP_Statistical measures.pdf',
                'Network Graphs (via Gephi)': 'TIPS_NLP_Gephi network graphs.pdf'}
-TIPS_options = 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'English Language Benchmarks', 'Style Analysis', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'Nominalization', 'NLP Searches', 'Excel Charts', 'Excel Enabling Macros', 'Excel smoothing data series', 'Statistical measures', 'Network Graphs (via Gephi)'
+TIPS_options = 'CoNLL Table', 'POSTAG (Part of Speech Tags)', 'DEPREL (Stanford Dependency Relations)', 'English Language Benchmarks', 'Style Analysis', 'Clause Analysis', 'Noun Analysis', 'Verb Analysis', 'Function Words Analysis', 'Nominalization', 'WordNet', 'NLP Searches', 'Excel Charts', 'Excel Enabling Macros', 'Excel smoothing data series', 'Statistical measures', 'Network Graphs (via Gephi)'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -714,13 +804,14 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to search the CoNLL table for a selected search word and extract a selected number of words appearing BEFORE and AFTER in a sentence." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, select POSTAG value for searched token (e.g., NN for noun; RETURN for ANY POSTAG value)." + GUI_IO_util.msg_Esc)
+                                  "Please, select POSTAG value for searched token (e.g., NN for noun; RETURN for ANY POSTAG value).\n\n" \
+                                  "Select DEPREL value for searched token (e.g., nsubjpass for passive nouns that are subjects; RETURN for ANY DEPREL value)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, select DEPREL value for searched token (e.g., nsubjpass for passive nouns that are subjects; RETURN for ANY DEPREL value)." + GUI_IO_util.msg_Esc)
+                                  "Please, select POSTAG value for token co-occurring in the same sentence (e.g., NN for noun; RETURN for ANY POSTAG value).\n\n" \
+                                  "Select DEPREL value for token co-occurring in the same sentence (e.g., DEPREL nsubjpass for passive nouns that are subjects; RETURN for ANY DEPREL value)." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, select POSTAG value for token co-occurring in the same sentence (e.g., NN for noun; RETURN for ANY POSTAG value)." + GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, select DEPREL value for token co-occurring in the same sentence (e.g., DEPREL nsubjpass for passive nouns that are subjects; RETURN for ANY DEPREL value)." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox if you wish to aggregate nouns and verbs in the CoNLL table (POS NN* and POS VB*) via WordNet." \
+                                  "\n\nCAVEAT: For VERBS, the 'stative' category includes the auxiliary 'be' probably making up the vast majority of stative verbs. Similarly, the category 'possession' include the auxiliary 'have' (and 'get'). You may wish to exclude these auxiliary verbs from frequencies."+ GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, tick the checkbox if you wish to run the repetition finder to compute counts and proportions of nouns, verbs, adjectives, and proper nouns across selected K beginnning and ending sentences." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",

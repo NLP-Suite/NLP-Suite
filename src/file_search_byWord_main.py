@@ -66,11 +66,11 @@ def run(inputFilename,inputDir, outputDir,
         if 'Wordnet' in extra_GUIs_menu_var.get():
             call("python knowledge_graphs_WordNet_main.py", shell=True)
 
-    # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search',
-                                                       silent=False)
-    if outputDir == '':
-        return
+    # # create a subdirectory of the output directory
+    # outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search',
+    #                                                    silent=False)
+    # if outputDir == '':
+    #     return
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Word/collocation search start',
                         'Started running Word/collocation search at', True,
@@ -371,7 +371,8 @@ extract_sentences_checkbox = tk.Checkbutton(window, text='Search corpus by word(
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                     extract_sentences_checkbox, True, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate,
-                    "Tick the checkbox to search for and extract words/set of words in your document(s) (e.g, coming out, standing in line, boyfriend) extracting the sentences in txt files for further analysis.")
+                    "Tick the checkbox to search for and extract words/set of words in your document(s) (e.g, coming out, standing in line, boyfriend) extracting the sentences in txt files for further analysis.\n"
+                    "THE SEARCH ALGORITHM DOES NOT SEARCH FOR WORDS CO-OCCURRING IN THE SAME SENTENCE.")
 
 extract_sentences_search_words_var.set('')
 extract_sentences_search_words_entry = tk.Entry(window, textvariable=extract_sentences_search_words_var)
@@ -510,7 +511,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click to select a csv file containing a list of values to be used as a dictionary for searching the input file(s).\n\nEntries in the file, one per line, can be single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe little square button to the right will allow you to open the selected csv file.\n\nThe csv filename will be displayed in the entry widget to the right.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe widget where you can enter your comma-separated, case-sensitive words/collocations will become available once you select the option. Enter there the comma-separated, case-sensitive words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document. When the checkbox 'Create subcorpus of files' is ticked, the algorithm will export all the txt files that contain the search words to a directory called 'subcorpus_search' inside the input directory. A set of csv files are also exported but to the selected output directory.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words, such as coming out, falling in love).\n\nThe widget where you can enter your comma-separated, case-sensitive words/collocations will become available once you select the option. Enter there the comma-separated, case-sensitive words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nYou can also enter the number of sentences preceeding and following the found sentences to provide context. Again, the widgets will become available when the checkbox is ticked.\n\nIn INPUT, the script expects a single txt file or a directory of txt files.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract_with_searchword.txt and containing, for each input file, all the sentences that have the search word(s) in them;\n2. files ending with _extract_wo_searchword.txt and containing, for each input file, the sentences that do NOT have the search word(s) in them\n\nIn OUTPUT the search algorithm will also produce\n1. a single txt file with all the sentences from all the documents processed containing the search word(s);\na wordcloud of all the extracted sentence words." + GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words, such as coming out, falling in love).\n\nTHE SEARCH ALGORITHM DOES NOT SEARCH FOR WORDS CO-OCCURRING IN THE SAME SENTENCE.\n\nThe widget where you can enter your comma-separated, case-sensitive words/collocations will become available once you select the option. Enter there the comma-separated, case-sensitive words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nYou can also enter the number of sentences preceeding and following the found sentences to provide context. Again, the widgets will become available when the checkbox is ticked.\n\nIn INPUT, the script expects a single txt file or a directory of txt files.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract_with_searchword.txt and containing, for each input file, all the sentences that have the search word(s) in them;\n2. files ending with _extract_wo_searchword.txt and containing, for each input file, the sentences that do NOT have the search word(s) in them\n\nIn OUTPUT the search algorithm will also produce\n1. a single txt file with all the sentences from all the documents processed containing the search word(s);\na wordcloud of all the extracted sentence words." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 

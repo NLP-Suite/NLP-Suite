@@ -1177,10 +1177,10 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             if '_____________' in charts_type_options_widget.get():
                 # set to default value
                 charts_type_options_widget.set('Bar chart')
-            if 'Bubble' in charts_type_options_widget.get() and 'Plotly' in charts_package_options_widget.get():
-                mb.showwarning(title='Warning',message='The Bubble chart is currently not supported in the NLP Suite.\n\nCheck back soon!')
+            #if 'Bubble' in charts_type_options_widget.get() and 'Plotly' in charts_package_options_widget.get():
+             #   mb.showwarning(title='Warning',message='The Bubble chart is currently not supported in the NLP Suite.\n\nCheck back soon!')
                 # set to default value
-                charts_type_options_widget.set('Bar chart')
+            #    charts_type_options_widget.set('Bar chart')
         charts_type_options_widget.trace('w', open_GUI)
 
         # if not 'data_manipulation_main.py' in scriptName and not not 'data_visualization_1_main.py' in scriptName :

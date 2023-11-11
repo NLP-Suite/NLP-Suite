@@ -20,7 +20,48 @@ import constants_util
 """
 NGramsCoOccurrences implements the ability to generate NGram and CoOccurrences data
 """
+import hashfile
+from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+def is_subset(A, B):
+    A = ' '.join(A).split(' ')
+    return all(element in B for element in A)
 
+def one_text_res(sentences, targets, doc_index, doc_name):
+    results = []
+    for sent in sentences:
+        if is_subset(targets, word_tokenize_stanza(stanzaPipeLine(sent))):
+            results.append((sent, sentences.index(sent), doc_index, doc_name))
+    return pd.DataFrame(results, columns=['Sentence', 'Sentence ID',
+                                          'Document ID', 'Document'])
+
+def readfile(doc):
+    with open(doc, "r", encoding="utf-8", errors="ignore") as f:
+        fullText = f.read()
+        fullText = fullText.replace('\n', ' ')
+    return fullText
+def get_all_dataframe_for_sentence_cooccur(inputFilename, inputDir, targets,
+                                           configFileName, outputDir, outputFilename):
+    files = IO_files_util.getFileList(inputFilename, inputDir,
+                                      '.txt', silent=False, configFileName=configFileName)
+    o2 = os.path.dirname(outputDir+"Sentence")
+    hashmap = hashfile.getcache(o2) if hashfile.checkOut(o2) else {}
+    all_results = pd.DataFrame() # Initialize an empty DataFrame to store all results
+    for index, file in enumerate(files):
+        checksum = hashfile.calculate_checksum(file)
+        head, tail = os.path.split(file)
+        if checksum in hashmap:
+            sentences = hashmap[checksum]
+            print(f" cache auto:  Processing file {index + 1}/{len(files)} {tail}")
+        else:
+            print(f" producing cache:  Processing file {index + 1}/{len(files)} {tail}")
+            sentences = sent_tokenize_stanza(stanzaPipeLine(readfile(file)))
+            hashfile.storehash(hashmap, checksum, sentences)
+            hashfile.writehash(hashmap, o2)
+        df = one_text_res(sentences, targets, index, IO_csv_util.dressFilenameForCSVHyperlink(file))
+        all_results = pd.concat([all_results, df]) # Append the results to the all_results DataFrame
+    all_results.to_csv(outputFilename,index=False)
+    print("Generation complete. Done!")
+    return all_results
 
 def processSearchWords(inputStr):
     word_list = []
@@ -228,7 +269,7 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
             return
     else:
         # create a subdirectory of the output directory
-        outputDir = IO_files_util.make_output_subdirectory(csv_file_var, inputDir, outputDir, label='N-grams search',
+        outputDir = IO_files_util.make_output_subdirectory(csv_file_var, inputDir, outputDir, label='search_N-grams',
                                                            silent=False)
         if outputDir == '':
             return
@@ -349,16 +390,34 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
     def transform(ngram):
         return ' '.join(ngram.split(' ')[:-1])
 
-    def extract_context(ngram_str, target_word, minus_K_words_var, plus_K_words_var):
+    def extract_context(ngram_str, target_phrase, minus_K_words_var, plus_K_words_var):
         words = ngram_str.split(' ')
-        target_index = words.index(target_word)
+        # Create a list of words in the target_phrase
+        target_words = target_phrase.split(' ')
+        target_length = len(target_words)
+
+        # Find the start index of the phrase
+        for i in range(len(words) - target_length + 1):
+            if words[i:i + target_length] == target_words:
+                target_index = i
+                break
+        else:
+            # The target_phrase is not found in the ngram_str
+            return None, None
+
+        # Calculate context indices
         start_index = max(target_index - minus_K_words_var, 0)  # Ensure the start index isn't negative.
-        end_index = min(target_index + plus_K_words_var + 1,
+        end_index = min(target_index + target_length + plus_K_words_var,
                         len(words))  # Ensure the end index doesn't exceed the length of the list.
+
+        # Get words before and after the target phrase
         words_before = words[start_index:target_index]
-        words_after = words[target_index + 1:end_index]
+        words_after = words[target_index + target_length:end_index]
+
+        # Join the context words back into strings
         context_before = ' '.join(words_before)
         context_after = ' '.join(words_after)
+
         return context_before, context_after
 
     def is_word_in_custom_range(ngram, word, minus_K_words_var, plus_K_words_var):
@@ -366,7 +425,7 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
         start_index = minus_K_words_var # you need abs() if the minus is a negative value, i don't know the design, yet
         end_index = len(words) - plus_K_words_var
         subrange = words[start_index:end_index]  # Extract the subrange
-        return word in subrange  # Check if the word is within the subrange.
+        return word in ' '.join(subrange) # Check if the word is within the subrange.
 
     def process_ngrams(data, word, minus_K_words_var, plus_K_words_var):
         column_name = data.columns[0]
@@ -502,6 +561,15 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
                                                                                       'N-grams_search')
                 combined_saneky_df.to_csv(NgramsSearchFileName_Sankey, index=False)
                 combined_saneky_df[combined_saneky_df.columns[0]].to_csv(NgramsSearchFileName_txt,index = False)
+
+                with open(NgramsSearchFileName_txt, 'r', encoding='utf-8', errors='ignore') as f:
+                    q = f.read()
+                for word in search_keywords_list:
+                    q = q.replace(word, '')
+                    print(q, word)
+                with open(NgramsSearchFileName_txt, 'w', encoding='utf-8') as f:
+                    f.write(q)
+
                 use_contour_only = False
                 max_words = 100
                 font = 'Default'

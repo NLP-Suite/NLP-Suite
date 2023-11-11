@@ -481,3 +481,8 @@ This is done so that a date string returned by gthe function can be sorted prope
 2023_Xi_Liqiang.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
 
 This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+word2vec,BERT Word2Vec timing,"Beware that BERT Word2Vec on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, with the tokenizing, lemmatzing, and Eucledian distance options, takes approximately 2 hours on a standard laptop. Eucledian distance is the item taking the longest.",ON
+word2vec,Gensim Word2Vec timing,"Beware that Gensim Word2Vec on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, with the tokenizing, lemmatzing, and Eucledian distance options, takes approximately 2 hours on a standard laptop. Eucledian distance is the item taking the longest.",ON
+1954_Mao_Zhou.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
