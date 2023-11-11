@@ -443,6 +443,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                         # chartName.legend(legendEntry=())
                         # chartName.add_data(data,titles_from_data=False)
                         # test for n > 1 but... no matter how this is exported it still displays the legend oon the right; see comments above
+                        if n < 2:
+                            chartName.legend=None
                         chartName.series.append(Series(data, title=title_series[0]))
                     chartName.set_categories(hover_over_values)
                 else:
