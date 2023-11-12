@@ -121,7 +121,7 @@ spacytextblob
 # matplotlib #THIS SHOULD BE AUTOMATICALLY INSTALLED BY ANACONDA
 #
 # used by Word2Vec
-plotly
+Plotly
 
 # uaed by charts_util
 seaborn

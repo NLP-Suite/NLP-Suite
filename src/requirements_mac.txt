@@ -159,7 +159,7 @@ pickleshare==0.7.5
 Pillow==9.4.0
 pipreqs==0.4.12
 platformdirs==2.6.2
-plotly==5.11.0
+Plotly==5.11.0
 pluggy @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_croot-w6jyveby/pluggy_1648109277227/work
 ply==3.11
 preshed @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_a218694b-51c3-4a6f-b7ee-bd1ed6d0c2e67acmt_aw/croots/recipe/preshed_1651240934336/work

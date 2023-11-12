@@ -5,9 +5,9 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"charts_plotly_util",['os','pandas','plotly','kaleido'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"charts_Plotly_util",['os','pandas','plotly','kaleido'])==False:
     sys.exit(0)
-# if plotly fails, install version 0.1.0 of kaleido
+# if Plotly fails, install version 0.1.0 of kaleido
 # pip install kaleido==0.1.0post1
 
 import os
@@ -34,7 +34,7 @@ import IO_csv_util
 #                        second_y_var=0,
 #                        second_yAxis_label=''):
 # match the excel chart format
-def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols_to_plot,
+def create_Plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols_to_plot,
                         column_xAxis_label='',
                         column_yAxis_label='',
                         remove_hyperlinks=True,
@@ -76,11 +76,49 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
         else:
             y_cols = csv_field_Y_axis_list
             x_cols = X_axis_var
-
+            html_template = """
+                                <html>
+                                <head>
+                                <style>
+                                    .container {{
+                                        display: flex;
+                                        flex-wrap: wrap;
+                                        align-items: center;
+                                        justify-content: center;
+                                    }}
+                                    .chart {{
+                                        margin: 10px;
+                                    }}
+                                </style>
+                                </head>
+                                <body>
+                                <div class="container">
+                                    {charts}
+                                </div>
+                                </body>
+                                </html>
+                                """
+            def process_multiple(x_cols, y_cols,lst, df2, ops, types, data):
+                chart_htmls = []
+                for chart_name in lst:
+                    print(df2)
+                    try:
+                        df2 = eval(df2)
+                    except:
+                        pass
+                    fig = eval(ops)
+                    chart_html = fig.to_html(full_html=False, include_Plotlyjs='cdn')
+                    chart_htmls.append(f'<div class="chart">{chart_html}</div>')
+                final_html = html_template.format(charts=''.join(chart_htmls))
+                with open(outputDir + os.sep + types+'chart of the ' + x_cols + ".html", 'w') as file:
+                    file.write(final_html)
             if i.lower()=='bar':
-                fig = px.bar(data, x=x_cols, y=y_cols,title = 'Frequency Distribution of '+x_cols)
-                file_list.append(
-                    save_chart(fig, outputDir, 'Frequency Distribution of '+x_cols, static_flag, x_cols))
+                print(data)
+                process_multiple(x_cols,y_cols,y_cols, "None","px.bar(data, x=x_cols, color=chart_name)","bar", data)
+                file_list.append(outputDir + os.sep + 'bar'+'chart of the ' + x_cols + ".html")
+                #fig = px.bar(data, x=x_cols, y=y_cols,title = 'Frequency Distribution of '+x_cols)
+                #file_list.append(
+                #    save_chart(fig, outputDir, 'Frequency Distribution of '+x_cols, static_flag, x_cols))
             elif i.lower()=='pie':
                 if not x_cols:
                     df2 = data[y_cols].value_counts()
@@ -89,48 +127,28 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
                     file_list.append(
                         save_chart(fig, outputDir, 'Pie chart of '+y_cols[0] + "no x grouping", static_flag, x_cols))
                 else:
-                    html_template = """
-                    <html>
-                    <head>
-                    <style>
-                        .container {{
-                            display: flex;
-                            flex-wrap: wrap;
-                            align-items: center;
-                            justify-content: center;
-                        }}
-                        .chart {{
-                            margin: 10px;
-                        }}
-                    </style>
-                    </head>
-                    <body>
-                    <div class="container">
-                        {charts}
-                    </div>
-                    </body>
-                    </html>
-                    """
-
-                    chart_htmls = []
-
-                    for chart_name in list(data[x_cols].value_counts().keys()):
-                        df2 = data[data[x_cols] == chart_name][y_cols[0]].value_counts()
-                        fig = px.pie(df2, values=df2.values, names=df2.index, title=chart_name)
-                        chart_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
-                        chart_htmls.append(f'<div class="chart">{chart_html}</div>')
-                    final_html = html_template.format(charts=''.join(chart_htmls))
-                    with open(outputDir+os.sep+'Pie chart of '+y_cols[0] + "no x grouping.html", 'w') as file:
-                        file.write(final_html)
-
+                    df2 = "data[data[x_cols] == chart_name][y_cols[0]].value_counts()"
+                    ops = "px.pie(df2, values=df2.values, names=df2.index, title=chart_name)"
+                    lst = eval('list(data[x_cols].value_counts().keys())')
+                    process_multiple(x_cols, y_cols, lst, df2, ops, 'Pie', data)
+                    file_list.append(outputDir + os.sep + 'pie' + 'chart of the ' + x_cols + ".html")
             elif i.lower()=='scatter':
-                fig = px.scatter(data, x=x_cols, y=y_cols, title='Frequency Distribution of ' + x_cols)
-                file_list.append(
-                    save_chart(fig, outputDir, 'Frequency Distribution of ' + x_cols, static_flag, x_cols))
+                process_multiple(x_cols, y_cols, y_cols, "None", "px.scatter(data, x=x_cols, color=chart_name)", "scatter", data)
+                file_list.append(outputDir + os.sep + 'scatter' + 'chart of the ' + x_cols + ".html")
+                #fig = px.scatter(data, x=x_cols, y=y_cols, title='Frequency Distribution of ' + x_cols)
+                #file_list.append(
+                #    save_chart(fig, outputDir, 'Frequency Distribution of ' + x_cols, static_flag, x_cols))
+            elif i.lower() == 'radar':
+
+                process_multiple(x_cols, y_cols, y_cols, "None", "px.line_polar(data, r=x_cols, theta=chart_name)",
+                                 "Radar", data)
+                file_list.append(outputDir + os.sep + 'radar' + 'chart of the ' + x_cols + ".html")
             elif i.lower()=='line':
-                fig = px.line(data, x=x_cols, y=y_cols, title='Frequency Distribution of ' + x_cols)
-                file_list.append(
-                    save_chart(fig, outputDir, 'Frequency Distribution of ' + x_cols, static_flag, x_cols))
+                process_multiple(x_cols, y_cols, y_cols, "None", "px.line(data, x=x_cols, color=chart_name)", "line", data)
+                file_list.append(outputDir + os.sep + 'line' + 'chart of the ' + x_cols + ".html")
+                #fig = px.line(data, x=x_cols, y=y_cols, title='Frequency Distribution of ' + x_cols)
+                #file_list.append(
+                #    save_chart(fig, outputDir, 'Frequency Distribution of ' + x_cols, static_flag, x_cols))
             elif i.lower()=='bubble':
                 fig = px.scatter(data, x=x_cols, y=y_cols[0],
                                  size=y_cols[1], color=y_cols[2])
@@ -210,7 +228,7 @@ def save_chart(fig, outputDir, chart_title, static_flag, x_label = '', y_label =
         fig.write_html(savepath)
     return savepath
 
-#plot bar chart with plotly
+#plot bar chart with Plotly
 #fileName is a csv file with data to be plotted
 #x_label indicates the column name of x axis from the data
 #height indicates the column name of y axis from the data
@@ -230,7 +248,7 @@ def plot_bar_chart_px(x_label, fileName, chart_title, height = ''):
     fig.update_layout(title=chart_title, title_x=0.5)
     return fig
 
-#plot pie chart with plotly
+#plot pie chart with Plotly
 #fileName is a csv file with data to be plotted
 #x_label indicates the column name of x axis from the data
 #height indicates the column name of y axis from the data
@@ -245,7 +263,7 @@ def plot_pie_chart_px(x_label, fileName, chart_title, height = ''):
     fig.update_layout(title=chart_title, title_x=0.5)
     return fig
 
-#plot scatter chart with plotly
+#plot scatter chart with Plotly
 #fileName is a csv file with data to be plotted
 #x_label indicates the column name of x axis from the data    COULD BE A DISCRETE VARIABLE
 #y_label indicates the column name of y axis from the data    COULD BE A DISCRETE VARIABLE
@@ -256,7 +274,7 @@ def plot_scatter_chart_px(x_label, y_label, fileName, chart_title):
     fig.update_layout(title=chart_title, title_x=0.5)
     return fig
 
-#plot scatter chart with plotly
+#plot scatter chart with Plotly
 #fileName is a csv file with data to be plotted
 #theta_label indicates the column name of the "feature" from the data    SHOULD BE A DISCRETE VARIABLE
 #r_label indicates the column name of the value of the feature from the data    CANNOT BE A DISCRETE VARIABLE
