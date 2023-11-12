@@ -1,8 +1,16 @@
+import sys
+import GUI_util
+import IO_libraries_util
+
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "BERT_util2",
+                                          ['os', 're', 'collections', 'transformers', 'argparse', 'tkinter', 'spacy',
+                                          'tensorflow', 'numpy','random','pickle','tqdm']) == False:
+    sys.exit(0)
+
+
 # import statements
-import matplotlib.pyplot as plt
 from WSI_classes import Clusterer, Matcher
 import re
-from sklearn.cluster import KMeans
 import numpy as np
 import random
 import pickle
@@ -13,51 +21,12 @@ tcache_path = f'{os.getcwd()}/cache'
 if not os.path.exists(tcache_path):
     os.makedirs(tcache_path)
 os.environ['TRANSFORMERS_CACHE'] = tcache_path
-import sys
-import GUI_util
-import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window, "BERT_util2",
-                                          ['os', 'transformers', 'csv', 'argparse', 'tkinter', 'time', 'stanza',
-                                           'summarizer','sacremoses','contextualSpellCheck','sentencepiece','sentence_transformers', 'tensorflow']) == False:
-    sys.exit(0)
-
-
-from regex import R
-from transformers import AutoTokenizer, AutoModelForTokenClassification
 from transformers import BertModel, BertTokenizer, BertTokenizerFast, EncoderDecoderModel
-from transformers import pipeline
-from sentence_transformers import SentenceTransformer
-import pandas as pd
-import re
-import math
 from collections import Counter
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-import csv
-import time
-import itertools
-import stanza
-import argparse
-import tkinter.messagebox as mb
-import torch
 import spacy
-import contextualSpellCheck
-# Visualization
-import plotly.express as px
-##from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
-from summarizer import Summarizer
 
-
-import IO_csv_util
 import IO_files_util
-import charts_util
-import statistics_txt_util
-import word2vec_tsne_plot_util
-import IO_user_interface_util
-import word2vec_distances_util
-import IO_internet_util
 
 
 SEED = 0

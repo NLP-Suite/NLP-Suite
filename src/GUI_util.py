@@ -424,10 +424,8 @@ def activateRunButton(config_filename,IO_setup_display_brief,scriptName, missing
     err_msg =''
 
 # both input filename and dir are valid options but both are missing
-    #@@@
     run_button_state, open_setup_IO_GUI = config_util.check_missing_IO(window, config_filename, scriptName,
                                                 IO_setup_display_brief, missing_IO, silent)
-    #@@@
     if open_setup_IO_GUI:
         silent=True
         missing_IO = setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent, open_setup_IO_GUI=False)
@@ -820,9 +818,7 @@ def setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent, o
                                       config_input_output_numeric_options, scriptName, silent)
         if missing_IO!='':
             open_setup_IO_GUI=True
-    #@@@
     if not 'NLP_setup_IO_main' in scriptName: # if the NLP_setup_IO_main is already opened, you do not want to open it again
-        #@@@
         # changed_setup_IO_config(scriptName, IO_setup_display_brief, silent=False)
         if not silent and missing_IO!='':
             mb.showwarning(title='Warning',
@@ -1030,7 +1026,6 @@ def setup_parsers_annotators(y_multiplier_integer, scriptName):
         call("python NLP_setup_external_software_main.py", shell=True)
     # currently not used
     if setup_menu.get() == 'I/O configuration':
-        #@@@
         missing_IO = setup_IO_configuration_options(False, scriptName, True, open_setup_IO_GUI=False)
 
     setup_menu.set("Setup")
@@ -1081,7 +1076,6 @@ def changed_setup_IO_config(scriptName, IO_setup_display_brief, silent=False, op
     else:
         config_filename = scriptName.replace('main.py', 'config.csv')
 
-    #@@@
     missing_IO = setup_IO_configuration_options(IO_setup_display_brief, scriptName, silent,
                                                 open_setup_IO_GUI=False)
 
@@ -1151,7 +1145,14 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        "Select the package you wish to use to visualize charts: Excel or Plotly (dynamic/static)")
 
         # TODO chart type widget (same as setup)
-        charts_type_options = ['_________________ Excel & plotLy options', 'Bar chart','Bubble chart','Line chart','Pie chart', 'Radar chart', 'Scatter plot', '_________________ Open GUI', 'Box plot (Open GUI)', 'Colormap (Open GUI)', 'Sankey flowchart (Open GUI)', 'Sunburst chart (Open GUI)', 'Treemap chart (Open GUI)', 'Wordcloud (Open GUI)']
+        # 'Bubble chart', 'Radar chart', 'Scatter plot' require more than one variable and data_visualization_2_main.py should be used
+        if scriptName=='data_visualization_2_main.py':
+            charts_type_options = ['_________________ Excel & Plotly options', 'Bar chart','Bubble chart','Line chart','Pie chart', 'Radar chart', 'Scatter plot', '_________________ Open GUI', 'Colormap (Open GUI)', 'Geographic maps (Open GUI)', 'Gephi (Open GUI)', 'Sankey flowchart (Open GUI)', 'Sunburst chart (Open GUI)', 'Treemap chart (Open GUI)', 'Wordcloud (Open GUI)']
+        else:
+            charts_type_options = ['_________________ Excel & Plotly options', 'Bar chart', 'Line chart', 'Pie chart',
+                                   '_________________ Open GUI', 'Bubble, Radar, Scatter plots (Open GUI)', 'Boxplot (Open GUI)', 'Colormap (Open GUI)',
+                                   'Comparative bar charts', 'Geographic maps (Open GUI)', 'Gephi (Open GUI)', 'Sankey flowchart (Open GUI)', 'Sunburst chart (Open GUI)',
+                                   'Time mapper', 'Treemap chart (Open GUI)', 'Wordcloud (Open GUI)']
         charts_type_options_widget.set('Bar chart')
         charts_type_menu_lb = tk.OptionMenu(window,charts_type_options_widget,*charts_type_options)
         # place widget with hover-over info
@@ -1159,11 +1160,13 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        y_multiplier_integer,
                                                        charts_type_menu_lb,
                                                        True,False,False,False,90,
-                                                       GUI_IO_util.open_setup_x_coordinate,
-                                                       "The selection of specific chart types is still under development.\nCharts are currently automatically visualized as bar or line charts.")
+                                                       GUI_IO_util.open_TIPS_x_coordinate,
+                                                       "Charts can be visualized automatically as bar, line, or pie charts. Select your preferred option.\nMany more chart types are available in the specialized GUIs data_visualization_1_main.py and data_visualization_2_main.py.\nOpen those GUIs and select the csv file and variable you wish to chart.")
         def open_GUI(*args):
-            if 'Box' in charts_type_options_widget.get():
+            if 'Bubble' in charts_type_options_widget.get() or 'Comparative' in charts_type_options_widget.get() or 'Box' in charts_type_options_widget.get() or 'Time' in charts_type_options_widget.get():
                 call('python data_visualization_2_main.py', shell=True)
+            if 'Geographic' in charts_type_options_widget.get():
+                call('python GIS_main.py', shell=True)
             if 'Colormap' in charts_type_options_widget.get():
                 call('python data_visualization_1_main.py', shell=True)
             if 'Sankey' in charts_type_options_widget.get():

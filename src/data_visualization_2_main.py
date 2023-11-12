@@ -69,7 +69,7 @@ def run(inputFilename, outputDir, openOutputFiles,
                        message="No visualization option has been selected.\n\nPlease, use the dropdown menu of the 'Visualization options' widget to select the desired option and try again.")
         return
 
-# Excel/plotLy charts --------------------------------------------------------------------------------
+# Excel/Plotly charts --------------------------------------------------------------------------------
     if 'Excel' in visualizations_menu_var or 'Plotly' in visualizations_menu_var:
 
         if 'bar' in GUI_util.charts_type_options_widget.get().lower() or 'line' in GUI_util.charts_type_options_widget.get().lower():
@@ -254,7 +254,7 @@ csv_field_visualization_var_SV = ''
 def clear(e):
     extra_GUIs_var.set(0)
     extra_GUIs_menu_var.set('')
-    visualizations_menu_var.set('Excel/plotLy charts')
+    visualizations_menu_var.set('Excel/Plotly charts')
     X_axis_var.set('')
     Y_axis_var.set('')
     csv_files_list.clear()
@@ -269,12 +269,13 @@ def clear(e):
     csv_file_field_Y_axis_list.clear()
 window.bind("<Escape>", clear)
 
+
 extra_GUIs_var.set(0)
 extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: open_GUI())
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Excel charts (Open GUI)','Geographic maps (Open GUI)','HTML annotator (Open GUI)', 'Visualize categorical, network, temporal data', 'Wordclouds (Open GUI)')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Visualize categorical and network data: Gephi, Sankey, Colormap, Sunburst, Treemap (Open GUI)', 'Texts to maps (Open GUI)', 'Google Earth Pro (Open GUI)', 'HTML annotator (Open GUI)', 'Wordclouds (Open GUI)')
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -282,16 +283,20 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                    False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
                                    "Select other related types of analysis you wish to perform")
 
+
+
 def open_GUI(*args):
     if extra_GUIs_var:
         extra_GUIs_menu.configure(state='normal')
     if 'Excel' in extra_GUIs_menu_var.get():
         call("python charts_Excel_main.py", shell=True)
-    elif 'Geographic' in extra_GUIs_menu_var.get():
+    elif 'Google' in extra_GUIs_menu_var.get():
+        call("python GIS_main.py", shell=True)
+    elif 'Texts to maps' in extra_GUIs_menu_var.get():
         call("python GIS_main.py", shell=True)
     elif 'HTML' in extra_GUIs_menu_var.get():
         call("python html_annotator_main.py", shell = True)
-    elif 'Visualize categorical, network, temporal data' in extra_GUIs_menu_var.get():
+    elif 'Visualize categorical' in extra_GUIs_menu_var.get():
         call("python data_visualization_1_main.py", shell=True)
     elif 'Wordclouds' in extra_GUIs_menu_var.get():
         call("python wordclouds_main.py", shell=True)
@@ -345,7 +350,7 @@ def check_selected_csv_file_field_Y_axis_list(main_Y_axis):
     if main_Y_axis:
         field_value = csv_field_visualization_var.get() # main Y-axis, used for boxplots, comparative bar chhrts, time mapper
     else:
-        field_value = Y_axis_var.get() # additional Y-axis used for Excel and plotly
+        field_value = Y_axis_var.get() # additional Y-axis used for Excel and Plotly
     if field_value =='':
         return
     if field_value in str(', '.join(csv_file_field_Y_axis_list)):
@@ -361,14 +366,14 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                                visualization_basic_options_lb, True)
 
 
-visualizations_menu_var.set('Excel/plotLy charts')
-visualizations_menu = tk.OptionMenu(window, visualizations_menu_var, 'Boxplots','Comparative bar charts','Excel/plotLy charts','Time mapper')
+visualizations_menu_var.set('Excel/Plotly charts')
+visualizations_menu = tk.OptionMenu(window, visualizations_menu_var, 'Boxplots','Comparative bar charts','Excel/Plotly charts','Time mapper')
 # select_time_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    visualizations_menu,
                                    False, False, True, False, 90, GUI_IO_util.visualization_filename_label_lb_pos,
-                                   "Use the dropdown menu to select a visualization option for your data: Boxplots, Comparative bar charts, Excel/plotLy charts, Time mapper\nBoxplots require a NUMERIC field; Comparative bar charts require a CATEGORICAL field")
+                                   "Use the dropdown menu to select a visualization option for your data: Boxplots, Comparative bar charts, Excel/Plotly charts, Time mapper\nBoxplots require a NUMERIC field; Comparative bar charts require a CATEGORICAL field")
 
 def check_selected_csv_files(selected_filename):
     file_accepted = True
@@ -381,12 +386,12 @@ def check_selected_csv_files(selected_filename):
 GUI_util.inputFilename.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 # GUI_util.input_main_dir_path.trace('w', lambda x, y, z: changed_filename(GUI_util.inputFilename.get()))
 
-Excel_plotly_lb = tk.Label(window, text='Excel/plotly',foreground="red",font=("Courier", 12, "bold"))
+Excel_Plotly_lb = tk.Label(window, text='Excel/Plotly',foreground="red",font=("Courier", 12, "bold"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
-                                   Excel_plotly_lb,
+                                   Excel_Plotly_lb,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "The widgets on this line refer to the Excel/plotly option only")
+                                   "The widgets on this line refer to the Excel/Plotly option only")
 
 X_axis_lb = tk.Label(window, text='Select X-axis')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
@@ -746,7 +751,7 @@ def activate_all_options(*args):
     if error:
             return
 
-    # Excel/plotly
+    # Excel/Plotly
     X_axis_menu.configure(state='disabled')
     Y_axis_menu.configure(state='disabled')
     add_Y_axis.configure(state='disabled')
@@ -770,7 +775,7 @@ def activate_all_options(*args):
     select_time_menu.configure(state='disabled')
     cumulative_checkbox.configure(state='disabled')
 
-    if 'plotly' in visualizations_menu_var.get().lower():
+    if 'Plotly' in visualizations_menu_var.get().lower():
         X_axis_menu.configure(state='normal')
         Y_axis_menu.configure(state='normal')
         add_Y_axis.configure(state='normal')
@@ -833,9 +838,9 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select the GUI you wish to open for specialized data visualization options: Excel charts, geographic maps in Google Earth Pro, HTML file, wordclouds.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select the csv file field to be used for visualization.\n\nA NUMERIC field is required for the 'Boxplot' option and a CATEGORICAL field for the 'Comparative bar charts' option.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select type of visual chart to be used for visualization.")
-    # Excel/plotly
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Use the widgets in this line to set the parameters required by The Excel/plotly charts option." \
-                        "\n\nThe Excel/plotly charts require an X-axis field and, perhaps, additional Y-axis fields (e.g., for multiple series line charts or bar charts).")
+    # Excel/Plotly
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Use the widgets in this line to set the parameters required by The Excel/Plotly charts option." \
+                        "\n\nThe Excel/Plotly charts require an X-axis field and, perhaps, additional Y-axis fields (e.g., for multiple series line charts or bar charts).")
     # boxplot
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Use the widgets in this line to set the parameters required by the 'Boxplot' option." \
                             "\n\nUse the dropdown menu to select the type of data points to be processed. Tick the 'Split data by category' checkbox if you want to use a file field to split and/or color the charts by the value of a csv file field.")

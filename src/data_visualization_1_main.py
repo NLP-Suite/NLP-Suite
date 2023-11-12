@@ -404,11 +404,11 @@ error = False
 #                                    "Open a GUI for special visualization options: Excel charts, geographic maps (from texts to maps), geographic maps (Google Earth Pro), HTML, wordclouds")
 
 def open_GUI(*args):
-    if 'Boxplot' in extra_GUIs_menu_var.get() or 'Time' in extra_GUIs_menu_var.get() or 'Multiple' in extra_GUIs_menu_var.get():
-        call("python data_visualization_1_main.py", shell=True)
-    if 'Excel' in extra_GUIs_menu_var.get():
-        call("python charts_Excel_main.py", shell=True)
-    elif 'texts to maps' in extra_GUIs_menu_var.get():
+    if 'Excel' in extra_GUIs_menu_var.get() or 'Boxplot' in extra_GUIs_menu_var.get() or 'Time' in extra_GUIs_menu_var.get() or 'Comparative' in extra_GUIs_menu_var.get():
+        call("python data_visualization_2_main.py", shell=True)
+    # if 'Excel' in extra_GUIs_menu_var.get():
+    #     call("python charts_Excel_main.py", shell=True)
+    elif 'Texts to maps' in extra_GUIs_menu_var.get():
         call("python GIS_main.py", shell=True)
     elif 'Google Earth' in extra_GUIs_menu_var.get():
         call("python GIS_Google_Earth_main.py", shell=True)
@@ -424,7 +424,7 @@ extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analy
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Boxplot', 'Time mapper', 'Multiple bar charts', 'Excel', 'texts to maps', 'Google Earth', 'HTML', 'Wordclouds')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Excel/Plotly (Open GUI)', 'Boxplot (Open GUI)', 'Comparative bar charts (Open GUI)', 'Time mapper (Open GUI)', 'Texts to maps (Open GUI)', 'Google Earth Pro (Open GUI)', 'HTML annotator (Open GUI)', 'Wordclouds (Open GUI)')
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,

@@ -383,9 +383,9 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
 #         graph = True, complete_sid = True, series_label = None, chartPackage = 'Excel'):
 #     cols = group_cols + select_col
 #     if 'Excel' in chartPackage:
-#        use_plotly = False
+#        use_Plotly = False
 #     else:
-#         use_plotly = True
+#         use_Plotly = True
 #     try:
 #         data,header = IO_csv_util.get_csv_data(inputFilename, True)
 #         data = pd.DataFrame(data, columns=header)

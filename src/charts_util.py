@@ -31,7 +31,7 @@ import os
 
 import IO_csv_util
 import IO_user_interface_util
-import charts_plotly_util
+import charts_Plotly_util
 import charts_Excel_util
 import statistics_csv_util
 
@@ -640,7 +640,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
     # get the chart type from the GUI user selection
     chart_type_list = [GUI_util.charts_type_options_widget.get().split(' ')[0]]
 
-    use_plotly = 'plotly' in chartPackage.lower()
+    use_Plotly = 'Plotly' in chartPackage.lower()
     # added by Tony, May 2022 for complete sentence index
     # the file should have a column named Sentence ID
     # the extra parameter "complete_sid" is set to True by default to avoid extra code mortification elsewhere
@@ -648,7 +648,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
         # TODO Samir
         inputFilename = add_missing_IDs(inputFilename, inputFilename)
         # complete_sentence_index(inputFilename)
-    if use_plotly:
+    if use_Plotly:
         if 'static' in chartPackage.lower():
             static_flag=True
         else:
@@ -657,7 +657,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
         #   or the display is too messy; it works well with Excel
         if 'Kurtosis' in chart_title:
             chart_type_list=["Bar"]
-        Plotly_outputFilename = charts_plotly_util.create_plotly_chart(inputFilename = inputFilename,
+        Plotly_outputFilename = charts_Plotly_util.create_Plotly_chart(inputFilename = inputFilename,
                                                                         outputDir = outputDir,
                                                                         chart_title = chart_title,
                                                                         chart_type_list = chart_type_list,
@@ -1391,7 +1391,7 @@ def Sunburst(data, outputFilename, outputDir, case_sensitive, interest, label,be
                     if finaldata.empty:
                         mb.showwarning("Warning",
                                        "The Sunburst algorithm has produced an empty dataframe.\n\nPlease, make sure that the 'Filename label/part' you have entered are in the document name under the Document field of your input file.\n\nREMEMBER THAT SEARCH WORDS ARE CASE SENSITIVE.\n\nPlease, try again.")
-                # return plotly.offline.plot(fig)
+                # return Plotly.offline.plot(fig)
 
             else:
                 tempdata1=tempdata[tempdata['Sentence ID']<=first_sentences] #all observations with the first n sentences
@@ -1467,7 +1467,7 @@ def Treemap(data,outputFilename,interest,csv_file_field,extra_dimension_average,
 # import pandas as pd
 # import re
 # import numpy as np
-# import plotly.express as px
+# import Plotly.express as px
 
 def timechart(data,outputFilename,var,date_format_var,cumulative,monthly=None,yearly=None):
 #convert csv to pandas

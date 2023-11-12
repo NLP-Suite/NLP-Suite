@@ -5,9 +5,9 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"charts_plotly_util",['os','pandas','plotly','kaleido'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"charts_Plotly_util",['os','pandas','plotly','kaleido'])==False:
     sys.exit(0)
-# if plotly fails, install version 0.1.0 of kaleido
+# if Plotly fails, install version 0.1.0 of kaleido
 # pip install kaleido==0.1.0post1
 
 import os
@@ -34,7 +34,7 @@ import IO_csv_util
 #                        second_y_var=0,
 #                        second_yAxis_label=''):
 # match the excel chart format
-def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols_to_plot,
+def create_Plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols_to_plot,
                         column_xAxis_label='',
                         column_yAxis_label='',
                         remove_hyperlinks=True,
@@ -107,7 +107,7 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
                     except:
                         pass
                     fig = eval(ops)
-                    chart_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
+                    chart_html = fig.to_html(full_html=False, include_Plotlyjs='cdn')
                     chart_htmls.append(f'<div class="chart">{chart_html}</div>')
                 final_html = html_template.format(charts=''.join(chart_htmls))
                 with open(outputDir + os.sep + types+'chart of the ' + x_cols + ".html", 'w') as file:
@@ -228,7 +228,7 @@ def save_chart(fig, outputDir, chart_title, static_flag, x_label = '', y_label =
         fig.write_html(savepath)
     return savepath
 
-#plot bar chart with plotly
+#plot bar chart with Plotly
 #fileName is a csv file with data to be plotted
 #x_label indicates the column name of x axis from the data
 #height indicates the column name of y axis from the data
@@ -248,7 +248,7 @@ def plot_bar_chart_px(x_label, fileName, chart_title, height = ''):
     fig.update_layout(title=chart_title, title_x=0.5)
     return fig
 
-#plot pie chart with plotly
+#plot pie chart with Plotly
 #fileName is a csv file with data to be plotted
 #x_label indicates the column name of x axis from the data
 #height indicates the column name of y axis from the data
@@ -263,7 +263,7 @@ def plot_pie_chart_px(x_label, fileName, chart_title, height = ''):
     fig.update_layout(title=chart_title, title_x=0.5)
     return fig
 
-#plot scatter chart with plotly
+#plot scatter chart with Plotly
 #fileName is a csv file with data to be plotted
 #x_label indicates the column name of x axis from the data    COULD BE A DISCRETE VARIABLE
 #y_label indicates the column name of y axis from the data    COULD BE A DISCRETE VARIABLE
@@ -274,7 +274,7 @@ def plot_scatter_chart_px(x_label, y_label, fileName, chart_title):
     fig.update_layout(title=chart_title, title_x=0.5)
     return fig
 
-#plot scatter chart with plotly
+#plot scatter chart with Plotly
 #fileName is a csv file with data to be plotted
 #theta_label indicates the column name of the "feature" from the data    SHOULD BE A DISCRETE VARIABLE
 #r_label indicates the column name of the value of the feature from the data    CANNOT BE A DISCRETE VARIABLE
