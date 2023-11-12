@@ -76,11 +76,49 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
         else:
             y_cols = csv_field_Y_axis_list
             x_cols = X_axis_var
-
+            html_template = """
+                                <html>
+                                <head>
+                                <style>
+                                    .container {{
+                                        display: flex;
+                                        flex-wrap: wrap;
+                                        align-items: center;
+                                        justify-content: center;
+                                    }}
+                                    .chart {{
+                                        margin: 10px;
+                                    }}
+                                </style>
+                                </head>
+                                <body>
+                                <div class="container">
+                                    {charts}
+                                </div>
+                                </body>
+                                </html>
+                                """
+            def process_multiple(x_cols, y_cols,lst, df2, ops, types, data):
+                chart_htmls = []
+                for chart_name in lst:
+                    print(df2)
+                    try:
+                        df2 = eval(df2)
+                    except:
+                        pass
+                    fig = eval(ops)
+                    chart_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
+                    chart_htmls.append(f'<div class="chart">{chart_html}</div>')
+                final_html = html_template.format(charts=''.join(chart_htmls))
+                with open(outputDir + os.sep + types+'chart of the ' + x_cols + ".html", 'w') as file:
+                    file.write(final_html)
             if i.lower()=='bar':
-                fig = px.bar(data, x=x_cols, y=y_cols,title = 'Frequency Distribution of '+x_cols)
-                file_list.append(
-                    save_chart(fig, outputDir, 'Frequency Distribution of '+x_cols, static_flag, x_cols))
+                print(data)
+                process_multiple(x_cols,y_cols,y_cols, "None","px.bar(data, x=x_cols, color=chart_name)","bar", data)
+                file_list.append(outputDir + os.sep + 'bar'+'chart of the ' + x_cols + ".html")
+                #fig = px.bar(data, x=x_cols, y=y_cols,title = 'Frequency Distribution of '+x_cols)
+                #file_list.append(
+                #    save_chart(fig, outputDir, 'Frequency Distribution of '+x_cols, static_flag, x_cols))
             elif i.lower()=='pie':
                 if not x_cols:
                     df2 = data[y_cols].value_counts()
@@ -89,48 +127,28 @@ def create_plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols
                     file_list.append(
                         save_chart(fig, outputDir, 'Pie chart of '+y_cols[0] + "no x grouping", static_flag, x_cols))
                 else:
-                    html_template = """
-                    <html>
-                    <head>
-                    <style>
-                        .container {{
-                            display: flex;
-                            flex-wrap: wrap;
-                            align-items: center;
-                            justify-content: center;
-                        }}
-                        .chart {{
-                            margin: 10px;
-                        }}
-                    </style>
-                    </head>
-                    <body>
-                    <div class="container">
-                        {charts}
-                    </div>
-                    </body>
-                    </html>
-                    """
-
-                    chart_htmls = []
-
-                    for chart_name in list(data[x_cols].value_counts().keys()):
-                        df2 = data[data[x_cols] == chart_name][y_cols[0]].value_counts()
-                        fig = px.pie(df2, values=df2.values, names=df2.index, title=chart_name)
-                        chart_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
-                        chart_htmls.append(f'<div class="chart">{chart_html}</div>')
-                    final_html = html_template.format(charts=''.join(chart_htmls))
-                    with open(outputDir+os.sep+'Pie chart of '+y_cols[0] + "no x grouping.html", 'w') as file:
-                        file.write(final_html)
-
+                    df2 = "data[data[x_cols] == chart_name][y_cols[0]].value_counts()"
+                    ops = "px.pie(df2, values=df2.values, names=df2.index, title=chart_name)"
+                    lst = eval('list(data[x_cols].value_counts().keys())')
+                    process_multiple(x_cols, y_cols, lst, df2, ops, 'Pie', data)
+                    file_list.append(outputDir + os.sep + 'pie' + 'chart of the ' + x_cols + ".html")
             elif i.lower()=='scatter':
-                fig = px.scatter(data, x=x_cols, y=y_cols, title='Frequency Distribution of ' + x_cols)
-                file_list.append(
-                    save_chart(fig, outputDir, 'Frequency Distribution of ' + x_cols, static_flag, x_cols))
+                process_multiple(x_cols, y_cols, y_cols, "None", "px.scatter(data, x=x_cols, color=chart_name)", "scatter", data)
+                file_list.append(outputDir + os.sep + 'scatter' + 'chart of the ' + x_cols + ".html")
+                #fig = px.scatter(data, x=x_cols, y=y_cols, title='Frequency Distribution of ' + x_cols)
+                #file_list.append(
+                #    save_chart(fig, outputDir, 'Frequency Distribution of ' + x_cols, static_flag, x_cols))
+            elif i.lower() == 'radar':
+
+                process_multiple(x_cols, y_cols, y_cols, "None", "px.line_polar(data, r=x_cols, theta=chart_name)",
+                                 "Radar", data)
+                file_list.append(outputDir + os.sep + 'radar' + 'chart of the ' + x_cols + ".html")
             elif i.lower()=='line':
-                fig = px.line(data, x=x_cols, y=y_cols, title='Frequency Distribution of ' + x_cols)
-                file_list.append(
-                    save_chart(fig, outputDir, 'Frequency Distribution of ' + x_cols, static_flag, x_cols))
+                process_multiple(x_cols, y_cols, y_cols, "None", "px.line(data, x=x_cols, color=chart_name)", "line", data)
+                file_list.append(outputDir + os.sep + 'line' + 'chart of the ' + x_cols + ".html")
+                #fig = px.line(data, x=x_cols, y=y_cols, title='Frequency Distribution of ' + x_cols)
+                #file_list.append(
+                #    save_chart(fig, outputDir, 'Frequency Distribution of ' + x_cols, static_flag, x_cols))
             elif i.lower()=='bubble':
                 fig = px.scatter(data, x=x_cols, y=y_cols[0],
                                  size=y_cols[1], color=y_cols[2])

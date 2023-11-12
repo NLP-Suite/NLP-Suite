@@ -227,17 +227,16 @@ input_main_dir_path=GUI_util.input_main_dir_path
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
-def clear(e):
-    reset_all_values()
-window.bind("<Escape>", clear)
-
 extra_GUIs_var = tk.IntVar()
 extra_GUIs_menu_var = tk.StringVar()
 
 visualizations_menu_var = tk.StringVar()
 
+Y_axis_var = tk.StringVar()
+
 csv_field_visualization_var = tk.StringVar()
 
+split_data_byCategory_var = tk.IntVar()
 use_numerical_variable_var = tk.IntVar()
 csv_field_boxplot_var = tk.StringVar()
 
@@ -250,6 +249,25 @@ csv_files_list = []
 file_menu_values = []
 menu_values = []
 error = False
+csv_field_visualization_var_SV = ''
+
+def clear(e):
+    extra_GUIs_var.set(0)
+    extra_GUIs_menu_var.set('')
+    visualizations_menu_var.set('Excel/plotLy charts')
+    X_axis_var.set('')
+    Y_axis_var.set('')
+    csv_files_list.clear()
+    csv_field_visualization_var.set('')
+    csv_field_boxplot_var.set('')
+    points_var.set('')
+    split_data_byCategory_var.set(0)
+    # activate_split_options()
+    csv_field_boxplot_color_var.set('')
+    process_csv_file_menu(inputFilename.get())
+    date_format_menu.configure(state='disabled')
+    csv_file_field_Y_axis_list.clear()
+window.bind("<Escape>", clear)
 
 extra_GUIs_var.set(0)
 extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analyses ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: open_GUI())
@@ -309,21 +327,32 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 
 #@@@
 def check_selected_csv_file_field_Y_axis_list(main_Y_axis):
+    global csv_field_visualization_var_SV
     if not 'Excel' in visualizations_menu_var.get():
+        # csv_file_field_Y_axis_list.clear()
         return
     if csv_field_visualization_var.get()!='':
-        csv_field_visualization_menu.configure(state='disabled')
+        # the next line does not work on Mac,
+        #   so must take a convoluted way of making sure the same value is not added several times to csv_file_field_Y_axis_list
+        # csv_field_visualization_menu.configure(state='disabled')
+        if csv_field_visualization_var_SV=='':
+            csv_field_visualization_var_SV=csv_field_visualization_var.get()
+        else:
+            # remove the previously selected field from csv_file_field_Y_axis_list
+            if csv_field_visualization_var_SV in str(', '.join(csv_file_field_Y_axis_list)):
+                csv_file_field_Y_axis_list.remove(csv_field_visualization_var_SV)
+            csv_field_visualization_var_SV=''
     if main_Y_axis:
-        field = csv_field_visualization_var.get() # main Y-axis, used for boxplots, multiple bar chhrts, time mapper
+        field_value = csv_field_visualization_var.get() # main Y-axis, used for boxplots, comparative bar chhrts, time mapper
     else:
-        field = Y_axis_var.get() # additional Y-axis used for Excel and plotly
-    if field =='':
+        field_value = Y_axis_var.get() # additional Y-axis used for Excel and plotly
+    if field_value =='':
         return
-    if field in str(csv_file_field_Y_axis_list):
+    if field_value in str(', '.join(csv_file_field_Y_axis_list)):
         mb.showwarning(title='Warning',
-                       message='The option "' + field + '" has already been selected. Selection ignored.\n\nYou can see your current selections by using the dropdown menu.')
+                       message='The option "' + field_value + '" has already been selected. Selection ignored.\n\nYou can see your current selections by using the dropdown menu.')
     else:
-        csv_file_field_Y_axis_list.append(field)
+        csv_file_field_Y_axis_list.append(field_value)
 
 csv_field_visualization_var.trace('w', lambda x, y, z: check_selected_csv_file_field_Y_axis_list(True))
 
@@ -357,7 +386,7 @@ Excel_plotly_lb = tk.Label(window, text='Excel/plotly',foreground="red",font=("C
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    Excel_plotly_lb,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "The widgets on the next line refer to the Excel/plotly option only")
+                                   "The widgets on this line refer to the Excel/plotly option only")
 
 X_axis_lb = tk.Label(window, text='Select X-axis')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
@@ -376,7 +405,6 @@ Y_axis_lb = tk.Label(window, text='Select additional Y-axis')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
                                                Y_axis_lb, True)
 
-Y_axis_var = tk.StringVar()
 Y_axis_menu = tk.OptionMenu(window, Y_axis_var, *file_menu_values)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_coordinate, y_multiplier_integer,
@@ -394,22 +422,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_
                                                GUI_IO_util.labels_x_coordinate,
                                                "Click the + button to add another Y-axis variable")
 
-def reset_all_values():
-    csv_file_field_Y_axis_list.clear()
-    extra_GUIs_var.set(0)
-    extra_GUIs_menu_var.set('')
-    visualizations_menu_var.set('')
-    csv_files_list.clear()
-    split_data_byCategory_var.set(0)
-    activate_split_options()
-    csv_field_visualization_var.set('')
-    X_axis_var.set('')
-    Y_axis_var.set('')
-    csv_field_boxplot_var.set('')
-    csv_field_boxplot_color_var.set('')
-    points_var.set('')
-    process_csv_file_menu(inputFilename.get())
-    date_format_menu.configure(state='disabled')
 
 def reset_csv_field_Y_axis_values():
     csv_file_field_Y_axis_list.clear()
@@ -448,9 +460,9 @@ boxplot_lb = tk.Label(window, text='Boxplot', foreground="red",font=("Courier", 
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    boxplot_lb,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "The widgets on the next line refer to the Boxplot option only")
+                                   "The widgets on this line refer to the Boxplot option only")
 
-points_lb = tk.Label(window, text='Data points')
+points_lb = tk.Label(window, text='Data')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                                points_lb, True)
 
@@ -464,7 +476,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                    "Select the amount of data points you want to visualize")
 
 
-split_data_byCategory_var = tk.IntVar()
 split_data_byCategory_checkbox = tk.Checkbutton(window, variable = split_data_byCategory_var, text='Split data by category',
                                 onvalue=1, offvalue=0, command = lambda: activate_split_options()) #, command = lambda: activate_all_options())
 # place widget with hover-over info
@@ -507,15 +518,15 @@ def activate_split_options(*args):
         csv_field_boxplot_color_var.set('')
         csv_field_boxplot_menu.configure(state='disabled')
         csv_field_boxplot_color_menu.configure(state='disabled')
-split_data_byCategory_var.trace('w',activate_split_options())
+split_data_byCategory_var.trace('w',activate_split_options)
 activate_split_options()
 
-multiple_bar_lb = tk.Label(window, text='Multiple bar charts',foreground="red",font=("Courier", 12, "bold"))
+multiple_bar_lb = tk.Label(window, text='Bar charts',foreground="red",font=("Courier", 12, "bold"))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    multiple_bar_lb,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "The widgets on the next line refer to the multiple bar charts option only")
+                                   "The widgets on this line refer to the comparative bar charts option only")
 
 # add another file
 add_file = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1,
@@ -527,23 +538,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_c
                                                add_file, True, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
                                                "Click the + button to add another csv file (in addition to either the input csv file displayed in the I/O configuration or any other files already added)")
-
-def reset_all_values():
-    csv_file_field_Y_axis_list.clear()
-    extra_GUIs_var.set(0)
-    extra_GUIs_menu_var.set('')
-    visualizations_menu_var.set('')
-    X_axis_var.set('')
-    Y_axis_var.set('')
-    csv_files_list.clear()
-    split_data_byCategory_var.set(0)
-    activate_split_options()
-    csv_field_visualization_var.set('')
-    csv_field_boxplot_var.set('')
-    csv_field_boxplot_color_var.set('')
-    points_var.set('')
-    process_csv_file_menu(inputFilename.get())
-    date_format_menu.configure(state='disabled')
 
 def reset_csv_files_values():
     csv_files_list.clear()
@@ -582,7 +576,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.setup_pop_up_
                                                csv_file_menu,
                                                False, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate + 100,
-                                               "The multiple charts visualization option requires multiple csv files in input.\nUse the dropdown menu to select a specific file that you can then open for inspection.")
+                                               "The comparative bar charts visualization option requires multiple csv files in input.\nUse the dropdown menu to select a specific file that you can then open for inspection.")
 
 # # setup a button to open Windows Explorer on the selected input directory
 # openInputFile_button = tk.Button(window, width=GUI_IO_util.open_file_directory_button_width, text='',
@@ -624,7 +618,7 @@ time_mapper_lb = tk.Label(window, text='Time mapper', foreground="red",font=("Co
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                    time_mapper_lb,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
-                                   "The widgets on the next line refer to the time mapper option only")
+                                   "The widgets on this line refer to the time mapper option only")
 
 # time_mapper_var.set(0)
 # time_mapper_checkbox = tk.Checkbutton(window, text='Visualize temporal data', variable=time_mapper_var,
@@ -765,7 +759,7 @@ def activate_all_options(*args):
     csv_field_boxplot_menu.configure(state='disabled')
     csv_field_boxplot_color_menu.configure(state='disabled')
 
-    # multiple bar charts
+    # comparative bar charts
     add_file.configure(state='disabled')
     reset_file_button.configure(state='disabled')
     openInputFile_button.configure(state='disabled')
@@ -845,9 +839,9 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     # boxplot
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Use the widgets in this line to set the parameters required by the 'Boxplot' option." \
                             "\n\nUse the dropdown menu to select the type of data points to be processed. Tick the 'Split data by category' checkbox if you want to use a file field to split and/or color the charts by the value of a csv file field.")
-    # multiple bar charts
+    # comparative bar charts
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Use the widgets in this line to set the parameters required by the 'Comparative bar charts' option." \
-                            "\n\nAT LEAST TWO CSV FILES ARE REQUIRED FOR THE MULTIPLE BAR CHARTS OPTION.\n\nClick on the + button to add a new csv file (in addition to either the input csv file displayed in the I/O configuration or any other files already added).\nClick on the Reset button to clear the current selection and start over.\nUse the dropdown menu to select a specific csv file that you can then open with the Open button.")
+                            "\n\nAT LEAST TWO CSV FILES ARE REQUIRED FOR THE COMPARATIVE BAR CHARTS OPTION.\n\nClick on the + button to add a new csv file (in addition to either the input csv file displayed in the I/O configuration or any other files already added).\nClick on the Reset button to clear the current selection and start over.\nUse the dropdown menu to select a specific csv file that you can then open with the Open button.")
     # time mapper
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Use the widgets in this line to set the parameters required by the 'Time mapper' option.\n\nYou can use the Time mapper to analyze time-dependent data in an interactive bar chart." \
             "\n\nTHE TIME MAPPER ALGORITHM REQUIRES A DATE FIELD EMBEDDED IN THE FILENAME. YOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE 'Setup INPUT/OUTPUT configuration' WIDGET AT THE TOP OF THE ALGORITHM GUI THAT HAS PRODUCED THE CSV FILE USED HERE IN INPUT AND THEN TICKING THE CHECKBOXS 'Filename embeds multiple items' AND 'Filename embeds date' WHEN THE NLP_setup_IO_main GUI OPENS." \
