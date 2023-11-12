@@ -640,7 +640,7 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
     # get the chart type from the GUI user selection
     chart_type_list = [GUI_util.charts_type_options_widget.get().split(' ')[0]]
 
-    use_Plotly = 'Plotly' in chartPackage.lower()
+    use_Plotly = 'plotly' in chartPackage.lower()
     # added by Tony, May 2022 for complete sentence index
     # the file should have a column named Sentence ID
     # the extra parameter "complete_sid" is set to True by default to avoid extra code mortification elsewhere

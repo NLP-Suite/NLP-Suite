@@ -343,10 +343,11 @@ def check_selected_csv_file_field_Y_axis_list(main_Y_axis):
         if csv_field_visualization_var_SV=='':
             csv_field_visualization_var_SV=csv_field_visualization_var.get()
         else:
-            # remove the previously selected field from csv_file_field_Y_axis_list
-            if csv_field_visualization_var_SV in str(', '.join(csv_file_field_Y_axis_list)):
-                csv_file_field_Y_axis_list.remove(csv_field_visualization_var_SV)
-            csv_field_visualization_var_SV=''
+            if main_Y_axis:
+                # remove the previously selected field from csv_file_field_Y_axis_list ONLY if coming from main Y-axis
+                if csv_field_visualization_var_SV in str(', '.join(csv_file_field_Y_axis_list)):
+                    csv_file_field_Y_axis_list.remove(csv_field_visualization_var_SV)
+                csv_field_visualization_var_SV=''
     if main_Y_axis:
         field_value = csv_field_visualization_var.get() # main Y-axis, used for boxplots, comparative bar chhrts, time mapper
     else:
@@ -393,20 +394,20 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
                                    "The widgets on this line refer to the Excel/Plotly option only")
 
-X_axis_lb = tk.Label(window, text='Select X-axis')
+X_axis_lb = tk.Label(window, text='X-axis')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                                X_axis_lb, True)
 
 X_axis_var = tk.StringVar()
 X_axis_menu = tk.OptionMenu(window, X_axis_var, *file_menu_values)
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_TIPS_x_coordinate+100, y_multiplier_integer,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu+70, y_multiplier_integer,
                                                X_axis_menu,
                                                True, False, True, False, 90,
                                                GUI_IO_util.labels_x_coordinate + 100,
                                                "Select the csv file field to be used as X-axis")
 
-Y_axis_lb = tk.Label(window, text='Select additional Y-axis')
+Y_axis_lb = tk.Label(window, text='Additional Y-axis')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
                                                Y_axis_lb, True)
 
@@ -421,7 +422,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_setup_x_
 # add another Y-axis
 add_Y_axis = tk.Button(window, text='+', width=GUI_IO_util.add_button_width, height=1, command = lambda: check_selected_csv_file_field_Y_axis_list(False))
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate+850,
                                                y_multiplier_integer,
                                                add_Y_axis, True, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
@@ -437,7 +438,7 @@ def reset_csv_field_Y_axis_values():
 reset_Y_axis_button = tk.Button(window, text='Reset ', width=GUI_IO_util.reset_button_width, height=1, state='normal',
                                 command=lambda: reset_csv_field_Y_axis_values())
 # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_coordinate + 40,
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_indented_coordinate+890,
                                                y_multiplier_integer,
                                                reset_Y_axis_button, True, False, False, False, 90,
                                                GUI_IO_util.labels_x_coordinate,
@@ -453,7 +454,7 @@ def show_Y_axis_list():
 show_Y_axis_button = tk.Button(window, text='Show', width=GUI_IO_util.show_button_width, height=1,
                                  command=lambda: show_Y_axis_list())
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_coordinate + 95, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+945, y_multiplier_integer,
                                              show_Y_axis_button,
                                              False, False, True, False,
                                              90, GUI_IO_util.WordNet_show_pos,
@@ -775,7 +776,7 @@ def activate_all_options(*args):
     select_time_menu.configure(state='disabled')
     cumulative_checkbox.configure(state='disabled')
 
-    if 'Plotly' in visualizations_menu_var.get().lower():
+    if 'plotly' in visualizations_menu_var.get().lower():
         X_axis_menu.configure(state='normal')
         Y_axis_menu.configure(state='normal')
         add_Y_axis.configure(state='normal')
