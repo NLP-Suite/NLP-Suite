@@ -217,11 +217,11 @@ def verb_modality_data_preparation(data):
 	for i in data:
 		# Halliday's modality value
 		if(i[1] in high_value_keywords and i[3] in verb_postags):
-			high_value_row.append(i+["high_value_modals"])
+			high_value_row.append(i+["High-value modals"])
 		if(i[1] in median_value_keywords and i[3] in verb_postags):
-			median_value_row.append(i+["median_value_modals"])
+			median_value_row.append(i+["Median-value modals"])
 		if(i[1] in low_value_keywords and i[3] in verb_postags):
-			low_value_row.append(i+["low_value_modals"])
+			low_value_row.append(i+["Low-value modals"])
 
 		# general modality
 		if(i[1] in obligation_keywords and i[3] in verb_postags):
