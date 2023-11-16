@@ -609,7 +609,7 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, createCharts, 
         # run with all default values;
         prefer_horizontal = .9
         doNotListIndividualFiles = True
-        collocation = True
+        collocation = False
         transformed_image_mask = []
         stopwords = ''
         column_name='Co-occurring Token/Word'

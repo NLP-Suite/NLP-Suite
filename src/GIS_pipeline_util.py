@@ -144,7 +144,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         locations = GIS_location_util.extract_NER_locations(window, inputFilename, encodingValue,
                                                             datePresent)
     else:
-        # locations is a list of names of locations
+        # locations is a double list of names of locations in the form [['United States','COUNTRY']]
         locations = GIS_location_util.extract_csvFile_locations(window, inputFilename, withHeader, locationColumnNumber, encodingValue, datePresent, dateColumnNumber)
         if locations == None or len(locations) == 0:
             return
@@ -223,6 +223,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
             GIS_geocode_util.geocode(window, locations, inputFilename, outputDir,
                 locationColumnName,geocoder,country_bias, area_var,restrict,
                 encodingValue)
+
         if kmloutputFilename!='':
             filesToOpen.append(kmloutputFilename)
         if geocodedLocationsOutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
@@ -358,11 +359,13 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                     else:
                         filesToOpen.extend(outputFiles)
 
+    nRecordsFound, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(geocodedLocationsOutputFilename)
+
     # ------------------------------------------------------------------------------------
     # map
     # ------------------------------------------------------------------------------------
 
-    if 'folium' in mapping_package:
+    if nRecordsFound > 0 and 'folium' in mapping_package:
         import GIS_folium_map_util
         folium_pinmap_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir,
                                                                                   outputDir, '.html', 'GIS_pin',
@@ -382,13 +385,14 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
     # Google Maps heat map
     # ------------------------------------------------------------------------------------
 
-    if 'Google Maps' in mapping_package:
+    if nRecordsFound > 0 and 'Google Maps' in mapping_package:
+
         heatMapoutputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
                                                                         '.html', 'GIS',
                                                                         geocoder, locationColumnName, '', '',
                                                                         False, True)
         coordList = []
-        nRecordsFound, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(geocodedLocationsOutputFilename)
+
         df = pd.read_csv(geocodedLocationsOutputFilename, encoding='utf-8', on_bad_lines='skip')
         if 'Latitude' in df and 'Longitude' in df:
             lat = df.Latitude

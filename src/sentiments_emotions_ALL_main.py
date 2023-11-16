@@ -64,10 +64,10 @@ window.bind("<Escape>", clear)
 
 y_multiplier_integer = 0
 
-open_YAGO_GUI_button = tk.Button(window, text='YAGO searches (Emotion ontology class) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: call("python knowledge_graphs_DBpedia_YAGO_main.py", shell=True))
+open_rhetoric_GUI_button = tk.Button(window, text='Vocabulary Analysis (punctuation and repetition) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: call("python style_analysis_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   open_YAGO_GUI_button,
+                                   open_rhetoric_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
@@ -75,6 +75,20 @@ open_WordNet_GUI_button = tk.Button(window, text='WordNet searches (NOUN: feelin
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_WordNet_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Click on the button to open the GUI")
+
+search_GUI_button = tk.Button(window, text='Search corpus for words of emotions/sentiment; ALL search options (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: call("python file_search_ALL_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   search_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Click on the button to open the GUI")
+
+open_YAGO_GUI_button = tk.Button(window, text='YAGO searches (Emotion ontology class) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: call("python knowledge_graphs_DBpedia_YAGO_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   open_YAGO_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
@@ -92,20 +106,6 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_rhetoric_GUI_button = tk.Button(window, text='Vocabulary Analysis (punctuation and repetition) (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: call("python style_analysis_main.py", shell=True))
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   open_rhetoric_GUI_button,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click on the button to open the GUI")
-
-search_GUI_button = tk.Button(window, text='Search corpus for words of emotions/sentiment (Open GUI)',width=GUI_IO_util.widget_width_long,command=lambda: call("python file_search_ALL_main.py", shell=True))
-# place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                                   search_GUI_button,
-                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click on the button to open the GUI")
-
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
@@ -116,13 +116,13 @@ TIPS_options='The world of emotions and sentiments','Sentiment Analysis'
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
 # any special message (e.g., msg_anyFile stored in GUI_IO_util) will have to be prefixed by GUI_IO_util.
 def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the button to open the GUI for YAGO knowledge-graph to annotate words of emotion via the YAGO Emotion ontology class..")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the button to open the GUI for WordNet DOWN searches for all terms of feelings and emotions (NOUN: feeling; VERB: emotion).")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for all options for sentiment analysis available in the NLP Suite.\n   Dictionary based algorithms: ANEW, hedonometer, SentiWordnet, VADER.\n   Neural network: Stanford CoreNLP.")
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for computing and visualizing common shapes of stories in your corpus.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for analyzing puntuation symbols of pathos/emotions (exclamation and question marks ! and ?) and repetions.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the button to open the GUI for WordNet DOWN searches for all terms of feelings and emotions (NOUN: feeling; VERB: emotion).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                               "Please, click on the button to open the GUI for all searches available in the NLP Suite for expressions of emotions and sentiments in your corpus.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the button to open the GUI for YAGO knowledge-graph to annotate words of emotion via the YAGO Emotion ontology class..")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for all options for sentiment analysis available in the NLP Suite.\n   Neural network: BERT, spaCy, Stanford CoreNLP, Stanza.\n   Dictionary based algorithms: ANEW, hedonometer, SentiWordnet, VADER.\n\nNeural network approaches are far better but slower, since they take context into account. Since meaning for many words is in context, dictionary-based approaches, developed for restricted domains (e.g., media-based texts, such as tweeter/X), are less accurate for texts from wider domains.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for computing and visualizing common shapes of stories in your corpus.")
     return y_multiplier_integer
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 

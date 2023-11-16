@@ -200,7 +200,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
             differentColumns_differentColors = False
             csvField_color_list = []
             doNotListIndividualFiles = True
-            collocation = True
+            collocation = False
             import wordclouds_util
             outputFiles2 = wordclouds_util.python_wordCloud(outputtxtFilename, '', outputDir, configFileName,
                                                            selectedImage="",
@@ -702,7 +702,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
         differentColumns_differentColors = False
         csvField_color_list = []
         doNotListIndividualFiles = True
-        collocation = True
+        collocation = False
         import wordclouds_util
         outputFiles = wordclouds_util.python_wordCloud(outputFilenameTxt, '', outputDir, configFileName, selectedImage="",
                                                   use_contour_only=use_contour_only,

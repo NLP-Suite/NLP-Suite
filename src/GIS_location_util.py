@@ -196,7 +196,7 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 						nextrow = dt.iloc[index + 1]
 					except:
 						nextrow=row
-					# spaCy and Stanza do not contain tokenEnd tokenBegin headers
+					# spaCy and Stanza do not contain tokenEnd tokenBegin headers; code would break
 					try:
 						if row["tokenEnd"]==nextrow["tokenBegin"]:
 							# the current location value (e.g., las) needs to be merged with the next row value (e.g., las vegas)
@@ -212,6 +212,7 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 							else:
 								currLocation = row["Location"]
 					except:
+						currLocation = row["Location"]
 						pass
 
 					locList.append(save_location(datePresent, currLocation, row)[0])
@@ -224,7 +225,7 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 				# 			locList.append([row[locationColumnNumber], [index], [0]])
 
 	if len(locList)==0:
-		mb.showwarning(title='Locations', message="There are no locations in your input file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.\n\nNo map via Google Earth Pro and Google Maps can be done.")
+		mb.showwarning(title='Locations', message="There are no locations in your input file\n\n" + inputFilename + "\n\nThere is no geocoding to be done.\n\nNo maps can be done.")
 		return
 	# IO_user_interface_util.timed_alert(window, 2000, 'csv file locations extraction', "Finished extracting locations from csv file at", True, '', True, startTime, True)
 	# return sorted(locList)

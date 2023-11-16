@@ -43,8 +43,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         temporal_aggregation_var,
         viewer_options_list):
 
-
-
+    filesToOpen = []
 
 
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
@@ -52,26 +51,37 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     else:
         config_filename = scriptName.replace('main.py', 'config.csv')
 
+    if csv_file_var!='':
+        result = mb.askokcancel("Warning",
+                    "This is a reminder that you are now running the N-grams searches with the csv input file\n\n"+csv_file_var+'\n\nPress Cancel then Esc to clear the csv file widget if you want to run the N-grams functions using the input file(s) displayed in the I/O configuration and try again.')
+        if result == False:
+            return
+
+
+
     if within_sentence_co_occurrence_search_var:
-        print("OK executing efficient solution for sentence cooccurence...")
-        print("Cannot use old method because too slow and improper")
+        # print("OK executing efficient solution for sentence cooccurence...")
+        # print("Cannot use old method because too slow and improper")
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Stanza', 'Co-reference_within_sentence')
-        print(outputFilename)
-        NGrams_CoOccurrences_util.get_all_dataframe_for_sentence_cooccur(inputFilename,
+        # print(outputFilename)
+        outputFiles = NGrams_CoOccurrences_util.get_all_dataframe_for_sentence_cooccur(inputFilename,
                                                                          inputDir, search_words.split(', '),
                                                                     config_filename, outputDir, outputFilename)
-        filesToOpen = outputFilename
-        if openOutputFiles == True:
-            pass
-            mb.showwarning(title='Execution complete',
-                       message='Execution complete. For safety reason you should go to output Directory to open the file by yourself')
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+        # if openOutputFiles == True:
+        #     pass
+        #     mb.showwarning(title='Execution complete',
+        #                message='Execution complete. For safety reason you should go to output Directory to open the file by yourself')
 
             #IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
         return
 
 
     # print(date_options, temporal_aggregation_var, date_format, items_separator_var, date_position_var)
-    filesToOpen = []
 
     print("language_list",language_list)
 
@@ -81,11 +91,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     error_flag = False
     ngrams_word_var = True
 
-    if csv_file_var!='':
-        result = mb.askokcancel("Warning",
-                       "This is a reminder that you are now running the N-grams search with the csv input file\n\n"+csv_file_var+'\n\nPress Cancel then Esc to clear the csv file widget if you do not wish to run the N-grams search.')
-        if result == False:
-            return
+    # if csv_file_var!='':
+    #     result = mb.askokcancel("Warning",
+    #                    "This is a reminder that you are now running the N-grams search with the csv input file\n\n"+csv_file_var+'\n\nPress Cancel then Esc to clear the csv file widget if you do not wish to run the N-grams search.')
+    #     if result == False:
+    #         return
 
     if extra_GUIs_var.get() and extra_GUIs_menu_var.get()!='':
         if 'CoNLL' in extra_GUIs_menu_var.get():
@@ -416,6 +426,7 @@ inputFilename=GUI_util.inputFilename
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
+filesToOpen = []
 ngrams_list=[]
 Ngrams_search_var = tk.IntVar()
 Ngrams_compute_var= tk.IntVar()
@@ -513,7 +524,7 @@ search_words_var.set('')
 search_words_lb = tk.Label(window, text='Search word(s)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,search_words_lb,True)
 search_words_entry = tk.Entry(window, textvariable=search_words_var)
-search_words_entry.configure(width=GUI_IO_util.widget_width_extra_long)
+search_words_entry.configure(width=GUI_IO_util.widget_width_long)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos, y_multiplier_integer,
                                    search_words_entry,
@@ -521,7 +532,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occu
                                    "Enter the comma-separated words/collocations to be searched by the options 'Search N-grams csv file' or the VIEWER;\nfor N-grams each item in the list will be plotted separately; for Co-occurrences all items will be plotted together ")
 
 minus_K_lb = tk.Label(window, text='-K')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,1050,y_multiplier_integer,minus_K_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_add_ngrams_button_pos,y_multiplier_integer,minus_K_lb,True)
 
 minus_K_words_var = tk.IntVar()
 plus_K_words_var = tk.IntVar()
@@ -530,20 +541,20 @@ minus_K_words_var.set(0)
 minus_K_words_entry = tk.Entry(window, textvariable=minus_K_words_var) #extract_sentences_search_words_var)
 minus_K_words_entry.configure(width=3, state='normal')
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window, GUI_IO_util.style_add_ngrams_button_pos+30, y_multiplier_integer,
                     minus_K_words_entry, True, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
                     "Enter the number of words preceding the search word to be extracted, for context, together with the search sentences\n"
                     "The option does not apply to N-grams VIEWER or Co-Occurrences VIEWER")
 
 plus_K_lb = tk.Label(window, text='+K')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,1140,y_multiplier_integer,plus_K_lb,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_show_ngrams_button_pos,y_multiplier_integer,plus_K_lb,True)
 
 plus_K_words_var.set(0)
-plus_K_words_entry = tk.Entry(window, textvariable=plus_K_words_var) #extract_sentences_search_words_var)
+plus_K_words_entry = tk.Entry(window, textvariable=GUI_IO_util.style_show_ngrams_button_pos+30) #extract_sentences_search_words_var)
 plus_K_words_entry.configure(width=3, state='normal')
 # place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window, 1170, y_multiplier_integer,
+y_multiplier_integer=GUI_IO_util.placeWidget(window, GUI_IO_util.style_show_ngrams_button_pos+30, y_multiplier_integer,
                     plus_K_words_entry, False, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
                     "Enter the number of words following the search word to be extracted, for context, together with the search sentences\n"
@@ -632,6 +643,9 @@ def get_csv_file(window,title,fileType,annotate):
         Ngrams_viewer_checkbox.configure(state='normal')
         CoOcc_viewer_checkbox.configure(state='normal')
         return
+    extra_GUIs_checkbox.configure(state='disabled')
+    Ngrams_compute_checkbox.configure(state='disabled')
+
     Ngrams_viewer_checkbox.configure(state='disabled')
     CoOcc_viewer_checkbox.configure(state='disabled')
 
@@ -800,11 +814,15 @@ def activate_all_options():
     extra_GUIs_checkbox.configure(state='normal')
     extra_GUIs_menu.configure(state='disabled')
     Ngrams_compute_checkbox.configure(state='normal')
+    ngrams_menu.configure(state='disabled')
+    ngrams_number_menu.configure(state='disabled')
+    ngrams_options_menu.configure(state='disabled')
     Ngrams_search_checkbox.configure(state='normal')
     minus_K_words_entry.configure(width=3, state='normal')
     plus_K_words_entry.configure(width=3, state='normal')
     Ngrams_viewer_checkbox.configure(state='normal')
     CoOcc_viewer_checkbox.configure(state='normal')
+    within_sentence_co_occurrence_search_checkbox.configure(state='disabled')
     search_words_entry.configure(state='normal')
     date_options_checkbox.config(state='normal')
     if "INPUT FILE" in GUI_util.IO_setup_var.get():
@@ -826,17 +844,22 @@ def activate_all_options():
         plus_K_words_entry.configure(width=3, state='disabled')
 
     if Ngrams_compute_var.get():
+        ngrams_menu.configure(state='normal')
+        ngrams_number_menu.configure(state='normal')
+        ngrams_options_menu.configure(state='normal')
         extra_GUIs_checkbox.configure(state='disabled')
         extra_GUIs_menu.configure(state='disabled')
         Ngrams_search_checkbox.configure(state='disabled')
         Ngrams_viewer_checkbox.configure(state='disabled')
         CoOcc_viewer_checkbox.configure(state='disabled')
+        within_sentence_co_occurrence_search_checkbox.configure(state='disabled')
         search_words_entry.configure(state='disabled')
         minus_K_words_entry.configure(width=3, state='disabled')
         plus_K_words_entry.configure(width=3, state='disabled')
     if Ngrams_search_var.get():
         extra_GUIs_checkbox.configure(state='disabled')
         extra_GUIs_menu.configure(state='disabled')
+        Ngrams_compute_checkbox.configure(state='disabled')
         minus_K_words_entry.configure(width=3, state='normal')
         plus_K_words_entry.configure(width=3, state='normal')
         Ngrams_compute_checkbox.configure(state='disabled')
@@ -848,6 +871,7 @@ def activate_all_options():
         extra_GUIs_menu.configure(state='disabled')
         Ngrams_viewer_checkbox.configure(state='normal')
         CoOcc_viewer_checkbox.configure(state='normal')
+        within_sentence_co_occurrence_search_checkbox.configure(state='normal')
         Ngrams_compute_checkbox.configure(state='disabled')
         Ngrams_search_checkbox.configure(state='disabled')
         search_words_entry.configure(state='normal')

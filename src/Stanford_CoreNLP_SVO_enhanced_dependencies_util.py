@@ -481,12 +481,13 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
 
     CollectedVs = []#list of processed verbs
     SVO = []#list that store the subject-verb-object triplets
-    L = []#list that stores the location information appear in sentences
-    NER_value = []
+    location_list = []#list that stores the location information appear in sentences
+    loc_NER_value = []
+    per_NER_value = []
     T = []#list that stores the time information appear in sentences
     T_S = []#list that stores normalized form of the time information appear in sentences
     T_T = []#list that stores Date Type of normalized date
-    P = []#list that stores person names appear in sentences
+    person_list = []#list that stores person names appear in sentences
     N = []#list that stores negation booleans (T=negation; F= without negation)
     acl = []#list that stores modifier
     s = "Someone?"#default subject
@@ -496,8 +497,8 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
     # CYNTHIA: get locations from entitymentions
     for item in entitymentions:
         if item["ner"] is not None and item["ner"] in ['STATE_OR_PROVINCE', 'COUNTRY', "CITY", "LOCATION"]:
-            L.append(item["text"])
-            NER_value.append(item["ner"])
+            location_list.append(item["text"])
+            loc_NER_value.append([item["text"], item["ner"], item["tokenBegin"], item["tokenEnd"]])
 
     link_verb_LVC_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "verb_obj_obl_json.txt"
     for key in sent_data.keys():#traverse each token in that sentence
@@ -515,16 +516,15 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
                 info = date_get_tense(token['normalizedNER'])
             T_T.append(info)
 
-        if token["ner"] == "PERSON": 
-            P.append(token["word"])
-        #CYNTHIA: process location separately
-        # if token["ner"] == "CITY" or  token["ner"] == 'STATE_OR_PROVINCE' or token["ner"] == 'COUNTRY':
-        #     L.append(token["word"])
+        for item in entitymentions:
+            if item["ner"] is not None and item["ner"] in ['PERSON']:
+                person_list.append(item["text"])
+                per_NER_value.append([item["text"], item["ner"], item["tokenBegin"], item["tokenEnd"]])
 
         gov_dict = token["govern_dict"]#the dictionary that contains information of the dep and index of tokens whose syntactical head is the corrent token
         if ("VB" in token["pos"]) and ("advcl" not in token['deprel']) and ("xcomp" not in token['deprel'])and (token['deprel'] != "dep") and (token['deprel'] != "acl"):#if the verb has not been processed and its dep is not a special dep that will be processed independently
             # If the current token is a verb
-            # it will possibly contains its subject and object in its govern dictionary
+            # it will possibly contain its subject and object in its govern dictionary
             if key not in CollectedVs:
                 verb_list, conj_word = verb_index_conj(key, token, gov_dict, sent_data)
                 #verb_list will contain the other verbs in this sentence that are the current verb's conjunct
@@ -588,7 +588,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
                     SVO.extend(svo_acl)
                     N.extend(negation_acl)
  
-    return SVO, L, NER_value, T, T_S, T_T, P, N
+    return SVO, location_list, loc_NER_value, T, T_S, T_T, per_NER_value, person_list, N
             
                         
 # Dec. 21
@@ -622,7 +622,7 @@ def date_get_info(norm_date):
 def date_get_tense(norm_date):
     tense = ''
     # print(norm_date)
-    if (len(norm_date) >= 9 and "PREV" in norm_date) or "OFFSET P" in norm_date or "PAST" in norm_date:
+    if (len(norm_date) >= 9 and "PREV" in norm_date) or "OFFSET person_list" in norm_date or "PAST" in norm_date:
         # print('past')
         tense = 'PAST'
     elif (len(norm_date) >= 6 and 'OFFSET' in norm_date) or "FUTURE" in norm_date:

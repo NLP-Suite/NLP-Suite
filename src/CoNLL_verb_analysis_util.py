@@ -169,13 +169,13 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 																	'Verb Voice')
 
 	# convert list to dataframe and save
-	df = pd.DataFrame(verb_voice_list)
+	df = pd.DataFrame(voice_stats)
 	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
 						  language_encoding='utf-8')
 	if createCharts == True:
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0, 1]]
-		count_var = 1
+		count_var = 0
 		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
 												   outputFileLabel='verb',
 												   chartPackage=chartPackage,
@@ -213,7 +213,9 @@ def verb_modality_data_preparation(data):
 	will_would_keywords = ['will', 'would', 'll', '\'d']
 	can_may_keywords = ['can', 'could', 'may', 'might']
 
+	# i includes all the CoNLL table data, much useless for modality but easier to export; so be it, for now
 	for i in data:
+		# Halliday's modality value
 		if(i[1] in high_value_keywords and i[3] in verb_postags):
 			high_value_row.append(i+["high_value_modals"])
 		if(i[1] in median_value_keywords and i[3] in verb_postags):
@@ -221,12 +223,14 @@ def verb_modality_data_preparation(data):
 		if(i[1] in low_value_keywords and i[3] in verb_postags):
 			low_value_row.append(i+["low_value_modals"])
 
+		# general modality
 		if(i[1] in obligation_keywords and i[3] in verb_postags):
 			obl_row.append(i+["Obligation"])
 		elif(i[1] in will_would_keywords and i[3] in verb_postags):
 			will_row.append(i+["Will/Would"])
 		elif(i[1] in can_may_keywords and i[3] in verb_postags):
 			can_row.append(i+["Can/May"])
+
 	verb_modality_value_list = high_value_row + median_value_row + low_value_row
 	verb_modality_list = obl_row + will_row + can_row
 	verb_modality_stats = [['Verb Modality', 'Frequencies'],
@@ -319,12 +323,16 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 				filesToOpen.append(outputFiles)
 			else:
 				filesToOpen.extend(outputFiles)
-
+		# header = ['ID', 'Form', 'Lemma', 'POS', 'NER', '?', 'Deprel', 'Deps', '?', '??', '???', 'Document ID', 'Document', 'Year', 'Modality Value']
+		# verb_modality_value_list.insert(0, header)
 		df = pd.DataFrame(verb_modality_value_list)
 		IO_csv_util.df_to_csv(GUI_util.window, df, verb_modality_value_stats_file_name, headers=None, index=False,
 							  language_encoding='utf-8')
 		columns_to_be_plotted_xAxis=[]
-		columns_to_be_plotted_yAxis=[[0, 14]]
+		# col_num = IO_csv_util.get_columnNumber_from_headerValue(header,'Modality Value')
+		# columns_to_be_plotted_yAxis=[[0, col_num]]
+		columns_to_be_plotted_yAxis = [[0, len(verb_modality_value_list[0])-1]]
+
 		count_var = 1
 		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_modality_value_stats_file_name, outputDir,
 												   outputFileLabel='verb_mod_val',
@@ -386,7 +394,8 @@ def verb_tense_data_preparation(data):
 			elif(tense == 'VBP'):
 				tense_col = 'Present'
 				vbp_counter+=1
-			dat.append(i+[tense_col])
+			if not aux and tense != 'MD':
+				dat.append(i+[tense_col])
 	verb_tense_stats = [['Verb Tense', 'Frequencies'],
 					['Gerund', vbg_counter],
 					['Infinitive', vb_counter_infinitive],
@@ -443,14 +452,14 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
 																   'Verb Tense')
 
-	df = pd.DataFrame(verb_tense_list)
+	df = pd.DataFrame(verb_tense_stats)
 	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
 						  language_encoding='utf-8')
 
 	if createCharts == True:
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0,1]]
-		count_var=1
+		count_var=0
 		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
 														 outputFileLabel='verb_tense',
 														 chartPackage=chartPackage,
