@@ -336,7 +336,7 @@ def run(inputFilename,inputDir, outputDir,
             differentColumns_differentColors = False
             csvField_color_list = []
             doNotListIndividualFiles = True
-            collocation = True
+            collocation = False
             import wordclouds_util
             outputFiles=wordclouds_util.python_wordCloud(inputFilename, inputDir, outputDir, config_filename, selectedImage="", use_contour_only=use_contour_only, prefer_horizontal=prefer_horizontal, font=font, max_words=max_words, lemmatize=lemmatize, exclude_stopwords=exclude_stopwords, exclude_punctuation=exclude_punctuation, lowercase=lowercase, differentPOS_differentColors=differentPOS_differentColors, differentColumns_differentColors=differentColumns_differentColors, csvField_color_list=csvField_color_list, doNotListIndividualFiles=doNotListIndividualFiles,openOutputFiles=False, collocation=collocation)
             if outputFiles != None:

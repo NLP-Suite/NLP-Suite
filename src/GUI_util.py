@@ -1146,13 +1146,19 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
 
         # TODO chart type widget (same as setup)
         # 'Bubble chart', 'Radar chart', 'Scatter plot' require more than one variable and data_visualization_2_main.py should be used
-        if scriptName=='data_visualization_2_main.py':
-            charts_type_options = ['_________________ Excel & Plotly options', 'Bar chart','Bubble chart','Line chart','Pie chart', 'Radar chart', 'Scatter plot', '_________________ Open GUI', 'Colormap (Open GUI)', 'Geographic maps (Open GUI)', 'Gephi (Open GUI)', 'Sankey flowchart (Open GUI)', 'Sunburst chart (Open GUI)', 'Treemap chart (Open GUI)', 'Wordcloud (Open GUI)']
+        if scriptName=='data_visualization_1_main.py':
+            charts_type_options = ['Excel & Python options: Bar, Bubble, Line, Pie, Radar, and Scatter charts (OPEN GUI)', 'Boxplot (Open GUI)', 'Comparative bar charts (Open GUI)', 'Time mapper (Open GUI)', 'Geographic maps (Open GUI)', 'Wordcloud (Open GUI)']
+        elif scriptName == 'data_visualization_2_main.py':
+            charts_type_options = ['_________________ Excel & Python options', 'Bar chart', 'Bubble chart',
+                                   'Line chart', 'Pie chart', 'Radar chart', 'Scatter plot',
+                                   '_________________ Open GUI', 'Colormap (Open GUI)', 'Geographic maps (Open GUI)',
+                                   'Gephi (Open GUI)', 'Sankey flowchart (Open GUI)', 'Sunburst chart (Open GUI)',
+                                   'Treemap chart (Open GUI)', 'Wordcloud (Open GUI)']
         else:
-            charts_type_options = ['_________________ Excel & Plotly options', 'Bar chart', 'Line chart', 'Pie chart',
+            charts_type_options = ['_________________ Excel & Python options', 'Bar chart', 'Line chart', 'Pie chart',
                                    '_________________ Open GUI', 'Bubble, Radar, Scatter plots (Open GUI)', 'Boxplot (Open GUI)', 'Colormap (Open GUI)',
-                                   'Comparative bar charts', 'Geographic maps (Open GUI)', 'Gephi (Open GUI)', 'Sankey flowchart (Open GUI)', 'Sunburst chart (Open GUI)',
-                                   'Time mapper', 'Treemap chart (Open GUI)', 'Wordcloud (Open GUI)']
+                                   'Comparative bar charts (Open GUI)', 'Geographic maps (Open GUI)', 'Gephi (Open GUI)', 'Sankey flowchart (Open GUI)', 'Sunburst chart (Open GUI)',
+                                   'Time mapper (Open GUI)', 'Treemap chart (Open GUI)', 'Wordcloud (Open GUI)']
         charts_type_options_widget.set('Bar chart')
         charts_type_menu_lb = tk.OptionMenu(window,charts_type_options_widget,*charts_type_options)
         # place widget with hover-over info

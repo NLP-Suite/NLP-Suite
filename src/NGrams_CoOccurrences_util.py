@@ -60,7 +60,7 @@ def get_all_dataframe_for_sentence_cooccur(inputFilename, inputDir, targets,
         df = one_text_res(sentences, targets, index, IO_csv_util.dressFilenameForCSVHyperlink(file))
         all_results = pd.concat([all_results, df]) # Append the results to the all_results DataFrame
     all_results.to_csv(outputFilename,index=False)
-    print("Generation complete. Done!")
+    # print("Generation complete. Done!")
     return all_results
 
 def processSearchWords(inputStr):
@@ -582,7 +582,7 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
                 differentColumns_differentColors = False
                 csvField_color_list = []
                 doNotListIndividualFiles = True
-                collocation = True
+                collocation = False
                 import wordclouds_util
                 outputFiles2 = wordclouds_util.python_wordCloud(NgramsSearchFileName_txt, '', outputDir, configFileName,
                                                                 selectedImage="",

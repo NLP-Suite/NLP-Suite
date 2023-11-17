@@ -1,7 +1,7 @@
 # If there's an error that interrupted the operation within this script, PLEASE
 #1. (In Terminal) Type in sudo lsof -i tcp:9000 see the PID of the subprocess occupying the port
 #2. Type in kill -9 ***** to kill that subprocess
-#P.S ***** is the 5 digit PID
+#person_list.S ***** is the 5 digit PID
 
 # originally designed by Yi Wang March 2020
 # extensively edited and finalized by Claude Hu Fall 2020-2021
@@ -1007,7 +1007,7 @@ def date_in_filename(document, **kwargs):
 def date_get_tense(norm_date):
     tense = ''
     # print(norm_date)
-    if (len(norm_date) >= 9 and "PREV" in norm_date) or "OFFSET P" in norm_date or "PAST" in norm_date:
+    if (len(norm_date) >= 9 and "PREV" in norm_date) or "OFFSET person_list" in norm_date or "PAST" in norm_date:
         # print('past')
         tense = 'PAST'
     elif (len(norm_date) >= 6 and 'OFFSET' in norm_date) or "FUTURE" in norm_date:
@@ -1136,6 +1136,56 @@ def date_get_info(norm_date):
     #     tense = "OTHER"
     return tense
 
+# check if an NER tag is part of a multi-line tag (e.g., for locations, Soviet Union, United States;
+#   for PERSON Mao Zedung)
+#   when they are, the tokenEnd in current row is equal to tokenBegin of next row
+
+def check_NER_tokenBegin_tokenEnd(NER):
+    index = 0
+    new_NER= []
+    beginToken_currenRow = -1
+    currNERtag = ''
+    while index < len(NER):
+        # NER[index][1] contains the tag value, e.g., PERSON, CITY, ...
+        if beginToken_currenRow==-1:
+            beginToken_currenRow = NER[index][2]
+        endToken_currenRow = NER[index][3]
+        NERtag_currenRow = NER[index][1]
+        try:
+            beginToken_nextRow = NER[index + 1][2]
+            NERtag_nextRow = NER[index + 1][1]
+        except:
+            beginToken_nextRow = None
+            NERtag_nextRow = None
+        # the NER values but have the same beginning/ending values AND
+        #   be of the same tag type (e.g., PERSON)
+        #   unless LOCATION is the type; e.g., Denmark Street, is tagged as COUNTRY and LOCATION
+        if ((endToken_currenRow == beginToken_nextRow) or (beginToken_nextRow == None)) and \
+                (NERtag_currenRow == NERtag_nextRow) or ((NERtag_currenRow != NERtag_nextRow) and \
+                (NERtag_currenRow == 'COUNTRY' or NERtag_currenRow == 'STATE_OR_PROVINCE' or NERtag_currenRow == 'CITY' or NERtag_currenRow == 'LOCATION') and \
+                 (NERtag_nextRow == None or NERtag_nextRow == 'COUNTRY' or NERtag_nextRow == 'STATE_OR_PROVINCE' or NERtag_nextRow == 'CITY' or NERtag_nextRow == 'LOCATION')):
+            if currNERtag != '':
+                currNERtag = currNERtag + ' ' + str(NER[index][0])
+            else:
+                currNERtag = str(NER[index][0])
+            if beginToken_nextRow == None:
+                NER[index][0] = currNERtag
+                NER[index][2] = beginToken_currenRow
+                new_NER.append(NER[index])
+            index = index + 1
+            continue
+        else:
+            if currNERtag != '':
+                currNERtag = currNERtag + ' ' + str(NER[index][0])
+            else:
+                currNERtag = str(NER[index][0])
+            NER[index][0] = currNERtag
+            new_NER.append(NER[index])
+            beginToken_currenRow=-1
+            currNERtag = ''
+            index = index + 1
+    return new_NER
+
 def process_json_ner(config_filename,documentID, document, sentenceID, json, **kwargs):
     print("   Processing Json output file for NER annotator")
     # establish the kwarg local vars
@@ -1217,42 +1267,10 @@ def process_json_ner(config_filename,documentID, document, sentenceID, json, **k
                     else:
                         NER.append(temp)
 
-    # check if an NER tag is part of a multi-line tag (e.g., for locations, Soviet Union, United States; for PERSON Mao Zedung)
-    index = 0
-    # NER[index][1] contains the tag value, e.g., PERSON, CITY, ...
-    currNERtag = ''
-    while index < len(NER):
-        endToken_currenRow=NER[index][3]
-        NERtag_currenRow = NER[index][1]
-        try:
-            beginToken_nextRow=NER[index+1][2]
-            NERtag_nextRow = NER[index+1][1]
-        except:
-            beginToken_nextRow=None
-            NERtag_nextRow = None
-        # the NER values but have the same beginning/ending values AND be of the same tag type (e.g., PERSON)
-        if ((endToken_currenRow == beginToken_nextRow) or (beginToken_nextRow==None)) and \
-                (NERtag_currenRow==NERtag_nextRow):
-            if currNERtag != '':
-                currNERtag = currNERtag + ' ' + str(NER[index][0])
-            else:
-                currNERtag = str(NER[index][0])
-            if beginToken_nextRow==None:
-                NER[index][0]=currNERtag
-                result.append(NER[index])
-            index = index + 1
-            continue
-        else:
-            if currNERtag != '':
-                currNERtag = currNERtag + ' ' + str(NER[index][0])
-            else:
-                currNERtag = str(NER[index][0])
-        NER[index][0] = currNERtag
-        result.append(NER[index])
-        currNERtag=''
-        index = index + 1
+    # check tokenBegin & tokenEnd in current and next sentence
+    new_NER = check_NER_tokenBegin_tokenEnd(NER)
 
-    return result
+    return new_NER
 
 def process_json_sentiment(config_filename,documentID, document, sentenceID, json, **kwargs):
     print("   Processing Json output file for SENTIMENT annotator")
@@ -1554,11 +1572,29 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
 
         # TODO MINO: add Date Type columns
         # CYNTHIA: feed another information sentence['entitymentions'] to SVO_extraction to get locations
-        SVO, L, NER_value, T, T_S, T_T, P, N = Stanford_CoreNLP_SVO_enhanced_dependencies_util.SVO_extraction(sent_data, sentence['entitymentions'])# main function
+        SVO, location_list, loc_NER_value, T, T_S, T_T, per_NER_value, person_list, N = Stanford_CoreNLP_SVO_enhanced_dependencies_util.SVO_extraction(sent_data, sentence['entitymentions'])# main function
+        # per_NER_value currently not used
         nidx = 0
+        location_list = []
+        # person_list = []
+        new_NER_value = []
 
-        #CYNTHIA: " ".join(L) => "; ".join(L)
-        # ; added list of locations in SVO output (e.g., Los Angeles; New York; Washington)
+        for el in loc_NER_value:
+            # need to recompute location list in case locations have been regrouped
+            #   e.g., Denmark Street (COUNTRY, LOCATION) regrouped as Denmark Street
+            new_NER_value.append([el[0], el[1], el[2], el[3], sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+        loc_NER_value = check_NER_tokenBegin_tokenEnd(new_NER_value)
+        # recompute location_list as NER values may have changed
+        for el in loc_NER_value:
+            # need to recompute location list in case locations have been regrouped
+            #   e.g., Denmark Street (COUNTRY, LOCATION) regrouped as Denmark Street
+            location_list.append(el[0])
+            # if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(location_list) != 0:
+                # produce an intermediate location file
+                # locations.append([sentenceID, complete_sent, [[x,y] for x,y in zip(L,NER_value)]])
+            locations.append(el)
+
+        # CYNTHIA: added list of locations in SVO output (e.g., Los Angeles; New York; Washington)
         # TODO Mino: add Date Type columns
         for row in SVO:
             # SVO_brief.append([sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), row[0], row[1], row[2]])
@@ -1571,14 +1607,16 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
                 tmp_T_S = "; ".join(T_S)
                 tmp_T_T = "; ".join(T_T)
             if filename_embeds_date_var:
-                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), tmp_T_S, tmp_T_T, sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document),date_str])
+                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(location_list), "; ".join(person_list), " ".join(T), tmp_T_S, tmp_T_T, sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document),date_str])
             else:
-                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(L), "; ".join(P), " ".join(T), tmp_T_S, tmp_T_T, sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(location_list), "; ".join(person_list), " ".join(T), tmp_T_S, tmp_T_T, sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
             nidx += 1
-        # for each sentence, get locations
-        if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(L) != 0:
-            # produce an intermediate location file
-            locations.append([sentenceID, complete_sent, [[x,y] for x,y in zip(L,NER_value)]])
+        # # for each sentence, get locations
+        # if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(location_list) != 0:
+        #     # produce an intermediate location file
+        #     # locations.append([sentenceID, complete_sent, [[x,y] for x,y in zip(L,NER_value)]])
+        #
+        #     locations.append(NER_value)
 
     # TODO Mino
     if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True:
@@ -1655,15 +1693,15 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
         entitymentions = sentence['entitymentions']
         complete_sent = ''
         N = []  # list that stores the Negation information appear in sentences
-        L = []  # list that stores the location information appear in sentences
+        location_list = []  # list that stores the location information appear in sentences
         NER_value = []
         T = []  # list that stores the time information appear in sentences
         T_S = []  # list that stores normalized form of the time information appear in sentences
-        P = []  # list that stores person names appear in sentences
+        person_list = []  # list that stores person names appear in sentences
         # CYNTHIA: get locations from entitymentions
         for item in entitymentions:
             if item["ner"] is not None and item["ner"] in ['STATE_OR_PROVINCE', 'COUNTRY', "CITY", "LOCATION"]:
-                L.append(item["text"])
+                location_list.append(item["text"])
                 NER_value.append(item["ner"])
         for token in sentence['tokens']:
             if token["ner"] == "TIME" or token["ner"] == "DATE":
@@ -1674,7 +1712,7 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
                 except:
                     print("normalizedNER not available.")
             if token["ner"] == "PERSON":
-                P.append(token["word"])
+                person_list.append(token["word"])
 
             if token['originalText'] in string.punctuation:
                 complete_sent = complete_sent + token['originalText']
@@ -1708,14 +1746,14 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
         if len(container) > 0:
             for row in container:
                 if filename_embeds_date_var:
-                    openIE.append([row[0], row[1], row[2], 'N/A', "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S),date_str, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                    openIE.append([row[0], row[1], row[2], 'N/A', "; ".join(location_list), "; ".join(person_list), " ".join(T), "; ".join(T_S),date_str, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
                 else:
-                    openIE.append([row[0], row[1], row[2], 'N/A', "; ".join(L), "; ".join(P), " ".join(T), "; ".join(T_S), sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                    openIE.append([row[0], row[1], row[2], 'N/A', "; ".join(location_list), "; ".join(person_list), " ".join(T), "; ".join(T_S), sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
                 # nidx += 1
         # for each sentence, get locations
-        if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(L) != 0:
+        if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(location_list) != 0:
             # produce an intermediate location file
-            locations.append([sentenceID, complete_sent, [[x,y] for x,y in zip(L,NER_value)]])
+            locations.append([sentenceID, complete_sent, [[x,y] for x,y in zip(location_list,NER_value)]])
 
     if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True:
         visualize_GIS_maps(kwargs, locations, documentID, document, date_str)
@@ -2066,23 +2104,21 @@ def get_csv_column_unique_val_list(inputFilename, col):
 
 
 def visualize_GIS_maps(kwargs, locations, documentID, document, date_str):
-    # columns: Location, NER, Sentence ID, Sentence, Document ID, Document
+    # columns: Location, NER, tokenBegin, tokenEnd, Sentence ID, Sentence, Document ID, Document
     to_write = []
     for sent in locations:
-        for locs in sent[2]:
-            if ("extract_date_from_text_var" in kwargs and kwargs["extract_date_from_text_var"] == True) \
-                    or (
-                    "filename_embeds_date_var" in kwargs and kwargs["filename_embeds_date_var"] == True):
-                to_write.append(
-                    [locs[0], locs[1], sent[0], sent[1], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str]
-                )
-            else:
-                to_write.append(
-                    [locs[0], locs[1], sent[0], sent[1], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
-    columns = ["Location", "NER", "Sentence ID", "Sentence", "Document ID", "Document"]
+        if ("extract_date_from_text_var" in kwargs and kwargs["extract_date_from_text_var"] == True) \
+                or (
+                "filename_embeds_date_var" in kwargs and kwargs["filename_embeds_date_var"] == True):
+                # [locs[0], locs[1], sent[0], sent[1], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str]
+                # we need to check sent[5] for tokenBegin & tokenEnd
+                to_write.append([sent[0], sent[1], sent[2], sent[3], sent[4], sent[5], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str])
+        else:
+            to_write.append([sent[0], sent[1], sent[2], sent[3], sent[4], sent[5], documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+    columns = ["Location", "NER", "tokenBegin", "tokenEnd", "Sentence ID", "Sentence", "Document ID", "Document"]
     if ("extract_date_from_text_var" in kwargs and kwargs["extract_date_from_text_var"] == True) \
         or ("filename_embeds_date_var" in kwargs and kwargs["filename_embeds_date_var"] == True):
-        columns = ["Location", "NER", "Sentence ID", "Sentence", "Document ID", "Document", "Date"]
+        columns = ["Location", "NER", "tokenBegin", "tokenEnd", "Sentence ID", "Sentence", "Document ID", "Document", "Date"]
 
     df = pd.DataFrame(to_write, columns=columns)
     outputFilename= kwargs["location_filename"]

@@ -283,10 +283,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 svo_result_list.append(outputFiles[0])
 
             # TODO MINO: create normalize_date subdir and outputs
-            outputNormalizedDateDir = IO_files_util.make_output_subdirectory('', '', outputSVODir,
-                                                                label='normalized-date',
-                                                                silent=True)
-            nDateOutput = SVO_util.normalize_date_svo(SVO_filename, outputNormalizedDateDir, createCharts, chartPackage)
+            nDateOutput = SVO_util.normalize_date_svo(SVO_filename, outputSVODir, createCharts, chartPackage)
             if nDateOutput != None:
                 nDateSVOFilename=nDateOutput[0]
                 filesToOpen.extend(nDateOutput)
@@ -597,31 +594,29 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                      [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
                                      [1], [1]) # bold_var_list, italic_var_list
 
-                        if outputFiles!=None and outputFiles!='':
-                            if len(outputFiles) > 0:
-                                # since out_file produced by KML is a list cannot use append
-                                filesToOpen = filesToOpen + outputFiles
+                        if outputFiles != None:
+                            if isinstance(outputFiles, str):
+                                filesToOpen.append(outputFiles)
+                            else:
+                                filesToOpen.extend(outputFiles)
 
     # generate subset of files to be opened
 
     if openOutputFiles == True and len(filesToOpen) > 0:
         filesToOpenSubset = []
-        # add the SVO main file,
+        # add the SVO main files
+        filesToOpenSubset.append(SVO_filename)
+        # filesToOpenSubset.append(nDateSVOFilename)
         if filter_subjects_var.get() or filter_verbs_var.get() or filter_objects_var.get():
             filesToOpenSubset.append(SVO_filtered_filename)
-        else:
-            filesToOpenSubset.append(SVO_filename)
-            # filesToOpenSubset.append(nDateSVOFilename)
         for file in filesToOpen:
             # open all charts, all Google Earth and Google Maps maps, Gephi gexf network graph, html files, and wordclouds png files
-            if file[-4:] == '.kml' or file[-5:] == '.html' or file[-4:] == '.png' or file[-5:] == '.gexf' or \
-                file[-5:] == '.xlsx':
+            if file[-4:] == '.kml' or file[-5:] == '.html' or file[-4:] == '.png' or file[-5:] == '.gexf': # or \
+                # file[-5:] == '.xlsx':
                 filesToOpenSubset.append(file)
         filesToOpenSubset_string = ", \n   ".join(filesToOpenSubset)
         print("Subset of the " + str(len(filesToOpenSubset)) + " SVO files from the different subfolders to be opened:\n   " + str(filesToOpenSubset_string))
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
-
-#@@@
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(),

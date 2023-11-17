@@ -323,11 +323,12 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
             if outputSVOFilterDir == '':
                 return
 
-
     # Creating filtered sets
     s_filtered_set = set(open(filter_s_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_s else set()
+    # should add any PERSON or ORGANIZATION to the list, if these PERSON or ORGANIZATION values are not in the WordNet social-actor-list
     v_filtered_set = set(open(filter_v_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_v else set()
     o_filtered_set = set(open(filter_o_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_o else set()
+    # should add any PERSON or ORGANIZATION to the list, if these PERSON or ORGANIZATION values are not in the WordNet social-actor-list
 
     # Create DataFrames for lemmatized and filtered SVOs
     lemmatized_svo = df.copy()
@@ -616,13 +617,24 @@ def lemmatize_filter_svo_old(window,svo_file_name, filter_s, filter_v, filter_o,
 
     return filesToOpen
 
-# TODO MINO: add normalize_date visualization function for SVO
-def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackage='Excel'):
+def normalize_date_svo(inputFilename, outputDir, createCharts=True, chartPackage='Excel'):
     filesToOpen = []
 
+
+    # read the file to make sure there are dates to visualize
+    data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
+    # col='Date expression'
+    if data['Date expression'].empty or data['Date expression'].isna().all():
+        print("There no NER normalized dates for the extracted SVOs")
+        return
+
+    outputNormalizedDateDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                                     label='normalized-date',
+                                                                     silent=True)
+
     # Date expressions are in the form yesterday, tomorrow morning, the day before Christmas
-    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                                                        outputDir,
+    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
+                                                        outputNormalizedDateDir,
                                                         columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date expression'],
                                                         chart_title='Frequency Distribution of Date Expressions',
                                                         # count_var = 1 for columns of alphabetic values
@@ -639,8 +651,8 @@ def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackag
             filesToOpen.extend(outputFiles)
 
     # normalized dates are in the form PAST_REF, NEXT_IMMEDIATE P1D, ...
-    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                                                        outputDir,
+    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
+                                                        outputNormalizedDateDir,
                                                         columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Normalized date'],
                                                         chart_title='Frequency Distribution of Normalized Dates',
                                                         # count_var = 1 for columns of alphabetic values
@@ -657,8 +669,8 @@ def normalize_date_svo(outputFilename, outputDir, createCharts=True, chartPackag
             filesToOpen.extend(outputFiles)
 
     # Date types are in the form PAST, PRESENT, OTHER
-    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
-                                                        outputDir,
+    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
+                                                        outputNormalizedDateDir,
                                                         columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date type'],
                                                         chart_title='Frequency Distribution of Date Types',
                                                         # count_var = 1 for columns of alphabetic values
