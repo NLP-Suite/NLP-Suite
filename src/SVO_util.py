@@ -237,6 +237,9 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputSVODi
     return output_name
 
 def visualize_SVOs(fileName, outputDir, createCharts, chartPackage, filesToOpen, openFiles):
+    nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(fileName)
+    if nRecords==0:
+        return
     if 'lemma' in fileName:
         label = 'lemmatized'
         label1 = 'lemma'

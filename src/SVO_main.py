@@ -168,11 +168,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if outputSVODir == '':
         return
 
-    if coref_var:
-        # create a subdirectory of the output directory
-        outputCorefDir = IO_files_util.make_output_subdirectory('', '', outputCorefDir, '',
-                                                            silent=True)
-
     outputDir = outputSVODir # outputDir is the main subdir inside the main output directory inside which will go gender,
     # the outputDir folder inside the main output folder will contain subdir SVO, gender, GIS, quote, etc.
 
@@ -191,22 +186,25 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             mb.showwarning(title='Language',
                            message='The Stanford CoreNLP coreference resolution annotator is only available for English and Chinese.')
             return
+        # create a subdirectory of the output directory
+        outputCorefDir = IO_files_util.make_output_subdirectory('', '', outputCorefDir, '',
+                                                                silent=True)
         # inputFilename and inputDir are the original txt files to be coreferenced
         # 2 items are returned: filename string and true/False for error
-        files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename,
+        outputFiles, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename,
                                        inputFilename, inputDir, outputCorefDir,
                                        openOutputFiles, createCharts, chartPackage,
                                        language_var, memory_var, export_json_var,
                                        manual_coref_var)
         if error_indicator != 0:
             return
-        for file in files_to_open:
+        for file in outputFiles:
             # visualize the data produced under coref table
             if 'chart' in file or '.csv' in file:
                 filesToOpen.append(file)
 
         # changed the inputDir to the coreferenced dir
-        inputDir = outputCorefDir + os.sep + 'coref'
+        inputDir = outputCorefDir + os.sep + 'coref_' + package_var
         # only the inputDir will be used when coreferencing, whether it will contain a set of files or just one file
         inputFilename=''
 
@@ -278,6 +276,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 SVO_filename = outputFiles
                 svo_result_list.append(outputFiles)
             else:
+                if len(outputFiles)==0:
+                    return
                 filesToOpen.extend(outputFiles)
                 SVO_filename=outputFiles[0]
                 svo_result_list.append(outputFiles[0])
@@ -400,6 +400,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 # -------------------------------------------------------------------------------------------------------------------------------------
 # Lemmatizing and Filtering SVO for all packages
 
+    SVO_lemmatized_filename = ''
+    SVO_filtered_filename = ''
     if len(svo_result_list)>0:
         if lemmatize_subjects or lemmatize_verbs or lemmatize_objects or \
             filter_subjects or filter_verbs or filter_objects:
@@ -409,8 +411,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
                         outputSVOSVODir, createCharts, chartPackage)
             if output != None:
-                SVO_lemmatized_filename=''
-                SVO_filtered_filename=''
                 if 'English' in language: # SVO filtered by WordNet are available for English only
                     if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
                         SVO_lemmatized_filename=output[0]

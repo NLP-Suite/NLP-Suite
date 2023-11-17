@@ -325,7 +325,11 @@ def check_CoreNLPVersion(CoreNLPdir,calling_script='',silent=False):
     except:
         # no internet
         return
-    github_version = response.json()["name"][1:]
+    try:
+        # for bizarre reasons, the code sometimes breaks with keyerror on "name"
+        github_version = response.json()["name"][1:]
+    except:
+        return
     # get local stanford corenlp version
     onlyfiles = [f for f in os.listdir(CoreNLPdir) if os.path.isfile(os.path.join(CoreNLPdir, f))]
     for f in onlyfiles:

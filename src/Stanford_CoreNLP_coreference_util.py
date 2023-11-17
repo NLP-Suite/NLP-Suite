@@ -21,10 +21,10 @@ import GUI_IO_util
 
 # part of the code about search text function is adapted from
 # https://www.geeksforgeeks.org/create-find-and-replace-features-in-tkinter-text-widget/
-def createCompareWindow(origin_display, coref_display, origin_non_coref, corefed_non_coref, root, result):
+def createCorefCompareWindow(origin_display, coref_display, origin_non_coref, corefed_non_coref, root, result):
     top = Toplevel(root)
     # top.title("Comparing results from {0} LEFT: ORIGINAL text; in BLUE pronouns NOT corefed; in YELLOW pronouns corefed; RIGHT: COREFED text; in RED pronouns corefed; Edit text on the right and Save".format('Neural Network'))
-    top.title("Comparing coref results (LEFT: ORIGINAL text; RIGHT: COREFED text). In BLUE pronouns NOT corefed; in RED pronouns corefed. EDIT text on the right and Save (or Quit). Use FIND bar to search text.".format('Neural Network'))
+    top.title("Corefed results compared (LEFT: ORIGINAL text; RIGHT: COREFED text). In BLUE pronouns NOT corefed; in RED pronouns corefed. EDIT text on the right. Use FIND bar to search text. CLOSE to exit and save changes".format('Neural Network'))
     # adding of single line text box
     topFrame = tk.Frame(top)
     topFrame.pack(fill="both", expand=False, side=tk.TOP, padx=300)
@@ -32,8 +32,10 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, corefed
     searchBox.pack(fill = BOTH, expand=False)
     searchBox.focus_set()
     # adding of search button
-    findButton = Button(topFrame, text ='Find')
+    findButton = Button(topFrame, text ='Find', width=10)
     findButton.pack()
+    closeButton = Button(topFrame, text ='Close', width=10)
+    closeButton.pack()
 
     text1 = tk.Text(top, height=40, width=GUI_IO_util.widget_width_long)
     text1.pack(side=tk.LEFT)
@@ -89,11 +91,14 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, corefed
         top.update()
 
     def exit_btn():
-        msgbox_save = tk.messagebox.askyesnocancel("Finish Manual Editing", "Do you want to QUIT manual editing without saving changes?")
-        if msgbox_save:
+        global answer
+        answer = tk.messagebox.askyesnocancel("Exit Manual Editing", "Do you want to SAVE any changes you have made in manual editing before quitting?")
+        if answer: # save
+            exit_btn_save()
+        elif answer==False: # quit w/o saving
             top.destroy()
             top.update()
-        return
+        return answer
 
     # function to search string in text
     def find():
@@ -135,15 +140,14 @@ def createCompareWindow(origin_display, coref_display, origin_non_coref, corefed
             # mark located string as red
             text1.tag_config('found', foreground='red', background='gainsboro')
         searchBox.focus_set()
+
     findButton.config(command = find)
 
-    bottomFrame = tk.Frame(top)
-    bottomFrame.pack(fill="both", expand=True, side=tk.BOTTOM)
-    tk.Button(bottomFrame, text="Quit", command=exit_btn).pack(side="left")
-    tk.Button(bottomFrame, text="Save", command=exit_btn_save).pack(side="left")
+    closeButton.config(command = exit_btn)
 
     top.protocol("WM_DELETE_WINDOW", exit_btn)
     root.wait_window(top)
+    return answer
 
 caps = "([A-HJ-Z])"
 prefixes = "(Mr|St|Mrs|Ms|Dr)[.]"
@@ -297,7 +301,9 @@ def manualCoref(original_file, corefed_file, outputFile):
         return 1
     result = []
     result.append("\n".join(corefed_text.split("\n")[2:]))
-    createCompareWindow(origin_display, corefed_display, origin_non_coref, corefed_non_coref, GUI_util.window, result)
+    answer = createCorefCompareWindow(origin_display, corefed_display, origin_non_coref, corefed_non_coref, GUI_util.window, result)
+    if answer==False: # use coreferenced text with no manual edits
+        result[0]=corefed_text
     f = open(outputFile, "w", encoding='utf-8', errors='ignore')
     try:
         f.write(result[0])
