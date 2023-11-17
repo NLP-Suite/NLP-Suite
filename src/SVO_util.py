@@ -624,15 +624,10 @@ def normalize_date_svo(inputFilename, outputDir, createCharts=True, chartPackage
     # read the file to make sure there are dates to visualize
     data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
     # col='Date expression'
-    col=6
-    temp = not data['Date expression'].notnull
-    temp = list(data.iloc[:col])
-    temp = len(data.get('Date expression'))
-    data.iloc[:-6].\
-        apply(lambda x: sorted(x, key=pd.notnull), 1)
-    if temp<10:
+    if data['Date expression'].empty or data['Date expression'].isna().all():
+        print("There no NER normalized dates for the extracted SVOs")
         return
-    # SIMON; no point continuing if there are no dates to visualize
+
     outputNormalizedDateDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                                      label='normalized-date',
                                                                      silent=True)
