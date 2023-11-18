@@ -329,9 +329,11 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
     # Creating filtered sets
     s_filtered_set = set(open(filter_s_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_s else set()
     # should add any PERSON or ORGANIZATION to the list, if these PERSON or ORGANIZATION values are not in the WordNet social-actor-list
+    # multi name S & O (e.g., Mao Zedong) in WordNet are listed with underscores (Mao_Zedong); we must do the same for multi-word names
     v_filtered_set = set(open(filter_v_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_v else set()
     o_filtered_set = set(open(filter_o_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_o else set()
     # should add any PERSON or ORGANIZATION to the list, if these PERSON or ORGANIZATION values are not in the WordNet social-actor-list
+    # multi name S & O (e.g., Mao Zedong) in WordNet are listed with underscores (Mao_Zedong); we must do the same for multi-word names
 
     # Create DataFrames for lemmatized and filtered SVOs
     lemmatized_svo = df.copy()
@@ -630,7 +632,7 @@ def normalize_date_svo(inputFilename, outputDir, createCharts=True, chartPackage
     if data['Date expression'].empty or data['Date expression'].isna().all():
         print("There no NER normalized dates for the extracted SVOs")
         return
-
+    nEmtyCells=str(int(data['Date expression'].isna().sum()))
     outputNormalizedDateDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                                      label='normalized-date',
                                                                      silent=True)
@@ -643,7 +645,7 @@ def normalize_date_svo(inputFilename, outputDir, createCharts=True, chartPackage
                                                         # count_var = 1 for columns of alphabetic values
                                                         count_var=1, hover_label=[],
                                                         outputFileNameType='date-express', #'NER_info_bar',
-                                                        column_xAxis_label='Date expression',
+                                                        column_xAxis_label='Date expression (includes '+nEmtyCells+' SVOs with no date)',
                                                         groupByList=['Document'],
                                                         plotList=['Frequency'],
                                                         chart_title_label='Date Expressions')
@@ -661,7 +663,7 @@ def normalize_date_svo(inputFilename, outputDir, createCharts=True, chartPackage
                                                         # count_var = 1 for columns of alphabetic values
                                                         count_var=1, hover_label=[],
                                                         outputFileNameType='date', #'NER_date_bar',
-                                                        column_xAxis_label='Normalized date',
+                                                        column_xAxis_label='Normalized date (includes '+nEmtyCells+' SVOs with no date)',
                                                         groupByList=['Document'],
                                                         plotList=['Frequency'],
                                                         chart_title_label='Normalized Dates')
@@ -682,7 +684,7 @@ def normalize_date_svo(inputFilename, outputDir, createCharts=True, chartPackage
                                                         column_xAxis_label='Date type',
                                                         groupByList=['Document'],
                                                         plotList=['Frequency'],
-                                                        chart_title_label='Date Types')
+                                                        chart_title_label='Date Types (includes '+nEmtyCells+' SVOs with no date)')
     if outputFiles!=None:
         if isinstance(outputFiles, str):
             filesToOpen.append(outputFiles)

@@ -40,7 +40,9 @@ def readfile(doc):
         fullText = fullText.replace('\n', ' ')
     return fullText
 def get_all_dataframe_for_sentence_cooccur(inputFilename, inputDir, targets,
-                                           configFileName, outputDir, outputFilename):
+                                           configFileName, outputDir):
+    outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Stanza',
+                                                             'Co-occurrence_within_sentence')
     files = IO_files_util.getFileList(inputFilename, inputDir,
                                       '.txt', silent=False, configFileName=configFileName)
     o2 = os.path.dirname(outputDir+"Sentence")
@@ -61,7 +63,7 @@ def get_all_dataframe_for_sentence_cooccur(inputFilename, inputDir, targets,
         all_results = pd.concat([all_results, df]) # Append the results to the all_results DataFrame
     all_results.to_csv(outputFilename,index=False)
     # print("Generation complete. Done!")
-    return all_results
+    return outputFilename
 
 def processSearchWords(inputStr):
     word_list = []

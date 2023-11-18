@@ -513,216 +513,217 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
         if search_option == "Exact match":
             word_match = True
 
-        # Win/Mac may use different quotation, we replace any directional quotes to straight ones
-        right_double = u"\u201C"  # “
-        left_double = u"\u201D"  # ”
-        straight_double = u"\u0022"  # "
-        if (right_double in inputString) or (left_double in inputString):
-            inputString = inputString.replace(right_double, straight_double)
-            inputString = inputString.replace(left_double, straight_double)
-        if inputString.count(straight_double) == 2:
-            # Append ', ' to the end of search_words_var so that literal_eval creates a list
-            inputString += ', '
-        # convert the string inputString to a list []
-        def Convert(inputString):
-            wordList = list(inputString.split(","))
-            return wordList
+    # Win/Mac may use different quotation, we replace any directional quotes to straight ones
+    right_double = u"\u201C"  # “
+    left_double = u"\u201D"  # ”
+    straight_double = u"\u0022"  # "
+    if (right_double in inputString) or (left_double in inputString):
+        inputString = inputString.replace(right_double, straight_double)
+        inputString = inputString.replace(left_double, straight_double)
+    if inputString.count(straight_double) == 2:
+        # Append ', ' to the end of search_words_var so that literal_eval creates a list
+        inputString += ', '
+    # convert the string inputString to a list []
+    def Convert(inputString):
+        wordList = list(inputString.split(","))
+        return wordList
 
-        wordList = Convert(inputString)
+    wordList = Convert(inputString)
 
-        if inputFilename!='':
-            inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
-            outputDir_sentences = os.path.join(outputDir, "sentences_" + inputFileBase)
-        else:
-            # processing a directory
-            inputDirBase = os.path.basename(inputDir)
-            outputDir_sentences = os.path.join(outputDir, "sentences_Dir_" + inputDirBase)
+    if inputFilename!='':
+        inputFileBase = os.path.basename(inputFilename)[0:-4]  # without .txt
+        outputDir_sentences = os.path.join(outputDir, "sentences_" + inputFileBase)
+    else:
+        # processing a directory
+        inputDirBase = os.path.basename(inputDir)
+        outputDir_sentences = os.path.join(outputDir, "sentences_Dir_" + inputDirBase)
 
-        # create a subdirectory in the output directory
-        # should be silent because the user has already agreed to overwrite an existing upper directory
-        outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_with_searchword', silent=True)
-        if outputDir_sentences_extract == '':
-            return
-        outputDir_sentences_extract_wo_searchword = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_wo_searchword', silent=True)
-        if outputDir_sentences_extract_wo_searchword == '':
-            return
+    # create a subdirectory in the output directory
+    # should be silent because the user has already agreed to overwrite an existing upper directory
+    outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_with_searchword', silent=True)
+    if outputDir_sentences_extract == '':
+        return
+    outputDir_sentences_extract_wo_searchword = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='extract_wo_searchword', silent=True)
+    if outputDir_sentences_extract_wo_searchword == '':
+        return
 
-        startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                                       'Started running the Word search with extraction function at',
-                                                       True, '', True, '',  False)
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                                   'Started running the Word search with extraction function at',
+                                                   True, '', True, '',  False)
 
-        fileID = 0
-        file_extract_written = False
-        file_extract_wo_searchword_written = False
-        nDocsExtractOutput = 0
-        nDocsExtractMinusOutput = 0
+    fileID = 0
+    file_extract_written = False
+    file_extract_wo_searchword_written = False
+    nDocsExtractOutput = 0
+    nDocsExtractMinusOutput = 0
 
-        outputFilenameCSV = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                    'search_sent_extract')
+    outputFilenameCSV = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                'search_sent_extract')
 
-        print(inputDir, outputDir)
+    print(inputDir, outputDir)
 
-        with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore') as f:
-            f.write('Search Word, Sentence ID, Relative position in document, Sentence, Document ID, Document\n')
+    with open(outputFilenameCSV, 'w', encoding='utf-8', errors='ignore') as f:
+        f.write('Search Word, Sentence ID, Relative position in document, Sentence, Document ID, Document\n')
 
-        textToProcess = ''
-        for doc in inputDocs:
-            wordFound = False
-            fileID = fileID + 1
-            head, tail = os.path.split(doc)
-            print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
-            with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
-                text = inputFile.read().replace("\n", " ")
-            outputFilename_extract = os.path.join(outputDir_sentences_extract,tail[:-4]) + "_extract_with_searchword.txt"
-            outputFilename_extract_wo_searchword = os.path.join(outputDir_sentences_extract_wo_searchword,tail[:-4]) + "_extract_wo_searchword.txt"
-            with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
-                    outputFilename_extract_wo_searchword, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_wo_searchword:
+    textToProcess = ''
+    for doc in inputDocs:
+        wordFound = False
+        fileID = fileID + 1
+        head, tail = os.path.split(doc)
+        print("Processing file " + str(fileID) + "/" + str(Ndocs) + ' ' + tail)
+        with open(doc, 'r', encoding='utf-8', errors='ignore') as inputFile:
+            text = inputFile.read().replace("\n", " ")
+        outputFilename_extract = os.path.join(outputDir_sentences_extract,tail[:-4]) + "_extract_with_searchword.txt"
+        outputFilename_extract_wo_searchword = os.path.join(outputDir_sentences_extract_wo_searchword,tail[:-4]) + "_extract_wo_searchword.txt"
+        with open(outputFilename_extract, 'w', encoding='utf-8', errors='ignore') as outputFile_extract, open(
+                outputFilename_extract_wo_searchword, 'w', encoding='utf-8', errors='ignore') as outputFile_extract_wo_searchword:
 
-                import hashfile
-                if hashfile.calculate_checksum(doc) + "doc" in hashmap:
-                    sentences = hashmap[hashfile.calculate_checksum(doc)+"doc"]
-                    print('using cache...')
-                else:
-                    sentences_tokens = sent_tokenize_stanza(stanzaPipeLine(text), False)
-                    sentences = [s.text for s in sentences_tokens]
-                    hashmap[hashfile.calculate_checksum(doc) + "doc"] = sentences
-                    hashfile.writehash(hashmap, hashOutputDir)
-                    print("creating cache...")
-
-                n_sentences_extract = 0
-                n_sentences_extract_wo_searchword = 0
-                sentence_index = 0
-
-                for sentence in sentences:
-                    if len(sentence) == 0:
-                        sentence_index += 1
-                        continue
-                    sentence_index += 1
-                    wordFound = False
-                    sentenceSV = sentence
-                    nextSentence = False
-                    for keyword in wordList:
-                        if nextSentence == True:
-                            # go to next sentence; do not write the same sentence several times if it contains several words in wordList
-                            break
-                        if case_sensitive==False:
-                            sentence = sentence.lower()
-                            keyword = keyword.lower()
-                        # TODO should check that a single word is processed rather than a collocation
-                        #   when a single word is processed should tokenize
-                        #       or the keyword "rent" would be found in rental, renting, etc.
-                        #       unless a partial match is selected
-
-                        # using Stanza would be more accurate but slower
-                        # if keyword in word_tokenize_stanza(stanzaPipeLine(sentence.lower())):
-                        if word_match:
-                            sentence = re.findall(r'\b\w+\b', sentence)
-                            sentencecopy = sentence
-                        else:
-                            sentencecopy = sentence
-                        if keyword in sentence:
-                            with open(outputFilenameCSV,'a',encoding='utf-8',errors='ignore') as f:
-                                f.write(keyword+','+
-                                        str(sentences.index(sentencecopy))+','+
-                                        str(sentences.index(sentencecopy)/len(sentences))+','+
-                                        str(csv_escape(''.join(sentencecopy)))+','+
-                                        str(inputDocs.index(doc))+','+
-                                        IO_csv_util.dressFilenameForCSVHyperlink(doc)+
-                                        '\n')
-
-                            wordFound = True
-                            nextSentence = True
-                            n_sentences_extract += 1
-                            # TODO should process -K +K options for sentences
-                            new_sentences = find_k_adjacent_elements(sentences,sentenceSV,plus_K_var,minus_K_var)
-                            outputFile_extract.write(' '.join(new_sentences) + "\n")  # write out original sentence
-                            file_extract_written = True
-                            # create a string containing all the searched sentences so that they can be displayed ina wordcloud
-                            textToProcess = textToProcess + ' '.join(new_sentences) + "\n"
-                    # if none of the words in wordList are found in a sentence
-                    #   write the sentence to the extract_wo_searchword file
-                    if wordFound == False:
-                        n_sentences_extract_wo_searchword += 1
-                        outputFile_extract_wo_searchword.write(sentenceSV + " ")  # write out original sentence
-                        file_extract_wo_searchword_written = True
-            if file_extract_written == True:
-                # filesToOpen.append(outputFilename_extract)
-                nDocsExtractOutput += 1
-                file_extract_written = False
-            outputFile_extract.close()
-            if n_sentences_extract == 0: # remove empty file
-                os.remove(outputFilename_extract)
-            if file_extract_wo_searchword_written:
-                # filesToOpen.append(outputFilename_extract_wo_searchword)
-                nDocsExtractMinusOutput += 1
-                file_extract_wo_searchword_written = False
-            outputFile_extract_wo_searchword.close()
-            if n_sentences_extract_wo_searchword == 0: # remove empty file
-                os.remove(outputFilename_extract_wo_searchword)
-        if Ndocs == 1:
-            msg1 = str(Ndocs) + " file was"
-        else:
-            msg1 = str(Ndocs) + " files were"
-        if nDocsExtractOutput == 1:
-            msg2 = str(nDocsExtractOutput) + " file was"
-        else:
-            msg2 = str(nDocsExtractOutput) + " files were"
-        if nDocsExtractMinusOutput == 1:
-            msg3 = str(nDocsExtractMinusOutput) + " file was"
-        else:
-            msg3 = str(nDocsExtractMinusOutput) + " files were"
-        mb.showwarning("Warning", msg1 + " processed in input.\n\n" +
-                       msg2 + " written with _extract_with_searchword in the filename.\n\n" +
-                       msg3 + " written with _extract_wo_searchword in the filename.\n\n" +
-                       "Files were written to the subdirectories " + outputDir_sentences_extract + " and " + outputDir_sentences_extract_wo_searchword + " of the output directory." +
-                       "\n\nPlease, check the output subdirectories for filenames ending with _extract_with_searchword.txt and _extract_wo_searchword.txt.")
-
-        if textToProcess=='':
-            mb.showwarning(title='Warning',message='There are no sentences in your input document(s) containing the selected search word(s).')
-            return
-        # write to text file textToProcess
-        outputFilenameTxt = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'search_single_text')
-        filesToOpen.append(outputFilenameTxt)
-        outputTxtFile = open(outputFilenameTxt, "w")
-        outputTxtFile.write(textToProcess)
-        outputTxtFile.close()
-
-        import wordclouds_util
-
-        # run with all default values;
-        use_contour_only = False
-        max_words = 100
-        font = 'Default'
-        prefer_horizontal = .9
-        lemmatize = False
-        exclude_stopwords = True
-        exclude_punctuation = True
-        lowercase = False
-        differentPOS_differentColors = False
-        differentColumns_differentColors = False
-        csvField_color_list = []
-        doNotListIndividualFiles = True
-        collocation = False
-        import wordclouds_util
-        outputFiles = wordclouds_util.python_wordCloud(outputFilenameTxt, '', outputDir, configFileName, selectedImage="",
-                                                  use_contour_only=use_contour_only,
-                                                  prefer_horizontal=prefer_horizontal, font=font, max_words=max_words,
-                                                  lemmatize=lemmatize, exclude_stopwords=exclude_stopwords,
-                                                  exclude_punctuation=exclude_punctuation, lowercase=lowercase,
-                                                  differentPOS_differentColors=differentPOS_differentColors,
-                                                  differentColumns_differentColors=differentColumns_differentColors,
-                                                  csvField_color_list=csvField_color_list,
-                                                  doNotListIndividualFiles=doNotListIndividualFiles,
-                                                  openOutputFiles=False, collocation=collocation)
-        
-        if outputFiles != None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
+            import hashfile
+            if hashfile.calculate_checksum(doc) + "doc" in hashmap:
+                sentences = hashmap[hashfile.calculate_checksum(doc)+"doc"]
+                print('using cache...')
             else:
-                filesToOpen.extend(outputFiles)
-        IO_files_util.openExplorer(window, outputDir_sentences_extract)
+                sentences_tokens = sent_tokenize_stanza(stanzaPipeLine(text), False)
+                sentences = [s.text for s in sentences_tokens]
+                hashmap[hashfile.calculate_checksum(doc) + "doc"] = sentences
+                hashfile.writehash(hashmap, hashOutputDir)
+                print("creating cache...")
 
-        IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the Word search with extraction function at',
-                                           True, '', True, startTime,  False)
+            n_sentences_extract = 0
+            n_sentences_extract_wo_searchword = 0
+            sentence_index = 0
+
+            for sentence in sentences:
+                if len(sentence) == 0:
+                    sentence_index += 1
+                    continue
+                sentence_index += 1
+                wordFound = False
+                sentenceSV = sentence
+                nextSentence = False
+                for keyword in wordList:
+                    if nextSentence == True:
+                        # go to next sentence; do not write the same sentence several times if it contains several words in wordList
+                        break
+                    if case_sensitive==False:
+                        sentence = sentence.lower()
+                        keyword = keyword.lower()
+
+                    # TODO should check that a single word is processed rather than a collocation
+                    #   when a single word is processed should tokenize
+                    #       or the keyword "rent" would be found in rental, renting, etc.
+                    #       unless a partial match is selected
+
+                    # using Stanza would be more accurate but slower
+                    # if keyword in word_tokenize_stanza(stanzaPipeLine(sentence.lower())):
+                    if word_match:
+                        sentence = re.findall(r'\b\w+\b', sentence)
+                        sentencecopy = sentence
+                    else:
+                        sentencecopy = sentence
+                    if keyword in sentence:
+                        with open(outputFilenameCSV,'a',encoding='utf-8',errors='ignore') as f:
+                            f.write(keyword+','+
+                                    str(sentences.index(sentencecopy))+','+
+                                    str(sentences.index(sentencecopy)/len(sentences))+','+
+                                    str(csv_escape(''.join(sentencecopy)))+','+
+                                    str(inputDocs.index(doc))+','+
+                                    IO_csv_util.dressFilenameForCSVHyperlink(doc)+
+                                    '\n')
+
+                        wordFound = True
+                        nextSentence = True
+                        n_sentences_extract += 1
+                        # TODO should process -K +K options for sentences
+                        new_sentences = find_k_adjacent_elements(sentences,sentenceSV,plus_K_var,minus_K_var)
+                        outputFile_extract.write(' '.join(new_sentences) + "\n")  # write out original sentence
+                        file_extract_written = True
+                        # create a string containing all the searched sentences so that they can be displayed ina wordcloud
+                        textToProcess = textToProcess + ' '.join(new_sentences) + "\n"
+                # if none of the words in wordList are found in a sentence
+                #   write the sentence to the extract_wo_searchword file
+                if wordFound == False:
+                    n_sentences_extract_wo_searchword += 1
+                    outputFile_extract_wo_searchword.write(sentenceSV + " ")  # write out original sentence
+                    file_extract_wo_searchword_written = True
+        if file_extract_written == True:
+            # filesToOpen.append(outputFilename_extract)
+            nDocsExtractOutput += 1
+            file_extract_written = False
+        outputFile_extract.close()
+        if n_sentences_extract == 0: # remove empty file
+            os.remove(outputFilename_extract)
+        if file_extract_wo_searchword_written:
+            # filesToOpen.append(outputFilename_extract_wo_searchword)
+            nDocsExtractMinusOutput += 1
+            file_extract_wo_searchword_written = False
+        outputFile_extract_wo_searchword.close()
+        if n_sentences_extract_wo_searchword == 0: # remove empty file
+            os.remove(outputFilename_extract_wo_searchword)
+    if Ndocs == 1:
+        msg1 = str(Ndocs) + " file was"
+    else:
+        msg1 = str(Ndocs) + " files were"
+    if nDocsExtractOutput == 1:
+        msg2 = str(nDocsExtractOutput) + " file was"
+    else:
+        msg2 = str(nDocsExtractOutput) + " files were"
+    if nDocsExtractMinusOutput == 1:
+        msg3 = str(nDocsExtractMinusOutput) + " file was"
+    else:
+        msg3 = str(nDocsExtractMinusOutput) + " files were"
+    mb.showwarning("Warning", msg1 + " processed in input.\n\n" +
+                   msg2 + " written with _extract_with_searchword in the filename.\n\n" +
+                   msg3 + " written with _extract_wo_searchword in the filename.\n\n" +
+                   "Files were written to the subdirectories " + outputDir_sentences_extract + " and " + outputDir_sentences_extract_wo_searchword + " of the output directory." +
+                   "\n\nPlease, check the output subdirectories for filenames ending with _extract_with_searchword.txt and _extract_wo_searchword.txt.")
+
+    if textToProcess=='':
+        mb.showwarning(title='Warning',message='There are no sentences in your input document(s) containing the selected search word(s).')
+        return
+    # write to text file textToProcess
+    outputFilenameTxt = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'search_single_text')
+    filesToOpen.append(outputFilenameTxt)
+    outputTxtFile = open(outputFilenameTxt, "w")
+    outputTxtFile.write(textToProcess)
+    outputTxtFile.close()
+
+    import wordclouds_util
+
+    # run with all default values;
+    use_contour_only = False
+    max_words = 100
+    font = 'Default'
+    prefer_horizontal = .9
+    lemmatize = False
+    exclude_stopwords = True
+    exclude_punctuation = True
+    lowercase = False
+    differentPOS_differentColors = False
+    differentColumns_differentColors = False
+    csvField_color_list = []
+    doNotListIndividualFiles = True
+    collocation = False
+    import wordclouds_util
+    outputFiles = wordclouds_util.python_wordCloud(outputFilenameTxt, '', outputDir, configFileName, selectedImage="",
+                                              use_contour_only=use_contour_only,
+                                              prefer_horizontal=prefer_horizontal, font=font, max_words=max_words,
+                                              lemmatize=lemmatize, exclude_stopwords=exclude_stopwords,
+                                              exclude_punctuation=exclude_punctuation, lowercase=lowercase,
+                                              differentPOS_differentColors=differentPOS_differentColors,
+                                              differentColumns_differentColors=differentColumns_differentColors,
+                                              csvField_color_list=csvField_color_list,
+                                              doNotListIndividualFiles=doNotListIndividualFiles,
+                                              openOutputFiles=False, collocation=collocation)
+
+    if outputFiles != None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
+    IO_files_util.openExplorer(window, outputDir_sentences_extract)
+
+    IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running the Word search with extraction function at',
+                                       True, '', True, startTime,  False)
 
     return filesToOpen

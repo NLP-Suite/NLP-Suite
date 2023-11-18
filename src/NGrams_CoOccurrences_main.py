@@ -59,28 +59,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
 
 
-    if within_sentence_co_occurrence_search_var:
-        # print("OK executing efficient solution for sentence cooccurence...")
-        # print("Cannot use old method because too slow and improper")
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Stanza', 'Co-reference_within_sentence')
-        # print(outputFilename)
-        outputFiles = NGrams_CoOccurrences_util.get_all_dataframe_for_sentence_cooccur(inputFilename,
-                                                                         inputDir, search_words.split(', '),
-                                                                    config_filename, outputDir, outputFilename)
-        if outputFiles != None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
-            else:
-                filesToOpen.extend(outputFiles)
-        # if openOutputFiles == True:
-        #     pass
-        #     mb.showwarning(title='Execution complete',
-        #                message='Execution complete. For safety reason you should go to output Directory to open the file by yourself')
-
-            #IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
-        return
-
-
     # print(date_options, temporal_aggregation_var, date_format, items_separator_var, date_position_var)
 
     print("language_list",language_list)
@@ -214,7 +192,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             #                                                       createCharts, chartPackage,
             #                                                       bySentenceIndex_character_var)
 
-# The following sett of options apply to both search and viewer
+# The following set of options apply to both search and viewer
 
     case_sensitive = False
     normalize=False
@@ -340,7 +318,23 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                      True)
 
         # run VIEWER ------------------------------------------------------------------------------------
-        filesToOpen = NGrams_CoOccurrences_util.NGrams_search_VIEWER(
+
+        if within_sentence_co_occurrence_search_var:
+            # print("OK executing efficient solution for sentence cooccurence...")
+            # print("Cannot use old method because too slow and improper")
+            # outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Stanza', 'Co-occurrence_within_sentence')
+            # print(outputFilename)
+            outputFiles = NGrams_CoOccurrences_util.get_all_dataframe_for_sentence_cooccur(inputFilename,
+                                                                                           inputDir,
+                                                                                           search_words.split(', '),
+                                                                                           config_filename, outputDir)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+        outputFiles = NGrams_CoOccurrences_util.NGrams_search_VIEWER(
                 inputDir,
                 outputDir,
                 config_filename,
@@ -360,6 +354,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 date_position_var,
                 viewer_options_list,
                 ngrams_size,Ngrams_search_var,csv_file_var)
+
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
