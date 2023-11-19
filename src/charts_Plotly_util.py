@@ -5,7 +5,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"charts_Plotly_util",['os','pandas','plotly','seaborn','matplotlib','kaleido'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"charts_Plotly_util",['os','pandas','plotly','kaleido'])==False:
     sys.exit(0)
 # if Plotly fails, install version 0.1.0 of kaleido
 # pip install kaleido==0.1.0post1
@@ -15,9 +15,6 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
-import seaborn as sns
-import matplotlib.pyplot as plt
-
 
 import IO_csv_util
 
