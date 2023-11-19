@@ -390,9 +390,10 @@ def mallet_heatmap(composition_file, topics_file, outputDir, fig_set={"figure.fi
                      ha="left")  # Align text on left
             topic_num += 1
 
-    plt.savefig(outputDir + os.sep + "aggregate_corrs.png")
-
-    return heatmap
+    outputFilename = outputDir + os.sep + "MALLET_topics.png"
+    plt.savefig(outputFilename)
+    # should return the saved filename
+    return outputFilename # heatmap
 
 
 # Example
