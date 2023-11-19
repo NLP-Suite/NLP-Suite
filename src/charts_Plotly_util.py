@@ -339,4 +339,3 @@ def plot_multi_line_chart_w_slider_px(fileName, chart_title, col_to_be_ploted, s
     #save_chart(figs, outputDir, chart_title, False)
     return figs
 
-

@@ -59,28 +59,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
 
 
-    if within_sentence_co_occurrence_search_var:
-        # print("OK executing efficient solution for sentence cooccurence...")
-        # print("Cannot use old method because too slow and improper")
-        outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Stanza', 'Co-reference_within_sentence')
-        # print(outputFilename)
-        outputFiles = NGrams_CoOccurrences_util.get_all_dataframe_for_sentence_cooccur(inputFilename,
-                                                                         inputDir, search_words.split(', '),
-                                                                    config_filename, outputDir, outputFilename)
-        if outputFiles != None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
-            else:
-                filesToOpen.extend(outputFiles)
-        # if openOutputFiles == True:
-        #     pass
-        #     mb.showwarning(title='Execution complete',
-        #                message='Execution complete. For safety reason you should go to output Directory to open the file by yourself')
-
-            #IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
-        return
-
-
     # print(date_options, temporal_aggregation_var, date_format, items_separator_var, date_position_var)
 
     print("language_list",language_list)
@@ -214,7 +192,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             #                                                       createCharts, chartPackage,
             #                                                       bySentenceIndex_character_var)
 
-# The following sett of options apply to both search and viewer
+# The following set of options apply to both search and viewer
 
     case_sensitive = False
     normalize=False
@@ -340,7 +318,23 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                      True)
 
         # run VIEWER ------------------------------------------------------------------------------------
-        filesToOpen = NGrams_CoOccurrences_util.NGrams_search_VIEWER(
+
+        if within_sentence_co_occurrence_search_var:
+            # print("OK executing efficient solution for sentence cooccurence...")
+            # print("Cannot use old method because too slow and improper")
+            # outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Stanza', 'Co-occurrence_within_sentence')
+            # print(outputFilename)
+            outputFiles = NGrams_CoOccurrences_util.get_all_dataframe_for_sentence_cooccur(inputFilename,
+                                                                                           inputDir,
+                                                                                           search_words.split(', '),
+                                                                                           config_filename, outputDir)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+        outputFiles = NGrams_CoOccurrences_util.NGrams_search_VIEWER(
                 inputDir,
                 outputDir,
                 config_filename,
@@ -360,6 +354,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 date_position_var,
                 viewer_options_list,
                 ngrams_size,Ngrams_search_var,csv_file_var)
+
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -395,7 +395,7 @@ IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
                                                  GUI_height_brief=560, # height at brief display
-                                                 GUI_height_full=610, # height at full display
+                                                 GUI_height_full=600, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1) # to be added for full display
@@ -731,7 +731,7 @@ within_sentence_co_occurrence_search_checkbox = tk.Checkbutton(window, text='Co-
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
                                    within_sentence_co_occurrence_search_checkbox,
                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Tick the checkbox to search co-occurring words within sentence, rather than within document (defalt: within document)")
+                                   "Tick the checkbox to search co-occurring words within sentence (default: within document only)\nWhen ticking this option, BOTH csv files within doocument AND within sentence will be produced")
 
 def date_processing():
     if CoOcc_Viewer_var.get() and date_options.get():
@@ -923,17 +923,20 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
                                   'Please, use the dropdown menu to select different options for N-grams. Clisk the + button to select more options; the Reset button to start fresh; the Show button to visualize the options already selected.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates the following three files:\n  1. csv file of frequencies of the twenty most frequent words;\n  2. csv file of the following statistics for each column in the previous csv file and for each document in the corpus: Count, Mean, Mode, Median, Standard deviation, Minimum, Maximum, Skewness, Kurtosis, 25% quantile, 50% quantile; 75% quantile;\n  3. Excel line chart of the number of sentences and words for each document.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
         'Please, enter the comma-separated list of single words or collocations (i.e., sets of words such as coming out, beautiful sunny day) for which you want to know N-Grams/Co-occurrences statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
+        'Please, use the dropdown menu to select various options that can be applied to the VIEWER. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nYou can make your searches CASE SENSITIVE.\n\nYou can NORMALIZE results. Only works for N-Grams. Formula: search word frequency / total number of all words e.g: word "nurse" occurs once in year 1892, and year 1892 has a total of 1000 words. Then the normalized frequency will be 1/1000.\n\nYou can SCALE results. Only works for N-Grams. It applies the min-max normalization to frequency of search words. After the min-max normalization is done, each column of data (i.e., each search word) will fall in the same range.\n\nYou can LEMMATIZE words for your searches (e.g., be instead of being, is, was). The routine relies on the Stanford CoreNLP for lemmatizing words.\n\nFinally, you can select to display minimal information or full information.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                 'Please, tick the checkbox if you wish to search the output csv files created by the "Compute N-grams" algorithms.\n\nYou will be prompted to select the type of csv file to be used for the search (bigram, trigram,...)')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
         'Please, tick the Ngram VIEWER checkbox if you wish to run the Ngram Viewer script.'\
-        '\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrene Viewer script.'\
+        '\n\nTick the Co-Occurrence VIEWER checkbox if you wish to run the Co-Occurrence Viewer script.'\
         '\n\nYou can run both Viewers at the same time.'\
         '\n\nThe NGrams part of the algorithm requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872). '\
         '\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXES "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'\
         '\n\nFor both viewers, results will be visualized in Excel line plots.'\
-        '\n\nFor N-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. '\
-        'For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
+        '\n\nFor N-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear.'\
+        'For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.' \
+        '\n\nThe WITHIN SENTENCE option will produce two different types of output csv files: search word(s) co-occurring within document AND within sentence')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
         'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences. ' \
             'YOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXS "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'\
@@ -941,8 +944,6 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
             '\n\nFor both viewers, results will be visualized in Excel line plots.'\
             '\n\nFor N-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear. '\
             'For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-        'Please, use the dropdown menu to select various options that can be applied to the VIEWER. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nYou can make your searches CASE SENSITIVE.\n\nYou can NORMALIZE results. Only works for N-Grams. Formula: search word frequency / total number of all words e.g: word "nurse" occurs once in year 1892, and year 1892 has a total of 1000 words. Then the normalized frequency will be 1/1000.\n\nYou can SCALE results. Only works for N-Grams. It applies the min-max normalization to frequency of search words. After the min-max normalization is done, each column of data (i.e., each search word) will fall in the same range.\n\nYou can LEMMATIZE words for your searches (e.g., be instead of being, is, was). The routine relies on the Stanford CoreNLP for lemmatizing words.\n\nFinally, you can select to display minimal information or full information.')
     # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
     #     'Please, click on the button to open the GUI where you can compute N-grams.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
