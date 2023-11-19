@@ -348,7 +348,7 @@ import matplotlib.pyplot as plt
 def mallet_heatmap(composition_file, topics_file, outputDir, fig_set={"figure.figsize": (8, 6), "figure.dpi": 300},
                    show_topics=True):
     """
-    Uses Seaborn to create a heatmap of topics generated using MALLET topic modeling.
+    Uses Seaborn to create a heatmap of topics generated using MALLET topic modeling
 
     Args:
         composition_file r(str): File name and directory of MALLET topic composition file. Usually NLP-MALLET_Output_Keys.csv.

@@ -264,31 +264,33 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
     if createCharts:
         # the MALLET files do not have headers to be able to use charts_util.visualize_chart
 
-        columns_to_be_plotted_xAxis=[]
-        columns_to_be_plotted_yAxis=[]
-        for i in range(2, numTopics):
-            columns_to_be_plotted_yAxis.append([1, i])
-
-        hover_label=[]
-        chart_title = 'MALLET Topics\nTopic Contribution to Document'
-        xAxis = 'Document'
-        yAxis = 'Topic weight in document'
-
-        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, Composition_FileName, outputDir,
-                                                  'MALLET_TM',
-                                                  chartPackage=chartPackage,
-                                                  chart_type_list=["bar"],
-                                                  chart_title=chart_title,
-                                                  column_xAxis_label_var=xAxis,
-                                                  hover_info_column_list=hover_label,
-                                                  count_var=0,
-                                                  column_yAxis_label_var=yAxis)
-
-        if outputFiles!=None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
-            else:
-                filesToOpen.extend(outputFiles)
+        # this plot s commented out because it requires hover-over effects not completed in statistics_csv
+        #   substituted with the heatmap
+        # columns_to_be_plotted_xAxis=[]
+        # columns_to_be_plotted_yAxis=[]
+        # for i in range(2, numTopics):
+        #     columns_to_be_plotted_yAxis.append([1, i])
+        #
+        # hover_label=[]
+        # chart_title = 'MALLET Topics\nTopic Contribution to Document'
+        # xAxis = 'Document'
+        # yAxis = 'Topic weight in document'
+        #
+        # outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, Composition_FileName, outputDir,
+        #                                           'MALLET_TM',
+        #                                           chartPackage=chartPackage,
+        #                                           chart_type_list=["bar"],
+        #                                           chart_title=chart_title,
+        #                                           column_xAxis_label_var=xAxis,
+        #                                           hover_info_column_list=hover_label,
+        #                                           count_var=0,
+        #                                           column_yAxis_label_var=yAxis)
+        #
+        # if outputFiles!=None:
+        #     if isinstance(outputFiles, str):
+        #         filesToOpen.append(outputFiles)
+        #     else:
+        #         filesToOpen.extend(outputFiles)
 
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0, 1]]
@@ -316,7 +318,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
     # Composition_FileName, Keys_FileName
 
     import charts_Plotly_util
-    outputFiles = charts_Plotly_util.mallet_heatmap(Composition_FileName, Keys_FileName, outputDir, fig_set={"figure.figsize": (8, 6), "figure.dpi": 300},
+    outputFiles = charts_Plotly_util.mallet_heatmap(Composition_FileName, Keys_FileName, outputDir, fig_set={"figure.figsize": (23, 21), "figure.dpi": 300},
                    show_topics=True)
 
     if outputFiles != None:
