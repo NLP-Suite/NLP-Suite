@@ -313,6 +313,18 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
             else:
                 filesToOpen.extend(outputFiles)
 
+    # Composition_FileName, Keys_FileName
+
+    import charts_Plotly_util
+    outputFiles = charts_Plotly_util.mallet_heatmap(Composition_FileName, Keys_FileName, outputDir, fig_set={"figure.figsize": (8, 6), "figure.dpi": 300},
+                   show_topics=True)
+
+    if outputFiles != None:
+        if isinstance(outputFiles, str):
+            filesToOpen.append(outputFiles)
+        else:
+            filesToOpen.extend(outputFiles)
+
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir)
         filesToOpen=[] # to avoid opening files twice, here and in calling function

@@ -345,7 +345,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 #
 
-def mallet_heatmap(composition_file, topics_file, fig_set={"figure.figsize": (8, 6), "figure.dpi": 300},
+def mallet_heatmap(composition_file, topics_file, outputDir, fig_set={"figure.figsize": (8, 6), "figure.dpi": 300},
                    show_topics=True):
     """
     Uses Seaborn to create a heatmap of topics generated using MALLET topic modeling.
@@ -360,13 +360,13 @@ def mallet_heatmap(composition_file, topics_file, fig_set={"figure.figsize": (8,
         heatmap (object): Seaborn heatmap plot object.
     """
 
-    topics = pd.read_csv(topics_file, names=["Topic", "Weight", "Keys"])  # Topic keys file
+    topics = pd.read_csv(topics_file, names=["Topic", "Weight", "Keys"], encoding='utf-8',on_bad_lines='skip')  # Topic keys file
 
     # Add column names to topic composition file before reading
     composition_names = ["Document ID", "Document"]
     for topic_num in range(1, len(topics.index) + 1):
         composition_names.append(f"Topic {topic_num}")
-    composition = pd.read_csv(composition_file, names=composition_names)
+    composition = pd.read_csv(composition_file, names=composition_names, encoding='utf-8',on_bad_lines='skip')
     composition.drop(["Document ID"], axis=1, inplace=True)  # Drop ID, DataFrames are already indexed
 
     document_titles = composition["Document"]  # Clean hyperlinks function here
@@ -389,6 +389,8 @@ def mallet_heatmap(composition_file, topics_file, fig_set={"figure.figsize": (8,
                      f"Topic {topic_num}: {keys}",
                      ha="left")  # Align text on left
             topic_num += 1
+
+    plt.savefig(outputDir + os.sep + "aggregate_corrs.png")
 
     return heatmap
 
