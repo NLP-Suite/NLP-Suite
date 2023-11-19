@@ -126,7 +126,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     lemmatize = False
     search_keywords_found = False
     search_within_sentence = False
-    word_match = False
+    exact_word_match = False
     for search_option in search_options_list:
         if search_option == 'Case sensitive (default)':
             case_sensitive = True
@@ -137,7 +137,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         if search_option == "Lemmatize":  # not available yet
             lemmatize = True
         if search_option == "Exact match":
-            word_match = True
+            exact_word_match = True
 
     nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'search')
@@ -286,7 +286,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
 
 
 
-                            if word_match:
+                            if exact_word_match:
                                 sent = re.findall(r'\b\w+\b', sentence)
                             else:
                                 sent = sentence
@@ -497,7 +497,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
     from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 
     case_sensitive = False
-    word_match = False
+    exact_word_match = False
     lemmatize = False
     search_keywords_found = False
     search_within_sentence = False
@@ -511,7 +511,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
         if search_option == "Lemmatize":  # not available yet
             lemmatize = True
         if search_option == "Exact match":
-            word_match = True
+            exact_word_match = True
 
     # Win/Mac may use different quotation, we replace any directional quotes to straight ones
     right_double = u"\u201C"  # “
@@ -616,9 +616,10 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
 
                     # using Stanza would be more accurate but slower
                     # if keyword in word_tokenize_stanza(stanzaPipeLine(sentence.lower())):
-                    if word_match:
-                        sentence = re.findall(r'\b\w+\b', sentence)
-                        sentencecopy = sentence
+                    if exact_word_match:
+                        if type(sentence) == str:
+                            sentencecopy = sentence
+                            sentence = re.findall(r'\b\w+\b', sentence)
                     else:
                         sentencecopy = sentence
                     if keyword in sentence:
