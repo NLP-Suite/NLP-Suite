@@ -66,11 +66,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         config_util.get_date_options(config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
-    if extra_GUIs_var and extra_GUIs_menu_var!='':
-        if 'checking' in extra_GUIs_menu_var:
-            call('python file_checker_converter_cleaner_main.py', shell=True)
-        elif 'coref' in extra_GUIs_menu_var:
-            call('python coreference_main.py', shell=True)
+    # if extra_GUIs_var and extra_GUIs_menu_var!='':
+    #     if 'checking' in extra_GUIs_menu_var:
+    #         call('python file_checker_converter_cleaner_main.py', shell=True)
+    #     elif 'coref' in extra_GUIs_menu_var:
+    #         call('python coreference_main.py', shell=True)
 
     if parser_var == 0 and CoNLL_table_analyzer_var == 1:
         mb.showinfo("Warning", "You have selected to open the CoNLL table analyser GUI. This option expects to run the parser first.\n\nPlease, tick the CoreNLP parser checkbox and try again.")
@@ -429,9 +429,15 @@ quote_var = tk.IntVar()
 y_multiplier_integer_SV=0 # used to set the parser widget on the proper GUI line
 y_multiplier_integer_SV1=0 # used to set the quote_var widget and coref widget on the proper GUI line
 
-def open_GUI(param):
+def open_GUI(*args):
     if extra_GUIs_var.get():
         extra_GUIs_menu.configure(state='normal')
+    if extra_GUIs_menu_var.get():
+        if 'checking' in extra_GUIs_menu_var.get():
+            call('python file_checker_converter_cleaner_main.py', shell=True)
+        elif 'coref' in extra_GUIs_menu_var.get():
+            call('python coreference_main.py', shell=True)
+extra_GUIs_menu_var.trace('w',open_GUI)
 
 extra_GUIs_var.set(0)
 extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for pre-processing ', variable=extra_GUIs_var, onvalue=1, offvalue=0, command=lambda: open_GUI(extra_GUIs_menu_var.get()))
@@ -445,21 +451,8 @@ extra_GUIs_menu.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    extra_GUIs_menu,
                                    False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
-                                   "Select the complexity/readability analysis you wish to perform (* for all); widget disabled until checkbox ticked.")
-
-
-# pre_processing_button = tk.Button(window, width=GUI_IO_util.widget_width_medium, text='Pre-processing tools: file checking & cleaning (Open GUI)',command=lambda: open_GUI('preprocess'))
-# # place widget with hover-over info
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-#                                    pre_processing_button,
-#                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-#                                    "Click on the button to open the GUI")
-# coreference_button = tk.Button(window, width=GUI_IO_util.widget_width_medium, text='Coreference resolution (Open GUI)',command=lambda: open_GUI('coref'))
-# # place widget with hover-over info
-# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-#                                    coreference_button,
-#                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-#                                    "Click on the button to open the GUI")
+                                   "Select other related types of analysis you wish to perform" \
+                                   "\nThe selected GUI will open without having to press RUN")
 
 y_multiplier_integer_SV=y_multiplier_integer
 

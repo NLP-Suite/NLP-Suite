@@ -57,19 +57,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
     openOutputFilesSV=openOutputFiles
     outputDir_style=outputDir
 
-    if extra_GUIs_var and extra_GUIs_menu_var!='':
-        if 'Spelling' in extra_GUIs_menu_var:
-            call('python file_spell_checker_main.py', shell=True)
-        if 'statistics' in extra_GUIs_menu_var:
-            call('python statistics_txt_main.py', shell=True)
-        if 'N-grams' in extra_GUIs_menu_var:
-            call('python NGrams_CoOccurrences_main.py', shell=True)
-        if 'Nominalization' in extra_GUIs_menu_var:
-            call('python nominalization_main.py', shell=True)
-        if 'CoNLL' in extra_GUIs_menu_var:
-            call('python CoNLL_table_analyzer_main.py', shell=True)
-        if 'WordNet' in extra_GUIs_menu_var:
-            call('python knowledge_graphs_WordNet_main.py', shell=True)
 
     if (extra_GUIs_var == False and complexity_readability_analysis_var == False and
         vocabulary_analysis_var == False and
@@ -391,7 +378,26 @@ extra_GUIs_menu.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    extra_GUIs_menu,
                                    False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
-                                   "Select other related types of analysis you wish to perform")
+                                   "Select other related types of analysis you wish to perform" \
+                                    "\nThe selected GUI will open without having to press RUN")
+
+def open_GUI(*args):
+    if extra_GUIs_var:
+        extra_GUIs_menu.configure(state='normal')
+    if extra_GUIs_menu_var.get():
+        if 'Spelling' in extra_GUIs_menu_var.get():
+            call('python file_spell_checker_main.py', shell=True)
+        if 'statistics' in extra_GUIs_menu_var.get():
+            call('python statistics_txt_main.py', shell=True)
+        if 'N-grams' in extra_GUIs_menu_var.get():
+            call('python NGrams_CoOccurrences_main.py', shell=True)
+        if 'Nominalization' in extra_GUIs_menu_var.get():
+            call('python nominalization_main.py', shell=True)
+        if 'CoNLL' in extra_GUIs_menu_var.get():
+            call('python CoNLL_table_analyzer_main.py', shell=True)
+        if 'WordNet' in extra_GUIs_menu_var.get():
+            call('python knowledge_graphs_WordNet_main.py', shell=True)
+extra_GUIs_menu_var.trace('w',open_GUI)
 
 complexity_readability_analysis_var.set(0)
 complexity_readability_analysis_checkbox = tk.Checkbutton(window, text='Complexity/readability analysis', variable=complexity_readability_analysis_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())

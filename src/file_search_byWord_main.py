@@ -56,15 +56,15 @@ def run(inputFilename,inputDir, outputDir,
          if result == False: # No
             return
 
-    if extra_GUIs_var.get():
-        if 'CoNLL' in extra_GUIs_menu_var.get():
-            call("python CoNLL_table_analyzer_main.py", shell=True)
-        if 'Style' in extra_GUIs_menu_var.get():
-            call("python style_analysis_main.py", shell=True)
-        if 'Ngrams searches' in extra_GUIs_menu_var.get():
-            call("python NGrams_CoOccurrences_main.py", shell=True)
-        if 'Wordnet' in extra_GUIs_menu_var.get():
-            call("python knowledge_graphs_WordNet_main.py", shell=True)
+    # if extra_GUIs_var.get():
+    #     if 'CoNLL' in extra_GUIs_menu_var.get():
+    #         call("python CoNLL_table_analyzer_main.py", shell=True)
+    #     if 'Style' in extra_GUIs_menu_var.get():
+    #         call("python style_analysis_main.py", shell=True)
+    #     if 'Ngrams searches' in extra_GUIs_menu_var.get():
+    #         call("python NGrams_CoOccurrences_main.py", shell=True)
+    #     if 'Wordnet' in extra_GUIs_menu_var.get():
+    #         call("python knowledge_graphs_WordNet_main.py", shell=True)
 
     # # create a subdirectory of the output directory
     # outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search',
@@ -206,13 +206,31 @@ extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analy
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Ngrams searches & VIEWER','Wordnet searches','CoNLL table searches', 'Style analysis')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'CoNLL table searches', 'Ngrams searches & VIEWER','Wordnet searches', 'Style analysis')
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    extra_GUIs_menu,
                                    False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
-                                   "Select other related types of analysis you wish to perform")
+                                   "Select other related types of analysis you wish to perform" \
+                                    "\nThe selected GUI will open without having to press RUN")
+
+def open_GUI(*args):
+    extra_GUIs_menu.configure(state='disabled')
+    if extra_GUIs_var.get():
+        extra_GUIs_menu.configure(state='normal')
+    else:
+        return
+    if extra_GUIs_var.get():
+        if 'CoNLL' in extra_GUIs_menu_var.get():
+            call("python CoNLL_table_analyzer_main.py", shell=True)
+        if 'Style' in extra_GUIs_menu_var.get():
+            call("python style_analysis_main.py", shell=True)
+        if 'Ngrams searches' in extra_GUIs_menu_var.get():
+            call("python NGrams_CoOccurrences_main.py", shell=True)
+        if 'Wordnet' in extra_GUIs_menu_var.get():
+            call("python knowledge_graphs_WordNet_main.py", shell=True)
+extra_GUIs_menu_var.trace('w',open_GUI)
 
 search_options_menu_var.set('Case sensitive (default)')
 search_options_menu_lb = tk.Label(window, text='Search options')

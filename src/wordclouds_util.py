@@ -237,7 +237,8 @@ def processColorList(currenttext, color_to_words, csvField_color_list, myfile):
     return currenttext, color_to_words
 
 # add bg_image_flag parameter to indicate whether to add background image
-def display_wordCloud_sep_color(inputFilename, inputDir, outputDir, text, color_to_words, transformed_image_mask,collocation,prefer_horizontal, bg_image = None,bg_image_flag = False, font = None, max_words = 100):
+# display_wordCloud_sep_color(inputFilename, outputDir, currenttext, color_to_words, transformed_image_mask, collocation, prefer_horizontal, bg_image = bg_image, bg_image_flag= bg_image_flag)
+def display_wordCloud_sep_color(inputFilename, inputDir, outputDir, text, color_to_words, transformed_image_mask, collocation, prefer_horizontal, bg_image = None,bg_image_flag = False, font = None, max_words = 100):
     # stopwords dealt with in main function
     stopwords=''
     c_wid = 0 if bg_image_flag else 3
@@ -377,7 +378,7 @@ def processCsvColumns(inputFilename, inputDir, outputDir, openOutputFiles,csvFie
             currenttext, color_to_words = processColorList(currenttext, color_to_words, csvField_color_list, myfile)
             tempOutputfile=''
             if currenttext!='':
-                tempOutputfile = display_wordCloud_sep_color(inputFilename, outputDir, currenttext, color_to_words, transformed_image_mask, collocation, prefer_horizontal, bg_image = bg_image, bg_image_flag= bg_image_flag)
+                tempOutputfile = display_wordCloud_sep_color(inputFilename, inputDir, outputDir, currenttext, color_to_words, transformed_image_mask, collocation, prefer_horizontal, bg_image = bg_image, bg_image_flag= bg_image_flag)
     myfile.close()
     return tempOutputfile
 
@@ -494,19 +495,12 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
         #   to avoid the same improper word to appear with lower and upper case at the beginning of a sentence
         stannlp = stanza.Pipeline(lang='en', processors='tokenize, mwt')
         runStanza = True
-        stannlp = stanza.Pipeline(lang='en', processors='tokenize, mwt')
+        processors = 'tokenize, mwt'
         if lemmatize:
-            # stanza.download('en')#set the annotator that gives postag
-            stannlp = stanza.Pipeline(lang='en', processors='tokenize, mwt, lemma')
-            runStanza=True
+            processors = processors + ', lemma'
         if exclude_punctuation or differentPOS_differentColors:
-            # stanza.download('en') #set the annotator that gives postag
-            stannlp = stanza.Pipeline(lang='en', processors='tokenize,mwt,pos')
-            runStanza = True
-        if lemmatize and (exclude_punctuation or differentPOS_differentColors):
-            # stanza.download('en')  # set the annotator that gives postag
-            stannlp = stanza.Pipeline(lang='en', processors='tokenize,mwt,lemma,pos')
-            runStanza = True
+            processors = processors + ', pos' #, ner'
+        stannlp = stanza.Pipeline(lang='en', processors=processors)
 
     if runStanza:
         startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Running STANZA & wordcloud',
@@ -539,9 +533,10 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                 try:
                     # this assumes that the input csv file is a CoNLL table
                     df = pd.read_csv(doc, encoding='utf-8',on_bad_lines='skip')
-                    postags_ = df['POS']
                     forms_ = df['Form']
                     lemmas_ = df['Lemma']
+                    postags_ = df['POS']
+                    # ners_ = df['NER']
 
                     #text: summing tokens in each line together
                     words_ = []
@@ -557,9 +552,9 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                         # print("pos: ", postags_[i])
                         # RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, GREY for ADVERBS
                         #   YELLOW for anything else; no longer used
-                        if len(postags_[j]) >= 2 and postags_[j][0:2] == "VB":
+                        if len(postags_[j]) >= 2 and 'VB' in postags_[j][0:2]: # == "VB":
                             color_to_words[blue_code].append(words_[j])
-                        elif len(postags_[j]) >= 2 and postags_[j][0:2] == "NN":
+                        elif len(postags_[j]) >= 2 and 'NN' in postags_[j][0:2]: # == "NN":
                             color_to_words[red_code].append(words_[j])
                         elif len(postags_[j]) >= 2 and postags_[j][0:2] == "JJ":
                             color_to_words[green_code].append(words_[j])
@@ -567,7 +562,9 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                             color_to_words[grey_code].append(words_[j])
                         # else:  # should not process? Skip any other tags?
                         #     color_to_words[yellow_code].append(words_[j])
-                        if postags_[j][0:2] == "NN" or postags_[j][0:2] == "VB" or \
+                        # if postags_[j][0:2] == "NN" or postags_[j][0:2] == "VB" or \
+                        #         postags_[j][0:2] == "JJ" or postags_[j][0:2] == "RB":
+                        if 'NN' in postags_[j][0:2] or 'VB' in postags_[j][0:2] or \
                                 postags_[j][0:2] == "JJ" or postags_[j][0:2] == "RB":
                             textToProcess = textToProcess + ' ' + words_[j]
                 except:
@@ -588,8 +585,12 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                     textToProcess = ''
                     annotated = stannlp(currenttext)
                     for sent_id in range(len(annotated.sentences)):
+                        # words do not contain ner; tokens do
+                        # words is a single list []; tokes a double list [[]]
+                        # for word in annotated.sentences[sent_id].tokens:
                         for word in annotated.sentences[sent_id].words:
-                            print("--------------------word.text.lower()",word.text.lower())
+                            # pos & upos have the same tag value
+                            print("--------------------word.text.lower() & pos",word.text.lower(), word.pos)
                             if word.text.lower() == "'s" or word.text.lower() == "’s" or word.text.lower() == "s":
                                 continue  # do not process the s of a saxon genitive
                             # RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, GREY for ADVERBS
@@ -615,7 +616,9 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                             if exclude_punctuation:
                                 if word.pos == "PUNCT":
                                     continue  # do not process punctuation marks
-                            if word.pos == "NOUN":
+                            # word.pos PROPN
+                            # if word.upos == "NOUN":
+                            if word.pos == "NOUN" or word.pos == "PROPN":
                                 color_to_words[red_code].append(word_str)
                             elif word.pos == "VERB":
                                 color_to_words[blue_code].append(word_str)
@@ -624,7 +627,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                             elif word.pos == "ADV":
                                 color_to_words[grey_code].append(word_str)
                             if differentPOS_differentColors:
-                                if word.pos != "NOUN" and word.pos != "VERB" and \
+                                if word.pos != "NOUN" and word.pos != "PROPN" and word.pos != "VERB" and \
                                         word.pos != "ADJ" and word.pos != "ADV":
                                     continue
 
@@ -677,10 +680,11 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                          message=str(NumEmptyDocs) + ' file(s) empty in the input directory\n' + str(
                              inputDir) + '\n\nFile(s) listed in command line. Please, make sure to check the file(s) content.')
 
-    if openOutputFiles:
-        head, scriptName = os.path.split(os.path.basename(__file__))
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
-        filesToOpen = None
+    #@@@ 11/20/2023
+    # if openOutputFiles:
+    #     head, scriptName = os.path.split(os.path.basename(__file__))
+    #     IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+    #     filesToOpen = None
     return filesToOpen
 
     # plt.show()

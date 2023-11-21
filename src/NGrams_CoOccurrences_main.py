@@ -75,13 +75,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     #     if result == False:
     #         return
 
-    if extra_GUIs_var.get() and extra_GUIs_menu_var.get()!='':
-        if 'CoNLL' in extra_GUIs_menu_var.get():
-            call('python CoNLL_table_analyzer_main.py', shell=True)
-        if 'WordNet' in extra_GUIs_menu_var.get():
-            call('python knowledge_graphs_WordNet_main.py', shell=True)
-        if 'Word search' in extra_GUIs_menu_var.get():
-            call("python file_search_byWord_main.py", shell=True)
+    # if extra_GUIs_var.get() and extra_GUIs_menu_var.get()!='':
+    #     if 'CoNLL' in extra_GUIs_menu_var.get():
+    #         call('python CoNLL_table_analyzer_main.py', shell=True)
+    #     if 'WordNet' in extra_GUIs_menu_var.get():
+    #         call('python knowledge_graphs_WordNet_main.py', shell=True)
+    #     if 'Word search' in extra_GUIs_menu_var.get():
+    #         call("python file_search_byWord_main.py", shell=True)
 
     # get the date options from filename
     filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(
@@ -468,13 +468,34 @@ extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analy
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Word searches','Wordnet searches','Style analysis')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Word searches','Wordnet searches','CoNLL table analyzer', 'Corpus statistics', 'Style analysis')
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
                                    extra_GUIs_menu,
                                    False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
-                                   "Select other related types of analysis you wish to perform")
+                                   "Select other related types of analysis you wish to perform" \
+                                    "\nThe selected GUI will open without having to press RUN")
+
+def open_GUI(*args):
+    extra_GUIs_menu.configure(state='disabled')
+    if extra_GUIs_var.get():
+        extra_GUIs_menu.configure(state='normal')
+    else:
+        return
+    if extra_GUIs_var.get():
+        if 'CoNLL' in extra_GUIs_menu_var.get():
+            call("python CoNLL_table_analyzer_main.py", shell=True)
+        if 'statistics' in extra_GUIs_menu_var.get():
+            call("python statistics_txt_main.py", shell=True)
+        if 'Style' in extra_GUIs_menu_var.get():
+            call("python style_analysis_main.py", shell=True)
+        if 'WordNet' in extra_GUIs_menu_var.get():
+            call('python knowledge_graphs_WordNet_main.py', shell=True)
+        if 'Word search' in extra_GUIs_menu_var.get():
+            call("python file_search_byWord_main.py", shell=True)
+
+extra_GUIs_menu_var.trace('w',open_GUI)
 
 Ngrams_compute_var.set(0)
 Ngrams_compute_checkbox = tk.Checkbutton(window, text='Compute N-grams', variable=Ngrams_compute_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())

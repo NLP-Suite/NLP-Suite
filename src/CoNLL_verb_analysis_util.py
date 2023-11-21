@@ -54,14 +54,18 @@ cla_open_csv = False  # if run from command line, will check if they want to ope
 
 def compute_stats(data):
 	global form_list, postag_list, postag_counter, deprel_list, deprel_counter
-	form_list = []
+	verb_postags = ['VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ']
+	data = [tok for tok in data if (tok[3] in verb_postags)]
 	form_list = [i[1] for i in data]
-	form_list = []
+	lemma_list = [i[2] for i in data]
 	postag_list = [i[3] for i in data]
 	deprel_list = [i[6] for i in data]
+
+	form_counter = Counter(form_list)
+	lemma_counter = Counter(lemma_list)
 	postag_counter = Counter(postag_list)
 	deprel_counter = Counter(deprel_list)
-	return form_list, postag_list, postag_counter, deprel_list, deprel_counter
+	return form_list, form_counter, lemma_list, lemma_counter, postag_list, postag_counter, deprel_list, deprel_counter
 
 
 # VERB VOICE ----------------------------------------------------------------------------------------------
@@ -406,26 +410,27 @@ def verb_tense_data_preparation(data):
 	dat = sorted(dat, key=lambda x: int(x[recordID_position]))
 	return dat, verb_tense_stats
 
-# tense analysis; compute frequencies
-# def verb_tense_compute_frequencies(data, data_divided_sents):
-# 	global postag_counter
-# 	verb_future_list = []
-# 	verb_gerund_list = []
-# 	verb_infinitive_list = []
-# 	verb_past_list = []
-# 	verb_past_principle_list = []
-# 	verb_present_list = []
-# 	# must be sorted in descending order
-# 	form_list, postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
-# 	verb_tense_stats = [['Verb Tense', 'Frequencies'],
-# 				   # ['Future', postag_counter['VBD']],
-# 				   ['Gerund', postag_counter['VBG']],
-# 				   ['Infinitive', postag_counter['VB']],
-# 				   ['Past', postag_counter['VBD']],
-# 				   ['Past Principle/Passive', postag_counter['VBN']],
-# 				   ['Present', postag_counter['VBP']]]
+def verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
+	global postag_counter
+	# must be sorted in descending order
+	form_list, form_counter, lemma_list, lemma_counter, postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
+	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb',
+																'list')
+	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
+																   'Verb','stats')
 
-# 	return verb_tense_list, verb_tense_stats
+	df = pd.DataFrame({'Form': form_list, 'Lemma': lemma_list})
+	IO_csv_util.df_to_csv(GUI_util.window, df, verb_file_name, headers=['Form', 'Lemma'], index=False,
+						  language_encoding='utf-8')
+
+	form_df = pd.DataFrame(form_counter.items(), columns=['Form', 'Form Frequency'])
+	lemma_df = pd.DataFrame(lemma_counter.items(), columns=['Lemma', 'Lemma Frequency'])
+
+	merged_df = pd.concat([form_df, lemma_df], axis=1)
+	IO_csv_util.df_to_csv(GUI_util.window, merged_df, verb_stats_file_name, headers=['Form', 'Form Frequency', 'Lemma', 'Lemma Frequency'], index=False,
+						  language_encoding='utf-8')
+
+	return verb_file_name, verb_stats_file_name
 
 
 def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
@@ -485,12 +490,19 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 		#
 	return filesToOpen
 
+# calls functions that compute voice, modality, tense
 def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
 	filesToOpen = []  # Store all files that are to be opened once finished
 
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
 												   'Started running VERB ANALYSES at',
 												   True, '', True, '', True)
+
+	outputFiles = verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents,
+								   openOutputFiles, createCharts, chartPackage)
+
+	if outputFiles!=None:
+		filesToOpen.extend(outputFiles)
 
 	outputFiles = verb_voice_stats(inputFilename, outputDir, data, data_divided_sents,
 								   openOutputFiles, createCharts, chartPackage)

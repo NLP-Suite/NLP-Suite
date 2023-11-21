@@ -174,11 +174,11 @@ def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, lang
             #   you do not want to add a header then header=None;
             #   however, if you pass a header, then you cannot have header=None or a header will never be saved
             if headers!=None:
-                data_frame.to_csv(outputFilename, columns=headers, index=False, encoding=language_encoding)
+                data_frame.to_csv(outputFilename, columns=headers, index=index, encoding=language_encoding)
             else:
                 data_frame = data_frame.applymap(
                     lambda x: x.encode('utf-8', 'replace').decode('utf-8') if isinstance(x, str) else x)
-                data_frame.to_csv(outputFilename, columns=headers, header=None, index=False, encoding=language_encoding)
+                data_frame.to_csv(outputFilename, columns=headers, header=None, index=index, encoding=language_encoding)
             break # exit loop
         except IOError as e:
             # mb.showwarning(title='Output file error', message="Could not write the file " + outputFilename + "\n\nA file with the same name is already open. Please, close the Excel file and then click OK to resume.")
