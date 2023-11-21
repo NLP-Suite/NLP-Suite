@@ -1733,3 +1733,58 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
                                        'Finished running Sentence Complexity at', True, '', True, startTime)
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir)
+
+# def compute_corpus_statistics_byPOS(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles,
+#                                     createCharts, chartPackage):
+#     filesToOpen=[]
+#     lemmatize= True
+#
+#     inputDocs=IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
+#     nDocs=len(inputDocs)
+#     if nDocs==0:
+#         return filesToOpen
+#
+#     stannlp = stanza.Pipeline(lang='en', processors='tokenize, mwt, lemma, pos')
+#
+#     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Running STANZA & wordcloud',
+#                                        'Started running STANZA and wordcloud at', True,
+#                                        'Please, be patient. Depending upon the number of documents processed this may take a few minutes.',True,'',False)
+#
+#     for doc in inputDocs:
+#         i = i+1
+#         head, tail = os.path.split(doc)
+#         print("Processing file " + str(i) + "/" + str(nDocs) + ' ' + tail)
+#         if doc[-4:]=='.txt':
+#             with open(doc, 'r', encoding='utf-8', errors='ignore') as myfile:
+#                 textToProcess = ''
+#                 currenttext = myfile.read()
+#                 # check for empty file
+#                 textToProcess = ''
+#                 annotated = stannlp(currenttext)
+#                 for sent_id in range(len(annotated.sentences)):
+#                     # words do not contain ner; tokens do
+#                     # words is a single list []; tokes a double list [[]]
+#                     # for word in annotated.sentences[sent_id].tokens:
+#                     for word in annotated.sentences[sent_id].words:
+#                         # pos & upos have the same tag value
+#                         print("--------------------word.text.lower() & pos",word.text.lower(), word.pos)
+#                         if word.text.lower() == "'s" or word.text.lower() == "’s" or word.text.lower() == "s":
+#                             continue  # do not process the s of a saxon genitive
+#                         # RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, GREY for ADVERBS
+#                         #   YELLOW for anything else; no longer used
+#                         if lemmatize:
+#                             word_str = word.lemma
+#                             # if no lemma, use form value
+#                             if word_str==None:
+#                                 word_str = word.text
+#                         else:
+#                             word_str = word.text
+#                             pass
+#
+#                         if word_str != None:
+#                             textToProcess = textToProcess + ' ' + word_str
+#
+#                 if len(textToProcess) == 0:
+#                     textToProcess = currenttext
+#
+#             combinedtext = combinedtext + textToProcess

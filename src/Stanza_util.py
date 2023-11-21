@@ -167,15 +167,15 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
         #            if Stanza gives error for downloading, check the current version of Stanza
         nlp = stanza.Pipeline(short_lang, processors='tokenize', verbose=False)
 
-        if "Lemma"  in annotator_params:
+        if "Lemma" in annotator_params:
             annotator = 'Lemma'
             processors='tokenize,lemma,pos'
+        elif "ALL POS" in annotator_params or "POS" in annotator_params:
+            annotator = 'POS'
+            processors = 'tokenize,pos'
         elif "NER" in annotator_params:
             annotator = 'NER'
             processors='tokenize,ner'
-        elif "All POS" in annotator_params:
-            annotator = 'POS'
-            processors='tokenize,pos'
         elif "depparse" in annotator_params or "SVO" in annotator_params:
             if short_lang not in available_NER:
                 processors = 'tokenize,mwt,pos,lemma,depparse'  # add NER when parser option selected

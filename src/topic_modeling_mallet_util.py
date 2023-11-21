@@ -318,7 +318,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
     # Composition_FileName, Keys_FileName
 
     import charts_matplotlib_seaborn_util
-    outputFiles = charts_matplotlib_seaborn_util.MALLET_heatmap(Composition_FileName, Keys_FileName, outputDir, fig_set={"figure.figsize": (23, 21), "figure.dpi": 300},
+    outputFiles = charts_matplotlib_seaborn_util.MALLET_heatmap(Composition_FileName, Keys_FileName, outputDir, fig_set={"figure.figsize": (8, 6), "figure.dpi": 300},
                    show_topics=True)
 
     if outputFiles != None:
