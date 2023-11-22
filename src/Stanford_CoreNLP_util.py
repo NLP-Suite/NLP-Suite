@@ -844,7 +844,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     output_format.append("Date")
                 # save csv file with the expected header (i.e., output_format)
                 df = pd.DataFrame(run_output, columns=output_format)
-                IO_csv_util.df_to_csv(GUI_util.window, df, outputFilename, headers=output_format, index=True)
+                IO_csv_util.df_to_csv(GUI_util.window, df, outputFilename, headers=output_format, index=False)
                 #count the number of corefed pronouns (COREF annotator)
                 if annotator_chosen == 'coref table':
                     corefed_pronouns = df.shape[0]

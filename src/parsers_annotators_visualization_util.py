@@ -83,7 +83,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
     # generate visualization output ----------------------------------------------------------------
 # NER ________________________________________________________________
 
-    if ('NER' in str(annotator_params) and 'NER' in outputFilename)  or 'parse' in str(annotator_params):
+    if ('NER' in str(annotator_params) and 'NER' in outputFilename) or 'parse' in str(annotator_params):
         reminders_util.checkReminder(scriptName, reminders_util.NER_frequencies,
                                      reminders_util.message_NER_frequencies)
         if IO_csv_util.get_csvfile_headers(outputFilename, False)[1] == "NER":
