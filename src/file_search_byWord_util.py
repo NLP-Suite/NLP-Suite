@@ -685,7 +685,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
     # write to text file textToProcess
     outputFilenameTxt = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'search_single_text')
     filesToOpen.append(outputFilenameTxt)
-    outputTxtFile = open(outputFilenameTxt, "w")
+    outputTxtFile = open(outputFilenameTxt, "w", encoding="utf-8", errors="ignore")
     outputTxtFile.write(textToProcess)
     outputTxtFile.close()
 

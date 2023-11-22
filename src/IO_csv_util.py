@@ -166,7 +166,7 @@ def GetMaxValueInCSVField(inputFilename,algorithm='',columnHeader='Document ID',
 
 
 # triggered by a df.to_csv
-# headers is a list []
+# headers is a list [], e.g., ['Form', 'Lemma', 'POS']
 def df_to_csv(window,data_frame, outputFilename, headers=None, index=False, language_encoding='utf-8'):
     while True: # repeat until file is closed
         try:
