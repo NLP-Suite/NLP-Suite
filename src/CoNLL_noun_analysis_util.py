@@ -71,7 +71,7 @@ def compute_stats(data):
 
 # noun analysis; compute frequencies
 
-def noun_POSTAG_DEPREL_compute_frequencies(data, data_divided_sents):
+def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
     # print("\n\n################# NOUN ANALYSIS ################")
     list_nouns_postag = []
     list_nouns_deprel = []
@@ -119,45 +119,79 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running NOUN ANALYSES at',
                                                  True, '', True, '', True)
 
-    postag_list, postag_counter, deprel_list, deprel_counter, ner_list, ner_counter = compute_stats(data)
+    # the following line is needed by the next line as it computes variables defined as general
+    noun_postag_list, noun_postag_stats, noun_deprel_list, noun_deprel_stats, noun_ner_list, noun_ner_stats = compute_stats(data)
 
-    noun_postag, noun_deprel, noun_ner, noun_postag_stats, noun_deprel_stats, noun_ner_stats = noun_POSTAG_DEPREL_compute_frequencies(data,
+    noun_postag_list, noun_deprel_list, noun_ner_list, noun_postag_stats, noun_deprel_stats, noun_ner_stats = noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data,
                                                                                                   data_divided_sents)
+
     # output file names
-    noun_postag_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
+    noun_list_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun-ALL',
+                                                                    'list')
+    noun_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
+                                                                 'stats')
+
+    noun_postag_list_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
                                                                     'POSTAG_list')
-    noun_deprel_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
-                                                                    'DEPREL_list')
-    noun_ner_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
+    noun_ner_list_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
                                                                  'NER_list')
+    noun_deprel_list_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
+                                                                    'DEPREL_list')
     noun_postag_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Noun',
-                                                                     'POSTAG')
-    noun_deprel_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA','Noun',
-                                                                     'DEPREL')
+                                                                     'POSTAG_stats')
     noun_ner_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA','Noun',
-                                                                  'NER')
-
-    # save csv files -------------------------------------------------------------------------------------------------
-    # POS tags
-
-    df = pd.DataFrame(noun_postag)
-    IO_csv_util.df_to_csv(GUI_util.window, df, noun_postag_stats_file_name, headers=None, index=False,
-                          language_encoding='utf-8')
+                                                                  'NER_stats')
+    noun_deprel_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA','Noun',
+                                                                     'DEPREL_stats')
 
     # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
     #       "Noun POS Tags"])
 
-    # DepRel
 
-    df = pd.DataFrame(noun_deprel)
-    IO_csv_util.df_to_csv(GUI_util.window, df, noun_deprel_stats_file_name, headers=None, index=False,
+    # save csv files -------------------------------------------------------------------------------------------------
+    # ALL nouns
+
+    df = pd.DataFrame(noun_postag_list)
+    df1 = df.iloc[:, 1:4]
+    df1.columns = ['Form', 'Lemma', 'POS']
+    IO_csv_util.df_to_csv(GUI_util.window, df1, noun_list_file_name, headers=['Form', 'Lemma', 'POS'], index=False,
+                          language_encoding='utf-8')
+
+    # df = pd.DataFrame(noun_postag_stats)
+    # IO_csv_util.df_to_csv(GUI_util.window, df, noun_stats_file_name, headers=None, index=False,
+    #                       language_encoding='utf-8')
+
+
+    # POS tags
+
+    df = pd.DataFrame(noun_postag_list)
+    IO_csv_util.df_to_csv(GUI_util.window, df, noun_postag_list_file_name, headers=None, index=False,
+                          language_encoding='utf-8')
+
+    df = pd.DataFrame(noun_postag_stats)
+    IO_csv_util.df_to_csv(GUI_util.window, df, noun_postag_stats_file_name, headers=None, index=False,
                           language_encoding='utf-8')
 
     # NER
 
-    df = pd.DataFrame(noun_ner)
+    df = pd.DataFrame(noun_ner_list)
+    IO_csv_util.df_to_csv(GUI_util.window, df, noun_ner_list_file_name, headers=None, index=False,
+                          language_encoding='utf-8')
+
+    df = pd.DataFrame(noun_ner_stats)
     IO_csv_util.df_to_csv(GUI_util.window, df, noun_ner_stats_file_name, headers=None, index=False,
                           language_encoding='utf-8')
+
+    # DepRel
+
+    df = pd.DataFrame(noun_deprel_list)
+    IO_csv_util.df_to_csv(GUI_util.window, df, noun_deprel_list_file_name, headers=None, index=False,
+                          language_encoding='utf-8')
+
+    df = pd.DataFrame(noun_deprel_stats)
+    IO_csv_util.df_to_csv(GUI_util.window, df, noun_deprel_stats_file_name, headers=None, index=False,
+                          language_encoding='utf-8')
+
 
     # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
     #   "Noun DEPREL Tags"])
@@ -165,9 +199,50 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
     if createCharts == True:
 
         # bar charts -----------------------------------------------------------------------------------------------
+
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[0,0]]
+        count_var=1
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, noun_list_file_name, outputDir,
+                                     outputFileLabel='Nouns_Form',
+                                     chartPackage=chartPackage,
+                                     chart_type_list=['bar'],
+                                     chart_title="Frequency Distribution of Nouns (Form)",
+                                     column_xAxis_label_var='Noun',
+                                     hover_info_column_list=[],
+                                     count_var=count_var,
+                                     complete_sid=False)  # TODO to be changed
+
+        # run_all returns a string; must use append
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0,1]]
         count_var=1
+        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, noun_list_file_name, outputDir,
+                                     outputFileLabel='Nouns_Lemma',
+                                     chartPackage=chartPackage,
+                                     chart_type_list=['bar'],
+                                     chart_title="Frequency Distribution of Nouns (Lemma)",
+                                     column_xAxis_label_var='Noun',
+                                     hover_info_column_list=[],
+                                     count_var=count_var,
+                                     complete_sid=False)  # TODO to be changed
+
+        # run_all returns a string; must use append
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+
+        columns_to_be_plotted_xAxis=[]
+        columns_to_be_plotted_yAxis=[[0,1]]
+        count_var=0
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, noun_postag_stats_file_name, outputDir,
                                      outputFileLabel='Nouns_POS',
                                      chartPackage=chartPackage,

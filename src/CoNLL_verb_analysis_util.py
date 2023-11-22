@@ -177,6 +177,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
 						  language_encoding='utf-8')
 	if createCharts == True:
+
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0, 1]]
 		count_var = 0
@@ -412,12 +413,14 @@ def verb_tense_data_preparation(data):
 
 def verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
 	global postag_counter
+	filesToOpen = []
 	# must be sorted in descending order
 	form_list, form_counter, lemma_list, lemma_counter, postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
-	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb',
+	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb_ALL',
 																'list')
+	filesToOpen.append(verb_file_name)
 	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
-																   'Verb','stats')
+																   'Verb_ALL','stats')
 
 	df = pd.DataFrame({'Form': form_list, 'Lemma': lemma_list})
 	IO_csv_util.df_to_csv(GUI_util.window, df, verb_file_name, headers=['Form', 'Lemma'], index=False,
@@ -430,7 +433,47 @@ def verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents,
 	IO_csv_util.df_to_csv(GUI_util.window, merged_df, verb_stats_file_name, headers=['Form', 'Form Frequency', 'Lemma', 'Lemma Frequency'], index=False,
 						  language_encoding='utf-8')
 
-	return verb_file_name, verb_stats_file_name
+	if createCharts:
+		columns_to_be_plotted_xAxis = []
+		columns_to_be_plotted_yAxis = [[0, 0]]
+		count_var = 1
+		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_file_name, outputDir,
+										  outputFileLabel='Verbs_Form',
+										  chartPackage=chartPackage,
+										  chart_type_list=['bar'],
+										  chart_title="Frequency Distribution of Verbs (Form)",
+										  column_xAxis_label_var='Verb',
+										  hover_info_column_list=[],
+										  count_var=count_var,
+										  complete_sid=False)  # TODO to be changed
+
+		# run_all returns a string; must use append
+		if outputFiles != None:
+			if isinstance(outputFiles, str):
+				filesToOpen.append(outputFiles)
+			else:
+				filesToOpen.extend(outputFiles)
+
+		columns_to_be_plotted_xAxis = []
+		columns_to_be_plotted_yAxis = [[0, 1]]
+		count_var = 1
+		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_file_name, outputDir,
+										  outputFileLabel='Verbs_Lemma',
+										  chartPackage=chartPackage,
+										  chart_type_list=['bar'],
+										  chart_title="Frequency Distribution of Verbs (Lemma)",
+										  column_xAxis_label_var='Verb',
+										  hover_info_column_list=[],
+										  count_var=count_var,
+										  complete_sid=False)  # TODO to be changed
+
+		if outputFiles != None:
+			if isinstance(outputFiles, str):
+				filesToOpen.append(outputFiles)
+			else:
+				filesToOpen.extend(outputFiles)
+
+	return filesToOpen
 
 
 def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
@@ -503,6 +546,7 @@ def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sen
 
 	if outputFiles!=None:
 		filesToOpen.extend(outputFiles)
+
 
 	outputFiles = verb_voice_stats(inputFilename, outputDir, data, data_divided_sents,
 								   openOutputFiles, createCharts, chartPackage)

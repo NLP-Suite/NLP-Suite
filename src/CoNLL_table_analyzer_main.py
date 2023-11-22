@@ -56,17 +56,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                        message="No option has been selected.\n\nPlease, select an option by ticking a checkbox and try again.")
             return
 
-    if extra_GUIs_var.get():
-        if 'Data manipulation' in extra_GUIs_menu_var.get():
-            call("python data_manipulation_main.py", shell=True)
-        elif 'Style' in extra_GUIs_menu_var.get():
-            call("python style_analysis_main.py", shell=True)
-        if 'Ngrams searches' in extra_GUIs_menu_var.get():
-            call("python NGrams_CoOccurrences_main.py", shell=True)
-        if 'Word searches' in extra_GUIs_menu_var.get():
-            call("python file_search_byWord_main.py", shell=True)
-        if 'Wordnet' in extra_GUIs_menu_var.get():
-            call("python knowledge_graphs_WordNet_main.py", shell=True)
+    # if extra_GUIs_var.get():
+    #     if 'Data manipulation' in extra_GUIs_menu_var.get():
+    #         call("python data_manipulation_main.py", shell=True)
+    #     elif 'Style' in extra_GUIs_menu_var.get():
+    #         call("python style_analysis_main.py", shell=True)
+    #     if 'Ngrams searches' in extra_GUIs_menu_var.get():
+    #         call("python NGrams_CoOccurrences_main.py", shell=True)
+    #     if 'Word searches' in extra_GUIs_menu_var.get():
+    #         call("python file_search_byWord_main.py", shell=True)
+    #     if 'Wordnet' in extra_GUIs_menu_var.get():
+    #         call("python knowledge_graphs_WordNet_main.py", shell=True)
 
 # Ngrams searches & VIEWER','Word searches
 
@@ -405,7 +405,7 @@ extra_GUIs_checkbox = tk.Checkbutton(window, text='GUIs available for more analy
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extra_GUIs_checkbox,True)
 
 extra_GUIs_menu_var.set('')
-extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Ngrams searches & VIEWER','Word searches','Wordnet searches','Data manipulation GUI for more options on querying the CoNLL table','Style analysis')
+extra_GUIs_menu = tk.OptionMenu(window,extra_GUIs_menu_var,'Ngrams searches & VIEWER','Word searches','Wordnet searches','Data manipulation GUI for more options on querying the CoNLL table','Corpus statistics','Style analysis')
 extra_GUIs_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -413,6 +413,27 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                    False, False, True, False, 90, GUI_IO_util.IO_configuration_menu,
                                    "Select other related types of analysis you wish to perform" \
                                     "\nThe selected GUI will open without having to press RUN")
+
+def open_GUI(*args):
+    extra_GUIs_menu.configure(state='disabled')
+    if extra_GUIs_var.get():
+        extra_GUIs_menu.configure(state='normal')
+    else:
+        return
+    if extra_GUIs_var.get():
+        if 'Data manipulation' in extra_GUIs_menu_var.get():
+            call("python data_manipulation_main.py", shell=True)
+        elif 'Style' in extra_GUIs_menu_var.get():
+            call("python style_analysis_main.py", shell=True)
+        if 'Ngrams searches' in extra_GUIs_menu_var.get():
+            call("python NGrams_CoOccurrences_main.py", shell=True)
+        if 'Word searches' in extra_GUIs_menu_var.get():
+            call("python file_search_byWord_main.py", shell=True)
+        if 'Wordnet' in extra_GUIs_menu_var.get():
+            call("python knowledge_graphs_WordNet_main.py", shell=True)
+        if 'statistics' in extra_GUIs_menu_var.get():
+            call("python statistics_txt_main.py", shell=True)
+extra_GUIs_menu_var.trace('w',open_GUI)
 
 all_analyses_var = tk.IntVar()
 all_analyses_checkbox = tk.Checkbutton(window, state='disabled', variable = all_analyses_var, text='Clause, noun, verb, function word',
