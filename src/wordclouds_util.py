@@ -166,6 +166,7 @@ class GroupedColorFunc(object):
         return self.get_color_func(word)
 
 # CYNTHIA: wordcloud function particularly designed for SVO
+# collocations set to False to avoid repetition of words
 def SVOWordCloud(svoFile, inputFilename, outputDir, transformed_image_mask, prefer_horizontal):
     # read SVO result in
     svo_df = pd.read_csv(svoFile, encoding='utf-8',on_bad_lines='skip')
@@ -196,10 +197,10 @@ def SVOWordCloud(svoFile, inputFilename, outputDir, transformed_image_mask, pref
     # print (words_count_dict)
     max_words = 1000 # TODO MINO: make max_words bigger to include generally lower frequency "Object (O)" words
     if len(transformed_image_mask) != 0:
-        wc = WordCloud(width = 800, height = 800, max_words=max_words, prefer_horizontal=prefer_horizontal, mask=transformed_image_mask,
+        wc = WordCloud(width = 800, height = 800, max_words=max_words, prefer_horizontal=prefer_horizontal, collocations=False, mask=transformed_image_mask,
                        contour_width=3, contour_color='firebrick', background_color ='white').generate_from_frequencies(words_count_dict)
     else:
-        wc = WordCloud(width=800, height=800, max_words=max_words, prefer_horizontal=prefer_horizontal, contour_width=3,
+        wc = WordCloud(width=800, height=800, max_words=max_words, prefer_horizontal=prefer_horizontal, collocations=False, contour_width=3,
                         background_color='white').generate_from_frequencies(words_count_dict)
     grouped_color_func = GroupedColorFunc(color_list, default_code)
     wc.recolor(color_func=grouped_color_func)

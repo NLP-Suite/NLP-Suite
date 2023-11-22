@@ -198,7 +198,8 @@ pydict["Annotator - hedge/uncertainty"] = ["", 0]
 pydict["CoNLL table analyzer - Search the CoNLL table"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["CoNLL table analyzer - Clause, noun, verb, function words frequencies"] = ["CoNLL_table_analyzer_main.py", 1]
 pydict["Statistics (csv files)"] = ["statistics_csv_main.py", 1]
-pydict["Statistics (txt files)"] = ["statistics_txt_main.py", 1] # ["style_analysis_main.py", 1]
+pydict["Statistics (txt files): Number of documents, words, syllables"] = ["statistics_txt_main.py", 1] # ["style_analysis_main.py", 1]
+pydict["Statistics (txt files): Number of nouns, verbs, adjectives, pronouns, ..."] = ["statistics_txt_main.py", 1] # ["style_analysis_main.py", 1]
 pydict["Co-Reference PRONOMINAL resolution (via Stanford CoreNLP)"] = ["parsers_annotators_main.py", 1]
 pydict["Co-Occurrences"] = ["NGrams_CoOccurrences_main.py", 1]
 pydict["N-grams"] = ["NGrams_CoOccurrences_main.py", 1]
@@ -279,6 +280,8 @@ pydict["Style analysis (ALL options GUI)"] = ["style_analysis_main.py", 1]
 pydict["Narrative analysis (ALL options GUI)"] = ["narrative_analysis_ALL_main.py", 1]
 pydict["WHAT\'S IN YOUR CORPUS/DOCUMENT(S)? A SWEEPING VIEW"] = ["whats_in_your_corpus_main.py", 1]
 pydict["Corpus/document(s) statistics (Sentences, words, lines)"] = ["statistics_txt_main.py", 1]
+pydict['Corpus/document(s) statistics (Nouns, verbs, adjectives, pronouns, ...)'] = ["statistics_txt_main.py", 1]
+pydict['N-grams & Co-Occurrences'] = ["NGrams_CoOccurrences_main.py", 1]
 pydict["Who wrote the text? Man or woman? (via Gender guesser)"] = ["Gender guesser", 0, 0, '']
 pydict["Wordclouds (ALL options GUI)"] = ["wordclouds_main.py", 1]
 pydict["WordNet"] = ["knowledge_graphs_WordNet_main.py", 1]
@@ -454,7 +457,7 @@ statistical_tools_lb = tk.Label(window, text='Statistical Tools')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
                                                statistical_tools_lb, True)
 statistical_tools_menu = ttk.Combobox(window, width = 90, textvariable = statistical_tools_var)
-statistical_tools_menu['values'] = ['Statistics (csv files)','Statistics (txt files)']
+statistical_tools_menu['values'] = ['Statistics (csv files)','Corpus/document(s) statistics (Sentences, words, lines)','Corpus/document(s) statistics (Nouns, verbs, adjectives, pronouns, ...)','N-grams & Co-occurrences']
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate, y_multiplier_integer, statistical_tools_menu, False, False, True, False, 90, GUI_IO_util.entry_box_x_coordinate, "Using the dropdown menu, select one of the available options and then click on RUN. Press Esc to clear selections.")
 
