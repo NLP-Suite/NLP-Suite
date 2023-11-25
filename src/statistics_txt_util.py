@@ -1028,9 +1028,9 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                         fileLabel = str(k) + '_K_Sentences'
                         fileLabel_byDocID = 'Rep_Words_First_Last_' +str(k) + '_K_Sentences_byDoc'
                         columns_to_be_plotted_yAxis = ['Word']
-                        chart_title_label = f'Frequency of repeated words in first and last K ({k}) sentences'
-                        chart_title_byDocID = f'Frequency of repeated words in first and last K ({k}) sentences by Document'
-                        chart_title_bySentID = f'Frequency of repeated words in first and last K ({k}) sentences by Sentence ID'
+                        chart_title_label = f'Frequency of Repeated Words in First and Last K ({k}) Sentences'
+                        chart_title_byDocID = f'Frequency of Repeated Words in First and Last K ({k}) Sentences by Document'
+                        chart_title_bySentID = f'Frequency of Repeated Words in First and Last K ({k}) Sentences by Sentence ID'
                         column_xAxis_label = 'Words'
 
                         if sentenceID <= k:

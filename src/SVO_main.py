@@ -464,8 +464,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             reminders_util.checkReminder(scriptName, reminders_util.title_options_no_SVO_records,
                                          reminders_util.message_no_SVO_records, True)
 
-    reminders_util.checkReminder(scriptName, reminders_util.title_options_SVO_someone,
-                                 reminders_util.message_SVO_someone, True)
+    reminders_util.checkReminder(scriptName, reminders_util.title_options_SVO_inferred_subject_passive,
+                                 reminders_util.message_SVO_inferred_subject_passive, True)
     # the SVO script can take in input a csv SVO file previously computed (in which case the filename will contain SVO_): inputFilename
     # results currently produced are in svo_result_list
 

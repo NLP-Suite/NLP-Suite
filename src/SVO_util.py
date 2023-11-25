@@ -41,10 +41,10 @@ import IO_csv_util
 #             continue
 #         # check if the triple needs to be included
 #
-#         if svo[2] == "Someone?" and (svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]) not in added:
+#         if svo[2] == "inferred_subject_passive" and (svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]) not in added:
 #             notSure.add((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
 #             continue
-#         if svo[2] != "Someone?":
+#         if svo[2] != "inferred_subject_passive":
 #             if (svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]) in notSure:
 #                 notSure.remove((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
 #             # before writing row, split location
@@ -351,9 +351,13 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
         lemmatized_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
             ['Subject (S)', 'Verb (V)', 'Object (O)']]
 
+        # SIMON
+        filter_byNER = set([row['Persons']]).union(set([row['Organizations']]))
         if ((filter_s and row['Subject (S)'] not in s_filtered_set) or
+                (filter_s and row['Subject (S)'] not in filter_byNER) or
                 (filter_v and row['Verb (V)'] not in v_filtered_set) or
-                (filter_o and row['Object (O)'] not in o_filtered_set)):
+                (filter_o and row['Object (O)'] not in o_filtered_set) or
+                (filter_o and row['Subject (O)'] not in filter_byNER)):
             # Drop rows from filtered_svo DataFrame that do not meet the filter condition
             filtered_svo.drop(idx, inplace=True)
         else:
