@@ -43,6 +43,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
     filesToOpen = []
     outputFile = ''
 
+    import os
     if select_DB_tables_var.get()!='':
         IO_files_util.openFile(window, inputDir + os.sep + select_DB_tables_var.get() + ".xlsx")
         return
@@ -117,7 +118,6 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
 
 # Gephi ----------------------------------------------------------------------------------------
     if semantic_triplet_var and gephi_var:
-        import os
         svo_result_list=[]
         fileBase = os.path.basename(outputFile)[0:-5]
         nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(outputFile, encodingValue='utf-8')

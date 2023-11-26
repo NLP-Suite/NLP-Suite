@@ -473,6 +473,27 @@ def link_verb_LVC_extraction(token, gov_dict, sent_data):
                             return s, v, o, negation
     return "", "", "", negation
 
+
+
+def replace_words_with_full_names(sentence, full_names):
+    updated_sentence = ''
+    words = sentence.split()
+    available_names = full_names.copy()  # Create a copy of the full_names list
+
+    for word in words:
+        was_replaced = False
+        for full_name in available_names:
+            if word in full_name.split():
+                updated_sentence += full_name + ' '
+                available_names.remove(full_name)  # Remove the used name from the copy
+                was_replaced = True
+                break
+        if not was_replaced:
+            updated_sentence += word + ' '
+
+    return updated_sentence.strip()
+
+
 # CYNTHIA
 def SVO_extraction (sent_data, entitymentions): #returns columns of the final output
 # def SVO_extraction (sent_data): #returns columns of the final output
@@ -598,6 +619,15 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
                     SVO.extend(svo_acl)
                     N.extend(negation_acl)
 
+    print("BEGIN======")
+    print(SVO)
+    for index, item in enumerate(SVO):
+        SVO[index][0] = replace_words_with_full_names(SVO[index][0],person_list)
+        SVO[index][0] = replace_words_with_full_names(SVO[index][0], organization_list)
+        SVO[index][2] = replace_words_with_full_names(SVO[index][2], person_list)
+        SVO[index][2] = replace_words_with_full_names(SVO[index][2], organization_list)
+    print(SVO)
+    print("======END")
     # the values are returned for every SVO
     return SVO, location_list, loc_NER_value, T, T_S, T_T, per_NER_value, org_NER_value, person_list, organization_list, N
             

@@ -353,10 +353,12 @@ videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
 TIPS_lookup = {'Word similarity (Levenshtein edit distance)': 'TIPS_NLP_Word similarity (Levenshtein edit distance).pdf',
-               'NER (Named Entity Recognition)': 'TIPS_NLP_NER (Named Entity Recognition) Stanford CoreNLP.pdf',
-               'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",
-               'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf"}
-TIPS_options = 'Word similarity (Levenshtein edit distance)', 'NER (Named Entity Recognition)', 'CoNLL Table', 'POSTAG (Part of Speech Tags)'
+               'File checker, converter, cleaner':'TIPS_NLP_File checker & converter & cleaner.pdf',
+               'Filename checker':'TIPS_NLP_Filename checker.pdf',
+               'Text encoding':'TIPS_NLP_Text encoding.pdf',
+               'utf-8 text encoding':'TIPS_NLP_Text encoding (utf-8).pdf',
+               'Spelling checker': 'TIPS_NLP_Spelling checker.pdf'}
+TIPS_options = 'Text encoding', 'utf-8 text encoding', 'Spelling checker', 'Word similarity (Levenshtein edit distance)', 'File checker, converter, cleaner', 'Filename checker'
 
 
 # add all the lines to the end to every special GUI
