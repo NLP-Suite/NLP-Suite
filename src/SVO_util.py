@@ -338,11 +338,15 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
 
     for idx, row in df.iterrows():
         if lemmatize_s:
-            row['Subject (S)'] = lemmatize_stanza(stanzaPipeLine(row['Subject (S)']))
+            # do not lemmatize multi-word expressions or only the first term will be returned
+            if row['Subject (S)'].count(' ')==0:
+                row['Subject (S)'] = lemmatize_stanza(stanzaPipeLine(row['Subject (S)']))
         if lemmatize_v:
             row['Verb (V)'] = lemmatize_stanza(stanzaPipeLine(row['Verb (V)']))
         if lemmatize_o:
-            row['Object (O)'] = lemmatize_stanza(stanzaPipeLine(row['Object (O)']))
+            # do not lemmatize multi-word expressions or only the first term will be returned
+            if row['Object (O)'].count(' ')==0:
+                row['Object (O)'] = lemmatize_stanza(stanzaPipeLine(row['Object (O)']))
 
         # Assign lemmatized rows back to the lemmatized_svo DataFrame
         lemmatized_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
@@ -372,7 +376,7 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
 # S filter
         if filter_s and not filter_v and not filter_o:
             if ((row['Subject (S)'] in s_filtered_set) or \
-                (str(row['Subject (S)']).lower() in filter_byNER)):
+                (str(row['Subject (S)']) in filter_byNER)):
                 keep_record = True
 # V filter
         if filter_v and not filter_s and not filter_o:
@@ -382,7 +386,7 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
 # O filter
         if filter_o and not filter_s and not filter_v:
             if ((row['Object (O)'] in o_filtered_set) or \
-                (str(row['Object (O)']).lower() in filter_byNER)):
+                (str(row['Object (O)']) in filter_byNER)):
                 keep_record = True
 
         if keep_record:
@@ -392,17 +396,6 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
         else:
             # Drop rows from filtered_svo DataFrame that do not meet the filter condition
             filtered_svo.drop(idx, inplace=True)
-
-        #     if ((filter_s and row['Subject (S)'] in s_filtered_set) or \
-        #     (filter_s and str(row['Subject (S)']).lower() in filter_byNER)) or \
-        #     (filter_v and row['Verb (V)'] in v_filtered_set) or \
-        #     ((filter_o and row['Object (O)'] in o_filtered_set) and \
-        #     (filter_o and row['Subject (O)'] in filter_byNER)):
-        #         filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
-        #         ['Subject (S)', 'Verb (V)', 'Object (O)']]
-        # else:
-        #     # Drop rows from filtered_svo DataFrame that do not meet the filter condition
-        #     filtered_svo.drop(idx, inplace=True)
 
     # print(lemmatized_svo,filtered_svo)
     # Continue with your code, now working with filtered and lemmatized DataFrames
