@@ -71,6 +71,7 @@ def run(inputFilename,inputDir, outputDir,
         language_detect_var.get()==False and \
         spelling_var.get() == False and \
         NLTK_unusual_var.get() == False and \
+        lower_case_words_after_end_of_sentence_var.get() == False and \
         word_length_var.get() == False and \
         sentence_length_var.get() == False):
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
@@ -97,6 +98,22 @@ def run(inputFilename,inputDir, outputDir,
     if language_detect_var.get():
         output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, config_filename,
                                                                openOutputFiles, createCharts, chartPackage)
+        if output != None:
+            if isinstance(output, str):
+                filesToOpen.append(output)
+            else:
+                filesToOpen.extend(output)
+
+# check lower-case word after end-of-sentence punctuation !.? ----------------------------------------------------
+
+    if lower_case_words_after_end_of_sentence_var.get():
+        output = statistics_txt_util.process_words(GUI_util.window, config_filename, inputFilename, inputDir,
+                                                   outputDir, openOutputFiles, createCharts,
+                                                   chartPackage,
+                                                   processType='Lower case words after end-of-sentence punctuation', language='English',
+                                                   excludeStopWords=True, word_length=3,
+                                                   excludePunctuation=True, excludeArticles=True,
+                                                   wordgram=1, lemmatize=False)
         if output != None:
             if isinstance(output, str):
                 filesToOpen.append(output)
@@ -226,7 +243,7 @@ language_detect_var = tk.IntVar()
 spelling_var = tk.IntVar()
 spelling_auto_correct_var = tk.IntVar()
 NLTK_unusual_var = tk.IntVar()
-lower_case_words_var = tk.IntVar()
+lower_case_words_after_end_of_sentence_var = tk.IntVar()
 word_length_var = tk.IntVar()
 sentence_length_var = tk.IntVar()
 
@@ -304,11 +321,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
                     GUI_IO_util.labels_x_coordinate,
                     "Tick the checkbox to obtain an NLTK list of unusual words as an indicator of possible misspellings")
 
-lower_case_words_var.set(1)
-lower_case_words_checkbox = tk.Checkbutton(window,text="Lower-case words after end-of-sentence punctuation (e.g., . ? !)", variable=lower_case_words_var, onvalue=1, offvalue=0)
+lower_case_words_after_end_of_sentence_var.set(1)
+lower_case_words_after_end_of_sentencecheckbox = tk.Checkbutton(window,text="Lower-case words after end-of-sentence punctuation (e.g., . ? !)", variable=lower_case_words_after_end_of_sentence_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
-                    lower_case_words_checkbox, False, False, True,False, 90,
+                    lower_case_words_after_end_of_sentencecheckbox, False, False, True,False, 90,
                     GUI_IO_util.labels_x_coordinate,
                     "Tick the checkbox to check for lower-case words coming after a . as an indicator of possible break in sentence construction")
 
@@ -379,5 +396,4 @@ if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
 filename_embeds_date_var, date_format_var, items_separator_var, date_position_var, config_file_exists = config_util.get_date_options(config_filename, config_input_output_numeric_options)
 extract_date_from_text_var=0
 
-mb.showwarning(title='Warning',message='The option is currently under development. Sorry!\n\nCheck back soon.')
 GUI_util.window.mainloop()

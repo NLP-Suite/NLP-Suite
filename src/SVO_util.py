@@ -8,7 +8,6 @@ import IO_user_interface_util
 import charts_util
 import IO_csv_util
 
-
 # notSure = set()
 # added = set()
 #
@@ -326,10 +325,8 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
             if outputSVOFilterDir == '':
                 return
 
-    # Creating filtered sets
+    # Creating filtered sets from WordNet list
     s_filtered_set = set(open(filter_s_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_s else set()
-    # should add any PERSON or ORGANIZATION to the list, if these PERSON or ORGANIZATION values are not in the WordNet social-actor-list
-    # multi name S & O (e.g., Mao Zedong) in WordNet are listed with underscores (Mao_Zedong); we must do the same for multi-word names
     v_filtered_set = set(open(filter_v_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_v else set()
     o_filtered_set = set(open(filter_o_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_o else set()
     # should add any PERSON or ORGANIZATION to the list, if these PERSON or ORGANIZATION values are not in the WordNet social-actor-list
@@ -351,18 +348,62 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
         lemmatized_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
             ['Subject (S)', 'Verb (V)', 'Object (O)']]
 
-        # SIMON
         filter_byNER = set([row['Persons']]).union(set([row['Organizations']]))
-        if ((filter_s and row['Subject (S)'] not in s_filtered_set) or
-                (filter_s and row['Subject (S)'] not in filter_byNER) or
-                (filter_v and row['Verb (V)'] not in v_filtered_set) or
-                (filter_o and row['Object (O)'] not in o_filtered_set) or
-                (filter_o and row['Subject (O)'] not in filter_byNER)):
+        # add unstated passive subjects as inferred_subject_passive
+        filter_byNER.add('inferred_subject_passive')
+
+        keep_record = False
+
+# S-V-O filter
+        if filter_s and filter_v and filter_o:
+            if ((row['Subject (S)'] in s_filtered_set) or \
+                (str(row['Subject (S)']).lower() in filter_byNER)) and \
+                (row['Verb (V)'] in v_filtered_set) and \
+                ((row['Object (O)'] in o_filtered_set) and \
+                (row['Object (O)'] in filter_byNER)):
+                keep_record=True
+
+# S-V filter
+        if filter_s and filter_v and not filter_o:
+            if ((row['Subject (S)'] in s_filtered_set) or \
+                (str(row['Subject (S)']).lower() in filter_byNER)) and \
+                (row['Verb (V)'] in v_filtered_set):
+                keep_record = True
+# S filter
+        if filter_s and not filter_v and not filter_o:
+            if ((row['Subject (S)'] in s_filtered_set) or \
+                (str(row['Subject (S)']).lower() in filter_byNER)):
+                keep_record = True
+# V filter
+        if filter_v and not filter_s and not filter_o:
+            if (row['Verb (V)'] in v_filtered_set):
+                keep_record = True
+
+# O filter
+        if filter_o and not filter_s and not filter_v:
+            if ((row['Object (O)'] in o_filtered_set) or \
+                (str(row['Object (O)']).lower() in filter_byNER)):
+                keep_record = True
+
+        if keep_record:
+            filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
+                ['Subject (S)', 'Verb (V)', 'Object (O)']]
+            keep_record = False
+        else:
             # Drop rows from filtered_svo DataFrame that do not meet the filter condition
             filtered_svo.drop(idx, inplace=True)
-        else:
-            filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
-            ['Subject (S)', 'Verb (V)', 'Object (O)']]
+
+        #     if ((filter_s and row['Subject (S)'] in s_filtered_set) or \
+        #     (filter_s and str(row['Subject (S)']).lower() in filter_byNER)) or \
+        #     (filter_v and row['Verb (V)'] in v_filtered_set) or \
+        #     ((filter_o and row['Object (O)'] in o_filtered_set) and \
+        #     (filter_o and row['Subject (O)'] in filter_byNER)):
+        #         filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
+        #         ['Subject (S)', 'Verb (V)', 'Object (O)']]
+        # else:
+        #     # Drop rows from filtered_svo DataFrame that do not meet the filter condition
+        #     filtered_svo.drop(idx, inplace=True)
+
     # print(lemmatized_svo,filtered_svo)
     # Continue with your code, now working with filtered and lemmatized DataFrames
 
@@ -409,8 +450,7 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
             # pd.DataFrame.from_dict(lemmatized_filtered_svo, orient='index').to_csv(svo_filter_file_name, encoding='utf-8',
             #                                                               index=False)
             # save filtered file
-            filtered_svo.to_csv(svo_filter_file_name, encoding='utf-8',
-                                                                          index=False)
+            filtered_svo.to_csv(svo_filter_file_name, encoding='utf-8', index=False)
 
             # if filter_s or filter_v or filter_o:
             # pd.DataFrame.from_dict(filtered_svo, orient='index').to_csv(svo_filter_file_name, encoding='utf-8', index=False)

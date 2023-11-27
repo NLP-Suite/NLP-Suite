@@ -110,7 +110,10 @@ def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
 
     tl = ['ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Deps', 'Clause Tag', 'Record ID', 'Sentence ID',
           'Document ID', 'Document']
-    possible_items = list(pd.DataFrame(data, columns=tl)['NER'].value_counts().keys())
+    included_tags = ['NN', 'NNPS', 'NNP', 'NNS']
+    df = pd.DataFrame(data, columns=tl)
+    filtered_df = df[df['POS'].isin(included_tags)]
+    possible_items = list(filtered_df['NER'].value_counts().keys())
     list_nouns_ner = data_preparation(data,possible_items, possible_items, 4)
     strings = '''[['Noun NERs', 'Frequencies'],'''
     for index, item in enumerate(possible_items):
