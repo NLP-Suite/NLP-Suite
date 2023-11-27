@@ -100,7 +100,7 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_va
             outputFiles = charts_util.visualize_chart(createCharts, chartPackage,
                                                             outputFilename_rep_words, outputDir,
                                                             columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
-                                                            chart_title="Frequency Distribution of Repeated Words in first and last K (" + str(Begin_K_sent_var)+'-'+str(End_K_sent_var) +") sentences",
+                                                            chart_title="Frequency Distribution of Repeated Words in First and Last K (" + str(Begin_K_sent_var)+'-'+str(End_K_sent_var) +") Sentences",
                                                             outputFileNameType=str(Begin_K_sent_var)+'-'+str(End_K_sent_var)+'-sent_rep_words',
                                                             column_xAxis_label='Words',
                                                             count_var=count_var,

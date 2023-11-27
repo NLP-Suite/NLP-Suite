@@ -380,7 +380,64 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             if outputSVOUnFilterDir == '':
                 return
 
-        # plot Subjects
+# wordclouds of locations, persons, organizations
+
+        # import wordclouds_util
+        # # run with all default values;
+        # prefer_horizontal = .9
+        # doNotListIndividualFiles = True
+        # collocation = False
+        # transformed_image_mask = []
+        # stopwords = ''
+        #
+        # column_name='Locations'
+        #
+        # textToProcess = IO_csv_util.get_csv_field_values(outputFilename, column_name, uniqueValues=False, returnList=False)
+        #
+        # outputFiles = wordclouds_util.display_wordCloud(outputFilename, '', outputDir, textToProcess, doNotListIndividualFiles,
+        #                       transformed_image_mask, stopwords, collocation, prefer_horizontal, bg_image=None,
+        #                       bg_image_flag=True, font=None, max_words=100)
+        #
+        # if outputFiles!=None:
+        #     if isinstance(outputFiles, str):
+        #         # rename outputfile not to be overwritten by the next wordclouds
+        #         os.rename(outputFiles,outputFiles[:-4] + "_locations.png")
+        #         filesToOpen.append(outputFiles)
+        #     else:
+        #         filesToOpen.extend(outputFiles)
+        #
+        # column_name='Persons'
+        #
+        # textToProcess = IO_csv_util.get_csv_field_values(outputFilename, column_name, uniqueValues=False, returnList=False)
+        #
+        # outputFiles = wordclouds_util.display_wordCloud(outputFilename, '', outputDir, textToProcess, doNotListIndividualFiles,
+        #                       transformed_image_mask, stopwords, collocation, prefer_horizontal, bg_image=None,
+        #                       bg_image_flag=True, font=None, max_words=100)
+        #
+        # if outputFiles!=None:
+        #     if isinstance(outputFiles, str):
+        #         # rename outputfile not to be overwritten by the next wordclouds
+        #         os.rename(outputFiles,outputFiles[:-4] + "_persons.png")
+        #         filesToOpen.append(outputFiles)
+        #     else:
+        #         filesToOpen.extend(outputFiles)
+        #
+        # column_name='Organizations'
+        #
+        # textToProcess = IO_csv_util.get_csv_field_values(outputFilename, column_name, uniqueValues=False, returnList=False)
+        #
+        # outputFiles = wordclouds_util.display_wordCloud(outputFilename, '', outputDir, textToProcess, doNotListIndividualFiles,
+        #                       transformed_image_mask, stopwords, collocation, prefer_horizontal, bg_image=None,
+        #                       bg_image_flag=True, font=None, max_words=100)
+        #
+        # if outputFiles!=None:
+        #     if isinstance(outputFiles, str):
+        #         os.rename(outputFiles,outputFiles[:-4] + "_organizations.png")
+        #         filesToOpen.append(outputFiles)
+        #     else:
+        #         filesToOpen.extend(outputFiles)
+
+# plot Subjects
         outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputSVOUnFilterDir,
                                                            columns_to_be_plotted_xAxis=[],
@@ -399,7 +456,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             else:
                 filesToOpen.extend(outputFiles)
 
-        # plot Verbs
+# plot Verbs
         outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputSVOUnFilterDir,
                                                            columns_to_be_plotted_xAxis=[],
@@ -418,7 +475,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             else:
                 filesToOpen.extend(outputFiles)
 
-        # plot Objects
+# plot Objects
         outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
                                                            outputSVOUnFilterDir,
                                                            columns_to_be_plotted_xAxis=[],

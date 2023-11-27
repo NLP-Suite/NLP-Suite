@@ -185,7 +185,7 @@ def advcl_building(token, sent_data, ner, p_s, p_o, v_obj_obl_json, v_prep_json)
         if advcl_token["pos"] == "VBN" and o == "":# if the modifier is in passive voice
             o = p_s#the subject of the verb it modifies will be its default object
         else:
-            if s == "Someone?":
+            if s == "inferred_subject_passive":
                 s = p_s#the subject of the verb it modifies will be its default subject
         result.append([s, v, o])
         negation_result.append(negation)
@@ -209,7 +209,7 @@ def advcl_extraction(token, sent_data, p_s, p_o, v_obj_obl_json, v_prep_json):
     return result, negation_result
         
 def verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json):#extract the subject and object of a single verb (as well as processing modifiers of that verb)
-    s = 'Someone?'
+    s = 'inferred_subject_passive'
     o = ''
     s_idx = -1
     o_idx = -1
@@ -225,9 +225,7 @@ def verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json):#extrac
     if 'compound:prt' in vgd.keys():
         # v_string = v_string + " "  +sent_data[vgd['compound:prt']]['word']
         v_string = v_string + " " + token_connect(vgd["compound:prt"], sent_data)
-    
-        
-    
+
     #extract subject    
     s_dep = ''
     if "nsubj" in vgd.keys():
@@ -325,7 +323,7 @@ def verb_root(verb_list, conj_word, token, sent_data):#extract subject, object, 
     s_set = False #booleans indicating if setting a default subject is needed (T:neede; F: already set)
     o_set = False#booleans indicating if setting default object is needed (T:neede; F: already set)
     o_share_idx = -1
-    s_share = 'Someone?'# a potential default subject for multiple conjunct verbs
+    s_share = 'inferred_subject_passive'# a potential default subject for multiple conjunct verbs
     o_share = ""# a potential default object for multiple conjunct verbs
     for verb in verb_list:
         s, v, o, negation, o_idx = verb_root_svo_building(verb, sent_data, v_obj_obl_json, v_prep_json)
@@ -335,14 +333,14 @@ def verb_root(verb_list, conj_word, token, sent_data):#extract subject, object, 
             if negation_list[0] == True and conj_word == "or":
                 negation = True
 
-        if s_set == False and s != 'Someone?':#setting potential subject
+        if s_set == False and s != 'inferred_subject_passive':#setting potential subject
             s_set = True
             s_share = s
         if o_set == False and o != '':#setting potential object
             o_set = True
             o_share = o
             o_share_idx = o_idx
-        if s == 'Someone?':
+        if s == 'inferred_subject_passive':
             s = s_share
         if o == '' and verb < o_share_idx: #object has to locate behind the verb in the sentence.
             o = o_share  
@@ -363,7 +361,7 @@ def pred_root(token, gov_dict, sent_data):# returns one triplet of subject-link 
     #predicative nominate
     #https://www.thesaurus.com/e/grammar/predicate-nominative-vs-predicate-adjectives/
     # the predicative nominate would be the synactical head of the subject and the link verb (usually is "be")
-    s = 'Someone?'
+    s = 'inferred_subject_passive'
     v = ''
     o = ''
     negation = negation_detect(token, sent_data)
@@ -433,7 +431,7 @@ def negation_detect(token, sent_data):#detect if there's negation associated wit
                     
         
 def link_verb_LVC_extraction(token, gov_dict, sent_data):
-    s = 'Someone?'
+    s = 'inferred_subject_passive'
     v = ''
     o = ''
     negation = negation_detect(token, sent_data)
@@ -475,6 +473,27 @@ def link_verb_LVC_extraction(token, gov_dict, sent_data):
                             return s, v, o, negation
     return "", "", "", negation
 
+
+
+def replace_words_with_full_names(sentence, full_names):
+    updated_sentence = ''
+    words = sentence.split()
+    available_names = full_names.copy()  # Create a copy of the full_names list
+
+    for word in words:
+        was_replaced = False
+        for full_name in available_names:
+            if word in full_name.split():
+                updated_sentence += full_name + ' '
+                available_names.remove(full_name)  # Remove the used name from the copy
+                was_replaced = True
+                break
+        if not was_replaced:
+            updated_sentence += word + ' '
+
+    return updated_sentence.strip()
+
+
 # CYNTHIA
 def SVO_extraction (sent_data, entitymentions): #returns columns of the final output
 # def SVO_extraction (sent_data): #returns columns of the final output
@@ -482,15 +501,17 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
     CollectedVs = []#list of processed verbs
     SVO = []#list that store the subject-verb-object triplets
     location_list = []#list that stores the location information appear in sentences
+    person_list = []#list that stores person names appear in sentences
+    organization_list = []
     loc_NER_value = []
     per_NER_value = []
+    org_NER_value = []
     T = []#list that stores the time information appear in sentences
     T_S = []#list that stores normalized form of the time information appear in sentences
     T_T = []#list that stores Date Type of normalized date
-    person_list = []#list that stores person names appear in sentences
     N = []#list that stores negation booleans (T=negation; F= without negation)
     acl = []#list that stores modifier
-    s = "Someone?"#default subject
+    s = "inferred_subject_passive"#default subject
     v = ""
     o = ""
 
@@ -499,13 +520,23 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
         if item["ner"] is not None and item["ner"] in ['STATE_OR_PROVINCE', 'COUNTRY', "CITY", "LOCATION"]:
             location_list.append(item["text"])
             loc_NER_value.append([item["text"], item["ner"], item["tokenBegin"], item["tokenEnd"]])
+        if item["ner"] is not None and item["ner"] in ['PERSON']:
+            # SIMON
+            if not item["text"] in person_list:
+                person_list.append(item["text"])
+                per_NER_value.append([item["text"], item["ner"], item["tokenBegin"], item["tokenEnd"]])
+        if item["ner"] is not None and item["ner"] in ['ORGANIZATION']:
+            # SIMON
+            if not item["text"] in organization_list:
+                organization_list.append(item["text"])
+                org_NER_value.append([item["text"], item["ner"], item["tokenBegin"], item["tokenEnd"]])
 
     link_verb_LVC_text = GUI_IO_util.CoreNLP_enhanced_dependencies_libPath + os.sep + "verb_obj_obl_json.txt"
     for key in sent_data.keys():#traverse each token in that sentence
         negation = False 
         token = sent_data[key]
 
-        #collect token if it contains information of location/time/name
+        # collect token if it contains information of location/time/person/organization
         if token["ner"] == "TIME" or token["ner"] == "DATE":
             T.append(token["word"])
             
@@ -516,10 +547,10 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
                 info = date_get_tense(token['normalizedNER'])
             T_T.append(info)
 
-        for item in entitymentions:
-            if item["ner"] is not None and item["ner"] in ['PERSON']:
-                person_list.append(item["text"])
-                per_NER_value.append([item["text"], item["ner"], item["tokenBegin"], item["tokenEnd"]])
+        # for item in entitymentions:
+        #     if item["ner"] is not None and item["ner"] in ['PERSON']:
+        #         person_list.append(item["text"])
+        #         per_NER_value.append([item["text"], item["ner"], item["tokenBegin"], item["tokenEnd"]])
 
         gov_dict = token["govern_dict"]#the dictionary that contains information of the dep and index of tokens whose syntactical head is the corrent token
         if ("VB" in token["pos"]) and ("advcl" not in token['deprel']) and ("xcomp" not in token['deprel'])and (token['deprel'] != "dep") and (token['deprel'] != "acl"):#if the verb has not been processed and its dep is not a special dep that will be processed independently
@@ -536,10 +567,10 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
                     v = svo_verb[i][1]
                     o = svo_verb[i][2]
                     n = negation_verb[i]
-                    #a verb will be collected into the outpt if it:
-                    # i. has associated subject
-                    # ii. OR has associated object
-                    if s != 'Someone?' or o != '':
+                    # a verb will be collected into the output if it:
+                    #   i. has associated subject
+                    #   ii. OR has associated object
+                    if s != 'inferred_subject_passive' or o != '':
                         SVO.append([s, v, o])
                         N.append(n)
 
@@ -547,7 +578,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
         else:#if that token is not a verb 
             #check if that token is a part of an LVC that starts with a link verb (like "be responsible for")
             s,v,o, negation = link_verb_LVC_extraction(token, gov_dict, sent_data)
-            if v != "" and ( s != "Someone?" or o != ''):
+            if v != "" and ( s != "inferred_subject_passive" or o != ''):
                 if [s, v, o] not in SVO:#avoid repetition
                     SVO.append([s, v, o])
                     N.append(negation)
@@ -555,7 +586,7 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
             elif (token["deprel"] == "ROOT" or token["deprel"] == "parataxis") and ("NN" in token["pos"] or token["pos"] == "PRP"):#Subject -> Verb(be) -> predicative nominative
                 s, v, o, negation = pred_root(token, gov_dict, sent_data)
                 
-                if v != "" and ( s != "Someone?" or o != ''):
+                if v != "" and ( s != "inferred_subject_passive" or o != ''):
                     if [s, v, o] not in SVO:#avoid repetition
                         SVO.append([s, v, o])
                         N.append(negation)
@@ -582,13 +613,23 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
                     CollectedVs.append(v_id)
                     svo_acl, negation_acl = verb_root([v_id], "",v_token, sent_data)
                     if len(svo_acl) != 0:
-                        if svo_acl[0][0] == "Someone?":
+                        if svo_acl[0][0] == "inferred_subject_passive":
                             #if the subject is missing in the dependency, the subject of the clausal modifier is the token that it modifies (syntactical head)
                             svo_acl[0][0] = token["word"]
                     SVO.extend(svo_acl)
                     N.extend(negation_acl)
- 
-    return SVO, location_list, loc_NER_value, T, T_S, T_T, per_NER_value, person_list, N
+
+    print("BEGIN======")
+    print(SVO)
+    for index, item in enumerate(SVO):
+        SVO[index][0] = replace_words_with_full_names(SVO[index][0],person_list)
+        SVO[index][0] = replace_words_with_full_names(SVO[index][0], organization_list)
+        SVO[index][2] = replace_words_with_full_names(SVO[index][2], person_list)
+        SVO[index][2] = replace_words_with_full_names(SVO[index][2], organization_list)
+    print(SVO)
+    print("======END")
+    # the values are returned for every SVO
+    return SVO, location_list, loc_NER_value, T, T_S, T_T, per_NER_value, org_NER_value, person_list, organization_list, N
             
                         
 # Dec. 21

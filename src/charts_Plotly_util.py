@@ -1,5 +1,6 @@
 # Written by Tony Chen Gu in Feb 2022
 # Contact: chentony2011@hotmail.com
+# https://plotly.com/python/
 
 import sys
 import GUI_util

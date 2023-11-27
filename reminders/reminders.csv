@@ -486,3 +486,4 @@ word2vec,Gensim Word2Vec timing,"Beware that Gensim Word2Vec on the 296 files (2
 1954_Mao_Zhou.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
 
 This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+SVO,SVO inferred_subject_passive,"The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., ""A beautiful car was bought""), a subject is automatically added as inferred_subject_passive.",ON

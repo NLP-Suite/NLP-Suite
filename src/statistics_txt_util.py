@@ -811,6 +811,8 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
     inputDocs=IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
 
     Ndocs=str(len(inputDocs))
+    if Ndocs==0:
+        return
 
     if processType != '':
         hideMessage = False
@@ -919,6 +921,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
             #print(filtered_words)
 
 # SUBJECTIVITY/OBJECTIVITY PER SENTENCE---------------------------------------------------------------------------------------------
+
             if "Objectivity/subjectivity" in processType:
                 # import spaCy_util
                 # annotator_available = spaCy_util.check_spaCy_annotator_availability(['Objectivity/subjectivity'], language, silent=False)
@@ -943,8 +946,26 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                 word_list.append([subjectivity_score, sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
 
 
-    # WORD LENGTH --------------------------------------------------------------------------
+# Lower case words after end-of-sentence punctuation --------------------------------------------------------------------------
+
             for wordID, word in enumerate(filtered_words):
+                if processType == 'Lower case words after end-of-sentence punctuation':
+                    header = ['Word', 'Sentence ID 1','Sentence 1','Sentence ID 2','Sentence 2', 'Document ID','Document']
+                    if word and (word=='.' or word=='!' or word=='?'):
+                        # check beginning of next word in next sentence since the end-of-sentence character will have split the sentence
+                        # exclude numbers from list
+                        if sentenceID<len(sentences) and sentences[sentenceID][0].isalpha() and sentences[sentenceID][0].islower():
+                            word_list.append([str(sentences[sentenceID].split()[0]), sentenceID, s, sentenceID+1, sentences[sentenceID],documentID,
+                                              IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+                        select_col = ['Word']
+                        fileLabel = 'sent_split'
+                        fileLabel_byDocID = ''
+                        columns_to_be_plotted_yAxis = ['Word']
+                        chart_title_label = ''
+                        column_xAxis_label = 'Words'
+
+# WORD LENGTH --------------------------------------------------------------------------
+
                 if processType=='' or "word length" in processType.lower():
                     header = ['Word', 'Word length (in characters)', 'Word ID (in sentence)', 'Number of words in sentence', 'Sentence ID','Sentence','Document ID','Document']
                     select_col = ['Word length']
@@ -993,9 +1014,10 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                     column_xAxis_label = 'Initial-vowel words'
                     if word and word and word[0].lower() in "aeiou" and word.isalpha():
                         word_list.append([word, wordID + 1, len(words), sentenceID, s, documentID, IO_csv_util.dressFilenameForCSVHyperlink(doc)])
+
     # PUNCTUATION SYMBOLS --------------------------------------------------------------------------
 
-                if processType == '' or "punctuation" in processType.lower():
+                if processType == '' or "pathos" in processType.lower():
                     header = ['Punctuation symbols of pathos (?!)', 'Word ID (in sentence)', 'Number of words in sentence', 'Sentence ID', 'Sentence', 'Document ID','Document']
                     select_col = ['Punctuation symbols of pathos (?!)'] # line chart by sentence index
                     fileLabel = 'punctuation'
@@ -1028,9 +1050,9 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                         fileLabel = str(k) + '_K_Sentences'
                         fileLabel_byDocID = 'Rep_Words_First_Last_' +str(k) + '_K_Sentences_byDoc'
                         columns_to_be_plotted_yAxis = ['Word']
-                        chart_title_label = f'Frequency of repeated words in first and last K ({k}) sentences'
-                        chart_title_byDocID = f'Frequency of repeated words in first and last K ({k}) sentences by Document'
-                        chart_title_bySentID = f'Frequency of repeated words in first and last K ({k}) sentences by Sentence ID'
+                        chart_title_label = f'Frequency of Repeated Words in First and Last K ({k}) Sentences'
+                        chart_title_byDocID = f'Frequency of Repeated Words in First and Last K ({k}) Sentences by Document'
+                        chart_title_bySentID = f'Frequency of Repeated Words in First and Last K ({k}) Sentences by Sentence ID'
                         column_xAxis_label = 'Words'
 
                         if sentenceID <= k:

@@ -278,8 +278,11 @@ def display_wordCloud_sep_color(inputFilename, inputDir, outputDir, text, color_
     return output_file_name
 
 # called by python_wordCloud
+# inputFilename is only used to create an appropriate name for the image file;
+# the texts to be processed is contained in textToProcess
 def display_wordCloud(inputFilename,inputDir,outputDir,textToProcess,doNotListIndividualFiles,transformed_image_mask, stopwords, collocation, prefer_horizontal,bg_image = None, bg_image_flag = True, font = None, max_words=100):
-
+    if textToProcess=='':
+        return
     comment_words = ' '
     # stopwords = set(STOPWORDS)
     # for val in textToProcess:
@@ -591,7 +594,7 @@ def python_wordCloud(inputFilename, inputDir, outputDir, configFileName, selecte
                         # for word in annotated.sentences[sent_id].tokens:
                         for word in annotated.sentences[sent_id].words:
                             # pos & upos have the same tag value
-                            print("--------------------word.text.lower() & pos",word.text.lower(), word.pos)
+                            # print("--------------------word.text.lower() & pos",word.text.lower(), word.pos)
                             if word.text.lower() == "'s" or word.text.lower() == "’s" or word.text.lower() == "s":
                                 continue  # do not process the s of a saxon genitive
                             # RED for NOUNS, BLUE for VERBS, GREEN for ADJECTIVES, GREY for ADVERBS

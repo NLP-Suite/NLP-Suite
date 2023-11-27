@@ -348,8 +348,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         "First Referent Sentence ID", "First Referent Sentence", "Pronoun Start ID in Referent Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
         'gender':['Word', 'Gender', 'Sentence ID', 'Sentence','Document ID', 'Document'],
         'normalized-date':["Date expression", "Normalized date", "tid","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
-        'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location",'Person','Date expression','Normalized date', 'Date type', 'Sentence ID', 'Sentence','Document ID', 'Document'],
-        'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Location", 'Person', 'Date expression',
+        'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Locations", "Persons", "Organizations",'Date expression','Normalized date', 'Date type', 'Sentence ID', 'Sentence','Document ID', 'Document'],
+        'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Locations", 'Persons', 'Organizations', 'Date expression',
                    'Normalized date', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         # Chen
         # added Deps column
@@ -1553,6 +1553,8 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
     SVO_enhanced_dependencies = []
     SVO_brief = []
     locations = [] # a list of [sentence, sentence id, [location_text, ner_value]]
+    persons = []
+    organizations = []
     for sentence in json['sentences']:#traverse output of each sentence
         sent_data = Stanford_CoreNLP_SVO_enhanced_dependencies_util.SVO_enhanced_dependencies_sent_data_reorg(sentence)#reorganize the output into a dictionary in which each content (also dictionary) contains information of a token
         #including a dictionary (govern_dictionary) indicating the index of tokens whose syntactical head is the current token
@@ -1572,17 +1574,24 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
 
         # TODO MINO: add Date Type columns
         # CYNTHIA: feed another information sentence['entitymentions'] to SVO_extraction to get locations
-        SVO, location_list, loc_NER_value, T, T_S, T_T, per_NER_value, person_list, N = Stanford_CoreNLP_SVO_enhanced_dependencies_util.SVO_extraction(sent_data, sentence['entitymentions'])# main function
+        #
+        SVO, location_list, loc_NER_value, T, T_S, T_T, per_NER_value, org_NER_value, person_list, organization_list, N = Stanford_CoreNLP_SVO_enhanced_dependencies_util.SVO_extraction(sent_data, sentence['entitymentions'])# main function
         # per_NER_value currently not used
         nidx = 0
         location_list = []
-        # person_list = []
+        person_list = []
+        organization_list =[]
+        person = []
+        organization = []
         new_NER_value = []
 
+# PROCESS LOCATION LIST --------------------------------------------------------------
+        # loc_NER_value [['Shanklin','LOCATION',24,25]]
         for el in loc_NER_value:
             # need to recompute location list in case locations have been regrouped
             #   e.g., Denmark Street (COUNTRY, LOCATION) regrouped as Denmark Street
             new_NER_value.append([el[0], el[1], el[2], el[3], sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+        # loc_NER_value is now added elements [['Shanklin','LOCATION',24,25, Sentence ID, Sentence, Document ID, Document]]
         loc_NER_value = check_NER_tokenBegin_tokenEnd(new_NER_value)
         # recompute location_list as NER values may have changed
         for el in loc_NER_value:
@@ -1593,6 +1602,44 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
                 # produce an intermediate location file
                 # locations.append([sentenceID, complete_sent, [[x,y] for x,y in zip(L,NER_value)]])
             locations.append(el)
+
+
+# PROCESS PERSON LIST --------------------------------------------------------------
+        new_NER_value = []
+        # Person
+        # [['Mao','PERSON',22,24]]
+        for el in per_NER_value:
+            # need to recompute Person list in case Person & organization have been regrouped
+            #   e.g., Mao Zedong regrouped as Mao Zedong
+            new_NER_value.append([el[0], el[1], el[2], el[3], sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+        #
+        # per_NER_value is now added elements [['World Bank','ORGANIZATION',22,24, Sentence ID, Sentence, Document ID, Document]]
+        per_NER_value = check_NER_tokenBegin_tokenEnd(new_NER_value)
+        # recompute Person list as NER values may have changed
+        for el in per_NER_value:
+            # need to recompute Person & organization list in case Person & organization have been regrouped
+            #   e.g., Mao Zedong regrouped as Mao Zedong
+            person_list.append(el[0])
+            person.append(el)
+
+# PROCESS ORGANIZATION LIST --------------------------------------------------------------
+        new_NER_value = []
+        # organization
+        # [['World Bank','ORGANIZATION',22,24]]
+        for el in org_NER_value:
+            # need to recompute Person & organization list in case Person & organization have been regrouped
+            #   e.g., Mao Zedong regrouped as Mao Zedong
+            new_NER_value.append([el[0], el[1], el[2], el[3], sentenceID, complete_sent, documentID,
+                                  IO_csv_util.dressFilenameForCSVHyperlink(document)])
+        #
+        # per_NER_value is now added elements [['World Bank','ORGANIZATION',22,24, Sentence ID, Sentence, Document ID, Document]]
+        org_NER_value = check_NER_tokenBegin_tokenEnd(new_NER_value)
+        # recompute Person & organization list as NER values may have changed
+        for el in org_NER_value:
+            # need to recompute Person & organization list in case Person & organization have been regrouped
+            #   e.g., Mao Zedong regrouped as Mao Zedong
+            organization_list.append(el[0])
+            organization.append(el)
 
         # CYNTHIA: added list of locations in SVO output (e.g., Los Angeles; New York; Washington)
         # TODO Mino: add Date Type columns
@@ -1607,9 +1654,11 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
                 tmp_T_S = "; ".join(T_S)
                 tmp_T_T = "; ".join(T_T)
             if filename_embeds_date_var:
-                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(location_list), "; ".join(person_list), " ".join(T), tmp_T_S, tmp_T_T, sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document),date_str])
+                # SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(location_list), "; ".join(person_list), " ".join(T), tmp_T_S, tmp_T_T, sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document),date_str])
+                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(location_list), "; ".join(person_list), "; ".join(organization_list), " ".join(T), tmp_T_S, tmp_T_T, sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document),date_str])
             else:
-                SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(location_list), "; ".join(person_list), " ".join(T), tmp_T_S, tmp_T_T, sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                # SVO_enhanced_dependencies.append([row[0], row[1], row[2], N[nidx], "; ".join(location_list), "; ".join(person_list), " ".join(T), tmp_T_S, tmp_T_T, sentenceID,complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                SVO_enhanced_dependencies.append( [row[0], row[1], row[2], N[nidx], "; ".join(location_list), "; ".join(person_list), "; ".join(organization_list), " ".join(T),tmp_T_S, tmp_T_T, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
             nidx += 1
         # # for each sentence, get locations
         # if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(location_list) != 0:

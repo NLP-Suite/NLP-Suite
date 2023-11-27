@@ -43,7 +43,7 @@ cla_open_csv = False  # if run from command line, will check if they want to ope
 # prepare data in a given way
 # in the tag_pos position of the data, find if it is in a given list of tags
 # add a column in the end describing the tag the extract the row from data
-def data_preperation(data, tag_list, name_list, tag_pos):
+def data_preparation(data, tag_list, name_list, tag_pos):
     dat = []
     for tok in data:
         if tok[tag_pos] in tag_list:
@@ -78,7 +78,7 @@ def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
     list_nouns_ner = []
 
     # must all be sorted in descending order
-    list_nouns_postag = data_preperation(data, ['NN', 'NNS', 'NNP', 'NNPS'],
+    list_nouns_postag = data_preparation(data, ['NN', 'NNS', 'NNP', 'NNPS'],
      ['Noun singular/mass (NN)', 'Noun plural (NNS)', 'Proper noun singular (NNP)', 'Proper noun plural (NNPS)'], 3)
     noun_postag_stats = [['Noun POS Tags', 'Frequencies'],
                          ['Proper noun singular (NNP)', postag_counter['NNP']],
@@ -86,7 +86,7 @@ def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
                          ['Noun singular/mass (NN)', postag_counter['NN']],
                          ['Noun plural (NNS)', postag_counter['NNS']]]
 
-    list_nouns_deprel = data_preperation(data, ['obj','iobj','nsubj','nsubj:pass','csubj','csubj:pass'],
+    list_nouns_deprel = data_preparation(data, ['obj','iobj','nsubj','nsubj:pass','csubj','csubj:pass'],
     ['Object (obj)','Indirect object (iobj)','Nominal subject (nsubj)','Nominal passive subject (nsubj:pass)',
     'Clausal subject (csubj)','Clausal passive subject (csubj:pass)'],6)
 
@@ -98,17 +98,34 @@ def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
                          ['Clausal subject (csubj)', deprel_counter['csubj']],
                          ['Clausal passive subject (csubj:pass)', deprel_counter['csubj:pass']]]
 
-    list_nouns_ner = data_preperation(data, ['COUNTRY','CITY','LOCATION','PERSON','ORGANIZATION','STATE_OR_PROVINCE'],
-    ['COUNTRY','CITY','LOCATION','PERSON','ORGANIZATION','STATE_OR_PROVINCE'],4)
-    noun_ner_stats = [['Noun NERs', 'Frequencies'],
-        ['COUNTRY', ner_counter['COUNTRY']],
-        ['CITY', ner_counter['CITY']],
-        ['LOCATION', ner_counter['LOCATION']],
-        ['PERSON', ner_counter['PERSON']],
-        ['ORGANIZATION', ner_counter['ORGANIZATION']],
-        ['STATE_OR_PROVINCE', ner_counter['STATE_OR_PROVINCE']]]
+    # list_nouns_ner = data_preparation(data, ['COUNTRY','CITY','LOCATION','PERSON','ORGANIZATION','STATE_OR_PROVINCE'],
+    # ['COUNTRY','CITY','LOCATION','PERSON','ORGANIZATION','STATE_OR_PROVINCE'],4)
+    # noun_ner_stats = [['Noun NERs', 'Frequencies'],
+    #     ['COUNTRY', ner_counter['COUNTRY']],
+    #     ['CITY', ner_counter['CITY']],
+    #     ['LOCATION', ner_counter['LOCATION']],
+    #     ['PERSON', ner_counter['PERSON']],
+    #     ['ORGANIZATION', ner_counter['ORGANIZATION']],
+    #     ['STATE_OR_PROVINCE', ner_counter['STATE_OR_PROVINCE']]]
 
+    tl = ['ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Deps', 'Clause Tag', 'Record ID', 'Sentence ID',
+          'Document ID', 'Document']
+    included_tags = ['NN', 'NNPS', 'NNP', 'NNS']
+    df = pd.DataFrame(data, columns=tl)
+    filtered_df = df[df['POS'].isin(included_tags)]
+    possible_items = list(filtered_df['NER'].value_counts().keys())
+    list_nouns_ner = data_preparation(data,possible_items, possible_items, 4)
+    strings = '''[['Noun NERs', 'Frequencies'],'''
+    for index, item in enumerate(possible_items):
+        if index != len(possible_items)-1:
+            strings+= "['"+item+"',ner_counter['"+item+"']],"
+        else:
+            strings += "['" + item + "',ner_counter['" + item + "']]]"
+    noun_ner_stats = eval(strings)
+    print(noun_ner_stats[1],noun_ner_stats[1][1], "THIS IS THE O COUNTER!!!!!!!!")
     return list_nouns_postag, list_nouns_deprel, list_nouns_ner, noun_postag_stats, noun_deprel_stats, noun_ner_stats
+
+    # return list_nouns_postag, list_nouns_deprel, list_nouns_ner, noun_postag_stats, noun_deprel_stats, noun_ner_stats
 
 
 def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):

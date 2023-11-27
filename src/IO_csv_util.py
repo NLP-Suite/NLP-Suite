@@ -134,7 +134,8 @@ def get_csv_field_values(inputFilename, column_name, uniqueValues=True, returnLi
                 sorted_unique_values = sorted(unique_values)
                 list(sorted_unique_values)
             else:
-                unique_values = row[col_num] + ', ' + unique_values
+                if row[col_num] !='':
+                    unique_values = row[col_num] + ', ' + unique_values
     return unique_values
 
 # get the number of records and columns of a csv file
