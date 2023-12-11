@@ -33,7 +33,7 @@ import IO_csv_util
 #       https://stanfordnlp.github.io/CoreNLP/memory-time.html
 
 # extra parameters passed to uniform the funct call
-def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles,createCharts=False,chartPackage='Excel'):
+def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles,chartPackage='Excel', dataTransformation='No transformation'):
     import file_filename_util
     result=file_filename_util.backup_files(inputFilename, inputDir,'Add full-stops to paragraphs', '.txt', configFileName)
     if result==False:
@@ -96,7 +96,7 @@ def add_full_stop_to_paragraph(window, inputFilename, inputDir, outputDir, confi
 
     mb.showwarning(title='End of paragraph punctuation', message=msgString)
 
-def check_typesetting_hyphenation(window,inputFilename,inputDir, outputDir='',configFileName='',openOutputFiles=False,createCharts=False,chartPackage='Excel'):
+def check_typesetting_hyphenation(window,inputFilename,inputDir, outputDir='',configFileName='',openOutputFiles=False,chartPackage='Excel', dataTransformation='No transformation'):
     filesToOpen=[]
     docID = 0
     files=IO_files_util.getFileList(inputFilename, inputDir, fileType='txt', silent=False, configFileName=configFileName)
@@ -133,7 +133,7 @@ def check_typesetting_hyphenation(window,inputFilename,inputDir, outputDir='',co
     else:
         mb.showwarning('Warning', 'There are ' + str(hyphenated_lines) + ' typesetting hyphenated lines in the input file(s).')
 
-def remove_typeseting_hyphenation(window,inputFilename,inputDir, outputDir='',openOutputFiles=False,createCharts=False,chartPackage='Excel',configFileName=''):
+def remove_typeseting_hyphenation(window,inputFilename,inputDir, outputDir='',openOutputFiles=False,chartPackage='Excel',dataTransformation='No transformation', configFileName=''):
 
     # if not IO_user_interface_util.input_output_save('Remove end-of-line typesetting hyphenation and join split parts'):
     #     return
@@ -142,7 +142,7 @@ def remove_typeseting_hyphenation(window,inputFilename,inputDir, outputDir='',op
     answer = tk.messagebox.askyesno("Warning", message)
     if answer:
         check_typesetting_hyphenation(window, inputFilename, inputDir, outputDir, openOutputFiles,
-                                      createCharts=False, chartPackage='Excel',configFileName=configFileName)
+                                       chartPackage='Excel',dataTransformation='No transformation', configFileName=configFileName)
         return
 
     docID = 0
@@ -236,7 +236,7 @@ def remove_characters_between_characters(window,inputFilename,inputDir, outputDi
             mb.showwarning(title='Edits saved', message=str(i) + ' substrings contained between ' + startCharacter + ' ' + endCharacter + ' were removed and saved directly in the input file ' + tail)
 
 # inputFilename contains path
-def remove_blank_lines(window,inputFilename,inputDir, outputDir='', configFileName='', openOutputFiles=False,createCharts=False,chartPackage='Excel'):
+def remove_blank_lines(window,inputFilename,inputDir, outputDir='', configFileName='', openOutputFiles=False,chartPackage='Excel'):
     import file_filename_util
     result=file_filename_util.backup_files(inputFilename, inputDir,"Remove blank lines", '.txt', configFileName)
     if result==False:
@@ -303,7 +303,7 @@ def isTitle(sentence,Title_length_limit):
         # print sentence
         return True
 
-def newspaper_titles(window,inputFilename,inputDir,outputDir, configFileName, openOutputFiles,createCharts,chartPackage):
+def newspaper_titles(window,inputFilename,inputDir,outputDir, configFileName, openOutputFiles,chartPackage, dataTransformation):
     from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
 
     if inputDir=='' and inputFilename!='':

@@ -159,7 +159,7 @@ def voice_output(voice_word_list, data_divided_sents):
 	voice_act = sorted(voice_act, key=lambda x: int(x[recordID_position]))  # sort in ascending record id order
 	return voice_sorted, voice_stats, voice_pass, voice_act_aux, voice_act
 
-def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
+def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, chartPackage, dataTransformation):
 	filesToOpen = []  # Store all files that are to be opened once finished
 	# print ("\nRun verb voice analysis")
 	data_prep = verb_voice_data_preparation(data)
@@ -176,7 +176,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	df = pd.DataFrame(voice_stats)
 	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
 						  language_encoding='utf-8')
-	if createCharts == True:
+	if chartPackage!='No charts':
 
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0, 1]]
@@ -184,6 +184,7 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
 												   outputFileLabel='verb',
 												   chartPackage=chartPackage,
+										           dataTransformation=dataTransformation,
 												   chart_type_list=['bar'],
 												   chart_title="Frequency Distribution of Verb Voice",
 												   column_xAxis_label_var='Verb voice',
@@ -285,7 +286,7 @@ def verb_modality_data_preparation(data):
 # 		return
 
 def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles,
-						createCharts, chartPackage):
+						chartPackage, dataTransformation):
 	import os
 	head, scriptName = os.path.split(os.path.basename(__file__))
 	reminders_util.checkReminder(scriptName,
@@ -309,13 +310,14 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
 						  language_encoding='utf-8')
 
-	if createCharts == True:
+	if chartPackage!='No charts':
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0, 1]]
 		count_var = 1
 		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
 												   outputFileLabel='verb_mod',
 												   chartPackage=chartPackage,
+										           dataTransformation=dataTransformation,
 												   chart_type_list=['bar'],
 												   chart_title="Frequency Distribution of Verb Modality",
 												   column_xAxis_label_var='Verb modality',
@@ -342,6 +344,7 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_modality_value_stats_file_name, outputDir,
 												   outputFileLabel='verb_mod_val',
 												   chartPackage=chartPackage,
+										           dataTransformation=dataTransformation,
 												   chart_type_list=['bar'],
 												   chart_title="Frequency Distribution of Halliday's Verb Modality Values",
 												   column_xAxis_label_var='Verb modality value',
@@ -411,7 +414,7 @@ def verb_tense_data_preparation(data):
 	dat = sorted(dat, key=lambda x: int(x[recordID_position]))
 	return dat, verb_tense_stats
 
-def verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
+def verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, chartPackage, dataTransformation):
 	global postag_counter
 	filesToOpen = []
 	# must be sorted in descending order
@@ -433,13 +436,14 @@ def verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents,
 	IO_csv_util.df_to_csv(GUI_util.window, merged_df, verb_stats_file_name, headers=['Form', 'Form Frequency', 'Lemma', 'Lemma Frequency'], index=False,
 						  language_encoding='utf-8')
 
-	if createCharts:
+	if chartPackage!='No charts':
 		columns_to_be_plotted_xAxis = []
 		columns_to_be_plotted_yAxis = [[0, 0]]
 		count_var = 1
 		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_file_name, outputDir,
 										  outputFileLabel='Verbs_Form',
 										  chartPackage=chartPackage,
+										  dataTransformation=dataTransformation,
 										  chart_type_list=['bar'],
 										  chart_title="Frequency Distribution of Verbs (Form)",
 										  column_xAxis_label_var='Verb',
@@ -460,6 +464,7 @@ def verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents,
 		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_file_name, outputDir,
 										  outputFileLabel='Verbs_Lemma',
 										  chartPackage=chartPackage,
+										  dataTransformation=dataTransformation,
 										  chart_type_list=['bar'],
 										  chart_title="Frequency Distribution of Verbs (Lemma)",
 										  column_xAxis_label_var='Verb',
@@ -476,7 +481,7 @@ def verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents,
 	return filesToOpen
 
 
-def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
+def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, chartPackage, dataTransformation):
 	global postag_counter
 	filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -504,13 +509,14 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
 						  language_encoding='utf-8')
 
-	if createCharts == True:
+	if chartPackage!='No charts':
 		columns_to_be_plotted_xAxis=[]
 		columns_to_be_plotted_yAxis=[[0,1]]
 		count_var=0
 		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
 														 outputFileLabel='verb_tense',
 														 chartPackage=chartPackage,
+										  				 dataTransformation=dataTransformation,
 														 chart_type_list=['bar'],
 														 chart_title="Frequency Distribution of Verb Tense",
 														 column_xAxis_label_var='Verb tense',
@@ -534,7 +540,7 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	return filesToOpen
 
 # calls functions that compute voice, modality, tense
-def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
+def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sents, openOutputFiles, chartPackage, dataTransformation):
 	filesToOpen = []  # Store all files that are to be opened once finished
 
 	startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
@@ -542,25 +548,25 @@ def verb_stats(config_filename, inputFilename, outputDir, data, data_divided_sen
 												   True, '', True, '', True)
 
 	outputFiles = verb_compute_frequencies(inputFilename, outputDir, data, data_divided_sents,
-								   openOutputFiles, createCharts, chartPackage)
+								   openOutputFiles, chartPackage, dataTransformation)
 
 	if outputFiles!=None:
 		filesToOpen.extend(outputFiles)
 
 
 	outputFiles = verb_voice_stats(inputFilename, outputDir, data, data_divided_sents,
-								   openOutputFiles, createCharts, chartPackage)
+								   openOutputFiles, chartPackage, dataTransformation)
 
 	if outputFiles!=None:
 		filesToOpen.extend(outputFiles)
 
 	outputFiles = verb_modality_stats(config_filename, inputFilename, outputDir, data, data_divided_sents,
-									  openOutputFiles, createCharts, chartPackage)
+									  openOutputFiles, chartPackage, dataTransformation)
 	if outputFiles!=None:
 		filesToOpen.extend(outputFiles)
 
 	outputFiles = verb_tense_stats(inputFilename, outputDir, data, data_divided_sents,
-								   openOutputFiles, createCharts, chartPackage)
+								   openOutputFiles, chartPackage, dataTransformation)
 	if outputFiles!=None:
 		filesToOpen.extend(outputFiles)
 

@@ -40,7 +40,7 @@ import knowledge_graphs_WordNet_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
         coref_var,
         manual_coref_var,
         normalized_NER_date_extractor_var,
@@ -193,7 +193,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # 2 items are returned: filename string and true/False for error
         outputFiles, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename,
                                        inputFilename, inputDir, outputCorefDir,
-                                       openOutputFiles, createCharts, chartPackage,
+                                       openOutputFiles, chartPackage, dataTransformation,
                                        language_var, memory_var, export_json_var,
                                        manual_coref_var)
         if error_indicator != 0:
@@ -256,8 +256,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # they can be passed independently, but it is useful to have both arguments
         outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                    outputSVODir, openOutputFiles,
-                                   createCharts,
+                                   
                                    chartPackage,
+                                   dataTransformation,
                                    annotator, False,
                                    language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                    extract_date_from_text_var=extract_date_from_text_var,
@@ -283,11 +284,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 svo_result_list.append(outputFiles[0])
 
             # TODO MINO: create normalize_date subdir and outputs
-            nDateOutput = SVO_util.normalize_date_svo(SVO_filename, outputSVODir, createCharts, chartPackage)
+            nDateOutput = SVO_util.normalize_date_svo(SVO_filename, outputSVODir, chartPackage, dataTransformation)
             if nDateOutput != None:
-                nDateSVOFilename=nDateOutput[0]
-                filesToOpen.extend(nDateOutput)
-
+                if len(nDateOutput)>0:
+                    # nDateSVOFilename=nDateOutput[0] #see below; filename commented out
+                    filesToOpen.extend(nDateOutput)
 
 # CoreNLP OpenIE _____________________________________________________
     if 'OpenIE' in package_var:
@@ -298,8 +299,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputSVODir, openOutputFiles,
-                                                                           createCharts,
+                                                                           
                                                                            chartPackage,
+                                                                           dataTransformation,
                                                                            'OpenIE',
                                                                            False,
                                                                            language_var, memory_var, export_json_var, document_length_var, limit_sentence_length_var,
@@ -310,14 +312,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                            date_position_var=date_position_var,
                                                                            google_earth_var = google_earth_var,
                                                                            location_filename = location_filename)
-        if isinstance(outputFiles, str):
-            filesToOpen.append(outputFiles)
-            SVO_filename = outputFiles
-            svo_result_list.append(outputFiles)
-        else:
-            filesToOpen.extend(outputFiles)
-            SVO_filename = outputFiles[0]
-            svo_result_list.append(outputFiles[0])
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                SVO_filename = outputFiles
+                svo_result_list.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+                SVO_filename = outputFiles[0]
+                svo_result_list.append(outputFiles[0])
 
 # removed from the options; way way too slow and with far better options now in spaCy and Stanza
 # SENNA _____________________________________________________
@@ -329,7 +332,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 #             return
 #         svo_SENNA_files = []
 #         tempOutputFiles = SENNA_util.run_senna(inputFilename, inputDir, outputSVODir, openOutputFiles,
-#                                                                 createCharts, chartPackage)
+#                                                                 chartPackage, dataTransformation)
 #         if len(tempOutputFiles)!=0:
 #             filesToOpen.extend(tempOutputFiles)
 #             SVO_filename=tempOutputFiles[0]
@@ -344,7 +347,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputSVODir,
                                                     openOutputFiles,
-                                                    createCharts, chartPackage,
+                                                    chartPackage, dataTransformation,
                                                     annotator, False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
@@ -375,7 +378,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputSVODir,
                                                       openOutputFiles,
-                                                      createCharts, chartPackage,
+                                                      chartPackage, dataTransformation,
                                                       annotator, False,
                                                       language_list,
                                                       memory_var, document_length_var, limit_sentence_length_var,
@@ -409,7 +412,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         filter_subjects, filter_verbs, filter_objects,
                         subject_filePath, verb_filePath, object_filePath,
                         lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                        outputSVOSVODir, createCharts, chartPackage)
+                        outputSVOSVODir, chartPackage, dataTransformation)
             if output != None:
                 if 'English' in language: # SVO filtered by WordNet are available for English only
                     if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
@@ -445,8 +448,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 WordNetDir=''
                 output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
                                                                          config_filename, 'NOUN',
-                                                                         openOutputFiles, createCharts,
-                                                                         chartPackage, language_var)
+                                                                         openOutputFiles, 
+                                                                         chartPackage, dataTransformation, language_var)
                 os.remove(outputFilename)
                 if output != None and output != '':
                     filesToOpen.extend(output)
@@ -454,8 +457,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     outputFilename = IO_csv_util.extract_from_csv(SVO_lemmatized_filename, outputWNDir, '', ['Verb (V)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
                                                                              config_filename, 'VERB',
-                                                                             openOutputFiles, createCharts,
-                                                                             chartPackage, language_var)
+                                                                             openOutputFiles, 
+                                                                             chartPackage, dataTransformation, language_var)
                     os.remove(outputFilename)
                     if output != None and output != '':
                         filesToOpen.extend(output)
@@ -582,7 +585,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         outputFiles = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
                                      config_filename, location_filename, inputDir,
                                      outputGISDir,
-                                     'Nominatim', 'Google Earth Pro & Google Maps', createCharts, chartPackage,
+                                     'Nominatim', 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
                                      date_present,
                                      country_bias,
                                      area_var,
@@ -623,8 +626,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_package_options_widget.get(),
+                                 GUI_util.data_transformation_options_widget.get(),
                                  coref_var.get(),
                                  manual_coref_var.get(),
                                  normalized_NER_date_extractor_var.get(),

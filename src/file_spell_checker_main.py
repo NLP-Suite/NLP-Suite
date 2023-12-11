@@ -19,8 +19,9 @@ import file_spell_checker_util
 
 def run(inputFilename, inputDir, outputDir,
         openOutputFiles,
-        createCharts,
+        
         chartPackage,
+        dataTransformation,
         by_all_tokens_var,
         byNER_value_var,
         NER_list,
@@ -50,10 +51,10 @@ def run(inputFilename, inputDir, outputDir,
                 silent=False
             # openOutputFiles=False
             filesToOpen=file_spell_checker_util.nltk_unusual_words(GUI_util.window, inputFilename, inputDir, outputDir, config_filename, False,
-													   createCharts,chartPackage, silent, config_filename)
+													   chartPackage, dataTransformation, silent, config_filename)
 
         if checker_value_var == '*' or "detector" in checker_value_var:
-            file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, config_filename, openOutputFiles, createCharts, chartPackage)
+            file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, config_filename, openOutputFiles, chartPackage, dataTransformation)
 
         if checker_value_var == '*' or 'autocorrect' in checker_value_var or 'pyspellchecker' in checker_value_var or 'textblob' in checker_value_var:
             autocorrect_df, pyspellchecker_df,textblob_df = file_spell_checker_util.spellcheck(inputFilename, inputDir, checker_value_var, check_withinSubDir_spell_checker_var)
@@ -64,7 +65,7 @@ def run(inputFilename, inputDir, outputDir,
         if checker_value_var == '*' or 'BERT' in checker_value_var:
             pyspellchecker_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'spell_pyspellchecker')
             import BERT_util
-            BERT_output = BERT_util.spell_checker_bert(window, inputFilename, inputDir, outputDir, '', createCharts, chartPackage)
+            BERT_output = BERT_util.spell_checker_bert(window, inputFilename, inputDir, outputDir, '', chartPackage, dataTransformation)
             filesToOpen.append(BERT_output)
         if checker_value_var == '*' or 'pyspellchecker' in checker_value_var:
             pyspellchecker_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'spell_pyspellchecker')
@@ -102,12 +103,12 @@ def run(inputFilename, inputDir, outputDir,
 
         if check_withinSubDir and (not spelling_checker_var):
             outputFiles = file_spell_checker_util.check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles,
-																		 createCharts, NER_list, similarity_value,
+																		 NER_list, similarity_value,
 																		 by_all_tokens_var,
                                                                          spelling_checker_var)
         else:
             outputFiles = file_spell_checker_util.check_for_typo(inputDir, outputDir,
-                                                                 openOutputFiles, createCharts, chartPackage,
+                                                                 openOutputFiles, chartPackage, dataTransformation,
                                                                  NER_list, similarity_value,
 																 by_all_tokens_var)
 
@@ -123,8 +124,8 @@ run_similarity_command = lambda: run(
                                      GUI_util.input_main_dir_path.get(),
                                      GUI_util.output_dir_path.get(),
                                      GUI_util.open_csv_output_checkbox.get(),
-                                     GUI_util.create_chart_output_checkbox.get(),
                                      GUI_util.charts_package_options_widget.get(),
+                                     GUI_util.data_transformation_options_widget.get(),
                                      by_all_tokens_var.get(),
                                      byNER_value_var.get(),
                                      NER_list,

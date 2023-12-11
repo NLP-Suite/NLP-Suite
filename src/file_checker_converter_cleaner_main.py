@@ -27,8 +27,9 @@ import config_util
 
 def run(inputFilename,inputDir, outputDir,
     openOutputFiles,
-    createCharts,
+    
     chartPackage,
+    dataTransformation,
     check_tools,
     convert_tools,
     clean_tools,
@@ -84,9 +85,9 @@ def run(inputFilename,inputDir, outputDir,
                 'find_replace' in function_to_run:
             func(GUI_util.window,inputFilename,inputDir,outputDir, config_filename)
         elif 'sentence_length' in function_to_run:
-            outputFile=func(inputFilename,inputDir,outputDir,config_filename, createCharts,chartPackage)
+            outputFile=func(inputFilename,inputDir,outputDir,config_filename, chartPackage, dataTransformation)
         else:
-            func(GUI_util.window,inputFilename,inputDir, outputDir,config_filename, openOutputFiles,createCharts,chartPackage)
+            func(GUI_util.window,inputFilename,inputDir, outputDir,config_filename, openOutputFiles, chartPackage, dataTransformation)
 
         if len(outputFile)>0:
             filesToOpen.append(outputFile)
@@ -105,8 +106,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_package_options_widget.get(),
+                            GUI_util.data_transformation_options_widget.get(),
                             check_tools_var.get(),
                             convert_tools_var.get(),
                             clean_tools_var.get(),

@@ -24,7 +24,7 @@ import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createCharts, chartPackage,
+def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, chartPackage, dataTransformation,
         CoreNLP_gender_annotator_var, CoreNLP_download_gender_file_var, CoreNLP_upload_gender_file_var,
         annotator_dictionary_var, annotator_dictionary_file_var,personal_pronouns_var,plot_var, year_state_var, firstName_entry_var, new_SS_folders):
 
@@ -64,7 +64,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
     if CoreNLP_gender_annotator_var==True:
         output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, input_main_dir_path,
                                         outputDir, openOutputFiles,
-                                        createCharts, chartPackage, 'gender', False, language, export_json_var, memory_var)
+                                        chartPackage, dataTransformation,'gender', False, language, export_json_var, memory_var)
 
         # annotator returns a list and not a string
         # the gender annotator returns 2 Excel charts in addition to the csv file
@@ -127,9 +127,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
                 GUI_util.output_dir_path.get(),
                 GUI_util.open_csv_output_checkbox.get(),
-                                                GUI_util.create_chart_output_checkbox.get(),
-                                GUI_util.charts_package_options_widget.get(),
-
+                GUI_util.charts_package_options_widget.get(),
+                GUI_util.data_transformation_options_widget.get(),
                 CoreNLP_gender_annotator_var.get(),
                 CoreNLP_download_gender_file_var.get(),
                 CoreNLP_upload_gender_file_var.get(),

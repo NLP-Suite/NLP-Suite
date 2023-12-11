@@ -165,7 +165,7 @@ def find(doc_dir, soc_acts, nlp, compare, sim_base, f, terminal_output):
 # CoreNLPDir: the path to stanfordCoreNLP folder. example name is "stanford-corenlp-4.2.0"
 # inputDir: the path to a folder that stores ungrouped documents in txt format.
 # inputTargetDir: the path to a folder that stores several folders which contains several documents of the same target
-def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCharts, chartPackage, relativity_threshold):
+def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, chartPackage, dataTransformation, relativity_threshold):
 
     filesToOpen = []
     # check that the CoreNLPdir has been setup
@@ -223,7 +223,7 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
     nlp.close()
     f.close()
 
-    if createCharts == True:
+    if chartPackage!='No charts':
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[3, 3]]
         hover_label=''
@@ -231,6 +231,7 @@ def main(window, inputDir, inputTargetDir, outputDir, openOutputFiles, createCha
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel='SSR_NER_home',
                                                   chartPackage=chartPackage,
+                                                  dataTransformation=dataTransformation,
                                                   chart_type_list=["pie"],
                                                   chart_title='Frequency Distribution of Find a Home Outcome',
                                                   column_xAxis_label_var='',

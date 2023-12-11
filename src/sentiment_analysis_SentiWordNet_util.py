@@ -151,7 +151,7 @@ def analyzefile(inputFilename, outputDir, output_file, mode, documentID, documen
     # csvfile.close()
     return output_file
 
-def main(inputFilename, inputDir, outputDir, configFileName, mode, createCharts=False, chartPackage='Excel'):
+def main(inputFilename, inputDir, outputDir, configFileName, mode,  chartPackage='Excel', dataTransformation='No transformation'):
     """
     Runs analyzefile on the appropriate files, provided that the input paths are valid.
     :param inputFilename:
@@ -218,10 +218,10 @@ def main(inputFilename, inputDir, outputDir, configFileName, mode, createCharts=
                 # sys.exit(1)
     csvfile.close()
 
-    if createCharts == True:
+    if chartPackage!='No charts':
         # sentiWordNet computes a single sentiment score; does not compute separate mean and median values
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment score'],
                                                    chart_title='Frequency of SentiWordNet Sentiment Scores',
                                                    count_var=0, hover_label=[],

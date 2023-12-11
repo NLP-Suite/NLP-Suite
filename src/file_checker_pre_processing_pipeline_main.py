@@ -28,16 +28,17 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_package_options_widget.get(),
+                            GUI_util.data_transformation_options_widget.get(),
                             utf8_var.get(),
                             ASCII_var.get())
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 def run(inputFilename,inputDir, outputDir,
         openOutputFiles,
-        createCharts,
+        
         chartPackage,
+        dataTransformation,
         utf8_var,
         ASCII_var):
 
@@ -97,7 +98,7 @@ def run(inputFilename,inputDir, outputDir,
 
     if language_detect_var.get():
         output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, config_filename,
-                                                               openOutputFiles, createCharts, chartPackage)
+                                                               openOutputFiles, chartPackage, dataTransformation)
         if output != None:
             if isinstance(output, str):
                 filesToOpen.append(output)
@@ -108,8 +109,8 @@ def run(inputFilename,inputDir, outputDir,
 
     if lower_case_words_after_end_of_sentence_var.get():
         output = statistics_txt_util.process_words(GUI_util.window, config_filename, inputFilename, inputDir,
-                                                   outputDir, openOutputFiles, createCharts,
-                                                   chartPackage,
+                                                   outputDir, openOutputFiles, 
+                                                   chartPackage, dataTransformation,
                                                    processType='Lower case words after end-of-sentence punctuation', language='English',
                                                    excludeStopWords=True, word_length=3,
                                                    excludePunctuation=True, excludeArticles=True,
@@ -122,7 +123,7 @@ def run(inputFilename,inputDir, outputDir,
 
     # if 'capital' in corpus_statistics_options_menu_var:
     #     output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir, config_filename,
-    #                                                            openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
+    #                                                            openOutputFiles, chartPackage, dataTransformation, corpus_statistics_options_menu_var)
     #     if output != None:
     #         if isinstance(output, str):
     #             filesToOpen.append(output)
@@ -134,7 +135,7 @@ def run(inputFilename,inputDir, outputDir,
     if spelling_var.get():
         pyspellchecker_file_name = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'spell_pyspellchecker')
         # import BERT_util
-        # BERT_output = BERT_util.spell_checker_bert(window, inputFilename, inputDir, outputDir, '', createCharts, chartPackage)
+        # BERT_output = BERT_util.spell_checker_bert(window, inputFilename, inputDir, outputDir, '', chartPackage, dataTransformation)
         # filesToOpen.append(BERT_output)
 
         autocorrect_df = pd.DataFrame({'Original': [],
@@ -156,7 +157,7 @@ def run(inputFilename,inputDir, outputDir,
 # NLTK unusual words -----------------------------------------------------------------
 
     if NLTK_unusual_var.get():
-        output=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, config_filename, False, createCharts, chartPackage)
+        output=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, config_filename, False, chartPackage, dataTransformation)
         if output != None:
             if isinstance(output, str):
                 filesToOpen.append(output)
@@ -166,8 +167,8 @@ def run(inputFilename,inputDir, outputDir,
 # compute word length ----------------------------------------------------
 
     if word_length_var.get():
-        output = statistics_txt_util.process_words(GUI_util.window, config_filename, inputFilename, inputDir, outputDir, openOutputFiles, createCharts,
-                          chartPackage,
+        output = statistics_txt_util.process_words(GUI_util.window, config_filename, inputFilename, inputDir, outputDir, openOutputFiles, 
+                          chartPackage, dataTransformation,
                           processType='word length', language='English', excludeStopWords=True, word_length=3,
                           excludePunctuation=True, excludeArticles=True,
                           wordgram=1, lemmatize=False)
@@ -181,7 +182,7 @@ def run(inputFilename,inputDir, outputDir,
 
     if sentence_length_var.get():
         output = statistics_txt_util.compute_sentence_length(inputFilename, inputDir, outputDir,
-                            config_filename, createCharts, chartPackage)
+                            config_filename, chartPackage, dataTransformation)
         if output != None:
             if isinstance(output, str):
                 filesToOpen.append(output)

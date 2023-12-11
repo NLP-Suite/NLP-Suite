@@ -117,7 +117,7 @@ def clause_data_preparation(data):
     dat = sorted(dat, key=lambda x: int(x[recordID_position]))
     return clause_stats, dat
 
-def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,openOutputFiles,createCharts,chartPackage):
+def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,openOutputFiles,chartPackage, dataTransformation):
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -151,13 +151,14 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
     df = pd.DataFrame(clausal_list)
     IO_csv_util.df_to_csv(GUI_util.window, df, clausal_analysis_stats_file_name, headers=None, index=False, language_encoding='utf-8')
 
-    if createCharts==True:
+    if chartPackage!='No charts'==True:
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[0,1]]
         count_var=1
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, clausal_analysis_stats_file_name, outputDir,
                                                         outputFileLabel='clausal_stats',
                                                         chartPackage=chartPackage,
+                                                        dataTransformation=dataTransformation,
                                                         chart_type_list=['bar'],
                                                         chart_title="Frequency Distribution of Clause Types",
                                                         column_xAxis_label_var='Clause Type',

@@ -84,7 +84,7 @@ def gatherAnnotations(inputFile, tags, mustInclude='<p>', cleanMultiples=True):
     return result
         
 
-def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCharts, chartPackage):
+def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,chartPackage, dataTransformation):
     filesToOpen=[]
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running html annotator extractor at', True, "You can follow html annotation extractor in command line.")
 
@@ -144,7 +144,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCha
 
     writeCSV.close()
 
-    # if createCharts==True:
+    # if chartPackage!='No charts'==True:
     #     chart_title='HTML extractor'
     #     columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[2,2]
     #     hover_label=['']

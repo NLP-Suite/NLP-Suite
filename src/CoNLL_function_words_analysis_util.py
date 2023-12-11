@@ -46,7 +46,7 @@ def compute_stats(data):
     deprel_counter = Counter(deprel_list)
     return postag_list, postag_counter, deprel_list, deprel_counter
 
-def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputFiles,createCharts, chartPackage):
+def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputFiles,chartPackage, dataTransformation):
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -79,13 +79,14 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
           # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
           #     "PRONOUNS"])
 
-        if createCharts==True:
+        if chartPackage!='No charts'==True:
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
             count_var=1
             outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_pron',
                                                             chartPackage=chartPackage,
+                                                            dataTransformation=dataTransformation,
                                                             chart_type_list=['bar'],
                                                             chart_title="Frequency Distribution of Pronouns",
                                                             column_xAxis_label_var='Pronoun',
@@ -103,7 +104,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
     # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running PRONOUN Analysis at', True, '', True, startTime, True)
     return filesToOpen
 
-def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createCharts, chartPackage):
+def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,chartPackage, dataTransformation):
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -135,13 +136,14 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
           # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
           #     "PREPOSITIONS"])
 
-        if createCharts==True:
+        if chartPackage!='No charts'==True:
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
             count_var=1
             outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_prep',
                                                             chartPackage=chartPackage,
+                                                            dataTransformation=dataTransformation,
                                                             chart_type_list=['bar'],
                                                             chart_title="Frequency Distribution of Prepositions",
                                                             column_xAxis_label_var='Preposition',
@@ -158,7 +160,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
 
     return filesToOpen
 
-def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createCharts, chartPackage):
+def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,chartPackage, dataTransformation):
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -191,13 +193,14 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
                               language_encoding='utf-8')
 
-        if createCharts==True:
+        if chartPackage!='No charts'==True:
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
             count_var=1
             outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_article',
                                                             chartPackage=chartPackage,
+                                                            dataTransformation=dataTransformation,
                                                             chart_type_list=['bar'],
                                                             chart_title="Frequency Distribution of Articles/Determiners",
                                                             column_xAxis_label_var='Article/Determiner',
@@ -212,7 +215,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
                     filesToOpen.extend(outputFiles)
     return filesToOpen
 
-def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutputFiles,createCharts, chartPackage):
+def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutputFiles,chartPackage, dataTransformation):
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -242,13 +245,14 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
         # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
           #     "CONJUNCTIONS"])
 
-        if createCharts==True:
+        if chartPackage!='No charts'==True:
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
             count_var=1
             outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_conjunction',
                                                             chartPackage=chartPackage,
+                                                            dataTransformation=dataTransformation,
                                                             chart_type_list=['bar'],
                                                             chart_title="Frequency Distribution of Conjunctions",
                                                             column_xAxis_label_var='Conjunctions',
@@ -269,7 +273,7 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
 
     return filesToOpen
 
-def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createCharts, chartPackage):
+def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,chartPackage, dataTransformation):
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
@@ -299,13 +303,14 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
         IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
                               language_encoding='utf-8')
 
-        if createCharts==True:
+        if chartPackage!='No charts'==True:
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=[[0,1]]
             count_var=1
             outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
                                                             outputFileLabel='FuncWords_auxiliary',
                                                             chartPackage=chartPackage,
+                                                            dataTransformation=dataTransformation,
                                                             chart_type_list=['bar'],
                                                             chart_title="Frequency Distribution of Auxiliary Verbs",
                                                             column_xAxis_label_var='Auxiliary Verbs',
@@ -438,7 +443,7 @@ def stats_auxiliaries_output(data,data_divided_sents):
 
     return list_auxiliaries_deprel, auxiliaries_deprel_stats, auxiliaries_data
 
-def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,createCharts,chartPackage):
+def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFiles,chartPackage, dataTransformation):
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -447,29 +452,29 @@ def function_words_stats(inputFilename,outputDir,data, data_divided_sents, openO
 
 
     outputFiles = article_stats(inputFilename, outputDir, data, data_divided_sents,
-                                                                   openOutputFiles, createCharts, chartPackage)
+                                                                   openOutputFiles, chartPackage, dataTransformation)
     if outputFiles!=None:
         filesToOpen.extend(outputFiles)
 
-    outputFiles = auxiliary_stats(inputFilename, outputDir, data, data_divided_sents,
-                                                                     openOutputFiles, createCharts, chartPackage)
+    outputFiles = auxiliary_stats(inputFilename, outputDir, data, data_divided_sents,openOutputFiles,
+                                                        chartPackage, dataTransformation)
     if outputFiles!=None:
         filesToOpen.extend(outputFiles)
 
     outputFiles = conjunction_stats(inputFilename, outputDir, data,
                                                                        data_divided_sents, openOutputFiles,
-                                                                       createCharts, chartPackage)
+                                                                       chartPackage, dataTransformation)
     if outputFiles!=None:
         filesToOpen.extend(outputFiles)
 
     outputFiles = preposition_stats(inputFilename, outputDir, data,
                                                                        data_divided_sents, openOutputFiles,
-                                                                       createCharts, chartPackage)
+                                                                       chartPackage, dataTransformation)
     if outputFiles!=None:
         filesToOpen.extend(outputFiles)
 
-    outputFiles = pronoun_stats(inputFilename, outputDir, data, data_divided_sents,
-                                                                   openOutputFiles, createCharts, chartPackage)
+    outputFiles = pronoun_stats(inputFilename, outputDir, data, data_divided_sents,openOutputFiles,
+                                chartPackage, dataTransformation)
     if outputFiles!=None:
         filesToOpen.extend(outputFiles)
 

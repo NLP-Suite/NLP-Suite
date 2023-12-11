@@ -47,7 +47,7 @@ import word2vec_distances_util
 import IO_internet_util
 
 # Provides NER tags per sentence for every doc and stores in a csv file
-def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mode, createCharts, chartPackage):
+def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mode, chartPackage, dataTransformation):
     tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-large-finetuned-conll03-english")
     model = AutoModelForTokenClassification.from_pretrained("xlm-roberta-large-finetuned-conll03-english")
 
@@ -108,8 +108,8 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mo
         kwargs = NER_dict
         outputFiles = parsers_annotators_visualization_util.parsers_annotators_visualization(
             configFileName, inputFilename, inputDir, outputDir,
-            outputFilename, ['NER'], kwargs, createCharts,
-            chartPackage)
+            outputFilename, ['NER'], kwargs, 
+            chartPackage, dataTransformation)
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -125,7 +125,7 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mo
 
 
 # provides summary of text per doc and stores in a csv file
-def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, createCharts, chartPackage, configFileName):
+def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, chartPackage, dataTransformation, configFileName):
 
 
     result_summary_list = []
@@ -163,7 +163,7 @@ def doc_summary_BERT(window, inputFilename, inputDir, outputDir, mode, createCha
     return tempOutputFiles
 
 # Creates a list of vectors/word embeddings for input files and subsequently plots them on a 2d graph
-def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, vis_menu_var,
+def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, vis_menu_var,
             dim_menu_var, compute_distances_var, top_words_var, keywords_var, lemmatize_var, remove_stopwords_var, configFileName):
     model = SentenceTransformer('sentence-transformers/all-distilroberta-v1')
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
@@ -186,7 +186,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
     if inputFilename.endswith('csv'):
         word_vectors=None
         result_df=None
-        outputFiles = word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts, chartPackage,
+        outputFiles = word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage, dataTransformation,
                                    word_vectors,
                                    result_df,
                                    keywords_var,
@@ -337,7 +337,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
       # compute distances
     if compute_distances_var:
 
-        outputFiles = word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts, chartPackage,
+        outputFiles = word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage, dataTransformation,
                                    word_vectors,
                                    result_df,
                                    keywords_var,
@@ -433,7 +433,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         # filesToOpen.append(dist_outputFilename)
         # filesToOpen.append(cos_sim_outputFilename)
         #
-        # outputFiles = charts_util.visualize_chart(createCharts, chartPackage, dist_outputFilename,
+        # outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, dist_outputFilename,
         #                                                    outputDir,
         #                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['n-dimensional Euclidean distance'],
         #                                                    chart_title='Frequency Distribution of n-dimensional Euclidean distances',
@@ -449,7 +449,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         #     if len(chart_outputFilename) > 0:
         #         filesToOpen.extend(chart_outputFilename)
         #
-        # outputFiles = charts_util.visualize_chart(createCharts, chartPackage, cos_sim_outputFilename,
+        # outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, cos_sim_outputFilename,
         #                                                    outputDir,
         #                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Cosine similarity'],
         #                                                    chart_title='Frequency Distribution of cosine similarities',
@@ -518,7 +518,7 @@ def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Docu
 
 
 # helper main method for sentiment analysis
-def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode, createCharts=False, chartPackage='Excel', model_path="cardiffnlp/twitter-xlm-roberta-base-sentiment"):
+def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode,  chartPackage='Excel', dataTransformation = 'No Transformation', model_path="cardiffnlp/twitter-xlm-roberta-base-sentiment"):
     # model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
     # model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
 
@@ -601,9 +601,9 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode, cre
                 # sys.exit(1)
     csvfile.close()
 
-    if createCharts == True:
+    if chartPackage!='No charts':
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Sentiment score'],
                                                            chart_title='Frequency of roBERTa Sentiment Scores',
@@ -621,7 +621,7 @@ def sentiment_main(inputFilename, inputDir, outputDir, configFileName, mode, cre
             else:
                 filesToOpen.extend(outputFiles)
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Sentiment label'],
                                                            chart_title='Frequency of roBERTa Sentiment Labels',

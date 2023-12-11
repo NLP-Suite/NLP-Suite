@@ -247,7 +247,7 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
 def NGrams_search_VIEWER(inputDir="relative_path_here",
         outputDir="relative_path_here",
         configFileName='',
-        createCharts=True, chartPackage='Excel',
+         chartPackage='Excel', dataTransformation='No transformation',
         n_grams_viewer=False,
         CoOcc_Viewer=True,
         search_wordsLists=None,
@@ -510,7 +510,7 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
             return
         combined_pivot_df.to_csv(NgramsSearchFileName, index=False)
 
-        if createCharts:
+        if chartPackage!='No charts':
             inputFilename = NgramsSearchFileName
             ngram_size = int(data.columns[0].split('-')[0])
             if ngram_size==1:
@@ -540,6 +540,7 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
                 outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel='search',
                                                   chartPackage=chartPackage,
+                                                  dataTransformation=dataTransformation,
                                                   chart_type_list=['line'],
                                                   chart_title='Frequency Distribution of Search Word(s) by ' + X_axis_label + '\n' + title_string,
                                                   hover_info_column_list=[],
@@ -739,7 +740,7 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
 
     if n_grams_viewer:
         import charts_util
-        if createCharts == True and NgramsFileName != '':
+        if chartPackage!='No charts' and NgramsFileName != '':
             xlsxFilename = NgramsFileName
             xAxis = temporal_aggregation
             chart_title = 'N-Grams Viewer'
@@ -754,6 +755,7 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
             outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                               'n-grams_viewer',
                                               chartPackage=chartPackage,
+                                              dataTransformation=dataTransformation,
                                               chart_type_list=["line"],
                                               chart_title=chart_title, column_xAxis_label_var=xAxis,
                                               hover_info_column_list=hover_label)
@@ -766,7 +768,7 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
     # plot co-occurrences -----------------------------------------------------------------------------
 
     if CoOcc_Viewer:
-        if createCharts and coOccFileName != '':
+        if chartPackage!='No charts' and coOccFileName != '':
             import charts_util
             xlsxFilename = coOccFileName
             chart_title = 'Co-Occurring Words: ' + search_wordsLists
@@ -781,6 +783,7 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
                                               outputFileLabel='byDoc',
                                               # outputFileNameType + 'byDoc', #outputFileLabel,
                                               chartPackage=chartPackage,
+                                              dataTransformation=dataTransformation,
                                               chart_type_list=['bar'],
                                               chart_title=chart_title + '\nby Document',
                                               column_xAxis_label_var='',
@@ -804,6 +807,7 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
             # outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
             #                                            'co-occ_viewer',
             #                                            chartPackage=chartPackage,
+            #                                            dataTransformation=dataTransformation,
             #                                            chart_type_list=["bar"],
             #                                            count_var=1,
             #                                            chart_title=chart_title,

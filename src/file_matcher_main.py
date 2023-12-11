@@ -17,7 +17,7 @@ import IO_files_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 
-def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, createCharts, chartPackage, find_var, source_extension_var, target_extension_var, matching_var, copy_var, move_var, character_value, number_of_items):
+def run(inputPath, outputPath, selectedCsvFile_var, openOutputFiles, chartPackage, dataTransformation, find_var, source_extension_var, target_extension_var, matching_var, copy_var, move_var, character_value, number_of_items):
 
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running File Matcher at',
                                                  True, '', True, '', False)
@@ -57,8 +57,8 @@ run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
                                GUI_util.output_dir_path.get(),
                                selectedCsvFile_var.get(),
                                GUI_util.open_csv_output_checkbox.get(),
-                               GUI_util.create_chart_output_checkbox.get(),
                                GUI_util.charts_package_options_widget.get(),
+                               GUI_util.data_transformation_options_widget.get(),
                                find_var.get(),
                                source_file_type_menu_var.get(),
                                target_file_type_menu_var.get(),

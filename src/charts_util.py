@@ -87,7 +87,7 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
 # plot the words contained in each groupBy field values (e.g, the word 'Rome' in POS tag PPN)
 # must first run compute_csv_column_frequencies_with_aggregation
 # columns_to_be_plotted_yAxis=['Form']
-def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage, filesToOpen,
+def visualize_chart_byGroup(inputFilename, outputDir, chartPackage, dataTransformation, filesToOpen,
                             columns_to_be_plotted_byGroup, groupByList,
                             chart_title, columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis):
 
@@ -98,7 +98,7 @@ def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage
     #@@@ 9/29/2023
     outputFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
                                                   inputFilename, None, outputDir, False,
-                                                  createCharts, chartPackage,
+                                                  chartPackage, dataTransformation,
                                                   # plot_cols=columns_to_be_plotted_numeric,
                                                   plot_cols=columns_to_be_plotted_yAxis,
                                                   hover_col=[],
@@ -149,6 +149,7 @@ def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage
         # outputFiles = run_all(columns_to_be_plotted_byGroup, new_inputFilename, outputDir,
         #                                           outputFileLabel=outputFileLabel, # outputFileNameType + 'byDoc', #outputFileLabel,
         #                                           chartPackage=chartPackage,
+        #                                           dataTransformation=dataTransformation,
         #                                           chart_type_list=['bar'],
         #                                           chart_title=chart_title,
         #                                           column_xAxis_label_var='',
@@ -164,7 +165,7 @@ def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage
         #         filesToOpen.append(chart_outputFilename)
     return filesToOpen
 
-# def visualize_chart_byDoc(inputFilename, outputDir, outputFileNameType, createCharts, chartPackage, filesToOpen,
+# def visualize_chart_byDoc(inputFilename, outputDir, outputFileNameType, chartPackage, dataTransformation, filesToOpen,
 #                         columns_to_be_plotted_byDoc, columns_to_be_plotted_yAxis,
 #                         count_var, pivot, chart_title, hover_label):
 #     column_yAxis_label = 'Frequencies'
@@ -173,7 +174,7 @@ def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage
 #     if count_var == 1:  # for alphabetic fields that need to be counted for display in a chart
 #         # TODO TONY using this function, the resulting output file is in the wrong format and would need to be pivoted to be used
 #         # temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(inputFilename, ["Document ID",'Document'], ['POS'], outputDir, chart_title, graph=False,
-#         #                              complete_sid=False,  chartPackage='Excel')
+#         #                              complete_sid=False,  chartPackage='Excel', dataTransformation='No transformation')
 #
 #         # TODO TONY the compute_csv_column_frequencies_with_aggregation should export the distinct values of a column
 #         #   in separate columns so that they will be plotted with different colors as separate series
@@ -182,7 +183,7 @@ def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage
 #         temp_outputFilename = statistics_csv_util.compute_csv_column_frequencies(
 #             GUI_util.window,
 #             inputFilename, None, outputDir,
-#             False, createCharts, chartPackage,
+#             False, chartPackage, dataTransformation,
 #             # plot_cols=columns_to_be_plotted_numeric,
 #             plot_cols=columns_to_be_plotted_yAxis,
 #             hover_col=[],
@@ -248,6 +249,7 @@ def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage
 #                                    outputFileLabel=outputFileLabel,
 #                                    # outputFileNameType + 'byDoc', #outputFileLabel,
 #                                    chartPackage=chartPackage,
+#                                    dataTransformation=dataTransformation,
 #                                    chart_type_list=['bar'],
 #                                    chart_title=chart_title + ' by Document',
 #                                    column_xAxis_label_var='',
@@ -263,7 +265,7 @@ def visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage
 #             filesToOpen.append(chart_outputFilename)
 #     return filesToOpen
 
-def visualize_chart_bySent(inputFilename, outputDir, createCharts, chartPackage, filesToOpen, n_documents,
+def visualize_chart_bySent(inputFilename, outputDir, chartPackage, dataTransformation, filesToOpen, n_documents,
                               columns_to_be_plotted_byDoc, columns_to_be_plotted_yAxis, count_var, pivot):
 
     # TODO temporary to measure process time
@@ -278,8 +280,9 @@ def visualize_chart_bySent(inputFilename, outputDir, createCharts, chartPackage,
             inputFilename,
             None, outputDir,
             False,
-            createCharts,
+            
             chartPackage,
+            dataTransformation,
             plot_cols=columns_to_be_plotted_numeric,
             hover_col=[],
             group_cols=[['Document ID', 'Document', 'Sentence ID']],
@@ -330,6 +333,7 @@ def visualize_chart_bySent(inputFilename, outputDir, createCharts, chartPackage,
     outputFiles = run_all(columns_to_be_plotted_bySent, inputFilename, outputDir,
                                    outputFileLabel=outputFileLabel,
                                    chartPackage=chartPackage,
+                                   dataTransformation=dataTransformation,
                                    chart_type_list=['line'],
                                    chart_title=chart_title,
                                    column_xAxis_label_var=xAxis_label,
@@ -368,7 +372,7 @@ def visualize_chart_bySent(inputFilename, outputDir, createCharts, chartPackage,
 #   chart_title_label is used as part of the chart_title when plotting the fields statistics (Mean, Mode, Skewness,...)
 # X-axis
 
-def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
+def visualize_chart(chartPackage,dataTransformation,inputFilename,outputDir,
                     columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
                     chart_title, count_var, hover_label, outputFileNameType, column_xAxis_label,
                     groupByList, plotList, chart_title_label, column_yAxis_label='Frequencies', pivot = False):
@@ -377,7 +381,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     columns_to_be_plotted_byDoc=[]
     columns_to_be_plotted_bySent=[]
 
-    if createCharts == True:
+    if chartPackage!='No charts':
         chart_outputFilenameSV=''
     else:
         return
@@ -479,6 +483,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
         outputFiles = run_all(columns_to_be_plotted_numeric, inputFilename, outputDir,
                                                   outputFileLabel=outputFileNameType,
                                                   chartPackage=chartPackage,
+                                                  dataTransformation=dataTransformation,
                                                   chart_type_list=['bar'],
                                                   chart_title=chart_title,
                                                   column_xAxis_label_var=column_xAxis_label,
@@ -512,7 +517,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 
             # by DOCUMENT
             outputFiles = visualize_chart_byGroup(inputFilename, outputDir,
-                                       createCharts, chartPackage,
+                                       chartPackage, dataTransformation,
                                        filesToOpen,
                                        columns_to_be_plotted_byGroup, groupByList,
                                        chart_title,
@@ -534,7 +539,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
             groupCol = IO_csv_util.get_columnNumber_from_headerValue(headers, header, inputFilename)
             # [POS, Form]
             columns_to_be_plotted_byGroup.append([groupCol, field_number_yAxis])
-        outputFiles = visualize_chart_byGroup(inputFilename, outputDir, createCharts, chartPackage,
+        outputFiles = visualize_chart_byGroup(inputFilename, outputDir, chartPackage, dataTransformation,
                                                        filesToOpen,
                                                        columns_to_be_plotted_byGroup, groupByList, chart_title,
                                                        columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis)
@@ -554,7 +559,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
     # TODO Samir; to test the add_missing_IDs you must change bySent=False to bySent=True
     bySent = False
     if bySent:
-        fileToOpen=visualize_chart_bySent(inputFilename, outputDir, createCharts, chartPackage, filesToOpen, n_documents, columns_to_be_plotted_byDoc, columns_to_be_plotted_yAxis, count_var, pivot)
+        fileToOpen=visualize_chart_bySent(inputFilename, outputDir, chartPackage, filesToOpen, n_documents, columns_to_be_plotted_byDoc, columns_to_be_plotted_yAxis, count_var, pivot)
 
 # compute field STATISTICS (mean, median, skeweness, kurtosis...)--------------------------------------------------------------
     # TODO THE FIELD MUST CONTAIN NUMERIC VALUES
@@ -570,8 +575,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
                                                    outputDir,
                                                    outputFileNameType, groupByList,
                                                    plotList, chart_title_label,
-                                                   createCharts,
-                                                   chartPackage)
+                                                   chartPackage, dataTransformation)
 
         if outputFiles!=None:
             if isinstance(outputFiles, str):
@@ -628,7 +632,7 @@ def visualize_chart(createCharts,chartPackage,inputFilename,outputDir,
 
 
 def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
-            chartPackage, chart_type_list,chart_title, column_xAxis_label_var,
+            chartPackage, dataTransformation, chart_type_list,chart_title, column_xAxis_label_var,
             hover_info_column_list=[],
             count_var=0,
             column_yAxis_label_var='Frequencies',

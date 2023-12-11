@@ -23,7 +23,7 @@ import Stanza_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, config_filename,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, config_filename,
         NER_package, NER_list):
 
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
@@ -60,7 +60,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         import BERT_util
         NER_list = BERT_util.NER_dict
         NER_entry_var.set(NER_list['NERs'])
-        outputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, config_filename, '', createCharts, chartPackage)
+        outputFiles = BERT_util.NER_tags_BERT(window,inputFilename, inputDir, outputDir, config_filename, '', chartPackage, dataTransformation)
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -75,7 +75,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         oputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
                                                     openOutputFiles,
-                                                    createCharts, chartPackage,
+                                                    chartPackage, dataTransformation,
                                                     ['NER'], False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
@@ -94,7 +94,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     if '*' in NER_package or 'CoreNLP' in NER_package:
         NER_list = NER_entry_var.get() #Stanford_CoreNLP_util.NER_list
         outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
-                                                            openOutputFiles, createCharts, chartPackage,
+                                                            openOutputFiles, chartPackage, dataTransformation,
                                                             'NER',
                                                             language=language_var,
                                                             NERs=NER_list,
@@ -125,7 +125,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputDir,
                                                       openOutputFiles,
-                                                      createCharts, chartPackage,
+                                                      chartPackage, dataTransformation,
                                                       'NER', False,
                                                       language_list,
                                                       memory_var, document_length_var, limit_sentence_length_var,
@@ -155,8 +155,8 @@ run_script_command=lambda: run(
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_package_options_widget.get(),
+                            GUI_util.data_transformation_options_widget.get(),
                             config_filename,
                             NER_packages_var.get(),
                             NER_list)

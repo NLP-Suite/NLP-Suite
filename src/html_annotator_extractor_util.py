@@ -65,7 +65,7 @@ def gatherAnnotations(inputFile, tags, mustInclude='<p>', cleanMultiples=True):
     return result
 
 
-def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCharts, chartPackage, configFileName):
+def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,chartPackage, dataTransformation, configFileName):
     filesToOpen=[]
     outputFilename=IO_files_util.generate_output_file_name('DBpedia annotations', '', outputDir, '.csv', 'html extractor', '', '')
     filesToOpen.append(outputFilename)
@@ -112,7 +112,7 @@ def buildcsv(inputHTMLFile, inputHTMLFolder, outputDir,openOutputFiles,createCha
 
     writeCSV.close()
 
-    # if createCharts==True:
+    # if chartPackage!='No charts'==True:
     #     # TODO need to create bar and line charts
     #     chart_title='HTML extractor'
     #     columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=[2,2]

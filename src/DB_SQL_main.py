@@ -59,7 +59,7 @@ def dbFromCSV(inpath, outpath):
     return dbOutput
 
 
-def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,SQL_query_var, createFromCSV):
+def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation, SQL_query_var, createFromCSV):
 
     if createFromCSV==1:
         dbOutput = dbFromCSV(inputDir,outputDir)
@@ -114,6 +114,7 @@ run_script_command=lambda: run(
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
+                                GUI_util.data_transformation_options_widget.get(),
                                 SQL_query_entry.get("1.0", "end-1c"),
                                 construct_SQLite_DB_var.get())
 

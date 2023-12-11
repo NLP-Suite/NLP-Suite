@@ -181,6 +181,11 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 		index=1 #skip header
 		currLocation = ''
 		tokenEnd = 0
+
+		# If Column A is 'Word' (coming from CoreNLP NER annotator), rename to 'Location'
+		if list(dt.columns)[0]=='Word':
+			dt = dt.rename(columns={"Word": "Location"})
+
 		for index, row in dt.iterrows():
 			print("Processing record " + str(index+1)+"/"+str(count_row)+ " in csv file; location: " + str(row[locationColumnNumber]))
 			if str(row["Location"]) != '' and str(row["Location"]) != 'nan':

@@ -17,7 +17,7 @@ import statistics_txt_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPackage,
+def run(inputFilename, inputDir, outputDir,openOutputFiles,chartPackage,dataTransformation,
     compute_sentence_length_var,
     visualize_bySentenceIndex_var,
     visualize_bySentenceIndex_options_var,
@@ -47,18 +47,18 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
             return
 
     if compute_sentence_length_var:
-        filesToOpen = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir, config_filename, createCharts, chartPackage )
+        filesToOpen = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir, config_filename, chartPackage,dataTransformation )
 
     if visualize_bySentenceIndex_var:
         filesToOpen = IO_files_util.runScript_fromMenu_option(script_to_run, IO_values,
                                                 inputFilename, inputDir, outputDir,
-                                                openOutputFiles, createCharts, chartPackage,
+                                                openOutputFiles, chartPackage,dataTransformation,
                                                 visualize_bySentenceIndex_options_var)
 
     if sentence_complexity_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
-        filesToOpen=statistics_txt_util.compute_sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir, config_filename, openOutputFiles,createCharts, chartPackage)
+        filesToOpen=statistics_txt_util.compute_sentence_complexity(GUI_util.window,inputFilename, inputDir, outputDir, config_filename, openOutputFiles,chartPackage, dataTransformation)
         if filesToOpen==None:
             return
 
@@ -66,7 +66,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,createCharts,chartPac
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
         statistics_txt_util.compute_sentence_text_readability(GUI_util.window,inputFilename, inputDir, outputDir,
-                                                              openOutputFiles,createCharts, chartPackage)
+                                                              openOutputFiles,chartPackage, dataTransformation)
 
     if visualize_sentence_structure_var==True:
         # if IO_libraries_util.check_inputPythonJavaProgramFile('DependenSee.Jar')==False:
@@ -98,8 +98,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.input_main_dir_path.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
+                                GUI_util.data_transformation_options_widget.get(),
                                 compute_sentence_length_var.get(),
                                 visualize_bySentenceIndex_var.get(),
                                 visualize_bySentenceIndex_options_var.get(),

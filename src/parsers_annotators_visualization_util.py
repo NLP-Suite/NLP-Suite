@@ -5,7 +5,7 @@ import IO_csv_util
 
 # outputFilename is actually the file containing fields to be charted
 def parsers_annotators_visualization(configFilename, inputFilename, inputDir, outputDir, outputFilename,
-                annotator_params, kwargs, createCharts, chartPackage, openFiles=True):
+                annotator_params, kwargs, chartPackage, dataTransformation, openFiles=True):
     # headers = IO_csv_util.get_csvfile_headers_pandas(outputFilename)
     # docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, inputFilename)
     # docCol = docCol + 1  # we need to visualize the doc filename
@@ -21,7 +21,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
     if ("Lemma" in str(annotator_params) and 'Lemma' in outputFilename) or 'parse' in str(annotator_params):
         # reminders_util.checkReminder(scriptName, reminders_util.lemma_frequencies,
         #                              reminders_util.message_lemma_frequencies, True)
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Form','Lemma'],
@@ -44,7 +44,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 # All POS ________________________________________________________________
 
     if ('POS' in str(annotator_params) and 'POS' in outputFilename) or 'parse' in str(annotator_params):
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['POS'],
@@ -62,7 +62,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             else:
                 filesToOpen.extend(outputFiles)
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Form'],
@@ -88,7 +88,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                                      reminders_util.message_NER_frequencies)
         if IO_csv_util.get_csvfile_headers(outputFilename, False)[1] == "NER":
             # plot NER tag (e.g, LOCATION), standard bar and by Doc
-            outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                outputDir,
                                columns_to_be_plotted_xAxis=[],
                                columns_to_be_plotted_yAxis=['NER'],
@@ -107,7 +107,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                     filesToOpen.extend(outputFiles)
 
             # plot Form values by NER tag (e.g, Atlanta in LOCATION)
-            outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                outputDir,
                                columns_to_be_plotted_xAxis=[],
                                columns_to_be_plotted_yAxis=['Form'],
@@ -134,7 +134,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 
         reminders_util.checkReminder(scriptName, reminders_util.DepRel_frequencies,
                                      reminders_util.message_DepRel_frequencies, True)
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['DepRel'],
@@ -152,7 +152,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             else:
                 filesToOpen.extend(outputFiles)
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Form'],
@@ -180,7 +180,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             # (('SVO' in str(annotator_params) and 'SVO' in outputFilename)) or \
             # visualizing normalized-date for SVO is done in SVO_util called in SVO_main
         # Date expressions are in the form yesterday, tomorrow morning, the day before Christmas
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Date expression'],
@@ -199,7 +199,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                 filesToOpen.extend(outputFiles)
 
             # normalized dates are in the form PAST_REF, NEXT_IMMEDIATE P1D, ...
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Normalized date'],
@@ -218,7 +218,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                 filesToOpen.extend(outputFiles)
 
             # Date types are in the form PAST, PRESENT, OTHER
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Date type'],
@@ -240,7 +240,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 # gender ________________________________________________________________
 
     if 'gender' in str(annotator_params) and 'gender' in outputFilename:
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Gender'],
@@ -258,7 +258,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             else:
                 filesToOpen.extend(outputFiles)
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Word'],
@@ -307,7 +307,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 # quote ________________________________________________________________
 
     if 'quote' in str(annotator_params) and 'quote' in outputFilename:
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Speakers'],
@@ -329,7 +329,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 
     if 'sentiment' in str(annotator_params) and 'sentiment' in outputFilename:
         if IO_csv_util.get_csvfile_headers(outputFilename, False)[0] == "Sentiment score":
-            outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[],
                                                                columns_to_be_plotted_yAxis=['Sentiment score'], # sentiment score
@@ -347,7 +347,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                     filesToOpen.extend(outputFiles)
 
         if IO_csv_util.get_csvfile_headers(outputFilename, False)[1] == "Sentiment label":
-            outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[],
                                                                columns_to_be_plotted_yAxis=['Sentiment label'],
@@ -438,7 +438,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
         #         filesToOpen.extend(outputFiles)
 
 # plot Subjects
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputSVOUnFilterDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Subject (S)'],
@@ -457,7 +457,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                 filesToOpen.extend(outputFiles)
 
 # plot Verbs
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputSVOUnFilterDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Verb (V)'],
@@ -476,7 +476,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                 filesToOpen.extend(outputFiles)
 
 # plot Objects
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                            outputSVOUnFilterDir,
                                                            columns_to_be_plotted_xAxis=[],
                                                            columns_to_be_plotted_yAxis=['Object (O)'],
@@ -508,12 +508,12 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
         # TODO temporary needs to restore
         # pronoun_files = check_pronouns(configFilename, outputFilename,
         #                          outputDir, filesToOpen,
-        #                          createCharts,chartPackage, param, corefed_pronouns, all_pronouns)
+        #                          chartPackage, dataTransformation, param, corefed_pronouns, all_pronouns)
         # if len(pronoun_files)>0:
         #     filesToOpen.extend(pronoun_files)
 
         if "coref table" in str(annotator_params):
-            outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[],
                                                                columns_to_be_plotted_yAxis=['Pronoun'],
@@ -531,7 +531,7 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                 else:
                     filesToOpen.extend(outputFiles)
 
-            outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[],
                                                                columns_to_be_plotted_yAxis=['Referent'],

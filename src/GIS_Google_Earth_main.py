@@ -42,7 +42,7 @@ import reminders_util
 # from iso3166 import countries
 
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
             encoding_var,
             locationColumnName,
             date_var, date_format_var,
@@ -112,7 +112,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         mapping_package = 'Google Earth'
     filesToOpen = GIS_pipeline_util.GIS_pipeline(GUI_util.window,config_filename,
                                        inputFilename, inputDir, outputDir,
-                                       geocoder, mapping_package, createCharts, chartPackage,
+                                       geocoder, mapping_package, chartPackage, dataTransformation,
                                        datePresent,
                                        country_bias,
                                        area_var,
@@ -137,8 +137,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
                 GUI_util.output_dir_path.get(),GUI_util.open_csv_output_checkbox.get(),
-                GUI_util.create_chart_output_checkbox.get(),
                 GUI_util.charts_package_options_widget.get(),
+                GUI_util.data_transformation_options_widget.get(),
                 encoding_var.get(),
                 location_var.get(),
                 date_var.get(),date_format_var.get(),

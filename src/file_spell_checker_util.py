@@ -67,7 +67,7 @@ def lemmatizing(word):#edited by Claude Hu 08/2020
     return result
 
 # https://www.nltk.org/book/ch02.html
-def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, openOutputFiles, createCharts=True, chartPackage='Excel'):
+def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, openOutputFiles,  chartPackage='Excel', dataTransformation='No transformation'):
     import nltk
     nltk.download('words')
     filesToOpen=[]
@@ -115,13 +115,13 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, configFileName, 
     # if not silent: IO_user_interface_util.single_file_output_save(inputDir,'NLTK Unusual Words')
 
     # NLTK unusual words
-    if createCharts:
+    if chartPackage!='No charts':
         if nFile>10:
              result = mb.askyesno("Excel charts","You have " + str(nFile) + " files for which to compute Excel charts.\n\nTHIS WILL TAKE A LONG TIME.\n\nAre you sure you want to do that?")
              if result==False:
                  pass
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Misspelled-unusual word'],
                                                    chart_title='Frequency of Misspelled-Unusual Words',
                                                    count_var=1, hover_label=[],
@@ -146,7 +146,7 @@ def generate_simple_csv(Dataframe):
     pass
 
 # check within subdirectory
-def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, NERs, similarity_value, by_all_tokens_var,spelling_checker_var=False):
+def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, NERs, similarity_value, by_all_tokens_var,spelling_checker_var=False):
     outputFileName_complete = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'WordSimil',
                                                                       str(similarity_value), 'Edit_dist_algo',
                                                                       'NERs', 'Full-table')
@@ -162,7 +162,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
                        message='There are no sub directories under the selected input directory\n\n' + inputDir +'\n\nPlease, uncheck your subdir option if you want to process this directory and try again.')
     df_list = []
     for dir in subdir:
-        dfs = check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, NERs, similarity_value, by_all_tokens_var)
+        dfs = check_for_typo(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, NERs, similarity_value, by_all_tokens_var)
         df_list.append(dfs)
     if len(df_list) > 0:
         df_complete_list = [df[0] for df in df_list]
@@ -176,7 +176,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
         filesToOpen.append(outputFileName_complete)
 
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, inputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Typo?'],
                                                            chart_title='Frequency of Potential Typos',
                                                            count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
@@ -249,7 +249,7 @@ def check_edit_dist(input_word, checklist, similarity_value):
 # output csv header list: ['NNPs', 'sentenceID', 'DocumentID', 'fileName', 'NamedEntity', 'potential_Typo']
 
 # using Levenshtein distance to check for typos
-def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, NERs, similarity_value, by_all_tokens_var):
+def check_for_typo(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, NERs, similarity_value, by_all_tokens_var):
     filesToOpen=[]
     all_header_rows_dict = []
     ner_dict = {}
@@ -485,7 +485,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity end',
                                                'Finished running Word similarity at', True, '', True, startTime, True)
 
-            outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFileName_simple, outputDir,
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFileName_simple, outputDir,
                                                                columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Typo?'],
                                                                chart_title='Frequency of Potential Typos',
                                                                count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
@@ -783,7 +783,7 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
 # https://towardsdatascience.com/benchmarking-language-detection-for-nlp-8250ea8b67c
 # TODO print all languages and their probabilities in a csv file, with Language, Probability, Document ID, Document (with hyperlink)
 
-def language_detection(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, createCharts, chartPackage):
+def language_detection(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, chartPackage, dataTransformation):
 
     folderID = 0
     fileID = 0
@@ -952,7 +952,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
     IO_user_interface_util.timed_alert(GUI_util.window, 1000, 'Analysis end',
                                        'Finished running Language Detection at', True,'Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.', True, startTime, True)
     print('Languages detected are exported via the ISO 639 two-letter code. ISO 639 is a standardized nomenclature used to classify languages. Check the ISO list at https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes.')
-    if createCharts:
+    if chartPackage!='No charts':
         columns_to_be_plotted_yAxis=[[1, 1]]
         chart_title='Frequency of Languages Detected by LANGDETECT, LANGID, spaCy, and Stanza'
         hover_label=[]
@@ -960,6 +960,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, configFileNam
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                   outputFileLabel='_bar_chart',
                                                   chartPackage=chartPackage,
+                                                  dataTransformation=dataTransformation,
                                                   chart_type_list=["bar"],
                                                   chart_title=chart_title,
                                                   column_xAxis_label_var='Language',

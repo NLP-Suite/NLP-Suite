@@ -25,7 +25,7 @@ import NGrams_CoOccurrences_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
         n_grams_list,
         Ngrams_compute_var,
         ngrams_menu_var,
@@ -175,7 +175,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                                 excludeStopWords,
                                                                                 wordgram,
                                                                                 openOutputFiles,
-                                                                                createCharts, chartPackage,
+                                                                                chartPackage,
+                                                                                dataTransformation,
                                                                                 bySentenceID)
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
@@ -189,7 +190,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             #                                                       outputDir, config_filename,
             #                                                       ngrams_size, frequency, normalize,
             #                                                       excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords, openOutputFiles,
-            #                                                       createCharts, chartPackage,
+            #                                                       chartPackage, dataTransformation,
             #                                                       bySentenceIndex_character_var)
 
 # The following set of options apply to both search and viewer
@@ -217,7 +218,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 inputDir,
                 outputDir,
                 config_filename,
-                createCharts, chartPackage,
+                chartPackage, dataTransformation,
                 n_grams_viewer_var,
                 CoOcc_Viewer_var,
                 search_words,
@@ -280,7 +281,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
             return
 
-        if (n_grams_viewer_var ==True or CoOcc_Viewer_var==True) and (createCharts==False):
+        if (n_grams_viewer_var ==True or CoOcc_Viewer_var==True) and (chartPackage=='No charts'):
             mb.showwarning(title='Warning',
                            message='The checkbox to compute Excel charts is unticked. Since the VIEWER produces Excel charts as output, the script will abort.\n\nPlease, tick the checkbox to produce Excel charts and try again.')
             return
@@ -338,7 +339,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 inputDir,
                 outputDir,
                 config_filename,
-                createCharts, chartPackage,
+                chartPackage, dataTransformation,
                 n_grams_viewer_var,
                 CoOcc_Viewer_var,
                 search_words,
@@ -368,8 +369,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_main_dir_path.get(), GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_package_options_widget.get(),
+                                 GUI_util.data_transformation_options_widget.get(),
                                  n_grams_list,
                                  Ngrams_compute_var.get(),
                                  ngrams_menu_var.get(),

@@ -15,8 +15,9 @@ import GUI_IO_util
 
 def run(window, inputFilename, inputDir, outputDir, selectedFile,
             openOutputFiles,
-            createCharts,
+            
             chartPackage,
+            dataTransformation,
             sample_by_documentID,
             sample_by_date, date_menu, comparator, date_distance_value, date_type,
             sample_by_keywords_inFilename,
@@ -53,7 +54,7 @@ def run(window, inputFilename, inputDir, outputDir, selectedFile,
                                               search_by_dictionary=False, search_by_search_keywords=True,
                                               search_keywords_list=keywords_inDocument,
                                               create_subcorpus_var=True, search_options_list=[], lang='English',
-                                              createCharts=createCharts, chartPackage=chartPackage)
+                                              chartPackage=chartPackage, dataTransformation=dataTransformation)
     else:
         mb.showwarning(title='Warning',message='The selected option is not available yet. Please, check back soon.\n\nSorry!')
         return
@@ -69,8 +70,8 @@ run_script_command=lambda: run(window, GUI_util.inputFilename.get(),
                                GUI_util.output_dir_path.get(),
                                selectedFile.get(),
                                GUI_util.open_csv_output_checkbox.get(),
-                               GUI_util.create_chart_output_checkbox.get(),
                                GUI_util.charts_package_options_widget.get(),
+                               GUI_util.data_transformation_options_widget.get(),
                                sample_by_documentID_var.get(),
                                sample_by_date_var.get(),
                                date_menu_var.get(),

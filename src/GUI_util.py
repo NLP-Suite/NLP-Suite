@@ -108,9 +108,9 @@ release_version_var=tk.StringVar()
 GitHub_release_version_var=tk.StringVar()
 
 open_csv_output_checkbox = tk.IntVar()
-create_chart_output_checkbox = tk.IntVar()
 charts_package_options_widget = tk.StringVar()
 charts_type_options_widget = tk.StringVar()
+data_transformation_options_widget = tk.StringVar()
 
 videos_dropdown_field = tk.StringVar()
 tips_dropdown_field = tk.StringVar()
@@ -1121,28 +1121,28 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         open_csv_output_checkbox.set(1)
 
         #creat Excel chart files widget defined above since it is used earlier
-        create_Excel_chart_output_label = tk.Checkbutton(window, variable= create_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label,  create_chart_output_checkbox, "Create charts", "Do NOT create charts"))
-        create_Excel_chart_output_label.configure(text="Create chart(s)")
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
-                                                       y_multiplier_integer,
-                                                       create_Excel_chart_output_label,
-                                                       True,False,False,False,
-                                                       90,GUI_IO_util.open_TIPS_x_coordinate,
-                                                       "Untick the checkbox to NOT create charts in output")
-
-        create_chart_output_checkbox.set(1)
+        # create_Excel_chart_output_label = tk.Checkbutton(window, variable= create_chart_output_checkbox, onvalue=1, offvalue=0,command=lambda: trace_checkbox(create_Excel_chart_output_label,  create_chart_output_checkbox, "Create charts", "Do NOT create charts"))
+        # create_Excel_chart_output_label.configure(text="Create chart(s)")
+        # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
+        #                                                y_multiplier_integer,
+        #                                                create_Excel_chart_output_label,
+        #                                                True,False,False,False,
+        #                                                90,GUI_IO_util.open_TIPS_x_coordinate,
+        #                                                "Untick the checkbox to NOT create charts in output")
+        #
+        # create_chart_output_checkbox.set(1)
         # y_multiplier_integer=y_multiplier_integer+1
         # y_multiplier_integer=y_multiplier_integer+1
-        charts_package_options = ['Excel','Python Plotly (dynamic)','Python Plotly (static)']
+        charts_package_options = ['No charts','Excel','Python Plotly (dynamic)','Python Plotly (static)']
         # TODO EXCEL widget (same as open reminders)
         charts_package_options_widget.set('Excel')
         charts_package_menu_lb = tk.OptionMenu(window,charts_package_options_widget,*charts_package_options)
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
                                                        y_multiplier_integer,
                                                        charts_package_menu_lb,
                                                        True,False,False,False,
-                                                       90,GUI_IO_util.open_reminders_x_coordinate,
-                                                       "Select the package you wish to use to visualize charts: Excel or Plotly (dynamic/static)")
+                                                       90,GUI_IO_util.open_TIPS_x_coordinate,
+                                                       "Select the package you wish to use to visualize charts: Excel or Plotly (dynamic/static).\nSelect the 'No charts' option if you do not wish to compute and visualize charts.")
 
         # TODO chart type widget (same as setup)
         # 'Bubble chart', 'Radar chart', 'Scatter plot' require more than one variable and data_visualization_2_main.py should be used
@@ -1162,12 +1162,24 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
         charts_type_options_widget.set('Bar chart')
         charts_type_menu_lb = tk.OptionMenu(window,charts_type_options_widget,*charts_type_options)
         # place widget with hover-over info
-        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate,
                                                        y_multiplier_integer,
                                                        charts_type_menu_lb,
                                                        True,False,False,False,90,
                                                        GUI_IO_util.open_TIPS_x_coordinate,
                                                        "Charts can be visualized automatically as bar, line, or pie charts. Select your preferred option.\nMany more chart types are available in the specialized GUIs data_visualization_1_main.py and data_visualization_2_main.py.\nOpen those GUIs and select the csv file and variable you wish to chart.")
+
+        data_transformation_options=['No transformation','Ln','Log','Min-Max','Square rooot','Z score']
+        data_transformation_options_widget.set('No transformation')
+        data_transformation_menu_lb = tk.OptionMenu(window,data_transformation_options_widget,*data_transformation_options)
+        # place widget with hover-over info
+        y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_setup_x_coordinate,
+                                                       y_multiplier_integer,
+                                                       data_transformation_menu_lb,
+                                                       True,False,False,False,90,
+                                                       GUI_IO_util.open_reminders_x_coordinate,
+                                                       "Select the type of data transformation you wish to apply in plotting charts.\nAll charts involving multiple documents are normalized by document length.\nThe normalization and data transformation options are not available yet.")
+
         def open_GUI(*args):
             if 'Bubble' in charts_type_options_widget.get() or 'Comparative' in charts_type_options_widget.get() or 'Box' in charts_type_options_widget.get() or 'Time' in charts_type_options_widget.get():
                 call('python data_visualization_2_main.py', shell=True)
@@ -1192,8 +1204,8 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
             #    charts_type_options_widget.set('Bar chart')
         charts_type_options_widget.trace('w', open_GUI)
 
-        # if not 'data_manipulation_main.py' in scriptName and not not 'data_visualization_1_main.py' in scriptName :
-        data_tools_options = ['Corpus sampling', 'Data manipulation', 'Data statistics', 'Data visualization 1', 'Data visualization 2']
+        # if not 'data_manipulation_main.py' in scriptName and not 'data_visualization_1_main.py' in scriptName :
+        data_tools_options = ['Data/corpus sampling', 'Data manipulation', 'Data statistics', 'Data visualization 1', 'Data visualization 2']
         data_tools_options_widget.set('Data tools')
         data_tools_menu_lb = tk.OptionMenu(window, data_tools_options_widget, *data_tools_options)
         # place widget with hover-over info
@@ -1202,7 +1214,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        data_tools_menu_lb,
                                                        False, False, False, False, 90,
                                                        GUI_IO_util.open_TIPS_x_coordinate,
-                                                       "Select the option to open the csv data manipulation GUI where you can append, concatenate, merge, and purge rows and columns in csv file(s).\nOr select the option to visualize data in a variety of ways.")
+                                                       "Select the option to open the GUI that will allow you to perform selected data sampling (corpus sampling), manipulation, statistics, and visualization.")
         def run_data_tool(*args):
             if not 'data_manipulation_main.py' in scriptName and 'manipulation' in data_tools_options_widget.get():
                 call("python data_manipulation_main.py", shell=True)

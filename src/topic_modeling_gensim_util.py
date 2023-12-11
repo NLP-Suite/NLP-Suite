@@ -128,7 +128,7 @@ def format_topics_sentences(ldamodel, corpus, texts):
     sent_topics_df = pd.concat([sent_topics_df, contents], axis=1)
     return sent_topics_df
 
-def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2word,data_lemmatized, lda_model, data):
+def malletModelling(MalletDir, outputDir, corpus,num_topics, id2word,data_lemmatized, lda_model, data):
     startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running Mallet LDA topic modeling at',True)
     config_filename='topic_modeling_gensim_config.csv'
     try:
@@ -326,7 +326,7 @@ def malletModelling(MalletDir, outputDir, createCharts, corpus,num_topics, id2wo
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Mallet LDA topic modeling at',True, '', True, startTime)
 
 def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_stopwords_var,
-                                      lemmatize, nounsOnly, run_Mallet, openOutputFiles,createCharts, chartPackage):
+                                      lemmatize, nounsOnly, run_Mallet, openOutputFiles,chartPackage, dataTransformation):
     global filesToOpen
     filesToOpen=[]
     if pd.__version__[0]=='2':
@@ -536,7 +536,7 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
         MalletDir = os.path.join(MalletDir, "bin/mallet")
 
         # building LDA Mallet Model
-        malletModelling(MalletDir, outputDir, createCharts, corpus, num_topics, id2word, data_lemmatized,
+        malletModelling(MalletDir, outputDir, corpus, num_topics, id2word, data_lemmatized,
                                                    lda_model, data)
 
     if openOutputFiles==True:

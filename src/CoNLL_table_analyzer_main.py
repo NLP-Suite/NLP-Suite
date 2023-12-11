@@ -30,7 +30,7 @@ import reminders_util
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
         searchedCoNLLField, searchField_kw, postag, deprel, co_postag, co_deprel, Begin_K_sent_var, End_K_sent_var):
 
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
@@ -107,20 +107,22 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             outputFiles = CoNLL_clause_analysis_util.clause_stats(inputFilename, '', outputDir,
                                                                   data,
                                                                   all_CoNLL_records,
-                                                                  openOutputFiles, createCharts, chartPackage)
+                                                                  openOutputFiles, chartPackage, dataTransformation)
             if outputFiles!=None:
                 filesToOpen.extend(outputFiles)
 
         if all_analyses.get() =='*' or all_analyses.get() =='Noun analysis':
             import CoNLL_noun_analysis_util
             outputFiles = CoNLL_noun_analysis_util.noun_stats(inputFilename, outputDir, data, all_CoNLL_records,
-                                                              openOutputFiles, createCharts, chartPackage)
+                                                              openOutputFiles,
+                                                              chartPackage,
+                                                              dataTransformation)
             if outputFiles!=None:
                 filesToOpen.extend(outputFiles)
         if all_analyses.get() =='*' or all_analyses.get() =='Verb analysis':
             import CoNLL_verb_analysis_util
             outputFiles = CoNLL_verb_analysis_util.verb_stats(config_filename, inputFilename, outputDir, data, all_CoNLL_records,
-                                                              openOutputFiles, createCharts, chartPackage)
+                                                              openOutputFiles, chartPackage, dataTransformation)
 
             if outputFiles!=None:
                 filesToOpen.extend(outputFiles)
@@ -129,7 +131,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             import CoNLL_function_words_analysis_util
             outputFiles = CoNLL_function_words_analysis_util.function_words_stats(inputFilename, outputDir, data,
                                                                                   all_CoNLL_records, openOutputFiles,
-                                                                                  createCharts, chartPackage)
+                                                                                  chartPackage, dataTransformation)
             if outputFiles!=None:
                 filesToOpen.extend(outputFiles)
 
@@ -199,7 +201,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 return
 
         temp_outputDir, filesToOpen = CoNLL_table_search_util.search_CoNLL_table(inputFilename, outputDir, config_filename,
-                                          createCharts, chartPackage,
+                                          chartPackage, dataTransformation,
                                           all_CoNLL_records, searchField_kw, searchedCoNLLField,
                                           related_token_POSTAG=co_postag,
                                           related_token_DEPREL=co_deprel, _tok_postag_=postag,
@@ -235,7 +237,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         import knowledge_graphs_WordNet_util
         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, inputFilename_nouns, outputDir,
                                                                  config_filename, 'NOUN',
-                                                                 openOutputFiles, createCharts, chartPackage,
+                                                                 openOutputFiles, chartPackage, dataTransformation,
                                                                  language_var='English')
         if output != None:
             if isinstance(output, str):
@@ -245,7 +247,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, inputFilename_verbs, outputDir,
                                                                  config_filename, 'VERB',
-                                                                 openOutputFiles, createCharts, chartPackage,
+                                                                 openOutputFiles, chartPackage,dataTransformation,
                                                                  language_var='English')
         if output != None:
             if isinstance(output, str):
@@ -269,7 +271,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                        'Started running the CoNLL table K-sentences analyzer at',
                                                        True, '', True, '', False)
-        temp_outputDir, outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_var, End_K_sent_var)
+        temp_outputDir, outputFiles = CoNLL_k_sentences_util.k_sent(inputFilename, outputDir, chartPackage, dataTransformation, Begin_K_sent_var, End_K_sent_var)
         if outputFiles!=None:
             outputDir = temp_outputDir
             filesToOpen.extend(outputFiles)
@@ -284,8 +286,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_package_options_widget.get(),
+                                 GUI_util.data_transformation_options_widget.get(),
                                  searchedCoNLLField_var.get(),
                                  searchField_kw_var.get(),
                                  postag_var.get(),

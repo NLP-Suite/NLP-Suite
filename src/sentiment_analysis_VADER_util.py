@@ -216,7 +216,7 @@ def analyzefile(inputFilename, outputDir, outputFilename, mode, Document_ID, Doc
 
     return outputFilename
 
-def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPackage='Excel'):
+def main(inputFilename, inputDir, outputDir, mode,  chartPackage='Excel', dataTransformation='No transformation'):
     """
     Runs analyzefile on the appropriate files, provided that the input paths are valid.
     :param inputFilename:
@@ -291,10 +291,10 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                 sys.exit(1)
     csvfile.close()
 
-    if createCharts == True:
+    if chartPackage!='No charts':
         # VADER does not compute separate mean and median values
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Sentiment score'],
                                                    chart_title='Frequency of VADER Sentiment Scores',
                                                    count_var=0, hover_label=[],

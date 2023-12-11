@@ -64,7 +64,7 @@ def lemmatizing(word):#edited by Claude Hu 08/2020
     return result
 
 # https://www.nltk.org/book/ch02.html
-def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles, createCharts=True, silent=False):
+def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,  silent=False):
     filesToOpen=[]
     unusual=[]
     container=[]
@@ -112,7 +112,7 @@ def nltk_unusual_words(window,inputFilename,inputDir,outputDir, openOutputFiles,
     # if not silent: IO_user_interface_util.single_file_output_save(inputDir,'NLTK')
 
     # NLTK unusual words
-    if createCharts:
+    if chartPackage!='No charts':
         if nFile>10:
              result = mb.askyesno("Excel charts","You have " + str(nFile) + " files for which to compute Excel charts.\n\nTHIS WILL TAKE A LONG TIME.\n\nAre you sure you want to do that?")
              if result==False:
@@ -160,7 +160,7 @@ def createChart(inputFilename,outputDir,columns_to_be_plotted,hover_label):
 
 
 # check within subdirectory
-def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, NERs, similarity_value, by_all_tokens_var,spelling_checker_var):
+def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, NERs, similarity_value, by_all_tokens_var,spelling_checker_var):
     filesToOpen=[]
     if inputDir=='':
         return
@@ -170,7 +170,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
                        message='There are no sub directories under the selected input directory\n\n' + inputDir +'\n\nPlease, uncheck your subdir option if you want to process this directory and try again.')
     df_list = []
     for dir in subdir:
-        dfs = check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, NERs, similarity_value, by_all_tokens_var)
+        dfs = check_for_typo(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, NERs, similarity_value, by_all_tokens_var)
         df_list.append(dfs)
     if len(df_list) > 0:
         df_complete_list = [df[0] for df in df_list]
@@ -183,7 +183,7 @@ def check_for_typo_sub_dir(inputDir, outputDir, openOutputFiles, createCharts, c
         filesToOpen.append(outputFileName_simple)
         filesToOpen.append(outputFileName_complete)
 
-        if createCharts:
+        if chartPackage!='No charts':
             outputFiles = createChart(outputFileName_simple,outputDir, [[10, 10]], '')
             if chart_outputFilename!="":
                 filesToOpen.append(chart_outputFilename)
@@ -227,7 +227,7 @@ def check_edit_dist(input_word, checklist, similarity_value):
 # output csv header list: ['NNPs', 'sentenceID', 'DocumentID', 'fileName', 'NamedEntity', 'potential_Typo']
 
 # using Levenshtein distance to check for typos
-def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, NERs, similarity_value, by_all_tokens_var):
+def check_for_typo(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, NERs, similarity_value, by_all_tokens_var):
     filesToOpen=[]
     all_header_rows_dict = []
     ner_dict = {}
@@ -445,7 +445,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, createCharts, chartPack
             IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Word similarity end',
                                                'Finished running Word similarity at', True)
 
-            if createCharts:
+            if chartPackage!='No charts':
                 outputFiles=createChart(outputFileName_simple, outputDir, [[10, 10]], '')
 
                 if outputFiles!=None:
@@ -730,7 +730,7 @@ def spellcheck(inputFilename,inputDir, checker_value_var, check_withinDir):
 # function implements three different approaches to language detection: langdetect, spacy, langid
 # https://towardsdatascience.com/benchmarking-language-detection-for-nlp-8250ea8b67c
 # TODO print all languages and their probabilities in a csv file, with Language, Probability, Document ID, Document (with hyperlink)
-def language_detection(window, inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage):
+def language_detection(window, inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation):
 
     folderID = 0
     fileID = 0
@@ -851,7 +851,7 @@ def language_detection(window, inputFilename, inputDir, outputDir, openOutputFil
         mb.showwarning(title='File read errors',
                 message=msg+ '\n\nFaulty files are listed in command line/terminal. Please, search for \'File read error\' and inspect each file carefully.')
     filesToOpen.append(outputFilenameCSV)
-    if createCharts:
+    if chartPackage!='No charts':
         columns_to_be_plotted_xAxis=[]
         columns_to_be_plotted_yAxis=[[1, 1],[4,4],[7,7]]
         chart_title='Frequency of Languages Detected by 3 Algorithms'

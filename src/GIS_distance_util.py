@@ -55,6 +55,7 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
     outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                               '',
                                               chartPackage=chartPackage,
+                                              dataTransformation=dataTransformation,
                                               chart_type_list=["bar"],
                                               chart_title=chart_title,
                                               column_xAxis_label_var=xAxis,
@@ -84,6 +85,7 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
     outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                               '',
                                               chartPackage=chartPackage,
+                                              dataTransformation=dataTransformation,
                                               chart_type_list=["bar"],
                                               chart_title=chart_title,
                                               column_xAxis_label_var=xAxis,
@@ -101,7 +103,7 @@ def createCharts(distanceoutputFilename, outputDir, filesToOpen, baselineLocatio
     filesToOpen.append(xlsxFilename)
     return filesToOpen
 
-def computePairwiseDistances(window,inputFilename,outputDir,createCharts, headers,locationColumnNumber,locationColumnNumber2,locationColumnName,locationColumnName2,distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue):
+def computePairwiseDistances(window,inputFilename,outputDir,headers,locationColumnNumber,locationColumnNumber2,locationColumnName,locationColumnName2,distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue):
     filesToOpen=[]
     currList=[]
     startTime=IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS distance at',
@@ -177,7 +179,7 @@ def computePairwiseDistances(window,inputFilename,outputDir,createCharts, header
     outputFile.close()
     filesToOpen.append(distanceoutputFilename)
 
-    if createCharts == True:
+    if chartPackage!='No charts':
         filesToOpen = createCharts(distanceoutputFilename,outputDir,filesToOpen)
         # if len(chart_outputFilename) > 0:
         # 	filesToOpen.append(chart_outputFilename)
@@ -192,7 +194,7 @@ def computePairwiseDistances(window,inputFilename,outputDir,createCharts, header
 #   If the list contains previously geocoded values the function will NOT geocode the values
 #       otherwise it will geocode the location names
 
-def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createCharts, geolocator,geocoder,InputIsGeocoded,baselineLocation,headers,locationColumnNumber,locationColumnName,distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue):
+def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,geolocator,geocoder,InputIsGeocoded,baselineLocation,headers,locationColumnNumber,locationColumnName,distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue):
     currList=[]
     filesToOpen=[]
     startTime=IO_user_interface_util.timed_alert(window, 2000, 'Analysis start', 'Started running GIS distance from ' + baselineLocation + ' at',
@@ -309,7 +311,7 @@ def computeDistancesFromSpecificLocation(window,inputFilename,outputDir,createCh
     outputFile.close()
     filesToOpen.append(distanceoutputFilename)
 
-    if createCharts == True:
+    if chartPackage!='No charts':
         filesToOpen = createCharts(distanceoutputFilename,outputDir,filesToOpen,baselineLocation)
         # if len(chart_outputFilename) > 0:
         # 	filesToOpen.append(chart_outputFilename)
