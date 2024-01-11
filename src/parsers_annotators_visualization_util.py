@@ -380,6 +380,24 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
             if outputSVOUnFilterDir == '':
                 return
 
+            # Sankey_limit1_var=12
+            # Sankey_limit2_var = 12
+            # Sankey_limit3_var = 12
+            # three_way_Sankey = False
+            #
+            # output_label = 'sankey'
+            # import IO_files_util
+            # outputFilename_sankey = IO_files_util.generate_output_file_name(outputFilename, inputDir, outputDir,
+            #                                                          '.html', output_label)
+            # outputFiles = charts_util.Sankey(outputFilename, outputFilename_sankey,
+            #                     'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var, three_way_Sankey, None, Sankey_limit3_var)
+            #
+            # if outputFiles!=None:
+            #     if isinstance(outputFiles, str):
+            #         filesToOpen.append(outputFiles)
+            #     else:
+            #         filesToOpen.extend(outputFiles)
+
 # wordclouds of locations, persons, organizations
 
         # import wordclouds_util

@@ -283,7 +283,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
     # number of words in input ---------------------------------------------------------------------
     # number of syllables in input ---------------------------------------------------------------------
     columns_list = [['Document', 'Number of Sentences in Document'], ['Document', 'Number of Words in Document'], ['Document', 'Number of Syllables in Document']]
-    import statistics_csv_util
+
     columns_to_be_plotted_numeric = statistics_csv_util.get_columns_to_be_plotted(outputFilename, columns_list)
     outputFiles = charts_util.run_all(columns_to_be_plotted_numeric, outputFilename, outputDir,
                           outputFileLabel='sent-word-syll',
@@ -639,6 +639,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
         errorFound = IO_csv_util.list_to_csv(GUI_util.window, hapax_result, csv_outputFilename)
         if not errorFound:
             filesToOpen.append(csv_outputFilename)
+
         outputDir=outputDirSV
 
     outputDirSV = outputDir
@@ -659,6 +660,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
 
         if not errorFound and chartPackage!='No charts':
             filesToOpen.append(csv_outputFilename)
+
             columns_to_be_plotted_xAxis = [str(index+1) + '-grams']
             if inputDir == '':
                 columns_to_be_plotted_yAxis = ['Frequency in Document']
@@ -861,6 +863,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
                                                         openOutputFiles,
                                                         chartPackage, dataTransformation,bySentenceID)
         # Excel charts are generated in compute_character_word_ngrams; return to exit here
+        
         return outputFiles
 
     #For the user input of K sentences or words to be analyzed
@@ -1121,6 +1124,10 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', fileLabel)
     IO_error=IO_csv_util.list_to_csv(window, word_list, outputFilename)
+
+
+
+    
     if not IO_error:
         filesToOpen.append(outputFilename)
 
@@ -1461,6 +1468,8 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
         # IO_util.sort_csvFile_by_columns(outputFilename, outputFilename, ['Document ID','Sort order'])
         outputTxtFile.close()
         outputCsvFile.close()
+
+
         result = True
 
         # readability
@@ -1738,6 +1747,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
                                                              'SentenceComplexity')
     IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, 'utf-8')
     filesToOpen.append(outputFilename)
+
     # TODO we need an X-axis to plot these scores against
     # , 'Frazier score'
     outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,

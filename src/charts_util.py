@@ -79,6 +79,9 @@ def prepare_data_to_be_plotted_inExcel(inputFilename, columns_to_be_plotted, cha
     # TODO temporary to measure process time
     # IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running Excel prepare_data_to_be_plotted_inExcel at',
     #                                    True, '', True, startTime, True)
+
+
+
     return data_to_be_plotted
 
 
@@ -676,6 +679,17 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
                                 columns_to_be_plotted,
                                 chart_type_list,count_var,
                                 column_yAxis_field_list)
+
+    def list_of_lists_to_csv(data, csv_file_path):
+        df = pd.DataFrame(data[1:], columns=data[0])
+        df.to_csv(csv_file_path, index=False)
+    if type(data_to_be_plotted[0])==list:
+        list_of_lists_to_csv(data_to_be_plotted[0],"temptemp2.csv")
+        df = statistics_csv_util.proc('temptemp2.csv', dataTransformation)
+        os.remove('temptemp2.csv')
+        data_to_be_plotted = [[df.columns.tolist()] + df.values.tolist()]
+
+
     if data_to_be_plotted==None:
             return
 
@@ -701,27 +715,33 @@ def run_all(columns_to_be_plotted,inputFilename, outputDir, outputFileLabel,
             # Calculate the counts for each column
             group_cols_count = data[group_cols[0]].value_counts().reset_index()
             group_cols_count.columns = [group_cols[0], f'Frequency_{group_cols[0]}']
-
             plot_cols_count = data.groupby(group_cols)[plot_cols[0]].value_counts().reset_index(
                 name=f'Frequency_{plot_cols[0]}')
-
             # Merge the counts back into the original dataframe
             data_final = pd.merge(group_cols_count, plot_cols_count, how='inner', on=group_cols[0])
-
             data_final = data_final.drop_duplicates()  # Remove potential duplicate rows
-
+            return data_final
             # Convert DataFrame into list of lists
-            data_list = data_final.values.tolist()
-
+            #data_list = data_final.values.tolist()
             # Extract 2nd and 3rd column into one list of lists and 4th and 5th into another
-            list_1 = [[row[2], row[3]] for row in data_list]
-            list_2 = [[row[0], row[1]] for row in data_list]
-            list_1.insert(0, ['Form values', 'Frequencies of Form'])
-            list_2.insert(0, ['Lemma values', 'Frequencies of Lemma'])
-            return [list_1, list_2]
+            #list_1 = [[row[2], row[3]] for row in data_list]
+            #list_2 = [[row[0], row[1]] for row in data_list]
+            #list_1.insert(0, ['Form values', 'Frequencies of Form'])
+            #list_2.insert(0, ['Lemma values', 'Frequencies of Lemma'])
+            #return [list_1, list_2]
         if len(data_to_be_plotted)==2 and data_to_be_plotted[0][0]==['Form values','Frequencies of Form'] and data_to_be_plotted[1][0]==['Lemma values','Frequencies of Lemma']:
             data = pd.DataFrame(data, columns=headers)
             data_to_be_plotted=double_level_grouping_and_frequency(data,['Form'],['Lemma'])
+            data_to_be_plotted.to_csv("Temptemp.csv",index=False)
+            data_final = statistics_csv_util.proc("Temptemp.csv",dataTransformation)
+            data_list = data_final.values.tolist()
+            list_1 = [[row[2], row[3]] for row in data_list]
+            list_2 = [[row[0], row[1]] for row in data_list]
+            list_1.insert(0, ['Form values', 'Frequencies of Form'+"_"+dataTransformation])
+            list_2.insert(0, ['Lemma values', 'Frequencies of Lemma'+"_"+dataTransformation])
+            data_to_be_plotted = [list_1,list_2]
+            os.remove("Temptemp.csv")
+
         chart_title = chart_title
         outputFiles = charts_Excel_util.create_excel_chart(GUI_util.window, data_to_be_plotted,
                                                   inputFilename, outputDir,

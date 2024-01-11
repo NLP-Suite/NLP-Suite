@@ -671,7 +671,7 @@ def normalize_date_svo(inputFilename, outputDir,  chartPackage='Excel', dataTran
         return
     nEmtyCells=str(int(data['Date expression'].isna().sum()))
     outputNormalizedDateDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-                                                                     label='normalized-date',
+                                                                     label='normalized-date_CoreNLP',
                                                                      silent=True)
 
     # Date expressions are in the form yesterday, tomorrow morning, the day before Christmas

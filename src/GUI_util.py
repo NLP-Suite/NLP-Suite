@@ -1169,7 +1169,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        GUI_IO_util.open_TIPS_x_coordinate,
                                                        "Charts can be visualized automatically as bar, line, or pie charts. Select your preferred option.\nMany more chart types are available in the specialized GUIs data_visualization_1_main.py and data_visualization_2_main.py.\nOpen those GUIs and select the csv file and variable you wish to chart.")
 
-        data_transformation_options=['No transformation','Ln','Log','Min-Max','Square rooot','Z score']
+        data_transformation_options=['No transformation','Ln','Log','Square rooot','Z score']
         data_transformation_options_widget.set('No transformation')
         data_transformation_menu_lb = tk.OptionMenu(window,data_transformation_options_widget,*data_transformation_options)
         # place widget with hover-over info

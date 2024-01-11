@@ -22,6 +22,70 @@ import charts_util
 import GUI_IO_util
 import IO_user_interface_util
 
+
+import pandas as pd
+import os
+import numpy as np
+from pandas.api.types import is_numeric_dtype
+from scipy.stats import zscore
+
+def get_file_size(file_path, file_size_dict):
+    if file_path in file_size_dict:
+        return file_size_dict[file_path]
+    try:
+        file_size_dict[file_path] = os.stat(file_path).st_size
+    except FileNotFoundError:
+        file_size_dict[file_path] = 0
+    return file_size_dict[file_path]
+
+def normalize_data(row, col, file_size):
+    return row[col] / file_size if file_size > 0 else 0
+
+def apply_transformation(column, transformation):
+    if transformation == 'Ln':
+        return np.log(column + 1)
+    elif transformation == 'Log':
+        return np.log10(column + 1)
+    elif 'Square' in transformation:
+        return np.sqrt(column)
+    elif transformation == 'Z score':
+        return zscore(column)
+    elif transformation == 'Min-Max':
+        min_val = column.min()
+        max_val = column.max()
+        return (column - min_val) / (max_val - min_val)
+    return column
+
+def proc(infile,arg):
+    file = pd.read_csv(infile)
+    # file has to be a dataframe using pandas, it is tested using pd.read_csv(some filename)
+    if 'Document' in file.columns:
+        print("Effective Document was detected in your dataframe's columns")
+        file_size_dict = {}
+        if arg!='No transformation':
+            print("Appropriate transformation on FILESIZE is applied...")
+            for col in file.columns:
+                if 'Document' not in col and is_numeric_dtype(file[col]):
+                    if 'Frequencies' in col or 'Frequency' in col:
+                        print(col)
+                        file[col] = file.apply(lambda row: normalize_data(row, col, get_file_size(row['Document'].replace('=hyperlink("', '').replace('")','').rstrip('"'), file_size_dict)), axis=1)
+
+                else:
+                    print(col)
+                    print("failed...")
+    for col in file.columns:
+        if 'Document' not in col and is_numeric_dtype(file[col]):
+            if 'Frequencies' in col or 'Frequency' in col:
+                print(col)
+                print("Appropriate transformation on TRANSFORMATION METHOD is applied")
+                file[col] = apply_transformation(file[col], arg)
+                print(file.columns.tolist())
+                print("old .........")
+                file = file.rename(columns={col: col + "_" + arg})
+                print(file.columns.tolist())
+                print("new .........")
+    return file
+
 #column_to_be_counted is the column number (starting 0 in data_list for which a count is required)
 #column_name is the name that will appear as the chart name
 #value is the value in a column that needs to be added up; for either POSTAG (e.g., NN) or DEPREL tags, the tag value is displayed with its description to make reading easier
@@ -334,6 +398,7 @@ def compute_csv_column_statistics(window,inputFilename,outputDir, outputFileName
         outputFiles=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,outputFileNameLabel,groupByList,plotList,chart_title_label,chartPackage, dataTransformation)
         if outputFiles!=None:
             if isinstance(outputFiles, str):
+
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
@@ -403,6 +468,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 
     # remove hyperlink before processing
     data.to_csv(inputFilename,encoding='utf-8', index=False)
+
     if 'Document' in headers:
         try:
             removed_hyperlinks, inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
@@ -690,8 +756,26 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         return
 
     df = data
+    import statistics_csv_util
+    statistics_csv_util.proc(outputFilename, dataTransformation).to_csv(outputFilename)
+    print("OK DONE TRANSFORMATION")
+    print('===-=====-====')
     if chartPackage!='No charts':
+        def add_suffix_to_selected_elements(list_of_lists, suffix, keyword, curse):
+            return [[element + "_" + suffix if keyword in element and curse not in element else element for element in sublist] for sublist in
+                    list_of_lists]
+
+        columns_list_copy = columns_list.copy()
+
+        columns_list = add_suffix_to_selected_elements(columns_list,dataTransformation,'Frequency','Document')
         columns_to_be_plotted = get_columns_to_be_plotted(outputFilename, columns_list)
+        bool = False
+        for ele in columns_to_be_plotted:
+            if None in ele:
+                bool = True
+        if bool:
+            columns_list = columns_list_copy
+            columns_to_be_plotted =  get_columns_to_be_plotted(outputFilename, columns_list_copy)
         # The form/lemma + doc have a special treatment
         if plot_cols == ['Form','Lemma'] and 'Document' in group_cols:
             #@@@

@@ -178,6 +178,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                                                                 chartPackage,
                                                                                 dataTransformation,
                                                                                 bySentenceID)
+                import statistics_csv_util
+                for file in outputFiles:
+                    print(file, 'beginning to process because maybe needed normalization....')
+                    if 'csv' in file:
+                        statistics_csv_util.proc(file, dataTransformation).to_csv(file)
+                        print("OK DONE TRANSFORMATION")
+                        print('===-=====-====')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -329,6 +336,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                                                                            inputDir,
                                                                                            search_words.split(', '),
                                                                                            config_filename, outputDir)
+
+
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
