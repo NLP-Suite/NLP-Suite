@@ -235,7 +235,6 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, ope
         column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[7] # Skewness
         column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[8] # Kurtosis
         # Plot Mean, Mode, Skewness, Kurtosis
-
         columns_to_be_plotted_xAxis=[]
         #@@@
         # see note above about the order of items in columns_to_be_plotted list
@@ -482,10 +481,16 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
     file_label=''
     for col in plot_cols:
         file_label = file_label + col + '_'
+    tracked = True
     if len(group_cols)>0:
         if 'Document' in group_cols:
             # file_label = file_label + 'byDoc'
             file_label = 'byDoc'
+            try:
+                if data['Document'].nunique() <= 1:
+                    tracked = False # if we find a non byDoc , exit immediately
+            except:
+                pass
         else:
             # file_label = file_label + 'by'+group_cols[0] # add only the first element
             file_label = 'by' + group_cols[0]  # add only the first element
@@ -711,8 +716,9 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             # TODO Samir
             print("Completing sentence index...")
             charts_util.add_missing_IDs(outputFilename, outputFilename)
-        data.to_csv(outputFilename,encoding='utf-8', index=False)
-        filesToOpen.append(outputFilename)
+        if tracked:
+            data.to_csv(outputFilename,encoding='utf-8', index=False)
+            filesToOpen.append(outputFilename)
         hover_over_header = []
         chartType='bar'
 
@@ -757,10 +763,12 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 
     df = data
     import statistics_csv_util
-    statistics_csv_util.proc(outputFilename, dataTransformation).to_csv(outputFilename)
-    print("OK DONE TRANSFORMATION")
-    print('===-=====-====')
-    if chartPackage!='No charts':
+    if tracked: # if the byDoc holds, we proceed, otherwise we skip by using this bool
+        statistics_csv_util.proc(outputFilename, dataTransformation).to_csv(outputFilename, encoding='utf-8', index=False)
+
+        print("OK DONE TRANSFORMATION")
+        print('===-=====-====')
+    if chartPackage!='No charts' and tracked:
         def add_suffix_to_selected_elements(list_of_lists, suffix, keyword, curse):
             return [[element + "_" + suffix if keyword in element and curse not in element else element for element in sublist] for sublist in
                     list_of_lists]
@@ -824,4 +832,6 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
     # we can now remove the no_hyperlinks file (i.e., inputFilename), since the frequency file has been computed
     if removed_hyperlinks:
         os.remove(inputFilename)
+
+
     return filesToOpen # several files with the charts
