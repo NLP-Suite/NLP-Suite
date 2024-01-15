@@ -46,7 +46,7 @@ msg_outputFilename="Please, enter the OUTPUT file name. THE SELECT OUTPUT BUTTON
 msg_openOutputFiles="Please, tick the checkbox to open automatically (or not open) output csv file(s), including any charts." \
     "\n\nUse the dropdown menu to select the chart package you wish to use for chart visualization (e.g., Excel, plotly). If you do not wish to create and visualize charts, select the 'No charts' option." \
     "\n\nIf you select to create and visualize charts, use the next dropdown menu widget to select the chart type you wish to use (e.g., bar chart, pie chart)." \
-    "\n\nIf you select to create and visualize charts, use the next dropdown menu widget to select the type of data transformation to be used for plotting ('No transformation' is the default option')." \
+    "\n\nIf you select to create and visualize charts, use the next dropdown menu widget to select the type of data transformation to be used for plotting ('No transformation' is the default option'). All charts involving multiple documents are automatically normalized by document size." \
     "\n\nIn the NLP Suite, all CSV FILES that contain information on web links or files with their path will encode this information as hyperlinks. If you click on the hyperlink, it will automatically open the file or take you to a website. IF YOU ARE A MAC USER, YOU MUST OPEN ALL CSV FILES WITH EXCEL, RATHER THAN NUMBERS, OR THE HYPERLINK WILL BE BARRED AND DISPLAYED AS A RED TRIANGLE."
 msg_multipleDocsCoNLL="\n\nFOR CONLL FILES THAT INCLUDE MULTIPLE DOCUMENTS, THE EXCEL CHARTS PROVIDE OVERALL FREQUENCIES ACROSS ALL DOCUMENTS. FOR SPECIFIC DOCUMENT ANALYSES, PLEASE USE THE GENERAL EXCEL OUTPUT FILE."
 

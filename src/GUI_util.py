@@ -1178,7 +1178,7 @@ def GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplie
                                                        data_transformation_menu_lb,
                                                        True,False,False,False,90,
                                                        GUI_IO_util.open_reminders_x_coordinate,
-                                                       "Select the type of data transformation you wish to apply in plotting charts.\nAll charts involving multiple documents are normalized by document length.\nThe normalization and data transformation options are not available yet.")
+                                                       "Select the type of data transformation you wish to apply in plotting charts.\nAll charts involving multiple documents are automatically normalized by document size.")
 
         def open_GUI(*args):
             if 'Bubble' in charts_type_options_widget.get() or 'Comparative' in charts_type_options_widget.get() or 'Box' in charts_type_options_widget.get() or 'Time' in charts_type_options_widget.get():
