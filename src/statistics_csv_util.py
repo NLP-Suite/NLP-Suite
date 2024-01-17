@@ -60,14 +60,14 @@ def proc(infile,arg):
     file = pd.read_csv(infile)
     # file has to be a dataframe using pandas, it is tested using pd.read_csv(some filename)
     if 'Document' in file.columns:
-        print("Effective Document was detected in your dataframe's columns")
+        # print("Effective Document was detected in your dataframe's columns")
         file_size_dict = {}
         if arg!='No transformation':
-            print("Appropriate transformation on FILESIZE is applied...")
+            print("Data normalized by FILESIZE ...")
             for col in file.columns:
                 if 'Document' not in col and is_numeric_dtype(file[col]):
                     if 'Frequencies' in col or 'Frequency' in col:
-                        print(col)
+                        # print(col)
                         file[col] = file.apply(lambda row: normalize_data(row, col, get_file_size(row['Document'].replace('=hyperlink("', '').replace('")','').rstrip('"'), file_size_dict)), axis=1)
 
                 else:
@@ -76,14 +76,14 @@ def proc(infile,arg):
     for col in file.columns:
         if 'Document' not in col and is_numeric_dtype(file[col]):
             if 'Frequencies' in col or 'Frequency' in col:
-                print(col)
-                print("Appropriate transformation on TRANSFORMATION METHOD is applied")
+                # print(col)
+                # print("Appropriate transformation on TRANSFORMATION METHOD is applied")
                 file[col] = apply_transformation(file[col], arg)
-                print(file.columns.tolist())
-                print("old .........")
+                # print(file.columns.tolist())
+                # print("old .........")
                 file = file.rename(columns={col: col + "_" + arg})
-                print(file.columns.tolist())
-                print("new .........")
+                # print(file.columns.tolist())
+                # print("new .........")
     return file
 
 #column_to_be_counted is the column number (starting 0 in data_list for which a count is required)
@@ -766,8 +766,8 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
     if tracked: # if the byDoc holds, we proceed, otherwise we skip by using this bool
         statistics_csv_util.proc(outputFilename, dataTransformation).to_csv(outputFilename, encoding='utf-8', index=False)
 
-        print("OK DONE TRANSFORMATION")
-        print('===-=====-====')
+        # print("OK DONE TRANSFORMATION")
+        # print('===-=====-====')
     if chartPackage!='No charts' and tracked:
         def add_suffix_to_selected_elements(list_of_lists, suffix, keyword, curse):
             return [[element + "_" + suffix if keyword in element and curse not in element else element for element in sublist] for sublist in

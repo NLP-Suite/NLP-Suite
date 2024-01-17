@@ -1804,7 +1804,7 @@ def process_and_aggregate_data(data, **kwargs):
         # If agg_column is not specified, we cannot proceed with grouping; handle this case as needed
     if not agg_column:
         raise ValueError("The 'groupby_column' parameter is required for aggregation.")
-        print("Due to exception in missing provided value, we have to return early")
+        print("Due to exception in missing groupby_column parameter required for aggregation, the function is aborted")
         return
         # Group by the specified column along with select_columns and calculate the count
     agg_data = data.groupby([agg_column, select_columns]).size().reset_index(name='Count')
@@ -1846,12 +1846,12 @@ def visualize_data(data, top_n=60, figsize=(15, 10), y_label='Lemma', x_label='D
     sorted_rows = numeric_data.sum(axis=1).sort_values(ascending=False).index
     sorted_pivot_data = sorted_pivot_data.loc[sorted_rows]
     transposed_data = sorted_pivot_data.head(top_n)
-    print("doing calculations...complete!")
+    # print("doing calculations...complete!")
     plt.figure(figsize=figsize)
     try:
         sns.heatmap(transposed_data, annot=False, fmt='.2f', cmap=color, cbar_kws={'label': normalize})
     except:
-        print("There is something wrong with the cmap, perhaps something is wrong, let's use default")
+        print("There appears to be ann error with cmap; we revert to default ")
         sns.heatmap(transposed_data, annot=False, fmt='.2f', cmap='YlOrBr', cbar_kws={'label': normalize})
     ax = plt.gca()
     ax.set_yticks(np.arange(len(transposed_data.index)))
@@ -1959,7 +1959,7 @@ def sql_commands(s, dataFrame):
     if add:
         all_values = add.split(', ')
         further_group(dataFrame, GROUPBY, all_values)
-        print("I have detected your all_values contain some string, and I map them accordingly")
+        print("The function detected string values in input, and they were mapped accordingly")
         GROUPBY = 'Real_' + GROUPBY
     SELECT = s[-1][0].replace("|", "")
     WHERE = {}
@@ -1991,7 +1991,7 @@ def special_sql_commands(s, dataFrame):
     if add:
         all_values = add.split(', ')
         further_group(dataFrame, GROUPBY, all_values)
-        print("I have detected your all_values contain some string, and I map them accordingly")
+        print("The function detected string values in input, and they were mapped accordingly")
         GROUPBY = 'Real_' + GROUPBY
     WHERE = {}
     if WHERE_s:
@@ -2100,7 +2100,7 @@ def rate_prop(df, rt, base):
 def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list, suntree,
                      fixed_param_var, rate_param_var, base_param_var, filter_options_var):
     print(fixed_param_var, rate_param_var, base_param_var, filter_options_var)
-    print("======")
+    # print("======")
     data = pd.read_csv(inputFilename)
     WHERE, GROUPBY = special_sql_commands(csv_file_categorical_field_list, data)
     data = where_data(data, where_column=WHERE)
@@ -2113,10 +2113,10 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
     # df_grouped.head(5)
     if filter_options_var == 'Fixed parameter':
         df_grouped = fixed_transform(df_grouped, int(fixed_param_var))
-        print("OK Fixed parameter applied")
+        print("Fixed parameter applied")
     if filter_options_var == 'Propagating parameter':
         df_grouped = rate_prop(df_grouped, int(rate_param_var), int(base_param_var))
-        print("OK Propagating parameter applied")
+        print("Propagating parameter applied")
     print(df_grouped)
     if suntree:
         fig = px.sunburst(df_grouped, path=select_and_count, values='counts')  # Ensure the hierarchy levels are correct

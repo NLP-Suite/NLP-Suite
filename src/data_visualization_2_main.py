@@ -475,7 +475,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
                                                points_lb, True)
 
 points_var = tk.StringVar()
-points_menu = tk.OptionMenu(window, points_var, 'All', 'None', 'Outliers')
+points_menu = tk.OptionMenu(window, points_var, 'all', 'None', 'outliers')
 # points_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+70, y_multiplier_integer,
