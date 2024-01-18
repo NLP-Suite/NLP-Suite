@@ -4,7 +4,7 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Statistics",['csv','tkinter','os','collections','pandas','numpy','scipy','itertools'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Statistics_csv_util",['csv','tkinter','os','collections','pandas','numpy','scipy','itertools'])==False:
     sys.exit(0)
 
 import os
@@ -21,6 +21,70 @@ import IO_csv_util
 import charts_util
 import GUI_IO_util
 import IO_user_interface_util
+
+
+import pandas as pd
+import os
+import numpy as np
+from pandas.api.types import is_numeric_dtype
+from scipy.stats import zscore
+
+def get_file_size(file_path, file_size_dict):
+    if file_path in file_size_dict:
+        return file_size_dict[file_path]
+    try:
+        file_size_dict[file_path] = os.stat(file_path).st_size
+    except FileNotFoundError:
+        file_size_dict[file_path] = 0
+    return file_size_dict[file_path]
+
+def normalize_data(row, col, file_size):
+    return row[col] / file_size if file_size > 0 else 0
+
+def apply_transformation(column, transformation):
+    if transformation == 'Ln':
+        return np.log(column + 1)
+    elif transformation == 'Log':
+        return np.log10(column + 1)
+    elif 'Square' in transformation:
+        return np.sqrt(column)
+    elif transformation == 'Z score':
+        return zscore(column)
+    elif transformation == 'Min-Max':
+        min_val = column.min()
+        max_val = column.max()
+        return (column - min_val) / (max_val - min_val)
+    return column
+
+def proc(infile,arg):
+    file = pd.read_csv(infile)
+    # file has to be a dataframe using pandas, it is tested using pd.read_csv(some filename)
+    if 'Document' in file.columns:
+        # print("Effective Document was detected in your dataframe's columns")
+        file_size_dict = {}
+        if arg!='No transformation':
+            print("Data normalized by FILESIZE ...")
+            for col in file.columns:
+                if 'Document' not in col and is_numeric_dtype(file[col]):
+                    if 'Frequencies' in col or 'Frequency' in col:
+                        # print(col)
+                        file[col] = file.apply(lambda row: normalize_data(row, col, get_file_size(row['Document'].replace('=hyperlink("', '').replace('")','').rstrip('"'), file_size_dict)), axis=1)
+
+                else:
+                    print(col)
+                    print("failed...")
+    for col in file.columns:
+        if 'Document' not in col and is_numeric_dtype(file[col]):
+            if 'Frequencies' in col or 'Frequency' in col:
+                # print(col)
+                # print("Appropriate transformation on TRANSFORMATION METHOD is applied")
+                file[col] = apply_transformation(file[col], arg)
+                # print(file.columns.tolist())
+                # print("old .........")
+                file = file.rename(columns={col: col + "_" + arg})
+                # print(file.columns.tolist())
+                # print("new .........")
+    return file
 
 #column_to_be_counted is the column number (starting 0 in data_list for which a count is required)
 #column_name is the name that will appear as the chart name
@@ -88,7 +152,7 @@ def compute_statistics_CoreNLP_CoNLL_tag(data_list,column_to_be_counted,column_n
 #       or on a specific field passed
 
 def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, openOutputFiles,
-                                            createCharts, chartPackage,
+                                            chartPackage,dataTransformation,
                                             columnNumber=[]):
     filesToOpen=[]
     if inputFilename[-4:]!='.csv':
@@ -164,14 +228,13 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, ope
     headers_stats=['Count','Mean','Mode','Median','Standard deviation','Minimum','Maximum',
                    'Skewness','Kurtosis','25% quantile','50% quantile','75% quantile']
 
-    if createCharts:
+    if chartPackage!='No charts':
         column_name_to_be_plotted=headers_stats[1] # Mean
         # the mode is returned as a series; exclude for now
         # column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[2] # Mode
         column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[7] # Skewness
         column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[8] # Kurtosis
         # Plot Mean, Mode, Skewness, Kurtosis
-
         columns_to_be_plotted_xAxis=[]
         #@@@
         # see note above about the order of items in columns_to_be_plotted list
@@ -186,6 +249,7 @@ def compute_csv_column_statistics_NoGroupBy(window,inputFilename, outputDir, ope
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, outputFilename, outputDir,
                                                   outputFileLabel='',
                                                   chartPackage=chartPackage,
+                                                  dataTransformation=dataTransformation,
                                                   chart_type_list=["bar"],
                                                   chart_title=column_name_to_be_plotted + ' Values\nby Document Statistic',
                                                   column_xAxis_label_var='', #Document
@@ -215,7 +279,7 @@ def percentile(n):
 # plotField are the columns to be used for plotting (e.g., Mean, Mode)) as ['Mean', 'Mode'] or ['Mean']
 #   plotField columns MUST contain NUMERIC values
 # chart_title_label is used as part of the chart_title
-def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outputFileNameLabel, groupByField: list, plotField: list, chart_title_label, createCharts, chartPackage):
+def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outputFileNameLabel, groupByField: list, plotField: list, chart_title_label, chartPackage, dataTransformation):
     filesToOpen=[]
     outputFilename=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', '', outputFileNameLabel + '_group_stats')
     # filesToOpen.append(output_name)
@@ -271,7 +335,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
     df_group.to_csv(outputFilename, encoding='utf-8')
     filesToOpen.append(outputFilename)
 
-    if createCharts:
+    if chartPackage!='No charts':
         column_name_to_be_plotted=headers_stats[1] # Mean
         column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[2] # Mode
         column_name_to_be_plotted=column_name_to_be_plotted + ', ' + headers_stats[7] # Skewness
@@ -297,6 +361,7 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, outputFilename, outputDir,
                                                   outputFileLabel='',
                                                   chartPackage=chartPackage,
+                                                  dataTransformation=dataTransformation,
                                                   chart_type_list=["bar"],
                                                   #chart_title=column_name_to_be_plotted + '\n' + chart_title_label + ' by Document',
                                                   chart_title=column_name_to_be_plotted + '\n' + chart_title_label + ' by ' + str(groupByField[0]),
@@ -318,20 +383,21 @@ def compute_csv_column_statistics_groupBy(window,inputFilename, outputDir, outpu
 #   'Skewness', 'Kurtosis', '25% quantile', '50% quantile', '75% quantile'
 #   it will provide statistics both ungrouped and grouped by Document ID
 def compute_csv_column_statistics(window,inputFilename,outputDir, outputFileNameLabel,
-                groupByList, plotList, chart_title_label='', createCharts=False, chartPackage='Excel'):
+                groupByList, plotList, chart_title_label='',  chartPackage='Excel', dataTransformation='No transformation'):
     filesToOpen=[]
     if len(groupByList)==0:
         command = tk.messagebox.askyesno("Groupby fields", "Do you want to compute statistics grouping results by the values of one or more fields (e.g., the DocumentID of a CoNLL table)?")
         if command ==True:
             groupByList=GUI_IO_util.slider_widget(GUI_util.window,"Enter comma-separated csv headers for GroupBy option",1,10,'')
     # TODO TONY temporarily disconnected while waiting to fix problems in the compute_csv_column_statistics_NoGroupBy function
-    # temp_outputfile = compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,createCharts,chartPackage)
+    # temp_outputfile = compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,chartPackage, dataTransformation)
     # if temp_outputfile!='':
     #     filesToOpen.append(temp_outputfile)
     if len(groupByList)>0:
-        outputFiles=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,outputFileNameLabel,groupByList,plotList,chart_title_label,createCharts,chartPackage)
+        outputFiles=compute_csv_column_statistics_groupBy(window,inputFilename,outputDir,outputFileNameLabel,groupByList,plotList,chart_title_label,chartPackage, dataTransformation)
         if outputFiles!=None:
             if isinstance(outputFiles, str):
+
                 filesToOpen.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
@@ -367,80 +433,6 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
     # end of function and pass the document forward
     return no_hyperlinks_filename
 
-# written by Tony Chen Gu, April 2022
-# TODO TONY How does this differ from the several compute frequency options that I have extensively commented for clarity
-    # the latter one seems doing the same staff  but the former one is only for stats results
-# the three steps function computes
-#   1. the frequencies of a given csv field (select_col) aggregating the results by (group_cols and select_col).
-#   2. the resulting frequencies are pivoted in order plot the data in a multi-line chart (one chart for every distinct value of select_col) by Sentence ID.
-#   3. the result of pivoting is then plotted
-# select_col should be one column name to be plotted eg: ['Verb Voice']
-# group_cols should be a list of column names eg ['Sentence ID']
-# enable complete_sid to make sentence index continuous
-# enable graph to make a multiline graph
-# the input should be saved to a csv file first
-# def compute_csv_column_frequencies(inputFilename, group_cols, select_col, outputDir, chart_title,
-#         graph = True, complete_sid = True, series_label = None, chartPackage = 'Excel'):
-#     cols = group_cols + select_col
-#     if 'Excel' in chartPackage:
-#        use_Plotly = False
-#     else:
-#         use_Plotly = True
-#     try:
-#         data,header = IO_csv_util.get_csv_data(inputFilename, True)
-#         data = pd.DataFrame(data, columns=header)
-#     except:
-#         # an error message about unable to read the file
-#         print("Error: cannot read the csv file " + inputFilename)
-#         return
-#     #data = CoNLL_verb_analysis_util.verb_voice_data_preparation(data)
-#     #data,stats,pas,aux,act = CoNLL_verb_analysis_util.voice_output(data, group_cols)
-#     #data = pd.DataFrame(data,columns=header+["Verb Voice"])
-#     try:
-#         print(data[select_col])
-#         print(data[group_cols])
-#     except:
-#         # an error message about wrong csv file without the necessary columns
-#         print("Please select the correct csv file, with correct columns")
-#         return
-#     name = outputDir + os.sep + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
-#     data.to_csv(name, encoding='utf-8')
-#     Excel_outputFilename=name
-#     # group by both group col and select cols and get a row named count to count the number of frequencies
-#     data = data.groupby(cols).size().to_frame("count")
-#     data.to_csv(name, encoding='utf-8')
-#     data = pd.read_csv(name, encoding='utf-8',on_bad_lines='skip')
-#     # transform the data by the select columns
-#     # Reshape data (produce a “pivot” table) based on column values. Uses unique values from specified index / columns to form axes of the resulting DataFrame.
-#     data = data.pivot(index = group_cols, columns = select_col, values = "count")
-#     print(data)
-#     data.to_csv(name, encoding='utf-8')
-#     # complete sentence id if needed
-#     if(complete_sid):
-#         # TODO Samir
-#         print("Completing sentence index...")
-#         charts_util.add_missing_IDs(name, name)
-#     print(name)
-#     if(graph):
-#         #TODO: need filename generation and chart_title generation
-#         data = pd.read_csv(name,header=0, encoding='utf-8',on_bad_lines='skip')
-#         cols_to_be_plotted = []
-#         for i in range(1,len(data.columns)):
-#             cols_to_be_plotted.append([0,i])
-#         if series_label is None:
-#             Excel_outputFilename = charts_util.run_all(cols_to_be_plotted, name, outputDir,
-#                                                        "frequency_multi-line_chart", chart_type_list=["line"],
-#                                                        chart_title=chart_title,
-#                                                        column_xAxis_label_var="Sentence ID", chartPackage=chartPackage)
-#         else:
-#             Excel_outputFilename = charts_util.run_all(cols_to_be_plotted, name, outputDir,
-#                                                        "frequency_multi-line_chart", chart_type_list=["line"],
-#                                                        chart_title=chart_title,
-#                                                        column_xAxis_label_var="Sentence ID", series_label_list=series_label,
-#                                                        chartPackage=chartPackage)
-#     return Excel_outputFilename
-
-
 # written by Yi Wang
 # edited by Roberto June 2022
 
@@ -452,7 +444,7 @@ def csv_data_pivot(inputFilename, index, values, no_hyperlinks=True):
 # plot_cols, hover_col, group_cols are single lists with the column headers (alphabetic, rather than column number)
 #   plot_cols=['POS'], hover_col=[], group_cols=[Sentence ID', 'Sentence', 'Document ID', 'Document']
 def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputDir,
-            openOutputFiles,createCharts,chartPackage,
+            openOutputFiles,chartPackage, dataTransformation,
             plot_cols, hover_col, group_cols, complete_sid,
             chart_title, fileNameType='CSV',chartType='line',pivot=True):
     name = outputDir + os.sep + os.path.splitext(os.path.basename(inputFilename))[0] + "_frequencies.csv"
@@ -475,6 +467,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
 
     # remove hyperlink before processing
     data.to_csv(inputFilename,encoding='utf-8', index=False)
+
     if 'Document' in headers:
         try:
             removed_hyperlinks, inputFilename = IO_csv_util.remove_hyperlinks(inputFilename)
@@ -488,10 +481,16 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
     file_label=''
     for col in plot_cols:
         file_label = file_label + col + '_'
+    tracked = True
     if len(group_cols)>0:
         if 'Document' in group_cols:
             # file_label = file_label + 'byDoc'
             file_label = 'byDoc'
+            try:
+                if data['Document'].nunique() <= 1:
+                    tracked = False # if we find a non byDoc , exit immediately
+            except:
+                pass
         else:
             # file_label = file_label + 'by'+group_cols[0] # add only the first element
             file_label = 'by' + group_cols[0]  # add only the first element
@@ -504,6 +503,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         return filesToOpen
 
 # no aggregation by group_cols --------------------------------------------------------
+
     elif len(plot_cols) != 0 and len(group_cols) == 0:
         plot_cols=['Victim Race','Victim Gender']
         for col in plot_cols:
@@ -531,7 +531,8 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         header="Frequency"
         chart_title="Frequency Distribution of " + str(plot_cols[0])
 
- # aggregation by group_cols NO hover over ----------------------------------------
+# aggregation by group_cols NO hover over ----------------------------------------
+
     elif len(plot_cols) != 0 and len(group_cols) != 0 and len(hover_col) == 0:
         # for col in plot_cols:
         #     # plot_cols, hover_col, group_cols are single lists with the column headers
@@ -715,12 +716,14 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             # TODO Samir
             print("Completing sentence index...")
             charts_util.add_missing_IDs(outputFilename, outputFilename)
-        data.to_csv(outputFilename,encoding='utf-8', index=False)
-        filesToOpen.append(outputFilename)
+        if tracked:
+            data.to_csv(outputFilename,encoding='utf-8', index=False)
+            filesToOpen.append(outputFilename)
         hover_over_header = []
         chartType='bar'
 
 # aggregation by group_cols & hover over -----------------------------------------------
+
     else:
         for col_hover in hover_col:
             col = str(plot_cols[0])
@@ -759,8 +762,28 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
         return
 
     df = data
-    if createCharts:
+    import statistics_csv_util
+    if tracked: # if the byDoc holds, we proceed, otherwise we skip by using this bool
+        statistics_csv_util.proc(outputFilename, dataTransformation).to_csv(outputFilename, encoding='utf-8', index=False)
+
+        # print("OK DONE TRANSFORMATION")
+        # print('===-=====-====')
+    if chartPackage!='No charts' and tracked:
+        def add_suffix_to_selected_elements(list_of_lists, suffix, keyword, curse):
+            return [[element + "_" + suffix if keyword in element and curse not in element else element for element in sublist] for sublist in
+                    list_of_lists]
+
+        columns_list_copy = columns_list.copy()
+
+        columns_list = add_suffix_to_selected_elements(columns_list,dataTransformation,'Frequency','Document')
         columns_to_be_plotted = get_columns_to_be_plotted(outputFilename, columns_list)
+        bool = False
+        for ele in columns_to_be_plotted:
+            if None in ele:
+                bool = True
+        if bool:
+            columns_list = columns_list_copy
+            columns_to_be_plotted =  get_columns_to_be_plotted(outputFilename, columns_list_copy)
         # The form/lemma + doc have a special treatment
         if plot_cols == ['Form','Lemma'] and 'Document' in group_cols:
             #@@@
@@ -778,6 +801,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                               outputFileLabel=fileNameType,
                                               chartPackage=chartPackage,
+                                              dataTransformation=dataTransformation,
                                               chart_type_list=[chartType],
                                               chart_title=chart_title,
                                               column_xAxis_label_var=column_xAxis_label_var,
@@ -794,6 +818,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
             outputFiles = charts_util.run_all(columns_to_be_plotted, outputFilename, outputDir,
                                               outputFileLabel=fileNameType,
                                               chartPackage=chartPackage,
+                                              dataTransformation=dataTransformation,
                                               chart_type_list=[chartType],
                                               chart_title=chart_title,
                                               column_xAxis_label_var=column_xAxis_label_var,
@@ -807,4 +832,6 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
     # we can now remove the no_hyperlinks file (i.e., inputFilename), since the frequency file has been computed
     if removed_hyperlinks:
         os.remove(inputFilename)
+
+
     return filesToOpen # several files with the charts

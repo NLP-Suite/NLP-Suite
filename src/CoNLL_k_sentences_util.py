@@ -15,7 +15,7 @@ import IO_files_util
 import charts_util
 import statistics_txt_util
 
-def k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_var, End_K_sent_var):
+def k_sent(inputFilename, outputDir, chartPackage, dataTransformation, Begin_K_sent_var, End_K_sent_var):
     filesToOpen=[]
 
     label='CoNLL_' + str(Begin_K_sent_var) + '-' + str(End_K_sent_var) + '-sent'
@@ -97,7 +97,7 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_va
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=['Word']
             count_var=1
-            outputFiles = charts_util.visualize_chart(createCharts, chartPackage,
+            outputFiles = charts_util.visualize_chart(chartPackage,dataTransformation,
                                                             outputFilename_rep_words, outputDir,
                                                             columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
                                                             chart_title="Frequency Distribution of Repeated Words in First and Last K (" + str(Begin_K_sent_var)+'-'+str(End_K_sent_var) +") Sentences",
@@ -204,7 +204,7 @@ def k_sent(inputFilename, outputDir, createCharts, chartPackage, Begin_K_sent_va
             columns_to_be_plotted_xAxis=[]
             columns_to_be_plotted_yAxis=['Nouns Proportion','Verbs Proportion','Adjectives Proportion','Proper-Nouns Proportion']
             count_var=0
-            outputFiles = charts_util.visualize_chart(createCharts, chartPackage,
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
                                                             outputFilename, outputDir,
                                                             columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
                                                             chart_title="Frequency Distribution of Different Proportions in First and Last K (" + str(Begin_K_sent_var)+'-'+str(End_K_sent_var) + ") Sentences",

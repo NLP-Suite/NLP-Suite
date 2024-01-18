@@ -34,7 +34,7 @@ import config_util
 files_to_open = []
 
 def run(inputFilename, inputDir, outputDir,
-        openOutputFiles, createCharts, chartPackage,
+        openOutputFiles, chartPackage, dataTransformation,
         Coref,
         Manual_Coref_var,
         split_coreferenced_files_var,
@@ -102,7 +102,7 @@ def run(inputFilename, inputDir, outputDir,
         # 2 items are returned: filename string and true/False for error
         files_to_open, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename, inputDir,
                                        outputCorefedDir,
-                                       openOutputFiles, createCharts, chartPackage,
+                                       openOutputFiles, chartPackage, dataTransformation,
                                        language_var,
                                        memory_var, export_json_var,
                                        Manual_Coref_var)
@@ -150,8 +150,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_package_options_widget.get(),
+                                 GUI_util.data_transformation_options_widget.get(),
                                  CoRef_var.get(),
                                  manual_Coref_var.get(),
                                  split_coreferenced_files_var.get(),

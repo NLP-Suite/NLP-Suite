@@ -15,7 +15,7 @@ import IO_files_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartPackage,
+def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTransformation,
         remove_stopwords_var, lemmatize_var, WSI_var,
         BERT_var, Gensim_var, compute_distances_var, top_words_var,
         sg_menu_var, vector_size_var, window_var, min_count_var,
@@ -74,8 +74,8 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
                                      reminders_util.message_BERT_Word2Vec_timing,
                                      True)
         import BERT_util
-        BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, Word2Vec_Dir, openOutputFiles, createCharts,
-                                                   chartPackage, vis_menu_var, dim_menu_var, compute_distances_var,
+        BERT_output = BERT_util.word_embeddings_BERT(window, inputFilename, inputDir, Word2Vec_Dir, openOutputFiles, 
+                                                   chartPackage, dataTransformation, vis_menu_var, dim_menu_var, compute_distances_var,
                                                      top_words_var, keywords_var, lemmatize_var, remove_stopwords_var, config_filename)
         filesToOpen.append(BERT_output)
 
@@ -88,7 +88,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, createCharts, chartP
             mb.showwarning(title='Missing keywords',message='The algorithm requires a comma-separated list of case-sensitive keywords taken from the corpus to be used as a Word2Vec run.\n\nPlease, enter the keywords and try again.')
             return
         import word2vec_Gensim_util
-        filesToOpen = word2vec_Gensim_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir, config_filename, openOutputFiles, createCharts, chartPackage,
+        filesToOpen = word2vec_Gensim_util.run_Gensim_word2vec(inputFilename, inputDir, Word2Vec_Dir, config_filename, openOutputFiles, chartPackage, dataTransformation,
                                  remove_stopwords_var, lemmatize_var,
                                  keywords_var,
                                  compute_distances_var, top_words_var,
@@ -103,8 +103,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.input_main_dir_path.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
+                                GUI_util.data_transformation_options_widget.get(),
                                 remove_stopwords_var.get(),
                                 lemmatize_var.get(),
                                 WSI_var.get(),

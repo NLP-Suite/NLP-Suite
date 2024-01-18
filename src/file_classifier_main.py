@@ -21,8 +21,9 @@ import IO_files_util
 
 def run(input_main_dir_path, input_secondary_dir_path, outputDir,
         openOutputFiles,
-        createCharts,
+        
         chartPackage,
+        dataTransformation,
         by_date_var,
         date_format,
         date_separator,
@@ -55,7 +56,7 @@ def run(input_main_dir_path, input_secondary_dir_path, outputDir,
         if len(outputFiles) > 0:
             filesToOpen.append(outputFiles)
     if by_NER_var:
-        outputFiles=file_classifier_NER_util.main(GUI_util.window,input_main_dir_path, input_secondary_dir_path, outputDir, openOutputFiles, createCharts, chartPackage, similarityIndex_var)
+        outputFiles=file_classifier_NER_util.main(GUI_util.window,input_main_dir_path, input_secondary_dir_path, outputDir, openOutputFiles, chartPackage, dataTransformation, similarityIndex_var)
         if len(outputFiles)>0:
             filesToOpen.append(outputFiles)
 
@@ -69,8 +70,8 @@ run_script_command=lambda: run(GUI_util.input_main_dir_path.get(),
                             GUI_util.input_secondary_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_package_options_widget.get(),
+                            GUI_util.data_transformation_options_widget.get(),
                             by_date_var.get(),
                             date_format.get(),
                             items_separator_var.get(),

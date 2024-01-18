@@ -20,7 +20,7 @@ import html_annotator_dictionary_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createCharts, chartPackage,
+def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, chartPackage, dataTransformation,
         knowledge_graphs_DBpedia_YAGO_var,
         knowledge_graphs_WordNet_var,
         html_gender_annotator_var,
@@ -78,7 +78,7 @@ def run(inputFilename,input_main_dir_path,outputDir, openOutputFiles, createChar
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_extractor_util.py')==False:
             return
         import html_annotator_extractor_util
-        html_annotator_extractor_util.buildcsv(inputFilename, input_main_dir_path, outputDir,openOutputFiles,createCharts, chartPackage, config_filename)
+        html_annotator_extractor_util.buildcsv(inputFilename, input_main_dir_path, outputDir,openOutputFiles,chartPackage, dataTransformation, config_filename)
     elif html_gender_annotator_var==True:
         if IO_libraries_util.check_inputPythonJavaProgramFile('html_annotator_gender_main.py')==False:
             return
@@ -102,8 +102,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
                 GUI_util.output_dir_path.get(),
                 GUI_util.open_csv_output_checkbox.get(),
-                GUI_util.create_chart_output_checkbox.get(),
                 GUI_util.charts_package_options_widget.get(),
+                GUI_util.data_transformation_options_widget.get(),
                 knowledge_graphs_DBpedia_YAGO_var.get(),
                 knowledge_graphs_WordNet_var.get(),
                 html_gender_annotator_var.get(),

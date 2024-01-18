@@ -381,7 +381,7 @@ def do_include_word(word: List[str], filters: List[CoNLLFilter]) -> bool:
 
 
 # Chen
-def search_CoNLL_table(inputFilename, outputDir, config_filename, createCharts, chartPackage, CoNLL_records, form_of_token,
+def search_CoNLL_table(inputFilename, outputDir, config_filename, chartPackage, dataTransformation, CoNLL_records, form_of_token,
                        _field_='FORM',
                        related_token_POSTAG="*",
                        related_token_DEPREL="*",
@@ -488,13 +488,13 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, createCharts, 
         item[9] keyword[3]/SEARCHED TOKEN POSTAG, 
         item[10] keyword[6]/'SEARCHED TOKEN DEPREL'))
     """
-    if createCharts == True:
+    if chartPackage!='No charts':
 
         count_var = 1
 
         columns_to_be_plotted_xAxis = ['POS Tag of Searched Token/Word']
         columns_to_be_plotted_yAxis = ['POS Tag of Searched Token/Word']
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
                                                            outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                                                            chart_title="Frequency Distribution of ' + _tok_postag_ + ' POS Tag of Searched Token/Word",
@@ -514,7 +514,7 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, createCharts, 
             columns_to_be_plotted_xAxis = ['DepRel of Searched Token/Word']
             columns_to_be_plotted_yAxis = ['DepRel of Searched Token/Word']
             # @@@
-            outputFiles = charts_util.visualize_chart(createCharts, chartPackage,
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
                                                                outputFilename, outputDir,
                                                                columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                                                                chart_title="Frequency Distribution of " + _tok_deprel_ + " DepRel of Searched Token/Word",
@@ -534,7 +534,7 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, createCharts, 
 
         columns_to_be_plotted_xAxis = ['Co-occurring Token/Word']
         columns_to_be_plotted_yAxis = ['Co-occurring Token/Word']
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
                                                            outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                                                            chart_title="Frequency Distribution of Co-occurring " + related_token_POSTAG + " words/tokens",
@@ -553,7 +553,7 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, createCharts, 
 
         columns_to_be_plotted_xAxis = ['POS Tag of Co-occurring Token/Word']
         columns_to_be_plotted_yAxis = ['POS Tag of Co-occurring Token/Word']
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
                                                            outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                                                            chart_title="Frequency Distribution of Co-occurring " + related_token_POSTAG + " POS Tags",
@@ -573,7 +573,7 @@ def search_CoNLL_table(inputFilename, outputDir, config_filename, createCharts, 
         columns_to_be_plotted_xAxis = ['DepRel of Co-occurring Token/Word']
         columns_to_be_plotted_yAxis = ['DepRel of Co-occurring Token/Word']
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
                                                            outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                                                            chart_title="Frequency Distribution of Co-occurring " + related_token_DEPREL + " DepRel Tags",

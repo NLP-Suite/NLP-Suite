@@ -26,8 +26,9 @@ import config_util
 
 def run(inputFilename,inputDir, outputDir,
     openOutputFiles,
-    createCharts,
+    
     chartPackage,
+    dataTransformation,
     split_mergedFile,
     split_mergedFile_separator_entry_begin,
     split_mergedFile_separator_entry_end,
@@ -81,7 +82,7 @@ def run(inputFilename,inputDir, outputDir,
 
             return
         import file_splitter_ByBME_K_sentences_util
-        filesToOpen = file_splitter_ByBME_K_sentences_util.sample_doc_beginning_middle_end(window, config_filename, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, Begin_K_sent, End_K_sent, config_filename)
+        filesToOpen = file_splitter_ByBME_K_sentences_util.sample_doc_beginning_middle_end(window, config_filename, inputFilename,inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation, Begin_K_sent, End_K_sent, config_filename)
 
     else:
         for file in files:
@@ -186,8 +187,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_package_options_widget.get(),
+                            GUI_util.data_transformation_options_widget.get(),
                             split_mergedFile_var.get(),
                             split_mergedFile_separator_entry_begin_var.get(),
                             split_mergedFile_separator_entry_end_var.get(),

@@ -27,8 +27,9 @@ import config_util
 
 def run(inputFilename,inputDir,outputDir,
         openOutputFiles,
-        createCharts,
+        
         chartPackage,
+        dataTransformation,
         mean_var,
         median_var,
         SA_algorithm_var,
@@ -138,7 +139,7 @@ def run(inputFilename,inputDir,outputDir,
             model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment" # multilingual model
         else:
             model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest" # English language model
-        outputFiles = BERT_util.sentiment_main(inputFilename, inputDir, outputDir, config_filename, mode, True, chartPackage, model_path)
+        outputFiles = BERT_util.sentiment_main(inputFilename, inputDir, outputDir, config_filename, mode, chartPackage, dataTransformation, model_path)
         if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -164,7 +165,7 @@ def run(inputFilename,inputDir,outputDir,
         outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
                                                     openOutputFiles,
-                                                    True, chartPackage,
+                                                    chartPackage, dataTransformation,
                                                     annotator, False,
                                                     language_var,
                                                     memory_var, document_length_var, limit_sentence_length_var,
@@ -197,7 +198,7 @@ def run(inputFilename,inputDir,outputDir,
             return
         import Stanford_CoreNLP_util
         outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                          outputDir, openOutputFiles, True, chartPackage,'sentiment', False,
+                                                                          outputDir, openOutputFiles, chartPackage,dataTransformation, 'sentiment', False,
                                                                           language_var, export_json_var,
                                                                           memory_var)
         # outputFilename=outputFilename[0] # annotators return a list and not a string
@@ -224,7 +225,7 @@ def run(inputFilename,inputDir,outputDir,
         outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputDir,
                                                       openOutputFiles,
-                                                      True, chartPackage,
+                                                      chartPackage, dataTransformation,
                                                       annotator, False,
                                                       [language_var], # Stanza_util takes language_var as a list
                                                       memory_var, document_length_var, limit_sentence_length_var,
@@ -284,8 +285,8 @@ def run(inputFilename,inputDir,outputDir,
                                                            'Started running ANEW Sentiment Analysis at',
                                                            True, '', True, '', False)
 
-            outputFiles = sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, mode, True,
-                                                            chartPackage)
+            outputFiles = sentiment_analysis_ANEW_util.main(inputFilename, inputDir, outputDir, mode, 
+                                                            chartPackage, dataTransformation)
 
             if outputFiles != None:
                 if isinstance(outputFiles, str):
@@ -312,7 +313,7 @@ def run(inputFilename,inputDir,outputDir,
             startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running HEDONOMETER Sentiment Analysis at',
                                                          True, '', True, '', False)
 
-            outputFiles = sentiment_analysis_hedonometer_util.main(inputFilename, inputDir, outputDir, mode, True, chartPackage)
+            outputFiles = sentiment_analysis_hedonometer_util.main(inputFilename, inputDir, outputDir, mode, chartPackage, dataTransformation)
 
             if outputFiles != None:
                 if isinstance(outputFiles, str):
@@ -333,7 +334,7 @@ def run(inputFilename,inputDir,outputDir,
             startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running SentiWordNet Sentiment Analysis at',
                                                          True, '', True, '', False)
 
-            outputFiles = sentiment_analysis_SentiWordNet_util.main(inputFilename, inputDir, outputDir, config_filename, mode, True, chartPackage)
+            outputFiles = sentiment_analysis_SentiWordNet_util.main(inputFilename, inputDir, outputDir, config_filename, mode, chartPackage, dataTransformation)
 
             if outputFiles != None:
                 if isinstance(outputFiles, str):
@@ -356,7 +357,7 @@ def run(inputFilename,inputDir,outputDir,
                 return
             startTime=IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start', 'Started running VADER Sentiment Analysis at',
                                                          True, '', True, '', False)
-            outputFiles = sentiment_analysis_VADER_util.main(inputFilename, inputDir, outputDir, mode, True, chartPackage)
+            outputFiles = sentiment_analysis_VADER_util.main(inputFilename, inputDir, outputDir, mode, chartPackage, dataTransformation)
 
             if outputFiles != None:
                 if isinstance(outputFiles, str):
@@ -376,8 +377,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                GUI_util.input_main_dir_path.get(),
                                GUI_util.output_dir_path.get(),
                                GUI_util.open_csv_output_checkbox.get(),
-                               GUI_util.create_chart_output_checkbox.get(),
                                GUI_util.charts_package_options_widget.get(),
+                               GUI_util.data_transformation_options_widget.get(),
                                mean_var.get(),
                                median_var.get(),
                                SA_algorithm_var.get(),

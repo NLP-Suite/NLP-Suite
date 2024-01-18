@@ -25,8 +25,9 @@ import config_util
 
 def run(inputFilename,inputDir, outputDir,
     openOutputFiles,
-    createCharts,
+    
     chartPackage,
+    dataTransformation,
     search_options,
     search_by_dictionary,
     selectedCsvFile,
@@ -86,13 +87,13 @@ def run(inputFilename,inputDir, outputDir,
         filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, config_filename,
                             search_by_dictionary, search_by_keyword, minus_K_words_var, plus_K_words_var,
                             search_keyword_values, create_subcorpus_var, search_options_list, language,
-                            createCharts, chartPackage)
+                            chartPackage, dataTransformation)
 
     if extract_sentences_var:
         outputFiles = file_search_byWord_util.search_extract_sentences(window, inputFilename, inputDir, outputDir, config_filename,
                                                  extract_sentences_search_words_var_str, search_options_list,
                                                  minus_K_sentences_var, plus_K_sentences_var,
-                                                 createCharts, chartPackage)
+                                                 chartPackage, dataTransformation)
         if outputFiles != None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -108,8 +109,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_package_options_widget.get(),
+                            GUI_util.data_transformation_options_widget.get(),
                             search_options_menu_var.get(),
                             search_by_dictionary_var.get(),
                             selectedCsvFile_var.get(),

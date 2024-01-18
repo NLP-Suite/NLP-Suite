@@ -619,15 +619,15 @@ def SVO_extraction (sent_data, entitymentions): #returns columns of the final ou
                     SVO.extend(svo_acl)
                     N.extend(negation_acl)
 
-    print("BEGIN======")
-    print(SVO)
+    # print("BEGIN======")
+    # print(SVO)
     for index, item in enumerate(SVO):
         SVO[index][0] = replace_words_with_full_names(SVO[index][0],person_list)
         SVO[index][0] = replace_words_with_full_names(SVO[index][0], organization_list)
         SVO[index][2] = replace_words_with_full_names(SVO[index][2], person_list)
         SVO[index][2] = replace_words_with_full_names(SVO[index][2], organization_list)
-    print(SVO)
-    print("======END")
+    # print(SVO)
+    # print("======END")
     # the values are returned for every SVO
     return SVO, location_list, loc_NER_value, T, T_S, T_T, per_NER_value, org_NER_value, person_list, organization_list, N
             

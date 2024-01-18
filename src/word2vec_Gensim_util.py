@@ -31,7 +31,7 @@ fin = open('../lib/wordLists/stopwords.txt', 'r')
 stop_words = set(fin.read().splitlines())
 punctuations = set(string.punctuation)
 
-def run_Gensim_word2vec(inputFilename, inputDir, outputDir, configFileName, openOutputFiles, createCharts, chartPackage,
+def run_Gensim_word2vec(inputFilename, inputDir, outputDir, configFileName, openOutputFiles, chartPackage, dataTransformation,
                         remove_stopwords_var, lemmatize_var,
                         keywords_var,
                         compute_distances_var, top_words_var,
@@ -59,7 +59,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, configFileName, open
     if inputFilename.endswith('csv'):
         word_vectors=None
         result_df=None
-        outputFiles = word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts, chartPackage,
+        outputFiles = word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage, dataTransformation,
                                    word_vectors,
                                    result_df,
                                    keywords_var,
@@ -226,7 +226,7 @@ def run_Gensim_word2vec(inputFilename, inputDir, outputDir, configFileName, open
 
     # compute word distances
     if compute_distances_var:
-        outputFiles = word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, createCharts, chartPackage,
+        outputFiles = word2vec_distances_util.compute_word2vec_distances(inputFilename, inputDir, outputDir, chartPackage, dataTransformation,
                                    word_vectors,
                                    result_df,
                                    keywords_var,

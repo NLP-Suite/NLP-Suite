@@ -145,7 +145,7 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 
 filesToOpen = []  # LINE ADDED
 
-def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutputFiles,createCharts,chartPackage, processType=''):
+def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutputFiles,chartPackage, dataTransformation, processType=''):
 	"""
 	Runs analyzefile on the appropriate files, provided that the input paths are valid.
 	:param inputFilename:
@@ -224,7 +224,7 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 		# should sort by Document ID and Sentence ID
 		# IO_csv_util.sort_csvFile_by_columns(outputFilename, outputFilename, ['Document ID', 'Sentence ID'])
 
-	outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+	outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
 													   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Concreteness (Mean score)'],
 													   # columns_to_be_plotted_bySent= [[10, 7, 0]],
 													   chart_title='Frequency Distribution of Abstract/Concrete Scores',

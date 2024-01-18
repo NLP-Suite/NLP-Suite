@@ -23,7 +23,7 @@ import config_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPackage,
+def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTransformation,
     extra_GUIs_var,
     extra_GUIs_menu_var,
     complexity_readability_analysis_var,
@@ -73,13 +73,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
                 return
             filesToOpen = statistics_txt_util.compute_sentence_complexity(GUI_util.window, inputFilename,
                                                                      inputDir, outputDir, config_filename,
-                                                                     openOutputFiles, createCharts, chartPackage)
+                                                                     openOutputFiles, chartPackage, )
         if '*' in complexity_readability_analysis_menu_var or 'Text' in complexity_readability_analysis_menu_var:
             if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
             statistics_txt_util.compute_sentence_text_readability(GUI_util.window, inputFilename, inputDir,
                                                              outputDir, config_filename,
-                                                             openOutputFiles, createCharts, chartPackage)
+                                                             openOutputFiles, chartPackage, dataTransformation)
 
         if complexity_readability_analysis_menu_var=='':
             mb.showwarning('Warning', 'No option has been selected for Complexity/readability analysis.\n\nPlease, select an option from the dropdown menu and try again.')
@@ -108,7 +108,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
 
         if '*' in vocabulary_analysis_menu_var or 'Vocabulary (via unigrams)' in vocabulary_analysis_menu_var:
             outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
-                                                                   openOutputFiles, createCharts, chartPackage,'unigrams',language)
+                                                                   openOutputFiles, chartPackage,dataTransformation,'unigrams',language)
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -117,7 +117,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
 
         if '*' in vocabulary_analysis_menu_var or 'Hapax legomena' in vocabulary_analysis_menu_var:
             outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
-                                                                   openOutputFiles, createCharts, chartPackage,'Hapax legomena', language)
+                                                                   openOutputFiles, chartPackage,dataTransformation,'Hapax legomena', language)
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -136,8 +136,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
             annotator_available=True
             if annotator_available:
                 outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
-                                                            openOutputFiles, createCharts,
-                                                            chartPackage,'Objectivity/subjectivity (via spaCy)', language)
+                                                            openOutputFiles, 
+                                                            chartPackage,dataTransformation,'Objectivity/subjectivity (via spaCy)', language)
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
@@ -152,8 +152,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
                 process = 'Repetition: Words in first K and last K sentences'
             # a reminder about CoNLL table analyzer option is posted in process_words
             outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
-                                                       openOutputFiles, createCharts,
-                                                       chartPackage,process,language)
+                                                       openOutputFiles, 
+                                                       chartPackage,dataTransformation,process,language)
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -167,8 +167,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
             else:
                 process = 'Repetition: Last K words of a sentence/First K words of next sentence'
             outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
-                                                       openOutputFiles, createCharts,
-                                                       chartPackage, process, language)
+                                                       openOutputFiles, 
+                                                       chartPackage, dataTransformation,process, language)
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -184,7 +184,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
             outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                           outputDir,
                                                           openOutputFiles,
-                                                          createCharts, chartPackage,
+                                                          chartPackage,dataTransformation,
                                                           annotator, False,
                                                           language_list,
                                                           memory_var, document_length_var, limit_sentence_length_var)
@@ -196,7 +196,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
 
         if '*' in vocabulary_analysis_menu_var or 'capital' in vocabulary_analysis_menu_var:
             outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
-                                                                   openOutputFiles, createCharts, chartPackage,'capital')
+                                                                   openOutputFiles, chartPackage,dataTransformation,'capital')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -205,7 +205,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
 
         if '*' in vocabulary_analysis_menu_var or 'Word length' in vocabulary_analysis_menu_var:
             outputFiles =statistics_txt_util.process_words(window, config_filename, inputFilename,inputDir, outputDir_style,
-                                                      openOutputFiles, createCharts, chartPackage,'Word length')
+                                                      openOutputFiles, chartPackage,dataTransformation,'Word length')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -214,7 +214,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
 
         if '*' in vocabulary_analysis_menu_var or 'Vowel' in vocabulary_analysis_menu_var:
             outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
-                                                       openOutputFiles, createCharts, chartPackage,'Vowel')
+                                                       openOutputFiles, chartPackage,dataTransformation,'Vowel')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -223,7 +223,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
 
         if '*' in vocabulary_analysis_menu_var or 'Punctuation' in vocabulary_analysis_menu_var:
             outputFiles =statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
-                                                      openOutputFiles, createCharts, chartPackage,'Punctuation')
+                                                      openOutputFiles, chartPackage,dataTransformation,'Punctuation')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -231,7 +231,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
                     filesToOpen.extend(outputFiles)
 
         if '*' == vocabulary_analysis_menu_var or 'Unusual' in vocabulary_analysis_menu_var:
-            outputFiles =file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir_style, config_filename, False, createCharts, chartPackage)
+            outputFiles =file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir_style, config_filename, False, chartPackage, dataTransformation)
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -241,7 +241,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
         if '*' == vocabulary_analysis_menu_var or 'Abstract' in vocabulary_analysis_menu_var:
             if language == 'English':
                 mode = "both" # mean, median, both (calculates both mean and median)
-                outputFiles = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, config_filename, openOutputFiles, createCharts, chartPackage, processType='')
+                outputFiles = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir_style, config_filename, openOutputFiles, chartPackage, dataTransformation,processType='')
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
@@ -261,7 +261,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
 
         if '*' in vocabulary_analysis_menu_var or 'detection' in vocabulary_analysis_menu_var:
                 outputFiles = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir_style, config_filename,
-                                                                         openOutputFiles, createCharts, chartPackage)
+                                                                         openOutputFiles, chartPackage, dataTransformation)
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
@@ -272,7 +272,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,createCharts,chartPa
         mb.showwarning('Warning',
                        'When the Gender Guesser (Hacker Factor) webpage opens, make sure to read carefully the page content in order to understand:\n1. how this sophisticated neural network Java tool can guess the gender identity of a text writer (male or female);\n2. the difference between formal and informal text genre;\n3. the meaning of the gender estimate as "Weak emphasis could indicate European";\n4. the limits of the algorithms (about 60-70% accuraracy).\n\nYou can also read Argamon, Shlomo, Moshe Koppel, Jonathan Fine, and Anat Rachel Shimoni. 2003. "Gender, Genre, and Writing Style in Formal Written Texts," Text, Vol. 23, No. 3, pp. 321–346.')
         IO_files_util.runScript_fromMenu_option('Gender guesser', 0, inputFilename, inputDir, outputDir,
-                                  openOutputFiles, createCharts, chartPackage)
+                                  openOutputFiles, chartPackage, dataTransformation)
         return
 
     openOutputFiles=openOutputFilesSV
@@ -284,8 +284,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.input_main_dir_path.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
+                                GUI_util.data_transformation_options_widget.get(),
                                 extra_GUIs_var.get(),
                                 extra_GUIs_menu_var.get(),
                                 complexity_readability_analysis_var.get(),

@@ -95,6 +95,7 @@ def run(inputFilename, outputDir, openOutputFiles,
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                         outputFileLabel='',
                                                         chartPackage=GUI_util.charts_package_options_widget.get(),
+                                                        dataTransformation=GUI_util.data_transformation_options_widget.get(),
                                                         chart_type_list=chart_type_list,
                                                         chart_title="Frequency Distribution of " + csv_field_visualization_var,
                                                         column_xAxis_label_var=csv_field_visualization_var,
@@ -474,7 +475,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_co
                                                points_lb, True)
 
 points_var = tk.StringVar()
-points_menu = tk.OptionMenu(window, points_var, 'All', 'None', 'Outliers')
+points_menu = tk.OptionMenu(window, points_var, 'all', 'None', 'outliers')
 # points_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu+70, y_multiplier_integer,

@@ -44,7 +44,7 @@ import IO_user_interface_util
 
 # RUN section __________________________________________________________________________________________________________
 
-def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage, OptimizeInterval, numTopics):
+def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,OptimizeInterval, numTopics):
     # to setup environment variable programmatically
     #   https://stackoverflow.com/questions/4906977/how-to-access-environment-variable-values
     # to get an environment variable
@@ -261,7 +261,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
     filesToOpen.append(Keys_FileName)
     filesToOpen.append(Composition_FileName)
 
-    if createCharts:
+    if chartPackage!='No charts':
         # the MALLET files do not have headers to be able to use charts_util.visualize_chart
 
         # this plot s commented out because it requires hover-over effects not completed in statistics_csv
@@ -279,6 +279,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         # outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, Composition_FileName, outputDir,
         #                                           'MALLET_TM',
         #                                           chartPackage=chartPackage,
+        #                                           dataTransformation=dataTransformation,
         #                                           chart_type_list=["bar"],
         #                                           chart_title=chart_title,
         #                                           column_xAxis_label_var=xAxis,
@@ -302,6 +303,7 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, Keys_FileName, outputDir,
                                                   'MALLET_TM',
                                                   chartPackage=chartPackage,
+                                                  dataTransformation=dataTransformation,
                                                   chart_type_list=["bar"],
                                                   chart_title=chart_title,
                                                   column_xAxis_label_var=xAxis,

@@ -18,7 +18,7 @@ import file_merger_util
 
 def run(input_main_dir_path, output_dir_path,
     openOutputFiles,
-    createCharts,
+    
     merge_processSubdir,
     merge_saveFilenameInOutput,
     merge_embed_filenames_inStringSeparators,
@@ -53,8 +53,8 @@ run_script_command=lambda: run(
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-							GUI_util.create_chart_output_checkbox.get(),
 							GUI_util.charts_package_options_widget.get(),
+							GUI_util.data_transformation_options_widget.get(),
                             merge_subdir_var.get(),
                             merge_save_fileName_var.get(),
                             merge_embed_filenames_inStringSeparators_var.get(),

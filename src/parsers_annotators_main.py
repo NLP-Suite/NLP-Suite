@@ -30,7 +30,7 @@ import spaCy_util
 # dateInclude indicates whether there is date embedded in the file name.
 # 1: included 0: not included
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
         extra_GUIs_var,
         extra_GUIs_menu_var,
         manual_Coref, open_GUI,
@@ -132,7 +132,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         outputFiles, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename, inputFilename,
                                                                                            inputDir,
                                                                                            outputDir, openOutputFiles,
-                                                                                           createCharts, chartPackage,
+                                                                                           chartPackage, dataTransformation,
                                                                                            language, memory_var,
                                                                                            export_json_var,
                                                                                            manual_Coref)
@@ -152,7 +152,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             if len(annotator)>0:
                 outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                                outputDir,
-                                                                               openOutputFiles, createCharts, chartPackage,
+                                                                               openOutputFiles, chartPackage, dataTransformation,
                                                                                annotator, False, #'All POS',
                                                                                language, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                                filename_embeds_date_var=filename_embeds_date_var,
@@ -217,7 +217,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         limit_sentence_length_var = 1000
 
         outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir, outputDir,
-                                                    openOutputFiles, createCharts, chartPackage,
+                                                    openOutputFiles, chartPackage, dataTransformation,
                                                     [annotator], False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
@@ -284,7 +284,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputDir,
                                                       openOutputFiles,
-                                                      createCharts, chartPackage,
+                                                      chartPackage, dataTransformation,
                                                       [annotator], False,
                                                       language_list,
                                                       memory_var, document_length_var, limit_sentence_length_var,
@@ -339,8 +339,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_package_options_widget.get(),
+                                 GUI_util.data_transformation_options_widget.get(),
                                  extra_GUIs_var.get(),
                                  extra_GUIs_menu_var.get(),
                                  manual_Coref_var.get(),

@@ -162,7 +162,7 @@ def excludeStopWords_list(words):
 # https://www.nltk.org/book/ch02.html
 # For the Gutenberg Corpus they provide the programming code to do it. section 1.9   Loading your own Corpus.
 # see also https://people.duke.edu/~ccc14/sta-663/TextProcessingSolutions.html
-def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, createCharts, chartPackage,
+def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, chartPackage, dataTransformation,
                               excludeStopWords=True, lemmatizeWords=True):
     filesToOpen = []
 
@@ -283,11 +283,12 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
     # number of words in input ---------------------------------------------------------------------
     # number of syllables in input ---------------------------------------------------------------------
     columns_list = [['Document', 'Number of Sentences in Document'], ['Document', 'Number of Words in Document'], ['Document', 'Number of Syllables in Document']]
-    import statistics_csv_util
+
     columns_to_be_plotted_numeric = statistics_csv_util.get_columns_to_be_plotted(outputFilename, columns_list)
     outputFiles = charts_util.run_all(columns_to_be_plotted_numeric, outputFilename, outputDir,
                           outputFileLabel='sent-word-syll',
                           chartPackage=chartPackage,
+                          dataTransformation=dataTransformation,
                           chart_type_list=['bar'],
                           chart_title='Number of Sentences, Words, Syllables by Document',
                           column_xAxis_label_var='Document',
@@ -315,7 +316,7 @@ def compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config
     columns_to_be_plotted_numeric=flat_list
 
     outputFiles = statistics_csv_util.compute_csv_column_statistics_NoGroupBy(window, outputFilename, outputDir, False,
-                                            createCharts, chartPackage,
+                                            chartPackage, dataTransformation,
                                             columns_to_be_plotted_numeric)
 
     if outputFiles != None:
@@ -348,7 +349,7 @@ def same_document_check(jgram):
     return True
 
 
-def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, createCharts, chartPackage):
+def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, chartPackage, dataTransformation):
     filesToOpen = []
     inputDocs = IO_files_util.getFileList(inputFilename, inputDir, fileType='.txt', silent=False, configFileName=configFileName)
     Ndocs = len(inputDocs)
@@ -405,7 +406,7 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
 
     filesToOpen.append(outputFilename)
 
-    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
                                                        columns_to_be_plotted_xAxis=[],
                                                        columns_to_be_plotted_yAxis=['Sentence length (in words)'],
                                                        chart_title='Sentence Length (In Words)',
@@ -424,7 +425,7 @@ def compute_sentence_length(inputFilename, inputDir, outputDir, configFileName, 
 
     return filesToOpen
 
-def compute_line_length(window, configFileName, inputFilename, inputDir, outputDir,openOutputFiles,createCharts, chartPackage):
+def compute_line_length(window, configFileName, inputFilename, inputDir, outputDir,openOutputFiles,chartPackage, dataTransformation):
     filesToOpen=[]
     outputFilename=IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'line_length')
     filesToOpen.append(outputFilename)
@@ -485,7 +486,7 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end', 'Finished running line length analysis at', True, '', True, startTime, True)
 
     # produce all charts
-    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
                                               columns_to_be_plotted_xAxis=[],
                                               columns_to_be_plotted_yAxis=['Line length (in words)'],
                                               chart_title='Frequency Distribution of Line Length',
@@ -517,9 +518,9 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, confi
                                   normalize,
                                   lemmatize=False, excludePunctuation=True, excludeArticles=True,
                                   excludeDeterminers=False, excludeStopWords=False,
-                                  wordgram=None,
+                                  wordgram=True, #word as opposed to character n-grams
                                   openOutputFiles=False,
-                                  createCharts=True, chartPackage='Excel', bySentenceID=None):
+                                  chartPackage='Excel', dataTransformation='No transformation', bySentenceID=False):
     # hapax have ngramsNumber = 1 and frequency = 1
 
     filesToOpen = []
@@ -563,15 +564,15 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, confi
         else:
             bySentenceID=0
 
-    filesToOpen = get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, frequency, hapax_words,
+    outputFiles = get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, frequency, hapax_words,
+                                normalize, lemmatize, excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords,
                                 wordgram,
-                                lemmatize, excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords,
-                                bySentenceID,  createCharts, chartPackage)
+                                bySentenceID,  chartPackage, dataTransformation)
 
     IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis end',
                                        'Finished running Word/Characters N-Grams at', True, '', True, startTime, False )
 
-    return filesToOpen, outputDir
+    return outputFiles, outputDir
 
 
 def process_punctuation(inputFilename, inputDir, excludePunctuation, ngrams_list, ctr_document, documentID):
@@ -590,10 +591,14 @@ def process_punctuation(inputFilename, inputDir, excludePunctuation, ngrams_list
 
 import NGrams_util
 # hapax_words is True when the user selevcts too export ONLY words, False when hapax will also include numebrs, symbiols, etc.
-def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, frequency=None, hapax_words=False,
+
+def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
+    ngramsNumber, frequency=None, hapax_words=False,
+    normalize=True, lemmatize=False, excludePunctuation=True, excludeArticles=True,
+    excludeDeterminers=True,excludeStopWords=True,
     wordgram=1,
-    lemmatize=False, excludePunctuation=True, excludeArticles=True, excludeDeterminers=True,excludeStopWords=True,
-    bySentenceID=False, createCharts=True,chartPackage='Excel'):
+    bySentenceID=False, chartPackage='Excel', dataTransformation='No transformation'):
+
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
 
     import hashfile
@@ -634,6 +639,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumb
         errorFound = IO_csv_util.list_to_csv(GUI_util.window, hapax_result, csv_outputFilename)
         if not errorFound:
             filesToOpen.append(csv_outputFilename)
+
         outputDir=outputDirSV
 
     outputDirSV = outputDir
@@ -652,8 +658,9 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumb
                                                                      '', False, True)
         errorFound = IO_csv_util.list_to_csv(GUI_util.window, corpus_ngramsList, csv_outputFilename)
 
-        if not errorFound:
+        if not errorFound and chartPackage!='No charts':
             filesToOpen.append(csv_outputFilename)
+
             columns_to_be_plotted_xAxis = [str(index+1) + '-grams']
             if inputDir == '':
                 columns_to_be_plotted_yAxis = ['Frequency in Document']
@@ -662,7 +669,7 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumb
            # chartPackage = "Excel" ## I am too tired ... I don't know why -- Simon
            # createCharts = 1
             # this variable is not right....
-            outputFiles = charts_util.visualize_chart(createCharts, chartPackage, csv_outputFilename,
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, csv_outputFilename,
                                                       outputDir,
                                                       columns_to_be_plotted_xAxis=columns_to_be_plotted_xAxis,
                                                       columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
@@ -783,7 +790,7 @@ def print_results(window, words, class_word_list, header, inputFilename, outputD
 
 
 # called by sentence_analysis_main and style_analysis_main
-def process_words(window, configFileName, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
+def process_words(window, configFileName, inputFilename,inputDir,outputDir, openOutputFiles, chartPackage,dataTransformation,
     processType='', language='English', excludeStopWords=True,word_length=3,excludePunctuation=True, excludeArticles=True,
                                           wordgram=1,lemmatize=False
                                           ):
@@ -843,19 +850,21 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
         else:
             frequency = 0  # N-grams
         normalize = False
+        excludeDeterminers = False
         excludePunctuation = True
         wordgram = True
         bySentenceID = False
-        tempOutputFiles = compute_character_word_ngrams(window, inputFilename, inputDir, outputDir, configFileName,
+        outputFiles, tempoutputDir = compute_character_word_ngrams(window, inputFilename, inputDir, outputDir, configFileName,
                                                         ngramsNumber, frequency, hapax_words,
                                                         normalize,
                                                         lemmatize, excludePunctuation, excludeArticles,
-                                                        excludeStopWords,
+                                                        excludeDeterminers, excludeStopWords,
                                                         wordgram,
                                                         openOutputFiles,
-                                                        createCharts, chartPackage, bySentenceID)
+                                                        chartPackage, dataTransformation,bySentenceID)
         # Excel charts are generated in compute_character_word_ngrams; return to exit here
-        return tempOutputFiles
+        
+        return outputFiles
 
     #For the user input of K sentences or words to be analyzed
     if 'Repetition: Words' in processType or 'Repetition: Last' in processType:
@@ -1115,25 +1124,30 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
 
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', fileLabel)
     IO_error=IO_csv_util.list_to_csv(window, word_list, outputFilename)
+
+
+
+    
     if not IO_error:
         filesToOpen.append(outputFilename)
 
-    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
-                                                columns_to_be_plotted_xAxis=[],
-                                                columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
-                                                chart_title=chart_title_label,
-                                                count_var=1, hover_label=[],
-                                                outputFileNameType='',  # 'line_bar',
-                                                column_xAxis_label=column_xAxis_label,
-                                                groupByList=['Document'],
-                                                plotList=['Frequency'],
-                                                chart_title_label=column_xAxis_label)
+    if chartPackage!='No charts':
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
+                                                    columns_to_be_plotted_xAxis=[],
+                                                    columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
+                                                    chart_title=chart_title_label,
+                                                    count_var=1, hover_label=[],
+                                                    outputFileNameType='',  # 'line_bar',
+                                                    column_xAxis_label=column_xAxis_label,
+                                                    groupByList=['Document'],
+                                                    plotList=['Frequency'],
+                                                    chart_title_label=column_xAxis_label)
 
-    if outputFiles!=None:
-        if isinstance(outputFiles, str):
-            filesToOpen.append(outputFiles)
-        else:
-            filesToOpen.extend(outputFiles)
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     # ngrams already display the started running... No need to duplicate
     if not 'unigrams' in processType:
@@ -1212,7 +1226,7 @@ def convert_txt_file(window,inputFilename,inputDir,outputDir,openOutputFiles,exc
 
 
 # https://pypi.org/project/textstat/
-def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, createCharts, chartPackage):
+def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, chartPackage, dataTransformation):
     filesToOpen = []
     documentID = 0
 
@@ -1454,10 +1468,12 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
         # IO_util.sort_csvFile_by_columns(outputFilename, outputFilename, ['Document ID','Sort order'])
         outputTxtFile.close()
         outputCsvFile.close()
+
+
         result = True
 
         # readability
-        if createCharts == True:
+        if chartPackage!='No charts':
             result = True
             # if nFile>10:
             #     result = mb.askyesno("Excel charts","You have " + str(nFile) + " files for which to compute Excel charts for each file.\n\nTHIS WILL TAKE A LONG TIME TO PRODUCE.\n\nAre you sure you want to do that?")
@@ -1465,7 +1481,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
 
                 # overall qualitative grade level (e.g., 4th)
                 hover_label = []
-                outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[],
                                                                    columns_to_be_plotted_yAxis=['Overall readability consensus'],
@@ -1490,7 +1506,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
                 # hover_label = ['Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence', 'Sentence']
                 hover_label = []
 
-                outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[],
                                                                    columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
@@ -1509,7 +1525,7 @@ def compute_sentence_text_readability(window, inputFilename, inputDir, outputDir
 
                 # overall numeric grade level
                 hover_label = []
-                outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[],
                                                                    columns_to_be_plotted_yAxis=['Grade level'],
@@ -1597,7 +1613,7 @@ def sentence_structure_tree(inputFilename, outputDir):
             cf.print_to_file(outputDir + '/' + os.path.basename(inputFilename) + '_' + str(sentenceID) + '_tree.ps')
 
 # written by Mino Cha March/April 2022
-def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, createCharts, chartPackage):
+def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, chartPackage, dataTransformation):
     ## list for csv file
     columns=[]
     documentID = []
@@ -1731,9 +1747,10 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
                                                              'SentenceComplexity')
     IO_csv_util.df_to_csv(window, op, outputFilename, columns, False, 'utf-8')
     filesToOpen.append(outputFilename)
+
     # TODO we need an X-axis to plot these scores against
     # , 'Frazier score'
-    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
                                                        columns_to_be_plotted_xAxis=[],
                                                        columns_to_be_plotted_yAxis=['Yngve score'],
                                                        chart_title='Frequency Distribution of Complexity Scores\n(Yngve & Frazier)',
@@ -1757,7 +1774,7 @@ def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, conf
         IO_files_util.OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir)
 
 # def compute_corpus_statistics_byPOS(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles,
-#                                     createCharts, chartPackage):
+#                                     chartPackage, dataTransformation):
 #     filesToOpen=[]
 #     lemmatize= True
 #

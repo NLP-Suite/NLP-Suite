@@ -69,7 +69,7 @@ def csv_escape(input_string):
         return input_string
 def search_sentences_documents(inputFilename, inputDir, outputDir, configFileName,
         search_by_dictionary, search_by_search_keywords, minus_K_words_var, plus_K_words_var, search_keywords_list,
-        create_subcorpus_var, search_options_list, lang, createCharts, chartPackage):
+        create_subcorpus_var, search_options_list, lang, chartPackage, dataTransformation):
     hashOutputDir = outputDir
     # create a subdirectory of the output directory
     outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search_word',
@@ -187,7 +187,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
        # with open(outputtxtFilename, 'r') as f:
        #     q = ''.join(f.readlines())
         import wordclouds_util
-        if createCharts:
+        if chartPackage!='No charts':
             use_contour_only = False
             max_words = 100
             font = 'Default'
@@ -437,7 +437,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     else:
         filesToOpen.append(outputFilename)
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Search word(s)'],
                                                            chart_title=chart_title,
                                                            count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
@@ -469,7 +469,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
 # inputString is the list of search words
 # wordList is a string
 def search_extract_sentences(window, inputFilename, inputDir, outputDir, configFileName, inputString, search_options_list,
-                                                  minus_K_var, plus_K_var, createCharts, chartPackage):
+                                                  minus_K_var, plus_K_var, chartPackage, dataTransformation):
     if not (isinstance(minus_K_var, int) and isinstance(plus_K_var, int) and minus_K_var >= 0 and plus_K_var >= 0):
         mb.showwarning(title="Warning",message="Invalid input for -K or +K widgets.\n\nThe values must be positive integer numbers.\n\nPlease, enter positive integers and try again.")
         return

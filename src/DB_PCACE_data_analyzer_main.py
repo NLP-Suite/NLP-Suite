@@ -25,7 +25,7 @@ import IO_user_interface_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
+def run(inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         simplex_data_type, simplex_data,
         primary_complex_var,
         value_parent_object_var,
@@ -78,7 +78,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
             filesToOpen.append(outputFile)
         # headers=IO_csv_util.get_csvfile_headers(outputFile)
         # columns_to_be_plotted_xAxis=IO_csv_util.get_headerValue_from_columnNumber(headers,column_number=0)
-        # outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFile,
+        # outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFile,
         #                                                    outputDir,
         #                                                    columns_to_be_plotted_xAxis=[columns_to_be_plotted_xAxis], columns_to_be_plotted_yAxis=['Frequency'],
         #                                                    chart_title='Frequency Distribution of Simplex Object\n' + str(simplex_data),
@@ -175,7 +175,7 @@ def run(inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
                                                       config_filename, location_filename, inputDir,
                                                       outputDir,
                                                       'Nominatim', 'Google Earth Pro & Google Maps',
-                                                      createCharts, chartPackage,
+                                                      chartPackage, dataTransformation,
                                                       date_present,
                                                       country_bias,
                                                       area_var,
@@ -221,6 +221,7 @@ run_script_command=lambda: run(
                                 GUI_util.open_csv_output_checkbox.get(),
                                 GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
+                                GUI_util.data_transformation_options_widget.get(),
                                 simplex_data_type_var.get(),
                                 simplex_data.get(),
                                 primary_complex_var.get(),

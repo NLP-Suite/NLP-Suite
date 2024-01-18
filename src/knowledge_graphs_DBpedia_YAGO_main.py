@@ -20,7 +20,7 @@ import constants_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage,
+def run(inputFilename,inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation,
         knowledge_graphs_var,
         confidence_level,
         databases_var,
@@ -110,9 +110,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                 GUI_util.input_main_dir_path.get(),
                 GUI_util.output_dir_path.get(),
                 GUI_util.open_csv_output_checkbox.get(),
-                                                GUI_util.create_chart_output_checkbox.get(),
-                                GUI_util.charts_package_options_widget.get(),
-
+                GUI_util.charts_package_options_widget.get(),
+                GUI_util.data_transformation_options_widget.get(),
                 knowledge_graphs_var.get(),
                 confidence_level_entry.get(),
                 databases_var.get(),

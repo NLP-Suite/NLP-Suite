@@ -4,7 +4,7 @@ from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tok
 import IO_files_util
 import IO_csv_util
 
-def sample_doc_beginning_middle_end(window, config_filename, inputFilename,inputDir,outputDir, openOutputFiles, createCharts, chartPackage, Begin_K_sent, End_K_sent, configFileName):
+def sample_doc_beginning_middle_end(window, config_filename, inputFilename,inputDir,outputDir, openOutputFiles, chartPackage, dataTransformation, Begin_K_sent, End_K_sent, configFileName):
     result_first_last = []
     result_middle = []
     result_first_txt = ""

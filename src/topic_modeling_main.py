@@ -55,7 +55,7 @@ args = parser.parse_args()
 """
 
 
-def run(inputDir, outputDir, openOutputFiles,createCharts,chartPackage, num_topics,
+def run(inputDir, outputDir, openOutputFiles,chartPackage, dataTransformation, num_topics,
         MALLET_var,
         optimize_intervals_var,
         Gensim_var,
@@ -91,11 +91,11 @@ def run(inputDir, outputDir, openOutputFiles,createCharts,chartPackage, num_topi
         return
 
     if MALLET_var:
-        filesToOpen = topic_modeling_mallet_util.run_MALLET(inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
+        filesToOpen = topic_modeling_mallet_util.run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
                                                      optimize_intervals_var, num_topics)
     if Gensim_var:
         filesToOpen = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir, config_filename, num_topics,
-                                          remove_stopwords_var, lemmatize_var, nounsOnly_var, Gensim_MALLET_var, openOutputFiles, createCharts, chartPackage)
+                                          remove_stopwords_var, lemmatize_var, nounsOnly_var, Gensim_MALLET_var, openOutputFiles, chartPackage, dataTransformation)
 
     if openOutputFiles:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -103,8 +103,8 @@ def run(inputDir, outputDir, openOutputFiles,createCharts,chartPackage, num_topi
 run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_package_options_widget.get(),
+                                 GUI_util.data_transformation_options_widget.get(),
                                  num_topics_var.get(),
                                  MALLET_var.get(),
                                  optimize_intervals_var.get(),

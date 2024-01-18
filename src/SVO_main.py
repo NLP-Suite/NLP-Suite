@@ -25,7 +25,6 @@ from subprocess import call
 import config_util
 import GUI_IO_util
 import IO_files_util
-import Gephi_util
 import GIS_pipeline_util
 # import wordclouds_util
 import IO_csv_util
@@ -40,7 +39,7 @@ import knowledge_graphs_WordNet_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
         coref_var,
         manual_coref_var,
         normalized_NER_date_extractor_var,
@@ -115,8 +114,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             mb.showerror(title='Input file error',
                          message="The selected input is a csv file, but... not an _svo.csv file.\n\nPlease, select an _svo.csv file (or txt file(s)) and try again.")
             return
-        if (coref_var == True or manual_coref_var == True or
-                normalized_NER_date_extractor_var == True or package_var!=''):
+        if (coref_var == True or manual_coref_var == True):
             mb.showerror(title='Input file/option error',
                          message="The data analysis option(s) you have selected require in input a txt file, rather than a csv file.\n\nPlease, check your input file and/or algorithm selections and try again.")
             return
@@ -193,7 +191,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # 2 items are returned: filename string and true/False for error
         outputFiles, error_indicator = Stanford_CoreNLP_coreference_util.run(config_filename,
                                        inputFilename, inputDir, outputCorefDir,
-                                       openOutputFiles, createCharts, chartPackage,
+                                       openOutputFiles, chartPackage, dataTransformation,
                                        language_var, memory_var, export_json_var,
                                        manual_coref_var)
         if error_indicator != 0:
@@ -225,7 +223,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
 # SVO CoreNLP Dependencies ++ _____________________________________________________
 
-    if package_var=='CoreNLP':
+    if package_var=='CoreNLP' and inputFilename[-4:] != '.csv':
 
         if language_var == 'Arabic' or language_var == 'Hungarian':
             mb.showwarning(title='Language',
@@ -234,21 +232,32 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
             return
-        gender_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir + os.sep + 'gender', '.csv',
-                                                                       'SVO_CoreNLP_gender')
-
-
-        gender_filename_html = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir + os.sep + 'gender', '.html',
-                                                          'dict_annotated_gender')
-
-        quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputSVODir + os.sep + 'quote', '.csv',
-                                                                       'SVO_CoreNLP_quote')
 
         annotator = ['SVO']
         if gender_var:
+            # In Stanford_CoreNLP_util def create_output_directory subdir are created in the form annotator + "_CoreNLP"
+            #   must respect this format to avoid error warning
+            gender_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir,
+                                                                      outputSVODir + os.sep + 'gender_CoreNLP', '.csv',
+                                                                      '') # SVO_CoreNLP_gender
+
+            gender_filename_html = IO_files_util.generate_output_file_name(inputFilename, inputDir,
+                                                                           outputSVODir + os.sep + 'gender_CoreNLP', '.html',
+                                                                           '') # dict_annotated_gender
+
             annotator.append("gender")
+        else:
+            gender_filename=''
+            gender_filename_html=''
         if quote_var:
+            # In Stanford_CoreNLP_util def create_output_directory subdir are created in the form annotator + "_CoreNLP"
+            #   must respect this format to avoid error warning
+            quote_filename = IO_files_util.generate_output_file_name(inputFilename, inputDir,
+                                                                     outputSVODir + os.sep + 'quote_CoreNLP', '.csv',
+                                                                     '') #SVO_CoreNLP_quote
             annotator.append("quote")
+        else:
+            quote_filename=''
 
         # annotator_params are different from gender_var and quote_var
         # annotator_params will run the annotator for SVO and run the gender and quote placing results inside the SVO output folder
@@ -256,8 +265,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         # they can be passed independently, but it is useful to have both arguments
         outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                    outputSVODir, openOutputFiles,
-                                   createCharts,
+                                   
                                    chartPackage,
+                                   dataTransformation,
                                    annotator, False,
                                    language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                    extract_date_from_text_var=extract_date_from_text_var,
@@ -283,14 +293,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 svo_result_list.append(outputFiles[0])
 
             # TODO MINO: create normalize_date subdir and outputs
-            nDateOutput = SVO_util.normalize_date_svo(SVO_filename, outputSVODir, createCharts, chartPackage)
+            nDateOutput = SVO_util.normalize_date_svo(SVO_filename, outputSVODir, chartPackage, dataTransformation)
             if nDateOutput != None:
-                nDateSVOFilename=nDateOutput[0]
-                filesToOpen.extend(nDateOutput)
-
+                if len(nDateOutput)>0:
+                    # nDateSVOFilename=nDateOutput[0] #see below; filename commented out
+                    filesToOpen.extend(nDateOutput)
 
 # CoreNLP OpenIE _____________________________________________________
-    if 'OpenIE' in package_var:
+    if 'OpenIE' in package_var and inputFilename[-4:] != '.csv':
         if language_var != 'English':
             mb.showwarning(title='Language',
                            message='The Stanford CoreNLP OpenIE annotator is only available for English.')
@@ -298,8 +308,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
         outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputSVODir, openOutputFiles,
-                                                                           createCharts,
+                                                                           
                                                                            chartPackage,
+                                                                           dataTransformation,
                                                                            'OpenIE',
                                                                            False,
                                                                            language_var, memory_var, export_json_var, document_length_var, limit_sentence_length_var,
@@ -310,14 +321,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                            date_position_var=date_position_var,
                                                                            google_earth_var = google_earth_var,
                                                                            location_filename = location_filename)
-        if isinstance(outputFiles, str):
-            filesToOpen.append(outputFiles)
-            SVO_filename = outputFiles
-            svo_result_list.append(outputFiles)
-        else:
-            filesToOpen.extend(outputFiles)
-            SVO_filename = outputFiles[0]
-            svo_result_list.append(outputFiles[0])
+        if outputFiles!=None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+                SVO_filename = outputFiles
+                svo_result_list.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
+                SVO_filename = outputFiles[0]
+                svo_result_list.append(outputFiles[0])
 
 # removed from the options; way way too slow and with far better options now in spaCy and Stanza
 # SENNA _____________________________________________________
@@ -329,7 +341,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 #             return
 #         svo_SENNA_files = []
 #         tempOutputFiles = SENNA_util.run_senna(inputFilename, inputDir, outputSVODir, openOutputFiles,
-#                                                                 createCharts, chartPackage)
+#                                                                 chartPackage, dataTransformation)
 #         if len(tempOutputFiles)!=0:
 #             filesToOpen.extend(tempOutputFiles)
 #             SVO_filename=tempOutputFiles[0]
@@ -337,14 +349,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
 # spaCY _____________________________________________________
 
-    if package_var == 'spaCy':
+    if package_var == 'spaCy' and inputFilename[-4:] != '.csv':
         document_length_var = 1
         limit_sentence_length_var = 1000
         annotator = 'SVO'
         outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputSVODir,
                                                     openOutputFiles,
-                                                    createCharts, chartPackage,
+                                                    chartPackage, dataTransformation,
                                                     annotator, False,
                                                     language,
                                                     memory_var, document_length_var, limit_sentence_length_var,
@@ -368,14 +380,14 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
 
 # Stanza _____________________________________________________
 
-    if package_var == 'Stanza':
+    if package_var == 'Stanza' and inputFilename[-4:] != '.csv':
         document_length_var = 1
         limit_sentence_length_var = 1000
         annotator = ['SVO']
         outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputSVODir,
                                                       openOutputFiles,
-                                                      createCharts, chartPackage,
+                                                      chartPackage, dataTransformation,
                                                       annotator, False,
                                                       language_list,
                                                       memory_var, document_length_var, limit_sentence_length_var,
@@ -409,7 +421,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         filter_subjects, filter_verbs, filter_objects,
                         subject_filePath, verb_filePath, object_filePath,
                         lemmatize_subjects, lemmatize_verbs, lemmatize_objects,
-                        outputSVOSVODir, createCharts, chartPackage)
+                        outputSVOSVODir, chartPackage, dataTransformation)
             if output != None:
                 if 'English' in language: # SVO filtered by WordNet are available for English only
                     if lemmatize_subjects or lemmatize_verbs or lemmatize_objects:
@@ -445,8 +457,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 WordNetDir=''
                 output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
                                                                          config_filename, 'NOUN',
-                                                                         openOutputFiles, createCharts,
-                                                                         chartPackage, language_var)
+                                                                         openOutputFiles, 
+                                                                         chartPackage, dataTransformation, language_var)
                 os.remove(outputFilename)
                 if output != None and output != '':
                     filesToOpen.extend(output)
@@ -454,8 +466,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     outputFilename = IO_csv_util.extract_from_csv(SVO_lemmatized_filename, outputWNDir, '', ['Verb (V)'])
                     output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, outputFilename, outputWNDir,
                                                                              config_filename, 'VERB',
-                                                                             openOutputFiles, createCharts,
-                                                                             chartPackage, language_var)
+                                                                             openOutputFiles, 
+                                                                             chartPackage, dataTransformation, language_var)
                     os.remove(outputFilename)
                     if output != None and output != '':
                         filesToOpen.extend(output)
@@ -469,7 +481,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # the SVO script can take in input a csv SVO file previously computed (in which case the filename will contain SVO_): inputFilename
     # results currently produced are in svo_result_list
 
-
+    if inputFilename[-4:] == '.csv':
+        svo_result_list.append(inputFilename)
+        SVO_filename=inputFilename
     if ('SVO_' in inputFilename) or (len(svo_result_list) > 0):
         i = 0
         for f in svo_result_list:
@@ -477,13 +491,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             tempOutputDir = head
             # Gephi network graphs _________________________________________________
             if gephi_var:
+                import Gephi_util
+                import charts_util
                 # i = 0
                 # previous svo csv files can be entered in input to display networks, wordclouds or GIS maps
                 if inputFilename[-4:] == ".csv":
                     fileBase = os.path.basename(inputFilename)[0:-4]
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename, encodingValue='utf-8')
                     if nRecords > 1:   # including headers; file is empty
-                        gexf_file = Gephi_util.create_gexf(window,fileBase, outputSVOSVODir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
+                        gexf_file = Gephi_util.create_gexf(window,fileBase, tempOutputDir, inputFilename, "Subject (S)", "Verb (V)", "Object (O)",
                                                            "Sentence ID")
                         if gexf_file != None and gexf_file != '':
                             filesToOpen.append(gexf_file)
@@ -494,6 +510,25 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                                                "Subject (S)", "Verb (V)", "Object (O)", "Sentence ID")
                             if gexf_file != None and gexf_file != '':
                                 filesToOpen.append(gexf_file)
+
+                    Sankey_limit1_var = 12
+                    Sankey_limit2_var = 12
+                    Sankey_limit3_var = 12
+                    three_way_Sankey = False
+
+                    output_label = 'sankey'
+                    outputFilename_sankey = IO_files_util.generate_output_file_name(inputFilename, inputDir, tempOutputDir,
+                                                                                    '.html', output_label)
+                    outputFiles = charts_util.Sankey(inputFilename, outputFilename_sankey,
+                                                     'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var,
+                                                     three_way_Sankey, None, Sankey_limit3_var)
+
+                    if outputFiles != None:
+                        if isinstance(outputFiles, str):
+                            filesToOpen.append(outputFiles)
+                        else:
+                            filesToOpen.extend(outputFiles)
+
                 else:  # txt input file
                     # for f in svo_result_list:
                         nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(f)
@@ -524,7 +559,24 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                                 for f in gexf_files:
                                     if "CoreNLP" not in f and "SENNA_SVO" not in f and "spaCy" not in f and "Stanza" not in f: #CoreNLP accounts for both ++ and OpenIE
                                         os.remove(f)
-                        # i +=1
+
+                            output_label = 'sankey'
+                            Sankey_limit1_var = 12
+                            Sankey_limit2_var = 12
+                            Sankey_limit3_var = 12
+                            three_way_Sankey = False
+
+                            outputFilename_sankey = IO_files_util.generate_output_file_name(f, inputDir, tempOutputDir,
+                                                                                            '.html', output_label)
+                            outputFiles = charts_util.Sankey(f, outputFilename_sankey,
+                                                             'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var,
+                                                             three_way_Sankey, None, Sankey_limit3_var)
+
+                            if outputFiles != None:
+                                if isinstance(outputFiles, str):
+                                    filesToOpen.append(outputFiles)
+                                else:
+                                    filesToOpen.extend(outputFiles)
 
     # wordcloud  _________________________________________________
 
@@ -535,7 +587,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(inputFilename)
                     if nRecords > 1:  # including headers; file is empty
                         myfile = IO_files_util.openCSVFile(inputFilename, 'r')
-                        outputFiles = wordclouds_util.SVOWordCloud(myfile, inputFilename, outputSVOSVODir, "", prefer_horizontal=.9)
+                        outputFiles = wordclouds_util.SVOWordCloud(myfile, inputFilename, tempOutputDir, "", prefer_horizontal=.9)
                         myfile.close()
                         filesToOpen.append(outputFiles)
                 else:
@@ -582,7 +634,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                         outputFiles = GIS_pipeline_util.GIS_pipeline(GUI_util.window,
                                      config_filename, location_filename, inputDir,
                                      outputGISDir,
-                                     'Nominatim', 'Google Earth Pro & Google Maps', createCharts, chartPackage,
+                                     'Nominatim', 'Google Earth Pro & Google Maps', chartPackage, dataTransformation,
                                      date_present,
                                      country_bias,
                                      area_var,
@@ -623,8 +675,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_package_options_widget.get(),
+                                 GUI_util.data_transformation_options_widget.get(),
                                  coref_var.get(),
                                  manual_coref_var.get(),
                                  normalized_NER_date_extractor_var.get(),
@@ -1030,7 +1082,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.run_button_x_c
 SRL_checkbox.configure(state='disabled')
 
 gephi_var.set(1)
-gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network graphs (via Gephi) ',
+gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network graphs (via Gephi & Sankey) ',
                                 variable=gephi_var, onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
@@ -1183,7 +1235,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "THE GENDER AND QUOTE/SPEAKER ANNOTATORS ARE AVAILABLE FOR STANFORD CORENLP AND ENGLISH LANGUAGE ONLY.\n\n"
                                   "Tick the SRL checkbox if you wish to run Jinho Choi's SRL (Semantic Role Labeling) algorithm (https://github.com/emorynlp/elit/blob/main/docs/semantic_role_labeling.md). THE OPTION IS CURRENTLY DISABLED."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.."+GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi & Sankey charts;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.."+GUI_IO_util.msg_Esc)
                                    # "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe GIS mapping option is not available for SENNA or CoreNLP OpenIE." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
@@ -1196,7 +1248,7 @@ readMe_message = "This set of Python 3 scripts extract automatically most of the
                  "\n\nThe set of scripts assembled here for this purpose ranges from testing for utf-8 compliance of the input text, to resolution for pronominal coreference, extraction of normalized NER dates (WHEN), visualized in various Excel charts, extraction, geocoding, and mapping in Google Earth Pro of NER locations." \
                  "\n\nAt the heart of the SVO approach are several NLP packages to choose from. For passive sentences, the pipeline swaps S and O to transform the triplet into active voice. " \
                  "Thus, the WHO, WHAT (WHOM) are extracted from a text. Each component of the SVO triplet can be filtered via specific dictionaries (e.g., filtering for social actors and social actions, only). " \
-                 "The set of SVO triplets are then visualized in dynamic network graphs (via Gephi)." \
+                 "The set of SVO triplets are then visualized in dynamic network graphs (via Gephi & Sankey)." \
                  "\n\nThe WHY and HOW of narrative are still beyond the reach of the current set of SVO scripts." \
                  "\n\nIn INPUT the scripts expect either a single txt file or a set of txt files in a directory (the corpus). " \
                  "You can also enter a csv file, the output of a previous run with any of the NLP packages (_svo.csv/_SVO_Result) marked file) if all you want to do is to visualize results." \

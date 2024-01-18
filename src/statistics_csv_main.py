@@ -17,7 +17,7 @@ import statistics_csv_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPackage,
+def run(inputFilename,inputDir,outputDir,openOutputFiles,chartPackage,dataTransformation,
         all_csv_stats,csv_field_freq,
         csv_list,hover_over_list, groupBy_list, script_to_run):
 
@@ -48,9 +48,9 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
 
     if all_csv_stats:
         # tempOutputFiles=statistics_csv_util.compute_csv_column_statistics(window,inputFilename,outputDir,
-        #                         groupBy_list, [], '', createCharts, chartPackage)
+        #                         groupBy_list, [], '', chartPackage, dataTransformation)
 
-        outputFiles=statistics_csv_util.compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,openOutputFiles,createCharts, chartPackage)
+        outputFiles=statistics_csv_util.compute_csv_column_statistics_NoGroupBy(window,inputFilename,outputDir,openOutputFiles,chartPackage, dataTransformation)
         if outputFiles:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)
@@ -67,7 +67,7 @@ def run(inputFilename,inputDir,outputDir,openOutputFiles,createCharts,chartPacka
                                                            inputFilename,
                                                            None,
                                                            outputDir,
-                                                           openOutputFiles, createCharts, chartPackage,
+                                                           openOutputFiles, chartPackage,dataTransformation,
                                                            csv_list,hover_over_list,groupBy_list,
                                                            False,
                                                            chart_title=chart_title,
@@ -89,8 +89,8 @@ run_script_command=lambda: run(
                 GUI_util.input_main_dir_path.get(),
                 GUI_util.output_dir_path.get(),
                 GUI_util.open_csv_output_checkbox.get(),
-                GUI_util.create_chart_output_checkbox.get(),
                 GUI_util.charts_package_options_widget.get(),
+                GUI_util.data_transformation_options_widget.get(),
                 all_csv_stats_var.get(),
                 csv_field_freq_var.get(),
                 csv_list,

@@ -91,7 +91,7 @@ def disaggregate_GoingDOWN(WordNetDir,outputDir, wordNet_keyword_list, noun_verb
 
 # the header does not matter, it can be NOUN or VERB or anything else
 # what matters is the first column; and there can be multiple columns that will not be processed
-def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_verb,openOutputFiles,createCharts, chartPackage, language_var=''):
+def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_verb,openOutputFiles,chartPackage, dataTransformation, language_var=''):
     # check WordNet
     IO_libraries_util.import_nltk_resource(GUI_util.window, 'corpora/WordNet', 'WordNet')
     from nltk.corpus import wordnet as wn
@@ -187,7 +187,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         outputFilenameCSV2_new = outputFilenameCSV2
     filesToOpen.append(outputFilenameCSV2_new)
 
-    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilenameCSV1_new, outputDir,
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilenameCSV1_new, outputDir,
                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['WordNet Category'],
                                                        chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb,
                                                        count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
@@ -217,7 +217,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
         # outputFilenameCSV3_new = data_manipulation_util.export_csv_to_csv_txt(outputFilenameCSV3_new, operation_results_text_list,'.csv',[0,1])
         outputFilenameCSV3_new = data_manipulation_util.export_csv_to_csv_txt(outputDir,operation_results_text_list,'.csv',[0,1])
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilenameCSV3_new,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilenameCSV3_new,
                                                            outputDir,
                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['WordNet Category'],
                                                            chart_title='Frequency of WordNet Aggregate Categories for ' + noun_verb + ' (No Auxiliaries)',
@@ -245,7 +245,7 @@ def aggregate_GoingUP(WordNetDir, inputFile, outputDir, config_filename, noun_ve
 # ConnlTable is the inputFilename
 # TODO TONY do we need this now? Don't we have more general ways of dealing with this?
 def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, noun_verb, openOutputFiles,
-                         createCharts, chartPackage):
+                         chartPackage, dataTransformation):
     filesToOpen = []
     startTime = IO_user_interface_util.timed_alert(GUI_util.window,2000,'Analysis start',
                                                    'Started running WordNet charts by sentence index at',
@@ -305,14 +305,15 @@ def Wordnet_bySentenceID(ConnlTable, wordnetDict, outputFilename, outputDir, nou
                       index=['Form', 'Lemma', 'POS', 'WordNet Category', 'Sentence ID', 'Document ID', 'Document'])
     outputFilename = charts_util.add_missing_IDs(df,outputFilename)
 
-    if createCharts:
+    if chartPackage!='No charts':
         outputFiles = statistics_csv_util.compute_csv_column_frequencies(GUI_util.window,
                                                                        ConnlTable,
                                                                        df,
                                                                        outputDir,
                                                                        openOutputFiles,
-                                                                       createCharts,
+                                                                       
                                                                        chartPackage,
+                                                                       dataTransformation,
                                                                        [[4, 5]],
                                                                        ['WordNet Category'], ['Form'],
                                                                        ['Sentence ID', 'Document ID', 'Document'],

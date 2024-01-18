@@ -37,7 +37,7 @@ import GIS_pipeline_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,outputDir, openOutputFiles, createCharts, chartPackage,
+def run(inputFilename,outputDir, openOutputFiles, chartPackage, dataTransformation,
         encoding, geocoder,
         # geocode,
         compute_pairwise_distances, compute_baseline_distances, baselineLocation,locationColumn,locationColumn2):
@@ -124,11 +124,11 @@ def run(inputFilename,outputDir, openOutputFiles, createCharts, chartPackage,
     split_locations=''
 
     if compute_baseline_distances and baselineLocation!='':
-        filesToOpen=GIS_distance_util.computeDistancesFromSpecificLocation(GUI_util.window,inputFilename, outputDir, createCharts, geolocator,geocoder,inputIsGeocoded,baselineLocation, headers,locationColumnNumber,locationColumn, distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue)
+        filesToOpen=GIS_distance_util.computeDistancesFromSpecificLocation(GUI_util.window,inputFilename, outputDir, geolocator,geocoder,inputIsGeocoded,baselineLocation, headers,locationColumnNumber,locationColumn, distinctValues,withHeader,inputIsCoNLL,split_locations,datePresent,filenamePositionInCoNLLTable,encodingValue)
         if len(filesToOpen)==0:
             return
     if compute_pairwise_distances:
-        filesToOpen=GIS_distance_util.computePairwiseDistances(GUI_util.window,inputFilename,outputDir,createCharts,headers,locationColumnNumber,locationColumnNumber2,locationColumn,locationColumn2, distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue)
+        filesToOpen=GIS_distance_util.computePairwiseDistances(GUI_util.window,inputFilename,outputDir,headers,locationColumnNumber,locationColumnNumber2,locationColumn,locationColumn2, distinctValues,geolocator,geocoder,inputIsCoNLL,datePresent,encodingValue)
         if len(filesToOpen)==0:
             return
         if len(filesToOpen) == 0:
@@ -143,6 +143,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.open_csv_output_checkbox.get(),
                             GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_package_options_widget.get(),
+                            GUI_util.data_transformation_options_widget.get(),
                             encoding_var.get(),
                             geocoder_var.get(),
                             # geocode_var.get(),

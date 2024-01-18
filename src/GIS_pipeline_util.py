@@ -75,7 +75,7 @@ def getGoogleAPIkey(window,Google_config, display_key=False):
 # the list of arguments reflect the order of widgets in the Google_Earth_main GUI
 # processes one file at a time
 def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
-                        geocoder, mapping_package, createCharts, chartPackage,
+                        geocoder, mapping_package, chartPackage, dataTransformation,
                         datePresent,
                         country_bias,
                         area_var,
@@ -255,13 +255,14 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
         # set inputIsGeocoded
         inputIsGeocoded=True
         filesToOpen.append(geocodedLocationsOutputFilename)
-        if createCharts:
+        if chartPackage!='No charts':
             if geocoder=='':
                 chart_title = 'Frequency of Locations'
             else:
                 chart_title = 'Frequency of Locations Found by ' + geocoder
 
-            outputFiles = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                                               geocodedLocationsOutputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
                                                                chart_title=chart_title,
@@ -284,7 +285,8 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                     outputFiles[0] = head+os.sep+tail
                     filesToOpen.extend(outputFiles)
 
-            outputFiles = charts_util.visualize_chart(createCharts, chartPackage, geocodedLocationsOutputFilename,
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                                               geocodedLocationsOutputFilename,
                                                                outputDir,
                                                                columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Country from Geocoder'],
                                                                chart_title='Frequency of Countries Found by ' + geocoder,
@@ -307,9 +309,9 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
             nRecordsNotFound, nColumns  = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(locationsNotFoundNonDistinctoutputFilename)
             if nRecordsNotFound>0:
                 filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
-                if createCharts:
+                if chartPackage!='No charts':
 
-                    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, locationsNotFoundNonDistinctoutputFilename,
+                    outputFiles = charts_util.visualize_chart(chartPackage, locationsNotFoundNonDistinctoutputFilename,
                                                                            outputDir,
                                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
                                                                            chart_title='Frequency of Locations not Found by ' + geocoder,
@@ -342,7 +344,8 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                 # no need to display since the chart will contain the values
                 # return_files.append(outputFilename)
                 columns_to_be_plotted_yAxis=["Number of Distinct Locations Found by Geocoder ", "Number of Distinct Locations NOT Found by Geocoder"]
-                outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                                                   outputFilename,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
                                                                    chart_title='Number of DISTINCT Locations Found and not Found by Geocoder',

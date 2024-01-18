@@ -299,7 +299,7 @@ def analyzefile(inputFilename, outputDir, outputFilename, csvfile, mode, Documen
                 i += 1
     return outputFilename
 
-def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPackage='Excel'):
+def main(inputFilename, inputDir, outputDir, mode,  chartPackage='Excel', dataTransformation='No transformation'):
     """
     Runs analyzefile on the appropriate files, provided that the input paths are valid.
     :param inputFilename:
@@ -383,7 +383,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
                 sys.exit(1)
     csvfile.close()
 
-    if createCharts == True:
+    if chartPackage!='No charts':
         if mode == "both":
             columns_to_be_plotted_yAxis=['Sentiment score (Mean)', 'Arousal score (Mean)', 'Dominance score (Mean)',
                                 'Sentiment score (Median)', 'Arousal score (Median)', 'Dominance score (Median)']
@@ -395,7 +395,7 @@ def main(inputFilename, inputDir, outputDir, mode, createCharts=False, chartPack
             columns_to_be_plotted_yAxis=['Sentiment score (Median)', 'Arousal score (Median)', 'Dominance score (Median)']
             # hover_label = ['Sentence', 'Sentence', 'Sentence']
 
-        outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename, outputDir,
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename, outputDir,
                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
                                                    chart_title='Frequency of ANEW Sentiment Scores',
                                                    count_var=0, hover_label=[],

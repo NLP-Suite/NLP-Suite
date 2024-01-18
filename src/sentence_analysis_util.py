@@ -19,7 +19,7 @@ def Extract(lst):
 	return [item[0] for item in lst]
 
 def dictionary_items_bySentenceID(window, inputFilename, inputDir, outputDir, configFileName,
-								  createCharts, chartPackage, openOutputFiles=True,
+								  chartPackage, dataTransformation, openOutputFiles=True,
 								  input_dictionary_file='', chart_title=''):
 	from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 

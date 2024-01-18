@@ -22,7 +22,7 @@ import GUI_IO_util
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPackage, check_ending):
+def run(inputFilename,inputDir, outputDir,openOutputFiles,chartPackage, dataTransformation,check_ending):
 
     filesToOpen = []
 
@@ -32,7 +32,7 @@ def run(inputFilename,inputDir, outputDir,openOutputFiles,createCharts,chartPack
         config_filename = scriptName.replace('main.py', 'config.csv')
 
     import nominalization_util
-    outputFiles = nominalization_util.nominalization(inputFilename,inputDir, outputDir, config_filename, config_input_output_numeric_options, openOutputFiles,createCharts,chartPackage,check_ending)
+    outputFiles = nominalization_util.nominalization(inputFilename,inputDir, outputDir, config_filename, config_input_output_numeric_options, openOutputFiles,chartPackage,dataTransformation,check_ending)
 
     if outputFiles!=None:
         if isinstance(outputFiles, str):
@@ -49,8 +49,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 GUI_util.input_main_dir_path.get(),
                                 GUI_util.output_dir_path.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
+                                GUI_util.data_transformation_options_widget.get(),
                                 check_nom_verb_ending_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)

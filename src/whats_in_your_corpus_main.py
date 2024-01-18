@@ -35,8 +35,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_package_options_widget.get(),
+                            GUI_util.data_transformation_options_widget.get(),
                             utf8_var.get(),
                             ASCII_var.get(),
                             corpus_statistics_var.get(),
@@ -59,8 +59,9 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 def run(inputFilename,inputDir, outputDir,
         openOutputFiles,
-        createCharts,
+        
         chartPackage,
+        dataTransformation,
         utf8_var,
         ASCII_var,
         corpus_statistics_var,
@@ -110,10 +111,13 @@ def run(inputFilename,inputDir, outputDir,
         ASCII_var == False and \
         corpus_statistics_var==False and \
         wordclouds_var == False and \
-        ((topics_var==False) or (topics_var==True and topics_Mallet_var==False and topics_Gensim_var==False and open_tm_GUI_var==False)) and \
+        # ((topics_var==False) or (topics_var==True and topics_Mallet_var==False and topics_Gensim_var==False and open_tm_GUI_var==False)) and \
+        topics_var==False and \
         what_else_var==False and \
-        ((GIS_var == False) or (GIS_var == True and open_GIS_GUI_var == False)) and \
-        ((SVO_var == False) or (SVO_var == True and open_SVO_GUI_var == False))):
+        # ((GIS_var == False) or (GIS_var == True and open_GIS_GUI_var == False)) and \
+        GIS_var == False and \
+        # ((SVO_var == False) or (SVO_var == True and open_SVO_GUI_var == False))):
+        SVO_var == False):
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
             return
 
@@ -152,7 +156,7 @@ def run(inputFilename,inputDir, outputDir,
 
         if '*' in corpus_statistics_options_menu_var or 'statistics' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config_filename, False,
-                                  createCharts, chartPackage,
+                                  chartPackage, dataTransformation,
                                   stopwords, lemmatize)
             if output != None:
                 if isinstance(output, str):
@@ -171,12 +175,12 @@ def run(inputFilename,inputDir, outputDir,
         #     statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
         #                                                       outputDir, n_grams_size, normalize, excludePunctuation, 1,
         #                                                       frequency, openOutputFiles,
-        #                                                       createCharts, chartPackage)
+        #                                                       chartPackage, dataTransformation)
 
         # compute sentence length ----------------------------------------------------
 
         if 'sentence length' in corpus_statistics_options_menu_var:
-            output = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir, config_filename, createCharts, chartPackage)
+            output = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir, config_filename, chartPackage, dataTransformation)
             if output != None:
                 if isinstance(output, str):
                     filesToOpen.append(output)
@@ -187,7 +191,7 @@ def run(inputFilename,inputDir, outputDir,
 
         if 'line length' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir, False,
-                                                   createCharts, chartPackage)
+                                                   chartPackage, dataTransformation)
             if output != None:
                 if isinstance(output, str):
                     filesToOpen.append(output)
@@ -196,7 +200,7 @@ def run(inputFilename,inputDir, outputDir,
 
         if '*' == corpus_statistics_options_menu_var:
             output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, config_filename,
-                                                                   openOutputFiles, createCharts, chartPackage)
+                                                                   openOutputFiles, chartPackage, dataTransformation)
             if output != None:
                 if isinstance(output, str):
                     filesToOpen.append(output)
@@ -204,7 +208,7 @@ def run(inputFilename,inputDir, outputDir,
                     filesToOpen.extend(output)
         if '*' == corpus_statistics_options_menu_var:
             output = statistics_txt_util.process_words(window, config_filename,inputFilename, inputDir, outputDir, config_filename,
-                                                                   openOutputFiles, createCharts, chartPackage)
+                                                                   openOutputFiles, chartPackage, dataTransformation)
             if output != None:
                 if isinstance(output, str):
                     filesToOpen.append(output)
@@ -212,7 +216,7 @@ def run(inputFilename,inputDir, outputDir,
                     filesToOpen.extend(output)
         if 'detection' in corpus_statistics_options_menu_var:
             output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, config_filename,
-                                                                         openOutputFiles, createCharts, chartPackage)
+                                                                         openOutputFiles, chartPackage, dataTransformation)
             if output != None:
                 if isinstance(output, str):
                     filesToOpen.append(output)
@@ -220,7 +224,7 @@ def run(inputFilename,inputDir, outputDir,
                     filesToOpen.extend(output)
         if 'capital' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir, config_filename,
-                                                                   openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
+                                                                   openOutputFiles, chartPackage, dataTransformation, corpus_statistics_options_menu_var)
             if output != None:
                 if isinstance(output, str):
                     filesToOpen.append(output)
@@ -228,7 +232,7 @@ def run(inputFilename,inputDir, outputDir,
                     filesToOpen.extend(output)
         if 'Short' in corpus_statistics_options_menu_var:
             output=statistics_txt_util.process_words(window,config_filename,inputFilename,inputDir, outputDir, config_filename,
-                                                     openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
+                                                     openOutputFiles, chartPackage, dataTransformation, corpus_statistics_options_menu_var)
             if output != None:
                 if isinstance(output, str):
                     filesToOpen.append(output)
@@ -237,7 +241,7 @@ def run(inputFilename,inputDir, outputDir,
 
         if 'Vowel' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir, config_filename,
-                                                       openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
+                                                       openOutputFiles, chartPackage, dataTransformation, corpus_statistics_options_menu_var)
             if output != None:
                 if isinstance(output, str):
                     filesToOpen.append(output)
@@ -246,7 +250,7 @@ def run(inputFilename,inputDir, outputDir,
 
         if 'Punctuation' in corpus_statistics_options_menu_var:
             output=statistics_txt_util.process_words(window,config_filename,inputFilename, inputDir, outputDir, config_filename,
-                                                     openOutputFiles, createCharts, chartPackage,corpus_statistics_options_menu_var)
+                                                     openOutputFiles, chartPackage, dataTransformation, corpus_statistics_options_menu_var)
             if output != None:
                 if isinstance(output, str):
                     filesToOpen.append(output)
@@ -262,7 +266,7 @@ def run(inputFilename,inputDir, outputDir,
                     filesToOpen.extend(output)
 
         if '*' == corpus_statistics_options_menu_var or 'Unusual' in corpus_statistics_options_menu_var:
-            output=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, config_filename, False, createCharts, chartPackage)
+            output=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, config_filename, False, chartPackage, dataTransformation)
             if output != None:
                 if isinstance(output, str):
                     filesToOpen.append(output)
@@ -270,7 +274,7 @@ def run(inputFilename,inputDir, outputDir,
                     filesToOpen.extend(output)
         if '*' == corpus_statistics_options_menu_var or 'Abstract' in corpus_statistics_options_menu_var:
             # ABSTRACT/CONCRETENESS _______________________________________________________
-            output = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, config_filename, openOutputFiles, createCharts, chartPackage, processType='')
+            output = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, config_filename, openOutputFiles, chartPackage, dataTransformation, processType='')
             if output != None:
                 if isinstance(output, str):
                     filesToOpen.append(output)
@@ -280,7 +284,7 @@ def run(inputFilename,inputDir, outputDir,
         if '*' in corpus_statistics_options_menu_var or 'complexity' in corpus_statistics_options_menu_var:
             output = statistics_txt_util.compute_sentence_complexity(GUI_util.window, inputFilename,
                                                                      inputDir, outputDir, config_filename,
-                                                                     openOutputFiles, createCharts, chartPackage)
+                                                                     openOutputFiles, chartPackage, dataTransformation)
             if output != None:
                 if isinstance(output, str):
                     filesToOpen.append(output)
@@ -293,26 +297,30 @@ def run(inputFilename,inputDir, outputDir,
             ngramType = 1
             if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
+            hapax_words = False
             ngramsNumber=3
             frequency=0
-            normalize = False
+            normalize = True
+            lemmatize = True
             excludePunctuation = True
             excludeArticles = True
             excludeDeterminers = False
             excludeStopWords = False
+            wordgram = 1
             bySentenceIndex_var=False
 
             # n-grams
             outputFiles, outputDir = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, config_filename,
-                                                              ngramsNumber, normalize,
+                                                              ngramsNumber, frequency, hapax_words,
+                                                              normalize, lemmatize,
                                                               excludePunctuation, excludeArticles,
                                                               excludeDeterminers, excludeStopWords,
-                                                              ngramType, frequency,
-                                                              openOutputFiles, createCharts, chartPackage,
-                                                              bySentenceIndex_var,False)
+                                                              wordgram,
+                                                              openOutputFiles, chartPackage, dataTransformation,
+                                                              bySentenceIndex_var)
             if outputFiles != None:
-                if isinstance(output, str):
+                if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
                     filesToOpen.extend(outputFiles)
@@ -373,7 +381,7 @@ def run(inputFilename,inputDir, outputDir,
                 else:
                     # run with all default values; do not run MALLET
                     output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir_TM, config_filename, num_topics=20,
-                                                          remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,createCharts=createCharts, chartPackage=chartPackage)
+                                                          remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,chartPackage=chartPackage, dataTransformation=dataTransformation)
                     if output != None:
                         if isinstance(output, str):
                             filesToOpen.append(output)
@@ -392,7 +400,7 @@ def run(inputFilename,inputDir, outputDir,
                         True)
                 else:
                     # running with default values
-                    output = topic_modeling_mallet_util.run_MALLET(inputDir, outputDir_TM, openOutputFiles=openOutputFiles, createCharts=createCharts, chartPackage=chartPackage, OptimizeInterval=True, numTopics=20)
+                    output = topic_modeling_mallet_util.run_MALLET(inputDir, outputDir_TM, openOutputFiles=openOutputFiles, chartPackage=chartPackage, dataTransformation=dataTransformation, OptimizeInterval=True, numTopics=20)
                     if output != None:
                         if isinstance(output, str):
                             filesToOpen.append(output)
@@ -461,7 +469,7 @@ def run(inputFilename,inputDir, outputDir,
                 else:
                     annotator = ['POS']
                     files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                outputDir_what_else, openOutputFiles, createCharts, chartPackage,
+                                                outputDir_what_else, openOutputFiles, chartPackage, dataTransformation,
                                                 annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
                     if len(files) > 0:
                         # the WordNet installation directory is now checked in aggregate_GoingUP
@@ -474,7 +482,7 @@ def run(inputFilename,inputDir, outputDir,
                             else:
                                 return
                             output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
-                                                                        openOutputFiles, createCharts, chartPackage, language_var)
+                                                                        openOutputFiles, chartPackage, dataTransformation, language_var)
                             if output != None:
                                 if isinstance(output, str):
                                     filesToOpen.append(output)
@@ -488,7 +496,7 @@ def run(inputFilename,inputDir, outputDir,
                             else:
                                 return
                             output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
-                                                                        openOutputFiles, createCharts, chartPackage, language_var)
+                                                                        openOutputFiles, chartPackage, dataTransformation, language_var)
                             if output != None:
                                 if isinstance(output, str):
                                     filesToOpen.append(output)
@@ -506,7 +514,7 @@ def run(inputFilename,inputDir, outputDir,
             NER_list=['PERSON','ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
-                                                                      createCharts, chartPackage,
+                                                                      chartPackage, dataTransformation,
                                                                       annotator_list, False,
                                                                       language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
@@ -522,7 +530,7 @@ def run(inputFilename,inputDir, outputDir,
 
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
-                                                                      createCharts, chartPackage,
+                                                                      chartPackage,
                                                                       annotator, False,
                                                                       language_var, export_json_var, memory_var, document_length_var,
                                                                       limit_sentence_length_var,
@@ -537,7 +545,7 @@ def run(inputFilename,inputDir, outputDir,
             annotator = 'gender'
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
-                                                                      createCharts, chartPackage,
+                                                                      chartPackage, dataTransformation,
                                                                       annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
 
             if output != None:
@@ -550,7 +558,7 @@ def run(inputFilename,inputDir, outputDir,
             annotator = 'quote'
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
-                                                                      createCharts, chartPackage,
+                                                                      chartPackage, dataTransformation,
                                                                       annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       single_quote_var = single_quote)
             if output != None:
@@ -562,7 +570,7 @@ def run(inputFilename,inputDir, outputDir,
         if times_var==True:
             annotator='normalized-date'
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir_what_else,
-                        openOutputFiles, createCharts, chartPackage,
+                        openOutputFiles, chartPackage, dataTransformation,
                         annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
             if output != None:
                 if isinstance(output, str):
@@ -576,7 +584,7 @@ def run(inputFilename,inputDir, outputDir,
 
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
-                                                                      createCharts, chartPackage,
+                                                                      chartPackage, dataTransformation,
                                                                       annotator, False,
                                                                       language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
@@ -590,7 +598,7 @@ def run(inputFilename,inputDir, outputDir,
             annotator = 'sentiment'
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
-                                                                      createCharts, chartPackage,
+                                                                      chartPackage, dataTransformation,
                                                                       annotator, False,
                                                                       memory_var, export_json_var, document_length_var,
                                                                       limit_sentence_length_var)
@@ -609,7 +617,7 @@ def run(inputFilename,inputDir, outputDir,
             NERs = ['COUNTRY', 'STATE_OR_PROVINCE', 'CITY', 'LOCATION']
             locations = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                          outputDir_what_else, openOutputFiles,
-                                                                         createCharts, chartPackage, 'NER',
+                                                                         chartPackage, dataTransformation, 'NER',
                                                                          False,
                                                                          language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                          NERs=NERs,
@@ -645,7 +653,7 @@ def run(inputFilename,inputDir, outputDir,
         #   any changes to the columns will result in error
         output = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
                         NER_outputFilename,inputDir, outputDir_temp,
-                        geocoder, GIS_package_var, createCharts, chartPackage,
+                        geocoder, GIS_package_var, chartPackage, dataTransformation,
                         datePresent,
                         country_bias,
                         box_tuple,
@@ -693,7 +701,7 @@ def run(inputFilename,inputDir, outputDir,
             quote_filename = quote_filename
             output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                                outputDir_SVO, openOutputFiles,
-                                                                               createCharts, chartPackage,
+                                                                               chartPackage, dataTransformation,
                                                                                'SVO', False,
                                                                                language_var,
                                                                                export_json_var,

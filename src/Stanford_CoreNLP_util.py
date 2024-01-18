@@ -182,7 +182,7 @@ def check_CoreNLP_annotator_availability(config_filename, annotator, language):
 
 def CoreNLP_annotate(config_filename,inputFilename,
                      inputDir, outputDir,
-                     openOutputFiles, createCharts, chartPackage,
+                     openOutputFiles, chartPackage, dataTransformation,
                      annotator_params,
                      DoCleanXML,
                      language,
@@ -870,8 +870,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                 outputDir_chosen = os.path.dirname(outputFilename)
                 outputFiles = parsers_annotators_visualization_util.parsers_annotators_visualization(
                     config_filename, inputFilename, inputDir, outputDir_chosen,
-                    outputFilename, annotator_params, kwargs, createCharts,
-                    chartPackage)
+                    outputFilename, annotator_params, kwargs, 
+                    chartPackage, dataTransformation)
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)
@@ -2186,7 +2186,7 @@ def count_pronouns(json):
     return result
 
 
-def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, createCharts,chartPackage, option, corefed_pronouns, all_pronouns: int):
+def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, chartPackage, dataTransformation, option, corefed_pronouns, all_pronouns: int):
     return_files = []
     df = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
     if df.empty:
@@ -2249,10 +2249,10 @@ def check_pronouns(config_filename, inputFilename, outputDir, filesToOpen, creat
             # no need to display since the chart will contain the values
             # return_files.append(outputFilename)
 
-            if createCharts:
+            if chartPackage!='No charts':
                 columns_to_be_plotted_xAxis=[]
                 columns_to_be_plotted_yAxis=["Number of Pronouns", "Number of Coreferenced Pronouns", "Pronouns Coreference Rate"]
-                outputFiles = charts_util.visualize_chart(createCharts, chartPackage, outputFilename,
+                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename,
                                                                    outputDir,
                                                                    columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
                                                                    chart_title='Coreferenced Pronouns',

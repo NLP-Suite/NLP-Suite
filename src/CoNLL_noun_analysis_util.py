@@ -128,7 +128,7 @@ def noun_POSTAG_NER_DEPREL_compute_lists_frequencies(data, data_divided_sents):
     # return list_nouns_postag, list_nouns_deprel, list_nouns_ner, noun_postag_stats, noun_deprel_stats, noun_ner_stats
 
 
-def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, createCharts, chartPackage):
+def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFiles, chartPackage, dataTransformation):
     # print("\nRun noun analysis")
 
     filesToOpen = []  # Store all files that are to be opened once finished
@@ -213,7 +213,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
     # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
     #   "Noun DEPREL Tags"])
 
-    if createCharts == True:
+    if chartPackage!='No charts':
 
         # bar charts -----------------------------------------------------------------------------------------------
 
@@ -223,6 +223,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, noun_list_file_name, outputDir,
                                      outputFileLabel='Nouns_Form',
                                      chartPackage=chartPackage,
+                                     dataTransformation=dataTransformation,
                                      chart_type_list=['bar'],
                                      chart_title="Frequency Distribution of Nouns (Form)",
                                      column_xAxis_label_var='Noun',
@@ -243,6 +244,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, noun_list_file_name, outputDir,
                                      outputFileLabel='Nouns_Lemma',
                                      chartPackage=chartPackage,
+                                     dataTransformation=dataTransformation,
                                      chart_type_list=['bar'],
                                      chart_title="Frequency Distribution of Nouns (Lemma)",
                                      column_xAxis_label_var='Noun',
@@ -263,6 +265,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, noun_postag_stats_file_name, outputDir,
                                      outputFileLabel='Nouns_POS',
                                      chartPackage=chartPackage,
+                                     dataTransformation=dataTransformation,
                                      chart_type_list=['bar'],
                                      chart_title="Frequency Distribution of Nouns POS Tags",
                                      column_xAxis_label_var='Nouns POS Tag',
@@ -280,6 +283,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, noun_deprel_stats_file_name, outputDir,
 														 outputFileLabel='Nouns_DEPREL',
 														 chartPackage=chartPackage,
+                                                         dataTransformation=dataTransformation,
 														 chart_type_list=['bar'],
 														 chart_title="Frequency Distribution of Nouns DEPREL Tags",
 														 column_xAxis_label_var='Nouns DEPREL Tag',
@@ -297,6 +301,7 @@ def noun_stats(inputFilename, outputDir, data, data_divided_sents, openOutputFil
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, noun_ner_stats_file_name, outputDir,
                                      outputFileLabel='Nouns_NER',
                                      chartPackage=chartPackage,
+                                     dataTransformation=dataTransformation,
                                      chart_type_list=['bar'],
                                      chart_title="Frequency Distribution of Nouns NERs",
                                      column_xAxis_label_var='Nouns NER',

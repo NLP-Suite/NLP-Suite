@@ -487,3 +487,4 @@ word2vec,Gensim Word2Vec timing,"Beware that Gensim Word2Vec on the 296 files (2
 
 This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
 SVO,SVO inferred_subject_passive,"The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., ""A beautiful car was bought""), a subject is automatically added as inferred_subject_passive.",ON
+Stanford_CoreNLP,CoreNLP quote timing,"Beware that the CoreNLP quote annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop.",ON

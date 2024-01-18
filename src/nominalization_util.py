@@ -217,7 +217,7 @@ def nominalized_verb_detection(docID,doc,dateStr, sent,check_ending,nominalized_
     # result_specific_document contains a list of docID, docName, sentence... for the document processed
     return result_true_false_each_noun, result_specific_document, noun_cnt, nominalized_cnt
 
-def nominalization(inputFilename,inputDir, outputDir, config_filename, config_input_output_numeric_options, openOutputFiles,createCharts,chartPackage, check_ending):
+def nominalization(inputFilename,inputDir, outputDir, config_filename, config_input_output_numeric_options, openOutputFiles,chartPackage, dataTransformation,check_ending):
 
     filesToOpen = []  # Store all files that are to be opened once finished
 
@@ -334,7 +334,7 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, config_in
         filesToOpen.append(outputFilename_nom_verb_frequencies)
 
 
-    if createCharts == True:
+    if chartPackage!='No charts':
         # bar chart of nominalized verbs
 
         inputFilename = outputFilename_nom_verb_frequencies
@@ -344,6 +344,7 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, config_in
         outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                          outputFileLabel='NOM_verb',
                                                          chartPackage=chartPackage,
+                                                         dataTransformation=dataTransformation,
                                                          chart_type_list=['bar'],
                                                          chart_title='Frequency Distribution of Nouns/Nominalized Verbs',
                                                          column_xAxis_label_var='Noun/Nominalized verb',
@@ -357,8 +358,8 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, config_in
 
 
 
-    if inputDir!='':
-    # line chart of frequencies of nominalized verbs by document or date
+        if inputDir!='':
+        # line chart of frequencies of nominalized verbs by document or date
 
             columns_to_be_plotted_xAxis=[]
 
@@ -382,7 +383,7 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, config_in
             # columns_to_be_plotted_xAxis=[]
             # columns_to_be_plotted_yAxis=['Frequency']
             # count_var=1
-            # outputFiles = charts_util.visualize_chart(createCharts, chartPackage,
+            # outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
             #                                                 inputFilename, outputDir,
             #                                                 columns_to_be_plotted_xAxis,columns_to_be_plotted_yAxis,
             #                                                 chart_title="Frequency Distribution of Nominalized Verbs]",
@@ -397,6 +398,7 @@ def nominalization(inputFilename,inputDir, outputDir, config_filename, config_in
             outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
                                                              outputFileLabel='NOM_verb',
                                                              chartPackage=chartPackage,
+                                                             dataTransformation=dataTransformation,
                                                              chart_type_list=['line'],
                                                              chart_title='Frequency Distribution of Nouns/Nominalized Verbs by ' + X_axis_label,
                                                              hover_info_column_list=[],

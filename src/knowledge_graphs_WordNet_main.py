@@ -31,8 +31,9 @@ pd.set_option('display.max_columns', 500)
 # written by Yi Wang April 2020
 
 def run(inputFilename, inputDir, outputDir,openOutputFiles,
-        createCharts,
+        
         chartPackage,
+        dataTransformation,
         csv_file,
         aggregate_POS_var,
         noun_verb,
@@ -159,7 +160,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 if result==False:
                     return
         filesToOpen = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, csv_file, outputDir, config_filename, noun_verb, openOutputFiles,
-                                                     createCharts, chartPackage, language_var)
+                                                     chartPackage, dataTransformation, language_var)
 
     if extract_nouns_verbs_from_CoNLL_var==True:
         # check that input file is a CoNLL table
@@ -185,7 +186,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
         # uses a txt fie in input
         language_var='English'
         files = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                 outputDir, openOutputFiles, createCharts, chartPackage,
+                                                                 outputDir, openOutputFiles, chartPackage, dataTransformation,
                                                                  annotator, False, language_var, export_json_var, memory_var)
         if len(files) > 0:
             noun_verb = ''
@@ -196,7 +197,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 else:
                     return
                 output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
-                                                        openOutputFiles, createCharts, chartPackage, language_var)
+                                                        openOutputFiles, chartPackage, dataTransformation, language_var)
                 if output != None:
                     filesToOpen.append(output)
 
@@ -207,7 +208,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                 else:
                     return
                 output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
-                                                        openOutputFiles, createCharts, chartPackage, language_var)
+                                                        openOutputFiles, chartPackage, dataTransformation, language_var)
                 if output != None:
                     filesToOpen.append(output)
 
@@ -217,7 +218,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
             return
         outputFilename=IO_files_util.generate_output_file_name(csv_file, outputDir, '.csv', 'WordNet', 'conll')
         filesToOpen.append(outputFilename)
-        temp_outputfiles = knowledge_graphs_WordNet_util.Wordnet_bySentenceID(csv_file,dict_WordNet_filename_var,outputFilename,outputDir,noun_verb,openOutputFiles,createCharts, chartPackage)
+        temp_outputfiles = knowledge_graphs_WordNet_util.Wordnet_bySentenceID(csv_file,dict_WordNet_filename_var,outputFilename,outputDir,noun_verb,openOutputFiles,chartPackage, dataTransformation)
         if temp_outputfiles!=None:
             filesToOpen.append(temp_outputfiles)
 
@@ -229,8 +230,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             GUI_util.input_main_dir_path.get(),
                             GUI_util.output_dir_path.get(),
                             GUI_util.open_csv_output_checkbox.get(),
-                            GUI_util.create_chart_output_checkbox.get(),
                             GUI_util.charts_package_options_widget.get(),
+                            GUI_util.data_transformation_options_widget.get(),
                             csv_file_var.get(),
                             aggregate_POS_var.get(),
                             noun_verb_menu_var.get(),

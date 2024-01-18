@@ -29,7 +29,7 @@ corpus_statistics_byPOS_var = tk.IntVar()
 def run(inputFilename, inputDir, outputDir,
         corpus_statistics_options_menu_var,
         corpus_text_options_menu_var,
-        openOutputFiles,createCharts,chartPackage,
+        openOutputFiles,chartPackage,dataTransformation,
         corpus_statistics_var,
         corpus_statistics_byPOS_var):
 
@@ -56,8 +56,8 @@ def run(inputFilename, inputDir, outputDir,
 
             import statistics_txt_util
             outputFiles = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir,
-                                                                        config_filename, False, createCharts,
-                                                                        chartPackage, stopwords_var, lemmatize_var)
+                                                                        config_filename, False, 
+                                                                        chartPackage, dataTransformation,stopwords_var, lemmatize_var)
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -65,7 +65,7 @@ def run(inputFilename, inputDir, outputDir,
                     filesToOpen.extend(outputFiles)
         if "Compute sentence length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
             outputFiles = statistics_txt_util.compute_sentence_length(inputFilename, inputDir, outputDir,
-                                                                      config_filename, createCharts, chartPackage)
+                                                                      config_filename, chartPackage, dataTransformation)
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -75,7 +75,7 @@ def run(inputFilename, inputDir, outputDir,
         if "Compute line length" in corpus_statistics_options_menu_var or "*" in corpus_statistics_options_menu_var:
             outputFiles = statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir,
                                                                   outputDir,
-                                                                  False, createCharts, chartPackage)
+                                                                  False, chartPackage, dataTransformation)
             if outputFiles != None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -101,7 +101,7 @@ def run(inputFilename, inputDir, outputDir,
         outputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                       outputDir,
                                                       openOutputFiles,
-                                                      createCharts, chartPackage,
+                                                      chartPackage, dataTransformation,
                                                       annotator, False,
                                                       language_list,
                                                       memory_var, document_length_var, limit_sentence_length_var,
@@ -129,8 +129,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 corpus_statistics_options_menu_var.get(),
                                 corpus_text_options_menu_var.get(),
                                 GUI_util.open_csv_output_checkbox.get(),
-                                GUI_util.create_chart_output_checkbox.get(),
                                 GUI_util.charts_package_options_widget.get(),
+                                GUI_util.data_transformation_options_widget.get(),
                                 corpus_statistics_var.get(),
                                 corpus_statistics_byPOS_var.get())
 

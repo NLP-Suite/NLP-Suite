@@ -65,7 +65,7 @@ def check_spaCy_available_languages(language):
 # spaCy annotate functions
 def spaCy_annotate(configFilename, inputFilename, inputDir,
                     outputDir,
-                    openOutputFiles, createCharts, chartPackage,
+                    openOutputFiles, chartPackage, dataTransformation,
                     annotator_params,
                     DoCleanXML,
                     language,
@@ -229,8 +229,8 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
                 outputFilename = filesToVisualize[j]
                 outputFiles = parsers_annotators_visualization_util.parsers_annotators_visualization(
                     configFilename, inputFilename, inputDir, outputDir,
-                    outputFilename, annotator_params, kwargs, createCharts,
-                    chartPackage)
+                    outputFilename, annotator_params, kwargs, 
+                    chartPackage,dataTransformation)
                 if outputFiles!=None:
                     if isinstance(outputFiles, str):
                         filesToOpen.append(outputFiles)

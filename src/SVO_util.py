@@ -235,7 +235,7 @@ def combine_two_svo(CoreNLP_svo, senna_svo, inputFilename, inputDir, outputSVODi
 
     return output_name
 
-def visualize_SVOs(fileName, outputDir, createCharts, chartPackage, filesToOpen, openFiles):
+def visualize_SVOs(fileName, outputDir, chartPackage, dataTransformation, filesToOpen, openFiles):
     nRecords, nColumns = IO_csv_util.GetNumberOf_Records_Columns_inCSVFile(fileName)
     if nRecords==0:
         return
@@ -245,7 +245,7 @@ def visualize_SVOs(fileName, outputDir, createCharts, chartPackage, filesToOpen,
     elif 'filter' in fileName:
         label = 'filtered'
         label1 = 'filter'
-    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, fileName,
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, fileName,
                                                        outputDir,
                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Subject (S)'],
                                                        chart_title='Frequency Distribution of Subjects (' + label + ')',
@@ -262,7 +262,7 @@ def visualize_SVOs(fileName, outputDir, createCharts, chartPackage, filesToOpen,
         else:
             filesToOpen.extend(outputFiles)
 
-    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, fileName,
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, fileName,
                                                        outputDir,
                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Verb (V)'],
                                                        chart_title='Frequency Distribution of Verbs (' + label + ')',
@@ -278,7 +278,7 @@ def visualize_SVOs(fileName, outputDir, createCharts, chartPackage, filesToOpen,
         else:
             filesToOpen.extend(outputFiles)
 
-    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, fileName,
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, fileName,
                                                        outputDir,
                                                        columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Object (O)'],
                                                        chart_title='Frequency Distribution of Objects (' + label + ')',
@@ -298,7 +298,7 @@ def visualize_SVOs(fileName, outputDir, createCharts, chartPackage, filesToOpen,
     return filesToOpen
 
 def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, filter_s_fileName, filter_v_fileName, filter_o_fileName,
-               lemmatize_s, lemmatize_v, lemmatize_o, outputSVODir, createCharts=True, chartPackage='Excel'):
+               lemmatize_s, lemmatize_v, lemmatize_o, outputSVODir,  chartPackage='Excel', dataTransformation='No transformation'):
     filesToOpen = []
     from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
@@ -467,15 +467,15 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
     if nRecords_lemma > 1 or nRecords_filter >1:
         openFiles = False # way too many files to open; but this can be changed at any time
         if lemmatize_s or lemmatize_v or lemmatize_o:
-            filesToOpen = visualize_SVOs(svo_lemma_file_name, outputSVOLemmaDir, createCharts, chartPackage, filesToOpen, openFiles)
+            filesToOpen = visualize_SVOs(svo_lemma_file_name, outputSVOLemmaDir, chartPackage, dataTransformation,filesToOpen, openFiles)
         if filter_s or filter_v or filter_o:
-            filesToOpen = visualize_SVOs(svo_filter_file_name, outputSVOFilterDir, createCharts, chartPackage, filesToOpen, openFiles)
+            filesToOpen = visualize_SVOs(svo_filter_file_name, outputSVOFilterDir, chartPackage, dataTransformation,filesToOpen, openFiles)
 
     return filesToOpen
 
 
 def lemmatize_filter_svo_old(window,svo_file_name, filter_s, filter_v, filter_o, filter_s_fileName, filter_v_fileName, filter_o_fileName,
-               lemmatize_s, lemmatize_v, lemmatize_o, outputSVODir, createCharts=True, chartPackage='Excel'):
+               lemmatize_s, lemmatize_v, lemmatize_o, outputSVODir,  chartPackage='Excel', dataTransformation='No transformation'):
     """
     Filters a svo csv file based on the dictionaries given, and replaces the original output csv file
     :param svo_file_name: the name of the svo csv file
@@ -653,13 +653,13 @@ def lemmatize_filter_svo_old(window,svo_file_name, filter_s, filter_v, filter_o,
     if nRecords_lemma > 1 or nRecords_filter >1:
         openFiles = False # way too many files to open; but this can be changed at any time
         if lemmatize_s or lemmatize_v or lemmatize_o:
-            filesToOpen = visualize_SVOs(svo_lemma_file_name, outputSVOLemmaDir, createCharts, chartPackage, filesToOpen, openFiles)
+            filesToOpen = visualize_SVOs(svo_lemma_file_name, outputSVOLemmaDir, chartPackage, dataTransformation, filesToOpen, openFiles)
         if filter_s or filter_v or filter_o:
-            filesToOpen = visualize_SVOs(svo_filter_file_name, outputSVOFilterDir, createCharts, chartPackage, filesToOpen, openFiles)
+            filesToOpen = visualize_SVOs(svo_filter_file_name, outputSVOFilterDir, chartPackage, dataTransformation, filesToOpen, openFiles)
 
     return filesToOpen
 
-def normalize_date_svo(inputFilename, outputDir, createCharts=True, chartPackage='Excel'):
+def normalize_date_svo(inputFilename, outputDir,  chartPackage='Excel', dataTransformation='No transformation'):
     filesToOpen = []
 
 
@@ -671,11 +671,11 @@ def normalize_date_svo(inputFilename, outputDir, createCharts=True, chartPackage
         return
     nEmtyCells=str(int(data['Date expression'].isna().sum()))
     outputNormalizedDateDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-                                                                     label='normalized-date',
+                                                                     label='normalized-date_CoreNLP',
                                                                      silent=True)
 
     # Date expressions are in the form yesterday, tomorrow morning, the day before Christmas
-    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, inputFilename,
                                                         outputNormalizedDateDir,
                                                         columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date expression'],
                                                         chart_title='Frequency Distribution of Date Expressions',
@@ -693,7 +693,7 @@ def normalize_date_svo(inputFilename, outputDir, createCharts=True, chartPackage
             filesToOpen.extend(outputFiles)
 
     # normalized dates are in the form PAST_REF, NEXT_IMMEDIATE P1D, ...
-    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, inputFilename,
                                                         outputNormalizedDateDir,
                                                         columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Normalized date'],
                                                         chart_title='Frequency Distribution of Normalized Dates',
@@ -711,7 +711,7 @@ def normalize_date_svo(inputFilename, outputDir, createCharts=True, chartPackage
             filesToOpen.extend(outputFiles)
 
     # Date types are in the form PAST, PRESENT, OTHER
-    outputFiles = charts_util.visualize_chart(createCharts, chartPackage, inputFilename,
+    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, inputFilename,
                                                         outputNormalizedDateDir,
                                                         columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Date type'],
                                                         chart_title='Frequency Distribution of Date Types',

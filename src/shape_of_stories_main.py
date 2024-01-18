@@ -39,7 +39,7 @@ import file_checker_util as utf
 
 # RUN section ______________________________________________________________________________________________________________________________________________________
 
-def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chartPackage, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
+def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, sentimentAnalysis, sentimentAnalysisMethod, memory_var, corpus_analysis,
         hierarchical_clustering, SVD, NMF, best_topic_estimation):
 
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
@@ -103,7 +103,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
     # check corpus statistics
     if corpus_analysis:
         statistics_txt_util.compute_corpus_statistics(GUI_util.window, inputDir, inputDir, outputDir, config_filename, openOutputFiles,
-                                                      createCharts, chartPackage)
+                                                      chartPackage, dataTransformation)
 
 # ----------------------------------------------------------------------------------------------------
     # step 1: run sentiment analysis
@@ -129,7 +129,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
         #         if not computeSAScores:
         #             return
         #     tempOutputfile=Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, '', inputDir, outputDir, openOutputFiles,
-        #                         createCharts, chartPackage,'sentiment',False, language_var, export_json_var, memory_var)
+        #                         chartPackage, dataTransformation,'sentiment',False, language_var, export_json_var, memory_var)
         #     if tempOutputfile==None:
         #         return
         #     sentiment_scores_input=tempOutputfile[0]
@@ -142,7 +142,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
                 model_path = "cardiffnlp/twitter-xlm-roberta-base-sentiment"  # multilingual model
             else:
                 model_path = "cardiffnlp/twitter-roberta-base-sentiment-latest"  # English language model
-            tempOutputFiles = BERT_util.sentiment_main(inputFilename, inputDir, outputDir, config_filename, '', createCharts, chartPackage, model_path)
+            tempOutputFiles = BERT_util.sentiment_main(inputFilename, inputDir, outputDir, config_filename, '', chartPackage, dataTransformation, model_path)
             if tempOutputFiles == None:
                 return
             if len(tempOutputFiles) > 0:
@@ -165,7 +165,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             tempOutputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                         outputDir, config_filename,
                                                         openOutputFiles,
-                                                        createCharts, chartPackage,
+                                                        chartPackage, dataTransformation,
                                                         annotator, False,
                                                         language_var,
                                                         memory_var, document_length_var, limit_sentence_length_var,
@@ -196,8 +196,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             if IO_libraries_util.check_inputPythonJavaProgramFile('Stanford_CoreNLP_util.py') == False:
                 return
             tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
-                                                                    outputDir, openOutputFiles, createCharts,
-                                                                    chartPackage, 'sentiment', False,
+                                                                    outputDir, openOutputFiles, 
+                                                                    chartPackage, dataTransformation, 'sentiment', False,
                                                                     language_var, export_json_var,
                                                                     memory_var)
             # outputFilename=outputFilename[0] # annotators return a list and not a string
@@ -219,7 +219,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, createCharts, chart
             tempOutputFiles = Stanza_util.Stanza_annotate(config_filename, inputFilename, inputDir,
                                                           outputDir,
                                                           openOutputFiles,
-                                                          createCharts, chartPackage,
+                                                          chartPackage, dataTransformation,
                                                           annotator, False,
                                                           [language_var],
                                                           # Stanza_util takes language_var as a list
@@ -365,8 +365,8 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(),
                                  GUI_util.input_main_dir_path.get(),
                                  GUI_util.output_dir_path.get(),
                                  GUI_util.open_csv_output_checkbox.get(),
-                                 GUI_util.create_chart_output_checkbox.get(),
                                  GUI_util.charts_package_options_widget.get(),
+                                 GUI_util.data_transformation_options_widget.get(),
                                  sentiment_analysis_var.get(),
                                  sentiment_analysis_menu_var.get(),
                                  memory_var.get(),
