@@ -19,7 +19,7 @@ import tkinter.messagebox as mb
 
 def internet_on():
     try:
-        response = urlopen('https://www.bing.com/', timeout=10)
+        response = urlopen('http://www.google.com/', timeout=10)
         return True
     except:
         return False
