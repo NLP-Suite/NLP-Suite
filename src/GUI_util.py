@@ -611,7 +611,7 @@ def IO_config_setup_brief(window, y_multiplier_integer, config_filename, scriptN
                                                    y_multiplier_integer,
                                                    setup_IO_menu, True, False, False, False, 90,
                                                    GUI_IO_util.labels_x_coordinate,
-                                                   "Use the dropdown menu to select the INPUT/OUTPUT configuration you want to use to run the algorithmms behind this GUI.\nThe default configuration is the one that applies to ALL GUIs in the NLP Suite. The GUI-specific configuration applies to this GUI only.\n"
+                                                   "Use the dropdown menu to select the INPUT/OUTPUT configuration you want to use to run the algorithms behind this GUI.\nThe default configuration is the one that applies to ALL GUIs in the NLP Suite. The GUI-specific configuration applies to this GUI only.\n"
                                                    "To change either configuration of INPUT/OUTPUT options, selected the desired configuration and then click on the Setup INPUT/OUTPUT configuration button.")
 
     if 'Default' in setup_IO_menu_var.get():  # GUI_util.setup_IO_menu_var.get()

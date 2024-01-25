@@ -1381,4 +1381,6 @@ if __name__ == '__main__':
 
     activate_all_options()
 
+    # GUI_util.window.attributes("-topmost", True)
+    # GUI_util.window.focus_force()
     GUI_util.window.mainloop()
