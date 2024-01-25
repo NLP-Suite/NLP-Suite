@@ -712,7 +712,7 @@ def OpenOutputFiles(window, openOutputFiles, filesToOpen, outputDir, scriptName=
     mb.showwarning(title="Output files",message="The " + scriptName + " has generated " +
                 str(nFiles) + " " + file_singular_plural + " in output." + wayTooMany + label + subsetLabel + opened_folder_label)
 
-    if nFiles > 10 and len(filesToOpenSubset) > 10:
+    if nFiles > 10 or len(filesToOpenSubset) > 10:
         return
 
     if len(filesToOpen) == 1:

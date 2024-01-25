@@ -69,7 +69,6 @@ def proc(infile,arg):
                     if 'Frequencies' in col or 'Frequency' in col:
                         # print(col)
                         file[col] = file.apply(lambda row: normalize_data(row, col, get_file_size(row['Document'].replace('=hyperlink("', '').replace('")','').rstrip('"'), file_size_dict)), axis=1)
-
                 else:
                     print(col)
                     print("failed...")
@@ -783,7 +782,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
                 bool = True
         if bool:
             columns_list = columns_list_copy
-            columns_to_be_plotted =  get_columns_to_be_plotted(outputFilename, columns_list_copy)
+            columns_to_be_plotted = get_columns_to_be_plotted(outputFilename, columns_list_copy)
         # The form/lemma + doc have a special treatment
         if plot_cols == ['Form','Lemma'] and 'Document' in group_cols:
             #@@@

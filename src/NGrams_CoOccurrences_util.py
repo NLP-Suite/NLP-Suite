@@ -464,7 +464,7 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
         # Check the input parameters, i comment it out for now because we don't know the design
         if minus_K_words_var < 0 or plus_K_words_var < 0 or (minus_K_words_var + plus_K_words_var) > int(data.columns[0][0]) - 1:
             mb.showwarning(title='Warning',
-                           message='The sum of -K and +K values should be < than the n-grams value (so, a 4-ngrams can only have a combination of -K + K values less or equal to 3).')
+                           message='The sum of -K and +K values should be < than the n-grams value (so, a 4-ngrams can only have a combination of -K + K values less or equal to 3).\n\nThe n-grams value in your input csv file is ' + str(data.columns[0][0]) + '.')
             return
 
         words = search_keywords_list

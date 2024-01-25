@@ -119,7 +119,9 @@ A package is a pre-written set of files that could be invoked (used) frequently,
    - If, after installing a package via pip install, the NLP Suite warns you that the package you have just installed is not installed, you have probably installed the package in the wrong environment (e.g., base) and not in NLP.
    - All Python packages are installed in specific Anaconda environments. The NLP Suite is setup in the NLP environment. If you open a command line/terminal most likely it will open the base environment.
    - If base appears in command line/terminal, you are in the wrong environment.
-   - If you installed pandas in the `base` environment, it will not be recognized by the NLP Suite. You need to uninstall it from the base environment and install it in the NLP environment after activating the NLP environmant via conda activate NLP.
+   - If you installed pandas in the `base` environment, it will not be recognized by the NLP Suite. You need to uninstall it from the base environment and install it in the NLP environment after activating the NLP environmant via the command
+
+conda activate NLP.
 
 7. **Show the version of a Python package**
    - `pip show pandas`: Shows the version of an installed package.
