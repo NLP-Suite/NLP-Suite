@@ -17,6 +17,11 @@ from collections import Counter
 import string
 from nltk.stem.porter import PorterStemmer
 import stanza
+try:
+    stanza.download('en')
+except:
+    import IO_internet_util
+    IO_internet_util.check_internet_availability_warning("statistics_txt_util.py (stanza.download(en))")
 
 # from nltk import tokenize
 # from nltk import word_tokenize
@@ -72,6 +77,7 @@ import IO_files_util
 import IO_csv_util
 import reminders_util
 import TIPS_util
+import statistics_csv_util
 
 #https://github.com/nltk/nltk/wiki/Frequently-Asked-Questions-(Stackoverflow-Edition)
 #to compute bigrams, 3-grams, ...
