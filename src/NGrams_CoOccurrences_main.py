@@ -182,7 +182,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 for file in outputFiles:
                     print(file, 'beginning to process because maybe needed normalization....')
                     if 'csv' in file:
-                        statistics_csv_util.proc(file, dataTransformation).to_csv(file, index = False)
+                        statistics_csv_util.proc(file, dataTransformation).to_csv(file, index=False)
                         print("OK DONE TRANSFORMATION")
                         print('===-=====-====')
             if outputFiles!=None:

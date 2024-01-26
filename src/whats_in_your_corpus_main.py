@@ -155,14 +155,14 @@ def run(inputFilename,inputDir, outputDir,
             lemmatize=True
 
         if '*' in corpus_statistics_options_menu_var or 'statistics' in corpus_statistics_options_menu_var:
-            output = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config_filename, False,
+            outputFiles, outputDir = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir, config_filename, False,
                                   chartPackage, dataTransformation,
                                   stopwords, lemmatize)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
         # compute ngrams ----------------------------------------------------
 
@@ -180,116 +180,116 @@ def run(inputFilename,inputDir, outputDir,
         # compute sentence length ----------------------------------------------------
 
         if 'sentence length' in corpus_statistics_options_menu_var:
-            output = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir, config_filename, chartPackage, dataTransformation)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            outputFiles = statistics_txt_util.compute_sentence_length(inputFilename,inputDir, outputDir, config_filename, chartPackage, dataTransformation)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
         # compute line length ----------------------------------------------------
 
         if 'line length' in corpus_statistics_options_menu_var:
-            output = statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir, False,
+            outputFiles = statistics_txt_util.compute_line_length(window, config_filename, inputFilename, inputDir, outputDir, False,
                                                    chartPackage, dataTransformation)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
         if '*' == corpus_statistics_options_menu_var:
-            output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, config_filename,
+            outputFiles = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, config_filename,
                                                                    openOutputFiles, chartPackage, dataTransformation)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
         if '*' == corpus_statistics_options_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename,inputFilename, inputDir, outputDir, config_filename,
+            outputFiles = statistics_txt_util.process_words(window, config_filename,inputFilename, inputDir, outputDir, config_filename,
                                                                    openOutputFiles, chartPackage, dataTransformation)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
         if 'detection' in corpus_statistics_options_menu_var:
-            output = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, config_filename,
+            outputFiles = file_spell_checker_util.language_detection(window, inputFilename, inputDir, outputDir, config_filename,
                                                                          openOutputFiles, chartPackage, dataTransformation)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
         if 'capital' in corpus_statistics_options_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir, config_filename,
+            outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir, config_filename,
                                                                    openOutputFiles, chartPackage, dataTransformation, corpus_statistics_options_menu_var)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
         if 'Short' in corpus_statistics_options_menu_var:
-            output=statistics_txt_util.process_words(window,config_filename,inputFilename,inputDir, outputDir, config_filename,
+            outputFiles=statistics_txt_util.process_words(window,config_filename,inputFilename,inputDir, outputDir, config_filename,
                                                      openOutputFiles, chartPackage, dataTransformation, corpus_statistics_options_menu_var)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
         if 'Vowel' in corpus_statistics_options_menu_var:
-            output = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir, config_filename,
+            outputFiles = statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir, config_filename,
                                                        openOutputFiles, chartPackage, dataTransformation, corpus_statistics_options_menu_var)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
         if 'Punctuation' in corpus_statistics_options_menu_var:
-            output=statistics_txt_util.process_words(window,config_filename,inputFilename, inputDir, outputDir, config_filename,
+            outputFiles=statistics_txt_util.process_words(window,config_filename,inputFilename, inputDir, outputDir, config_filename,
                                                      openOutputFiles, chartPackage, dataTransformation, corpus_statistics_options_menu_var)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
         if '*' == corpus_statistics_options_menu_var or 'Yule' in corpus_statistics_options_menu_var:
-            output=statistics_txt_util.yule(window, inputFilename, inputDir, outputDir, config_filename)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            outputFiles=statistics_txt_util.yule(window, inputFilename, inputDir, outputDir, config_filename)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
         if '*' == corpus_statistics_options_menu_var or 'Unusual' in corpus_statistics_options_menu_var:
-            output=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, config_filename, False, chartPackage, dataTransformation)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            outputFiles=file_spell_checker_util.nltk_unusual_words(window, inputFilename, inputDir, outputDir, config_filename, False, chartPackage, dataTransformation)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
         if '*' == corpus_statistics_options_menu_var or 'Abstract' in corpus_statistics_options_menu_var:
             # ABSTRACT/CONCRETENESS _______________________________________________________
-            output = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, config_filename, openOutputFiles, chartPackage, dataTransformation, processType='')
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            outputFiles = abstract_concreteness_analysis_util.main(GUI_util.window, inputFilename, inputDir, outputDir, config_filename, openOutputFiles, chartPackage, dataTransformation, processType='')
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
         if '*' in corpus_statistics_options_menu_var or 'complexity' in corpus_statistics_options_menu_var:
-            output = statistics_txt_util.compute_sentence_complexity(GUI_util.window, inputFilename,
+            outputFiles = statistics_txt_util.compute_sentence_complexity(GUI_util.window, inputFilename,
                                                                      inputDir, outputDir, config_filename,
                                                                      openOutputFiles, chartPackage, dataTransformation)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
 
         # compute ngrams ----------------------------------------------------
@@ -380,13 +380,13 @@ def run(inputFilename,inputDir, outputDir,
                         True)
                 else:
                     # run with all default values; do not run MALLET
-                    output = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir_TM, config_filename, num_topics=20,
+                    outputFiles = topic_modeling_gensim_util.run_Gensim(GUI_util.window, inputDir, outputDir_TM, config_filename, num_topics=20,
                                                           remove_stopwords_var=1, lemmatize=1, nounsOnly=0, run_Mallet=False, openOutputFiles=openOutputFiles,chartPackage=chartPackage, dataTransformation=dataTransformation)
-                    if output != None:
-                        if isinstance(output, str):
-                            filesToOpen.append(output)
+                    if outputFiles != None:
+                        if isinstance(outputFiles, str):
+                            filesToOpen.append(outputFiles)
                         else:
-                            filesToOpen.extend(output)
+                            filesToOpen.extend(outputFiles)
 
         if topics_Mallet_var==True:
             if open_tm_GUI_var == True:
@@ -400,12 +400,12 @@ def run(inputFilename,inputDir, outputDir,
                         True)
                 else:
                     # running with default values
-                    output = topic_modeling_mallet_util.run_MALLET(inputDir, outputDir_TM, openOutputFiles=openOutputFiles, chartPackage=chartPackage, dataTransformation=dataTransformation, OptimizeInterval=True, numTopics=20)
-                    if output != None:
-                        if isinstance(output, str):
-                            filesToOpen.append(output)
+                    outputFiles = topic_modeling_mallet_util.run_MALLET(inputDir, outputDir_TM, openOutputFiles=openOutputFiles, chartPackage=chartPackage, dataTransformation=dataTransformation, OptimizeInterval=True, numTopics=20)
+                    if outputFiles != None:
+                        if isinstance(outputFiles, str):
+                            filesToOpen.append(outputFiles)
                         else:
-                            filesToOpen.extend(output)
+                            filesToOpen.extend(outputFiles)
 
     #  what else ---------------------------------------------------------------------------------
     nouns_var=False
@@ -481,13 +481,13 @@ def run(inputFilename,inputDir, outputDir,
                                 noun_verb='VERB'
                             else:
                                 return
-                            output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
+                            outputFiles = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
                                                                         openOutputFiles, chartPackage, dataTransformation, language_var)
-                            if output != None:
-                                if isinstance(output, str):
-                                    filesToOpen.append(output)
+                            if outputFiles != None:
+                                if isinstance(outputFiles, str):
+                                    filesToOpen.append(outputFiles)
                                 else:
-                                    filesToOpen.extend(output)
+                                    filesToOpen.extend(outputFiles)
 
                         if nouns_var == True:
                             inputFilename = files[1]  # Nouns but... double check
@@ -495,13 +495,13 @@ def run(inputFilename,inputDir, outputDir,
                                 noun_verb='NOUN'
                             else:
                                 return
-                            output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
+                            outputFiles = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir,inputFilename, outputDir_what_else, config_filename, noun_verb,
                                                                         openOutputFiles, chartPackage, dataTransformation, language_var)
-                            if output != None:
-                                if isinstance(output, str):
-                                    filesToOpen.append(output)
+                            if outputFiles != None:
+                                if isinstance(outputFiles, str):
+                                    filesToOpen.append(outputFiles)
                                 else:
-                                    filesToOpen.extend(output)
+                                    filesToOpen.extend(outputFiles)
                     else:
                         if (what_else_var and what_else_menu_var == '*'):
                             IO_user_interface_util.timed_alert(GUI_util.window, 4000, 'Missing WordNet',
@@ -512,101 +512,101 @@ def run(inputFilename,inputDir, outputDir,
 
             annotator_list = ['NER', 'gender', 'quote', 'normalized-date']
             NER_list=['PERSON','ORGANIZATION', 'CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
-            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       chartPackage, dataTransformation,
                                                                       annotator_list, False,
                                                                       language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
         if people_organizations_var == True:
             annotator = 'NER'
             NER_list=['PERSON','ORGANIZATION']
 
-            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       chartPackage,
                                                                       annotator, False,
                                                                       language_var, export_json_var, memory_var, document_length_var,
                                                                       limit_sentence_length_var,
                                                                       NERs=NER_list)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
         if gender_var == True:
             annotator = 'gender'
-            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       chartPackage, dataTransformation,
                                                                       annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
 
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
         if dialogues_var==True:
             annotator = 'quote'
-            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       chartPackage, dataTransformation,
                                                                       annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       single_quote_var = single_quote)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
         if times_var==True:
             annotator='normalized-date'
-            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir_what_else,
+            outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir_what_else,
                         openOutputFiles, chartPackage, dataTransformation,
                         annotator, False, language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
         if locations_var == True:
             annotator = 'NER'
             NER_list = ['CITY', 'STATE_OR_PROVINCE', 'COUNTRY', 'LOCATION']
 
-            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       chartPackage, dataTransformation,
                                                                       annotator, False,
                                                                       language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
                                                                       NERs=NER_list)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
         if sentiments_var == True:
             annotator = 'sentiment'
-            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                       outputDir_what_else, openOutputFiles,
                                                                       chartPackage, dataTransformation,
                                                                       annotator, False,
                                                                       memory_var, export_json_var, document_length_var,
                                                                       limit_sentence_length_var)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 # GIS --------------------------------------------------------------------------------
     if GIS_var==True:
         if open_GIS_GUI_var == True:
@@ -651,7 +651,7 @@ def run(inputFilename,inputDir, outputDir,
 
         # locationColumnName where locations to be geocoded (or geocoded) are stored in the csv file;
         #   any changes to the columns will result in error
-        output = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
+        outputFiles = GIS_pipeline_util.GIS_pipeline(GUI_util.window, config_filename,
                         NER_outputFilename,inputDir, outputDir_temp,
                         geocoder, GIS_package_var, chartPackage, dataTransformation,
                         datePresent,
@@ -665,11 +665,11 @@ def run(inputFilename,inputDir, outputDir,
                         [0], ['1'], [0], [''], # name_var_list, scale_var_list, color_var_list, color_style_var_list,
                         [1],[1]) # bold_var_list, italic_var_list)
 
-        if output != None:
-            if isinstance(output, str):
-                filesToOpen.append(output)
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
             else:
-                filesToOpen.extend(output)
+                filesToOpen.extend(outputFiles)
 
     # SVO ------------------------------------------------------------------------------------
 
@@ -699,7 +699,7 @@ def run(inputFilename,inputDir, outputDir,
             gender_filename = gender_filename
             quote_var = True
             quote_filename = quote_filename
-            output = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
+            outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                                outputDir_SVO, openOutputFiles,
                                                                                chartPackage, dataTransformation,
                                                                                'SVO', False,
@@ -719,11 +719,11 @@ def run(inputFilename,inputDir, outputDir,
                                                                                gender_filename=gender_filename,
                                                                                quote_var=quote_var,
                                                                                quote_filename=quote_filename)
-            if output != None:
-                if isinstance(output, str):
-                    filesToOpen.append(output)
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
                 else:
-                    filesToOpen.extend(output)
+                    filesToOpen.extend(outputFiles)
 
     openOutputFiles=openOutputFilesSV
     if openOutputFiles == True:

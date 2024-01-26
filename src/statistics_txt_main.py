@@ -55,7 +55,7 @@ def run(inputFilename, inputDir, outputDir,
         if "*" in corpus_statistics_options_menu_var or 'frequencies' in corpus_statistics_options_menu_var:
 
             import statistics_txt_util
-            outputFiles = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir,
+            outputFiles, outputDir = statistics_txt_util.compute_corpus_statistics(window, inputFilename, inputDir, outputDir,
                                                                         config_filename, False, 
                                                                         chartPackage, dataTransformation,stopwords_var, lemmatize_var)
             if outputFiles != None:

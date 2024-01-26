@@ -17,6 +17,12 @@ Examples of Usage:
 '''
 
 import stanza
+try:
+    stanza.download('en')
+except:
+    import IO_internet_util
+    IO_internet_util.check_internet_availability_warning("Stanza_functions_util.py (stanza.download(en))")
+
 import IO_internet_util
 
 # check internet connection
