@@ -37,7 +37,7 @@ from striprtf.striprtf import rtf_to_text
 # https://pypi.org/project/pdfminer/#description
 # https://towardsdatascience.com/pdf-preprocessing-with-python-19829752af9f
 # fileName contains full path
-def pdf_converter(window,fileName, inputDir, outputDir,openOutputFiles,chartPackage, dataTransformation):
+def pdf_converter(window,fileName, inputDir, outputDir,config_filename,openOutputFiles,chartPackage, dataTransformation):
 
     if len(inputDir)>0:
         msgbox_subDir = tk.messagebox.askyesnocancel("Process sub-directories", "Do you want to process for files in subdirectories?")
@@ -94,7 +94,7 @@ def pdf_converter(window,fileName, inputDir, outputDir,openOutputFiles,chartPack
             f.write(data)
 
             f.close()
-    IO_user_interface_util.timed_alert(window, 700, 'pdf converter ', 'Finished running pdf converter at', True, str(numberOfDocs) + ' files were successfully converted from pdf to txt format and saved in directory ' + os.path.dirname(outputFilename))
+    IO_user_interface_util.timed_alert(window, 4000, 'Analysis end', 'Finished running pdf converter at', True, str(numberOfDocs) + ' files were successfully converted from pdf to txt format and saved in directory ' + os.path.dirname(outputFilename))
     if openOutputFiles and len(fileName)>0:
         IO_files_util.openFile(window, outputFilename)
 

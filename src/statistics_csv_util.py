@@ -56,34 +56,34 @@ def apply_transformation(column, transformation):
         return (column - min_val) / (max_val - min_val)
     return column
 
-def proc(infile,arg):
-    file = pd.read_csv(infile)
+def data_transformation(infile,arg):
+    df = pd.read_csv(infile)
     # file has to be a dataframe using pandas, it is tested using pd.read_csv(some filename)
-    if 'Document' in file.columns:
+    if 'Document' in df.columns:
         # print("Effective Document was detected in your dataframe's columns")
         file_size_dict = {}
         if arg!='No transformation':
-            print("Data normalized by FILESIZE ...")
-            for col in file.columns:
-                if 'Document' not in col and is_numeric_dtype(file[col]):
+            # print("Data normalized by FILESIZE ...")
+            for col in df.columns:
+                if 'Document' not in col and is_numeric_dtype(df[col]):
                     if 'Frequencies' in col or 'Frequency' in col:
                         # print(col)
-                        file[col] = file.apply(lambda row: normalize_data(row, col, get_file_size(row['Document'].replace('=hyperlink("', '').replace('")','').rstrip('"'), file_size_dict)), axis=1)
-                else:
-                    print(col)
-                    print("failed...")
-    for col in file.columns:
-        if 'Document' not in col and is_numeric_dtype(file[col]):
+                        df[col] = df.apply(lambda row: normalize_data(row, col, get_file_size(row['Document'].replace('=hyperlink("', '').replace('")','').rstrip('"'), file_size_dict)), axis=1)
+                # else:
+                #     print(col)
+                #     print("failed...")
+    for col in df.columns:
+        if 'Document' not in col and is_numeric_dtype(df[col]):
             if 'Frequencies' in col or 'Frequency' in col:
                 # print(col)
                 # print("Appropriate transformation on TRANSFORMATION METHOD is applied")
-                file[col] = apply_transformation(file[col], arg)
+                df[col] = apply_transformation(df[col], arg)
                 # print(file.columns.tolist())
                 # print("old .........")
-                file = file.rename(columns={col: col + "_" + arg})
+                df = df.rename(columns={col: col + "_" + arg})
                 # print(file.columns.tolist())
                 # print("new .........")
-    return file
+    return df
 
 #column_to_be_counted is the column number (starting 0 in data_list for which a count is required)
 #column_name is the name that will appear as the chart name
@@ -763,7 +763,7 @@ def compute_csv_column_frequencies(window,inputFilename, inputDataFrame, outputD
     df = data
     import statistics_csv_util
     if tracked: # if the byDoc holds, we proceed, otherwise we skip by using this bool
-        statistics_csv_util.proc(outputFilename, dataTransformation).to_csv(outputFilename, encoding='utf-8', index=False)
+        statistics_csv_util.data_transformation(outputFilename, dataTransformation).to_csv(outputFilename, encoding='utf-8', index=False)
 
         # print("OK DONE TRANSFORMATION")
         # print('===-=====-====')
