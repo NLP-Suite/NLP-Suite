@@ -156,7 +156,6 @@ pathy @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_24y4
 pdfminer.six==20221105
 pexpect==4.8.0
 pickleshare==0.7.5
-Pillow==9.4.0
 pipreqs==0.4.12
 platformdirs==2.6.2
 Plotly==5.11.0
@@ -238,7 +237,7 @@ SPARQLWrapper==2.0.0
 srsly @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_581acd93-b550-4b8a-a76a-ce58363e64a5hg6j7tvq/croots/recipe/srsly_1651584736471/work
 stack-data==0.6.2
 stanfordcorenlp==3.9.1.1
-stanza==1.4.2
+stanza==1.5.2
 striprtf==0.0.22
 summarizer==0.0.7
 tenacity==8.1.0
@@ -282,7 +281,11 @@ Werkzeug==2.2.3
 whichcraft==0.6.1
 widgetsnbextension==4.0.5
 wn==0.0.23
-wordcloud==1.8.2.2
+# wordcloud==1.8
+#wordcloud~=1.8 is incompatible with the latest Pillow and would need Pillow==9.5.0
+# Pillow==9.4.0
+wordcloud==1.9.3
+Pillow==10.2.0
 wrapt==1.14.1
 yarg==0.1.9
 zope.event==4.6

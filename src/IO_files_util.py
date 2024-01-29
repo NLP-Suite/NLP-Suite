@@ -319,7 +319,10 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
                                message='The GUI-specific config file ' + configFileName + ' does not exist.\n\nPlease, use the dropdown menu "I/O configuration" to select the GUI-specific option, then click on "Setup INPUT/OUTPUT configuration" button to setup the GUI-specific I/O config file and try again.')
             return files
 
-        sort_order = str(a['Sort order'][0])  # changed to 0 from 1
+        try:
+            sort_order = str(a['Sort order'][0])  # changed to 0 from 1
+        except:
+            sort_order = str(a['Sort order'][1])  # changed to 0 from 1
 
         if str(sort_order) =="nan":
             sort_order = "1"
@@ -333,15 +336,26 @@ def getFileList(inputFile, inputDir, fileType='.*',silent=False, configFileName=
         except:
             pass
 
-        separator = a['Item separator character(s)'][0]  # changed to 0 from 1
+        try:
+            separator = a['Item separator character(s)'][0]  # changed to 0 from 1
+        except:
+            separator = a['Item separator character(s)'][1]  # changed to 0 from 1
+
         if str(separator)=="nan":
             separator=' '
 
-        date_format = a['Date format'][0]
+        try:
+            date_format = a['Date format'][0] # changed to 0 from 1
+        except:
+            date_format = a['Date format'][1]
+
         try:
             date_pos = int(a['Date position'][0]) # changed to 0 from 1
         except:
-            date_pos = 9e999
+            try:
+                date_pos = int(a['Date position'][1]) # changed to 0 from 1
+            except:
+                date_pos = 9e999
         #@@@
         # separator = a['Item separator character(s)'][1]
         # if str(separator)=="nan":

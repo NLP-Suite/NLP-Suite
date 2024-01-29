@@ -697,7 +697,7 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
 
     if type(data_to_be_plotted[0]) == list:
         list_of_lists_to_csv(data_to_be_plotted[0], "temptemp2.csv")
-        df = statistics_csv_util.proc('temptemp2.csv', dataTransformation)
+        df = statistics_csv_util.data_transformation('temptemp2.csv', dataTransformation)
         os.remove('temptemp2.csv')
         data_to_be_plotted = [[df.columns.tolist()] + df.values.tolist()]
 
@@ -747,7 +747,7 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
             data = pd.DataFrame(data, columns=headers)
             data_to_be_plotted = double_level_grouping_and_frequency(data, ['Form'], ['Lemma'])
             data_to_be_plotted.to_csv("Temptemp.csv", index=False)
-            data_final = statistics_csv_util.proc("Temptemp.csv", dataTransformation)
+            data_final = statistics_csv_util.data_transformation("Temptemp.csv", dataTransformation)
             data_list = data_final.values.tolist()
             list_1 = [[row[2], row[3]] for row in data_list]
             list_2 = [[row[0], row[1]] for row in data_list]

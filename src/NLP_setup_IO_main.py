@@ -766,11 +766,11 @@ def close_GUI(IO_configuration_upon_entry):
         msg = '\n\nYou are setting up the default IO options for the NLP Suite. All GUIs rely on these options as saved in the config file "NLP_default_IO_config.cs."' \
                     '\n\nYOU WILL NOT BE ABLE TO RUN ANY ALGORITHMS IN THE NLP SUITE WITHOUT SETTING UP THE INPUT/OUTPUT OPTIONS.'
     if missing_input and missing_output:
-        msg = msg  + '\n\nYou MUST select either an INPUT TXT file or an INPUT files directory.\n\nYou MUST also select an OUTPUT files directory where all output files from the NLP Suite algorithms will be saved.'
+        msg = msg + '\n\nYou MUST select either an INPUT TXT file or an INPUT files directory.\n\nYou MUST also select an OUTPUT files directory where all output files from the NLP Suite algorithms will be saved.'
     if missing_input and not missing_output:
-        msg = msg  + 'You MUST select either an INPUT TXT file or an INPUT files directory.'
+        msg = msg + 'You MUST select either an INPUT TXT file or an INPUT files directory.'
     if not missing_input and missing_output:
-        msg = msg  + 'You MUST select an OUTPUT files directory where all output files from the NLP Suite algorithms will be saved.'
+        msg = msg + 'You MUST select an OUTPUT files directory where all output files from the NLP Suite algorithms will be saved.'
     if msg!='' and missing_IO!='':
         msg = msg + '\n\nAre you sure you want to EXIT the NLP_setup IO_main script anyway?'
         answer = tk.messagebox.askyesno("Warning", msg)
