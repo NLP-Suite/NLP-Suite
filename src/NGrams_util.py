@@ -66,10 +66,10 @@ def removedt(original_sentence):
     # from Stanford CoreNLP calculation
     # Create a regex pattern for the determiners, case-insensitive
     # The \b ensures the match is for whole words only, avoiding partial matches within words
-    dets_pattern = r'\b(?:' + '|'.join(map(re.escape, determiners)) + r')\b\s*'
+    dets_pattern = r'(\b(?:' + '|'.join(map(re.escape, determiners)) + r')\b)\s*'
     # Remove determiners along with the following spaces
     # We are using the \s* in the regex pattern to match zero or more whitespace characters following the determiner
-    filtered_sentence = re.sub(dets_pattern, "", original_sentence, flags=re.IGNORECASE)
+    filtered_sentence = re.sub(dets_pattern, " ", original_sentence, flags=re.IGNORECASE)
     # Stripping leading/trailing whitespace
     final_sentence = filtered_sentence.strip()
     return final_sentence
