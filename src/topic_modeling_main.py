@@ -55,7 +55,7 @@ args = parser.parse_args()
 """
 
 
-def run(inputDir, outputDir, openOutputFiles,chartPackage, dataTransformation, num_topics,
+def run(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, num_topics,
         MALLET_var,
         optimize_intervals_var,
         Gensim_var,

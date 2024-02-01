@@ -18,7 +18,7 @@ import file_merger_util
 
 def run(input_main_dir_path, output_dir_path,
     openOutputFiles,
-    
+	chartPackage, dataTransformation,
     merge_processSubdir,
     merge_saveFilenameInOutput,
     merge_embed_filenames_inStringSeparators,
@@ -47,6 +47,7 @@ def run(input_main_dir_path, output_dir_path,
 								config_filename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, "Analysis end", "Finished running 'File Merger' at", True, '', True, startTime, True)
+
 
 #the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 run_script_command=lambda: run(
