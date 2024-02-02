@@ -225,7 +225,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)
 
 # change the value of the readMe_message
-readMe_message="This Python 3 script merges txt files into a single txt file with a number of processing options."
+readMe_message="This Python 3 script merges txt files into a single txt file with a number of processing options.\n\nYou can also create simple merged files in command prompt/terminal. Please, read the TIPS filke TIPS_NLP_File merger.pdf for instructions."
 readMe_command = lambda: GUI_IO_util.display_help_button_info("NLP Suite Help", readMe_message)
 GUI_util.GUI_bottom(config_filename, config_input_output_numeric_options, y_multiplier_integer, readMe_command, videos_lookup, videos_options, TIPS_lookup, TIPS_options, IO_setup_display_brief, scriptName)
 
