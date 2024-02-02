@@ -204,6 +204,8 @@ pydict["Statistics (txt files): Number of nouns, verbs, adjectives, pronouns, ..
 pydict["Co-Reference PRONOMINAL resolution (via Stanford CoreNLP)"] = ["parsers_annotators_main.py", 1]
 pydict["Co-Occurrences VIEWER"] = ["NGrams_CoOccurrences_main.py", 1]
 pydict["N-grams VIEWER"] = ["NGrams_CoOccurrences_main.py", 1]
+pydict["Co-Occurrences"] = ["NGrams_CoOccurrences_main.py", 1]
+pydict["N-grams"] = ["NGrams_CoOccurrences_main.py", 1]
 pydict["N-grams search"] = ["NGrams_CoOccurrences_main.py", 1]
 pydict["N-grams/Co-Occurrences VIEWER"] = ["NGrams_CoOccurrences_main.py", 1]
 pydict["Data manipulation (ALL options GUI)"] = ["data_manipulation_main.py", 1]
