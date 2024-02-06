@@ -183,6 +183,18 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                 else:
                     filesToOpen.extend(outputFiles)
 
+# Categorical data
+
+        if filter_options_var=='No filtering':
+            fixed_param_var=None
+            rate_param_var=None
+            base_param_var=None
+        if filter_options_var=='Fixed parameter':
+            rate_param_var=None
+            base_param_var=None
+        if filter_options_var=='Propagating parameter':
+            fixed_param_var=None
+
 # Categorical data: Sunburst  --------------------------------------------------------------------------------
 
         if 'Sunburst' in categorical_menu_var.get():
@@ -216,7 +228,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
             #def Treemap(data,outputFilename,interest,var,extra_dimension_average,average_variable=None):
 
             outputFiles = charts_util.Sunburst_Treemap(inputFilename, outputFilename, outputDir,
-                                                       csv_file_categorical_field_list, 0)
+                                                       csv_file_categorical_field_list, 0,
+                                                       fixed_param_var, rate_param_var, base_param_var, filter_options_var)
             # 0 - Treemap, 1 - Sunburst, lazy boolean for shortening the code in charts_util
 
             # outputFiles = charts_util.Treemap(inputFilename, outputFilename,
