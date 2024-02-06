@@ -1,9 +1,22 @@
 import sys
+import GUI_util
+import IO_libraries_util
+
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Stanza_util.py",['stanza','os','tkinter','multiprocessing','pandas','gensim','spacy','pyLDAvis','matplotlib','logging','IPython'])==False:
+    sys.exit(0)
 
 import stanza
+try:
+    stanza.download('en')
+except:
+    import IO_internet_util
+    IO_internet_util.check_internet_availability_warning("Stanza_functions_util.py","stanza","json","re","tkinter","warnings")
+
 from stanza.pipeline.multilingual import MultilingualPipeline
+
 import pandas as pd
 import tkinter.messagebox as mb
+import sys
 import os
 import re
 import warnings

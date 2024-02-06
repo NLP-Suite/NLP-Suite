@@ -651,14 +651,35 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
         outputDir=outputDirSV
 
     outputDirSV = outputDir
-    for index,result in enumerate(results):
+    for index, result in enumerate(results):
         # create a subdirectory of the output directory by N-grams, 1, 2, 3, ...
         outputDir = IO_files_util.make_output_subdirectory('', '', outputDirSV, label='Ngrams_'+str(index+1),
                                                            silent=True)
         if outputDir == '':
             return
 
+        # Simon we should export a vocabulary 1-grams file, WITHOUT the fields 'Frequency in Document', 'Document ID', 'Document'
+        # we should call the file NLP_n-grams1_vocab_Word_Dir_newspaperArticles_stats
+        # We should also export the respective charts
         corpus_ngramsList = result.values.tolist()
+        if index+1==1:
+            corpus_ngramsList_vocab = []
+            for row in corpus_ngramsList:
+                # Extract the first and third element (index 0 and 2) of each row and append to the new list
+                corpus_ngramsList_vocab.append([row[0], row[2]])
+            # corpus_ngramsList_vocab = [corpus_ngramsList[:][i] for i in (0, 2)] #[[corpus_ngramsList[index][0], corpus_ngramsList[index][2]]]
+            csv_vocab_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
+                                                                         'n-grams' + str(index+1) + '_vocab_Word',
+                                                                         'stats', '', '',
+                                                                         '', False, True)
+            corpus_ngramsList_vocab.insert(0,[str(index+1)+'-grams', 'Frequency in Corpus'])
+
+            errorFound = IO_csv_util.list_to_csv(GUI_util.window, corpus_ngramsList_vocab, csv_vocab_outputFilename)
+
+            if not errorFound and chartPackage != 'No charts':
+                filesToOpen.append(csv_vocab_outputFilename)
+
+
         corpus_ngramsList.insert(0,[str(index+1)+'-grams', 'Frequency in Document', 'Frequency in Corpus', 'Document ID', 'Document'])
         csv_outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                      'n-grams' + str(index+1) + '_Word',

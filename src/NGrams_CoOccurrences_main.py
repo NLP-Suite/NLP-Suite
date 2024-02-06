@@ -180,11 +180,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                                                                 bySentenceID)
                 import statistics_csv_util
                 for file in outputFiles:
-                    print(file, 'beginning to process because maybe needed normalization....')
+                    # print(file, 'beginning to process because maybe needed normalization....')
                     if 'csv' in file:
                         statistics_csv_util.data_transformation(file, dataTransformation).to_csv(file, index=False)
-                        print("OK DONE TRANSFORMATION")
-                        print('===-=====-====')
+                        # print("OK DONE TRANSFORMATION")
+                        # print('===-=====-====')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
