@@ -40,7 +40,7 @@ def find_k_adjacent_elements(s, sv, kplus,kminus):
     after_k = s[idx+1:min(n, idx+kplus+1)]
     return prior_k + [sv] + after_k
 
-def find_EVERY_k_adjacent_elements(s, sv, kplus,kminus):
+def find_EVERY_k_adjacent_elements(s, sv, kplus,kminus, case_sensitive):
     #plus_K_var,minus_K_var
     n = len(s)
     #idx = s.index(sv)
@@ -48,7 +48,11 @@ def find_EVERY_k_adjacent_elements(s, sv, kplus,kminus):
     midi = []
     riight = []
     for idx in range(len(s)):
-        if s[idx]==sv:
+        p = s[idx]
+        if not case_sensitive:
+            p = s[idx].lower()
+            sv = sv.lower()
+        if p==sv:
             prior_k = s[max(0, idx-kminus):idx]
             after_k = s[idx+1:min(n, idx+kplus+1)]
             lefti.append(' '.join(prior_k))
@@ -146,7 +150,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     csvExist = os.path.exists(outputFilename)
 
     with open(outputFilename, 'w') as f:
-        f.write("Minus K Value of Words, Searched Word, Plus K Value of Words, Document ID, Document\n")
+        f.write("Minus K Value of Words (K=" + str(minus_K_words_var)+"), Searched Word, Plus K Value of Words (K=" + str(plus_K_words_var)+"), Document ID, Document\n")
     outputtxtFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'search')
     with open(outputtxtFilename, 'w') as f:
         f.write('') # just flushing it
@@ -159,6 +163,9 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
 
         # Use my logic when we have +- k because the csv is complicated to modify
         for index, file in enumerate(files):
+            docIndex += 1
+            _, tail = os.path.split(file)
+            print("Processing file " + str(docIndex) + "/" + str(nFile) + ' ' + tail)
             import hashfile
             if hashfile.calculate_checksum(file) in hashmap:
                 words_ = hashmap[hashfile.calculate_checksum(file)]
@@ -173,7 +180,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                 print("creating cache...")
             for keyword in search_keywords_list:
                 left, mid, right = find_EVERY_k_adjacent_elements(words_, keyword, plus_K_words_var,
-                                                                  minus_K_words_var)
+                                                                  minus_K_words_var, case_sensitive)
             with open(outputFilename,'a') as f:
                 for i in range(len(mid)):
                     a = [csv_escape(left[i]),csv_escape(mid[i]),csv_escape(right[i]), str(index+1), IO_csv_util.dressFilenameForCSVHyperlink(file)]

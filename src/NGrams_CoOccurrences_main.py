@@ -575,7 +575,7 @@ minus_K_words_entry.configure(width=3, state='normal')
 y_multiplier_integer=GUI_IO_util.placeWidget(window, GUI_IO_util.style_add_ngrams_button_pos+30, y_multiplier_integer,
                     minus_K_words_entry, True, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
-                    "Enter the number of words preceding the search word to be extracted, for context, together with the search sentences\n"
+                    "Enter the integer number of words (do not enter -) preceding the search word to be extracted, for context, together with the search sentences\n"
                     "The option does not apply to N-grams VIEWER or Co-Occurrences VIEWER")
 
 plus_K_lb = tk.Label(window, text='+K')
@@ -588,7 +588,7 @@ plus_K_words_entry.configure(width=3, state='normal')
 y_multiplier_integer=GUI_IO_util.placeWidget(window, GUI_IO_util.style_show_ngrams_button_pos+30, y_multiplier_integer,
                     plus_K_words_entry, False, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
-                    "Enter the number of words following the search word to be extracted, for context, together with the search sentences\n"
+                    "Enter the integer number of words (do not enter +) following the search word to be extracted, for context, together with the search sentences\n"
                     "The option does not apply to N-grams VIEWER or Co-Occurrences VIEWER")
 
 

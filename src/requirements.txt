@@ -13,7 +13,7 @@
 pygit2
 #
 spacy
-stanza==1.5.2
+stanza==1.5.1
 #
 pandas==1.5.2
 numpy

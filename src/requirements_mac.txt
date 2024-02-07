@@ -237,7 +237,7 @@ SPARQLWrapper==2.0.0
 srsly @ file:///private/var/folders/nz/j6p8yfhx1mv_0grj5xl4650h0000gp/T/abs_581acd93-b550-4b8a-a76a-ce58363e64a5hg6j7tvq/croots/recipe/srsly_1651584736471/work
 stack-data==0.6.2
 stanfordcorenlp==3.9.1.1
-stanza==1.5.2
+stanza==1.5.1
 striprtf==0.0.22
 summarizer==0.0.7
 tenacity==8.1.0

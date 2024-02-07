@@ -354,7 +354,7 @@ minus_K_words_entry.configure(width=3, state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
                     minus_K_words_entry, True, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
-                    "Enter the number of words preceding the search word to be extracted, for context, together with the search sentences")
+                    "Enter the integer number of words (do not enter -) preceding the search word to be extracted, for context, together with the search sentences")
 
 plus_K_lb = tk.Label(window, text='+K')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,1120,y_multiplier_integer,plus_K_lb,True)
@@ -366,7 +366,7 @@ plus_K_words_entry.configure(width=3, state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer,
                     plus_K_words_entry, True, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
-                    "Enter the number of words following the search word to be extracted, for context, together with the search sentences")
+                    "Enter the integer number of words (do not enter +) following the search word to be extracted, for context, together with the search sentences")
 
 create_subcorpus_var = tk.IntVar()
 create_subcorpus_var.set(0)
@@ -412,7 +412,7 @@ minus_K_sentences_entry.configure(width=3, state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window, 1080, y_multiplier_integer,
                     minus_K_sentences_entry, True, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
-                    "Enter the number of sentences preceding the search sentences to be extracted, for context, together with the search sentences")
+                    "Enter the integer number of sentences (do not enter -) preceding the search sentences to be extracted, for context, together with the search sentences")
 
 plus_K_lb = tk.Label(window, text='+K')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,1120,y_multiplier_integer,plus_K_lb,True)
@@ -424,7 +424,7 @@ plus_K_sentences_entry.configure(width=3, state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer,
                     plus_K_sentences_entry, False, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
-                    "Enter the number of sentences following the search sentences to be extracted, for context, together with the search sentences")
+                    "Enter the integer number of sentences (do not enter +) following the search sentences to be extracted, for context, together with the search sentences")
 
 def activate_all_options(*args):
     extra_GUIs_checkbox.configure(state='normal')
