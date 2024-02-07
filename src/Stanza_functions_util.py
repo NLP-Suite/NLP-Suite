@@ -16,6 +16,13 @@ Examples of Usage:
     lemma = lemmatize_stanza(stanzaPipeLine(word))
 '''
 
+import sys
+import GUI_util
+import IO_libraries_util
+
+if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"Stanza_functions_util",['tkinter','stanza']):
+    sys.exit(0)
+
 import stanza
 try:
     stanza.download('en')

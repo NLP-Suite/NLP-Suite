@@ -501,7 +501,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.open_reminder
                                                y_multiplier_integer,
                                                before_K_words_entry, True, False, False, False, 90,
                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_begin_pos,
-                                               "Enter the number of words to be extracted BEFORE the selected search word")
+                                               "Enter the integer number of words (do not enter -) to be extracted BEFORE the selected search word")
 
 after_K_words_entry_lb = tk.Label(window,
                                     text='After K-words')
@@ -515,7 +515,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.run_button_x_
                                                y_multiplier_integer,
                                                after_K_words_entry, False, False, False, False, 90,
                                                GUI_IO_util.file_splitter_split_mergedFile_separator_entry_end_pos,
-                                               "Enter the number of words to be extracted AFTER the selected search word")
+                                               "Enter the integer number of words (do not enter +) to be extracted AFTER the selected search word")
 
 
 search_token_lb = tk.Label(window, text='Searched token')

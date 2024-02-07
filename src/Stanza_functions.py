@@ -16,6 +16,20 @@ Examples of Usage:
     lemma = lemmatize_stanza(stanzaPipeLine(word))
 '''
 
+import sys
+import GUI_util
+import IO_libraries_util
+
+if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"Stanza_functions",['tkinter','stanza']):
+    sys.exit(0)
+
+import stanza
+try:
+    stanza.download('en')
+except:
+    import IO_internet_util
+    IO_internet_util.check_internet_availability_warning("Stanza_functions.py (stanza.download(en))")
+
 import stanza
 
 stanzaPipeLine = stanza.Pipeline(lang='en', processors= 'tokenize, lemma')
