@@ -488,3 +488,204 @@ word2vec,Gensim Word2Vec timing,"Beware that Gensim Word2Vec on the 296 files (2
 This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
 SVO,SVO inferred_subject_passive,"The SVO algorithms convert passive sentences into active ones. When no subject is present (e.g., ""A beautiful car was bought""), a subject is automatically added as inferred_subject_passive.",ON
 Stanford_CoreNLP,CoreNLP quote timing,"Beware that the CoreNLP quote annotator on the 296 files (2042312 words total) of the President of the United States Inaugural and State of the Union speeches, takes approximately 3 hours on a standard laptop.",ON
+1954_Mao_Zhou_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1955_Mao_Zhou_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1956_Mao_Zhou_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1957_Mao_Zhou_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1959_Mao-Zhou.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1959_Mao-Zhou_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1960_Mao_Zhou_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1964_Mao_Zhou_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1975_Mao_Zhou_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1978_Deng_Hua_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1979_Deng_Hua.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1979_Deng_Hua_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1980_Deng_Yao.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1980_Deng_Yao_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1981_Deng_Zhao_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1982_Deng_Zhao_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1983_Deng_Zhao_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1984_Deng_Zhao_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1985_Deng_Zhao_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1986_Deng_Zhao_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1987_Deng_Zhao_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1988_Deng_Li_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1989_Deng_Li_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1990_Jiang_Li_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1991_Jiang_Li_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1992_Jiang_Li_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1993_Jiang_Li_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1994_Jiang_Li_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1995_Jiang_Li_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1996_Jiang_Li_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1997_Jiang_Li_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1998_Jiang_Zhu_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+1999_Jiang_Zhu_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2000_Jiang_Wen_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2001_Jiang_Wen_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2002_Jiang_Wen_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2003_Hu_Wen_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2004_Hu_Wen_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2005_Hu_Wen_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2006_Hu_Wen_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2007_Hu_Wen_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2008_Hu_Wen_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2009_Hu_Wen_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2010_Hu_Wen_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2011_Hu_Wen_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2012_Hu_Wen_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2013_Xi_likeqiang.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2013_Xi_likeqiang_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2014_Xi_likeqiang.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2014_Xi_likeqiang_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2015_Xi_likeqiang.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2015_Xi_likeqiang_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2016_Xi_likeqiang.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2016_Xi_likeqiang_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2017_Xi_likeqiang.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2017_Xi_likeqiang_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2018_Xi_likeqiang.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2018_Xi_likeqiang_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2019_Xi_likeqiang.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2019_Xi_likeqiang_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2020_Xi_likeqiang.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2020_Xi_likeqiang_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2021_Xi_likeqiang.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2021_Xi_likeqiang_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2022_Xi_likeqiang.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2022_Xi_likeqiang_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+2023_Xi_Liqiang_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
