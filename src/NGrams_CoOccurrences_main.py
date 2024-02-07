@@ -609,7 +609,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_show_ngram
 
 def reset_viewer_options_list():
     viewer_options_list.clear()
-    viewer_options_menu_var.set('Case sensitive')
+    viewer_options_menu_var.set('Case sensitive (default)')
     viewer_options_menu.configure(state='normal')
 
 def show_viewer_options_list():
@@ -833,7 +833,7 @@ def clear(e):
     n_grams_viewer_var.set(0)
     CoOcc_Viewer_var.set(0)
     within_sentence_co_occurrence_search_var.set(0)
-    viewer_options_menu_var.set('Case sensitive')
+    viewer_options_menu_var.set('Case sensitive (default)')
     temporal_aggregation_var.set('year')
     activate_all_options()
     GUI_util.clear("Escape")
