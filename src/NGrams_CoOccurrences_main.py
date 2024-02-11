@@ -529,7 +529,7 @@ ngrams_number_menu = tk.OptionMenu(window, ngrams_size, 2, 3, 4, 5, 6)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+80, y_multiplier_integer,
                                    ngrams_number_menu,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate+80,
-                                   "Select the number of N-grams to be computed.")
+                                   "Select the number of N-grams to be computed. 1-grams and hapax legomena (once-occurring words) are always computed automatically.")
 
 ngrams_options_menu_lb = tk.Label(window, text='Options')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,ngrams_options_menu_lb,True)
@@ -537,7 +537,7 @@ ngrams_options_menu = tk.OptionMenu(window, ngrams_options_menu_var, 'Hapax lego
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+70, y_multiplier_integer,
                                    ngrams_options_menu,
-                                   True, False, True, False, 90, GUI_IO_util.open_reminders_x_coordinate,
+                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
                                    "Select the N-grams option; hit + button to add multiple options; Reset to start fresh; Show to display current selection.")
 
 

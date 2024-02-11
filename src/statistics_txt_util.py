@@ -658,9 +658,6 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
         if outputDir == '':
             return
 
-        # Simon we should export a vocabulary 1-grams file, WITHOUT the fields 'Frequency in Document', 'Document ID', 'Document'
-        # we should call the file NLP_n-grams1_vocab_Word_Dir_newspaperArticles_stats
-        # We should also export the respective charts
         corpus_ngramsList = result.values.tolist()
         if index+1==1:
             corpus_ngramsList_vocab = []
@@ -678,6 +675,28 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
 
             if not errorFound and chartPackage != 'No charts':
                 filesToOpen.append(csv_vocab_outputFilename)
+                columns_to_be_plotted_xAxis = [str(index+1) + '-grams']
+                columns_to_be_plotted_yAxis = ['Frequency in Corpus']
+               # chartPackage = "Excel" ## I am too tired ... I don't know why -- Simon
+               # createCharts = 1
+                # this variable is not right....
+                outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, csv_vocab_outputFilename,
+                                                          outputDir,
+                                                          columns_to_be_plotted_xAxis=columns_to_be_plotted_xAxis,
+                                                          columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
+                                                          chart_title='Frequency of ' + str(index+1) + '-gram' ,
+                                                          count_var=0, hover_label=[],  # hover_label,
+                                                          # outputFileNameType='n-grams_'+str(gram), # +'_'+ tail,
+                                                          outputFileNameType='',
+                                                          column_xAxis_label=str(index+1) + '-gram',
+                                                          groupByList=[], #['Document'],
+                                                          plotList=[], # ['Frequency in Document'],
+                                                          chart_title_label=str(index+1) + '-gram')
+                if outputFiles != None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
 
         corpus_ngramsList.insert(0,[str(index+1)+'-grams', 'Frequency in Document', 'Frequency in Corpus', 'Document ID', 'Document'])
