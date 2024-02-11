@@ -275,14 +275,14 @@ def activate_search_options(*args):
             search_options_list.remove('Case sensitive (default)')
         if 'sensitive' in search_options_menu_var.get() and 'insensitive' in str(search_options_list):
             search_options_list.remove('Case insensitive')
-        if search_options_menu_var.get()=='Lemmatize':
-            mb.showwarning(title='Warning', message='The option is not available yet.\n\nSorry!')
-            # search_options_menu_var.set('')
-            if len(search_options_list) > 0:
-                add_search_button.configure(state='normal')
-                reset_search_button.configure(state='normal')
-                show_search_button.configure(state='normal')
-                return
+        # if search_options_menu_var.get()=='Lemmatize':
+        #     mb.showwarning(title='Warning', message='The option is not available yet.\n\nSorry!')
+        #     # search_options_menu_var.set('')
+        #     if len(search_options_list) > 0:
+        #         add_search_button.configure(state='normal')
+        #         reset_search_button.configure(state='normal')
+        #         show_search_button.configure(state='normal')
+        #         return
         if not search_options_menu_var.get() in search_options_list:
             search_options_list.append(search_options_menu_var.get())
         # search_options_menu.configure(state="disabled")
@@ -333,7 +333,7 @@ search_by_keyword_checkbox = tk.Checkbutton(window, text='Search corpus by word(
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                     search_by_keyword_checkbox, True, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate,
-                    "Tick the checkbox to search for word(s) in your document(s) (e.g, coming out, standing in line, boyfriend)")
+                    "Tick the checkbox to search for word(s) in your document(s) (e.g, coming out, standing in line, boyfriend).\nIn output, a separate record will be produced for each comma-separated entry.")
 
 keyword_value_var.set('')
 keyword_value = tk.Entry(window,width=GUI_IO_util.file_search_byWord_widget_width,textvariable=keyword_value_var)
@@ -342,7 +342,7 @@ keyword_value = tk.Entry(window,width=GUI_IO_util.file_search_byWord_widget_widt
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
                     keyword_value, True, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
-                    "Enter the comma-separated, case-sensitive words/set of words that a sentence must contain in your document(s) (e.g, coming out, standing in line, boyfriend).")
+                    "Enter the comma-separated words/set of words that a sentence must contain in your document(s) (e.g, coming out, standing in line, boyfriend).\nIn output, a separate record will be produced for each comma-separated entry.")
 
 minus_K_lb = tk.Label(window, text='-K')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,1050,y_multiplier_integer,minus_K_lb,True)

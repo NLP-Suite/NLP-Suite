@@ -40,7 +40,7 @@ def find_k_adjacent_elements(s, sv, kplus,kminus):
     after_k = s[idx+1:min(n, idx+kplus+1)]
     return prior_k + [sv] + after_k
 
-def find_EVERY_k_adjacent_elements(s, sv, kplus,kminus, case_sensitive):
+def find_EVERY_k_adjacent_elements(s, sv, kplus,kminus):
     #plus_K_var,minus_K_var
     n = len(s)
     #idx = s.index(sv)
@@ -48,11 +48,7 @@ def find_EVERY_k_adjacent_elements(s, sv, kplus,kminus, case_sensitive):
     midi = []
     riight = []
     for idx in range(len(s)):
-        p = s[idx]
-        if not case_sensitive:
-            p = s[idx].lower()
-            sv = sv.lower()
-        if p==sv:
+        if s[idx]==sv:
             prior_k = s[max(0, idx-kminus):idx]
             after_k = s[idx+1:min(n, idx+kplus+1)]
             lefti.append(' '.join(prior_k))
@@ -149,8 +145,8 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     first_occurrence_index = -1
     csvExist = os.path.exists(outputFilename)
 
-    with open(outputFilename, 'w') as f:
-        f.write("Minus K Value of Words (K=" + str(minus_K_words_var)+"), Searched Word, Plus K Value of Words (K=" + str(plus_K_words_var)+"), Document ID, Document\n")
+    # with open(outputFilename, 'w') as f:
+    #     f.write("Minus K Value of Words (" + str(minus_K_words_var)+"), Searched Word, Plus K Value of Words (" + str(plus_K_words_var)+")") #, Document ID, Document\n")
     outputtxtFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'search')
     with open(outputtxtFilename, 'w') as f:
         f.write('') # just flushing it
@@ -159,13 +155,14 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
 
 
     if plus_K_words_var or minus_K_words_var:
+        with open(outputFilename, 'w', newline='') as f:
+            f.write("Minus K Value of Words (" + str(
+                minus_K_words_var) + "), Search word(s), Plus K Value of Words (" + str(
+                plus_K_words_var) + "),Document ID, Document\n")  # , Document ID, Document\n")
         outputFiles = []
 
         # Use my logic when we have +- k because the csv is complicated to modify
         for index, file in enumerate(files):
-            docIndex += 1
-            _, tail = os.path.split(file)
-            print("Processing file " + str(docIndex) + "/" + str(nFile) + ' ' + tail)
             import hashfile
             if hashfile.calculate_checksum(file) in hashmap:
                 words_ = hashmap[hashfile.calculate_checksum(file)]
@@ -180,12 +177,14 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                 print("creating cache...")
             for keyword in search_keywords_list:
                 left, mid, right = find_EVERY_k_adjacent_elements(words_, keyword, plus_K_words_var,
-                                                                  minus_K_words_var, case_sensitive)
-            with open(outputFilename,'a') as f:
+                                                                  minus_K_words_var)
+            with open(outputFilename,'a', newline='') as f:
+                writer = csv.writer(f)
                 for i in range(len(mid)):
-                    a = [csv_escape(left[i]),csv_escape(mid[i]),csv_escape(right[i]), str(index+1), IO_csv_util.dressFilenameForCSVHyperlink(file)]
-                    f.write(','.join(a)+"\n")
-            with open(outputtxtFilename,'a') as f:
+                    str_filename = IO_csv_util.dressFilenameForCSVHyperlink(file)
+                    writer.writerow([csv_escape(left[i]),csv_escape(mid[i]),csv_escape(right[i]), str(index+1), str_filename])
+                    #f.write(','.join(a)+"\n")
+            with open(outputtxtFilename,'a', newline='') as f:
                 for i in range(len(mid)):
                     a = [left[i],right[i]] # If you would like to retain, just follow the 4 lines above and you can do that.
                     # this would be the basis for wordclouds
@@ -227,14 +226,22 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
             return outputFiles
 
     if (not (minus_K_words_var and plus_K_words_var)):
+        with open(outputFilename, 'w') as f:
+            f.write("")  # flushing
+        form_lemma_pair = {}
         with open(outputFilename, "a", newline="", encoding='utf-8', errors='ignore') as csvFile:
+            # with open(outputFilename, "a", newline="", encoding='utf-8', errors='ignore') as csvFile:
             writer = csv.writer(csvFile)
+            with open(outputFilename, 'w') as f:
+                f.write("Minus K Value of Words (" + str(
+                    minus_K_words_var) + "), Search word(s), Plus K Value of Words (" + str(
+                    plus_K_words_var) + "),")  # , Document ID, Document\n")
             if csvExist:
                 csvFile.truncate(0)
-                writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position in document",
+                writer.writerow(["Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position in document",
                                  "Frequency of occurrence", "Sentence ID", "Sentence", "Document ID", "Document"])
             else:
-                writer.writerow(["Search word(s)", "Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position in document",
+                writer.writerow(["Lemma", "Sentence ID of first occurrence", "Number of sentences", "Relative position in document",
                                  "Frequency of occurrence", "Sentence ID", "Sentence", "Document ID", "Document"])
 
             for file in files:
@@ -311,15 +318,22 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                     corpus_to_copy.add(file)
                                     document_percent_position = round((sentence_index / len_sentences_), 2)
                                     if lemmatize:
-                                        form = search_keywords_list
+
+                                        if keyword not in form_lemma_pair:
+                                            nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
+                                            doc = nlp(keyword)
+                                            form = doc.sentences[0].words[0].lemma
+                                            form_lemma_pair[keyword]=form
+                                        else:
+                                            form = form_lemma_pair[keyword]
                                         writer.writerow(
-                                            [keyword, form, first_occurrence_index, len_sentences_, document_percent_position, frequency,
+                                            ['',keyword, '',form,first_occurrence_index, len_sentences_, document_percent_position, frequency,
                                             sentence_index, sentence,
                                             docIndex,
                                             IO_csv_util.dressFilenameForCSVHyperlink(file)])
                                     else:
                                         writer.writerow(
-                                            [keyword, '', first_occurrence_index, len_sentences_, document_percent_position, frequency,
+                                            ['',keyword,'','', first_occurrence_index, len_sentences_, document_percent_position, frequency,
                                             sentence_index, sentence,
                                             docIndex,
                                             IO_csv_util.dressFilenameForCSVHyperlink(file)])
@@ -347,7 +361,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                         hashfile.writehash(hashmap, hashOutputDir)
                         print("creating cache...")
 
-
+                    dict_lemmatized_form = {}
                   #  words_ = word_tokenize_stanza(stanzaPipeLine(docText))
                     wordCounter = collections.Counter(words_)
                     for keyword in search_keywords_list:
@@ -703,7 +717,7 @@ def search_extract_sentences(window, inputFilename, inputDir, outputDir, configF
     max_words = 100
     font = 'Default'
     prefer_horizontal = .9
-    lemmatize = False
+    # lemmatize = False
     exclude_stopwords = True
     exclude_punctuation = True
     lowercase = False
