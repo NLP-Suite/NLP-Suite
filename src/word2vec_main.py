@@ -57,15 +57,14 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTr
 
         import WSI_util, WSI_viz, WSI_keyterms
 
-        docs, vocabs, paths = WSI_util.get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=WSI_keywords_var.get(),
-                                                fileType='.txt', configFileName=config_filename)
+        all_sent, all_vocab, Word2Vec_Dir, docs, paths = WSI_util.get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=WSI_keywords_var.get(), fileType='.txt', configFileName=config_filename)
         k_range = (k_means_min_var.get(), k_means_max_var.get())
-        WSI_util.get_centroids(docs, vocabs, paths, k_range)
-        WSI_util.match_embeddings(docs, vocabs, paths)
-        s_paths = WSI_util.get_cluster_sentences(docs, paths)
-        v_paths = WSI_viz.pie_charts(docs, paths)
+        WSI_util.get_centroids(all_sent, all_vocab, Word2Vec_Dir, k_range)
+        WSI_util.match_embeddings(all_sent, all_vocab, Word2Vec_Dir)
+        s_paths = WSI_util.get_cluster_sentences(docs, paths, Word2Vec_Dir)
+        v_paths = WSI_viz.sense_bar_chart(Word2Vec_Dir)
         n = int(ngrams_menu_var.get().split('-')[0])
-        k_paths = WSI_keyterms.get_keyterms(docs, paths, topn=top_keywords_var.get(), ngram_range=(1, n))
+        k_paths = WSI_keyterms.get_keyterms(Word2Vec_Dir, topn=top_keywords_var.get(), ngram_range=(1, n))
         filesToOpen = s_paths + v_paths + k_paths
 
     if BERT_var:

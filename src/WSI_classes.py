@@ -52,7 +52,7 @@ class Clusterer():
                 all_data.append(indexed_tokens)
                 all_words.append(tokenized_text)
                 all_masks.append(list(np.ones(len(indexed_tokens))))
-                all_users.append(sentence[0])
+                all_users.append('-'.join([str(sentence[0]), sentence[-1]]))
     
         lengths = np.array([len(l) for l in all_data])
         ordering = np.argsort(lengths)
@@ -94,6 +94,7 @@ class Clusterer():
                 current_batch = 12
             if max_len > 200:
                 current_batch = 6
+
         return batched_data, batched_words, batched_masks, batched_users
     
     
@@ -171,32 +172,34 @@ class Clusterer():
         return np.array(data)
     
     
-    def cluster_embeddings(self, data, k_range, w, doc, ID=None, dim_reduct=None, rs=SEED, lamb=10000, finetuned=False, a_s=None):
+    def cluster_embeddings(self, data, k_range, w, ID=None, dim_reduct=None, rs=SEED, lamb=10000, finetuned=False, a_s=None):
+            
+        if a_s is None:
+            ks = range(k_range[0], k_range[1])
+        else:
+            ks = range(a_s[0], a_s[1])
+        centroids = {}
+        rss = np.zeros(len(ks))
+        for i, k in enumerate(ks):
+            try:
+                km = KMeans(k, random_state=rs)
+                km.fit(data)
+                rss[i] = km.inertia_
+                centroids[k] = km.cluster_centers_
+            except ValueError as e:
+                s=str(e)[10:]
+                freq = s.split(" ", 1)[0]
+                if 'should be >=' in str(e):
+                    mb.showerror(title=':-(', message=f'The frequency of "{w}" ({str(freq)}) in in your dataset is less than the number of sense clusters ({k}) to be produced.\n\nPlease try to either lower the range of sense clusters to be produced or choose more frequent words to analyse and try again.\n\nAlso consider the possibility that your dataset is too small to use word sense induction on.')
+                    raise
+        crits = []
+        for i in range(len(ks)):
+            k = ks[i]
+            crit = rss[i] + lamb*k
+            crits.append(crit)
+        best_k = np.argmin(crits)
     
-            if a_s is None:
-                ks = range(k_range[0], k_range[1])
-            else:
-                ks = range(a_s[0], a_s[1])
-            centroids = {}
-            rss = np.zeros(len(ks))
-            for i, k in enumerate(ks):
-                try:
-                    km = KMeans(k, random_state=rs)
-                    km.fit(data)
-                    rss[i] = km.inertia_
-                    centroids[k] = km.cluster_centers_
-                except ValueError as e:
-                    if 'should be >=' in str(e):
-                        mb.showerror(title=':-(', message=f'The frequency of "{w}" in "{os.path.basename(doc)}" is less than the number of sense clusters ({k}) to be produced.\n\nPlease try to either lower the range of sense clusters to be produced or choose more frequent words to analyse and try again.\n\nAlso consider the possibility that the document "{os.path.basename(doc)}" is too small to use word sense induction on.')
-                        raise
-            crits = []
-            for i in range(len(ks)):
-                k = ks[i]
-                crit = rss[i] + lamb*k
-                crits.append(crit)
-            best_k = np.argmin(crits)
-    
-            return centroids[ks[best_k]]
+        return centroids[ks[best_k]]
     
 ####
 
@@ -227,7 +230,7 @@ class Matcher():
                 all_data.append(indexed_tokens)
                 all_words.append(tokenized_text)
                 all_masks.append(list(np.ones(len(indexed_tokens))))
-                all_users.append(sentence[0])
+                all_users.append('-'.join([str(sentence[0]), sentence[-1]]))
     
         lengths = np.array([len(l) for l in all_data])
         ordering = np.argsort(lengths)
@@ -291,7 +294,7 @@ class Matcher():
     def batch_match(self, outfile, centroids_d, data_dict):
     
         for tok in data_dict:
-            rep_list = data_dict[tok]
+            rep_list = data_dict[tok]        
             IDs = []
             reps = []
             for tup in rep_list:
@@ -319,7 +322,7 @@ class Matcher():
         ongoing_word = []
         ongoing_rep = []
         data_dict = defaultdict(list) # { word : [(user, rep)] }
-        for b, _ in enumerate(batched_data):
+        for b, _ in enumerate(tqdm(batched_data, desc='Matching...')):
             # each item in these lists/tensors is a sentence
             tokens_tensor = batched_data[b].to(device)
             atten_tensor = batched_masks[b].to(device)

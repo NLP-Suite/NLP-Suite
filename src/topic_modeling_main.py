@@ -36,6 +36,8 @@ import tkinter as tk
 import tkinter.messagebox as mb
 # necessary to avoid opening the GUI repeatedly
 from multiprocessing import current_process
+import spacy
+# python -m spacy download en_core_web_sm)
 
 import GUI_IO_util
 import topic_modeling_mallet_util
