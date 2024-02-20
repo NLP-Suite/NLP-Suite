@@ -1094,6 +1094,15 @@ def get_GUI_width(size_type=1):
             return 1350
         if size_type == 4:
             return 1400
+    elif sys.platform == 'linux': # for now we have two basic sizes
+        if size_type == 1:
+            return 1200 # increased from 1100 to account for the new SETUP widget on the last line of any GUI
+        if size_type == 2:
+                return 1200
+        elif size_type==3:
+            return 1300
+        elif size_type==4:
+            return 1300    
     elif sys.platform == 'win32': # for now we have two basic sizes
         if size_type == 1:
             return 1200 # increased from 1100 to account for the new SETUP widget on the last line of any GUI
