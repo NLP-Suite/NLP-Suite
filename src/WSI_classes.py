@@ -52,7 +52,7 @@ class Clusterer():
                 all_data.append(indexed_tokens)
                 all_words.append(tokenized_text)
                 all_masks.append(list(np.ones(len(indexed_tokens))))
-                all_users.append('-'.join([str(sentence[0]), sentence[-1]]))
+                all_users.append('<sep>'.join([str(sentence[0]), sentence[-1]]))
     
         lengths = np.array([len(l) for l in all_data])
         ordering = np.argsort(lengths)
@@ -230,7 +230,7 @@ class Matcher():
                 all_data.append(indexed_tokens)
                 all_words.append(tokenized_text)
                 all_masks.append(list(np.ones(len(indexed_tokens))))
-                all_users.append('-'.join([str(sentence[0]), sentence[-1]]))
+                all_users.append('<sep>'.join([str(sentence[0]), sentence[-1]]))
     
         lengths = np.array([len(l) for l in all_data])
         ordering = np.argsort(lengths)

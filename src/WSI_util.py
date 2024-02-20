@@ -44,8 +44,9 @@ websites = "[.](com|net|org|io|gov)"
 digits = "([0-9])"
 
 
-def get_vocab(text, u_vocab='', top_n=5, min_count=5, add_stopwords=['said']):
-
+def get_vocab(sentences, u_vocab='', top_n=5, min_count=5, add_stopwords=['said']):
+    
+    text = ' '.join([tpl[1] for tpl in sentences])
     if u_vocab == '':
         pattern = re.compile('[^A-Za-z0-9 ]+')
         text = ' '.join(re.sub(pattern, '', text).split())
@@ -63,6 +64,10 @@ def split_into_sentences(text, docID):
 
     text = " " + text + "  "
     text = text.replace("\n", " ")
+    text = text.replace(",", "")
+    text = text.replace(";", "")
+    text = text.replace(":", "")
+    text = text.replace("\"", "")
     text = re.sub(prefixes, "\\1<prd>", text)
     text = re.sub(websites, "<prd>\\1", text)
     text = re.sub(digits + "[.]" + digits, "\\1<prd>\\2", text)
@@ -79,10 +84,10 @@ def split_into_sentences(text, docID):
     if "\"" in text: text = text.replace(".\"", "\".")
     if "!" in text: text = text.replace("!\"", "\"!")
     if "?" in text: text = text.replace("?\"", "\"?")
-    text = text.replace(".", ".<stop>")
-    text = text.replace("?", "?<stop>")
-    text = text.replace("!", "!<stop>")
-    text = text.replace("<prd>", ".")
+    text = text.replace(".", "<stop>")
+    text = text.replace("?", "<stop>")
+    text = text.replace("!", "<stop>")
+    text = text.replace("<prd>", " ")
     sentences = text.split("<stop>")
     sentences = sentences[:-1]
     sentences = [(i, s.strip(), docID) for i, s in enumerate(sentences)]
@@ -117,12 +122,13 @@ def get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=[], fileType='.txt',
         if not os.path.exists(o_path):
             os.makedirs(o_path)
         sentences, fullText = get_sent(doc, o_path)
-        vocab = get_vocab(fullText, u_vocab=u_vocab)
+        vocab = get_vocab(sentences, u_vocab=u_vocab)
         all_sent += sentences
         all_vocab += vocab
         docs[doc] = sentences
         o_paths[doc] = o_path
-    vocab = list(set(vocab))
+    all_sent = list(set(all_sent))
+    all_vocab = list(set(all_vocab))
 
     return all_sent, all_vocab, Word2Vec_Dir, docs, o_paths
 
@@ -173,40 +179,38 @@ def match_embeddings(all_sent, all_vocab, Word2Vec_Dir):
     print('\nWord sense induction finished. Producing output files...\n')
 
 
-def get_cluster_sentences(docs, paths, Word2Vec_Dir):
+def get_cluster_sentences(Word2Vec_Dir):
 
     s_paths = []
     with open(f'{Word2Vec_Dir}/output/senses', 'r') as f:
         tokens = f.read().split('\n')[:-1]
-    senses = sorted(list(set([tok.split('\t')[-1] for tok in tokens])))
     vocab = list(set([tok.split('\t')[1] for tok in tokens]))
     tokens = [tok.split('\t') for tok in tokens]
     d = {}
     for w in vocab:
-        d[w] = {s: [] for s in senses}
         w_path = f'{Word2Vec_Dir}/results/{w}'
         if not os.path.exists(w_path):
             os.makedirs(w_path)
+        occs = [tok for tok in tokens if tok[1] == w]
+        senses = sorted(list(set([occ[-1] for occ in occs])))
         results = open(f'{w_path}/{w}_clusters.txt', 'w')
         s_paths.append(f'{w_path}/{w}_clusters.txt')
+        d[w] = {s: [] for s in senses}
         for s in senses:
             results.write(f'\n\nSENSE {s}:\n')
-            for doc in docs:
-                i_path = paths[doc]
-                with open(f'{i_path}/sentences.pickle', 'rb') as f:
+            s_occs = [tok for tok in occs if tok[-1] == s]
+            sents = []
+            for i, tok in enumerate(s_occs):
+                idx = int(tok[0].split('<sep>')[0])
+                f_name = tok[0].split('<sep>')[1]
+                with open(f'{Word2Vec_Dir}/output/{f_name.split(".txt")[0]}/sentences.pickle', 'rb') as f:
                     sentences = pickle.load(f)
-                occs = [tok for tok in tokens if \
-                        tok[-1] == s and tok[1] == w and tok[0].split('-')[1] == doc.split('/')[-1]]
-                sents = []
-                for i, tok in enumerate(occs):
-                    idx = int(tok[0].split('-')[0])
-                    f_name = tok[0].split('-')[1]
-                    sents.append((f_name, sentences[idx][1]))
-                sents = list(set(sents))
-                d[w][s] += [tpl[1] for tpl in sents]
-                for sent in sents:
-                    results.write('\n')
-                    results.write(f'FILE: {sent[0]} SEQUENCE: {sent[1]}')
+                sents.append(sentences[idx])
+            d[w][s] = [sent[1] for sent in sents]
+            sents = list(set(sents))
+            for sent in sents:
+                results.write('\n')
+                results.write(f'FILE: {sent[-1]} SEQUENCE: {sent[1]}')
     with open(f'{Word2Vec_Dir}/output/d.pickle', 'wb') as f:
         pickle.dump(d, f)
 
