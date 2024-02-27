@@ -53,7 +53,6 @@ def MALLET_heatmap(composition_file, topics_file, outputDir, fig_set={"figure.fi
         print(data.size)
         data = data.loc[:, (data != 0).any(axis=0)]
         print(data.size)
-
     heatmap = sns.heatmap(data,  # Select all columns excluding index column
                           vmin=0, vmax=1,  # Range 0-1
                           annot=True,  # Display values inside heatmap

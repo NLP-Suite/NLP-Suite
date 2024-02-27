@@ -1192,7 +1192,7 @@ def complete_sentence_index(file_path):
 def multiple_barchart(datalist, outputFilename, var, ntopchoices):
     if pd.__version__[0] == '2':
         mb.showwarning(title='Warning',
-                       message='The multiple_barchart algorithm is incompatible with a version of pandas higher than 2.0\n\nIn command line, please, pip unistall pandas and pip install pandas==1.5.2.\n\nMake sure you are in the right NLP environment by typing conda activate NLP')
+                       message='The multiple_barchart algorithm is incompatible with a version of pandas higher than 2.0\n\nIn command line, please, pip unistall pandas and pip install pandas==1.5.2 (or even pip install pandas==1.4.4).\n\nMake sure you are in the right NLP environment by typing conda activate NLP')
         return
 
     tempdatalist = []

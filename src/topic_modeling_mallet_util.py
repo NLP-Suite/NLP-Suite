@@ -256,8 +256,12 @@ def run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransform
                                'variables by reading the TIPS file for MALLET installation and setting MALLET '
                                'environment variables.')
         return
-    Keys_FileName = file_converter_util.tsv_converter(GUI_util.window, Keys_FileName, outputDir)
-    Composition_FileName = file_converter_util.tsv_converter(GUI_util.window, Composition_FileName, outputDir)
+    header = ['Topic #', 'Weight', 'Keywords']
+    Keys_FileName = file_converter_util.tsv_converter(GUI_util.window, Keys_FileName, outputDir, header)
+    Topic_Weight_in_Document = [f"Topic #{i} Weight in Document" for i in range(numTopics)]
+    header = ['Document ID', 'Document']
+    header.extend(Topic_Weight_in_Document)
+    Composition_FileName = file_converter_util.tsv_converter(GUI_util.window, Composition_FileName, outputDir, header)
     filesToOpen.append(Keys_FileName)
     filesToOpen.append(Composition_FileName)
 

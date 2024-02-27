@@ -241,7 +241,7 @@ def rtf_converter(window,fileName,inputdirectory,outputdirectory,openOutputFiles
 
 # the tsv file (fileName) has the full path embedded
 # File Converter (tsv --> csv)
-def tsv_converter(window,fileName,outputdirectory):
+def tsv_converter(window,fileName,outputdirectory, header):
     # read a tab-separated file
     with open(fileName,'r',encoding="utf-8",errors='ignore') as fin:
         cr = csv.reader(fin, delimiter='\t')
@@ -251,6 +251,7 @@ def tsv_converter(window,fileName,outputdirectory):
     fileName,extension = splitext(fileName)
     with open(fileName+'.csv','w',newline='') as fou:
         cw = csv.writer(fou, dialect = 'excel')
+        cw.writerow(header)
         for item in filecontents:
             cw.writerow(item)
     return fileName+'.csv'
