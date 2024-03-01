@@ -712,6 +712,8 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
     if not (isinstance(data_to_be_plotted[0], list)):
         for df in data_to_be_plotted:
             header = list(df.columns)
+            # when running topic modeling the topic number which is an integer gets converted to a decimal and plotted as a decimal
+            #   the following command is doing that
             data = df.values.tolist()
             data.insert(0, header)
             transform_list.append(data)
@@ -1192,7 +1194,7 @@ def complete_sentence_index(file_path):
 def multiple_barchart(datalist, outputFilename, var, ntopchoices):
     if pd.__version__[0] == '2':
         mb.showwarning(title='Warning',
-                       message='The multiple_barchart algorithm is incompatible with a version of pandas higher than 2.0\n\nIn command line, please, pip unistall pandas and pip install pandas==1.5.2.\n\nMake sure you are in the right NLP environment by typing conda activate NLP')
+                       message='The multiple_barchart algorithm is incompatible with a version of pandas higher than 2.0\n\nIn command line, please, pip unistall pandas and pip install pandas==1.5.2 (or even pip install pandas==1.4.4).\n\nMake sure you are in the right NLP environment by typing conda activate NLP')
         return
 
     tempdatalist = []

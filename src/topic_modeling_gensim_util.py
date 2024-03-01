@@ -331,7 +331,7 @@ def run_Gensim(window, inputDir, outputDir, config_filename, num_topics, remove_
     filesToOpen=[]
     if pd.__version__[0]=='2':
         mb.showwarning(title='Warning',
-                       message='Gensim is incompatible with a version of pandas higher than 2.0\n\nIn command line, please, pip unistall pandas and pip install pandas==1.5.2.\n\nMake sure you are in the right NLP environment by typing conda activate NLP')
+                       message='Gensim is incompatible with a version of pandas higher than 2.0\n\nIn command line, please, pip unistall pandas and pip install pandas==1.5.2 (or even pip install pandas==1.4.4).\n\nMake sure you are in the right NLP environment by typing conda activate NLP')
         return
 
     numFiles = IO_files_util.GetNumberOfDocumentsInDirectory(inputDir, 'txt')
