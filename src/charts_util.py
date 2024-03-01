@@ -712,6 +712,8 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
     if not (isinstance(data_to_be_plotted[0], list)):
         for df in data_to_be_plotted:
             header = list(df.columns)
+            # when running topic modeling the topic number which is an integer gets converted to a decimal and plotted as a decimal
+            #   the following command is doing that
             data = df.values.tolist()
             data.insert(0, header)
             transform_list.append(data)
