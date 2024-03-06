@@ -689,3 +689,4 @@ This is done so that a date string returned by gthe function can be sorted prope
 2023_Xi_Liqiang_1.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
 
 This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+NLP_setup_package_language,Stanza languages,"Pressing + with the default language option ""English"" displayed in the dropdown menu, will add ""English"" to the list of languages processed by Stanza. If you do not wish to include ""English,"" please, click the Reset button first then add the languages to be processed one at a time.",ON

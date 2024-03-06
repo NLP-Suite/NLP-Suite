@@ -44,16 +44,16 @@ websites = "[.](com|net|org|io|gov)"
 digits = "([0-9])"
 
 
-def get_vocab(sentences, u_vocab='', top_n=5, min_count=5, add_stopwords=['said']):
+def get_vocab(sentences, u_vocab='', top_n=0.008, min_count=50, add_stopwords=['said']):
     
-    text = ' '.join([tpl[1] for tpl in sentences])
     if u_vocab == '':
-        pattern = re.compile('[^A-Za-z0-9 ]+')
-        text = ' '.join(re.sub(pattern, '', text).split())
+        text = ' '.join([tpl[1] for tpl in sentences]).split()
         en = spacy.load('en_core_web_sm')
         stopwords = list(en.Defaults.stop_words) + add_stopwords
-        u_vocab = Counter([w for w in text.split() if w.lower() not in stopwords])
-        u_vocab = [w for w, i in u_vocab.most_common(top_n) if i >= min_count]
+        text = [w.strip() for w in text if w.strip() not in stopwords]
+        u_vocab = Counter(text)
+        u_vocab = [w for w, i in u_vocab.most_common(round(top_n * len(u_vocab))) \
+                if u_vocab[w] >= min_count]
     else:
         u_vocab = [w.strip() for w in u_vocab.split(',')]
 
@@ -61,7 +61,8 @@ def get_vocab(sentences, u_vocab='', top_n=5, min_count=5, add_stopwords=['said'
 
 
 def split_into_sentences(text, docID):
-
+    
+    text = text.replace('--', '')
     text = " " + text + "  "
     text = text.replace("\n", " ")
     text = text.replace(",", "")
@@ -90,7 +91,7 @@ def split_into_sentences(text, docID):
     text = text.replace("<prd>", " ")
     sentences = text.split("<stop>")
     sentences = sentences[:-1]
-    sentences = [(i, s.strip(), docID) for i, s in enumerate(sentences)]
+    sentences = [(i, re.sub('[^A-Za-z ]+', '', s.strip()), docID) for i, s in enumerate(sentences)]
 
     return sentences
 
@@ -127,7 +128,6 @@ def get_data(inputFilename, inputDir, Word2Vec_Dir, u_vocab=[], fileType='.txt',
         all_vocab += vocab
         docs[doc] = sentences
         o_paths[doc] = o_path
-    all_sent = list(set(all_sent))
     all_vocab = list(set(all_vocab))
 
     return all_sent, all_vocab, Word2Vec_Dir, docs, o_paths

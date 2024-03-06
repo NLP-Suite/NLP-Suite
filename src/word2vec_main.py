@@ -92,7 +92,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles, chartPackage, dataTr
                                  keywords_var,
                                  compute_distances_var, top_words_var,
                                  sg_menu_var, vector_size_var, window_var, min_count_var,
-                                 vis_menu_var, dim_menu_var)
+                                 vis_menu_var, dim_menu_var, diachronic=True)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, Word2Vec_Dir, scriptName)

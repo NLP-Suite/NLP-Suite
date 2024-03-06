@@ -455,11 +455,11 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordin
 if os.path.isfile(inputFilename.get()):
     menu_values=IO_csv_util.get_csvfile_headers(inputFilename.get())
 else:
-    menu_values = ''
+    menu_values = ' '
 
 location_field_lb = tk.Label(window, text='Select the column containing location names')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,location_field_lb,True)
-if menu_values!='':
+if menu_values!=' ':
     location_field = tk.OptionMenu(window, location_menu_var,*menu_values)
 else:
     location_field = tk.OptionMenu(window, location_menu_var,menu_values)
