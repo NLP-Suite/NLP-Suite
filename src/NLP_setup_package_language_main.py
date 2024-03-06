@@ -229,6 +229,7 @@ def activate_NLP_basics(*args):
     if package_basics_var.get()=='spaCy':
         mb.showwarning(title='Warning',
                        message='spaCy is not available yet for basic NLP operations.\n\nPlease, select another option.')
+        # package_basics_var.set('Stanza')
 package_basics_var.trace('w', activate_NLP_basics)
 
 language_lb = tk.Label(window,text='Language')
@@ -354,6 +355,7 @@ def save_NLP_config(parsers):
 
     # TODO any change in the labels MAIN NLP PACKAGE, LEMMATIZER PACKAGE, and LANGUAGE(S) must be carried out
     #   several times in config_util.py
+    # currently_selected_package_language= {'MAIN NLP PACKAGE': package_var.get(), 'LEMMATIZER PACKAGE': package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
     currently_selected_package_language= {'MAIN NLP PACKAGE': package_var.get(), 'LEMMATIZER PACKAGE': package_basics_var.get(), "LANGUAGE(S)": language_var.get()}
     config_util.save_NLP_package_language_config(window, currently_selected_package_language, package_var.get(), package_basics_var.get(),
                             language_var.get(), parsers_display_area['text'],
@@ -437,8 +439,14 @@ def close_GUI():
     if package_basics_var.get()=='':
         mb.showwarning(title='Warning',message='You must select the package for the basic functions of tokenizing, lemmatizing, sentence splitting before closing.')
         return
+    if package_basics_var.get()!='Stanza':
+        mb.showwarning(title='Warning',message='Stanza is the only option currently available as the package for the basic functions of tokenizing, lemmatizing, sentence splitting before closing.\n\nPlease, use the dropdown menu to select Stanza for basic functions.')
+        return
     import NLP_setup_update_util
     currently_selected_package_language = get_str_package_display_area_value()
+    global package_display_area_value_upon_entry
+    print(package_display_area_value_upon_entry)
+    print(currently_selected_package_language)
     if package_display_area_value_upon_entry != currently_selected_package_language:
         answer = tk.messagebox.askyesno("Warning", 'You have made changes to the default NLP packages and language.\n\nYou will lose your changes if you CLOSE without saving.\n\nWOULD YOU LIKE TO SAVE THE CHANGES MADE?')
         if answer:

@@ -15,7 +15,9 @@ import os
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
+import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+import math
 
 import IO_csv_util
 
@@ -339,4 +341,122 @@ def plot_multi_line_chart_w_slider_px(fileName, chart_title, col_to_be_ploted, s
     )
     #save_chart(figs, outputDir, chart_title, False)
     return figs
+
+#Bubble Chart Graph
+#Created by Aiden Amaya and ChatGPT 3.5
+# The chart will plot yAxis vs the xAxis, but categorize them using the category field.
+# Filename is the csv file it will read, xAxis, yAxis, and category are all csv file column fields.
+
+def plot_graph_bubble_chart(fileName, xAxis, yAxis, category):
+    # Load csv
+    df = pd.read_csv(fileName)
+
+    # Determine x-axis and y-axis columns based on user inputs, as well as the category you want bubbles to be separated by.
+    x_axis = df.columns[xAxis]
+    y_axis = df.columns[yAxis]
+    cat = df.columns[category]
+
+    # Define hover text based off of the column entries.
+    hover_text = []
+    for index, row in df.iterrows():
+        text = ''
+        for col in df.columns:
+            text += f"{col}: {row[col]}<br>"
+        hover_text.append(text)
+
+    df['text'] = hover_text
+
+    # If there is a number column, determine bubble size based on it.
+    numeric_columns = df.select_dtypes(include=['number']).columns
+    if not numeric_columns.empty:
+        bubble_size = [math.sqrt(row[numeric_columns[0]]) for l, row in df.iterrows()]
+        df['size'] = bubble_size
+        sizeref = 2. * max(df['size']) / (100 ** 2)
+    else:
+        sizeref = None
+
+    # Define color mapping for categories
+    category_colors = {
+        category_value: f'rgb({i * 50 % 256}, {i * 30 % 256}, {i * 70 % 256})'
+        for i, category_value in enumerate(df[cat].unique())
+    }
+
+    fig = go.Figure()
+
+    # Create scatterplot.
+    for i, (_, row) in enumerate(df.iterrows()):
+        color = category_colors[row[cat]] if cat in df.columns else None
+        fig.add_trace(go.Scatter(
+            x=[row[x_axis]], y=[row[y_axis]],
+            text=row['text'],
+            marker=dict(
+                size=row['size'] if 'size' in df.columns else None,
+                color=color,
+            ),
+            name=row[cat] if cat in df.columns else None
+        ))
+
+    # Tune marker appearance and layout
+    fig.update_traces(mode='markers', marker=dict(sizemode='area', sizeref=sizeref, line_width=2))
+
+    # Adjust bubble positions based on the values of the x and y axes
+    if sizeref:
+        fig.update_layout(autosize=False, width=800, height=600)
+        fig.update_xaxes(scaleanchor="y", scaleratio=1)
+        fig.update_yaxes(scaleanchor="x", scaleratio=1)
+
+    fig.update_layout(
+        title=f"{x_axis} vs {y_axis}",
+        xaxis=dict(
+            title=f'{x_axis}',
+            gridcolor='white',
+            gridwidth=2,
+        ),
+        yaxis=dict(
+            title=f'{y_axis}',
+            gridcolor='white',
+            gridwidth=2,
+        ),
+        paper_bgcolor='rgb(243, 243, 243)',
+        plot_bgcolor='rgb(243, 243, 243)',
+    )
+
+    # Visible toggle buttons based on category.
+    if cat in df.columns:
+        buttons = []
+        categories = df[cat].unique()
+        for category in categories:
+            buttons.append(
+                dict(label=str(category),
+                     method="update",
+                     args=[{"visible": [True if x == category else False for x in df[cat]]},
+                           {"title": f"{x_axis} vs {y_axis} - {category}"}])
+            )
+        fig.update_layout(
+            updatemenus=[{"buttons": buttons,
+                          "direction": "down",
+                          "showactive": True,
+                          "x": 1.1,
+                          "xanchor": "left",
+                          "y": 1.05,
+                          "yanchor": "top"}]
+        )
+
+    # Add a reset toggle button option.
+    buttons.append(
+        dict(label = "Reset Zoom" ,
+             method = "update",
+             args = [{"visible": [True] * len(df)},
+                     {"title": f"{x_axis} vs {y_axis}"}])
+    )
+    fig.update_layout(
+        updatemenus = [{"buttons" : buttons,
+                        "showactive": True,
+                        "x": 1.1,
+                        "xanchor": "left",
+                        "y": 1.05,
+                        "yanchor": "top"}]
+    )
+    return fig
+
 

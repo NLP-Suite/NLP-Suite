@@ -467,7 +467,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
             # out_df.at[i, 'Record ID'] = row[1]['ID']
             out_df.at[i, 'Sentence ID'] = sidx
             if "NER" in annotator_params:
-                curr_ner = out_df.at[i, 'NER']
+                curr_ner = str(out_df.at[i, 'NER'])
                 # process each NER tag based on BIOES representation
                 if curr_ner.startswith('S'):
                     out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']

@@ -29,8 +29,8 @@ config_filename = ''
 
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=400, # height at brief display
-                             GUI_height_full=480, # height at full display
+                             GUI_height_brief=480, # height at brief display
+                             GUI_height_full=560, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -60,7 +60,7 @@ GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_
 
 y_multiplier_integer = 0
 
-open_CoNLL_search_GUI_button = tk.Button(window, text='CoNLL table searches (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: call("python CoNLL_table_analyzer_main.py", shell=True))
+open_CoNLL_search_GUI_button = tk.Button(window, text='CoNLL table searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python CoNLL_table_analyzer_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_CoNLL_search_GUI_button,
@@ -68,34 +68,48 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
                                    "Click on the button to open the GUI")
 
 
-open_file_search_GUI_button = tk.Button(window, text='File searches (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: call("python file_manager_main.py", shell=True))
+open_file_search_GUI_button = tk.Button(window, text='File searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python file_manager_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_file_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_nGram_VIEWER_search_GUI_button = tk.Button(window, text='N-grams/co-occurrences searches (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: call("python NGrams_CoOccurrences_main.py", shell=True))
+open_nGram_VIEWER_search_GUI_button = tk.Button(window, text='N-grams/co-occurrences searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python NGrams_CoOccurrences_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_nGram_VIEWER_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_WordNet_search_GUI_button = tk.Button(window, text='WordNet searches (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: call("python knowledge_graphs_WordNet_main.py", shell=True))
+open_word_sense_search_GUI_button = tk.Button(window, text='Search word(s) for different word senses (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python word2vec_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   open_word_sense_search_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Click on the button to open the GUI")
+
+open_word_distance_search_GUI_button = tk.Button(window, text='Search word(s) for distance to other words in the semantic space (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python word2vec_main.py", shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   open_word_distance_search_GUI_button,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Click on the button to open the GUI")
+
+open_WordNet_search_GUI_button = tk.Button(window, text='WordNet searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python knowledge_graphs_WordNet_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_WordNet_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
 
-open_word_search_GUI_button = tk.Button(window, text='Words/collocations searches (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: call("python file_search_byWord_main.py", shell=True))
+open_word_search_GUI_button = tk.Button(window, text='Words/collocations searches (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python file_search_byWord_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    open_word_search_GUI_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Click on the button to open the GUI")
-export_csv_field_GUI_button = tk.Button(window, text='Export csv field content to csv/txt file (Open GUI)',width=GUI_IO_util.widget_width_short,command=lambda: call("python data_manipulation_main.py", shell=True))
+export_csv_field_GUI_button = tk.Button(window, text='Export csv field content to csv/txt file (Open GUI)',width=GUI_IO_util.widget_width_medium,command=lambda: call("python data_manipulation_main.py", shell=True))
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    export_csv_field_GUI_button,
@@ -115,6 +129,8 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the button to open the GUI for searching a CoNLL table.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for searching (and manipulating) files saved in your machine.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for an N-grams/Co_occurrences VIEWER similar to Google Ngrams Viewer (https://books.google.com/ngrams) but applied to your own corpus.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI to run the word sense induction algorithm. The BERT algorithm will compute all the different meanings a word has in your corpus.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI to run the word embeddings algorithm. The BERT and Gensim algorithms will compute the word embeddings of each word, then compute the cosine similarity and Euclidean distance of each pair of words in your corpus. These distance values will allow to measure the distance of words in the semantic space, i.e., how closely they are used in the corpus.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, click on the button to open the GUI for searching words in the WordNet knowledge graph.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click on the button to open the GUI for searching words and collocations in text file(s).")
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer, "NLP Suite Help",

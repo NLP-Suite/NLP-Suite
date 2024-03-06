@@ -27,9 +27,9 @@ def sense_keywords(d, o_path, re_pattern='[^a-zA-Z\'\-’ ]', mf_prop=1, topn=10
     
     regex = re.compile(re_pattern)
     sp = spacy.load('en_core_web_sm')
-    stopwords = sp.Defaults.stop_words
+    stopwords = list(sp.Defaults.stop_words)
     if add_stopwords is not None:
-        stopwords = list(stopwords) + add_stopwords
+        stopwords = stopwords + add_stopwords
     kw_d = {}
     for w in d:
         senses = sorted([s for s in d[w]])
@@ -43,7 +43,7 @@ def sense_keywords(d, o_path, re_pattern='[^a-zA-Z\'\-’ ]', mf_prop=1, topn=10
         clusters = [' '.join(c) for c in clusters]
         tfidf_transformer = TfidfVectorizer(smooth_idf=True, use_idf=True, ngram_range=ngram_range, max_features=int(mf_prop * v_size), stop_words=stopwords)
         tfidf_transformer.fit(clusters)
-        feature_names = tfidf_transformer.get_feature_names()
+        feature_names = tfidf_transformer.get_feature_names_out()
         kw_d[w] = {}
         for i, cluster in enumerate(clusters):
             tf_idf_vector = tfidf_transformer.transform([cluster])

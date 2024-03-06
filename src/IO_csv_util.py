@@ -40,6 +40,16 @@ def get_csv_data(inputFilename,withHeader):
     #print("io IO delimiter ",get_csvfile_numberofColumns(file_name))
     #TODO does not work; gives an error
     #print ("\n\n\n\ndetectCsvHeader(file_name) ",detectCsvHeader(file_name))
+
+    # Write empty string to all null bytes before we open the file.
+    fi = open(inputFilename, 'rb')
+    data = fi.read()
+    fi.close()
+    fo = open(inputFilename, 'wb')
+    # remove NUL bytes that would break the code in line 53
+    fo.write(data.replace(b'\x00', b''))
+    fo.close()
+
     with open(inputFilename,encoding='utf-8-sig',errors='ignore') as f:
         reader = csv.reader(f,delimiter=delimiter)
         if withHeader == True:
