@@ -58,12 +58,13 @@ args = parser.parse_args()
 
 
 def run(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, num_topics,
+        BERT_var,
         MALLET_var,
         optimize_intervals_var,
         Gensim_var,
         remove_stopwords_var, lemmatize_var, nounsOnly_var, Gensim_MALLET_var):
 
-    if not MALLET_var and not Gensim_var:
+    if not BERT_var and not MALLET_var and not Gensim_var:
         mb.showwarning(title='Warning', message='There are no options selected.\n\nPlease, select one of the available options (MALLET or Gensim) and try again.')
         return
 
@@ -74,7 +75,9 @@ def run(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, 
 
     filesToOpen = []
 
-    if MALLET_var:
+    if BERT_var:
+        label='BERT'
+    elif MALLET_var:
         label='MALLET'
     else:
         label='Gensim'
@@ -92,6 +95,10 @@ def run(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation, 
     if outputDir == '':
         return
 
+    if BERT_var:
+        import IO_user_interface_util
+        IO_user_interface_util.script_under_construction("Topic modeling via BERT")
+        return
     if MALLET_var:
         filesToOpen = topic_modeling_mallet_util.run_MALLET(inputDir, outputDir, openOutputFiles, chartPackage, dataTransformation,
                                                      optimize_intervals_var, num_topics)
@@ -108,6 +115,7 @@ run_script_command = lambda: run(GUI_util.input_main_dir_path.get(),
                                  GUI_util.charts_package_options_widget.get(),
                                  GUI_util.data_transformation_options_widget.get(),
                                  num_topics_var.get(),
+                                 BERT_var.get(),
                                  MALLET_var.get(),
                                  optimize_intervals_var.get(),
                                  Gensim_var.get(),
@@ -125,8 +133,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=560, # height at brief display
-                             GUI_height_full=600, # height at full display
+                             GUI_height_brief=600, # height at brief display
+                             GUI_height_full=640, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=1, # to be added for full display
                              increment=1)  # to be added for full display
@@ -160,6 +168,7 @@ if current_process().name == 'MainProcess':
     GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
     num_topics_var = tk.IntVar()
+    BERT_var = tk.IntVar()
     Gensim_var = tk.IntVar()
     MALLET_var = tk.IntVar()
     remove_stopwords_var = tk.IntVar()
@@ -180,6 +189,16 @@ if current_process().name == 'MainProcess':
                                                    False, False, True, False, 90,
                                                    GUI_IO_util.labels_x_coordinate,
                                                    "Enter the number of topics to be used. Try different number of topics for better results (e.g., 70, 5).")
+
+    BERT_var.set(0)
+    BERT_checkbox = tk.Checkbutton(window, text='Topic modeling (via BERT)', variable=BERT_var,
+                                               onvalue=1, offvalue=0, command=lambda: activate_options())
+    # place widget with hover-over info
+    y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                                   BERT_checkbox,
+                                                   False, False, True, False, 90,
+                                                   GUI_IO_util.labels_x_coordinate,
+                                                   "Tick/untick the checkbox to run the BERT topic modeling algorithm")
 
     MALLET_var.set(0)
     MALLET_checkbox = tk.Checkbutton(window, text='Topic modeling (via MALLET)', variable=MALLET_var,
@@ -287,6 +306,8 @@ if current_process().name == 'MainProcess':
 
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Please, enter the number of topics to be used (recommended default = 20).\n\nVarying the number of topics may provide better results.")
+        y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
+                                      "Please, tick the checkbox if you wish to run BERT topic modeling.")
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                       "Please, tick the checkbox if you wish to run MALLET LDA topic modeling.")
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer,

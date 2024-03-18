@@ -65,6 +65,7 @@ flit_core @ file:///opt/conda/conda-bld/flit-core_1644941570762/work/source/flit
 fonttools==4.38.0
 fqdn==1.5.1
 fst-pso==1.8.1
+folium==0.14.0
 funcy==1.17
 future==0.18.3
 FuzzyTM==2.0.5
