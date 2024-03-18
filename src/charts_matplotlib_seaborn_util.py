@@ -1,10 +1,11 @@
-# Written by Adrian Valencia in Nov 2023
+# Written by Adrian Valencia in Nov 2023; edited it March 2024
 
 import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"charts_matplotlib_seaborn_util",['os','pandas','seaborn','matplotlib'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window, "charts_matplotlib_seaborn_util",
+                                                 ['os', 'pandas', 'seaborn', 'matplotlib']) == False:
     sys.exit(0)
 
 import os
@@ -15,7 +16,6 @@ import matplotlib.pyplot as plt
 
 def MALLET_heatmap(composition_file, topics_file, outputDir, fig_set={"figure.figsize": (8, 6), "figure.dpi": 300},
                    show_topics=True):
-
     """
     Uses Seaborn to create a heatmap of topics generated using MALLET topic modeling
 
@@ -42,15 +42,23 @@ def MALLET_heatmap(composition_file, topics_file, outputDir, fig_set={"figure.fi
     for topic_num in range(1, len(topics.index) + 1):
         composition_names.append(f"Topic {topic_num}")
     composition = pd.read_csv(composition_file, names=composition_names, encoding='utf-8', on_bad_lines='skip')
-    composition.drop(["Document ID"], axis=1, inplace=True)  # Drop ID, DataFrames are already indexed
 
-    composition = composition.drop([0])  # Drop MALLET column names
+    # Checking for existing column names in input file
+    for index, row in composition.iterrows():
+        try:
+            temp = int(row["Document ID"])
+        except:
+            composition.drop(index=index, inplace=True)
+
+    composition.drop(["Document ID"], axis=1, inplace=True)  # Drop ID, DataFrames are already indexed
+    composition.reset_index(drop=True, inplace=True)  # Reseting index as some rows could have been removed
 
     document_titles = composition["Document"]  # Clean hyperlinks function here
 
     sns.set(rc=fig_set)  # Set figure dimensions and resolution
 
-    heatmap = sns.heatmap(composition.iloc[:, 1:].map(float),  # Select all columns excluding index column
+    heatmap = sns.heatmap(composition.iloc[:, 1:].applymap(float),  # Select all columns excluding index column
+                          # NOTE: 'applymap' has been deprecated, replaced with 'map' for newer versions. Sticking with 'applymap' for compatibility.
                           vmin=0, vmax=1,  # Range 0-1
                           annot=True,  # Display values inside heatmap
                           yticklabels=document_titles,  # Document name labels
@@ -73,15 +81,6 @@ def MALLET_heatmap(composition_file, topics_file, outputDir, fig_set={"figure.fi
     plt.savefig(outputFilename, bbox_inches="tight")
     # should return the saved filename
     return outputFilename  # heatmap
-
-
-# Example:
-
-# t = r"NLP-MALLET_Output_Keys_1.csv"
-# c = r"NLP-MALLET_Output_Composition_1.csv"
-#
-# MALLET_heatmap(c, t, r"C:\Users\Adrian Valencia\Desktop\Documents\Classes\Fall 2023\SOC446W\Homeworks\Homework 10",
-#                {"figure.figsize": (8, 6), "figure.dpi": 300}, True)  # exclude_empty_keys=True)
 
 # seaborn
 # https://seaborn.pydata.org/examples/different_scatter_variables.html
