@@ -306,8 +306,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                                                  GUI_width=GUI_IO_util.get_GUI_width(3),
-                                                 GUI_height_brief=680, # height at brief display
-                                                 GUI_height_full=720, # height at full display
+                                                 GUI_height_brief=640, # height at brief display
+                                                 GUI_height_full=680, # height at full display
                                                  y_multiplier_integer=GUI_util.y_multiplier_integer,
                                                  y_multiplier_integer_add=1, # to be added for full display
                                                  increment=1)  # to be added for full display
@@ -784,8 +784,8 @@ def activate_all_options():
 
 activate_all_options()
 
-videos_lookup = {'CoNLL Table Analyzer':'https://www.youtube.com/watch?v=I-knso52gbM'}
-videos_options='CoNLL Table Analyzer'
+videos_lookup = {'CoNLL Table Analyzer 1':'https://www.youtube.com/watch?v=I-knso52gbM', 'CoNLL Table Analyzer 2':'https://youtu.be/5pkHaCJmsPk'}
+videos_options='CoNLL Table Analyzer 1','CoNLL Table Analyzer 2'
 
 TIPS_lookup = {'CoNLL Table': "TIPS_NLP_Stanford CoreNLP CoNLL table.pdf",
                'POSTAG (Part of Speech Tags)': "TIPS_NLP_POSTAG (Part of Speech Tags) Stanford CoreNLP.pdf",

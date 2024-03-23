@@ -637,8 +637,8 @@ def turnOff_doNotCreateIntermediateFiles_checkbox(*args):
         doNotCreateIntermediateFiles_checkbox.config(state='disabled')
 input_main_dir_path.trace('w',turnOff_doNotCreateIntermediateFiles_checkbox)
 
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
+videos_lookup = {'Wordcloud 1':'https://youtu.be/CfRV9V7-OCM', 'Wordcloud 2':'https://youtu.be/5Q-AvG45rHY'}
+videos_options = 'Wordcloud 1', 'Wordcloud 2'
 
 TIPS_lookup = {"Lemmas & stopwords":"TIPS_NLP_NLP Basic Language.pdf",
                "Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf",

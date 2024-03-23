@@ -624,8 +624,8 @@ annotators_menu_var.trace('w', activate_annotators_menu)
 
 activate_annotators_menu()
 
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
+videos_lookup = {'Parsers & annotators':'https://youtu.be/ItEVxCXm2rc'}
+videos_options='Parsers & annotators'
 
 TIPS_lookup = {'Stanford CoreNLP download': 'TIPS_NLP_Stanford CoreNLP download install run.pdf',
                'Stanford CoreNLP performance & accuracy':'TIPS_NLP_Stanford CoreNLP performance and accuracy.pdf',
