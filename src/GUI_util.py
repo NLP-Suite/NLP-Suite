@@ -1060,7 +1060,8 @@ def watch_video(videos_lookup,scriptName):
         url = videos_lookup[videos_dropdown_field.get()]
         request = requests.get(url, allow_redirects=False)
         # status_code 200 means that the YouTube video website was found
-        if request.status_code != 200: # or request.status_code == 301 or request.status_code == 302:
+        # if request.status_code != 200: # or request.status_code == 301 or request.status_code == 302:
+        if not request.ok:
             mb.showinfo(title='video error', message="There was an error in opening the video '" + videos_dropdown_field.get() + "' on YouTube for the GUI '" + scriptName + "'.\n\nThis is an error in the NLP Suite, so, please, report the issue on GitHub with GUI and video names so that the NLP Suite developers can fix the error.")
         else:
             import webbrowser

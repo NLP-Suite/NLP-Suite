@@ -1234,8 +1234,8 @@ csv_field_relational_var.trace('w',activate_all_options)
 # K_sent_begin_var.trace('w',activate_all_options)
 # K_sent_end_var.trace('w',activate_all_options)
 
-videos_lookup = {'No videos available':''}
-videos_options='No videos available'
+videos_lookup = {'Data visualization':'https://youtu.be/EDKdurWa56g'}
+videos_options = 'Data visualization'
 
 TIPS_lookup = {
                "Network Graphs (via Gephi)": "TIPS_NLP_Gephi network graphs.pdf",

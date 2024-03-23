@@ -375,6 +375,8 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                     row += [""]
                 index = index + 1
             # fill out data sheet
+            # The python module openpyxl may sometimes raise the exception IllegalCharacterError (see: https://openpyxl.readthedocs.io/en/stable/api/openpyxl.utils.exceptions.html for further details).
+            # https://www.havnemark.dk/?p=185
             ws.append(row)
 
         #openpyxl only allows a maximum of 2 y axes with different scales

@@ -1001,13 +1001,13 @@ videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
 TIPS_lookup = {'utf-8 encoding': 'TIPS_NLP_Text encoding.pdf',
-               "Geocoding": "TIPS_NLP_Geocoding.pdf",
-               "Geocoding: How to Improve Nominatim":"TIPS_NLP_Geocoding Nominatim.pdf",
-               "Google Earth Pro": "TIPS_NLP_Google Earth Pro.pdf",
-               "Google Earth Pro KML Options": "TIPS_NLP_Google Earth Pro KML options.pdf",
-               "HTML": "TIPS_NLP_Google Earth Pro HTML.pdf",
-               "Google Earth Pro Icon": "TIPS_NLP_Google Earth Pro Icon.pdf",
-               "Google Earth Pro Description": "TIPS_NLP_Google Earth Pro Description.pdf"}
+               "Geocoding": "TIPS_NLP_GIS_Geocoding.pdf",
+               "Geocoding: How to Improve Nominatim":"TIPS_NLP_GIS_Geocoding Nominatim.pdf",
+               "Google Earth Pro": "TIPS_NLP_GIS_Google Earth Pro.pdf",
+               "Google Earth Pro KML Options": "TIPS_NLP_GIS_Google Earth Pro KML options.pdf",
+               "HTML": "TIPS_NLP_GIS_Google Earth Pro HTML.pdf",
+               "Google Earth Pro Icon": "TIPS_NLP_GIS_Google Earth Pro Icon.pdf",
+               "Google Earth Pro Description": "TIPS_NLP_GIS_Google Earth Pro Description.pdf"}
 TIPS_options = 'utf-8 encoding', 'Geocoding', 'Geocoding: How to Improve Nominatim', 'Google Earth Pro', 'HTML', 'Google Earth Pro Icon', 'Google Earth Pro Description'
 
 
