@@ -191,9 +191,19 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
             processors='tokenize,ner'
         elif "depparse" in annotator_params or "SVO" in annotator_params:
             if short_lang not in available_NER:
-                processors = 'tokenize,mwt,pos,lemma,depparse'  # add NER when parser option selected
+                # processors = 'tokenize,mwt,pos,lemma,depparse'  # add NER when parser option selected
+                # From https://stanfordnlp.github.io/stanza/mwt.html#description Note: Only languages with multi-word tokens (MWT), such as German or French, require MWTProcessor; other languages, such as English or Chinese, do not support this processor in the pipeline.
+                # https://github.com/stanfordnlp/stanza-resources/blob/master/resources_1.1.0.json
+                # mwt not available in all languages (e.g., Chinese)
+                # https://github.com/stanfordnlp/stanza/issues/464
+                processors = 'tokenize,pos,lemma,depparse'  # add NER when parser option selected
             else:
-                processors='tokenize,mwt,pos,ner,lemma,depparse' # add NER when parser option selected
+                # processors='tokenize,mwt,pos,ner,lemma,depparse' # add NER when parser option selected
+                # From https://stanfordnlp.github.io/stanza/mwt.html#description Note: Only languages with multi-word tokens (MWT), such as German or French, require MWTProcessor; other languages, such as English or Chinese, do not support this processor in the pipeline.
+                # https://github.com/stanfordnlp/stanza-resources/blob/master/resources_1.1.0.json
+                # mwt not available in all languages (e.g., Chinese)
+                # https://github.com/stanfordnlp/stanza/issues/464
+                processors = 'tokenize,pos,ner,lemma,depparse'  # add NER when parser option selected
             if "SVO" in annotator_params:
                 annotator = 'SVO'
             else:

@@ -11,7 +11,7 @@ def sense_bar_chart(Word2Vec_Dir,  figsize=(20, 10), fontsize=32):
     v_paths = []
     for w in vocab: 
         chart_title = f"Frequency Distribution of Senses of '{w}'"
-        senses = sorted(list(set([tok[-1] for tok in tokens]))) 
+        senses = sorted(list(set([tok[-1] for tok in tokens if tok[1] == w]))) 
         sense_labels = [f'Sense {sense}' for sense in senses]
         occs = [tok for tok in tokens if tok[1] == w]
         total = len(occs)

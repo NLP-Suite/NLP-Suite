@@ -275,11 +275,20 @@ def read_config_file(config_filename, config_input_output_numeric_options):
     if os.path.isfile(configFilePath) == True:
         config_file_exists=True
         csv_file = open(configFilePath, 'r', newline='')
+        # config_input_output_alphabetic_options a double list [[]]
         config_input_output_alphabetic_options = list(csv.reader(csv_file, delimiter=','))
         config_input_output_alphabetic_options.pop(0) # skip header
+        try:
+            list_lenght=len(config_input_output_alphabetic_options[0])
+        except:
+            mb.showwarning(title='Ill formatted config filename',message='The config filename\n\n' + configFilePath + '\n\nis ill formatted. Something must have gone wrong in saving the file. Please, let the NLP Suite developers know.')
+            config_input_output_alphabetic_options=[[]]
+            # missing_IO, config_file_exists
+            csv_file.close()
+            os.remove(configFilePath)
         # if not 'Date format' in config_input_output_alphabetic_options[0]: # len(config_input_output_alphabetic_options[0])==2:
         if len(config_input_output_alphabetic_options[0])==2:
-            mb.showwarning(title='Obsolete csv config file structure', message="The " + configFilePath + " has an obsolete config file structure.\n\nIt will be automatically deleted.\n\nPlease, enter next the Input/output configuration options that will be saved with the new file structure.")
+            mb.showwarning(title='Obsolete csv config file structure', message="The config filename\n\n" + configFilePath + "\n\nhas an obsolete config file structure.\n\nIt will be automatically deleted.\n\nPlease, enter next the Input/output configuration options that will be saved with the new file structure.")
             csv_file.close()
             os.remove(configFilePath)
             # repeat until the user has entered the appropriate information in NLP_setup_IO_main.py

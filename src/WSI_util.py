@@ -44,7 +44,7 @@ websites = "[.](com|net|org|io|gov)"
 digits = "([0-9])"
 
 
-def get_vocab(sentences, u_vocab='', top_n=0.008, min_count=50, add_stopwords=['said']):
+def get_vocab(sentences, u_vocab='', top_n=0.01, min_count=50, add_stopwords=['said']):
     
     if u_vocab == '':
         text = ' '.join([tpl[1] for tpl in sentences]).split()
@@ -168,9 +168,7 @@ def match_embeddings(all_sent, all_vocab, Word2Vec_Dir):
     c_path = f'{Word2Vec_Dir}/output/centroids'
     #load centroids
     centroids_d = model.load_centroids(all_vocab, f'{Word2Vec_Dir}/output')
-    seq = []
-    for w in all_vocab:
-        seq += [tpl for tpl in all_sent if w in tpl[1]]
+    seq = [tpl for tpl in all_sent if any(w in tpl[1].split() for w in all_vocab)]
     o_path = f'{Word2Vec_Dir}/output'
     if not os.path.exists(o_path):
         os.makedirs(o_path)
@@ -207,7 +205,6 @@ def get_cluster_sentences(Word2Vec_Dir):
                     sentences = pickle.load(f)
                 sents.append(sentences[idx])
             d[w][s] = [sent[1] for sent in sents]
-            sents = list(set(sents))
             for sent in sents:
                 results.write('\n')
                 results.write(f'FILE: {sent[-1]} SEQUENCE: {sent[1]}')
