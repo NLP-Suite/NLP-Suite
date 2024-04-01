@@ -1,3 +1,4 @@
+from sklearn.metrics import silhouette_score
 from tkinter import messagebox as mb
 import os
 tcache_path = f'{os.getcwd()}/cache'
@@ -179,12 +180,12 @@ class Clusterer():
         else:
             ks = range(a_s[0], a_s[1])
         centroids = {}
-        rss = np.zeros(len(ks))
+        scores = np.zeros(len(ks))
         for i, k in enumerate(ks):
             try:
                 km = KMeans(k, random_state=rs)
+                scores[i] = silhouette_score(data, km.fit_predict(data))
                 km.fit(data)
-                rss[i] = km.inertia_
                 centroids[k] = km.cluster_centers_
             except ValueError as e:
                 s=str(e)[10:]
@@ -192,12 +193,7 @@ class Clusterer():
                 if 'should be >=' in str(e):
                     mb.showerror(title=':-(', message=f'The frequency of "{w}" ({str(freq)}) in in your dataset is less than the number of sense clusters ({k}) to be produced.\n\nPlease try to either lower the range of sense clusters to be produced or choose more frequent words to analyse and try again.\n\nAlso consider the possibility that your dataset is too small to use word sense induction on.')
                     raise
-        crits = []
-        for i in range(len(ks)):
-            k = ks[i]
-            crit = rss[i] + lamb*k
-            crits.append(crit)
-        best_k = np.argmin(crits)
+        best_k = np.argmax(scores)
     
         return centroids[ks[best_k]]
     
