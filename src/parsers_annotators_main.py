@@ -98,10 +98,12 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                     annotator='parser (nn)'
             else:
                 if annotators_var and annotators_menu_var != '':
-                    if 'NER (Open GUI)' in annotators_menu_var: # NER annotator
-                        if IO_libraries_util.check_inputPythonJavaProgramFile('NER_main.py') == False:
-                            return
-                        call("python NER_main.py", shell=True)
+                    if 'NER annotator' in annotators_menu_var:
+                        annotator = 'NER'
+                    # if 'NER (Open GUI)' in annotators_menu_var: # NER annotator
+                    #     if IO_libraries_util.check_inputPythonJavaProgramFile('NER_main.py') == False:
+                    #         return
+                    #     call("python NER_main.py", shell=True)
                     elif 'Sentence splitter (with sentence length)' in annotators_menu_var:
                         annotator = 'Sentence'
                     elif 'Lemma annotator' in annotators_menu_var:
@@ -538,7 +540,7 @@ annotators_menu = tk.OptionMenu(window, annotators_menu_var,
         '   Sentence splitter (with sentence length)',
         '   Lemma annotator',
         '   POS annotator',
-        '   NER (Open GUI)',
+        '   NER annotator',
         'Special annotators (via BERT, CoreNLP, spaCy, Stanza) -----------------------------------------',
         '   Coreference PRONOMINAL resolution (via BERT, CoreNLP, spaCy)',
         '   Sentiment analysis',
