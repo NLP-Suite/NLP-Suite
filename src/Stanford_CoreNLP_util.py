@@ -936,15 +936,28 @@ def language_models(CoreNLPdir, language: str):
         language_file = os.path.join(CoreNLPdir, tail + "-models-" + language.lower() + ".jar")
         CoreNLP_download = "https://stanfordnlp.github.io/CoreNLP/human-languages.html"
         if not os.path.isfile(language_file):
-            answer = tk.messagebox.askyesno(title='Language pack', message="You have selected to work with the " + language.upper() + " language. But the language model\n\n" +
-                                language_file + "\n\nwas not found in the main directory of Stanford CoreNLP\n\n" +
-                                CoreNLPdir + "\n\nPlease, download the " + language.upper() + " language pack from the Stanford NLP website\n\n" + CoreNLP_download + "\n\nand move it to the main Stanford CoreNLP directory\n\n" + CoreNLPdir + "\n\nPlease, make sure that the downloaded CoreNLP version (e.g., 4.5.4) is the same as the version of the language model (e.g., 4.5.6 would be wrong!)\n\nWould you like to do download the language model now?")
+            CoreNLP_version = CoreNLPdir.split("-")[-1]
+            for file in os.listdir(CoreNLPdir):
+                if f"models-{language.lower()}.jar" in file:
+                    language_version = file.split("-models-")[0].split("-")[-1]
+                    assert language_version != CoreNLP_version
+                    answer = tk.messagebox.askyesno(title='Language pack',
+                                                    message="You have selected to work with the " + language.upper() + " language. But the language model\n\n" +
+                                                            language_file + "\n\nis not the correct version not found in the main directory of Stanford CoreNLP\n\n" +
+                                                            CoreNLPdir + "\n\nPlease, download the " + language.upper() + " language pack from the Stanford NLP website\n\n" + CoreNLP_download + "\n\nand move it to the main Stanford CoreNLP directory\n\n" + CoreNLPdir + "\n\nPlease, make sure that the downloaded CoreNLP version (e.g., 4.5.4) is the same as the version of the language model (e.g., 4.5.6 would be wrong!)\n\nWould you like to do download the language model now?")
+                    break
+            else:
+                # the requested language model is not here...
+                answer = tk.messagebox.askyesno(title='Language pack',
+                                                message="You have selected to work with the " + language.upper() + " language. But the language model\n\n" +
+                                                        language_file + "\n\nwas not found in the main directory of Stanford CoreNLP\n\n" +
+                                                        CoreNLPdir + "\n\nPlease, download the " + language.upper() + " language pack from the Stanford NLP website\n\n" + CoreNLP_download + "\n\nand move it to the main Stanford CoreNLP directory\n\n" + CoreNLPdir + "\n\nPlease, make sure that the downloaded CoreNLP version (e.g., 4.5.4) is the same as the version of the language model (e.g., 4.5.6 would be wrong!)\n\nWould you like to do download the language model now?")
             if answer:
                 if not IO_libraries_util.open_url('Stanford CoreNLP', CoreNLP_download):
                     return
             return
         else: # it can never get here to test for differences in model versions
-            CoreNLP_version = (CoreNLPdir.split("-",1)[1]).split("-",1)[1]
+            CoreNLP_version = CoreNLPdir.split("-")[-1]
             # the language file exists but the model version if different from the package version
             if not CoreNLP_version in language_file:
                 mb.showerror("Warning",

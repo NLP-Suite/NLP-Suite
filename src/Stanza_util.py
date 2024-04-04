@@ -51,7 +51,34 @@ def list_all_languages():
     languages_from_resources = []
     for key, value in resources.items():
         if isinstance(value, dict) and "lang_name" in value:
-            languages_from_resources.append(value["lang_name"])
+            language_name=value["lang_name"]
+            # reverse the names to have them in proper sort order
+            # should do the same for Greek, Hebrew, and other languages
+            # CHINESE
+            if "_Chinese" in language_name:
+                # reconstruct name from, e.g., Simplified_Chinese to Chinese_Simplified so that all Chinese are sorted together
+                language_name=value["lang_name"].split('_')[-1]+'_'+value["lang_name"].split('_')[0]
+            # Chinese_Traditional has very limited annotators; might as well remove it not to confuse the user
+            # FRENCH
+            if "_French" in language_name:
+                # reconstruct name from, so that all French are sorted together
+                language_name=value["lang_name"].split('_')[-1]+'_'+value["lang_name"].split('_')[0]
+            # GREEK
+            if "_Greek" in language_name:
+                # reconstruct name from, so that all Greek are sorted together
+                language_name=value["lang_name"].split('_')[-1]+'_'+value["lang_name"].split('_')[0]
+            # HEBREW
+            if "_Hebrew" in language_name:
+                # reconstruct name from, so that all Hebrew are sorted together
+                language_name=value["lang_name"].split('_')[-1]+'_'+value["lang_name"].split('_')[0]
+            # RUSSIAN
+            if "_Russian" in language_name:
+                # reconstruct name from, so that all Hebrew are sorted together
+                language_name=value["lang_name"].split('_')[-1]+'_'+value["lang_name"].split('_')[0]
+            # do not process Chinese_Traditional since it can handle very few annotators
+            if not "Chinese_Traditional" in language_name:
+                languages_from_resources.append(language_name)
+
     languages_from_resources.sort()
     #langs_full = sorted([dict(constants_util.languages)[x] for x in languages])
    # print(langs_full)
@@ -74,6 +101,20 @@ def get_language_list(language):
     # short_lang is the abbreviated language, e.g., la
     # long_lang is the long language, e.g., Latin
     for short_lang, long_lang in lang_dict.items():
+        # reverse the names to have them in proper sort order
+        # should do the same for Greek, Hebrew, and other languages
+        if long_lang=='Simplified_Chinese':
+            long_lang='Chinese_Simplified'
+        if long_lang=='Traditional_Chinese':
+            long_lang='Chinese_Traditional'
+        if long_lang=='Old_French':
+            long_lang='French_Old'
+        if long_lang=='Ancient_Greek':
+            long_lang='Greek_Ancient'
+        if long_lang=='Ancient_Hebrew':
+            long_lang='Hebrew_Ancient'
+        if long_lang=='Old_Russian':
+            long_lang='Russian_Old'
         if long_lang == language[0]:
             short_lang_list.append(short_lang)
             long_lang_list.append(long_lang)
@@ -170,6 +211,11 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
     processing_doc = ''
 
     short_lang_list, long_lang_list = get_language_list(language)
+
+    if len(short_lang_list)==0:
+        mb.showinfo("Warning",
+                    "The selected language\n" + " ".join(language) + "\nis not supported with this name in Stanza. Please, make sure you have not entered the wrong language name in the NLP_setup_package_language_main GUI (perhaps, a left over after selecting Stanza after a differrent package).\n\nPlease, check the language and try again.")
+        return
     short_lang=short_lang_list[0]
     long_lang=long_lang_list[0]
     # check if selected language is only one and NOT multilingual
@@ -192,18 +238,27 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
         elif "depparse" in annotator_params or "SVO" in annotator_params:
             if short_lang not in available_NER:
                 # processors = 'tokenize,mwt,pos,lemma,depparse'  # add NER when parser option selected
-                # From https://stanfordnlp.github.io/stanza/mwt.html#description Note: Only languages with multi-word tokens (MWT), such as German or French, require MWTProcessor; other languages, such as English or Chinese, do not support this processor in the pipeline.
+                # From https://stanfordnlp.github.io/stanza/mwt.html#description
+                #   Note: Only languages with multi-word tokens (MWT), such as German or French, require MWTProcessor;
+                #       other languages, such as English or Chinese, do not support this processor in the pipeline.
                 # https://github.com/stanfordnlp/stanza-resources/blob/master/resources_1.1.0.json
                 # mwt not available in all languages (e.g., Chinese)
                 # https://github.com/stanfordnlp/stanza/issues/464
-                processors = 'tokenize,pos,lemma,depparse'  # add NER when parser option selected
+                if short_lang not in available_mwt:
+                    processors = 'tokenize,pos,lemma,depparse'  # add NER when parser option selected
+                else:
+                    processors = 'tokenize,pos,mwt,lemma,depparse'  # add NER when parser option selected
             else:
                 # processors='tokenize,mwt,pos,ner,lemma,depparse' # add NER when parser option selected
                 # From https://stanfordnlp.github.io/stanza/mwt.html#description Note: Only languages with multi-word tokens (MWT), such as German or French, require MWTProcessor; other languages, such as English or Chinese, do not support this processor in the pipeline.
                 # https://github.com/stanfordnlp/stanza-resources/blob/master/resources_1.1.0.json
                 # mwt not available in all languages (e.g., Chinese)
                 # https://github.com/stanfordnlp/stanza/issues/464
-                processors = 'tokenize,pos,ner,lemma,depparse'  # add NER when parser option selected
+                if short_lang not in available_mwt:
+                    processors = 'tokenize,pos,ner,lemma,depparse'  # add NER when parser option selected
+                else:
+                    processors = 'tokenize,pos,mwt,ner,lemma,depparse'  # add NER when parser option selected
+
             if "SVO" in annotator_params:
                 annotator = 'SVO'
             else:
@@ -449,7 +504,8 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         # rename the columns created by Stanza
         out_df = out_df.rename(
             columns = {
-                # 'id':'ID',
+                # @@@
+                'id':'ID',
                 'text':'Form',
                 'lemma':'Lemma',
                 'upos':'POS',
@@ -470,34 +526,35 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         sidx = 1
         max_idx = len(out_df)-1
         for row in out_df.iterrows():
-            # if i != 0 and row[1]['ID'] == 1 :
-            if i != 0 and row[1]['id'] == 1:
-                    sidx+=1
-
-            # out_df.at[i, 'Record ID'] = row[1]['ID']
+            if i != 0 and row[1]['ID'] == 1:
+                sidx+=1
+            out_df.at[i, 'Record ID'] = i+1
             out_df.at[i, 'Sentence ID'] = sidx
             if "NER" in annotator_params:
                 curr_ner = str(out_df.at[i, 'NER'])
                 # process each NER tag based on BIOES representation
                 if curr_ner.startswith('S'):
+                    # print(out_df.at[i, 'Form'])
                     out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']
                 elif curr_ner.startswith('B'):
                     tmp_ner = curr_ner
                     tmp_idx = i
                     # find the final index that starts with E
-                    while tmp_ner.startswith('E') is False:
+                    # if tmp_ner=='B-Time':
+                    #     print('@@@ 1')
+                    while str(tmp_ner).startswith('E') is False:
                         tmp_ner = out_df.at[tmp_idx, 'NER']
                         tmp_idx+=1
                     tmp_idx+=1
                     # handle possible edge case where the next NER tag starts with S or current tag is a single tag
-                    if tmp_idx==i+1 or (i<=max_idx and out_df.at[i+1, 'NER'].startswith('S')):
+                    if tmp_idx==i+1 or (i<=max_idx and str(out_df.at[i+1, 'NER']).startswith('S')):
                         out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']
                     else:
                         # reversely iterate through the MWE from final index to current index, and update MWE accordingly
                         for j in reversed(range(i, tmp_idx-1)):
                             if j == tmp_idx-2:
                                 out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j, 'Form']
-                            elif out_df.at[j, 'NER'].startswith('B') or out_df.at[j, 'NER'].startswith('S'):
+                            elif str(out_df.at[j, 'NER']).startswith('B') or str(out_df.at[j, 'NER']).startswith('S'):
                                 out_df.at[j, 'Multi-Word Expression'] = out_df.at[j+1, 'Multi-Word Expression']
                                 # when finally reach the first tag (B), update existing MWE with complete MWE
                                 for k in reversed(range(i, tmp_idx-1)):
@@ -505,7 +562,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
                                         out_df.at[k, 'Multi-Word Expression'] = out_df.at[j, 'Multi-Word Expression']
                                     else:
                                         out_df.at[k, 'Multi-Word Expression'] = ''
-                            elif out_df.at[j, 'NER'].startswith('I'):
+                            elif str(out_df.at[j, 'NER']).startswith('I'):
                                 out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j+1 , 'Multi-Word Expression']
             i+=1
 
@@ -515,7 +572,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
                 temp_lang = out_df.at[idx, 'Language']
                 out_df.at[idx, 'Language'] = lang_dict[temp_lang]
 
-    if "Lemma"  in annotator_params:
+    if "Lemma" in annotator_params:
         # out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
         out_df = out_df[['Form', 'Lemma', 'POS', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "NER" in annotator_params:
@@ -526,11 +583,11 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         out_df = out_df[['Form', 'POS', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "depparse" in annotator_params or "SVO" in annotator_params:
         if language not in available_NER:
-            # out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
-            out_df = out_df[['Form', 'Lemma', 'POS', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            # out_df = out_df[['Form', 'Lemma', 'POS', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
         else:
-            # out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
-            out_df = out_df[['Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            # out_df = out_df[['Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "sentiment" in annotator_params:
         out_df = out_df[['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
     return out_df
@@ -759,8 +816,9 @@ available_ud = [
     "be",
     "bg",
     "ca",
-    "zh",
-    "zh-hant",
+    "zh", # has an alias called zh-hans
+    "zh-hans", # has an alias called zh-hans
+    # "zh-hant", traditional_chinese has hardly any processes
     "lzh",
     "cop",
     "hr",
@@ -816,17 +874,44 @@ available_ud = [
     "wo",
 ]
 
+available_mwt = [
+    "ar",
+    "ca",
+    "cop",
+    "cs",
+    "de"
+    "en",
+    "es",
+    "fa",
+    "fi",
+    "fr",
+    "gl",
+    "he",
+    "hy",
+    "it",
+    "kk",
+    "mr",
+    "pl",
+    "pt",
+    "ta",
+    "tr",
+    "uk",
+    "wo"
+]
 available_sentiment = [
+    "de",
     "en",
     "zh",
-    "de"
+    "zh-hans"
 ]
+
 
 available_NER = [
     "af",
     "ar",
     "bg",
     "zh",
+    "zh-hans",
     "da",
     "nl",
     "en",
@@ -875,6 +960,7 @@ NER_dict = {
         "TIME",
         "WORK_OF_ART"
     ],
+# zh-hans has an alias called zh; same thing
     "zh-hans": [
         "CARDINAL",
         "DATE",

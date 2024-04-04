@@ -115,8 +115,10 @@ def display_available_options():
             import stanza.resources.common
             DEFAULT_MODEL_DIR = stanza.resources.common.DEFAULT_MODEL_DIR
             resources_path = os.path.join(DEFAULT_MODEL_DIR, 'resources.json')
-            mb.showwarning(title='Warning',
-                           message='Stanza does not seem to be installed in your machine. The file-path resources_path could not be found.\n\nPlease, open terminal, type conda activate NLP (Enter) and then type pip install stanza (Enter) and try again.')
+            if not os.path.exists(resources_path):
+                mb.showwarning(title='Warning',
+                               message='Stanza does not seem to be installed in your machine. The file-path\n\n' + resources_path + '\n\ncould not be found.\n\nPlease, open terminal, type conda activate NLP (Enter) and then type pip install stanza (Enter) and try again.')
+                return
     memory_var.set(int(memory))
     document_length_var.set(int(document_length))
     limit_sentence_length_var.set(int(limit_sentence_length))
@@ -239,7 +241,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 menu_values = []
 global language_menu
 def get_available_languages():
-    languages_available=''
+    languages_available=[]
     if package_var.get() == 'Stanford CoreNLP':
         languages_available=['Arabic','Chinese','English', 'German','Hungarian','Italian','Spanish']
     if package_var.get() == 'BERT':
@@ -250,6 +252,7 @@ def get_available_languages():
         languages_available = spaCy_util.list_all_languages()
     if package_var.get() == 'Stanza':
         languages_available = Stanza_util.list_all_languages()
+    # languages_available is a list []
     return languages_available
 
 language_var.set('')
@@ -373,11 +376,14 @@ def activate_language_var():
     language_menu.configure(state='normal')
 
 def check_language(*args):
+    # language_list=get_available_languages()
     if language_var.get() in language_list:
         mb.showwarning(title='Warning',
                        message='The selected language "' + language_var.get() + '" is already in your selection list: ' + str(
                            language_list) + '.\n\nPlease, select another language.')
         window.focus_force()
+        reset_language_button.configure(state='normal')
+        show_language_button.configure(state='normal')
         return
     else:
         if language_var.get() == '':
@@ -412,6 +418,7 @@ def changed_NLP_package(*args):
         limit_sentence_length_var.configure(state='disabled')
     language_list.clear()
     language_menu['values'] = get_available_languages()
+    language_var.set('')
     check_language()
     changed_NLP_package_set_parsers()
 package_var.trace('w',changed_NLP_package)
