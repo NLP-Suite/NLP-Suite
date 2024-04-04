@@ -103,8 +103,6 @@ def get_language_list(language):
     for short_lang, long_lang in lang_dict.items():
         # reverse the names to have them in proper sort order
         # should do the same for Greek, Hebrew, and other languages
-        if "Chinese" in long_lang:
-            print('@@@')
         if long_lang=='Simplified_Chinese':
             long_lang='Chinese_Simplified'
         if long_lang=='Traditional_Chinese':
@@ -528,41 +526,35 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         sidx = 1
         max_idx = len(out_df)-1
         for row in out_df.iterrows():
-            # @@@
             if i != 0 and row[1]['ID'] == 1:
-            # if i != 0 and row[1]['id'] == 1:
                 sidx+=1
-
-            # @@@
             out_df.at[i, 'Record ID'] = i+1
             out_df.at[i, 'Sentence ID'] = sidx
             if "NER" in annotator_params:
                 curr_ner = str(out_df.at[i, 'NER'])
                 # process each NER tag based on BIOES representation
                 if curr_ner.startswith('S'):
+                    # print(out_df.at[i, 'Form'])
                     out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']
                 elif curr_ner.startswith('B'):
                     tmp_ner = curr_ner
                     tmp_idx = i
                     # find the final index that starts with E
-                    while tmp_ner.startswith('E') is False:
+                    # if tmp_ner=='B-Time':
+                    #     print('@@@ 1')
+                    while str(tmp_ner).startswith('E') is False:
                         tmp_ner = out_df.at[tmp_idx, 'NER']
                         tmp_idx+=1
-                        import math
-                        x = float('nan')
-                        if math.isnan(x):
-                            break
                     tmp_idx+=1
-                    # @@@
                     # handle possible edge case where the next NER tag starts with S or current tag is a single tag
-                    if tmp_idx==i+1 or (i<=max_idx and out_df.at[i+1, 'NER'].startswith('S')):
+                    if tmp_idx==i+1 or (i<=max_idx and str(out_df.at[i+1, 'NER']).startswith('S')):
                         out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']
                     else:
                         # reversely iterate through the MWE from final index to current index, and update MWE accordingly
                         for j in reversed(range(i, tmp_idx-1)):
                             if j == tmp_idx-2:
                                 out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j, 'Form']
-                            elif out_df.at[j, 'NER'].startswith('B') or out_df.at[j, 'NER'].startswith('S'):
+                            elif str(out_df.at[j, 'NER']).startswith('B') or str(out_df.at[j, 'NER']).startswith('S'):
                                 out_df.at[j, 'Multi-Word Expression'] = out_df.at[j+1, 'Multi-Word Expression']
                                 # when finally reach the first tag (B), update existing MWE with complete MWE
                                 for k in reversed(range(i, tmp_idx-1)):
@@ -570,7 +562,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
                                         out_df.at[k, 'Multi-Word Expression'] = out_df.at[j, 'Multi-Word Expression']
                                     else:
                                         out_df.at[k, 'Multi-Word Expression'] = ''
-                            elif out_df.at[j, 'NER'].startswith('I'):
+                            elif str(out_df.at[j, 'NER']).startswith('I'):
                                 out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j+1 , 'Multi-Word Expression']
             i+=1
 
@@ -811,8 +803,6 @@ with open(os.path.join(DEFAULT_MODEL_DIR, 'resources.json')) as fin:
     resources = json.load(fin)
 for key, value in resources.items():
     if isinstance(value, dict) and "lang_name" in value:
-        # if "Chinese" in value["lang_name"]:
-        #     print('@@@')
         lang_dict[key]=value["lang_name"]
         lang_dict_rev[value['lang_name']]=key
 
