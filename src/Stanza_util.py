@@ -504,7 +504,6 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         # rename the columns created by Stanza
         out_df = out_df.rename(
             columns = {
-                # @@@
                 'id':'ID',
                 'text':'Form',
                 'lemma':'Lemma',
@@ -530,7 +529,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
                 sidx+=1
             out_df.at[i, 'Record ID'] = i+1
             out_df.at[i, 'Sentence ID'] = sidx
-            if "NER" in annotator_params:
+            if "NER" in annotator_params or "depparse" in annotator_params:
                 curr_ner = str(out_df.at[i, 'NER'])
                 # process each NER tag based on BIOES representation
                 if curr_ner.startswith('S'):
@@ -586,7 +585,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
             out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
             # out_df = out_df[['Form', 'Lemma', 'POS', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
         else:
-            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'NER', 'Multi-Word Expression', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
             # out_df = out_df[['Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "sentiment" in annotator_params:
         out_df = out_df[['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]

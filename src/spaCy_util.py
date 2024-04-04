@@ -321,6 +321,10 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
             for i, token in enumerate(sent):
                 out_df.at[rec_ID,'Form'] = token.text
                 out_df.at[rec_ID, 'NER'] = token.ent_type_
+                out_df.at[rec_ID, 'is_sent_start'] = token.is_sent_start
+                out_df.at[rec_ID,'Multi-Word Expression'] = token.ent_iob_ # add IOB tag of NERs to process later
+
+
                 # add necessary columns after the loop
                 out_df.at[rec_ID, 'Sentence ID'] = sent_ID
                 out_df.at[rec_ID, 'Sentence'] = sent.text
@@ -328,8 +332,10 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
                 out_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
                 rec_ID+=1
             sent_ID+=1
+            out_df = get_mwe(out_df)
+
         # out_df = out_df[['ID', 'Form', 'NER', 'Multi-Word Expression','Record ID', 'Sentence ID', 'Document ID', 'Document']]
-        out_df = out_df[['Form', 'NER', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
+        out_df = out_df[['Form', 'NER', 'Multi-Word Expression', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
 
     if "parse" in str(annotator_params):
 

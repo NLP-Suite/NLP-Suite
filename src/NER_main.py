@@ -72,7 +72,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         limit_sentence_length_var = 1000
         NER_list = spaCy_util.NER_dict
         NER_entry_var.set(NER_list)
-        oputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
+        outputFiles = spaCy_util.spaCy_annotate(config_filename, inputFilename, inputDir,
                                                     outputDir,
                                                     openOutputFiles,
                                                     chartPackage, dataTransformation,
