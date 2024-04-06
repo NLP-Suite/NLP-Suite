@@ -148,16 +148,17 @@ def extract_NER_locations(window,conllFile,encodingValue,datePresent):
 	return locList
 
 
-def save_location(datePresent, currLocation, row):
+def save_location(datePresent, currLocation, sentence, document, row):
 	locList=[]
 	if datePresent:
 		try:
 			# NER may not be present when an external input csv file of locations is passed
-			locList.append([currLocation, row["Date"], row["NER"]])
+			# locList.append([currLocation, row["Date"], row["NER"]])
+			locList.append([currLocation, row["Date"], row["NER"], row["Sentence"], row["Document"]])
 		except:
-			locList.append([currLocation, row["Date"]])
+			locList.append([currLocation, row["Date"], row["Sentence"], row["Document"]])
 	else:
-		locList.append([currLocation, row["NER"]])
+		locList.append([currLocation, row["NER"],row["Sentence"], row["Document"]])
 	return locList
 
 # called from GIS_Google_util
@@ -216,11 +217,14 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 							# currLocation = ''
 							else:
 								currLocation = row["Location"]
+						sentence = row["Sentence"]
+						document = row["Document"]
 					except:
 						currLocation = row["Location"]
 						pass
 
-					locList.append(save_location(datePresent, currLocation, row)[0])
+					# locList.append(save_location(datePresent, currLocation, row)[0])
+					locList.append(save_location(datePresent, currLocation, sentence, document, row)[0])
 					currLocation = ''
 
 				# the code would break if no NER is passed (e.g., from DB_PC-ACE)

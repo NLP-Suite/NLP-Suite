@@ -667,7 +667,7 @@ def normalize_date_svo(inputFilename, outputDir,  chartPackage='Excel', dataTran
     data = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
     # col='Date expression'
     if data['Date expression'].empty or data['Date expression'].isna().all():
-        print("There no NER normalized dates for the extracted SVOs")
+        print("There are no NER normalized dates for the extracted SVOs")
         return
     nEmtyCells=str(int(data['Date expression'].isna().sum()))
     outputNormalizedDateDir = IO_files_util.make_output_subdirectory('', '', outputDir,
