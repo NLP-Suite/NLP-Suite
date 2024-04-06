@@ -352,7 +352,8 @@ def geocode(window,locations, inputFilename, outputDir,
 	else:
 		# always use the locationColumnName variable passed by algorithms to make sure locations are then matched
 		if datePresent==True:
-			geowriter.writerow(['Location','NER','Latitude','Longitude','Address','Country from Geocoder','Date'])
+			# geowriter.writerow(['Location','NER','Latitude','Longitude','Address','Country from Geocoder','Date'])
+			geowriter.writerow(['Location','NER','Latitude','Longitude','Address','Country from Geocoder','Date', 'Sentence', 'Document'])
 		else:
 			geowriter.writerow(['Location','NER','Latitude', 'Longitude', 'Address','Country from Geocoder',])
 
@@ -372,12 +373,13 @@ def geocode(window,locations, inputFilename, outputDir,
 	locations = tmp_loc
 	skipNext = False
 	index_list = []
+	index_locations=0
 	for item in locations:
-		index=index+1 #items in locations are NOT DISTINCT
+		index_locations+=1 #items in locations are NOT DISTINCT
 		if skipNext:
 			continue
 		if not pd.isna(item[0]) and str(item[0]) != '':
-			currRecord=str(index) + "/" + str(len(locations))
+			currRecord=str(index_locations) + "/" + str(len(locations))
 			print("Processing location " + currRecord + " for geocoding: "
 					+ str(item[0]) + " (NER tag: " + str(item[1]) + ")")
 			# for CoNLL tables as input rows & columns
@@ -404,10 +406,16 @@ def geocode(window,locations, inputFilename, outputDir,
 					NER_Tag_Nominatim = 'state'
 				elif NER_Tag == 'CITY':
 					NER_Tag_Nominatim = 'city'
-
+				if datePresent:
+					sentence = item[3]
+					document = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(item[4]))[1]
+				else:
+					sentence = item[2]
+					document = os.path.split(IO_csv_util.undressFilenameForCSVHyperlink(item[3]))[1]
 			# avoid repetition so as not to access the geocoder service several times for the same location;
 			# 	location already in list
 			if itemToGeocode in distinctGeocodedList:
+				# print(len(distinctGeocodedList))
 				# print("   Geocoding NON-DISTINCT location: " + itemToGeocode)
 				for index, row in multi_name_locations.iterrows():  # For every row in the ConLL
 					multi_name_location = row[0]
@@ -427,7 +435,6 @@ def geocode(window,locations, inputFilename, outputDir,
 				else:
 					lat = distinctGeocodedLocations[itemToGeocode][0]
 					lng = distinctGeocodedLocations[itemToGeocode][1]
-					address = distinctGeocodedLocations[itemToGeocode][2]
 					address = distinctGeocodedLocations[itemToGeocode][2]
 					address_list = address.split(',')
 					country_geocoder=address_list[-1].strip()
@@ -561,7 +568,7 @@ def geocode(window,locations, inputFilename, outputDir,
 		if locationsNotFound==index:
 			geocodedLocationsOutputFilename='' #used NOT to open the file since there are no records
 			# this warning is already given
-	IO_user_interface_util.timed_alert(window, 2000, "GIS geocoder", "Finished geocoding " + str(len(locations)) + " locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime, True)
+	IO_user_interface_util.timed_alert(window, 2000, "GIS geocoder", "Finished geocoding " + str(len(locations)) + " locations via the online service '" + geocoder + "' at", True, str(locationsNotFound) + " location(s) was/were NOT geocoded out of " + str(index_locations) + ". The list will be displayed as a csv file.\n\nPlease, check your locations and try again.\n\nA Google Earth Pro kml map file will now be produced for all successfully geocoded locations.", True, startTime, True)
 	return geocodedLocationsOutputFilename, locationsNotFoundoutputFilename, locationsNotFoundNonDistinctoutputFilename, kmloutputFilename
 
 # TODO MINO GIS date option
