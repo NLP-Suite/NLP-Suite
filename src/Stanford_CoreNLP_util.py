@@ -843,6 +843,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
                     # 'Date' added at the end of the column list for SVO, for instance
                     output_format.append("Date")
                 # save csv file with the expected header (i.e., output_format)
+                # @@@
                 df = pd.DataFrame(run_output, columns=output_format)
                 IO_csv_util.df_to_csv(GUI_util.window, df, outputFilename, headers=output_format, index=False)
                 #count the number of corefed pronouns (COREF annotator)
@@ -1770,9 +1771,14 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
         person_list = []  # list that stores person names appear in sentences
         # CYNTHIA: get locations from entitymentions
         for item in entitymentions:
-            if item["ner"] is not None and item["ner"] in ['STATE_OR_PROVINCE', 'COUNTRY', "CITY", "LOCATION"]:
-                location_list.append(item["text"])
-                NER_value.append(item["ner"])
+            # process locations
+            if item["ner"] is not None:
+                if item["ner"] in ['STATE_OR_PROVINCE', 'COUNTRY', "CITY", "LOCATION"]:
+                    location_list.append(item["text"])
+                    NER_value.append(item["ner"])
+                # else:
+                #     location_list.append('')['text']
+                #     NER_value.append('')
         for token in sentence['tokens']:
             if token["ner"] == "TIME" or token["ner"] == "DATE":
                 T.append(token["word"])
@@ -1815,20 +1821,47 @@ def process_json_openIE(config_filename,documentID, document, sentenceID, json, 
                container.append(SVO_value)
         if len(container) > 0:
             for row in container:
+                # added an extra N/A to deal with GIS in OpenIE currently not working;
+                # this is done to avoid code breaking
+                # @@@
                 if filename_embeds_date_var:
-                    openIE.append([row[0], row[1], row[2], 'N/A', "; ".join(location_list), "; ".join(person_list), " ".join(T), "; ".join(T_S),date_str, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                    openIE.append([row[0], row[1], row[2], 'N/A', "; ".join(location_list), "; ".join(person_list), " ".join(T), "; ".join(T_S),date_str, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str])
                 else:
-                    openIE.append([row[0], row[1], row[2], 'N/A', "; ".join(location_list), "; ".join(person_list), " ".join(T), "; ".join(T_S), sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
+                    openIE.append([row[0], row[1], row[2], 'N/A', 'N/A', "; ".join(location_list), "; ".join(person_list), " ".join(T), "; ".join(T_S), sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)])
                 # nidx += 1
         # for each sentence, get locations
+        # print('GIS maps are currently not produced for OpenIE')
         if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(location_list) != 0:
             # produce an intermediate location file
             locations.append([sentenceID, complete_sent, [[x,y] for x,y in zip(location_list,NER_value)]])
 
+    # print('GIS maps are currently not produced for OpenIE')
     if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True:
-        visualize_GIS_maps(kwargs, locations, documentID, document, date_str)
-
-    return openIE
+        # PROCESS LOCATION LIST --------------------------------------------------------------
+        # loc_NER_value [['Shanklin','LOCATION',24,25]]
+        # loc_NER_value is now added elements [['Shanklin','LOCATION',24,25, Sentence ID, Sentence, Document ID, Document]]
+        # loc_NER_value = check_NER_tokenBegin_tokenEnd(new_NER_value)
+        # for el in loc_NER_value:
+        #     # need to recompute location list in case locations have been regrouped
+        #     #   e.g., Denmark Street (COUNTRY, LOCATION) regrouped as Denmark Street
+        #     new_NER_value.append([el[0], el[1], el[2], el[3], sentenceID, complete_sent, documentID,
+        #                           IO_csv_util.dressFilenameForCSVHyperlink(document)])
+        # # loc_NER_value is now added elements [['Shanklin','LOCATION',24,25, Sentence ID, Sentence, Document ID, Document]]
+        # loc_NER_value = check_NER_tokenBegin_tokenEnd(new_NER_value)
+        # # recompute location_list as NER values may have changed
+        # for el in loc_NER_value:
+        #     # need to recompute location list in case locations have been regrouped
+        #     #   e.g., Denmark Street (COUNTRY, LOCATION) regrouped as Denmark Street
+        #     location_list.append(el[0])
+        #     # if "google_earth_var" in kwargs and kwargs["google_earth_var"] == True and len(location_list) != 0:
+        #     # produce an intermediate location file
+        #     # locations.append([sentenceID, complete_sent, [[x,y] for x,y in zip(L,NER_value)]])
+        #     locations.append(el)
+        try:
+            visualize_GIS_maps(kwargs, locations, documentID, document, date_str)
+        except:
+            print('GIS maps are currently not produced for OpenIE')
+    return openIE # 12 items returned
 
 def process_json_lemma(config_filename, documentID, document, sentenceID, recordID, json, **kwargs):
     print("   Processing Json output file for Lemma")
