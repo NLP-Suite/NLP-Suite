@@ -560,10 +560,10 @@ NLP_Suite_data_file_handling_tools_menu = \
 '-----------------------------------------------------------------------------------------', \
 '', \
 'File checker (file name)', \
-'File classifier (dumb classifier via embedded date) (file name)', \
+'File classifier (file name) (dumb classifier via embedded date)', \
 'File-type converter (csv, docx, pdf, rtf --> txt)', \
 'File matcher (file name)',\
-'File manager (List, Rename, Copy, Move, Delete, Count, Split)', 'PC-ACE database (via Pandas)', 'SQL database (via SQLite)'
+'File manager (file name) (List, Rename, Copy, Move, Delete, Count, Split)', 'PC-ACE database (via Pandas)', 'SQL database (via SQLite)'
 
 NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample corpus (ALL options GUI)', 'Search (ALL options GUI)',\
 '', \
@@ -573,12 +573,13 @@ NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample c
 'File checker (file content)', \
 'File checker (file content utf-8 encoding)', \
 'File checker (file name)', \
-'File cleaner (Change to ASCII non-ASCII apostrophes & quotes and % to percent)', \
-'File cleaner (Find & Replace string)', \
-'File cleaner (Remove blank lines from txt file(s))', \
-'File cleaner (Add full stop . at the end of paragraphs without end-of-paragraph punctuation)', \
-'File cleaner (Pronominal resolution via CoreNLP)', \
+'File cleaner (file content) (Change to ASCII non-ASCII apostrophes & quotes and % to percent)', \
+'File cleaner (file content) (Find & Replace string)', \
+'File cleaner (file content) (Remove blank lines from txt file(s))', \
+'File cleaner (file content) (Add full stop . at the end of paragraphs without end-of-paragraph punctuation)', \
+'File cleaner (file content) (Pronominal resolution via CoreNLP)', \
 'File finder (file name)', \
+'File manager (file name) (List, Rename, Copy, Move, Delete, Count, Split)',
 'File merger (file content)',\
 'File splitter (file content)',\
 'File splitter (file name)', \
@@ -593,7 +594,7 @@ NLP_Suite_pre_processing_tools_menu = 'File handler (ALL options GUI)','Sample c
 'Similarities between documents (via Python difflib)', \
 'Similarities between words (Levenshtein distance)', \
 'Spelling checkers', \
-'Spelling checker cleaner (Find & Replace string)'
+'Spelling checker cleaner (file content) (Find & Replace string)'
 
 # 'CoreNLP annotator - date (NER normalized date)',
 # 'CoreNLP annotator - gender (male & female names; via CoreNLP and dictionaries)',

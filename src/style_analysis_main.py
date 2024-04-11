@@ -73,7 +73,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
                 return
             filesToOpen = statistics_txt_util.compute_sentence_complexity(GUI_util.window, inputFilename,
                                                                      inputDir, outputDir, config_filename,
-                                                                     openOutputFiles, chartPackage, )
+                                                                     openOutputFiles, chartPackage, dataTransformation)
         if '*' in complexity_readability_analysis_menu_var or 'Text' in complexity_readability_analysis_menu_var:
             if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py') == False:
                 return
