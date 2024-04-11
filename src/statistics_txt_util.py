@@ -1661,7 +1661,8 @@ def sentence_structure_tree(inputFilename, outputDir):
             cf.print_to_file(outputDir + '/' + os.path.basename(inputFilename) + '_' + str(sentenceID) + '_tree.ps')
 
 # written by Mino Cha March/April 2022
-def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, configFileName, openOutputFiles, chartPackage, dataTransformation):
+def compute_sentence_complexity(window, inputFilename, inputDir, outputDir, configFileName,
+                                openOutputFiles, chartPackage, dataTransformation):
     ## list for csv file
     columns=[]
     documentID = []

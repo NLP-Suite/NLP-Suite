@@ -482,6 +482,8 @@ string_entry_var=tk.StringVar()
 by_foldername_var=tk.IntVar()
 folder_character_separator_var=tk.StringVar()
 
+position_in_string_var=tk.IntVar()
+
 comparison_var= tk.StringVar()
 by_embedded_items_var=tk.IntVar()
 number_of_items_var=tk.IntVar()
@@ -642,6 +644,7 @@ def activate_rename_options(*args):
         count_checkbox.configure(state="disabled")
         split_checkbox.configure(state="disabled")
         rename_new_entry.configure(state="normal")
+        position_in_string_value.configure(state="normal")
         by_foldername_checkbox.config(state="normal")
     else:
         list_checkbox.configure(state="normal")
@@ -651,6 +654,7 @@ def activate_rename_options(*args):
         count_checkbox.configure(state="normal")
         split_checkbox.configure(state="normal")
         rename_new_entry.configure(state="disabled")
+        position_in_string_value.configure(state="disabled")
         by_foldername_checkbox.config(state="disabled")
     #activate_prefix_options()
     character_count_checkbox.configure(state="disabled")
@@ -675,6 +679,7 @@ def activate_copy_options(*args):
         split_checkbox.configure(state="normal")
     character_count_checkbox.configure(state="disabled")
     rename_new_entry.configure(state="disabled")
+    position_in_string_value.configure(state="disabled")
     by_creation_date_checkbox.configure(state="disabled")
     by_author_checkbox.configure(state="disabled")
 copy_var.trace('w',activate_copy_options)
@@ -696,6 +701,7 @@ def activate_move_options(*args):
         split_checkbox.configure(state="normal")
     character_count_checkbox.configure(state="disabled")
     rename_new_entry.configure(state="disabled")
+    position_in_string_value.configure(state="disabled")
     by_creation_date_checkbox.configure(state="disabled")
     by_author_checkbox.configure(state="disabled")
 move_var.trace('w',activate_move_options)
@@ -735,6 +741,7 @@ def activate_count_options(*args):
         split_checkbox.configure(state="normal")
     character_count_checkbox.configure(state="disabled")
     rename_new_entry.configure(state="disabled")
+    position_in_string_value.configure(state="disabled")
 count_file_manager_var.trace('w',activate_count_options)
 
 def activate_split_options(*args):
@@ -767,6 +774,7 @@ def activate_split_options(*args):
         by_author_checkbox.configure(state="normal")
         character_count_checkbox.configure(state="normal")
         rename_new_entry.configure(state="normal")
+        position_in_string_value.configure(state="normal")
         by_prefix_checkbox.configure(state="normal")
         by_substring_checkbox.configure(state="normal")
 split_file_manager_var.trace('w',activate_split_options)
@@ -797,7 +805,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indente
 # on_date,
 
 by_author_checkbox = tk.Checkbutton(window, text='By author (Windows Office files)', variable=by_author_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+400,y_multiplier_integer,by_author_checkbox)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+370,y_multiplier_integer,by_author_checkbox)
 
 by_prefix_var.set(0)
 by_prefix_checkbox = tk.Checkbutton(window, text='By prefix value', variable=by_prefix_var, onvalue=1, offvalue=0)
@@ -807,25 +815,39 @@ by_substring_var.set(0)
 by_substring_checkbox = tk.Checkbutton(window, text='By sub-string value', variable=by_substring_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+140,y_multiplier_integer,by_substring_checkbox,True)
 
-string_entry_lb = tk.Label(window, text='Enter value (case sensitive)')
+string_entry_lb = tk.Label(window, text='Old value')
+# (case sensitive)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+280,y_multiplier_integer,string_entry_lb,True)
 
-string_entry = tk.Entry(window,width=30,textvariable=string_entry_var)
+string_entry = tk.Entry(window,width=20,textvariable=string_entry_var)
 string_entry.configure(state="disabled")
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+450,y_multiplier_integer,string_entry,True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+370,y_multiplier_integer,string_entry,True)
 
-rename_new_entry_lb = tk.Label(window, text='New renaming value (case sensitive)')
+rename_new_entry_lb = tk.Label(window, text='New value')
+# (case sensitive)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+580,y_multiplier_integer,rename_new_entry_lb,True)
 
-rename_new_entry = tk.Entry(window,width=30,textvariable=rename_new_entry_var)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+ 720,y_multiplier_integer,rename_new_entry)
+rename_new_entry = tk.Entry(window,width=20,textvariable=rename_new_entry_var)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+ 680,y_multiplier_integer,rename_new_entry,True)
 
 y_multiplier_integer_save=y_multiplier_integer-1
 
-rename_new_entry_lb.place_forget() #invisible
-rename_new_entry.place_forget() #invisible
-
+# rename_new_entry_lb.place_forget() #invisible
+# rename_new_entry.place_forget() #invisible
+#
 rename_new_entry.configure(state="disabled")
+
+position_in_string_lb = tk.Label(window, text='Position in string')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+850,y_multiplier_integer, position_in_string_lb,True)
+position_in_string_value = tk.Entry(window, width=2,textvariable=position_in_string_var)
+position_in_string_value.configure(state="disabled")
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+970,y_multiplier_integer, position_in_string_value)
+
+
+# We can easily replace a character at a specific index by
+#   converting the string into a list of characters using the list() method.
+#   then modifying the character at the desired index
+#   converting the list back to the string using the join() method.
 
 def activate_prefix_substring_options(*args):
     by_foldername_var.set(0)
@@ -838,20 +860,26 @@ def activate_prefix_substring_options(*args):
         else:
             by_prefix_checkbox.configure(state="normal")
         string_entry.configure(state="normal")
-        if rename_var.get()==False:
-            rename_new_entry_lb.place_forget() #invisible
-            rename_new_entry.place_forget() #invisible
-        else:
-            y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 400,y_multiplier_integer_save,rename_new_entry_lb,True)
-            y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+ 600,y_multiplier_integer_save,rename_new_entry)
+        rename_new_entry.configure(state="normal")
+        position_in_string_value.configure(state="normal")
+
+        # if rename_var.get()==False:
+        #     rename_new_entry_lb.place_forget() #invisible
+        #     rename_new_entry.place_forget() #invisible
+        # else:
+        #     y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate + 400,y_multiplier_integer_save,rename_new_entry_lb,True)
+        #     y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.entry_box_x_coordinate+ 600,y_multiplier_integer_save,rename_new_entry)
     else:
         if by_substring_var.get()==0:
             by_prefix_checkbox.configure(state="normal")
         by_substring_checkbox.configure(state="normal")
         string_entry.configure(state="disabled")
-        rename_new_entry_lb.place_forget() #invisible
-        rename_new_entry.place_forget() #invisible
+        rename_new_entry.configure(state="disabled")
+        position_in_string_value.configure(state="disabled")
+        # rename_new_entry_lb.place_forget() #invisible
+        # rename_new_entry.place_forget() #invisible
     string_entry_var.set("")
+    rename_new_entry_var.set("")
 by_prefix_var.trace('w',activate_prefix_substring_options)
 by_substring_var.trace('w',activate_prefix_substring_options)
 
