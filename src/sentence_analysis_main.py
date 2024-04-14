@@ -25,9 +25,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,chartPackage,dataTran
     IO_values,
     sentence_complexity_var,
     text_readability_var,
-    visualize_sentence_structure_var,
-    extract_sentences_var,
-    search_words_var):
+    visualize_sentence_structure_var):
 
 
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
@@ -41,8 +39,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,chartPackage,dataTran
         visualize_bySentenceIndex_var==False and
         sentence_complexity_var==False and
         text_readability_var==False and
-        visualize_sentence_structure_var==False and
-        extract_sentences_var==False):
+        visualize_sentence_structure_var==False):
             mb.showwarning(title='No options selected', message='No options have been selected.\n\nPlease, select an option and try again.')
             return
 
@@ -66,7 +63,7 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,chartPackage,dataTran
         if IO_libraries_util.check_inputPythonJavaProgramFile('statistics_txt_util.py')==False:
             return
         statistics_txt_util.compute_sentence_text_readability(GUI_util.window,inputFilename, inputDir, outputDir,
-                                                              openOutputFiles,chartPackage, dataTransformation)
+                                                              config_filename, openOutputFiles, chartPackage, dataTransformation)
 
     if visualize_sentence_structure_var==True:
         # if IO_libraries_util.check_inputPythonJavaProgramFile('DependenSee.Jar')==False:
@@ -82,11 +79,6 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,chartPackage,dataTran
         # mb.showwarning(title='Analysis end',message='Finished running the Dependency tree viewer (png graphs).\n\nMake sure to open the png files in output, one graph for each sentence.')
 
         statistics_txt_util.sentence_structure_tree(inputFilename, outputDir)
-
-    if extract_sentences_var:
-        if search_words_var=='':
-            mb.showwarning(title='No search words entered', message='You have selected to extract sentences from input file(s). You MUST enter specific words to be used to extract the sentences from input.\n\nPlease enter the word(s) and try again.')
-            return
 
     if openOutputFiles == 1:
         if filesToOpen == None:
@@ -107,9 +99,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                                 IO_values,
                                 sentence_complexity_var.get(),
                                 text_readability_var.get(),
-                                visualize_sentence_structure_var.get(),
-                                extract_sentences_var.get(),
-                                search_words_var.get())
+                                visualize_sentence_structure_var.get())
 
 GUI_util.run_button.configure(command=run_script_command)
 
@@ -223,15 +213,14 @@ visualize_bySentenceIndex_options_var=tk.StringVar()
 visualize_sentence_structure_var=tk.IntVar()
 sentence_complexity_var=tk.IntVar()
 text_readability_var=tk.IntVar()
-extract_sentences_var=tk.IntVar()
-search_words_var=tk.StringVar()
 
 def clear(e):
+    compute_sentence_length_var.set(0)
+    sentence_complexity_var.set(0)
+    text_readability_var.set(0)
     visualize_bySentenceIndex_var.set(0)
     visualize_sentence_structure_var.set(0)
-    extract_sentences_var.set(0)
     visualize_bySentenceIndex_options_var.set('')
-    search_words_var.set('')
     GUI_util.clear("Escape")
 window.bind("<Escape>", clear)
 
@@ -240,7 +229,14 @@ style_analysis_button = tk.Button(window, width=GUI_IO_util.widget_width_short, 
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    style_analysis_button,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Click on the button to open the GUI")
+                                   "Click on the button to open the style analysis GUI")
+
+extract_sentences_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Search/Extract sentences from corpus (Open GUI)',command=lambda: call('python file_search_byWord_main.py', shell=True))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   extract_sentences_button,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Click on the button to open the search/extract GUI")
 
 compute_sentence_length_checkbox = tk.Checkbutton(window, text='Compute sentence length', variable=compute_sentence_length_var, onvalue=1, offvalue=0)
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,compute_sentence_length_checkbox)
@@ -263,28 +259,11 @@ visualize_bySentenceIndex_options_var.trace('w', lambda x,y,z: getScript(visuali
 
 visualize_sentence_structure_var.set(0)
 visualize_sentence_structure_checkbox = tk.Checkbutton(window, text='Visualize sentence structure (via dependency tree)', variable=visualize_sentence_structure_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,visualize_sentence_structure_checkbox)
-
-extract_sentences_var.set(0)
-extract_sentences_checkbox = tk.Checkbutton(window, text='Extract sentences from corpus', variable=extract_sentences_var, onvalue=1, offvalue=0)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate,y_multiplier_integer,extract_sentences_checkbox,True)
-
-search_words_var.set('')
-search_words_lb = tk.Label(window, text='Word(s) in sentence')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+200,y_multiplier_integer,search_words_lb,True)
-search_words_entry = tk.Entry(window, textvariable=search_words_var)
-search_words_entry.configure(width=100)
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate+340,y_multiplier_integer,search_words_entry)
-
-def activate_extract_sentences(*args):
-    if extract_sentences_var.get()==False:
-        search_words_entry.configure(state='disabled')
-    else:
-        search_words_entry.configure(state='normal')
-extract_sentences_var.trace('w',activate_extract_sentences)
-
-activate_extract_sentences()
-
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
+                                   visualize_sentence_structure_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "You will be asked to enter a specific sentence to visualize its dependency tree as a png file")
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
@@ -315,12 +294,12 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                       GUI_IO_util.msg_IO_setup)
 
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, click the button \'Style analysis\' if you wish to open the style analysis GUi where a large variety of style tools are available, not necessarily at the sentence level, but at the document level..'+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, click the button \'Style analysis\' if you wish to open the style analysis GUi where a large variety of style tools are available, not necessarily at the sentence level, but at the document level.'+GUI_IO_util.msg_Esc)
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, click the button \'Search/extract sentences from corpus\' if you wish to open the search/extract GUI where a variety of search and extract options are available.'+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to compute the sentence lengths of your document(s).\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.'+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to run the sentence complexity algorithm to provide different measures of sentence complexity: Yngve Depth, Frazer Depth, and Frazer Sum. These measures are closely associated to the sentence clause structure.\n\nThe Frazier and Yngve scores are very similar, with one key difference: while the Frazier score measures the depth of a syntactic tree, the Yngve score measures the breadth of the tree.\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.'+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to run the Python 3 sentence_text_readability function to compute various measures of text readability, also closely associated to the sentence clause structure.\n\n  12 readability score requires HIGHSCHOOL education;\n  16 readability score requires COLLEGE education;\n  18 readability score requires MASTER education;\n  24 readability score requires DOCTORAL education;\n  >24 readability score requires POSTDOC education.\n\nIn INPUT, the script expects a single txt file or a directory with a set of txt files.\n\nIn OUTPUT, the script produces a txt file with readability scores for an entire text and a csv file with readability scores for each sentence in a text.'+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",'Please, tick the checkbox if you wish to visualize the sentence structure as a png image of the dependency tree.'+GUI_IO_util.msg_Esc)
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to extract all the sentences from your input txt file(s) that contain specific words (single words or collocations, i.e., sets of words).\n\nThe widget 'Words in sentence' will become available once you select the option. You will need to enter there the words/set of words that a sentence must contain in order to be extracted from input and saved in output. Words/set of words must be entered in DOUBLE QUOTES (e.g., \"The New York Times\") and comma separated (e.g., \"The New York Times\" , \"The Boston Globe\"). When running the script, the script will ask you if you want to process the search word(s) as case sensitive (thus, if you opt for case sensitive searches, a sentence containing the word 'King' will not be selected in output if in the widget 'Word(s) in sentence' you have entered 'king').\n\nIn INPUT, the script expects a single txt file or a directory.\n\nIn OUTPUT the script produces two types of files:\n1. files ending with _extract.txt and containing, for each input file, all the sentences that have the search word(s);\n2. files ending with _extract_wo-searchword.txt and containing, for each input file, the sentences that do NOT have the search word(s) in them.\n\nOutput files are saved in two subdirectories 'sentences\extract_with-searchword' and 'sentences\extract_wo-searchword' of the output directory."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)
     return y_multiplier_integer -1
 y_multiplier_integer = help_buttons(window,GUI_IO_util.help_button_x_coordinate,0)

@@ -56,17 +56,17 @@ def run(inputFilename, outputDir, openOutputFiles,
 
     if not inputFilename.endswith('csv'):
         mb.showwarning(title='Warning',
-                       message='The visualization algorithms require a "csv file field for visualization" variable.\n\nPlease, use the dropdown menu to select a field for anylysis and try again.')
+                       message='The visualization algorithms require a "csv file in input.\n\nPlease, select a csv file in input and try again.')
         return
 
-    if extra_GUIs_var==False and csv_field_visualization_var == '':
+    if extra_GUIs_var.get()==False and csv_field_visualization_var == '':
         mb.showwarning("Warning",
-                       "No csv file field to be used for visualization has been selected.\n\nPlease, use the dropdown menu of the 'csv file field for visualization' widget to select the desired field and try again.")
+                       "No csv file field to be used for visualization has been selected.\n\nPlease, use the dropdown menu of the 'csv file field for visualization (Y-axis)' widget to select the desired field and try again.")
         return
 
-    if extra_GUIs_var==False and visualizations_menu_var=='':
+    if extra_GUIs_var.get()==False and visualizations_menu_var=='':
         mb.showwarning(title="Warning",
-                       message="No visualization option has been selected.\n\nPlease, use the dropdown menu of the 'Visualization options' widget to select the desired option and try again.")
+                       message="No visualization option has been selected.\n\nPlease, use the dropdown menu of the 'Visualization options' widget to select the desired visualization option and try again.")
         return
 
 # Excel/Plotly charts --------------------------------------------------------------------------------
@@ -641,8 +641,10 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 date_format_lb = tk.Label(window,text='Date format ')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,
                                                y_multiplier_integer, date_format_lb, True)
+
 date_format_var.set('mm-dd-yyyy')
 date_format_menu = tk.OptionMenu(window, date_format_var, 'mm-dd-yyyy', 'dd-mm-yyyy','yyyy-mm-dd','yyyy-dd-mm','yyyy-mm','yyyy')
+date_format_menu.configure(state='disabled')
 date_format_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,
@@ -651,7 +653,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,
                                                date_format_menu,
                                                True, False, False, False, 90,
                                                GUI_IO_util.visualization_K_sent_begin_pos,
-                                               'Select the date type embedded in your filename')
+                                               'Select the date type embedded in your filename or in the csv file Date field\nWhen both filename and headers include a Date field, the Date field column in the csv file will be used, regardless of a date embedded in the filename')
 
 select_time_lb = tk.Label(window, text='Timeline')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
