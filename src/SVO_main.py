@@ -84,7 +84,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     outputLocations = []
 
     filesToOpen = []
-    files_to_open = []
 
     # # get the NLP package and language options
     # error, package, parsers, package_basics, language, package_display_area_value, encoding_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var = config_util.read_NLP_package_language_config()
@@ -666,8 +665,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
             if file[-4:] == '.kml' or file[-5:] == '.html' or file[-4:] == '.png' or file[-5:] == '.gexf': # or \
                 # file[-5:] == '.xlsx':
                 filesToOpenSubset.append(file)
+
         filesToOpenSubset_string = ", \n   ".join(filesToOpenSubset)
         print("Subset of the " + str(len(filesToOpenSubset)) + " SVO files from the different subfolders to be opened:\n   " + str(filesToOpenSubset_string))
+        # SVO can produce a very large number of files including the subset files
+        #   when even the subset is greater then 10, open a least the SVO file
+        if len(filesToOpenSubset)>10:
+            if package_var == 'Stanza' or package_var == 'spaCy':
+                filesToOpenSubset=[filesToOpen[0]]
+                filesToOpenSubset.append(filesToOpen[1])
+            else:
+                filesToOpenSubset = [filesToOpen[0]]
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
 
 # the values of the GUI widgets MUST be entered in the command as widget.get() otherwise they will not be updated

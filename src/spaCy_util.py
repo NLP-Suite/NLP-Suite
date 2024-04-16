@@ -122,27 +122,31 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
 
     if "Lemma" in annotator_params:
         annotator = 'Lemma'
+        label = 'Lemma'
     elif "NER" in annotator_params:
         annotator = 'NER'
+        label = 'NER'
     elif "All POS" in annotator_params:
         annotator = 'POS'
+        label = 'POS'
     elif "SVO" in annotator_params:
         annotator = 'SVO'
     elif "depparse" in annotator_params:
         annotator = 'depparse'
+        label = 'parser (dep)'
     elif "sentiment" in annotator_params:
         annotator = 'sentiment'
+        label = 'sentiment'
 
     # create the appropriate subdirectory to better organize output files                                               silent=False)
-    # outputDir = create_output_directory(inputFilename, inputDir, outputDir, annotator)
-    # outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-    #                                                    label=annotator + "_spaCy",
-    #                                                    silent=True)
 
-    # a CoNLL table is exported automatically for spaCy and Stanza
-    outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-                                                       label=annotator + "_CoNLL",
-                                                       silent=True)
+    if annotator == 'SVO':
+        # a CoNLL table is exported automatically for spaCy and Stanza
+        outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                           label=annotator + "_CoNLL",
+                                                           silent=True)
+    else:
+        outputDir = create_output_directory(inputFilename, inputDir, outputDir, annotator)
 
     # set up spaCy pipeline
     # download selected spaCy language models
@@ -200,8 +204,9 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
         # convert Doc to DataFrame
         temp_df = convertSpacyDoctoDf(Spacy_output, inputFilename, inputDir, tail, int(docID), annotator_params, lang_list)
         df = pd.concat([df, temp_df], ignore_index=True, axis=0)
-        # save dataframe to csv
-        df.to_csv(outputFilename, index=False, encoding=language_encoding)
+
+        # the dt dataframe when running SVO is the CoNLL table, saved later, after processing all input files
+        # it needs to be added here so as to know exactly the place of the CoNLL table in the output files list
         filesToOpen.append(outputFilename)
 
         # SVO extraction if selected
@@ -218,6 +223,10 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
                 loc_df_outputFilename = kwargs["location_filename"]
                 loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
                 filesToOpen.append(loc_df_outputFilename)
+
+    # save dataframe to csv
+    df.to_csv(outputFilename, index=False, encoding=language_encoding)
+    # filesToOpen.append(outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
                                        'Finished running spaCy ' + str(annotator_params[0]) + ' annotator at',
@@ -529,14 +538,18 @@ def visualize_GIS_maps_spaCy(svo_df):
 def create_output_directory(inputFilename, inputDir, outputDir,
                             annotator):
     outputDirSV=GUI_util.output_dir_path.get()
+    if 'parse' in annotator:
+        annotator_label = 'parser (dep)'
+    else:
+        annotator_label = annotator
     if outputDirSV != outputDir:
         # create output subdirectory
         outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-                                                           label=annotator,
+                                                           label=annotator_label,
                                                            silent=True)
     else:
         outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                           label=annotator + "_spaCy",
+                                                           label=annotator_label + "_spaCy",
                                                            silent=True)
 
     return outputDir
