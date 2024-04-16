@@ -35,13 +35,17 @@ import IO_csv_util
 import IO_files_util
 import charts_util
 
-# if SentiWordNet fails, run: "python -m nltk.downloader all"
-
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','wordnet')
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','omw-1.4')
-IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','sentiwordnet')
+# all nltk resources are stored in C:\Users\rfranzo\AppData\Roaming then nltk_data
+# check averaged_perceptron_tagger
+IO_libraries_util.import_nltk_resource(GUI_util.window,'taggers/averaged_perceptron_tagger','averaged_perceptron_tagger')
+# https://stackoverflow.com/questions/32039408/python-3-nltk-data-load-error
 IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
-IO_libraries_util.import_nltk_resource(GUI_util.window,'averaged_perceptron_tagger','averaged_perceptron_tagger')
+# check WordNet
+IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/wordnet','wordnet')
+# IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/wordnet','omw-1.4')
+IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/omw-1.4','omw-1.4')
+IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/sentiwordnet','sentiwordnet')
+
 
 from nltk.corpus import wordnet as wn
 from nltk.corpus import sentiwordnet as swn
@@ -50,6 +54,7 @@ from nltk import word_tokenize, pos_tag
 fin = open('../lib/wordLists/stopwords.txt', 'r')
 stops = set(fin.read().splitlines())
 
+# from nltk.corpus import wordnet as wn
 def penn_to_wn(tag):
     """
     Convert between the PennTreebank tags to simple Wordnet tags

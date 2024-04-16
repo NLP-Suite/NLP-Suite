@@ -203,6 +203,8 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 					except:
 						nextrow=row
 					# spaCy and Stanza do not contain tokenEnd tokenBegin headers; code would break
+					sentence = row["Sentence"]
+					document = row["Document"]
 					try:
 						if row["tokenEnd"]==nextrow["tokenBegin"]:
 							# the current location value (e.g., las) needs to be merged with the next row value (e.g., las vegas)
@@ -217,8 +219,8 @@ def extract_csvFile_locations(window,inputFilename,withHeader,locationColumnNumb
 							# currLocation = ''
 							else:
 								currLocation = row["Location"]
-						sentence = row["Sentence"]
-						document = row["Document"]
+						# sentence = row["Sentence"]
+						# document = row["Document"]
 					except:
 						currLocation = row["Location"]
 						pass

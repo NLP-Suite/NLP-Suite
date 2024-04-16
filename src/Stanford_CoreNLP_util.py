@@ -348,8 +348,8 @@ def CoreNLP_annotate(config_filename,inputFilename,
                         "First Referent Sentence ID", "First Referent Sentence", "Pronoun Start ID in Referent Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
         'gender':['Word', 'Gender', 'Sentence ID', 'Sentence','Document ID', 'Document'],
         'normalized-date':["Date expression", "Normalized date", "tid","Date type","Sentence ID", "Sentence", "Document ID", "Document"],
-        'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Locations", "Persons", "Organizations",'Date expression','Normalized date', 'Date type', 'Sentence ID', 'Sentence','Document ID', 'Document'],
-        'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Locations", 'Persons', 'Organizations', 'Date expression',
+        'SVO':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation","Location", "Person", "Organization",'Date expression','Normalized date', 'Date type', 'Sentence ID', 'Sentence','Document ID', 'Document'],
+        'OpenIE':['Subject (S)', 'Verb (V)', 'Object (O)', "Negation", "Location", 'Person', 'Organization', 'Date expression',
                    'Normalized date', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         # Chen
         # added Deps column
@@ -1575,8 +1575,8 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
     SVO_enhanced_dependencies = []
     SVO_brief = []
     locations = [] # a list of [sentence, sentence id, [location_text, ner_value]]
-    persons = []
-    organizations = []
+    person = []
+    organization = []
     for sentence in json['sentences']:#traverse output of each sentence
         sent_data = Stanford_CoreNLP_SVO_enhanced_dependencies_util.SVO_enhanced_dependencies_sent_data_reorg(sentence)#reorganize the output into a dictionary in which each content (also dictionary) contains information of a token
         #including a dictionary (govern_dictionary) indicating the index of tokens whose syntactical head is the current token

@@ -383,9 +383,9 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
 
     # output: svo_df
     if filename_embeds_date_var:
-        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Date'])
+        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID', 'Date'])
     else:
-        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID'])
+        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID'])
 
     # subject,verb and object constants
     SUBJECT_DEPS = {"nsubj", "nsubjpass", "csubj", "agent", "expl"}
@@ -394,6 +394,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
     # NER tags dictionary for location, person and time
     NER_LOCATION = {"GPE", "LOC"}
     NER_PERSON = {"PERSON"}
+    NER_ORGANIZATION = {"ORG"}
     NER_TIME = {"TIME", "DATE"}
 
     # set-ups to extract SVOs
@@ -418,10 +419,12 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
                 SVO_found = True
             # extract NER tags
             if SVO_found is True or NER_found is True:
-                if token.ent_type_ in  NER_LOCATION:
+                if token.ent_type_ in NER_LOCATION:
                     svo_df, NER_found, loc_ent_iob_ = extractNER(token, svo_df, c, 'Location', NER_found, loc_ent_iob_)
-                elif token.ent_type_ in  NER_PERSON:
+                elif token.ent_type_ in NER_PERSON:
                     svo_df, NER_found, per_ent_iob_ = extractNER(token, svo_df, c, 'Person', NER_found, per_ent_iob_)
+                elif token.ent_type_ in NER_ORGANIZATION:
+                    svo_df, NER_found, per_ent_iob_ = extractNER(token, svo_df, c, 'Organization', NER_found, per_ent_iob_)
                 elif token.ent_type_ in  NER_TIME:
                     svo_df, NER_found, tim_ent_iob_ = extractNER(token, svo_df, c, 'Time', NER_found, tim_ent_iob_)
         # check if SVO is found, then add Sentence ID
@@ -457,10 +460,10 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
     # set the S-V-O sequence in order
     # add date from filename
     if filename_embeds_date_var:
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date']]
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date']]
         svo_df['Date'] = date_str
     else:
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
 
     return svo_df
 
