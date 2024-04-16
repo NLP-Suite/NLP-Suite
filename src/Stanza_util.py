@@ -279,15 +279,21 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
 
         if 'SVO' in annotator:
             NER_available = check_Stanza_annotator_availability(['NER'], short_lang, long_lang, silent=True)
+
         # create the appropriate subdirectory to better organize output files
         if annotator=='depparse':
             file_label='parser (dep)'
         else:
             file_label=annotator
         # outputDir = create_output_directory(inputFilename, inputDir, outputDir, file_label)
-        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                           label=annotator + "_Stanza",
+        # a CoNLL table is exported automatically for spaCy and Stanza
+        outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                           label=annotator + "_CoNLL",
                                                            silent=True)
+
+        # outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+        #                                                    label=annotator + "_Stanza",
+        #                                                    silent=True)
 
         nlp = stanza.Pipeline(lang=short_lang, processors=processors, verbose=False)
 
@@ -306,8 +312,6 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
                 # stanza.download(k) # no need to manually download language package after Stanza v1.4.0
         nlp = MultilingualPipeline(lang_id_config={"langid_lang_subset":lang_list})
 
-
-    df = pd.DataFrame()
     # different outputFilename if SVO is selected
     if "SVO" in annotator_params:
         svo_df = pd.DataFrame()
@@ -318,6 +322,9 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
     else:
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                 file_label+'_Stanza')
+
+    # create output df
+    df = pd.DataFrame()
 
     for doc in inputDocs:
         docID = docID + 1
@@ -365,26 +372,25 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
         temp_df = convertStanzaDoctoDf(Stanza_output, inputFilename, inputDir, tail, docID, annotator_params, short_lang)
         df = pd.concat([df, temp_df], ignore_index=True, axis=0)
 
-        # extract SVO
+        df.to_csv(outputFilename, index=False, encoding=language_encoding)
+        filesToOpen.append(outputFilename)
+
+        # SVO extraction
         if "SVO" in annotator_params:
+
+            # extract SVO
             temp_svo_df = extractSVO(Stanza_output, docID, inputFilename, inputDir, tail, filename_embeds_date_var, NER_available) if len(language)==1 and 'multilingual' not in language \
                 else extractSVOMultilingual(Stanza_output, docID, inputFilename, inputDir, tail, filename_embeds_date_var, NER_available)
             svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
 
-    df.to_csv(outputFilename, index=False, encoding=language_encoding)
-    filesToOpen.append(outputFilename)
+            svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
+            filesToOpen.append(svo_df_outputFilename)
 
-    # SVO extraction
-    if "SVO" in annotator_params:
-
-        svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
-        filesToOpen.append(svo_df_outputFilename)
-
-        if google_earth_var is True:
-            loc_df = visualize_GIS_maps_Stanza(svo_df)
-            loc_df_outputFilename = kwargs["location_filename"]
-            loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
-            filesToOpen.append(loc_df_outputFilename)
+            if google_earth_var is True:
+                loc_df = visualize_GIS_maps_Stanza(svo_df)
+                loc_df_outputFilename = kwargs["location_filename"]
+                loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
+                filesToOpen.append(loc_df_outputFilename)
 
     # Filter + Visualization.
     language_list=IO_csv_util.get_csv_field_values(outputFilename, 'Language')
@@ -410,9 +416,9 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
         vocab_df.to_csv(vocab_df_outputFilename, index=False, encoding=language_encoding)
         filesToOpen.append(vocab_df_outputFilename)
 
-    filesToVisualize=filesToOpen
-
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end', 'Finished running Stanza ' + str(annotator_params) + ' annotator at', True, '', True, startTime, False)
+
+    filesToVisualize=filesToOpen
 
     for j in range(len(filesToVisualize)):
             #02/27/2021; eliminate the value error when there's no information from certain annotators
@@ -623,12 +629,13 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
     NER_TIME = {"S-TIME", "B-TIME", "I-TIME", "E-TIME", "S-DATE", "B-DATE", "I-DATE", "E-DATE",}
 
     # extraction of SVOs
+    SVO_found = False
+    S_found = False
+    V_found = False
+    O_found = False
     c = 0 #sentence index
     for sentence in doc.sentences:
         sent_dict = sentence.to_dict()
-        S_found = False
-        V_found = False
-        O_found = False
         for w,word in enumerate(sentence.words):
             # tmp_head = sentence.words[word.head-1].deprel if word.head > 0 else "root"
             # if (word.deprel in SUBJECT_DEPS or tmp_head in SUBJECT_DEPS) and (SVO_found):
@@ -649,7 +656,6 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
             if (SVO_found or NER_found) and NER_available:
                 token = sent_dict[w]
                 try:
-                    print(token['ner'])
                     if token['ner'] in NER_LOCATION:
                         svo_df, NER_found = extractNER(token, svo_df, c, 'Location', NER_found)
                     elif token['ner'] in NER_PERSON:
@@ -659,26 +665,22 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
                     elif token['ner'] in NER_TIME:
                         svo_df, NER_found = extractNER(token, svo_df, c, 'Time', NER_found)
                 except:
-                    print('ERROR!')
-            c += 1
+                    print('ERROR! No ner header in sentence number: ' + str(w) + ": " + str(sent_dict[w]))
         # check if SVO is found, then add Sentence ID
         if SVO_found:
-            print('@@@SUBJECT',svo_df.at[c, 'Subject (S)'])
-            print('@@@VERB',svo_df.at[c, 'Verb (V)'])
-
             svo_df.at[c, 'Sentence'] = sentence.text
             svo_df.at[c, 'Sentence ID'] = c+1
             SVO_found = False
-            # S_found = False
-            # V_found = False
-            # O_found = False
+            S_found = False
+            V_found = False
+            O_found = False
         c+=1
 
     # csv output columns
     svo_df['Document ID'] = docID
     svo_df['Document'] = IO_csv_util.dressFilenameForCSVHyperlink(inputFilename)
 
-    # replace NaN values accordingly
+    # replace nan values accordingly
     for index, row in svo_df.iterrows():
         svo_df.at[index, 'Subject (S)'] = '?' if pd.isna(row['Subject (S)']) else row['Subject (S)']
         svo_df.at[index, 'Verb (V)'] = '' if pd.isna(row['Verb (V)']) else row['Verb (V)']
@@ -783,7 +785,7 @@ def visualize_GIS_maps_Stanza(svo_df):
             loc_list = row['Location'].split(';')
             for loc in loc_list:
                 if loc != '':
-                    loc_df.loc[len(loc_df.index)] = [loc, 'LOCATION', row['Sentence ID'], row['Sentence'], row['Document ID'], 'Document']
+                    loc_df.loc[len(loc_df.index)] = [loc, 'LOCATION', row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
     return loc_df
 
 # modified from StanfordCoreNLP_util

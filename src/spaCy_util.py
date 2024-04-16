@@ -135,8 +135,13 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
 
     # create the appropriate subdirectory to better organize output files                                               silent=False)
     # outputDir = create_output_directory(inputFilename, inputDir, outputDir, annotator)
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                       label=annotator + "_spaCy",
+    # outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+    #                                                    label=annotator + "_spaCy",
+    #                                                    silent=True)
+
+    # a CoNLL table is exported automatically for spaCy and Stanza
+    outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                       label=annotator + "_CoNLL",
                                                        silent=True)
 
     # set up spaCy pipeline
@@ -191,18 +196,21 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
                         "spaCy encountered an error trying to download the language pack " + str(language) + "\n\nTry manually selecting the appropriate language rather than multilingual.")
             return
 
-        if 'NER' in str(annotator_params) or 'parse' in str(annotator_params) or 'sentiment' in str(annotator_params):
-            # convert Doc to DataFrame
-            temp_df = convertSpacyDoctoDf(Spacy_output, inputFilename, inputDir, tail, int(docID), annotator_params, lang_list)
-            df = pd.concat([df, temp_df], ignore_index=True, axis=0)
-            # save dataframe to csv
-            df.to_csv(outputFilename, index=False, encoding=language_encoding)
-            filesToOpen.append(outputFilename)
+        # if 'NER' in str(annotator_params) or 'parse' in str(annotator_params) or 'sentiment' in str(annotator_params) or 'SVO' in str(annotator_params):
+        # convert Doc to DataFrame
+        temp_df = convertSpacyDoctoDf(Spacy_output, inputFilename, inputDir, tail, int(docID), annotator_params, lang_list)
+        df = pd.concat([df, temp_df], ignore_index=True, axis=0)
+        # save dataframe to csv
+        df.to_csv(outputFilename, index=False, encoding=language_encoding)
+        filesToOpen.append(outputFilename)
 
         # SVO extraction if selected
         if "SVO" in annotator_params:
             temp_svo_df = extractSVO(Spacy_output, int(docID), inputFilename, inputDir, tail, filename_embeds_date_var)
             svo_df = pd.concat([svo_df, temp_svo_df], ignore_index=True, axis=0)
+            # save dataframe to csv
+            svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
+            filesToOpen.append(svo_df_outputFilename)
 
             # create locations file if GIS visualization is selected
             if google_earth_var is True:
@@ -210,9 +218,6 @@ def spaCy_annotate(configFilename, inputFilename, inputDir,
                 loc_df_outputFilename = kwargs["location_filename"]
                 loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
                 filesToOpen.append(loc_df_outputFilename)
-            # save dataframe to csv
-            svo_df.to_csv(svo_df_outputFilename, index=False, encoding=language_encoding)
-            filesToOpen.append(svo_df_outputFilename)
 
     IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
                                        'Finished running spaCy ' + str(annotator_params[0]) + ' annotator at',
@@ -337,7 +342,7 @@ def convertSpacyDoctoDf(spacy_doc, inputFilename, inputDir, tail, docID, annotat
         # out_df = out_df[['ID', 'Form', 'NER', 'Multi-Word Expression','Record ID', 'Sentence ID', 'Document ID', 'Document']]
         out_df = out_df[['Form', 'NER', 'Multi-Word Expression', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
 
-    if "parse" in str(annotator_params):
+    if "parse" in str(annotator_params) or "SVO" in str(annotator_params):
 
         out_df = pd.DataFrame()
         rec_ID = 0
@@ -418,7 +423,7 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
                 svo_df.at[c, 'Object (O)'] = token.text
                 SVO_found = True
             # extract NER tags
-            if SVO_found is True or NER_found is True:
+            if SVO_found or NER_found:
                 if token.ent_type_ in NER_LOCATION:
                     svo_df, NER_found, loc_ent_iob_ = extractNER(token, svo_df, c, 'Location', NER_found, loc_ent_iob_)
                 elif token.ent_type_ in NER_PERSON:
@@ -440,6 +445,8 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
             row['Location'] = row['Location'] + ';'
         if isinstance(row['Person'], str) and row['Person'].endswith(';') is False:
             row['Person'] = row['Person'] + ';'
+        if isinstance(row['Organization'], str) and row['Organization'].endswith(';') is False:
+            row['Organization'] = row['Organization'] + ';'
         if isinstance(row['Time'], str) and row['Time'].endswith(';') is False:
             row['Time'] = row['Time'] + ';'
 
@@ -515,7 +522,7 @@ def visualize_GIS_maps_spaCy(svo_df):
             loc_list = row['Location'].split(';')
             for loc in loc_list:
                 if loc != '':
-                    loc_df.loc[len(loc_df.index)] = [loc, 'LOCATION', row['Sentence ID'], row['Sentence'], row['Document ID'], 'Document']
+                    loc_df.loc[len(loc_df.index)] = [loc, 'LOCATION', row['Sentence ID'], row['Sentence'], row['Document ID'], row['Document']]
     return loc_df
 
 # modified from StanfordCoreNLP_util
