@@ -374,9 +374,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                 svo_result_list.append(outputFiles)
             else:
                 filesToOpen.extend(outputFiles)
+                # the SVO output file is in outputFiles[1] outputFiles[0] contains the CoNLL parser output
                 SVO_filename=outputFiles[1]
                 svo_result_list.append(outputFiles[1])
-            # the SVO output file is in outputFiles[1] outputFiles[0] contains the CoNLL parser output
 
 # Stanza _____________________________________________________
 
