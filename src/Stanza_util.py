@@ -272,28 +272,39 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
         if not annotator_available:
             return
 
+        if "Lemma" in annotator_params:
+            annotator = 'Lemma'
+            label = 'Lemma'
+        elif "NER" in annotator_params:
+            annotator = 'NER'
+            label = 'NER'
+        elif "All POS" in annotator_params:
+            annotator = 'POS'
+            label = 'POS'
+        elif "SVO" in annotator_params:
+            annotator = 'SVO'
+        elif "depparse" in annotator_params:
+            annotator = 'depparse'
+            label = 'parser (dep)'
+        elif "sentiment" in annotator_params:
+            annotator = 'sentiment'
+            label = 'sentiment'
+
+        # create the appropriate subdirectory to better organize output files                                               silent=False)
+
+        if annotator == 'SVO':
+            NER_available = check_Stanza_annotator_availability(['NER'], short_lang, long_lang, silent=True)
+            # a CoNLL table is exported automatically for spaCy and Stanza
+            outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
+                                                               label=annotator + "_CoNLL",
+                                                               silent=True)
+        else:
+            outputDir = create_output_directory(inputFilename, inputDir, outputDir, annotator)
+
         startTime = IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                                        'Started running Stanza ' + str(
                                                            annotator_params) + ' annotator at',
                                                        True, '', True, '', False)
-
-        if 'SVO' in annotator:
-            NER_available = check_Stanza_annotator_availability(['NER'], short_lang, long_lang, silent=True)
-
-        # create the appropriate subdirectory to better organize output files
-        if annotator=='depparse':
-            file_label='parser (dep)'
-        else:
-            file_label=annotator
-        # outputDir = create_output_directory(inputFilename, inputDir, outputDir, file_label)
-        # a CoNLL table is exported automatically for spaCy and Stanza
-        outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-                                                           label=annotator + "_CoNLL",
-                                                           silent=True)
-
-        # outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-        #                                                    label=annotator + "_Stanza",
-        #                                                    silent=True)
 
         nlp = stanza.Pipeline(lang=short_lang, processors=processors, verbose=False)
 
@@ -320,8 +331,12 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
                                                                 'CoNLL_Stanza')
     else:
+        if 'depparse' in annotator_params:
+            annotator_label='CoNLL'
+        else:
+            annotator_label=annotator
         outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv',
-                                                                file_label+'_Stanza')
+                                                                annotator_label+'_Stanza')
 
     # create output df
     df = pd.DataFrame()
@@ -372,7 +387,8 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
         temp_df = convertStanzaDoctoDf(Stanza_output, inputFilename, inputDir, tail, docID, annotator_params, short_lang)
         df = pd.concat([df, temp_df], ignore_index=True, axis=0)
 
-        df.to_csv(outputFilename, index=False, encoding=language_encoding)
+        # the dt dataframe when running SVO is the CoNLL table, saved later, after processing all input files
+        # it needs to be added here so as to know exactly the place of the CoNLL table in the output files list
         filesToOpen.append(outputFilename)
 
         # SVO extraction
@@ -391,6 +407,9 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
                 loc_df_outputFilename = kwargs["location_filename"]
                 loc_df.to_csv(loc_df_outputFilename, index=False, encoding=language_encoding)
                 filesToOpen.append(loc_df_outputFilename)
+
+    # save dataframe to csv
+    df.to_csv(outputFilename, index=False, encoding=language_encoding)
 
     # Filter + Visualization.
     language_list=IO_csv_util.get_csv_field_values(outputFilename, 'Language')
@@ -792,16 +811,19 @@ def visualize_GIS_maps_Stanza(svo_df):
 def create_output_directory(inputFilename, inputDir, outputDir,
                             annotator):
     outputDirSV=GUI_util.output_dir_path.get()
+    if 'parse' in annotator:
+        annotator_label = 'parser (dep)'
+    else:
+        annotator_label = annotator
     if outputDirSV != outputDir:
         # create output subdirectory
         outputDir = IO_files_util.make_output_subdirectory('', '', outputDir,
-                                                           label=annotator,
+                                                           label=annotator_label,
                                                            silent=True)
     else:
         outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                           label=annotator + "_Stanza",
+                                                           label=annotator_label + "_Stanza",
                                                            silent=True)
-
     return outputDir
 
 # Python dictionary of language (values) and their acronyms (keys)

@@ -333,7 +333,13 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         call("python CoNLL_table_analyzer_main.py", shell=True)
 
     if openOutputFiles:
-        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
+        if len(filesToOpen) > 0:
+            filesToOpenSubset = []
+            # add the CoNLL main file
+            if 'parse' in annotator:
+                filesToOpenSubset.append(filesToOpen[0])
+
+        IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName, filesToOpenSubset)
 
 # the values of the GUI widgets MUST be entered in the command otherwise they will not be updated
 
