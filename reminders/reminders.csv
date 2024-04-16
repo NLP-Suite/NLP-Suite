@@ -72,7 +72,7 @@ Please, arm yourself with patience, depending upon the number and size of docume
 Stanza, contrary to the other algorithms, does not compute the probability of language detection.",OFF
 sentiment_analysis,NLP setup options,"Some of the algorithms behind this GUI rely on a specific NLP package to carry out basic NLP functions (e.g., sentence splitting, tokenizing, lemmatizing) for a specific language your corpus is written in.
 
-Your selected corpus language is Chinese_Simplified.
+Your selected corpus language is English.
 Your selected NLP package for basic functions (e.g., sentence splitting, tokenizing, lemmatizing) is Stanza.
 
 You can always view your default selection saved in the config file NLP_default_package_language_config.csv by hovering over the Setup widget at the bottom of this GUI and change your default options by selecting Setup NLP package and corpus language.",OFF
@@ -1876,5 +1876,8 @@ This is done so that a date string returned by gthe function can be sorted prope
 
 This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
 2021-01-20_joseph r biden_ina.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
+
+This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON
+Career of Evil_JK Rowling_Charles Finch_10-29-2015.txt,Date embedded in filename,"The function that extracts the date embedded in a filename always returns the date in the format yyyy-mm-dd or yyyy-mm or yyyy, regardless of the date format.
 
 This is done so that a date string returned by gthe function can be sorted properly in Excel, if necessary",ON

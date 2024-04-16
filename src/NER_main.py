@@ -386,7 +386,7 @@ def activate_NER_Options(coming_from_add, coming_from_reset):
         NER_list = spaCy_util.NER_dict
         NER_entry_var.set(NER_list)
     elif 'Stanza' in NER_packages_var.get():
-        NER_list = get_NER_list(package,language)
+        NER_list = get_NER_list('Stanza',language)
         NER_entry_var.set(NER_list)
     else:
         NER_list=[]

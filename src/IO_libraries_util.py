@@ -130,12 +130,18 @@ def install_all_Python_packages(window, calling_script, modules_to_try):
 #                        message='The script needs the nltk data. These cannot be downloaded from requirements.\n\n\To download the data, in command line type\npython -m nltk.downloader all\n\nWARNING! On some laptops, the nltk.downloader may run into SSL certificate errors. If so, please type the following line in command line\n/Applications/Python 3.7/Install Certificates.command\n\nand start again. Please, change 3.7 to whatever Python version you have installed on your machine; to check your Python version type\nPython\nin command line.')
 
 
-# check for missing nltk resource and download if missing
-# resource paths &  resource
-#   'taggers/averaged_perceptron_tagger','averaged_perceptron_tagger'
-#   'tokenizers/punkt','punkt'
-#   'corpora/WordNet','WordNet'
-#   'corpora/stopwords','stopwords'
+# all nltk resources are stored in C:\Users\rfranzo\AppData\Roaming then nltk_data
+
+# check averaged_perceptron_tagger
+# 'taggers/averaged_perceptron_tagger','averaged_perceptron_tagger')
+# # https://stackoverflow.com/questions/32039408/python-3-nltk-data-load-error
+# 'tokenizers/punkt','punkt')
+# # check WordNet
+# 'corpora/wordnet','wordnet')
+# 'corpora/wordnet','omw-1.4')
+# 'corpora/omw-1.4','omw-1.4')
+# 'corpora/sentiwordnet','sentiwordnet')
+# 'corpora/stopwords','stopwords'
 
 def import_nltk_resource(window, resource_path, resource):
     try:

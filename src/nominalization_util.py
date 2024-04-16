@@ -12,20 +12,26 @@ import sys
 import GUI_util
 import IO_libraries_util
 
-if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Nominalization",['tkinter','nltk','pywsd','wn','csv','re','os','collections'])==False:
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Nominalization",['tkinter','nltk','wn','csv','re','os','collections'])==False:
     sys.exit(0)
 
 import os
 import tkinter as tk
 import tkinter.messagebox as mb
 
+# all nltk resources are stored in C:\Users\rfranzo\AppData\Roaming then nltk_data
 # check averaged_perceptron_tagger
 IO_libraries_util.import_nltk_resource(GUI_util.window,'taggers/averaged_perceptron_tagger','averaged_perceptron_tagger')
 # check punkt
 IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
 # check WordNet
-# IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/WordNet','WordNet')
+IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/wordnet','wordnet')
+# IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/wordnet','omw-1.4')
+IO_libraries_util.import_nltk_resource(GUI_util.window,'corpora/omw-1.4','omw-1.4')
 from nltk.corpus import wordnet as wn
+# pywsd word-sense-disambiguation needs ALL previous
+if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Nominalization",['pywsd'])==False:
+    sys.exit(0)
 
 # from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
 # MUST use this version or code will break no longer true; pywsd~=1.2.4 pip install pywsd~=1.2.4; even try pip install pywsd=1.2.2

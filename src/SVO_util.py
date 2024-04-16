@@ -352,7 +352,7 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
         lemmatized_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
             ['Subject (S)', 'Verb (V)', 'Object (O)']]
 
-        filter_byNER = set([row['Persons']]).union(set([row['Organizations']]))
+        filter_byNER = set([row['Person']]).union(set([row['Organization']]))
         # add unstated passive subjects as inferred_subject_passive
         filter_byNER.add('inferred_subject_passive')
 

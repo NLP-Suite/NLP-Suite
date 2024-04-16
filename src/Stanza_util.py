@@ -562,7 +562,13 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
                                     else:
                                         out_df.at[k, 'Multi-Word Expression'] = ''
                             elif str(out_df.at[j, 'NER']).startswith('I'):
-                                out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j+1 , 'Multi-Word Expression']
+                                if (out_df.at[j + 1, 'Multi-Word Expression']) is None:
+                                    out_df.at[j, 'Multi-Word Expression'] = out_df.at[j - 1, 'Form'] + ' '
+                                else:
+                                    try:
+                                        out_df.at[j, 'Multi-Word Expression'] = out_df.at[j-1, 'Form'] + ' ' + out_df.at[j+1 , 'Multi-Word Expression']
+                                    except:
+                                        print()
             i+=1
 
         if 'Language' in out_df.columns:
@@ -600,9 +606,9 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
 
     # output: svo_df
     if filename_embeds_date_var:
-        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Date'])
+        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID', 'Sentence', 'Date'])
     else:
-        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence'])
+        svo_df = pd.DataFrame(columns=['Subject (S)','Verb (V)','Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID', 'Sentence'])
     empty_verb_idx = []
     SVO_found = False
     NER_found = False # boolean value for NER tags
@@ -613,48 +619,60 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
     # NER tags dictionary for location, person and time
     NER_LOCATION = {"S-GPE", "B-GPE", "I-GPE", "E-GPE", "S-LOC", "B-LOC", "I-LOC", "E-LOC"}
     NER_PERSON = {"S-PERSON", "B-PERSON", "I-PERSON", "E-PERSON"}
+    NER_ORGANIZATION = {"S-ORG", "B-ORG", "I-ORG", "E-ORG"}
     NER_TIME = {"S-TIME", "B-TIME", "I-TIME", "E-TIME", "S-DATE", "B-DATE", "I-DATE", "E-DATE",}
 
     # extraction of SVOs
-    c = 0
+    c = 0 #sentence index
     for sentence in doc.sentences:
         sent_dict = sentence.to_dict()
         S_found = False
         V_found = False
-        O_found = True
+        O_found = False
         for w,word in enumerate(sentence.words):
             # tmp_head = sentence.words[word.head-1].deprel if word.head > 0 else "root"
             # if (word.deprel in SUBJECT_DEPS or tmp_head in SUBJECT_DEPS) and (SVO_found):
-            if (word.deprel in SUBJECT_DEPS) and (O_found):
+            if (word.deprel in SUBJECT_DEPS): # and (O_found):
                 svo_df.at[c, 'Subject (S)'] = word.text
                 S_found = True
-                O_found = False
             if word.pos=='VERB':
                 if S_found:
                     svo_df.at[c, 'Verb (V)'] = word.text
                     V_found = True
+                    SVO_found = True
             # if word.deprel in OBJECT_DEPS or tmp_head in OBJECT_DEPS:
             if word.deprel in OBJECT_DEPS:
-                if S_found:
+                if SVO_found:
                     svo_df.at[c, 'Object (O)'] = word.text
                     O_found = True
             # extract NER values
             if (SVO_found or NER_found) and NER_available:
                 token = sent_dict[w]
-                if token['ner'] in NER_LOCATION:
-                    svo_df, NER_found = extractNER(token, svo_df, c, 'Location', NER_found)
-                elif token['ner'] in NER_PERSON:
-                    svo_df, NER_found = extractNER(token, svo_df, c, 'Person', NER_found)
-                elif token['ner'] in NER_TIME:
-                    svo_df, NER_found = extractNER(token, svo_df, c, 'Time', NER_found)
-            # check if SVO is found, then add Sentence ID
-            if S_found and V_found and O_found:
-                svo_df.at[c, 'Sentence'] =  sentence.text
-                svo_df.at[c, 'Sentence ID'] =  c+1
-                S_found = False
-                V_found = False
-                O_found = False
-                c+=1
+                try:
+                    print(token['ner'])
+                    if token['ner'] in NER_LOCATION:
+                        svo_df, NER_found = extractNER(token, svo_df, c, 'Location', NER_found)
+                    elif token['ner'] in NER_PERSON:
+                        svo_df, NER_found = extractNER(token, svo_df, c, 'Person', NER_found)
+                    elif token['ner'] in NER_ORGANIZATION:
+                        svo_df, NER_found = extractNER(token, svo_df, c, 'Organization', NER_found)
+                    elif token['ner'] in NER_TIME:
+                        svo_df, NER_found = extractNER(token, svo_df, c, 'Time', NER_found)
+                except:
+                    print('ERROR!')
+            c += 1
+        # check if SVO is found, then add Sentence ID
+        if SVO_found:
+            print('@@@SUBJECT',svo_df.at[c, 'Subject (S)'])
+            print('@@@VERB',svo_df.at[c, 'Verb (V)'])
+
+            svo_df.at[c, 'Sentence'] = sentence.text
+            svo_df.at[c, 'Sentence ID'] = c+1
+            SVO_found = False
+            # S_found = False
+            # V_found = False
+            # O_found = False
+        c+=1
 
     # csv output columns
     svo_df['Document ID'] = docID
@@ -674,10 +692,10 @@ def extractSVO(doc, docID, inputFilename, inputDir, tail, filename_embeds_date_v
     # set the S-V-O sequence in order
     # add date from filename
     if filename_embeds_date_var:
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date']]
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document', 'Date']]
         svo_df['Date'] = date_str
     else:
-        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
+        svo_df = svo_df[['Subject (S)', 'Verb (V)', 'Object (O)', 'Location', 'Person', 'Organization', 'Time', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
 
     return svo_df
 
