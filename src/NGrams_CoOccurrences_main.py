@@ -524,7 +524,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 ngrams_size.set(3)
 ngrams_number_menu_lb = tk.Label(window, text='N-grams')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,ngrams_number_menu_lb,True)
-ngrams_number_menu = tk.OptionMenu(window, ngrams_size, 2, 3, 4, 5, 6)
+ngrams_number_menu = tk.OptionMenu(window, ngrams_size, 1, 2, 3, 4, 5, 6)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate+80, y_multiplier_integer,
                                    ngrams_number_menu,
