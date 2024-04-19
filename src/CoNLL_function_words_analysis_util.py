@@ -358,10 +358,10 @@ def stats_pronouns_output(data,data_divided_sents):
     postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
     # must be sorted in descending order
     pronouns_postag_stats = [['PRONOUN ANALYSIS','FREQUENCY'],
-           ['Personal pronoun (PRP)',postag_counter['PRP']],
-           ['Possessive pronoun (PRP$)',postag_counter['PRP$']],
-           ['WH-pronoun (WP)',postag_counter['WP']],
-           ['Possessive WH-pronoun (WP$)',postag_counter['WP$']]]
+           ['Personal pronoun (PRP)',postag_counter['PRP']], # I, you, she, he, it, we, they (as subjects of the sentence); me, you, her, him, it, us, them (as objects of the sentence)
+           ['Possessive pronoun (PRP$)',postag_counter['PRP$']], # mine, ours, yours, his, hers, theirs
+           ['WH-pronoun (WP)',postag_counter['WP']], # what, who, whom, whoever (which for CoreNLP is WDT Wh-determiner, not a WP Wh-pronoun
+           ['Possessive WH-pronoun (WP$)',postag_counter['WP$']]] # whose
 
     pronouns_data = data_preperation(data, ['PRP','PRP$','WP','WP$'], ['Personal pronouns','Possessive pronouns','WH-pronouns','Possessive WH-pronouns'], 3)
 

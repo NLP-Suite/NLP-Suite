@@ -39,7 +39,8 @@ def run(inputFilename,inputDir, outputDir,
     extract_sentences_var,
     extract_sentences_search_words_var_str,
     minus_K_sentences_var,
-    plus_K_sentences_var):
+    plus_K_sentences_var,
+    all_keywords_var):
 
     if GUI_util.setup_IO_menu_var.get() == 'Default I/O configuration':
         config_filename = 'NLP_default_IO_config.csv'
@@ -82,23 +83,57 @@ def run(inputFilename,inputDir, outputDir,
         if not 'Search within sentence (default)' in search_options_list:
             search_options_list.append('Search within sentence (default)')
 
-    if search_by_keyword:
-        print(minus_K_words_var, plus_K_words_var)
-        filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, config_filename,
-                            search_by_dictionary, search_by_keyword, minus_K_words_var, plus_K_words_var,
-                            search_keyword_values, create_subcorpus_var, search_options_list, language,
-                            chartPackage, dataTransformation)
-
     if extract_sentences_var:
-        outputFiles = file_search_byWord_util.search_extract_sentences(window, inputFilename, inputDir, outputDir, config_filename,
-                                                 extract_sentences_search_words_var_str, search_options_list,
-                                                 minus_K_sentences_var, plus_K_sentences_var,
-                                                 chartPackage, dataTransformation)
-        if outputFiles != None:
-            if isinstance(outputFiles, str):
-                filesToOpen.append(outputFiles)
-            else:
-                filesToOpen.extend(outputFiles)
+        if 'Lemmatize' in str(search_options_list):
+            useLemma = True
+        else:
+            useLemma = False
+        if all_keywords_var:
+            import NGrams_CoOccurrences_util
+            outputFiles = NGrams_CoOccurrences_util.NGrams_search_VIEWER(
+                inputDir,
+                outputDir,
+                config_filename,
+                chartPackage, dataTransformation,
+                0,
+                1,
+                extract_sentences_search_words_var_str,
+                minus_K_words_var,
+                plus_K_words_var,
+                language_list,
+                useLemma,
+                0,
+                '',
+                0,
+                '',
+                '',
+                0,
+                search_options_list,
+                0, '', '')
+
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+        else:
+            search_keyword_values=extract_sentences_search_words_var_str
+            print(minus_K_words_var, plus_K_words_var)
+            filesToOpen = file_search_byWord_util.search_sentences_documents(inputFilename, inputDir, outputDir, config_filename,
+                                search_by_dictionary, search_by_keyword, minus_K_words_var, plus_K_words_var,
+                                search_keyword_values, create_subcorpus_var, search_options_list, language,
+                                chartPackage, dataTransformation)
+
+            if extract_sentences_var:
+                outputFiles = file_search_byWord_util.search_extract_sentences(window, inputFilename, inputDir, outputDir, config_filename,
+                                                         extract_sentences_search_words_var_str, search_options_list,
+                                                         minus_K_sentences_var, plus_K_sentences_var,
+                                                         chartPackage, dataTransformation)
+                if outputFiles != None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
 
     if openOutputFiles == True:
@@ -122,7 +157,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             extract_sentences_var.get(),
                             extract_sentences_search_words_var.get(),
                             minus_K_sentences_var.get(),
-                            plus_K_sentences_var.get()
+                            plus_K_sentences_var.get(),
+                            all_keywords_var.get()
                             )
 
 GUI_util.run_button.configure(command=run_script_command)
@@ -422,9 +458,21 @@ plus_K_sentences_entry = tk.Entry(window, textvariable=plus_K_sentences_var) #ex
 plus_K_sentences_entry.configure(width=3, state='disabled')
 # place widget with hover-over info
 y_multiplier_integer=GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer,
-                    plus_K_sentences_entry, False, False, True, False,
+                    plus_K_sentences_entry, True, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
                     "Enter the integer number of sentences (do not enter +) following the search sentences to be extracted, for context, together with the search sentences")
+
+all_keywords_var = tk.IntVar()
+all_keywords_var.set(0)
+# search for ALL keywords in the same sentence/document
+all_keywords_checkbox = tk.Checkbutton(window, text='', variable=all_keywords_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+all_keywords_checkbox.configure(state='disabled')
+
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window,1180, y_multiplier_integer,
+                    all_keywords_checkbox, False, False, True, False,
+                    90, GUI_IO_util.open_TIPS_x_coordinate,
+                    "Tick the checkbox if you want to search for the listed comma-separated keywords as occurring in the same sentence/document.")
 
 def activate_all_options(*args):
     extra_GUIs_checkbox.configure(state='normal')
@@ -433,18 +481,19 @@ def activate_all_options(*args):
     search_by_keyword_checkbox.configure(state='normal')
 
     keyword_value.configure(state='disabled')
-    keyword_value_var.set('')
+    # keyword_value_var.set('')
     extra_GUIs_menu.configure(state='disabled')
     create_subcorpus_checkbox.configure(state='disabled')
     extract_sentences_checkbox.configure(state='normal')
     extract_sentences_search_words_entry.configure(state='disabled')
     minus_K_sentences_entry.configure(state='disabled')
     plus_K_sentences_entry.configure(state='disabled')
-    extract_sentences_search_words_var.set('')
+    # extract_sentences_search_words_var.set('')
 
     minus_K_words_entry.configure(state='disabled')
     plus_K_words_entry.configure(state='disabled')
-    extract_words_search_words_var.set('')
+    # extract_words_search_words_var.set('')
+    all_keywords_checkbox.configure(state='disabled')
 
     if extra_GUIs_var.get()==True:
         extra_GUIs_menu.configure(state='normal')
@@ -482,6 +531,7 @@ def activate_all_options(*args):
         minus_K_words_entry.configure(state='normal')
         plus_K_words_entry.configure(state='normal')
         extract_words_search_words_var.set('')
+        extract_sentences_search_words_var.set('')
         minus_K_words_var.set(0)
         plus_K_words_var.set(0)
         create_subcorpus_checkbox.configure(state='normal')
@@ -492,15 +542,18 @@ def activate_all_options(*args):
         selectedCsvFile_var.set('')
         search_by_keyword_checkbox.configure(state='disabled')
         keyword_value.configure(state='disabled')
-        extract_sentences_search_words_var.set('')
+        # extract_sentences_search_words_var.set('')
         extract_sentences_search_words_entry.configure(state='normal')
         minus_K_sentences_entry.configure(state='normal')
         plus_K_sentences_entry.configure(state='normal')
+        all_keywords_checkbox.configure(state='normal')
         minus_K_words_entry.configure(state='disabled')
         plus_K_words_entry.configure(state='disabled')
         extract_words_search_words_var.set('')
         create_subcorpus_checkbox.configure(state='disabled')
-
+    else:
+        keyword_value_var.set('')
+        extract_sentences_search_words_var.set('')
 activate_all_options()
 
 videos_lookup = {'No videos available':''}
@@ -525,7 +578,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
 
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of other available tools suitable for searches and style analysis.')
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, use the dropdown menu to set up the search criteria. Multiple criteria can be selected by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nWhen running the search as case sensitive, a sentence containing the word 'King' will not be selected in output if you search for 'King')\n\nWhen lemmatizing, the scripts would search 'coming out' in all its lemmatized forms: 'coming out', 'come out', 'comes out', 'came out'.\n\nWhen searching 'Within sentence' combinations of words or collocations will be searched and displayed within SENTENCE otherwise within DOCUMENT.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, use the dropdown menu to set up the search criteria. Multiple criteria can be selected by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nWhen running the search as case sensitive, a sentence containing the word 'King' will not be selected in output if you search for 'king')\n\nWhen lemmatizing, the scripts would search 'coming out' in all its lemmatized forms: 'coming out', 'come out', 'comes out', 'came out'.\n\nWhen searching 'Within sentence' combinations of words or collocations will be searched and displayed within SENTENCE otherwise within DOCUMENT.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, tick the checkbox to search input txt file(s) using the values contained in a csv dictionary file.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help", "Please, click to select a csv file containing a list of values to be used as a dictionary for searching the input file(s).\n\nEntries in the file, one per line, can be single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe little square button to the right will allow you to open the selected csv file.\n\nThe csv filename will be displayed in the entry widget to the right.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox to search input txt file(s) by single words or collocations, i.e., combinations of words such as 'coming out,' 'standing in line'.\n\nThe widget where you can enter your comma-separated, case-sensitive words/collocations will become available once you select the option. Enter there the comma-separated, case-sensitive words/set of words that a sentence must contain in order to be extracted from input and saved in output (e.g, coming out, standing in line, boyfriend).\n\nIn INPUT the scripts expect a single txt file or a set of txt files in a directory.\n\nIn OUTPUT the scripts generate a csv file with information about the document, sentence, word/collocation searched, and, most importantly, about the relative position where the search word appears in a document. When the checkbox 'Create subcorpus of files' is ticked, the algorithm will export all the txt files that contain the search words to a directory called 'subcorpus_search' inside the input directory. A set of csv files are also exported but to the selected output directory.")
