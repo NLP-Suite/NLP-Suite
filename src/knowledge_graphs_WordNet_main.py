@@ -196,10 +196,13 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                     noun_verb = 'VERB'
                 else:
                     return
-                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
+                outputFiles = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
                                                         openOutputFiles, chartPackage, dataTransformation, language_var)
-                if output != None:
-                    filesToOpen.append(output)
+                if outputFiles != None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
             if nouns_var == True:
                 temp_csv_file = files[1]  # Nouns but... double check
@@ -207,10 +210,13 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
                     noun_verb = 'NOUN'
                 else:
                     return
-                output = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
+                outputFiles = knowledge_graphs_WordNet_util.aggregate_GoingUP(WordNetDir, temp_csv_file, outputDir, config_filename, noun_verb,
                                                         openOutputFiles, chartPackage, dataTransformation, language_var)
-                if output != None:
-                    filesToOpen.append(output)
+                if outputFiles != None:
+                    if isinstance(outputFiles, str):
+                        filesToOpen.append(outputFiles)
+                    else:
+                        filesToOpen.extend(outputFiles)
 
     if aggregate_bySentenceID_var==1:
         # check that input file is a CoNLL table
@@ -218,9 +224,12 @@ def run(inputFilename, inputDir, outputDir,openOutputFiles,
             return
         outputFilename=IO_files_util.generate_output_file_name(csv_file, outputDir, '.csv', 'WordNet', 'conll')
         filesToOpen.append(outputFilename)
-        temp_outputfiles = knowledge_graphs_WordNet_util.Wordnet_bySentenceID(csv_file,dict_WordNet_filename_var,outputFilename,outputDir,noun_verb,openOutputFiles,chartPackage, dataTransformation)
-        if temp_outputfiles!=None:
-            filesToOpen.append(temp_outputfiles)
+        outputFiles = knowledge_graphs_WordNet_util.Wordnet_bySentenceID(csv_file,dict_WordNet_filename_var,outputFilename,outputDir,noun_verb,openOutputFiles,chartPackage, dataTransformation)
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if openOutputFiles==True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -274,7 +283,7 @@ config_filename = scriptName.replace('_main.py', '_config.csv')
         # 6 for txt or csv
 #   input dir
 #   input secondary dir
-#   output dir
+#   outputFiles dir
 config_input_output_numeric_options=[2,1,0,1]
 
 GUI_util.set_window(GUI_size, GUI_label, config_filename, config_input_output_numeric_options)
@@ -287,7 +296,7 @@ input_main_dir_path = GUI_util.input_main_dir_path
 outputDir = GUI_util.output_dir_path
 
 openOutputFiles = GUI_util.open_csv_output_checkbox.get()
-createCharts = GUI_util.create_chart_output_checkbox.get()
+# createCharts = GUI_util.create_chart_output_checkbox.get()
 
 GUI_util.GUI_top(config_input_output_numeric_options, config_filename, IO_setup_display_brief, scriptName)
 
