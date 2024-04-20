@@ -228,7 +228,7 @@ def main(window, inputFilename, inputDir, outputDir,  configFileName, openOutput
 													   columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Concreteness (Mean score)'],
 													   # columns_to_be_plotted_bySent= [[10, 7, 0]],
 													   chart_title='Frequency Distribution of Abstract/Concrete Scores',
-													   count_var=0, # 0 for numeric field
+													   count_var=1, # 0 for numeric field
 													   hover_label=[],
 													   outputFileNameType='',
 													   column_xAxis_label='Concreteness scores',
