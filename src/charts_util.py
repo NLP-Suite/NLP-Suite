@@ -2100,17 +2100,23 @@ def rate_prop(df, rt, base):
 
 # THIS IS AN ABBREVIATED VERSION FOR The sunburst / treemap
 def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list, suntree,
-                     fixed_param_var, rate_param_var, base_param_var, filter_options_var):
-    print(fixed_param_var, rate_param_var, base_param_var, filter_options_var)
+                     fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive=False):
+    print(fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive)
     # print("======")
     data = pd.read_csv(inputFilename)
+
+    if not case_sensitive:
+        data = data.astype(str).apply(lambda s: s.str.lower())
+
     WHERE, GROUPBY = special_sql_commands(csv_file_categorical_field_list, data)
+    if not case_sensitive:
+        for key, query in WHERE.items():
+            WHERE[key] = [q.lower() for q in query]
     data = where_data(data, where_column=WHERE)
     select_and_count = [GROUPBY]
     select_and_count.extend(list(WHERE.keys()))
     df = select_and_counting(data, select_and_count)
     df_grouped = df.groupby(select_and_count).size().reset_index(name='counts')
-
     df_grouped.to_csv(outputDir + os.sep + "Output_Csv_intermediate.csv", index=False)
     # df_grouped.head(5)
     if filter_options_var == 'Fixed parameter':
@@ -2119,7 +2125,11 @@ def Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categori
     if filter_options_var == 'Propagating parameter':
         df_grouped = rate_prop(df_grouped, int(rate_param_var), int(base_param_var))
         print("Propagating parameter applied")
-    print(df_grouped)
+    print('df_grouped:',df_grouped)
+    if df_grouped.empty:
+        mb.showwarning(title='No search values found',
+                       message='No combination of csv file fields and search values were found in your input file.\n\nPlease, make sure to check whether you are using a case sensitive search option.')
+        return
     if suntree:
         fig = px.sunburst(df_grouped, path=select_and_count, values='counts')  # Ensure the hierarchy levels are correct
     else:

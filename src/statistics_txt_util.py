@@ -552,7 +552,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, confi
         hapax_label = ''
 
     # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='Ngrams'+hapax_label,
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='N-grams'+hapax_label,
                                                        silent=True)
     if outputDir == '':
         return
@@ -969,7 +969,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
             #print(words_with_stop)
             # don't process stopwords
             filtered_words = words
-            if processType != '' and not "punctuation" in processType.lower():
+            if processType != '' and not "pathos" in processType.lower():
                 if excludeStopWords:
                     words = excludeStopWords_list(words)
                     filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation

@@ -317,7 +317,10 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                     row += [""]
                 index = index + 1
             # fill out data sheet
-            ws1.append(row)
+            # The python module openpyxl may sometimes raise the exception
+            #   IllegalCharacterError For further details see: https://openpyxl.readthedocs.io/en/stable/api/openpyxl.utils.exceptions.html).
+            #   https://www.havnemark.dk/?p=185
+            ws1.append([str(cell).encode("utf-8") if isinstance(cell, str) else cell for cell in row])
 
         withHeader_var = IO_csv_util.csvFile_has_header(inputFilename) # check if the file has header
         data, headers = IO_csv_util.get_csv_data(inputFilename,withHeader_var) # get the data and header
@@ -375,9 +378,10 @@ def create_excel_chart(window,data_to_be_plotted,inputFilename,outputDir,scriptT
                     row += [""]
                 index = index + 1
             # fill out data sheet
-            # The python module openpyxl may sometimes raise the exception IllegalCharacterError (see: https://openpyxl.readthedocs.io/en/stable/api/openpyxl.utils.exceptions.html for further details).
-            # https://www.havnemark.dk/?p=185
-            ws.append(row)
+            # The python module openpyxl may sometimes raise the exception
+            #   IllegalCharacterError For further details see: https://openpyxl.readthedocs.io/en/stable/api/openpyxl.utils.exceptions.html).
+            #   https://www.havnemark.dk/?p=185
+            ws.append([str(cell).encode("utf-8") if isinstance(cell, str) else cell for cell in row])
 
         #openpyxl only allows a maximum of 2 y axes with different scales
         if second_y_var==0: #we are NOT plotting with 2 y axes with different scales

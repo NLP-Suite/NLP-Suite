@@ -306,7 +306,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
         if search_words != '' and n_grams_viewer_var == False and CoOcc_Viewer_var == False:
             mb.showwarning(title='Warning',
-                           message="You have entered the string '" + search_words + "' in the Search widget but you have not selected which Viewer you wish to use, Ngram or Co-Occurrence.\n\nPlease, select an option and try again.")
+                           message="You have entered the string '" + search_words + "' in the Search widget but you have not selected which Viewer you wish to use, N-gram or Co-Occurrence.\n\nPlease, select an option and try again.")
             return
 
         if search_words == '' and (n_grams_viewer_var == True or CoOcc_Viewer_var == True):
