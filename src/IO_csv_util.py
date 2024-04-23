@@ -51,7 +51,12 @@ def get_csv_data(inputFilename,withHeader):
     fo.close()
 
     with open(inputFilename,encoding='utf-8-sig',errors='ignore') as f:
-        reader = csv.reader(f,delimiter=delimiter)
+        # can throw a NUL line error
+        # https://stackoverflow.com/questions/4166070/python-csv-error-line-contains-null-byte
+        # https://stackoverflow.com/questions/38883476/how-to-remove-those-x00-x00
+        # remove the NUL byte
+        lines = [line.replace("\x00", "") for line in f.readlines()]
+        reader = csv.reader(lines,delimiter=delimiter)
         if withHeader == True:
             headers = next(reader, None) #ADDED to skip header in new .csv CoNLL
         #data = [r[:numColumns] for r in reader]

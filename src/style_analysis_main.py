@@ -221,9 +221,9 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,chartPackage,dataTra
                 else:
                     filesToOpen.extend(outputFiles)
 
-        if '*' in vocabulary_analysis_menu_var or 'Punctuation' in vocabulary_analysis_menu_var:
+        if '*' in vocabulary_analysis_menu_var or 'pathos' in vocabulary_analysis_menu_var:
             outputFiles =statistics_txt_util.process_words(window, config_filename, inputFilename, inputDir, outputDir_style,
-                                                      openOutputFiles, chartPackage,dataTransformation,'Punctuation')
+                                                      openOutputFiles, chartPackage,dataTransformation,'pathos')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)

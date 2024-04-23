@@ -54,7 +54,11 @@ cla_open_csv = False  # if run from command line, will check if they want to ope
 
 def compute_stats(data):
 	global form_list, postag_list, postag_counter, deprel_list, deprel_counter
-	verb_postags = ['VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ']
+	# VBG gerund, VBD past, VBN Past Principle/Passive,
+	# VBP present (non-3rd person singular), VBZ present (3rd person singular)
+	# VB future, VB infintive, depending on MD modal
+
+	verb_postags = ['VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ', 'MD']
 	data = [tok for tok in data if (tok[3] in verb_postags)]
 	form_list = [i[1] for i in data]
 	lemma_list = [i[2] for i in data]
@@ -366,14 +370,15 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 # add an extra column describing verb tense
 def verb_tense_data_preparation(data):
 	dat = []
-	vbg_counter = 0
-	vbd_counter = 0
-	vbn_counter = 0
-	vbp_counter = 0
-	vb_counter = 0
-	vb_counter_future = 0
-	vb_counter_infinitive = 0
-	verb_tense_list = ['VBG', 'VBD', 'VB', 'VBN', 'VBP', 'MD'] # MD modal verb
+	vbg_counter = 0 # gerund
+	vbd_counter = 0 # past
+	vbn_counter = 0 # Past Principle/Passive
+	vbp_counter = 0 # present (non-3rd person singular)
+	vbz_counter = 0 # present (3rd person singular)
+	vb_counter_future = 0 # future
+	vb_counter_infinitive = 0 # infintive
+	verb_tense_list = ['VBG', 'VBD', 'VB', 'VBN', 'VBP', 'VBZ', 'MD'] # MD modal verb
+
 
 	aux = False
 	# data is the CoNLL table
@@ -400,7 +405,10 @@ def verb_tense_data_preparation(data):
 				tense_col = 'Past Principle/Passive'
 				vbn_counter+=1
 			elif(tense == 'VBP'):
-				tense_col = 'Present'
+				tense_col = 'Present (non-3rd person singular)'
+				vbp_counter+=1
+			elif(tense == 'VBZ'):
+				tense_col = 'Present (3rd person singular)'
 				vbp_counter+=1
 			if not aux and tense != 'MD':
 				dat.append(i+[tense_col])
@@ -409,7 +417,8 @@ def verb_tense_data_preparation(data):
 					['Infinitive', vb_counter_infinitive],
 					['Past', vbd_counter],
 					['Past Principle/Passive', vbn_counter],
-					['Present', vbp_counter],
+					['Present (non-3rd person singular)', vbp_counter],
+					['Present (3rd person singular)', vbz_counter],
 					['Future', vb_counter_future]]
 	dat = sorted(dat, key=lambda x: int(x[recordID_position]))
 	return dat, verb_tense_stats

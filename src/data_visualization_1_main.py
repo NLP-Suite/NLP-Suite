@@ -36,6 +36,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
         dynamic_network_field_var,
         Sankey_limit1_var, Sankey_limit2_var, Sankey_limit3_var,
         categorical_var,
+        case_sensitive_var,
         csv_file_categorical_field_list,
         filter_options_var,
         fixed_param_var,
@@ -203,7 +204,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
                                "The sunburst algorithm requires a value for 'csv file field.'\n\nPlease, select a value and try again.")
                 return
 
-            outputFiles = charts_util.Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list, 1,  fixed_param_var, rate_param_var, base_param_var, filter_options_var)
+            outputFiles = charts_util.Sunburst_Treemap(inputFilename, outputFilename, outputDir, csv_file_categorical_field_list, 1,  fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive_var)
 
             #### USED
         #    outputFiles = charts_util.Sunburst(inputFilename, outputFilename, outputDir, case_sensitive_var, temp_interest, label,
@@ -229,7 +230,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles,
 
             outputFiles = charts_util.Sunburst_Treemap(inputFilename, outputFilename, outputDir,
                                                        csv_file_categorical_field_list, 0,
-                                                       fixed_param_var, rate_param_var, base_param_var, filter_options_var)
+                                                       fixed_param_var, rate_param_var, base_param_var, filter_options_var, case_sensitive_var)
             # 0 - Treemap, 1 - Sunburst, lazy boolean for shortening the code in charts_util
 
             # outputFiles = charts_util.Treemap(inputFilename, outputFilename,
@@ -255,6 +256,7 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             dynamic_network_field_var.get(),
                             Sankey_limit1_var.get(), Sankey_limit2_var.get(), Sankey_limit3_var.get(),
                             categorical_var.get(),
+                            case_sensitive_var.get(),
                             csv_file_categorical_field_list,
                             filter_options_var.get(),
                             fixed_param_var.get(),
@@ -671,6 +673,7 @@ def activate_csv_fields_categorical_selection(comingFromPlus = True):
             # csv_file_categorical_field_list.append(csv_field_categorical_var.get())
             csv_file_categorical_field_string=csv_file_categorical_field_string + '|' + csv_field_categorical_var.get()
     if csv_field_categorical_var.get() != '':
+        # case_sensitive_checkbox.configure(state='normal')
         search_values_categorical.configure(state='normal')
         if comingFromPlus:
             csv_field_categorical_menu.config(state='normal')
@@ -680,6 +683,7 @@ def activate_csv_fields_categorical_selection(comingFromPlus = True):
         reset_button_categorical.config(state='normal')
         # show_button.config(state='normal')
     else:
+        # case_sensitive_checkbox.configure(state='disabled')
         search_values_categorical.configure(state='disabled')
         csv_field_categorical_menu.config(state='normal')
         # reset_button_categorical.config(state='disabled')
@@ -696,12 +700,12 @@ csv_field_categorical_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    csv_field_categorical_menu,
-                                   True, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Select the csv file field to be used to visualize specific data (e.g., 'Sentiment label' in a sentiment analysis csv output file)")
+                                   True, False, True, False, 90, GUI_IO_util.read_button_x_coordinate,
+                                   "Select the csv file field to be used to visualize specific data (e.g., 'Sentiment label' in a sentiment analysis csv output file)\nEACH SELECTED FIELD MUST BE PAIRED WITH ONE OR MORE COMMA-SEPARATED VALUES.\nEACH SELECTED CSV FLE FIELD WILL BE DISPLAYED AS AN OUTER CIRCLE AMONG CONCENTRIC CIRCLES (THE FIRST SELECTED FIELD AS THE CORE CIRCLE.")
 
 case_sensitive_var.set(1)
 # text='Case sensitive'
-case_sensitive_checkbox = tk.Checkbutton(window, state='disabled', variable=case_sensitive_var,
+case_sensitive_checkbox = tk.Checkbutton(window, variable=case_sensitive_var,
                                     onvalue=1, offvalue=0)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
@@ -1145,13 +1149,14 @@ def activate_all_options(*args):
             Sankey_limit3_menu.configure(state='normal')
 
     elif categorical_var.get(): # sunburst, treemap
+        case_sensitive_checkbox.configure(state='normal')
         search_values_categorical.configure(state='normal')
         extra_GUIs_checkbox.configure(state='disabled')
         menu_values = get_csv_file_menu_vales()
         if csv_field_categorical_var.get()=='' and 'Document' in menu_values:
             csv_field_categorical_var.set('Document')
 
-        # case_sensitive_checkbox.configure(state='normal')
+        case_sensitive_checkbox.configure(state='normal')
         # for now always set to disabled
 
         csv_field_categorical_menu.configure(state='normal')
@@ -1159,7 +1164,6 @@ def activate_all_options(*args):
         categorical_checkbox.configure(state='normal')
         # csv_field_categorical_menu.configure(state='disabled') #for now only Document can be selected
         relations_checkbox.configure(state='disabled')
-        case_sensitive_checkbox.configure(state='disabled')
 
         if csv_field_categorical_var.get()=='':
             # search_values_categorical.configure(state='disabled')
@@ -1270,7 +1274,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","THE WIDGETS ON THIS LINE REFER TO THE SANKEY CHART ONLY.\n\nPlease, using the dropdown menus, select the maximum number of values to be considered for each of the 2 or 3 elements in computing the interactive Sankey chart.\n\nWith to many values, Sankey charts become very messy.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, tick the checkbox if you wish to visualize data in interactive charts (e.g., sunburst or treemap).\n\nThe algorithm applies to categorical data rather than numerical data.")
     # search line
-    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The widgets in this line are REQUIRED to run either the Sunburst or Treemap algorithms.\n\nPlease, enter at least two sets of combinations of csv file field and search values.\n\n   First, select the csv file field using the dropdown menu.\n\n   Second, enter the comma-separated search values to be used from that field to construct the chart.\n   For instance, if you select 'Document' as csv file field, you can enter specific parts of a filename (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...).\n   If you select 'NER' as csv file field in an input CoNLL table, you can enter the tags 'PERSON' or 'LOCATION', 'COUNTRY', 'STATE_OR_PROVINCE', 'CITY'.\n\n   Finally, click on + symbol to accept the current combination of csv field and values (at least two combinations are required) (you can also press the Reset button to clear all selected values and start fresh, or the Show button to visualize the currently selected options). After clicking + you can enter another combination or click on RUN to obtain the chart.\n\nALWAYS CLICK THE + SYMBOL AFTER HAVING ENTERED THE LAST COMBINATION.")
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The widgets in this line are REQUIRED to run either the Sunburst or Treemap algorithms.\n\nPlease, enter at least two sets of combinations of csv file field and search values.\n\n   First, select the csv file field using the dropdown menu. The first fild will be the inner part of the circles; successive fields will be displayed as concentric to the first core field values. EACH SELECTED FIELD MUST BE PAIRED WITH ONE OR MORE COMMA-SEPARATED VALUES. EACH SELECTED CSV FLE FIELD WILL BE DISPLAYED AS AN OUTER CIRCLE AMONG CONCENTRIC CIRCLES (THE FIRST SELECTED FIELD AS THE CORE CIRCLE.\n\n   Second, tick the case sensitive checkbox if you want to run the searches as case sensitive (untick, otherwise);\n\n   Third, enter the comma-separated search values to be used from that field to construct the chart. \n   For instance, if you select 'Document' as csv file field, you can enter specific parts of a filename (e.g., Book1, Book2 in Harry Potter_Book1_1, Harry Potter_Book2_3, ...).\n   If you select 'NER' as csv file field in an input CoNLL table, you can enter the tags 'PERSON' or 'LOCATION', 'COUNTRY', 'STATE_OR_PROVINCE', 'CITY'.\n\n   Finally, click on + symbol to accept the current combination of csv field and values (at least two combinations are required) (you can also press the Reset button to clear all selected values and start fresh, or the Show button to visualize the currently selected options). After clicking + you can enter another combination or click on RUN to obtain the chart.\n\nALWAYS CLICK THE + SYMBOL AFTER HAVING ENTERED THE LAST COMBINATION.")
     # filtering line
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","The widgets in this line refer to the Sunburst or Treemap algorithms.\n\nThe options allow you to filter data when too many data values would simply make the charts unreadable.\n\n"
                         "'No filtering' is the default option. Start with this option, then, if necessary, try filtering."
