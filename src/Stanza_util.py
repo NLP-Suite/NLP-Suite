@@ -229,7 +229,7 @@ def Stanza_annotate(configFilename, inputFilename, inputDir,
         if "Lemma" in annotator_params:
             annotator = 'Lemma'
             processors='tokenize,lemma,pos'
-        elif "ALL POS" in annotator_params or "POS" in annotator_params:
+        elif "All POS" in annotator_params or "POS" in annotator_params:
             annotator = 'POS'
             processors = 'tokenize,pos'
         elif "NER" in annotator_params:
@@ -519,8 +519,14 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
 
     else:
         # drop the columns that don't correspond to Stanford CoreNLP output
+        # out_df = out_df.drop(
+        #     ['xpos', 'start_char', 'end_char', 'multi_ner', 'feats'],
+        #     axis=1,
+        #     errors='ignore'
+        #     )
+        # feats allows you to study verb mood
         out_df = out_df.drop(
-            ['xpos', 'start_char', 'end_char', 'multi_ner', 'feats'],
+            ['xpos', 'start_char', 'end_char', 'multi_ner'],
             axis=1,
             errors='ignore'
             )
@@ -536,6 +542,7 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
                 'head':'Head',
                 'deprel':'DepRel',
                 'ner':'NER',
+                'feats':'feats',
                 'lang':'Language',
                 'sentiment_score':'Sentiment score'
             }
@@ -610,13 +617,13 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
         out_df = out_df[['Form', 'NER', 'Multi-Word Expression','Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "All POS" in annotator_params:
         # out_df = out_df[['ID', 'Form', 'POS', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
-        out_df = out_df[['Form', 'POS', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+        out_df = out_df[['Form', 'POS', 'feats', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "depparse" in annotator_params or "SVO" in annotator_params:
         if language not in available_NER:
-            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'feats', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
             # out_df = out_df[['Form', 'Lemma', 'POS', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
         else:
-            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'NER', 'Multi-Word Expression', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
+            out_df = out_df[['ID', 'Form', 'Lemma', 'POS', 'NER', 'feats', 'Multi-Word Expression', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
             # out_df = out_df[['Form', 'Lemma', 'POS', 'NER', 'Head', 'DepRel', 'Record ID', 'Sentence ID', 'Document ID', 'Document']]
     elif "sentiment" in annotator_params:
         out_df = out_df[['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document']]
