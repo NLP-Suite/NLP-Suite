@@ -701,7 +701,7 @@ csv_field_categorical_menu.configure(state='disabled')
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
                                    csv_field_categorical_menu,
                                    True, False, True, False, 90, GUI_IO_util.read_button_x_coordinate,
-                                   "Select the csv file field to be used to visualize specific data (e.g., 'Sentiment label' in a sentiment analysis csv output file)\nEACH SELECTED FIELD MUST BE PAIRED WITH ONE OR MORE COMMA-SEPARATED VALUES.\nEACH SELECTED CSV FLE FIELD WILL BE DISPLAYED AS AN OUTER CIRCLE AMONG CONCENTRIC CIRCLES (THE FIRST SELECTED FIELD AS THE CORE CIRCLE.")
+                                   "Select the csv file field to be used to visualize specific data (e.g., 'Sentiment label' in a sentiment analysis csv output file)\nEACH SELECTED FIELD MUST BE PAIRED WITH ONE OR MORE COMMA-SEPARATED VALUES.\nEACH SELECTED CSV FLE FIELD WILL BE DISPLAYED AS AN OUTER CIRCLE AMONG CONCENTRIC CIRCLES (THE FIRST SELECTED FIELD AS THE CORE CIRCLE).")
 
 case_sensitive_var.set(1)
 # text='Case sensitive'
