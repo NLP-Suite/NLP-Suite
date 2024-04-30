@@ -333,8 +333,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         call("python CoNLL_table_analyzer_main.py", shell=True)
 
     if openOutputFiles:
+        filesToOpenSubset = []
         if len(filesToOpen) > 0:
-            filesToOpenSubset = []
             # add the CoNLL main file
             if 'parse' in annotator:
                 filesToOpenSubset.append(filesToOpen[0])

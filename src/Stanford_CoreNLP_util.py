@@ -342,7 +342,7 @@ def CoreNLP_annotate(config_filename,inputFilename,
         # 'NER': ['Word', 'NER', 'Sentence ID', 'Sentence', 'tokenBegin', 'tokenEnd', 'Document ID','Document', 'Date'],
         'DepRel': ["ID", "Form", "Head", "DepRel", "Record ID", "Sentence ID", "Document ID", "Document"],
         'sentiment': ['Sentiment score', 'Sentiment label', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
-        'quote': ['Speakers', 'Number of Quotes', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
+        'quote': ['Speakers', 'Quote', 'Number of Quotes', 'Sentence ID', 'Sentence', 'Document ID', 'Document'],
         'coref': 'text',
         'coref table': ["Pronoun", "Referent", "Referent Start ID in Sentence",
                         "First Referent Sentence ID", "First Referent Sentence", "Pronoun Start ID in Referent Sentence", "Sentence ID", "Sentence", "Document ID", "Document"],
@@ -1476,16 +1476,30 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
     result = []
     quoted_sentences = {}
     speakers = {}#the speakers of each quote
+    quotes = {}
     for quote in json['quotes']:
-        # quote_text = quote['text']
         # to find all sentences with quotes
         sentenceIDs = list(range(quote['beginSentence'], quote['endSentence'] + 1))
         for sent in sentenceIDs:
             quoted_sentences[sent] = quoted_sentences.get(sent, 0) + 1
+            # quote_text = quote['text']
+            # print(quote['speaker'], quote_text)
             if sent in speakers.keys():
-                speakers[sent].append(quote['speaker'])
+                speakers[sent].append(quote['canonicalSpeaker'])
+                try:
+                    quotes[sent].append(quote['text'])
+                except:
+                    print('ERROR')
             else:
-                speakers[sent] = [quote['speaker']]
+                try:
+                    if quote['mention']:
+                        # pass
+                        speakers[sent] = [quote['mention']]
+                    else:
+                        speakers[sent] = [quote['canonicalSpeaker']]
+                except:
+                    speakers[sent] = [quote['canonicalSpeaker']]
+                quotes[sent] = [quote['text']]
     # iterate over those sentence indexes and find its complete sentence
     for quoted_sent_id, number_of_quotes in quoted_sentences.items():
         sentenceID = quoted_sent_id+1
@@ -1505,10 +1519,10 @@ def process_json_quote(config_filename,documentID, document, sentenceID, json, *
 
         if filename_embeds_date_var:
             # TODO MINO: rearrange the columns
-            temp = [str(speakers[quoted_sent_id][0]), number_of_quotes, sentenceID,
+            temp = [str(speakers[quoted_sent_id][0]), quotes[quoted_sent_id][0], number_of_quotes,  sentenceID,
                     complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document), date_str]
         else:
-            temp = [str(speakers[quoted_sent_id][0]), number_of_quotes, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
+            temp = [str(speakers[quoted_sent_id][0]), quotes[quoted_sent_id][0], number_of_quotes, sentenceID, complete_sent, documentID, IO_csv_util.dressFilenameForCSVHyperlink(document)]
         result.append(temp)
     return result
 
@@ -1566,11 +1580,11 @@ def process_json_SVO_enhanced_dependencies(config_filename,documentID, document,
         raw_quote_info = process_json_quote(config_filename, documentID, document, sentenceID, json, **kwargs)
         # TODO MINO: process quotes with pandas without for-loop, and rearrange the columns
         if filename_embeds_date_var:
-            quote_columns = ["Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document", "Date"]
+            quote_columns = ["Speakers", "Quote", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document", "Date"]
         else:
-            quote_columns = ["Speakers", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]
+            quote_columns = ["Speakers", "Quote", "Number of Quotes", "Sentence ID", "Sentence", "Document ID", "Document"]
         quote_df = pd.DataFrame(raw_quote_info, columns=quote_columns)
-        quote_df = quote_df[["Speakers", "Number of Quotes", "Sentence ID", "Document ID"]]
+        quote_df = quote_df[["Speakers", "Quote", "Number of Quotes", "Sentence ID", "Document ID"]]
 
     SVO_enhanced_dependencies = []
     SVO_brief = []

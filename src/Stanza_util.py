@@ -10,7 +10,7 @@ try:
     stanza.download('en')
 except:
     import IO_internet_util
-    IO_internet_util.check_internet_availability_warning("Stanza_functions_util.py","stanza","json","re","tkinter","warnings")
+    # IO_internet_util.check_internet_availability_warning("Stanza_functions_util.py","stanza","json","re","tkinter","warnings")
 
 from stanza.pipeline.multilingual import MultilingualPipeline
 
