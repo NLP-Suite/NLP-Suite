@@ -321,6 +321,8 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
     if 'Lemmatize' in str(viewer_options_list):
         useLemma = True
 
+    print('TOP case_sensitive',case_sensitive)
+
     byNumberOfYears = 0
     byYear = False
     byQuarter = False
@@ -352,6 +354,8 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
 
 
     import IO_string_util
+    # @@@
+    case_sensitive = False
     search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_string_list(search_wordsLists,
                                                                                                    case_sensitive)
 
@@ -580,7 +584,9 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
                 lemmatize = False
                 exclude_stopwords = True
                 exclude_punctuation = True
+                # @@@
                 lowercase = False
+
                 differentPOS_differentColors = False
                 differentColumns_differentColors = False
                 csvField_color_list = []
@@ -700,7 +706,10 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
             f = open(file, "r", encoding='utf-8', errors='ignore')
             docText = f.read()
             f.close()
+            # @@@
+            case_sensitive=False
             if not case_sensitive:
+                print('case_sensitive',case_sensitive)
                 docText = docText.lower()
             tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
             hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)

@@ -382,7 +382,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
                                     "\nThe selected GUI will open without having to press RUN")
 
 def open_GUI(*args):
-    if extra_GUIs_var:
+    if extra_GUIs_var.get():
         extra_GUIs_menu.configure(state='normal')
     if extra_GUIs_menu_var.get():
         if 'Spelling' in extra_GUIs_menu_var.get():

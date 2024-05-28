@@ -524,7 +524,7 @@ def compute_line_length(window, configFileName, inputFilename, inputDir, outputD
 def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, configFileName,
                                   ngramsNumber,frequency,hapax_words,
                                   normalize,
-                                  lemmatize=False, excludePunctuation=True, excludeArticles=True,
+                                  lemmatize=False, case_sensitive=False, excludePunctuation=True, excludeArticles=True,
                                   excludeDeterminers=False, excludeStopWords=False,
                                   wordgram=True, #word as opposed to character n-grams
                                   openOutputFiles=False,
@@ -573,7 +573,7 @@ def compute_character_word_ngrams(window,inputFilename,inputDir,outputDir, confi
             bySentenceID=0
 
     outputFiles = get_ngramlist(inputFilename, inputDir, outputDir, configFileName, ngramsNumber, frequency, hapax_words,
-                                normalize, lemmatize, excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords,
+                                normalize, lemmatize, case_sensitive, excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords,
                                 wordgram,
                                 bySentenceID,  chartPackage, dataTransformation)
 
@@ -602,7 +602,7 @@ import NGrams_util
 
 def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
     ngramsNumber, frequency=None, hapax_words=False,
-    normalize=True, lemmatize=False, excludePunctuation=True, excludeArticles=True,
+    normalize=True, lemmatize=False, case_sensitive=False, excludePunctuation=True, excludeArticles=True,
     excludeDeterminers=True,excludeStopWords=True,
     wordgram=1,
     bySentenceID=False, chartPackage='Excel', dataTransformation='No transformation'):
@@ -624,13 +624,13 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
         else:
             tokens_ = NGrams_util.readandsplit(file,excludePunctuation,
                                                   excludeArticles, excludeDeterminers, excludeStopWords,len(files),
-                                                  lemmatize,index)
+                                                  lemmatize, case_sensitive, index)
             hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)
             hashfile.writehash(hashmap, o2)
         documents.append(tokens_)
     # we allow as many n-grams as the user selects
     filesToOpen = []
-    results, hapax_result = NGrams_util.operate(documents, files, int(ngramsNumber),hapax_words)
+    results, hapax_result = NGrams_util.operate(documents, files, int(ngramsNumber),hapax_words,case_sensitive)
     if hapax_result is not None:
         outputDirSV=outputDir
         outputDir = IO_files_util.make_output_subdirectory('', '', outputDir, label='Hapax',
