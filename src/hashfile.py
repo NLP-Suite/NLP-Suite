@@ -8,7 +8,7 @@ def calculate_checksum(filename): # This very fast option could ensure we don't
     return sha256_hash.hexdigest()
 import os
 def checkOut(outputDir):
-    outputDir +='Cache'
+    outputDir +='_Cache'
     # Check if the directory exists
     if not os.path.exists(outputDir):
         # If not, create the directory
@@ -21,7 +21,7 @@ def checkOut(outputDir):
             f.write("")
         return False
 def getcache(outputDir):
-    outputDir = outputDir + "Cache"
+    outputDir = outputDir + "_Cache"
     with open(outputDir+os.sep+'stanza.temp.cache', encoding='utf-8') as f:
         caches = f.readlines()
     hashmap = {}
@@ -40,10 +40,12 @@ def storehash(hashmap, hash, tokens):
         hashmap[hash]= tokens
     # since complex objects are passed by reference, no need to return to waste space
 def writehash(hashmap,outputDir):
-    outputDir = outputDir + "Cache"
+    outputDir = outputDir + "_Cache"
     s = ''
     for key in hashmap.keys():
         s+= str(key) + '@@@@----@@@@' + str(hashmap[key]) + '\n'
-    with open(outputDir+os.sep+'stanza.temp.cache', 'w', encoding='utf-8') as f:
-        f.write(s)
-
+    try:
+        with open(outputDir+os.sep+'stanza.temp.cache', 'w', encoding='utf-8') as f:
+            f.write(s)
+    except:
+        pass

@@ -68,7 +68,7 @@ def csv_escape(input_string):
         # Return the string unchanged if it doesn't contain any special characters
         return input_string
 def search_sentences_documents(inputFilename, inputDir, outputDir, configFileName,
-        search_by_dictionary, search_by_search_keywords, minus_K_words_var, plus_K_words_var, search_keywords_list,
+        search_by_dictionary, search_by_search_keywords, search_keywords_list, minus_K_words_var, plus_K_words_var,
         create_subcorpus_var, search_options_list, lang, chartPackage, dataTransformation):
     hashOutputDir = outputDir
     # create a subdirectory of the output directory

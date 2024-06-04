@@ -99,7 +99,9 @@ def readandsplit(filename, excludePunctuation, excludeArticles, excludeDetermine
         out = removedt(out)
     if excludeStopWords:
         out = removestop(out)
-    if case_sensitive:
+
+    # @@@
+    if not case_sensitive:
         out = out.lower()
 
     if not lemmatize:
@@ -159,8 +161,6 @@ def find_frequencies(sentences_ngrams, major_ngrams,files):
 def operateongram(documents,files,ngramsNumber, case_sensitive=False):
     ngrams = []
     for document in documents:
-        # if not case_sensitive:
-        #     [document.lower() for document in ["A", "B", "C"]]
         ngrams.extend(find_ngrams(document,ngramsNumber, case_sensitive))
     documents_ngram = [find_ngrams(document, ngramsNumber, case_sensitive) for document in documents]
     ngram_freq = find_frequencies(documents_ngram, ngrams, files)

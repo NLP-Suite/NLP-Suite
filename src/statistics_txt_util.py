@@ -619,8 +619,11 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
     for index, file in enumerate(files):
         if hashfile.calculate_checksum(file) in hashmap:
             tokens_ = hashmap[hashfile.calculate_checksum(file)]
+            # @@@
+            if not case_sensitive:
+                tokens_ = [x.lower() for x in tokens_]
             head, tail = os.path.split(file)
-            print(" cache auto:  Processing file " + str(index+1) + "/" + str(len(files)) + ' ' + tail )
+            print(" Using cache :  Processing file " + str(index+1) + "/" + str(len(files)) + ' ' + tail )
         else:
             tokens_ = NGrams_util.readandsplit(file,excludePunctuation,
                                                   excludeArticles, excludeDeterminers, excludeStopWords,len(files),
@@ -840,7 +843,7 @@ def print_results(window, words, class_word_list, header, inputFilename, outputD
 # called by sentence_analysis_main and style_analysis_main
 def process_words(window, configFileName, inputFilename,inputDir,outputDir, openOutputFiles, chartPackage,dataTransformation,
     processType='', language='English', excludeStopWords=True,word_length=3,excludePunctuation=True, excludeArticles=True,
-                                          wordgram=1,lemmatize=False
+                                          wordgram=1,lemmatize=False, case_sensitive=False
                                           ):
     filesToOpen=[]
     documentID = 0
@@ -905,7 +908,7 @@ def process_words(window, configFileName, inputFilename,inputDir,outputDir, open
         outputFiles, tempoutputDir = compute_character_word_ngrams(window, inputFilename, inputDir, outputDir, configFileName,
                                                         ngramsNumber, frequency, hapax_words,
                                                         normalize,
-                                                        lemmatize, excludePunctuation, excludeArticles,
+                                                        lemmatize, case_sensitive, excludePunctuation, excludeArticles,
                                                         excludeDeterminers, excludeStopWords,
                                                         wordgram,
                                                         openOutputFiles,

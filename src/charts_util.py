@@ -136,7 +136,6 @@ def visualize_chart_byGroup(inputFilename, outputDir, chartPackage, dataTransfor
     # 3 is the Document
     # 4 is Frequency
     # sel_column_name = IO_csv_util. = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)(headers, 1)
-    # @@@
     headers = IO_csv_util.get_csvfile_headers(inputFilename, ask_Question=False)
     docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)
     groupBy_Field = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_yAxis[0],
