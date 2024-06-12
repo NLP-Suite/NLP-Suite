@@ -22,16 +22,32 @@ NGramsCoOccurrences implements the ability to generate NGram and CoOccurrences d
 """
 import hashfile
 from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-def is_subset(A, B):
+def keywords_co_occurr(A, B):
     A = ','.join(A).split(',')
-    return all(element in B for element in A)
+    keywords_co_occurr=all(element in B for element in A)
+    return keywords_co_occurr
 
-def one_text_res(sentences, targets, doc_index, doc_name):
+def one_text_res(sentences, search_keywords_list, doc_index, doc_name):
     results = []
-    for sent in sentences:
-        if is_subset([targets], word_tokenize_stanza(stanzaPipeLine(sent))):
-            results.append((targets, sentences.index(sent), sent, doc_index, doc_name))
-    return pd.DataFrame(results, columns=['Search word(s)', 'Sentence ID', 'Sentence',
+    exact_word_match = True
+    sentIndex=0
+    search_keywords_str=str(', '.join(search_keywords_list))
+    import re
+    for sentence in sentences:
+        co_occurring = False
+        sentIndex+=1
+        for keyword in search_keywords_list:
+            if exact_word_match:
+                # findall returns a list
+                sent = re.findall(r'\b\w+\b', sentence)
+            else:
+                sent = sentence
+            if keywords_co_occurr(search_keywords_list, sent):
+                co_occurring=True
+        # convert list to string for csv file output
+        sent = str(' '.join(sent))
+        results.append((search_keywords_str, co_occurring, sentIndex, sent, doc_index, doc_name))
+    return pd.DataFrame(results, columns=['Search word(s)', 'Co-Occurring in Sentence', 'Sentence ID', 'Sentence',
                                           'Document ID', 'Document'])
 
 def readfile(doc):
@@ -40,12 +56,12 @@ def readfile(doc):
         fullText = fullText.replace('\n', ' ')
     return fullText
 
-# targets is the list of search words; search words will be processed individually;
+# search_keywords_list is the list of search words; search words will be processed individually;
 # multi-word expressions (e.g., 'peaceful reunification of the motherland') will not be processed as a single item
 # to process multi-word expressions as a single search word, separate each word by a comma
 #   e.g., 'peaceful, reunification, of, the, motherland'
-def search_within_sentence_coOccurences(inputFilename, inputDir, targets,
-                                           configFileName, outputDir):
+def search_within_sentence_coOccurences(inputFilename, inputDir, search_keywords_list,
+                                               configFileName, outputDir, exact_word_match=True):
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Stanza',
                                                              'Co-occurrence_within_sentence')
     files = IO_files_util.getFileList(inputFilename, inputDir,
@@ -53,22 +69,45 @@ def search_within_sentence_coOccurences(inputFilename, inputDir, targets,
     startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Within-sentence Co-Occurrences VIEWER start',
                                                    'Started running within-sentence Co-Occurrences VIEWER at',
                                                    True, '', True, '', False)
+    results = []
+    sentIndex = 0
+    import re
+
     o2 = os.path.dirname(outputDir+"Sentence")
+    # SIMON cache
     hashmap = hashfile.getcache(o2) if hashfile.checkOut(o2) else {}
     all_results = pd.DataFrame() # Initialize an empty DataFrame to store all results
-    for index, file in enumerate(files):
+    for doc_index, file in enumerate(files):
         checksum = hashfile.calculate_checksum(file)
         head, tail = os.path.split(file)
+        # SIMON cache
         if checksum in hashmap:
             sentences = hashmap[checksum]
-            print(f" Using cache :  Processing file {index + 1}/{len(files)} {tail}")
+            print(f" Using cache :  Processing file {doc_index + 1}/{len(files)} {tail}")
         else:
-            print(f" Creating cache:  Processing file {index + 1}/{len(files)} {tail}")
+            print(f" Building cache:  Processing file {doc_index + 1}/{len(files)} {tail}")
             sentences = sent_tokenize_stanza(stanzaPipeLine(readfile(file)))
             hashfile.storehash(hashmap, checksum, sentences)
             hashfile.writehash(hashmap, o2)
-        targets_str=str((','.join(str(x) for x in targets)))
-        df = one_text_res(sentences, targets_str, index, IO_csv_util.dressFilenameForCSVHyperlink(file))
+        for sentence in sentences:
+            co_occurring = False
+            sentIndex += 1
+            for keyword in search_keywords_list:
+                if exact_word_match:
+                    # findall returns a list
+                    sent = re.findall(r'\b\w+\b', sentence)
+                else:
+                    sent = sentence
+                if keywords_co_occurr(search_keywords_list, sent):
+                    co_occurring = True
+            # convert lists to string for csv file output
+            sent = str(' '.join(sent))
+            search_keywords_str = str(', '.join(search_keywords_list))
+            results.append((search_keywords_str, co_occurring, sentIndex, sent, doc_index, file))
+        df = pd.DataFrame(results, columns=['Search word(s)', 'Co-Occurring in Sentence', 'Sentence ID', 'Sentence',
+                                              'Document ID', 'Document'])
+
+        # df = one_text_res(sentences, search_keywords_list, index+1, IO_csv_util.dressFilenameForCSVHyperlink(file))
         all_results = pd.concat([all_results, df]) # Append the results to the all_results DataFrame
     all_results.to_csv(outputFilename,index=False)
 
@@ -198,9 +237,10 @@ def process_n_grams(search_word, ngram_results, quarter_ngram_results, year, mon
     # return coOcc_results, co_occurrence_checker
 
 
-def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word_list,
+def process_word_search(file, docIndex_sentIndex, n_grams_viewer, CoOcc_Viewer, tokens_, search_word_list,
                         ngram_results, quarter_ngram_results, coOcc_results, year, month,
-                        byNumberOfYears, byYear, byMonth, byQuarter, yearList):
+                        byNumberOfYears, byYear, byMonth, byQuarter, yearList, within_sentence_co_occurrence_search_var=True):
+
     for collocationIndex in range(len(tokens_)):
         token = tokens_[collocationIndex]
         for search_word in search_word_list:
@@ -223,7 +263,11 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
                                 checker = False
                                 break
                 if checker and CoOcc_Viewer:
-                    coOcc_results[file]['Co-Occurrence'][search_word] += 1
+                    if within_sentence_co_occurrence_search_var:
+                        coOcc_results[docIndex_sentIndex]['Co-Occurrence in Sentence'][search_word] += 1
+                        coOcc_results[docIndex_sentIndex]['Co-Occurrence in Document'][search_word] += 1
+                    else:
+                        coOcc_results[docIndex_sentIndex]['Co-Occurrence in Document'][search_word] += 1
                 if n_grams_viewer and checker:
                     ngram_results, quarter_ngram_results = process_n_grams(search_word, ngram_results,
                                                                            quarter_ngram_results, year, month,
@@ -241,18 +285,28 @@ def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word
                                                                                byQuarter, yearList)
 
                     if CoOcc_Viewer:
-                        coOcc_results[file]['Co-Occurrence'][search_word]+=1
-                        #coOcc_results, co_occurrence_checker = process_coOcc(file, search_word, search_word_list,
-                        #                                                     coOcc_results)
-                        # do not skip the next record when running both n-grams and coOcc
-                        #if co_occurrence_checker and not n_grams_viewer:
-                        #    break
-    if CoOcc_Viewer: #failed to consider this fact.... let's first make it work...
-        valuescheck = coOcc_results[file]['Co-Occurrence'].values()
+                        # @@@
+                        if within_sentence_co_occurrence_search_var:
+                            coOcc_results[docIndex_sentIndex]['Co-Occurrence in Sentence'][search_word]+=1
+                            valuescheck = coOcc_results[docIndex_sentIndex]['Co-Occurrence in Sentence'].values()
+                            if 0 in valuescheck:
+                                coOcc_results[docIndex_sentIndex]['Co-Occurrence-inSentence_bool'] = "NO"
+                            else:
+                                coOcc_results[docIndex_sentIndex]['Co-Occurrence_inSentence_bool'] = "YES"
+                            coOcc_results[docIndex_sentIndex]['Co-Occurrence in Document'][search_word]+=1
+                            valuescheck = coOcc_results[docIndex_sentIndex]['Co-Occurrence in Document'].values()
+                            if 0 in valuescheck:
+                                coOcc_results[docIndex_sentIndex]['Co-Occurrence-inDocument_bool'] = "NO"
+                            else:
+                                coOcc_results[docIndex_sentIndex]['Co-Occurrence_inDocument_bool'] = "YES"
+                        else:
+                            coOcc_results[docIndex_sentIndex]['Co-Occurrence in Document'][search_word]+=1
+        valuescheck = coOcc_results[docIndex_sentIndex]['Co-Occurrence in Document'].values()
         if 0 in valuescheck:
-            coOcc_results[file]['Co-Occurrence-bool']="NO"
+            coOcc_results[docIndex_sentIndex]['Co-Occurrence-inDocument_bool'] = "NO"
         else:
-            coOcc_results[file]['Co-Occurrence-bool'] = "YES"
+            coOcc_results[docIndex_sentIndex]['Co-Occurrence_inDocument_bool'] = "YES"
+
     return ngram_results, quarter_ngram_results, coOcc_results
 
 
@@ -459,7 +513,6 @@ def search_ngrams_csv_file(csv_file_var, inputDir, outputDir, configFileName, se
             lemmatize = False
             exclude_stopwords = True
             exclude_punctuation = True
-            # @@@
             lowercase = False
 
             differentPOS_differentColors = False
@@ -546,7 +599,7 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
         dateFormat="mm-dd-yyyy",
         itemsDelimiter="_",
         datePos=2,
-        viewer_options_list=[],ngrams_size=1,Ngrams_search_var=False,csv_file_var=None):
+        viewer_options_list=[],ngrams_size=1,Ngrams_search_var=False,csv_file_var=None, within_sentence_co_occurrence_search_var=True):
 
     from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 
@@ -564,12 +617,13 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
             break
     try:
         if useLemma:
-            stanzaPipeLine = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
+            nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
         else:
-            stanzaPipeLine = stanza.Pipeline(lang=lang, processors='tokenize')
+            nlp = stanza.Pipeline(lang=lang, processors='tokenize')
     except:
         mb.showwarning(title='Warning',
-                       message='You must enter an integer value. The value ' + str(result[0]) + ' is not an integer.')
+                       # message='You must enter an integer value. The value ' + str(result[0]) + ' is not an integer.')
+                    message = 'You must enter an integer value. The value is not an integer.')
         return
     case_sensitive = False
     normalize = False
@@ -588,7 +642,7 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
     if 'Lemmatize' in str(viewer_options_list):
         useLemma = True
 
-    print('TOP case_sensitive',case_sensitive)
+    # print('TOP case_sensitive',case_sensitive)
 
     byNumberOfYears = 0
     byYear = False
@@ -647,12 +701,12 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
     quarter_ngram_results = {}
     coOcc_results = {}
 
-
     # iterate over each file, searching for words
     print("\nProcessing files for search words\n")
     docIndex = 0
 
     #########NEW FILE##########
+    # SIMON cache
     import hashfile
     if hashfile.checkOut(outputDir):
         hashmap = hashfile.getcache(outputDir)
@@ -711,18 +765,56 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
                         ngram_results[word][str(y)][m] = {"Search Word(s)": word,
                                                           "Frequency": 0}
 
+# initialize the dictionary
+
+    # if within_sentence_co_occurrence_search_var:
+    #     mps_sent = {}
+    #     for x in search_keywords_list:
+    #         mps_sent[x] = 0
+    #     mps_doc = {}
+    #     for x in search_keywords_list:
+    #         mps_doc[x] = 0
+    #     coOcc_results = {"Search Word(s)": original_search_word,
+    #                            "Co-Occurrence-inSentence_bool": "", "Co-Occurrence in Sentence": mps_sent,
+    #                            "Co-Occurrence-inDocument_bool": "", "Co-Occurrence in Document": mps_doc,
+    #                            "Document ID": 0,
+    #                            "Document": ''}
+    # else:
+    #     mps_doc = {}
+    #     for x in search_keywords_list:
+    #         mps_doc[x] = 0
+    #     coOcc_results[file] = {"Search Word(s)": original_search_word,
+    #                            "Co-Occurrence-inDocument_bool": "", "Co-Occurrence in Document": mps_doc,
+    #                            "Document ID": docIndex,
+    #                            "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
+
 # process files ------------------------------------------------------------------------------
 
     for file in inputDocs:
         docIndex += 1
         # initialize the CoOcc_results dictionary
         if CoOcc_Viewer:
-            mps = {}
-            for x in search_keywords_list:
-                mps[x] = 0
-            coOcc_results[file] = {"Search Word(s)": original_search_word, "Co-Occurrence-bool": "", "Co-Occurrence": mps,
-                                   "Document ID": docIndex,
-                                   "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
+            if within_sentence_co_occurrence_search_var:
+                mps_sent = {}
+                for x in search_keywords_list:
+                    mps_sent[x] = 0
+                mps_doc = {}
+                for x in search_keywords_list:
+                    mps_doc[x] = 0
+                # coOcc_results[file] = {"Search Word(s)": original_search_word,
+                #                        "Co-Occurrence-inSentence_bool": "", "Co-Occurrence in Sentence": mps_sent,
+                #                        "Co-Occurrence-inDocument_bool": "", "Co-Occurrence in Document": mps_doc,
+                #                        "Document ID": docIndex,
+                #                        "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
+            else: # processing document
+                mps_doc = {}
+                for x in search_keywords_list:
+                    mps_doc[x] = 0
+                # coOcc_results[file] = {"Search Word(s)": original_search_word,
+                #                        "Co-Occurrence-inDocument_bool": "", "Co-Occurrence in Document": mps_doc,
+                #                        "Document ID": docIndex,
+                #                        "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
+
         head, tail = os.path.split(file)
         print("Processing file " + str(docIndex) + "/" + str(nDocs) + ' ' + tail)
         # extract the date from the file name
@@ -730,30 +822,85 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
         if date == '':
             pass# TODO: getDate warns user is this file has a bad date
 
-###########################################################
-        if hashfile.calculate_checksum(file) in hashmap:
-            tokens_ = hashmap[hashfile.calculate_checksum(file)]
-        else:
-            f = open(file, "r", encoding='utf-8', errors='ignore')
-            docText = f.read()
-            f.close()
-            if not case_sensitive:
-                docText = docText.lower()
+        # if hashfile.calculate_checksum(file) in hashmap:
+        #     tokens_ = hashmap[hashfile.calculate_checksum(file)]
+        # else:
+        f = open(file, "r", encoding='utf-8', errors='ignore')
+        docText = f.read()
+        f.close()
+        if not case_sensitive:
+            docText = docText.lower()
+        # @@@@
+        if within_sentence_co_occurrence_search_var:
+            import re
+            results = []
+            sentIndex=0
+            exact_word_match=True
+            sentences = sent_tokenize_stanza(stanzaPipeLine(readfile(file)))
+            # hashfile.storehash(hashmap, checksum, sentences)
+            # hashfile.writehash(hashmap, o2)
+
+            for sentIndex, sentence in enumerate(sentences):
+                docIndex_sentIndex = str(docIndex)+"_"+str(sentIndex)
+                co_occurring = False
+                # @@@
+                coOcc_results[docIndex_sentIndex] = {"Search Word(s)": original_search_word,
+                                       "Co-Occurrence-inSentence_bool": "", "Co-Occurrence in Sentence": mps_sent,
+                                       "Co-Occurrence-inDocument_bool": "", "Co-Occurrence in Document": mps_doc,
+                                       "Sentence ID": sentIndex,
+                                       "Sentence": sentence,
+                                       "Document ID": docIndex,
+                                       "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
+                for keyword in search_keywords_list:
+                    if exact_word_match:
+                        # findall returns a list
+                        sent = re.findall(r'\b\w+\b', sentence)
+                    else:
+                        sent = sentence
+                    if keywords_co_occurr(search_keywords_list, sent):
+                        co_occurring = True
+                tokens_ = word_tokenize_stanza(stanzaPipeLine(str(' '.join(sent))))
+                # convert lists to string for csv file output
+                sent = str(' '.join(sent))
+                search_keywords_str = str(', '.join(search_keywords_list))
+
+                ngram_results, quarter_ngram_results, coOcc_results = process_word_search(file, docIndex_sentIndex,
+                                                                                          n_grams_viewer,
+                                                                                          CoOcc_Viewer,
+                                                                                          tokens_,
+                                                                                          search_keywords_list,
+                                                                                          ngram_results,
+                                                                                          quarter_ngram_results,
+                                                                                          coOcc_results,
+                                                                                          year, month,
+                                                                                          byNumberOfYears, byYear,
+                                                                                          byMonth,
+                                                                                          byQuarter, yearList, within_sentence_co_occurrence_search_var)
+
+        else: # processing document
+            docIndex_sentIndex = docIndex # since there are no sentences to process
+            coOcc_results[docIndex_sentIndex] = {"Search Word(s)": original_search_word,
+                                                 "Co-Occurrence-inDocument_bool": "",
+                                                 "Co-Occurrence in Document": mps_doc,
+                                                 "Document ID": docIndex,
+                                                 "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
             tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
             hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)
             hashfile.writehash(hashmap, outputDir)
-############################################################
-        ngram_results, quarter_ngram_results, coOcc_results = process_word_search(file,
-                                                                                  n_grams_viewer, CoOcc_Viewer,
-                                                                                  tokens_, search_keywords_list,
-                                                                                  ngram_results, quarter_ngram_results,
-                                                                                  coOcc_results,
-                                                                                  year, month,
-                                                                                  byNumberOfYears, byYear, byMonth,
-                                                                                  byQuarter, yearList)
+            ngram_results, quarter_ngram_results, coOcc_results = process_word_search(file, docIndex_sentIndex,
+                                                                                      n_grams_viewer, CoOcc_Viewer,
+                                                                                      tokens_, search_keywords_list,
+                                                                                      ngram_results, quarter_ngram_results,
+                                                                                      coOcc_results,
+                                                                                      year, month,
+                                                                                      byNumberOfYears, byYear, byMonth,
+                                                                                      byQuarter, yearList, within_sentence_co_occurrence_search_var)
 
     NgramsFileName = ''
     coOccFileName = ''
+
+    # coOcc_results = coOcc_sentence_results
+    import charts_util
 
     if n_grams_viewer:
         if byQuarter:
@@ -765,21 +912,10 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
             label = temporal_aggregation
         NgramsFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                  'N-grams_' + label)
+        filesToOpen = save_ngrams(NgramsFileName, ngram_results, aggregateBy, temporal_aggregation)
 
-# Co-occurrences VIEWER -------------------------------------------------------------------------------
-
-    if CoOcc_Viewer:
-        coOccFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'Co-Occ')
-
-# save the N-grams/Co-occurrence output files ------------------------------------------------------------------------------
-    # pprint.pprint(coOcc_results)
-    filesToOpen = save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateBy, temporal_aggregation)
-
-# plot Ngrams --------------------------------------------------------------------------
-
-    if n_grams_viewer:
-        import charts_util
-        if chartPackage!='No charts' and NgramsFileName != '':
+        # plot Ngrams --------------------------------------------------------------------------
+        if chartPackage != 'No charts' and NgramsFileName != '':
             xlsxFilename = NgramsFileName
             xAxis = temporal_aggregation
             chart_title = 'N-Grams Viewer'
@@ -804,10 +940,18 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
                 else:
                     filesToOpen.extend(outputFiles)
 
-# plot co-occurrences -----------------------------------------------------------------------------
+# Co-occurrences VIEWER -------------------------------------------------------------------------------
 
     if CoOcc_Viewer:
-        if chartPackage!='No charts' and coOccFileName != '':
+        coOccFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'Co-Occ')
+
+    # save the Co-occurrence output files ------------------------------------------------------------------------------
+    # pprint.pprint(coOcc_results)
+        filesToOpen = save_co_occurrences(coOccFileName, coOcc_results, aggregateBy, temporal_aggregation, within_sentence_co_occurrence_search_var)
+
+    # plot co-occurrences -----------------------------------------------------------------------------
+
+        if chartPackage != 'No charts' and coOccFileName != '':
             import charts_util
             xlsxFilename = coOccFileName
             chart_title = 'Co-Occurring Words: ' + search_wordsLists
@@ -817,7 +961,12 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
                 xAxis = temporal_aggregation
             hover_label = []
             columns_to_be_plotted_byDoc = [[1, 2]]
-            freq_file = aggregate_YES_NO(xlsxFilename, ["Co-Occurrence"])
+            # @@@
+            if within_sentence_co_occurrence_search_var:
+                freq_file = aggregate_YES_NO(xlsxFilename, ["Co-Occurrence in Sentence", "Co-Occurrence in Document"], within_sentence_co_occurrence_search_var)
+            else:
+                freq_file = aggregate_YES_NO(xlsxFilename, ["Co-Occurrence in Document"], within_sentence_co_occurrence_search_var)
+                # freq_file = aggregate_YES_NO(xlsxFilename, ["Co-Occurrence in Sentence"])
             outputFiles = charts_util.run_all(columns_to_be_plotted_byDoc, freq_file, outputDir,
                                               outputFileLabel='byDoc',
                                               # outputFileNameType + 'byDoc', #outputFileLabel,
@@ -839,25 +988,6 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
                 else:
                     filesToOpen.extend(outputFiles)
 
-            # chart_title = 'Co-occurrence Viewer'
-            # columns_to_be_plotted_yAxis = process_date(search_wordsLists, temporal_aggregation)
-            # hover_label = []
-            # chart_title = 'Frequency Distribution of Co-Occurring Words'
-            # outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
-            #                                            'co-occ_viewer',
-            #                                            chartPackage=chartPackage,
-            #                                            dataTransformation=dataTransformation,
-            #                                            chart_type_list=["bar"],
-            #                                            count_var=1,
-            #                                            chart_title=chart_title,
-            #                                            column_xAxis_label_var='Word list: ' + search_wordsLists,
-            #                                            hover_info_column_list=hover_label)
-            # if outputFiles!=None:
-            #     if isinstance(outputFiles, str):
-            #         filesToOpen.append(outputFiles)
-            #     else:
-            #         filesToOpen.extend(outputFiles)
-
     if n_grams_viewer or CoOcc_Viewer:
         IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
                                                        'Finished running N-Grams-Co-Occurrences VIEWER at',
@@ -871,13 +1001,21 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
 """
 
 
-def aggregate_YES_NO(inputFilename, column):
-    cols = ["Document ID", "Document"] + column
+def aggregate_YES_NO(inputFilename, column, within_sentence_co_occurrence_search_var=True):
+    # @@@
+    if within_sentence_co_occurrence_search_var:
+        cols = ["Sentence ID", "Sentence", "Document ID", "Document"] + column
+    else:
+        cols = ["Document ID", "Document"] + column
     df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
     df = df.replace('YES', 1)
     df = df.replace('NO', 0)
     # create a new data frame with Document ID, Document, and the sum of the column
-    df = df[cols].groupby(["Document ID", "Document"]).sum()
+    # @@@
+    if within_sentence_co_occurrence_search_var:
+        df = df[cols].groupby(["Sentence ID", "Sentence", "Document ID", "Document"]).sum()
+    else:
+        df = df[cols].groupby(["Document ID", "Document"]).sum()
     # rename 'column' to Frequency
     df = df.rename(columns={column[0]: "Frequency"})
     df = df.reset_index()
@@ -899,7 +1037,8 @@ def aggregate_YES_NO(inputFilename, column):
 """
 
 
-def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateBy, temporal_aggregation):
+# ngrams ----------------------------------------------------------------------------------------
+def save_ngrams(NgramsFileName, ngram_results, aggregateBy, temporal_aggregation):
     filesToOpen = []
     if len(ngram_results) > 0:
         dfList = []  # create a list of dataframes: one df for one search word
@@ -956,23 +1095,40 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
         if NgramsFileName != '':
             newdf.to_csv(NgramsFileName, encoding='utf-8', index=False)
             filesToOpen.append(NgramsFileName)
-
+    return filesToOpen
+def save_co_occurrences(coOccFileName,  coOcc_results, aggregateBy, temporal_aggregation, within_sentence_co_occurrence_search_var = True):
+    filesToOpen = []
     if len(coOcc_results) > 0:
         # with open(os.path.join(WCOFileName, outputDir), 'w', encoding='utf-8') as f:
         with open(coOccFileName, 'w', newline='', encoding='utf-8', errors='ignore') as f:
             writer = csv.writer(f)
-            line = ["Search Word(s)", "Co-Occurrence"]
+            # @@@@
+            if within_sentence_co_occurrence_search_var:
+                line = ["Search Word(s)", "Co-Occurrence in Sentence", "Co-Occurrence in Document"]
+            else:
+                line = ["Search Word(s)", "Co-Occurrence in Document"]
             import re
             words = next(iter(coOcc_results.items()))[1]['Search Word(s)']
             line.extend([element + '_Frequency' for element in re.findall(r'[^,]+', words)])
+            # @@@
+            if within_sentence_co_occurrence_search_var:
+                # line.extend(["Sentence ID", "Sentence", "Document ID", "Document"])
+                line.extend(["Sentence ID", "Sentence"])
+            # else:
             line.extend(["Document ID", "Document"])
             writer.writerow(line)
             for label, res in coOcc_results.items():
-                if isinstance(res, dict):
-                    line = [res["Search Word(s)"], res["Co-Occurrence-bool"]]
-                    line.extend(list(res['Co-Occurrence'].values()))
-                    line.extend([res["Document ID"],IO_csv_util.dressFilenameForCSVHyperlink(res["Document"])])
-                    writer.writerow(line)
+                if within_sentence_co_occurrence_search_var:
+                    if isinstance(res, dict):
+                        line = [res["Search Word(s)"], res["Co-Occurrence-inSentence_bool"], res["Co-Occurrence-inDocument_bool"]]
+                        line.extend(list(res['Co-Occurrence in Sentence'].values()))
+                        # line.extend(list(res['Co-Occurrence in Document'].values()))
+                        line.extend([res["Sentence ID"], res["Sentence"]])
+                else:
+                    if isinstance(res, dict):
+                        line = [res["Search Word(s)"], res["Co-Occurrence-inDocument_bool"]]
+                        line.extend(list(res['Co-Occurrence in Document'].values()))
+                line.extend([res["Document ID"],IO_csv_util.dressFilenameForCSVHyperlink(res["Document"])])
+                writer.writerow(line)
         filesToOpen.append(coOccFileName)
-
     return filesToOpen

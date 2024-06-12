@@ -38,7 +38,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         csv_file_var,
         n_grams_viewer_var,
         CoOcc_Viewer_var,
-        within_sentence_co_occurrence_search_var,
+        # within_sentence_co_occurrence_search_var,
         date_options,
         temporal_aggregation_var,
         viewer_options_list):
@@ -88,7 +88,7 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         config_filename, config_input_output_numeric_options)
     extract_date_from_text_var = 0
 
-    if extra_GUIs_var.get() == False and Ngrams_compute_var==False and Ngrams_search_var==False and  n_grams_viewer_var==False and CoOcc_Viewer_var==False:
+    if extra_GUIs_var.get() == False and Ngrams_compute_var==False and Ngrams_search_var==False and n_grams_viewer_var==False and CoOcc_Viewer_var==False:
         mb.showwarning(title='Warning',
                        message='There are no options selected.\n\nPlease, select one of the available options and try again.')
         return
@@ -227,6 +227,15 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
             scaleData = True
         if 'Lemmatize' in str(viewer_options_list):
             useLemma = True
+        if 'Partial' in str(viewer_options_list):
+            exact_word_match = False
+        else:
+            exact_word_match = True
+        if 'within sentence' in str(viewer_options_list):
+            within_sentence_co_occurrence_search_var = True
+        else:
+            within_sentence_co_occurrence_search_var = False
+
 
 # Search N-grams csv file ____________________________________________________________________________________________
 
@@ -321,49 +330,51 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
 # run VIEWER ------------------------------------------------------------------------------------
 
-        if within_sentence_co_occurrence_search_var:
+        # if within_sentence_co_occurrence_search_var:
             # print("OK executing efficient solution for sentence cooccurence...")
             # print("Cannot use old method because too slow and improper")
             # outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Stanza', 'Co-occurrence_within_sentence')
             # print(outputFilename)
-            outputFiles = NGrams_CoOccurrences_util.search_within_sentence_coOccurences(inputFilename,
-                                                                                           inputDir,
-                                                                                           search_words.split(', '),
-                                                                                           config_filename, outputDir)
+            # outputFiles = NGrams_CoOccurrences_util.search_within_sentence_coOccurences(inputFilename,
+            #                                 inputDir,
+            #                                 search_words.split(', '),
+            #                                 config_filename,
+            #                                 outputDir,
+            #                                 exact_word_match)
+            #
+            #
+            # if outputFiles != None:
+            #     if isinstance(outputFiles, str):
+            #         filesToOpen.append(outputFiles)
+            #     else:
+            #         filesToOpen.extend(outputFiles)
+        # else:
+        outputFiles = NGrams_CoOccurrences_util.NGrams_coOccurrences_VIEWER(
+                inputDir,
+                outputDir,
+                config_filename,
+                chartPackage, dataTransformation,
+                n_grams_viewer_var,
+                CoOcc_Viewer_var,
+                search_words,
+                minus_K_words_var,
+                plus_K_words_var,
+                language_list,
+                useLemma,
+                date_options,
+                temporal_aggregation_var,
+                number_of_years,
+                date_format_var,
+                items_separator_var,
+                date_position_var,
+                viewer_options_list,
+                ngrams_size,Ngrams_search_var,csv_file_var,within_sentence_co_occurrence_search_var)
 
-
-            if outputFiles != None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
-        else:
-            outputFiles = NGrams_CoOccurrences_util.NGrams_coOccurrences_VIEWER(
-                    inputDir,
-                    outputDir,
-                    config_filename,
-                    chartPackage, dataTransformation,
-                    n_grams_viewer_var,
-                    CoOcc_Viewer_var,
-                    search_words,
-                    minus_K_words_var,
-                    plus_K_words_var,
-                    language_list,
-                    useLemma,
-                    date_options,
-                    temporal_aggregation_var,
-                    number_of_years,
-                    date_format_var,
-                    items_separator_var,
-                    date_position_var,
-                    viewer_options_list,
-                    ngrams_size,Ngrams_search_var,csv_file_var)
-
-            if outputFiles != None:
-                if isinstance(outputFiles, str):
-                    filesToOpen.append(outputFiles)
-                else:
-                    filesToOpen.extend(outputFiles)
+        if outputFiles != None:
+            if isinstance(outputFiles, str):
+                filesToOpen.append(outputFiles)
+            else:
+                filesToOpen.extend(outputFiles)
 
     if openOutputFiles == True:
         IO_files_util.OpenOutputFiles(GUI_util.window, openOutputFiles, filesToOpen, outputDir, scriptName)
@@ -386,7 +397,7 @@ run_script_command = lambda: run(GUI_util.inputFilename.get(), GUI_util.input_ma
                                  csv_file_var.get(),
                                  n_grams_viewer_var.get(),
                                  CoOcc_Viewer_var.get(),
-                                 within_sentence_co_occurrence_search_var.get(),
+                                 # within_sentence_co_occurrence_search_var.get(),
                                  date_options.get(),
                                  temporal_aggregation_var.get(),
                                  viewer_options_list)
@@ -555,7 +566,7 @@ search_words_entry.configure(width=GUI_IO_util.widget_width_long)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos, y_multiplier_integer,
                                    search_words_entry,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Enter the comma-separated words/collocations to be searched by the options 'Search N-grams csv file' or the VIEWER;\ncollocations, or multi-word expressions, cannot be processed with the Co-Occurrences VIEWER within sentence option;\nfor N-grams each item in the list will be plotted separately; for Co-occurrences all items will be plotted together ")
+                                   "Enter the comma-separated words/collocations (multi-word expressions) to be searched by the options 'Search N-grams csv file' or the VIEWER")
 
 minus_K_lb = tk.Label(window, text='-K')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_add_ngrams_button_pos,y_multiplier_integer,minus_K_lb,True)
@@ -590,7 +601,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window, GUI_IO_util.style_show_ngra
 viewer_menu_lb = tk.Label(window, text='Search options')
 viewer_options_menu_var.set('Case sensitive (default)')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate,y_multiplier_integer,viewer_menu_lb,True)
-viewer_options_menu = tk.OptionMenu(window, viewer_options_menu_var, 'Case sensitive (default)', 'Case insensitive', 'Exact match (default)','Partial match','Normalize results','Scale results', 'Lemmatize words')
+viewer_options_menu = tk.OptionMenu(window, viewer_options_menu_var, 'Case sensitive (default)', 'Case insensitive', 'Exact match (default)','Partial match','Search within sentence (default)', 'Search within document','Normalize results','Scale results', 'Lemmatize words')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_viewer_options_menu_pos,y_multiplier_integer,viewer_options_menu, True)
 
 add_viewer_button = tk.Button(window, text='+', width=GUI_IO_util.add_button_width,height=1,state='disabled',command=lambda: activate_viewer_var())
@@ -604,7 +615,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_show_ngram
 
 def reset_viewer_options_list():
     viewer_options_list.clear()
-    viewer_options_menu_var.set('Case sensitive (default)')
+    activate_default_viewer_options()
     viewer_options_menu.configure(state='normal')
 
 def show_viewer_options_list():
@@ -617,29 +628,29 @@ def activate_viewer_var():
     # Disable the + after clicking on it and enable the menu
     add_viewer_button.configure(state='disabled')
     viewer_options_menu.configure(state='normal')
-    activate_viewer_options()
+    # activate_viewer_options()
 
 def activate_viewer_options(*args):
     if viewer_options_menu_var.get()!='':
-        if viewer_options_menu_var.get() in viewer_options_list:
-            mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
-            return
-        if 'Partial match' in viewer_options_menu_var.get() or \
-                'Normalize' in viewer_options_menu_var.get() or \
+        if 'Normalize' in viewer_options_menu_var.get() or \
                 'Scale' in viewer_options_menu_var.get():
                 mb.showwarning(title='Warning', message='The option is not available yet.\n\nSorry!')
                 return
         # remove the case option, when a different one is selected
+        if 'Search within document' in viewer_options_menu_var.get() and 'Search within sentence (default)' in str(viewer_options_list):
+            viewer_options_list.remove('Search within sentence (default)')
+        if 'Search within sentence (default)' in viewer_options_menu_var.get() and 'Search within document' in str(viewer_options_list):
+            viewer_options_list.remove('Search within document')
         if 'insensitive' in viewer_options_menu_var.get() and 'sensitive' in str(viewer_options_list):
             viewer_options_list.remove('Case sensitive (default)')
         if 'sensitive' in viewer_options_menu_var.get() and 'insensitive' in str(viewer_options_list):
             viewer_options_list.remove('Case insensitive')
-        # if len(viewer_options_list) > 0:
-        #     add_viewer_button.configure(state='normal')
-        #     reset_viewer_button.configure(state='normal')
-        #     show_viewer_button.configure(state='normal')
-        #     return
-        viewer_options_list.append(viewer_options_menu_var.get())
+        if 'Partial match' in viewer_options_menu_var.get() and 'Exact match' in str(viewer_options_list):
+            viewer_options_list.remove('Exact match (default)')
+        if 'Exact match (default)' in viewer_options_menu_var.get() and 'Partial match' in str(viewer_options_list):
+            viewer_options_list.remove('Partial match')
+        if not viewer_options_menu_var.get() in viewer_options_list:
+            viewer_options_list.append(viewer_options_menu_var.get())
         viewer_options_menu.configure(state="disabled")
         add_viewer_button.configure(state='normal')
         reset_viewer_button.configure(state='normal')
@@ -652,6 +663,16 @@ def activate_viewer_options(*args):
 viewer_options_menu_var.trace('w',activate_viewer_options)
 
 activate_viewer_options()
+
+def activate_default_viewer_options(*args):
+    viewer_options_list.clear()
+    if not 'Case sensitive (default)' in viewer_options_list:
+        viewer_options_list.append('Case sensitive (default)')
+    viewer_options_list.append('Search within sentence (default)')
+    viewer_options_list.append('Exact match (default)')
+    viewer_options_menu_var.set('Case sensitive (default)')
+
+activate_default_viewer_options()
 
 Ngrams_search_var.set(0)
 Ngrams_search_checkbox = tk.Checkbutton(window, text='Search N-grams csv file', variable=Ngrams_search_var, onvalue=1, offvalue=0, command=lambda: get_csv_file(window,'Select INPUT csv file', [("dictionary files", "*.csv")],True))
@@ -710,6 +731,7 @@ def reset_n_grams_options_list():
     ngrams_options_menu_var.set('Case sensitive (default)')
     ngrams_options_menu.configure(state='normal')
 
+
 def show_n_grams_options_list():
     if len(n_grams_options_list)==0:
         mb.showwarning(title='Warning', message='There are no currently selected N-grams options.')
@@ -723,9 +745,6 @@ def activate_Ngrams_compute_var():
 
 def activate_ngrams_options(*args):
     if ngrams_options_menu_var.get()!='':
-        if ngrams_options_menu_var.get() in n_grams_options_list:
-            mb.showwarning(title='Warning', message='The option has already been selected. Selection ignored.\n\nYou can see your current selections by clicking the Show button.')
-            return
         if (ngrams_options_menu_var.get() == 'Case insensitive') and ('Case sensitive (default)' in str(n_grams_options_list)):
             n_grams_options_list.remove('Case sensitive (default)')
         elif (ngrams_options_menu_var.get() == 'Case sensitive (default)') and ('Case insensitive' in str(n_grams_options_list)):
@@ -752,22 +771,23 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 
 CoOcc_Viewer_var.set(0)
 CoOcc_viewer_checkbox = tk.Checkbutton(window, text='Co-Occurrences VIEWER', variable=CoOcc_Viewer_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,CoOcc_viewer_checkbox, True)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,CoOcc_viewer_checkbox, False)
 
 
-within_sentence_co_occurrence_search_var = tk.IntVar()
-within_sentence_co_occurrence_search_var.set(0)
-within_sentence_co_occurrence_search_checkbox = tk.Checkbutton(window, text='Co-Occurrence within sentence (Default: within document)', variable=within_sentence_co_occurrence_search_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
-# # place widget with hover-over info
-y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
-                                   within_sentence_co_occurrence_search_checkbox,
-                                   False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
-                                   "Tick the checkbox to search co-occurring words within sentence (default: within document only)\nThe option applies to Co-Occurrences VIEWER only")
+# within_sentence_co_occurrence_search_var = tk.IntVar()
+# within_sentence_co_occurrence_search_var.set(0)
+# within_sentence_co_occurrence_search_checkbox = tk.Checkbutton(window, text='Co-Occurrence within sentence (Default: within document)', variable=within_sentence_co_occurrence_search_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
+# # # place widget with hover-over info
+# y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_reminders_x_coordinate, y_multiplier_integer,
+#                                    within_sentence_co_occurrence_search_checkbox,
+#                                    False, False, True, False, 90, GUI_IO_util.open_TIPS_x_coordinate,
+#                                    "Tick the checkbox to search co-occurring words within sentence (default: within document only)\nThe option applies to Co-Occurrences VIEWER only")
 
 def date_processing():
     if CoOcc_Viewer_var.get() and date_options.get():
         mb.showwarning(title='Warning',
                        message='The current implementation of the Co-Occurrences Viewer does not process date information')
+        date_options.set(0)
 
 date_options.set(0)
 date_options_checkbox = tk.Checkbutton(window, text='Date options', variable=date_options, onvalue=1, offvalue=0, command=lambda: date_processing())
@@ -833,7 +853,7 @@ def clear(e):
     csv_file_var.set('')
     n_grams_viewer_var.set(0)
     CoOcc_Viewer_var.set(0)
-    within_sentence_co_occurrence_search_var.set(0)
+    # within_sentence_co_occurrence_search_var.set(0)
     viewer_options_menu_var.set('Case sensitive (default)')
     temporal_aggregation_var.set('year')
     activate_all_options()
@@ -854,7 +874,10 @@ def activate_all_options():
     plus_K_words_entry.configure(width=3, state='normal')
     Ngrams_viewer_checkbox.configure(state='normal')
     CoOcc_viewer_checkbox.configure(state='normal')
-    within_sentence_co_occurrence_search_checkbox.configure(state='disabled')
+    add_viewer_button.configure(state='disabled')
+    reset_viewer_button.configure(state='disabled')
+    show_viewer_button.configure(state='disabled')
+    # within_sentence_co_occurrence_search_checkbox.configure(state='disabled')
     search_words_entry.configure(state='normal')
     date_options_checkbox.config(state='normal')
     if "INPUT FILE" in GUI_util.IO_setup_var.get():
@@ -884,7 +907,7 @@ def activate_all_options():
         Ngrams_search_checkbox.configure(state='disabled')
         Ngrams_viewer_checkbox.configure(state='disabled')
         CoOcc_viewer_checkbox.configure(state='disabled')
-        within_sentence_co_occurrence_search_checkbox.configure(state='disabled')
+        # within_sentence_co_occurrence_search_checkbox.configure(state='disabled')
         search_words_entry.configure(state='disabled')
         minus_K_words_entry.configure(width=3, state='disabled')
         plus_K_words_entry.configure(width=3, state='disabled')
@@ -903,7 +926,10 @@ def activate_all_options():
         extra_GUIs_menu.configure(state='disabled')
         Ngrams_viewer_checkbox.configure(state='normal')
         CoOcc_viewer_checkbox.configure(state='normal')
-        within_sentence_co_occurrence_search_checkbox.configure(state='normal')
+        add_viewer_button.configure(state='normal')
+        reset_viewer_button.configure(state='normal')
+        show_viewer_button.configure(state='normal')
+        # within_sentence_co_occurrence_search_checkbox.configure(state='normal')
         Ngrams_compute_checkbox.configure(state='disabled')
         Ngrams_search_checkbox.configure(state='disabled')
         search_words_entry.configure(state='normal')
@@ -916,7 +942,7 @@ def activate_all_options():
 
 activate_all_options()
 
-# open_GUI_search_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Search words/collocations (Open GUI)',command=lambda: call("python file_search_byWord_main.py", shell=True))
+# open_GUI_search_button = tk.Button(window, width=GUI_IO_util.widget_width_short, text='Search words/collocations (multi-word expressions) (Open GUI)',command=lambda: call("python file_search_byWord_main.py", shell=True))
 # # place widget with hover-over info
 # y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
 #                                    open_GUI_search_button,
@@ -954,7 +980,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   'Please, use the dropdown menu to select different options for N-grams. Clisk the + button to select more options; the Reset button to start fresh; the Show button to visualize the options already selected.\n\nIn INPUT the script expects a single txt file or a directory containing a set of txt files.\n\nIn OUTPUT, the script generates the following three files:\n  1. csv file of frequencies of the twenty most frequent words;\n  2. csv file of the following statistics for each column in the previous csv file and for each document in the corpus: Count, Mean, Mode, Median, Standard deviation, Minimum, Maximum, Skewness, Kurtosis, 25% quantile, 50% quantile; 75% quantile;\n  3. Excel line chart of the number of sentences and words for each document.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
-        'Please, enter the comma-separated list of single words or collocations (i.e., sets of words such as coming out, beautiful sunny day) for which you want to know N-Grams/Co-occurrences statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
+        'Please, enter the comma-separated list of single words or collocations (multi-word expressions) (i.e., sets of words such as coming out, beautiful sunny day) for which you want to know N-Grams/Co-occurrences statistics (e.g., woman, man, job). Leave blank if you do not want NGrams data. Both NGrams and co-occurrences words can be entered.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
         'Please, use the dropdown menu to select various options that can be applied to the VIEWER. Multiple criteria can be seleced by clicking on the + button. Currently selected criteria can be displayed by clicking on the Show button.\n\nYou can make your searches CASE SENSITIVE.\n\nYou can NORMALIZE results. Only works for N-Grams. Formula: search word frequency / total number of all words e.g: word "nurse" occurs once in year 1892, and year 1892 has a total of 1000 words. Then the normalized frequency will be 1/1000.\n\nYou can SCALE results. Only works for N-Grams. It applies the min-max normalization to frequency of search words. After the min-max normalization is done, each column of data (i.e., each search word) will fall in the same range.\n\nYou can LEMMATIZE words for your searches (e.g., be instead of being, is, was). The routine relies on the Stanford CoreNLP for lemmatizing words.\n\nFinally, you can select to display minimal information or full information.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -967,8 +993,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         '\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXES "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'\
         '\n\nFor both viewers, results will be visualized in Excel line plots.'\
         '\n\nFor N-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear.'\
-        'For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.' \
-        '\n\nThe WITHIN SENTENCE option does NOT process collocations or multi-word expressions; you can trick the algorithm by entering a comma after every word of a multi-word expression (e.g., stand,up instead of stand up).')
+        'For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
         'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences. ' \
             'YOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXS "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'\

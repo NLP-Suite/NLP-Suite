@@ -384,6 +384,7 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
                     columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                     chart_title, count_var, hover_label, outputFileNameType, column_xAxis_label,
                     groupByList, plotList, chart_title_label, column_yAxis_label='Frequencies', pivot=False):
+
     filesToOpen = []
     columns_to_be_plotted_numeric = []
     columns_to_be_plotted_byDoc = []
