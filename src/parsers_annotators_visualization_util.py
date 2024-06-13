@@ -284,8 +284,8 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
                 filesToOpen.extend(outputFiles)
 
         headers=IO_csv_util.get_csvfile_headers(outputFilename)
-        Sankey_limit1_var=12
-        Sankey_limit2_var = 12
+        Sankey_limit1_var=5
+        Sankey_limit2_var = 10
         three_way_Sankey = False
         var3 = None
         Sankey_limit3_var = None
@@ -372,31 +372,32 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
         # create an SVO-unfiltered subdirectory of the main output directory
         import IO_files_util
         import os
-        head, tail = os.path.split(outputDir)
-        outputSVOUnFilterDir=head+os.sep+'SVO-form'
+        # head, tail = os.path.split(outputDir)
+        # outputSVOUnFilterDir=head+os.sep+'SVO-form'
+        outputSVOUnFilterDir = outputDir + os.sep + 'SVO_form'
         if not os.path.isdir(outputSVOUnFilterDir):
-            outputSVOUnFilterDir = IO_files_util.make_output_subdirectory('', '', head, label='SVO_form',
+            outputSVOUnFilterDir = IO_files_util.make_output_subdirectory('', '', outputDir, label='SVO_form',
                                                                         silent=True)
             if outputSVOUnFilterDir == '':
                 return
 
-            # Sankey_limit1_var=12
-            # Sankey_limit2_var = 12
-            # Sankey_limit3_var = 12
-            # three_way_Sankey = False
-            #
-            # output_label = 'sankey'
-            # import IO_files_util
-            # outputFilename_sankey = IO_files_util.generate_output_file_name(outputFilename, inputDir, outputDir,
-            #                                                          '.html', output_label)
-            # outputFiles = charts_util.Sankey(outputFilename, outputFilename_sankey,
-            #                     'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var, three_way_Sankey, None, Sankey_limit3_var)
-            #
-            # if outputFiles!=None:
-            #     if isinstance(outputFiles, str):
-            #         filesToOpen.append(outputFiles)
-            #     else:
-            #         filesToOpen.extend(outputFiles)
+            Sankey_limit1_var=5
+            Sankey_limit2_var = 10
+            Sankey_limit3_var = 20
+            three_way_Sankey = True
+
+            output_label = 'sankey'
+            import IO_files_util
+            outputFilename_sankey = IO_files_util.generate_output_file_name(outputFilename, inputDir, outputDir,
+                                                                     '.html', output_label)
+            outputFiles = charts_util.Sankey(outputFilename, outputFilename_sankey,
+                                'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var, three_way_Sankey, 'Object (O)', Sankey_limit3_var)
+
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
 
 # wordclouds of locations, persons, organizations
 
@@ -569,8 +570,8 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
 
 
             headers=IO_csv_util.get_csvfile_headers(outputFilename)
-            Sankey_limit1_var=12
-            Sankey_limit2_var = 12
+            Sankey_limit1_var=5
+            Sankey_limit2_var = 10
             three_way_Sankey = False
             var3 = None
             Sankey_limit3_var = None

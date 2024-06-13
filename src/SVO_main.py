@@ -512,17 +512,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                             if gexf_file != None and gexf_file != '':
                                 filesToOpen.append(gexf_file)
 
-                    Sankey_limit1_var = 10
-                    Sankey_limit2_var = 20
+                    Sankey_limit1_var = 5
+                    Sankey_limit2_var = 10
                     Sankey_limit3_var = 20
-                    three_way_Sankey = False
+                    three_way_Sankey = True
 
                     output_label = 'sankey'
                     outputFilename_sankey = IO_files_util.generate_output_file_name(inputFilename, inputDir, tempOutputDir,
                                                                                     '.html', output_label)
                     outputFiles = charts_util.Sankey(inputFilename, outputFilename_sankey,
                                                      'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var,
-                                                     three_way_Sankey, None, Sankey_limit3_var)
+                                                     three_way_Sankey, 'Object (O)', Sankey_limit3_var)
 
                     if outputFiles != None:
                         if isinstance(outputFiles, str):
@@ -562,16 +562,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                         os.remove(f)
 
                             output_label = 'sankey'
-                            Sankey_limit1_var = 10
-                            Sankey_limit2_var = 20
+                            Sankey_limit1_var = 5
+                            Sankey_limit2_var = 10
                             Sankey_limit3_var = 20
-                            three_way_Sankey = False
+                            three_way_Sankey = True
 
                             outputFilename_sankey = IO_files_util.generate_output_file_name(f, inputDir, tempOutputDir,
                                                                                             '.html', output_label)
                             outputFiles = charts_util.Sankey(f, outputFilename_sankey,
                                                              'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var,
-                                                             three_way_Sankey, None, Sankey_limit3_var)
+                                                             three_way_Sankey, 'Object (O)', Sankey_limit3_var)
 
                             if outputFiles != None:
                                 if isinstance(outputFiles, str):

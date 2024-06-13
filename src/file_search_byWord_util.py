@@ -177,7 +177,6 @@ def search_in_document(nlp, files, file, create_subcorpus_var, corpus_to_copy, d
         docText = docText
 
     for keyword in search_keywords_list:
-        # frequency_keyword = frequency_keyword
         frequency_keyword = docText.count(keyword)
         if (not search_keywords_found) and frequency_keyword>0:
             search_keywords_found=True
