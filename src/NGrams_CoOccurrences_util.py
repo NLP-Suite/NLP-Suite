@@ -747,7 +747,7 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
             if within_sentence_co_occurrence_search_var:
                 label='Co-occ_sent_VIEWER'
             else:
-                label = 'Co-occ_doct_VIEWER'
+                label = 'Co-occ_doc_VIEWER'
             outputDir = IO_files_util.make_output_subdirectory('', inputDir, outputDir, label=label,
                                                                silent=False)
         if outputDir == '':

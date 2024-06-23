@@ -439,7 +439,7 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
     # in visualize_chart
     for i in range(0, len(columns_to_be_plotted_yAxis)):
         # get numeric value of header, necessary for run_all
-        field_number_yAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_yAxis[i][0],
+        field_number_yAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_yAxis[i],
                                                                            inputFilename)
         if field_number_yAxis == None:
             return filesToOpen
@@ -695,12 +695,14 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
         df = pd.DataFrame(data[1:], columns=data[0])
         df.to_csv(csv_file_path, index=False)
 
+    data_to_be_plotted_2 = []
     if type(data_to_be_plotted[0]) == list:
         list_of_lists_to_csv(data_to_be_plotted[0], "temptemp2.csv")
         df = statistics_csv_util.data_transformation('temptemp2.csv', dataTransformation)
         os.remove('temptemp2.csv')
-        data_to_be_plotted = [[df.columns.tolist()] + df.values.tolist()]
-
+        data_to_be_plotted_2 = [[df.columns.tolist()] + df.values.tolist()]
+    if len(data_to_be_plotted_2) == len(data_to_be_plotted):
+        data_to_be_plotted = data_to_be_plotted_2
     if data_to_be_plotted == None:
         return
 
@@ -846,7 +848,10 @@ def get_data_to_be_plotted_with_counts(inputFilename, withHeader_var, headers, c
             try:
                 #  TODO the datalist is like [['NN','NN'], ...] so the code produces bad results
                 #       when multiple series side-by-side (e.g., form and lemma values) need to be plotted
-                column_list = [i[1] for i in data_list[k]]
+                if 'Search Word' in str(headers):
+                    column_list = [i[0] for i in data_list[k]] # works for search function
+                else:
+                    column_list = [i[1] for i in data_list[k]]
             except IndexError:
                 continue
             counts = list(Counter(column_list).most_common())

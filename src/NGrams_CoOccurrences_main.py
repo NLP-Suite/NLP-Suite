@@ -570,7 +570,7 @@ search_words_entry.configure(width=GUI_IO_util.widget_width_long)
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos, y_multiplier_integer,
                                    search_words_entry,
                                    False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "Enter the comma-separated words/collocations (multi-word expressions) to be searched by the options 'Search N-grams csv file' or the VIEWER")
+                                   "Enter the comma-separated words/collocations (multi-word expressions) to be searched by the options 'Search N-grams csv file' or the VIEWER.\nIn output, one record will be produced HORIZONTALLY with different headers in the output csv file for each search word.\nUse the File Search by Word GUI to produce records organized VERTICALLY, different reocrds in the output csv file for each search word.")
 
 viewer_menu_lb = tk.Label(window, text='Search options')
 viewer_options_menu_var.set('Case sensitive (default)')

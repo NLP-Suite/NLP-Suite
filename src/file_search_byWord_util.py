@@ -298,12 +298,13 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         search_by_dictionary, search_by_search_keywords, search_keywords_list, minus_K_var, plus_K_var,
         extract_sentences, create_subcorpus_var, search_options_list, lang, chartPackage, dataTransformation):
 
-    # create a subdirectory of the output directory
-    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search_word',
-                                                       silent=False)
+    # # create a subdirectory of the output directory
+    # outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search_word',
+    #                                                    silent=False)
+    #
+    # if outputDir == '':
+    #     return
 
-    if outputDir == '':
-        return
     startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
                                        "Started running the Word search function at",
                                         True, '', True, '', False)
@@ -365,8 +366,17 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
 
     if search_within_sentence:
         search_word_header = 'Search Word in Sentence'
+        label='_sent'
     else:
         search_word_header = 'Search Word in Document'
+        label='doc'
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search_word'+label,
+                                                       silent=False)
+
+    if outputDir == '':
+        return
 
     all_adjacent_words_allDocs = ''
     all_adjacent_sentences_allDocs = ''
@@ -584,7 +594,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                                   outputFileNameType='',
                                                   column_xAxis_label=search_keywords_str,
                                                   groupByList=['Document'],
-                                                  plotList=['Search Word in Document'],
+                                                  plotList=[],
                                                   chart_title_label='')
         if outputFiles != None:
             if isinstance(outputFiles, str):
@@ -604,14 +614,14 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
             # bar charts ----------------------------------------------------------------------
             chart_title = 'Frequency Distribution of Search Words'
             outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, outputFilename_csv_word, outputDir,
-                                                                       columns_to_be_plotted_xAxis=[],
+                                                                       columns_to_be_plotted_xAxis=['Search Word in Sentence'],
                                                                        columns_to_be_plotted_yAxis=['Frequency of occurrence'],
                                                                        chart_title=chart_title,
                                                                        count_var=1,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
                                                                        hover_label=[],
                                                                        outputFileNameType='',
                                                                        column_xAxis_label=search_keywords_str,
-                                                                       groupByList=['Search Word in Sentence'],
+                                                                       groupByList=[],
                                                                        plotList=[],
                                                                        chart_title_label='')
             if outputFiles!=None:

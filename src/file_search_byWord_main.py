@@ -405,7 +405,7 @@ search_by_keyword_checkbox = tk.Checkbutton(window, text='Search corpus by word(
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                     search_by_keyword_checkbox, True, False, True, False,
                     90, GUI_IO_util.labels_x_coordinate,
-                    "Tick the checkbox to search for word(s) in your document sentence or document (depending upon your selected option) (e.g, coming out, standing in line, boyfriend).\nIn output, a separate record will be produced for each comma-separated entry.\nTo process comma-separated entries CO-OCCURRING TOGETHER in the same document (not sentence), tick the checkbox at the end of the line.")
+                    "Tick the checkbox to search for word(s) in your document sentence or document (depending upon your selected option) (e.g, coming out, standing in line, boyfriend).")
 
 keyword_value_var.set('')
 keyword_value = tk.Entry(window,width=GUI_IO_util.file_search_byWord_widget_width,textvariable=keyword_value_var)
@@ -414,7 +414,7 @@ keyword_value = tk.Entry(window,width=GUI_IO_util.file_search_byWord_widget_widt
 y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.file_search_byWord_extract_sentences_search_words_entry_pos, y_multiplier_integer,
                     keyword_value, True, False, True, False,
                     90, GUI_IO_util.read_button_x_coordinate,
-                    "Enter the comma-separated words/set of words that a document sentence or document (depending upon your selected option) must contain (e.g, coming out, standing in line, boyfriend).\nIn output, a separate record will be produced for each comma-separated entry.\nTo process comma-separated entries co-occurring TOGETHER in the same document (not sentence), tick the checkbox at the end of the line.")
+                    "Enter the comma-separated words/set of words that a document sentence or document (depending upon your selected option) must contain (e.g, coming out, standing in line, boyfriend).\nIn output, a separate record will be produced VERTICALLY for each comma-separated entry.\nUse the Co-ccurrence option (tick the checkbox at the end of the line) to produce records organized HORIZONTALLY, different headers in the output csv file for each search word.")
 
 minus_K_lb = tk.Label(window, text='-K')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,1050,y_multiplier_integer,minus_K_lb,True)

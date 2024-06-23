@@ -160,6 +160,7 @@ def GetNumberOf_Records_Columns_inCSVFile(inputFilename,encodingValue='utf-8'):
     try:
         maxnum = pd.read_csv(inputFilename, encoding=encodingValue,on_bad_lines='skip').shape
     except:
+        # RF @@@@@
         return nRecords, nColumns
     return maxnum # tuple with first value number of records, second value number of columns
 
