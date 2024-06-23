@@ -52,6 +52,14 @@ def sent_tokenize_stanza(doc, return_text=True):
     else:
         return [sentence.text for sentence in doc.sentences]
 
+# returns list of sentence tokens
+# same as nltk.tokenize.sent_tokenize()
+# def doc_lemmatize_stanza(doc, return_text=True):
+#     if return_text is False:
+#         return [sentence for sentence in doc.sentences]
+#     else:
+#         return [sentence.text for sentence in doc.sentences]
+
 # returns a single lemmatized word. input should be a single word.
 # same as nltk.stem.wordnet.WordNetLemmatizer().lemmatize(text)
 # https://stanfordnlp.github.io/stanza/lemma.html
@@ -62,3 +70,10 @@ def lemmatize_stanza(doc):
     except:
         # if doc=[]
         return ''
+
+def lemmatize_stanza_doc(docText, lang):
+    nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
+    nlpText = nlp(docText)
+    lemmas = [word.lemma for t in nlpText.iter_tokens() for word in t.words]
+    lemmatized_docText = ' '.join(lemmas)
+    return lemmatized_docText

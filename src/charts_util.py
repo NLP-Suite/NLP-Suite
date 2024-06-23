@@ -439,7 +439,7 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
     # in visualize_chart
     for i in range(0, len(columns_to_be_plotted_yAxis)):
         # get numeric value of header, necessary for run_all
-        field_number_yAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_yAxis[i],
+        field_number_yAxis = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_yAxis[i][0],
                                                                            inputFilename)
         if field_number_yAxis == None:
             return filesToOpen
@@ -513,6 +513,8 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
             #   typically because of too many rows for Excel to handle, when Excel is used
             return
 
+    n_documents = IO_csv_util.GetMaxValueInCSVField(inputFilename, 'visualize_charts_util', 'Document ID')
+
     # by DOCUMENT
     if byDoc:
         # TODO depends on how many documents we have;
@@ -541,10 +543,9 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
                     filesToOpen.append(outputFiles)
                 else:
                     filesToOpen.extend(outputFiles)
-
     # bar chart aggregated by group  (e.g., form values by POS tags) -----------------------------------------------------------------
     #   avoid plotting by ['Document ID', 'Document'] as groupBy; done in chart byDoc
-    if len(groupByList) > 0 and groupByList != ['Document ID', 'Document']:
+    if n_documents > 1 and len(groupByList) > 0 and groupByList != ['Document ID', 'Document']:
         columns_to_be_plotted_byGroup = []
         for header in groupByList:
             groupCol = IO_csv_util.get_columnNumber_from_headerValue(headers, header, inputFilename)
@@ -643,7 +644,6 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
 #   e.g. [3, 4] DISPLAYS NER as X axis and Frequency_NER as Y axis
 
 #   plotList is the list of fields to be plotted
-
 
 def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
             chartPackage, dataTransformation, chart_type_list, chart_title, column_xAxis_label_var,

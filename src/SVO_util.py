@@ -195,8 +195,8 @@ def count_frequency_two_svo(CoreNLP_csv, senna_csv, inputFilename, inputDir, out
     elif len(diff) < max(len(same), len(diff)):
         diff.append([('', '', '')] * (len(same) - len(diff)))
 
-    for svo1, svo2 in zip(same, diff):
-        compare_df = compare_df.append(pd.DataFrame([['', svo1[0], svo1[1], svo1[2], svo2[3], svo2[0], svo2[1], svo2[2]]],
+    for svo1, svhashOutputDir in zip(same, diff):
+        compare_df = compare_df.append(pd.DataFrame([['', svo1[0], svo1[1], svo1[2], svhashOutputDir[3], svhashOutputDir[0], svhashOutputDir[1], svhashOutputDir[2]]],
                                                     columns=['Same', 'S', 'V', 'O', 'Different', 'S', 'V', 'O']), ignore_index=True)
 
     # Outputting the file

@@ -166,7 +166,12 @@ def GetNumberOf_Records_Columns_inCSVFile(inputFilename,encodingValue='utf-8'):
 # inputFile has path
 def GetMaxValueInCSVField(inputFilename,algorithm='',columnHeader='Document ID',encodingValue='utf-8'):
     maxvalue = 0
-    df = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
+    try:
+        df = pd.read_csv(inputFilename,encoding='utf-8',on_bad_lines='skip')
+    except:
+        mb.showwarning(title='csv file error',
+                       message="Decoding error encountered due to non-ASCII characters in the file\n\n" + inputFilename + "\n\nPlease, check your inpput csv file and try again!")
+        return 0
     try:
         column = df[columnHeader]
     except:

@@ -69,6 +69,10 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
     error_flag = False
     ngrams_word_var = True
 
+    if n_grams_viewer_var:
+        mb.showwarning(title='Warning',
+                       message='There N-grams VIEWER is temporarily disconnected, while we develop the same fast approach done for the Co-occurrences function.\n\nPlease, check back soon.')
+        return
     # if csv_file_var!='':
     #     result = mb.askokcancel("Warning",
     #                    "This is a reminder that you are now running the N-grams search with the csv input file\n\n"+csv_file_var+'\n\nPress Cancel then Esc to clear the csv file widget if you do not wish to run the N-grams search.')
@@ -565,38 +569,8 @@ search_words_entry.configure(width=GUI_IO_util.widget_width_long)
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.NGrams_Co_occurrences_Viewer_search_words_entry_pos, y_multiplier_integer,
                                    search_words_entry,
-                                   True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
                                    "Enter the comma-separated words/collocations (multi-word expressions) to be searched by the options 'Search N-grams csv file' or the VIEWER")
-
-minus_K_lb = tk.Label(window, text='-K')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_add_ngrams_button_pos,y_multiplier_integer,minus_K_lb,True)
-
-minus_K_words_var = tk.IntVar()
-plus_K_words_var = tk.IntVar()
-
-minus_K_words_var.set(0)
-minus_K_words_entry = tk.Entry(window, textvariable=minus_K_words_var) #extract_sentences_search_words_var)
-minus_K_words_entry.configure(width=3, state='normal')
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window, GUI_IO_util.style_add_ngrams_button_pos+30, y_multiplier_integer,
-                    minus_K_words_entry, True, False, True, False,
-                    90, GUI_IO_util.open_TIPS_x_coordinate,
-                    "Enter the integer number of words (do not enter -) preceding the search word to be extracted, for context, together with the search sentences\n"
-                    "The option does not apply to N-grams VIEWER or Co-Occurrences VIEWER")
-
-plus_K_lb = tk.Label(window, text='+K')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.style_show_ngrams_button_pos,y_multiplier_integer,plus_K_lb,True)
-
-plus_K_words_var.set(0)
-plus_K_words_entry = tk.Entry(window, textvariable=GUI_IO_util.style_show_ngrams_button_pos+30) #extract_sentences_search_words_var)
-plus_K_words_entry.configure(width=3, state='normal')
-# place widget with hover-over info
-y_multiplier_integer=GUI_IO_util.placeWidget(window, GUI_IO_util.style_show_ngrams_button_pos+30, y_multiplier_integer,
-                    plus_K_words_entry, False, False, True, False,
-                    90, GUI_IO_util.open_TIPS_x_coordinate,
-                    "Enter the integer number of words (do not enter +) following the search word to be extracted, for context, together with the search sentences\n"
-                    "The option does not apply to N-grams VIEWER or Co-Occurrences VIEWER")
-
 
 viewer_menu_lb = tk.Label(window, text='Search options')
 viewer_options_menu_var.set('Case sensitive (default)')
@@ -690,6 +664,9 @@ def get_csv_file(window,title,fileType,annotate):
         Ngrams_viewer_checkbox.configure(state='normal')
         CoOcc_viewer_checkbox.configure(state='normal')
         return
+    else:
+        minus_K_words_entry.configure(state='normal')
+        plus_K_words_entry.configure(state='normal')
     extra_GUIs_checkbox.configure(state='disabled')
     Ngrams_compute_checkbox.configure(state='disabled')
 
@@ -721,7 +698,37 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coor
 
 csv_file=tk.Entry(window, width=GUI_IO_util.widget_width_long,textvariable=csv_file_var)
 csv_file.config(state='disabled')
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+70, y_multiplier_integer,csv_file)
+y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate+80, y_multiplier_integer,csv_file,True)
+
+minus_K_lb = tk.Label(window, text='-K')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,(GUI_IO_util.style_add_ngrams_button_pos)+130,y_multiplier_integer,minus_K_lb,True)
+
+minus_K_words_var = tk.IntVar()
+plus_K_words_var = tk.IntVar()
+
+minus_K_words_var.set(0)
+minus_K_words_entry = tk.Entry(window, textvariable=minus_K_words_var) #extract_sentences_search_words_var)
+minus_K_words_entry.configure(width=3, state='disabled')
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window, (GUI_IO_util.style_add_ngrams_button_pos)+150, y_multiplier_integer,
+                    minus_K_words_entry, True, False, True, False,
+                    90, GUI_IO_util.open_TIPS_x_coordinate,
+                    "Enter the integer number of words (do not enter -) preceding the search word to be extracted, for context, together with the search sentences\n"
+                    "The option does not apply to N-grams VIEWER or Co-Occurrences VIEWER")
+
+plus_K_lb = tk.Label(window, text='+K')
+y_multiplier_integer=GUI_IO_util.placeWidget(window,(GUI_IO_util.style_show_ngrams_button_pos)+90,y_multiplier_integer,plus_K_lb,True)
+
+plus_K_words_var.set(0)
+plus_K_words_entry = tk.Entry(window, textvariable=(GUI_IO_util.style_show_ngrams_button_pos)+115) #extract_sentences_search_words_var)
+plus_K_words_entry.configure(width=3, state='disabled')
+# place widget with hover-over info
+y_multiplier_integer=GUI_IO_util.placeWidget(window, (GUI_IO_util.style_show_ngrams_button_pos)+115, y_multiplier_integer,
+                    plus_K_words_entry, False, False, True, False,
+                    90, GUI_IO_util.open_TIPS_x_coordinate,
+                    "Enter the integer number of words (do not enter +) following the search word to be extracted, for context, together with the search sentences\n"
+                    "The option does not apply to N-grams VIEWER or Co-Occurrences VIEWER")
+
 
 def reset_n_grams_options_list():
     Ngrams_compute_var.set(0)
@@ -771,8 +778,11 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_inden
 
 CoOcc_Viewer_var.set(0)
 CoOcc_viewer_checkbox = tk.Checkbutton(window, text='Co-Occurrences VIEWER', variable=CoOcc_Viewer_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
-y_multiplier_integer=GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate,y_multiplier_integer,CoOcc_viewer_checkbox, False)
-
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
+                                   CoOcc_viewer_checkbox,
+                                   False, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
+                                   "Depending upon the selected search options, you can search for co-occurrences within sentences or within documents.\nThe Co_Occurrences VIEWER option does NOT require in input file(s) with a date embedded in the filename, contrary to the N-grams VIEWER.")
 
 # within_sentence_co_occurrence_search_var = tk.IntVar()
 # within_sentence_co_occurrence_search_var.set(0)
@@ -870,10 +880,10 @@ def activate_all_options():
     ngrams_number_menu.configure(state='disabled')
     ngrams_options_menu.configure(state='disabled')
     Ngrams_search_checkbox.configure(state='normal')
-    minus_K_words_entry.configure(width=3, state='normal')
-    plus_K_words_entry.configure(width=3, state='normal')
     Ngrams_viewer_checkbox.configure(state='normal')
     CoOcc_viewer_checkbox.configure(state='normal')
+    minus_K_words_entry.configure(state='disabled')
+    plus_K_words_entry.configure(state='disabled')
     add_viewer_button.configure(state='disabled')
     reset_viewer_button.configure(state='disabled')
     show_viewer_button.configure(state='disabled')
@@ -898,7 +908,7 @@ def activate_all_options():
         minus_K_words_entry.configure(width=3, state='disabled')
         plus_K_words_entry.configure(width=3, state='disabled')
 
-    if Ngrams_compute_var.get():
+    elif Ngrams_compute_var.get():
         ngrams_menu.configure(state='normal')
         ngrams_number_menu.configure(state='normal')
         ngrams_options_menu.configure(state='normal')
@@ -911,17 +921,8 @@ def activate_all_options():
         search_words_entry.configure(state='disabled')
         minus_K_words_entry.configure(width=3, state='disabled')
         plus_K_words_entry.configure(width=3, state='disabled')
-    if Ngrams_search_var.get():
-        extra_GUIs_checkbox.configure(state='disabled')
-        extra_GUIs_menu.configure(state='disabled')
-        Ngrams_compute_checkbox.configure(state='disabled')
-        minus_K_words_entry.configure(width=3, state='normal')
-        plus_K_words_entry.configure(width=3, state='normal')
-        Ngrams_compute_checkbox.configure(state='disabled')
-        Ngrams_viewer_checkbox.configure(state='disabled')
-        CoOcc_viewer_checkbox.configure(state='disabled')
 
-    if n_grams_viewer_var.get() or CoOcc_Viewer_var.get():
+    elif n_grams_viewer_var.get() or CoOcc_Viewer_var.get():
         extra_GUIs_checkbox.configure(state='disabled')
         extra_GUIs_menu.configure(state='disabled')
         Ngrams_viewer_checkbox.configure(state='normal')
@@ -935,6 +936,17 @@ def activate_all_options():
         search_words_entry.configure(state='normal')
         date_options_checkbox.config(state='normal')
         viewer_options_menu.config(state='normal')
+
+    elif Ngrams_search_var.get():
+        extra_GUIs_checkbox.configure(state='disabled')
+        extra_GUIs_menu.configure(state='disabled')
+        Ngrams_compute_checkbox.configure(state='disabled')
+        minus_K_words_entry.configure(width=3, state='normal')
+        plus_K_words_entry.configure(width=3, state='normal')
+        Ngrams_compute_checkbox.configure(state='disabled')
+        Ngrams_viewer_checkbox.configure(state='disabled')
+        CoOcc_viewer_checkbox.configure(state='disabled')
+
     else:
         # search_words_entry.configure(state='disabled')
         date_options_checkbox.config(state='disabled')
@@ -993,7 +1005,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
         '\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXES "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'\
         '\n\nFor both viewers, results will be visualized in Excel line plots.'\
         '\n\nFor N-grams the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the frequency of documents where searched word(s) appear.'\
-        'For Word Co-Occurrences the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear.')
+        'For Word Co-Occurrences the routine will display the FREQUENCY OF SENTENCES or DOCUMENTS where searched word(s) appear, depending upon the selected search option (within sentence or within document).')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
         'Please, tick the checkbox if the filenames embed a date (e.g., The New York Times_12-19-1899). The DATE OPTIONS are required for N-grams; optional for word co-occurrences. ' \
             'YOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXS "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'\
@@ -1014,8 +1026,8 @@ The NGrams_CoOccurrences script allows searches for Ngrams or word co-occurrence
 \n\nThe NGrams VIEWER requires date metadata, i.e., a date embedded in the filename (e.g., The New York Time_2-18-1872). It computes the number of words that appear in documents within a selected time period (e.g., month, year). It works similarly to Google Ngram Viewer except this routine works on documents supplied by the user rather than on the millions of Google books (see https://books.google.com/ngrams/info).
 '\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE "Setup INPUT/OUTPUT configuration" WIDGET AT THE TOP OF THIS GUI AND THEN TICKING THE CHECKBOXS "Filename embeds multiple items" AND "Filename embeds date" WHEN THE NLP_setup_IO_main GUI OPENS.'
 \n\nThe routine relies on Stanza for lemmatizing words.
-\n\n   For NGRAMS, the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the FREQUENCY OF DOCUMENTS where searched word(s) appear.
-\n\n   For CO-OCCURRING words, the routine will display the FREQUENCY OF DOCUMENTS where searched word(s) appear together in the same document, NOT the frequency of the searched word(s) as with NGrams.
+\n\n   For NGRAMS, the routine will display the FREQUENCY OF NGRAMS (WORDS), NOT the FREQUENCY OF SENTENCES or DOCUMENTS where searched word(s) appear.
+\n\n   For CO-OCCURRING words, the routine will display the FREQUENCY OF SENTENCECS OR DOCUMENTS where searched word(s) appear together in the same sentence or document, depending upon the selected search option (within sentence or within document).'
 \n\nNGRAMS and CO-OCCURRING words DO NOT MAKE MUCH SENSE WITH A SINGLE FILE!
 """
 

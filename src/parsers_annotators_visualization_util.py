@@ -372,8 +372,6 @@ def parsers_annotators_visualization(configFilename, inputFilename, inputDir, ou
         # create an SVO-unfiltered subdirectory of the main output directory
         import IO_files_util
         import os
-        # head, tail = os.path.split(outputDir)
-        # outputSVOUnFilterDir=head+os.sep+'SVO-form'
         outputSVOUnFilterDir = outputDir + os.sep + 'SVO_form'
         if not os.path.isdir(outputSVOUnFilterDir):
             outputSVOUnFilterDir = IO_files_util.make_output_subdirectory('', '', outputDir, label='SVO_form',

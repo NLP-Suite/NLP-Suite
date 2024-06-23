@@ -609,27 +609,28 @@ def get_ngramlist(inputFilename, inputDir, outputDir, configFileName,
 
     files = IO_files_util.getFileList(inputFilename, inputDir, '.txt', silent=False, configFileName=configFileName)
 
-    import hashfile
-    o2 = os.path.dirname(outputDir)+'art'+str(excludeArticles)+'punc'+str(excludePunctuation)+'stp'+str(excludeStopWords)
-    if hashfile.checkOut(o2):
-        hashmap = hashfile.getcache(o2)
-    else:
-        hashmap = {}
+    # @ SIMON
+    # import hashfile
+    # hashOutputDir = os.path.dirname(outputDir)+'art'+str(excludeArticles)+'punc'+str(excludePunctuation)+'stp'+str(excludeStopWords)
+    # if hashfile.checkOut(hashOutputDir):
+    #     hashmap = hashfile.getcache(hashOutputDir)
+    # else:
+    #     hashmap = {}
     documents = []
     for index, file in enumerate(files):
-        if hashfile.calculate_checksum(file) in hashmap:
-            tokens_ = hashmap[hashfile.calculate_checksum(file)]
-            # @@@
-            if not case_sensitive:
-                tokens_ = [x.lower() for x in tokens_]
-            head, tail = os.path.split(file)
-            print(" Using cache :  Processing file " + str(index+1) + "/" + str(len(files)) + ' ' + tail )
-        else:
-            tokens_ = NGrams_util.readandsplit(file,excludePunctuation,
-                                                  excludeArticles, excludeDeterminers, excludeStopWords,len(files),
-                                                  lemmatize, case_sensitive, index)
-            hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)
-            hashfile.writehash(hashmap, o2)
+        # if hashfile.calculate_checksum(file) in hashmap:
+        #     tokens_ = hashmap[hashfile.calculate_checksum(file)]
+        #     # @@@
+        #     if not case_sensitive:
+        #         tokens_ = [x.lower() for x in tokens_]
+        #     head, tail = os.path.split(file)
+        #     print(" Using cache :  Processing file " + str(index+1) + "/" + str(len(files)) + ' ' + tail )
+        # else:
+        tokens_ = NGrams_util.readandsplit(file,excludePunctuation,
+                                              excludeArticles, excludeDeterminers, excludeStopWords,len(files),
+                                              lemmatize, case_sensitive, index)
+            # hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)
+            # hashfile.writehash(hashmap, hashOutputDir)
         documents.append(tokens_)
     # we allow as many n-grams as the user selects
     filesToOpen = []
