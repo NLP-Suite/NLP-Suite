@@ -225,7 +225,7 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 			sentence = input_df.at[index-1, label]
 			description = "<i><b>Location</b></i>: " + location + "<br/><br/>"
 			if datePresent:
-				description = description + "\n" + "<i><b>Date</b></i>: " + date + "<br/><br/>"
+				description = description + "\n" + "<i><b>Date</b></i>: " + str(date) + "<br/><br/>"
 			if document != "":
 				description = description + "\n" + "<i><b>Document</b></i>: " + document + "<br/><br/>"
 			if summary !='':
@@ -238,12 +238,12 @@ def process_geocoded_data_for_kml(window,locations, inputFilename, outputDir,
 		# TODO MINO GIS date option
 		if datePresent:
 			try:
-				GGPdateFormat = convertToGGP(date)
+				GEPdateFormat = convertToGEP(date)
 			except:
 				print(date)
-				GGPdateFormat = ''
-			pnt.timespan.begin = GGPdateFormat
-			pnt.timespan.end = GGPdateFormat
+				GEPdateFormat = ''
+			pnt.timespan.begin = GEPdateFormat
+			pnt.timespan.end = GEPdateFormat
 
 	try:
 		kml.save(kmloutputFilename)
@@ -525,10 +525,13 @@ def geocode(window,locations, inputFilename, outputDir,
 					if datePresent:
 						date = input_df.at[index - 1, 'Date']
 					if date!='':
-						pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
-									"<i><b>Date</b></i>: " + date + "<br/><br/>" + \
-									  "<i><b>Document</b></i>: " + document + "<br/><br/>" \
-									  "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>"
+						try:
+							pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
+											"<i><b>Date</b></i>: " + str(date) + "<br/><br/>" + \
+										  "<i><b>Document</b></i>: " + document + "<br/><br/>" \
+										  "<i><b>Sentence</b></i>: " + sentence + "<br/><br/>"
+						except:
+							pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>"
 					else:
 						pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>" \
 										  "<i><b>Document</b></i>: " + document + "<br/><br/>" \
@@ -537,9 +540,9 @@ def geocode(window,locations, inputFilename, outputDir,
 					pnt.description = "<i><b>Location</b></i>: " + itemToGeocode + "<br/><br/>"
 				# TODO MINO GIS date option
 				if datePresent:
-					GGPdateFormat = convertToGGP(date)
-					pnt.timespan.begin = GGPdateFormat
-					pnt.timespan.end = GGPdateFormat
+					GEPdateFormat = convertToGEP(date)
+					pnt.timespan.begin = GEPdateFormat
+					pnt.timespan.end = GEPdateFormat
 
 	[geowriterNotFoundNonDistinct.writerow([item[0], item[1]]) for item in notGeocodedFull]
 	csvfile.close()
@@ -573,15 +576,16 @@ def geocode(window,locations, inputFilename, outputDir,
 
 # TODO MINO GIS date option
 # from GIS_KML_util
-def convertToGGP(date):
-	GGPdateFormat = ''
+# convert date to Google Earth Pro date (GEP)
+def convertToGEP(date):
+	GEPdateFormat = ''
 	# if 'float' in str(type(date)): # this occurs when dealing with an integer YEAR only
 	# 	date=str(int(date))
 	# if 'int' in str(type(date)): # this occurs when dealing with an integer YEAR only
 	# 	date=str(int(date))
 	if not pd.isna(date) and date != '':
 		if 'float' in str(type(date)):  # this occurs when dealing with an integer YEAR only
-			date = str(int(date))
+			date = str(float(date))
 		if 'int' in str(type(date)):  # this occurs when dealing with an integer YEAR only
 			date = str(int(date))
 		fmts = ('%Y', '%y', '%Y-%m-%d', '%y-%m-%d', '%Y-%m', '%y-%m',
@@ -604,8 +608,8 @@ def convertToGGP(date):
 		# years before 1900 cannot be used
 		# pre 1900 dates may give a problem in Windows: ValueError: format %y requires year >= 1900 on Windows
 		try:
-			GGPdateFormat = currentDateFormat.strftime('%Y-%m-%d')
+			GEPdateFormat = currentDateFormat.strftime('%Y-%m-%d')
 		except:
 			mb.showerror(title='Date error',
 							message="There was an error in processing the date '" + date + "'.\n\nThe date format '" + fmt + "' was automatically applied to process the date, where format values are as follows:\n%B or %b   alphabetic month name in full or first 3 characters;\n%m   2-digit month (1 to 12);\n%d   2-digit day of the month (1 to 31);\n%Y   4-digit and %y 2-digit year (1918, 18).\n\nBut... either\n1.   the format automatically applied is incorrect for the date;\n2.   the date is in unrecognized format (e.g., it contains time besides date);\n3.   the date is prior to 1900. The library 'strftime' used here to deal with dates cannot process dates prior to 1900 in Windows.")
-		return GGPdateFormat
+		return GEPdateFormat

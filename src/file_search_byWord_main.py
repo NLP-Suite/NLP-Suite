@@ -442,7 +442,7 @@ y_multiplier_integer=GUI_IO_util.placeWidget(window, 1150, y_multiplier_integer,
 
 extract_sentences_var = tk.IntVar()
 extract_sentences_var.set(0)
-# eatract sentences, besides words
+# extract sentences, besides words
 extract_sentences_checkbox = tk.Checkbutton(window, text='', variable=extract_sentences_var, onvalue=1, offvalue=0, command=lambda: activate_all_options())
 extract_sentences_checkbox.configure(state='disabled')
 
@@ -450,7 +450,7 @@ extract_sentences_checkbox.configure(state='disabled')
 y_multiplier_integer=GUI_IO_util.placeWidget(window,1180, y_multiplier_integer,
                     extract_sentences_checkbox, True, False, True, False,
                     90, GUI_IO_util.open_TIPS_x_coordinate,
-                    "Tick the checkbox if you want to extract all -K +K SENTENCES (not words) occurring BEFORE and AFTER each found search word.")
+                    "Tick the checkbox if you want to extract all -K +K SENTENCES (not words) occurring BEFORE and AFTER each found search word.\nSentences containing (and not containing) the search words will be exported as text files for any further processing.\nWordcloud sub-directories will also be created with the appropriate txt and wordcloud files.\nThe option applies only to searches within sentences.")
 
 coOccurring_keywords_var = tk.IntVar()
 coOccurring_keywords_var.set(0)
@@ -520,6 +520,7 @@ def activate_all_options(*args):
         coOccurring_keywords_checkbox.configure(state='normal')
         extract_sentences_search_words_var.set('')
         if 'Search within document' in search_options_list:
+            extract_sentences_var.set(0)
             extract_sentences_checkbox.configure(state='disabled')
             minus_K_words_entry.configure(state='disabled')
             plus_K_words_entry.configure(state='disabled')

@@ -47,7 +47,7 @@ def find_k_adjacent_sentences(sentences, search_sentence, kminus, kplus):
     return adjacent_sentences
 
 # s is a list of individual tokens; so "pretty girl" would not be found
-# search_word is a string
+# search_word is a string of an individual search word or multi-word expression
 def find_k_adjacent_tokens(tokenized_sentence, search_word, exact_word_match, kminus, kplus):
     #minus_K_var, plus_K_var
     n = len(tokenized_sentence)
@@ -55,7 +55,7 @@ def find_k_adjacent_tokens(tokenized_sentence, search_word, exact_word_match, km
     mid = []
     right = []
     process_before_after = False
-    # convert search_word string to list by tokenizing
+    # convert search_word string to list
     search_word_list = search_word.split(' ')
     len_search_word=len(search_word_list)
     for idx, current_word in enumerate(tokenized_sentence): # e.g., good man
@@ -298,17 +298,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         search_by_dictionary, search_by_search_keywords, search_keywords_list, minus_K_var, plus_K_var,
         extract_sentences, create_subcorpus_var, search_options_list, lang, chartPackage, dataTransformation):
 
-    # # create a subdirectory of the output directory
-    # outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir, label='search_word',
-    #                                                    silent=False)
-    #
-    # if outputDir == '':
-    #     return
-
-    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
-                                       "Started running the Word search function at",
-                                        True, '', True, '', False)
-
     filesToOpen=[]
     outputFiles = []
 
@@ -329,23 +318,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     else:
         case_sensitive = True
     search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_string_list(search_keywords_list, case_sensitive)
-
-    if create_subcorpus_var:
-        if inputFilename!='':
-            head, tail = os.path.split(inputFilename)
-            # remove the extension
-            tail=tail[:-4]
-        elif inputDir!='':
-            head, tail = os.path.split(inputDir)
-        search_list=''
-
-        # txt subsample files are exported as a folder inside the input folder
-        subCorpusDir = os.path.join(inputDir, 'subcorpus_search')
-        if not os.path.exists(subCorpusDir):
-            try:
-                os.mkdir(subCorpusDir)
-            except Exception:
-                print(Exception)
 
     case_sensitive = False
     lemmatize = False
@@ -378,6 +350,17 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
     if outputDir == '':
         return
 
+    subCorpusDir=''
+    if create_subcorpus_var:
+        # create a subcorpus subdirectory of the output sub directory
+        outputDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
+                                                           label='search_word' + label,
+                                                           silent=False)
+        # create a subdirectory labeled subcorpus_search of the txt subsample files inside the input folder
+        subCorpusDir = IO_files_util.make_output_subdirectory(inputFilename, inputDir, inputDir,
+                                                           label='subcorpus_search',
+                                                           silent=False)
+    search_list = ''
     all_adjacent_words_allDocs = ''
     all_adjacent_sentences_allDocs = ''
     all_found_sentences_allDocs = ''
@@ -390,12 +373,17 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
 
 
     outputFilename_csv_sentence = ''
-    outputDir_sentences_extract = ''
-    outputDir_sentences_extract_wo_searchword = ''
+    # outputDir_sentences_extract = ''
+    # outputDir_sentences_extract_wo_searchword = ''
     outputFilename_extract_w_searchword = ''
     outputFilename_extract_wo_searchword = ''
     nDocsExtractOutput = 0
     nDocsExtractMinusOutput = 0
+
+    startTime=IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis start',
+                                       "Started running the Word search function at",
+                                        True, '', True, '', False)
+
 
     nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
 
@@ -465,15 +453,17 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
         label = '_sent'
     else:
         label = '_doc'
+
+    # both within documents and within sentences searches produce outputFilename_csv_word
     outputFilename_csv_word = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
                                                                       '.csv',
-                                                                      'search_word'+label)
+                                                                      'search_word' + label)
+    filesToOpen.append(outputFilename_csv_word)
 
     if not search_within_sentence:
+        # the within document option does not produce wordclouds. There is no point since entire documents containing the seatrch words would be processed
+        #   these documents can be exported and visualized separately for wordclouds
         header = [search_word_header, "Frequency of occurrence", "Document ID", "Document"]
-        outputFilename_csv_word = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir,
-                                                                          '.csv',
-                                                                          'search_word'+label)
         with open(outputFilename_csv_word, 'w', newline='') as f_csv:
             writer = csv.writer(f_csv)
             writer.writerow(header)  # write out all the csv file records found
@@ -489,9 +479,8 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                     except:
                         continue
         f_csv.close()
-        filesToOpen.append(outputFilename_csv_word)
     else:
-        # headers
+        # headers for csv files
         header = [search_word_header, "Number of sentences", "Sentence ID of first occurrence",
                   "Relative position in document",
                   "Frequency of occurrence", "Sentence ID", "Sentence", "Document ID", "Document"]
@@ -503,31 +492,12 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                                "Frequency of occurrence", "Sentence ID", "Sentence", "Document ID", "Document"]
 
         if extract_sentences:
-            # setup output files
-            outputFilename_csv_sentence = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
-                                                                                  '.csv',
-                                                                                  'search_sent_extract'+label)
-            # filesToOpen.append(outputFilename_csv_sentence)
+            # setup output text files
 
-            head, tail = os.path.split(inputFilename)
-
-            outputDir_sentences_extract = IO_files_util.make_output_subdirectory(inputFilename, inputDir, outputDir,
-                                                                                 label='extract_with_searchword'+label,
-                                                                                 silent=True)
-            if outputDir_sentences_extract == '':
-                return
-            outputDir_sentences_extract_wo_searchword = IO_files_util.make_output_subdirectory(inputFilename,
-                                                                                               inputDir,
-                                                                                               outputDir,
-                                                                                               label='extract_wo_searchword'+label,
-                                                                                               silent=True)
-            if outputDir_sentences_extract_wo_searchword == '':
-                return
-
-            outputFilename_extract_w_searchword = os.path.join(outputDir_sentences_extract,
-                                                               tail[:-4]) + "_extract_with_searchword.txt"
-            outputFilename_extract_wo_searchword = os.path.join(outputDir_sentences_extract_wo_searchword,
-                                                                tail[:-4]) + "_extract_wo_searchword.txt"
+            outputFilename_extract_w_searchword = os.path.join(outputDir) + \
+                                                               "NLP_extract_with_searchwords.txt"
+            outputFilename_extract_wo_searchword = os.path.join(outputDir) + \
+                                                                "NLP_extract_wo_searchwords.txt"
 
         with open(outputFilename_csv_word, 'w', newline='') as f_csv:
             writer = csv.writer(f_csv)
@@ -553,10 +523,10 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                         except:
                             continue
             f_csv.close()
-            filesToOpen.append(outputFilename_csv_word)
+
             if extract_sentences:
 
-                # write txt output files
+# write txt output files -----------------------------------------------------------------
 
                 with open(outputFilename_extract_w_searchword, 'w', encoding='utf-8',
                           errors='ignore') as outputFile_extract_w_searchword:
@@ -568,9 +538,6 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                     outputFile_extract_wo_searchword.write(
                         all_adjacent_sentences_allDocs)  # write out all the sentence containing the search word
                 outputFile_extract_wo_searchword.close()
-
-    # write to text file textToProcess
-    outputTxtFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.txt', 'search'+label)
 
     # when creating a subcorpus copy all the files in the set to a subdirectory 'subcorpus_search' of the input directory
     if create_subcorpus_var and len(corpus_to_copy) > 0:
@@ -632,7 +599,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
 
     # wordclouds ----------------------------------------------------------------------------
 
-            outputFiles = visualize_wordcloud(all_found_sentences_allDocs, 'wordcloud_all_sentences',
+            outputFiles = visualize_wordcloud(all_found_sentences_allDocs, 'all_sents_with_searchwords',
                                               inputFilename, inputDir, outputDir,
                                               configFileName, filesToOpen, lemmatize)
 
@@ -643,7 +610,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                     filesToOpen.extend(outputFiles)
 
             if minus_K_var > 0 and plus_K_var > 0:
-                outputFiles = visualize_wordcloud(all_adjacent_sentences_allDocs, 'wordcloud_-K+K_sentences',
+                outputFiles = visualize_wordcloud(all_adjacent_sentences_allDocs, 'K+K_sents_around_searchwords',
                                                   inputFilename, inputDir, outputDir,
                                                   configFileName, filesToOpen, lemmatize)
 
@@ -653,7 +620,7 @@ def search_sentences_documents(inputFilename, inputDir, outputDir, configFileNam
                     else:
                         filesToOpen.extend(outputFiles)
 
-                outputFiles = visualize_wordcloud(all_adjacent_words_allDocs, 'wordcloud_-K+K_words',
+                outputFiles = visualize_wordcloud(all_adjacent_words_allDocs, '-K+K_words_around_searchwords',
                                                   inputFilename, inputDir, outputDir,
                                                   configFileName, filesToOpen, lemmatize)
 

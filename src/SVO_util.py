@@ -551,6 +551,7 @@ def lemmatize_filter_svo_old(window,svo_file_name, filter_s, filter_v, filter_o,
                     deleted = True
                 else:
                     # if lemmatize_s and lemmatized_filtered_svo != {}:
+                    # if lemmatize_s and lemmatized_filtered_svo != {}:
                     #     lemmatized_filtered_svo[i]['Subject (S)'] = lemmatize_stanza(
                     #         stanzaPipeLine(filtered_svo[i]['Subject (S)']))
                     if lemmatize_s and filtered_svo != {}:
@@ -669,6 +670,7 @@ def normalize_date_svo(inputFilename, outputDir,  chartPackage='Excel', dataTran
     if data['Date expression'].empty or data['Date expression'].isna().all():
         print("There are no NER normalized dates for the extracted SVOs")
         return
+
     nEmtyCells=str(int(data['Date expression'].isna().sum()))
     outputNormalizedDateDir = IO_files_util.make_output_subdirectory('', '', outputDir,
                                                                      label='normalized-date_CoreNLP',

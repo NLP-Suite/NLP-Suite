@@ -96,7 +96,7 @@ def make_output_subdirectory(inputFilename, inputDir, outputDir, label, silent=T
             shutil.rmtree(outputSubDir)
         except Exception as e:
             mb.showwarning(title='Directory error',
-                           message="Could not create the directory " + outputSubDir + "\n\n" + str(e))
+                           message="Could not remove the directory " + outputSubDir + "\n\n" + str(e))
             outputSubDir = ''
     try:
         # chmod() changes the mode of path to the passed numeric mode
