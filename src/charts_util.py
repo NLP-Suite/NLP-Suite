@@ -136,7 +136,6 @@ def visualize_chart_byGroup(inputFilename, outputDir, chartPackage, dataTransfor
     # 3 is the Document
     # 4 is Frequency
     # sel_column_name = IO_csv_util. = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)(headers, 1)
-    # @@@
     headers = IO_csv_util.get_csvfile_headers(inputFilename, ask_Question=False)
     docCol = IO_csv_util.get_columnNumber_from_headerValue(headers, 'Document', inputFilename)
     groupBy_Field = IO_csv_util.get_columnNumber_from_headerValue(headers, columns_to_be_plotted_yAxis[0],
@@ -385,6 +384,7 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
                     columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
                     chart_title, count_var, hover_label, outputFileNameType, column_xAxis_label,
                     groupByList, plotList, chart_title_label, column_yAxis_label='Frequencies', pivot=False):
+
     filesToOpen = []
     columns_to_be_plotted_numeric = []
     columns_to_be_plotted_byDoc = []
@@ -513,6 +513,8 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
             #   typically because of too many rows for Excel to handle, when Excel is used
             return
 
+    n_documents = IO_csv_util.GetMaxValueInCSVField(inputFilename, 'visualize_charts_util', 'Document ID')
+
     # by DOCUMENT
     if byDoc:
         # TODO depends on how many documents we have;
@@ -541,10 +543,9 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
                     filesToOpen.append(outputFiles)
                 else:
                     filesToOpen.extend(outputFiles)
-
     # bar chart aggregated by group  (e.g., form values by POS tags) -----------------------------------------------------------------
     #   avoid plotting by ['Document ID', 'Document'] as groupBy; done in chart byDoc
-    if len(groupByList) > 0 and groupByList != ['Document ID', 'Document']:
+    if n_documents > 1 and len(groupByList) > 0 and groupByList != ['Document ID', 'Document']:
         columns_to_be_plotted_byGroup = []
         for header in groupByList:
             groupCol = IO_csv_util.get_columnNumber_from_headerValue(headers, header, inputFilename)
@@ -644,7 +645,6 @@ def visualize_chart(chartPackage, dataTransformation, inputFilename, outputDir,
 
 #   plotList is the list of fields to be plotted
 
-
 def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
             chartPackage, dataTransformation, chart_type_list, chart_title, column_xAxis_label_var,
             hover_info_column_list=[],
@@ -695,12 +695,14 @@ def run_all(columns_to_be_plotted, inputFilename, outputDir, outputFileLabel,
         df = pd.DataFrame(data[1:], columns=data[0])
         df.to_csv(csv_file_path, index=False)
 
+    data_to_be_plotted_2 = []
     if type(data_to_be_plotted[0]) == list:
         list_of_lists_to_csv(data_to_be_plotted[0], "temptemp2.csv")
         df = statistics_csv_util.data_transformation('temptemp2.csv', dataTransformation)
         os.remove('temptemp2.csv')
-        data_to_be_plotted = [[df.columns.tolist()] + df.values.tolist()]
-
+        data_to_be_plotted_2 = [[df.columns.tolist()] + df.values.tolist()]
+    if len(data_to_be_plotted_2) == len(data_to_be_plotted):
+        data_to_be_plotted = data_to_be_plotted_2
     if data_to_be_plotted == None:
         return
 
@@ -846,7 +848,10 @@ def get_data_to_be_plotted_with_counts(inputFilename, withHeader_var, headers, c
             try:
                 #  TODO the datalist is like [['NN','NN'], ...] so the code produces bad results
                 #       when multiple series side-by-side (e.g., form and lemma values) need to be plotted
-                column_list = [i[1] for i in data_list[k]]
+                if 'Search Word' in str(headers):
+                    column_list = [i[0] for i in data_list[k]] # works for search function
+                else:
+                    column_list = [i[1] for i in data_list[k]]
             except IndexError:
                 continue
             counts = list(Counter(column_list).most_common())
@@ -1267,6 +1272,7 @@ def boxplot(data, outputFilename, var, points, bycategory=None, category=None, c
 
 
 # written by Samir Kaddoura, March 2023
+# edited by Simon Bian, October 2023
 
 # var1 is the first categorical variable, lengthvar1 is the amount of var 1: should take values of 5 or 10
 # var2 is the second categorical variable, lengthvar2 is the amount of var 2: should take values of 5,10 or 20
@@ -1303,48 +1309,19 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
                 return
             finalframe = data[data[var1].isin(list(set(tempframe.index)))]
         tempframe2 = pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
+        tempframe3 = pd.DataFrame(finalframe[var3]).value_counts().head(lengthvar3).reset_index()
         finalframe = finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
+        finalframe = finalframe[finalframe[var3].isin(list(set(tempframe3[var3])))]
         finalframe = finalframe.reset_index(drop=True)
-        sourcelist = list(range(0, len(set(finalframe[var1]))))
-        source = [item for item in sourcelist for _ in range(len(set(finalframe[var2])))]
-
-        target1 = list(range(0, len(set(finalframe[var2]))))
+        sourcelist = list(range(0, len(set(finalframe[var1])) + len(set(finalframe[var2]))))
+        source = [item for item in sourcelist for _ in range(len(set(finalframe[var2])) + len(set(finalframe[var3])))]
+        target1 = list(range(0, len(set(finalframe[var2])) + len(set(finalframe[var3]))))
         target2 = [x + len(set(finalframe[var1])) for x in target1]
-        target = target2 * len(set(finalframe[var1]))
+        target = target2 * len(sourcelist)
 
+        labelvector = sorted(set(finalframe[var1])) + sorted(set(finalframe[var2])) + sorted(set(finalframe[var3]))
         valuevector = []
-        for i in sorted(list(set(finalframe[var1]))):
-            tempdata = pd.DataFrame(finalframe[finalframe[var1] == i][var2].value_counts()).reset_index().rename(
-                columns={'index': var2, var2: 'Frequency'})
-            for j in sorted(list(set(tempdata[var2]))):
-                if j not in list(tempdata[var2]):
-                    valuevector.append(0)
-                else:
-                    valuevector.append(list(tempdata[tempdata[var2] == j]['Frequency'])[0])
 
-        labelvector = sorted(list(set(finalframe[var1]))) + sorted(list(set(finalframe[var2])))
-
-    else:
-        # 2 variables
-        data[var1] = data[var1].str.lower()
-        tempframe = pd.DataFrame(data[var1].value_counts().head(lengthvar1)).reset_index()
-        try:
-            finalframe = data[data[var1].isin(list(set(tempframe['index'])))]
-        except:
-            mb.showwarning(title='Warning',
-                           message='The dataframe computed by the Sankey flowchart is empty.\n\nIt is likely that you are using a version of pandas > 1.5.2. If so, in command line please, pip unistall pandas and pip install pandas==1.5.2')
-            return
-            finalframe = tempframe  # data[data[var1].isin(list(set(tempframe['count'])))]
-        tempframe2 = pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
-        finalframe = finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
-        finalframe = finalframe.reset_index(drop=True)
-        source1 = list(range(0, len(set(finalframe[var1])) + len(set(finalframe[var2]))))
-        source = [item for item in source1 for _ in range(len(set(finalframe[var2])))]
-        target1 = list(range(0, len(set(finalframe[var2]))))
-        target2 = [x + len(set(finalframe[var1])) for x in target1]
-        target = target2 * len(source1)
-        labelvector = sorted(set(finalframe[var1])) + sorted(set(finalframe[var2]))
-        valuevector = []
         for i in sorted(list(set(finalframe[var1]))):
             tempvec = []
             tempframe = finalframe[finalframe[var1] == i]
@@ -1360,15 +1337,48 @@ def Sankey(data, outputFilename, var1, lengthvar1, var2, lengthvar2, three_way_S
         for i in sorted(list(set(finalframe[var2]))):
             tempvec = []
             tempframe = finalframe[finalframe[var2] == i]
-            wantedframe = pd.DataFrame(tempframe[var2].value_counts()).reset_index().rename(
-                columns={'index': var2, var2: 'Frequency'})
+            wantedframe = pd.DataFrame(tempframe[var3].value_counts()).reset_index().rename(
+                columns={'index': var3, var3: 'Frequency'})
             tempvec = list(np.repeat(0, len(set(finalframe[var2]))))
-            for j in sorted(list(set(finalframe[var2]))):
-                if j not in list(wantedframe[var2]):
+            for j in sorted(list(set(finalframe[var3]))):
+                if j not in list(wantedframe[var3]):
                     tempvec.append(0)
                 else:
-                    tempvec.append(list(wantedframe[wantedframe[var2] == j]['Frequency'])[0])
+                    tempvec.append(list(wantedframe[wantedframe[var3] == j]['Frequency'])[0])
             valuevector = valuevector + tempvec
+
+    else:
+        # 2 variables
+        data[var1] = data[var1].str.lower()
+        tempframe = pd.DataFrame(data[var1].value_counts().head(lengthvar1)).reset_index()
+        try:
+            finalframe = data[data[var1].isin(list(set(tempframe['index'])))]
+        except:
+            mb.showwarning(title='Warning',
+                           message='The dataframe computed by the Sankey flowchart is empty.\n\nIt is likely that you are using a version of pandas > 1.5.2. If so, in command line please, pip unistall pandas and pip install pandas==1.5.2')
+            return
+            finalframe = tempframe  # data[data[var1].isin(list(set(tempframe['count'])))]
+        tempframe2 = pd.DataFrame(finalframe[var2]).value_counts().head(lengthvar2).reset_index()
+        finalframe = finalframe[finalframe[var2].isin(list(set(tempframe2[var2])))]
+        finalframe = finalframe.reset_index(drop=True)
+        sourcelist = list(range(0, len(set(finalframe[var1]))))
+
+        source = [item for item in sourcelist for _ in range(len(set(finalframe[var2])))]
+        target1 = list(range(0, len(set(finalframe[var2]))))
+        target2 = [x + len(set(finalframe[var1])) for x in target1]
+        target = target2 * len(set(finalframe[var1]))
+        labelvector = sorted(list(set(finalframe[var1]))) + sorted(list(set(finalframe[var2])))
+        valuevector = []
+
+        for i in sorted(list(set(finalframe[var1]))):
+            tempdata = pd.DataFrame(finalframe[finalframe[var1] == i][var2].value_counts()).reset_index().rename(
+                columns={'index': var2, var2: 'Frequency'})
+            for j in sorted(list(set(tempdata[var2]))):
+                if j not in list(tempdata[var2]):
+                    valuevector.append(0)
+                else:
+                    valuevector.append(list(tempdata[tempdata[var2] == j]['Frequency'])[0])
+
     fig = go.Figure(go.Sankey(link=dict(source=source, target=target, value=valuevector),
                               node=dict(label=labelvector, pad=35, thickness=10)))
     fig.write_html(outputFilename)

@@ -36,7 +36,7 @@ import IO_csv_util
 #                        series_label_list=[],
 #                        second_y_var=0,
 #                        second_yAxis_label=''):
-# match the excel chart format
+# match the Excel chart format
 def create_Plotly_chart(inputFilename,outputDir,chart_title,chart_type_list,cols_to_plot,
                         column_xAxis_label='',
                         column_yAxis_label='',
@@ -344,17 +344,23 @@ def plot_multi_line_chart_w_slider_px(fileName, chart_title, col_to_be_ploted, s
 
 #Bubble Chart Graph
 #Created by Aiden Amaya and ChatGPT 3.5
-# The chart will plot yAxis vs the xAxis, but categorize them using the category field.
-# Filename is the csv file it will read, xAxis, yAxis, and category are all csv file column fields.
 
-def plot_graph_bubble_chart(fileName, xAxis, yAxis, category):
+# The chart will plot yAxis vs the xAxis, but categorize them using the category field.
+# inputFilename is the csv file it will read, xAxis, yAxis, and category are all csv file column fields.
+# outputFilename is the html file where the bubble chart will be saved
+
+def bubble_chart(inputFilename, outputFilename, xAxis, yAxis, category):
     # Load csv
-    df = pd.read_csv(fileName)
+    df = pd.read_csv(inputFilename)
 
     # Determine x-axis and y-axis columns based on user inputs, as well as the category you want bubbles to be separated by.
-    x_axis = df.columns[xAxis]
-    y_axis = df.columns[yAxis]
-    cat = df.columns[category]
+    # get column numbers
+    # x_axis = df.columns[xAxis]
+    # y_axis = df.columns[yAxis]
+    # cat = df.columns[category]
+    x_axis = xAxis
+    y_axis = yAxis
+    cat = category
 
     # Define hover text based off of the column entries.
     hover_text = []
@@ -386,11 +392,15 @@ def plot_graph_bubble_chart(fileName, xAxis, yAxis, category):
     # Create scatterplot.
     for i, (_, row) in enumerate(df.iterrows()):
         color = category_colors[row[cat]] if cat in df.columns else None
+        size = row['size'] if 'size' in df.columns else None
+        if str(size)=='nan':
+            size=None
         fig.add_trace(go.Scatter(
             x=[row[x_axis]], y=[row[y_axis]],
             text=row['text'],
             marker=dict(
-                size=row['size'] if 'size' in df.columns else None,
+                size=size,
+                # size=row['size'] if 'size' in df.columns else None,
                 color=color,
             ),
             name=row[cat] if cat in df.columns else None
@@ -406,7 +416,7 @@ def plot_graph_bubble_chart(fileName, xAxis, yAxis, category):
         fig.update_yaxes(scaleanchor="x", scaleratio=1)
 
     fig.update_layout(
-        title=f"{x_axis} vs {y_axis}",
+        title=f"{x_axis} vs {y_axis} by {cat}", # {category} specific value not available at this point
         xaxis=dict(
             title=f'{x_axis}',
             gridcolor='white',
@@ -430,7 +440,7 @@ def plot_graph_bubble_chart(fileName, xAxis, yAxis, category):
                 dict(label=str(category),
                      method="update",
                      args=[{"visible": [True if x == category else False for x in df[cat]]},
-                           {"title": f"{x_axis} vs {y_axis} - {category}"}])
+                           {"title": f"{x_axis} vs {y_axis} by {cat}: {category}"}])
             )
         fig.update_layout(
             updatemenus=[{"buttons": buttons,
@@ -447,8 +457,7 @@ def plot_graph_bubble_chart(fileName, xAxis, yAxis, category):
         dict(label = "Reset Zoom" ,
              method = "update",
              args = [{"visible": [True] * len(df)},
-                     {"title": f"{x_axis} vs {y_axis}"}])
-    )
+                     {"title": f"{x_axis} vs {y_axis} by {cat}: {category}"}]))
     fig.update_layout(
         updatemenus = [{"buttons" : buttons,
                         "showactive": True,
@@ -457,6 +466,7 @@ def plot_graph_bubble_chart(fileName, xAxis, yAxis, category):
                         "y": 1.05,
                         "yanchor": "top"}]
     )
-    return fig
+    fig.write_html(outputFilename)
+    return outputFilename
 
 

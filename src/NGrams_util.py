@@ -81,7 +81,7 @@ def removestop(original_sentence):
     filtered_sentence = re.sub(dets_pattern, "", original_sentence, flags=re.IGNORECASE)
     final_sentence = filtered_sentence.strip()
     return final_sentence
-def readandsplit(filename, excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords, nFiles,lemmatize,index):
+def readandsplit(filename, excludePunctuation, excludeArticles, excludeDeterminers, excludeStopWords, nFiles,lemmatize, case_sensitive, index):
 
     global called
     global nlp
@@ -99,6 +99,10 @@ def readandsplit(filename, excludePunctuation, excludeArticles, excludeDetermine
         out = removedt(out)
     if excludeStopWords:
         out = removestop(out)
+
+    # @@@
+    if not case_sensitive:
+        out = out.lower()
 
     if not lemmatize:
         if not called:
@@ -125,8 +129,12 @@ import os
 
 from collections import Counter
 
-def find_ngrams(words, n):
-    return [tuple(words[i:i+n]) for i in range(len(words)-n+1)]
+def find_ngrams(words, n, case_sensitive=False):
+    # if not case_sensitive:
+    #     return [tuple(words[i:i+n].lower()) for i in range(len(words)-n+1)]
+    # else:
+        return [tuple(words[i:i + n]) for i in range(len(words) - n + 1)]
+
 import pandas as pd
 
 def find_frequencies(sentences_ngrams, major_ngrams,files):
@@ -150,11 +158,11 @@ def find_frequencies(sentences_ngrams, major_ngrams,files):
     df = pd.DataFrame(all_records)
     return df
 
-def operateongram(documents,files,ngramsNumber):
+def operateongram(documents,files,ngramsNumber, case_sensitive=False):
     ngrams = []
     for document in documents:
-        ngrams.extend(find_ngrams(document,ngramsNumber))
-    documents_ngram = [find_ngrams(document, ngramsNumber) for document in documents]
+        ngrams.extend(find_ngrams(document,ngramsNumber, case_sensitive))
+    documents_ngram = [find_ngrams(document, ngramsNumber, case_sensitive) for document in documents]
     ngram_freq = find_frequencies(documents_ngram, ngrams, files)
     print(ngramsNumber, "gram of your corpus is complete.")
     return ngram_freq
@@ -166,11 +174,11 @@ def hapax(data,hapax_words):
         data = data[data['ngram'].str.contains(r'[a-zA-Z]', regex=True, na=False)]
         return data[data['Frequency in Corpus']==1]
 
-def operate(documents, files, max_ngramsNumber,hapax_words):
+def operate(documents, files, max_ngramsNumber,hapax_words, case_sensitive=False):
     ngram_freq_results = []
     hapax_result = None
     for n in range(1, max_ngramsNumber + 1):
-        ngram_freq = operateongram(documents, files, n)
+        ngram_freq = operateongram(documents, files, n, case_sensitive)
         ngram_freq_results.append(ngram_freq)
         if n==1:
             hapax_result = hapax(ngram_freq,hapax_words)

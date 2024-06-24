@@ -11,6 +11,8 @@ def convert_list_to_string(input_string):
     return output_string
 
 def process_comma_separated_string_list(keywords, case_sensitive=True):
+    print('in process_comma_separated_string_list case_sensitive', case_sensitive)
+
     if not case_sensitive:
         keywords = keywords.lower()
     if isinstance(keywords,str):
@@ -26,7 +28,7 @@ def process_comma_separated_string_list(keywords, case_sensitive=True):
             if keywords_str=='':
                 keywords_str = ele
             else:
-                keywords_str = keywords_str + ',' + ele
+                keywords_str = keywords_str + ', ' + ele
     keywords_list=temp_keywords_list
 
     return keywords_str, keywords_list

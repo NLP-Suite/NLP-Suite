@@ -229,6 +229,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
             filesToOpen.append(kmloutputFilename)
         if geocodedLocationsOutputFilename=='' and locationsNotFoundoutputFilename=='': #when geocoding cannot run because of internet connection
             return
+
     else:
         kmloutputFilename = GIS_geocode_util.process_geocoded_data_for_kml(window, locations, inputFilename, outputDir,
                                       locationColumnName, encodingValue, geocoder)
@@ -312,7 +313,7 @@ def GIS_pipeline(window, config_filename, inputFilename, inputDir, outputDir,
                 filesToOpen.append(locationsNotFoundNonDistinctoutputFilename)
                 if chartPackage!='No charts':
 
-                    outputFiles = charts_util.visualize_chart(chartPackage, locationsNotFoundNonDistinctoutputFilename,
+                    outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation, locationsNotFoundNonDistinctoutputFilename,
                                                                            outputDir,
                                                                            columns_to_be_plotted_xAxis=[], columns_to_be_plotted_yAxis=['Location'],
                                                                            chart_title='Frequency of Locations not Found by ' + geocoder,

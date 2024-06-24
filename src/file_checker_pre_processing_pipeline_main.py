@@ -108,13 +108,14 @@ def run(inputFilename,inputDir, outputDir,
 # check lower-case word after end-of-sentence punctuation !.? ----------------------------------------------------
 
     if lower_case_words_after_end_of_sentence_var.get():
+        # @@@ case_sensitive
         output = statistics_txt_util.process_words(GUI_util.window, config_filename, inputFilename, inputDir,
                                                    outputDir, openOutputFiles, 
                                                    chartPackage, dataTransformation,
                                                    processType='Lower case words after end-of-sentence punctuation', language='English',
                                                    excludeStopWords=True, word_length=3,
                                                    excludePunctuation=True, excludeArticles=True,
-                                                   wordgram=1, lemmatize=False)
+                                                   wordgram=1, lemmatize=False, case_sensitive=False)
         if output != None:
             if isinstance(output, str):
                 filesToOpen.append(output)
@@ -167,11 +168,12 @@ def run(inputFilename,inputDir, outputDir,
 # compute word length ----------------------------------------------------
 
     if word_length_var.get():
-        output = statistics_txt_util.process_words(GUI_util.window, config_filename, inputFilename, inputDir, outputDir, openOutputFiles, 
+        # @@@ case_sensitive=False
+        output = statistics_txt_util.process_words(GUI_util.window, config_filename, inputFilename, inputDir, outputDir, openOutputFiles,
                           chartPackage, dataTransformation,
                           processType='word length', language='English', excludeStopWords=True, word_length=3,
                           excludePunctuation=True, excludeArticles=True,
-                          wordgram=1, lemmatize=False)
+                          wordgram=1, lemmatize=False, case_sensitive=False)
         if output != None:
             if isinstance(output, str):
                 filesToOpen.append(output)

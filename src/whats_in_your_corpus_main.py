@@ -310,10 +310,11 @@ def run(inputFilename,inputDir, outputDir,
             bySentenceIndex_var=False
 
             # n-grams
+            case_sensitive=False
             outputFiles, outputDir = statistics_txt_util.compute_character_word_ngrams(GUI_util.window, inputFilename, inputDir,
                                                               outputDir, config_filename,
                                                               ngramsNumber, frequency, hapax_words,
-                                                              normalize, lemmatize,
+                                                              normalize, lemmatize, case_sensitive,
                                                               excludePunctuation, excludeArticles,
                                                               excludeDeterminers, excludeStopWords,
                                                               wordgram,

@@ -84,13 +84,15 @@ def conj_string(subjects, sent_data): # connect multiple conjugates into a singl
                 if len(subjects) == 2 and subjects[-1] == subj_gov[key]:
                     result = result + " " + conj + " " + sent_data[subjects[-1]]['word']
                     break
-    if result != start_result:
-        return result
-    else:
-        return token_connect(subjects, sent_data)
+    # It is a mistake to think that we can expand the scale of construction without limit, regardless of the possible objective conditions, or to go about without any certainty, without paying attention to the most rational and efficient use of material, human and financial resources.
+    # the above sentence results in a Subject (S) we we rather than we
+    # should the == be != ???
+    if result == start_result:
+        result = token_connect(subjects, sent_data)
+    return result
 
 def token_connect(keys, sent_data):
-    #if there are multiple tokens with the same dep uner a governor
+    #if there are multiple tokens with the same dep under a governor
     #this function process the content to that key (the dep) in the governor dictionary
     #if it's a list, this functino returns a string that connect each word with " "
     if isinstance(keys, list):

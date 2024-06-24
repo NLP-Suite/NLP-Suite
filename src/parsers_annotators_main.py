@@ -333,8 +333,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         call("python CoNLL_table_analyzer_main.py", shell=True)
 
     if openOutputFiles:
+        filesToOpenSubset = []
         if len(filesToOpen) > 0:
-            filesToOpenSubset = []
             # add the CoNLL main file
             if 'parse' in annotator:
                 filesToOpenSubset.append(filesToOpen[0])
@@ -440,10 +440,10 @@ y_multiplier_integer_SV1=0 # used to set the quote_var widget and coref widget o
 def open_GUI(*args):
     if extra_GUIs_var.get():
         extra_GUIs_menu.configure(state='normal')
-    if extra_GUIs_menu_var.get():
+    if extra_GUIs_menu_var.get()!='':
         if 'checking' in extra_GUIs_menu_var.get():
             call('python file_checker_converter_cleaner_main.py', shell=True)
-        elif 'coref' in extra_GUIs_menu_var.get():
+        elif 'Coref' in extra_GUIs_menu_var.get():
             call('python coreference_main.py', shell=True)
 extra_GUIs_menu_var.trace('w',open_GUI)
 

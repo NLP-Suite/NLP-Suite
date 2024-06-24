@@ -54,9 +54,19 @@ cla_open_csv = False  # if run from command line, will check if they want to ope
 
 def compute_stats(data):
 	global form_list, postag_list, postag_counter, deprel_list, deprel_counter
+
+	# IMPERATIVES ARE MORE DIFFICULT TO COMPUTE AND ARE CURRENTLY NOT COMPUTED IN THIS SCRIPT;
+	# SEE THE FOLLOWING LINKS, ESPECIALLY THE FIRST ONE FOR SUGGESTIONS
+
+	# https://aclanthology.org/2020.lrec-1.805.pdf EXCELLENT
+	# https://stackoverflow.com/questions/29473169/approach-for-identifying-whether-a-sentence-includes-an-imperative-within-it
+	# https://nlp.stanford.edu/software/lex-parser.shtml
+	# https://iconix.github.io/portfolio%20building/2017/09/25/nlp-for-tasks
+	# https://web.stanford.edu/~jurafsky/slp3/old_oct19/ed3book.pdf
+
 	# VBG gerund, VBD past, VBN Past Principle/Passive,
 	# VBP present (non-3rd person singular), VBZ present (3rd person singular)
-	# VB future, VB infintive, depending on MD modal
+	# VB future, VB infinitive, depending on MD modal
 
 	verb_postags = ['VB', 'VBN', 'VBD', 'VBG', 'VBP', 'VBZ', 'MD']
 	data = [tok for tok in data if (tok[3] in verb_postags)]

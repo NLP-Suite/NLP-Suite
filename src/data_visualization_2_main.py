@@ -26,6 +26,8 @@ def run(inputFilename, outputDir, openOutputFiles,
         split_data_byCategory_var,
         csv_field_boxplot_var,
         csv_field_boxplot_color_var,
+        X_axis_bubble_var,
+        category_bubble_var,
         csv_files_list,
         date_format_var,
         time_var,
@@ -130,7 +132,22 @@ def run(inputFilename, outputDir, openOutputFiles,
         if outputfilename!='':
             filesToOpen.append(outputfilename)
 
-# comparative bar charts --------------------------------------------------------------------------------
+# bubble chart  --------------------------------------------------------------------------------
+
+    if 'Bubble' in visualizations_menu_var:
+        outputFilename = IO_files_util.generate_output_file_name(inputFilename, '', outputDir,
+                                                                 '.html', 'bubble')
+        # You cannot keep it as float inside the csv. The csv will treat everything as strings.
+        # https://stackoverflow.com/questions/65393774/writing-floats-into-a-csv-file-but-floats-become-a-string
+
+        # fileName, xAxis, yAxis, category
+        import charts_Plotly_util
+        outputfilename = charts_Plotly_util.bubble_chart(inputFilename, outputFilename, X_axis_bubble_var, csv_field_visualization_var,
+                                             category_bubble_var)
+        if outputfilename != '':
+            filesToOpen.append(outputfilename)
+
+    # comparative bar charts --------------------------------------------------------------------------------
 
     if 'Comparative' in visualizations_menu_var:
         if len(csv_files_list) < 2:
@@ -182,6 +199,8 @@ run_script_command=lambda: run(GUI_util.inputFilename.get(),
                             split_data_byCategory_var.get(),
                             csv_field_boxplot_var.get(),
                             csv_field_boxplot_color_var.get(),
+                            X_axis_bubble_var.get(),
+                            category_bubble_var.get(),
                             csv_files_list,
                             date_format_var.get(),
                             time_var.get(),
@@ -196,8 +215,8 @@ GUI_util.run_button.configure(command=run_script_command)
 IO_setup_display_brief=True
 GUI_size, y_multiplier_integer, increment = GUI_IO_util.GUI_settings(IO_setup_display_brief,
                              GUI_width=GUI_IO_util.get_GUI_width(3),
-                             GUI_height_brief=520, # height at brief display
-                             GUI_height_full=560, # height at full display
+                             GUI_height_brief=560, # height at brief display
+                             GUI_height_full=600, # height at full display
                              y_multiplier_integer=GUI_util.y_multiplier_integer,
                              y_multiplier_integer_add=2, # to be added for full display
                              increment=2)  # to be added for full display
@@ -288,7 +307,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configurati
 
 
 def open_GUI(*args):
-    if extra_GUIs_var:
+    if extra_GUIs_var.get():
         extra_GUIs_menu.configure(state='normal')
     if 'Excel' in extra_GUIs_menu_var.get():
         call("python charts_Excel_main.py", shell=True)
@@ -370,7 +389,7 @@ y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coord
 
 
 visualizations_menu_var.set('Excel/Plotly charts')
-visualizations_menu = tk.OptionMenu(window, visualizations_menu_var, 'Boxplots','Comparative bar charts','Excel/Plotly charts','Time mapper')
+visualizations_menu = tk.OptionMenu(window, visualizations_menu_var, 'Boxplots','Bubble chart','Comparative bar charts','Excel/Plotly charts','Time mapper')
 # select_time_menu.configure(state='disabled')
 # place widget with hover-over info
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.IO_configuration_menu, y_multiplier_integer,
@@ -528,6 +547,39 @@ def activate_split_options(*args):
         csv_field_boxplot_color_menu.configure(state='disabled')
 split_data_byCategory_var.trace('w',activate_split_options)
 activate_split_options()
+
+bubble_chart_lb = tk.Label(window, text='Bubble chart', foreground="red",font=("Courier", 12, "bold"))
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_indented_coordinate, y_multiplier_integer,
+                                   bubble_chart_lb,
+                                   True, False, True, False, 90, GUI_IO_util.labels_x_indented_coordinate,
+                                   "The widgets on this line refer to the Bubble chart option only")
+
+X_axis_bubble_lb = tk.Label(window, text='X-axis')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.open_TIPS_x_coordinate, y_multiplier_integer,
+                                               X_axis_bubble_lb, True)
+
+X_axis_bubble_var = tk.StringVar()
+X_axis_bubble_menu = tk.OptionMenu(window, X_axis_bubble_var, *file_menu_values)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.IO_configuration_menu+70, y_multiplier_integer,
+                                               X_axis_bubble_menu,
+                                               True, False, True, False, 90,
+                                               GUI_IO_util.labels_x_coordinate + 100,
+                                               "Select the csv file field to be used as X-axis")
+
+category_bubble_lb = tk.Label(window, text='Category')
+y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.setup_pop_up_text_widget, y_multiplier_integer,
+                                               category_bubble_lb, True)
+
+category_bubble_var = tk.StringVar()
+category_bubble_menu = tk.OptionMenu(window, category_bubble_var, *file_menu_values)
+# place widget with hover-over info
+y_multiplier_integer = GUI_IO_util.placeWidget(window, GUI_IO_util.setup_pop_up_text_widget+100, y_multiplier_integer,
+                                               category_bubble_menu,
+                                               False, False, True, False, 90,
+                                               GUI_IO_util.setup_pop_up_text_widget+100,
+                                               "Select the csv file field to be used as category for bubble splitting")
 
 multiple_bar_lb = tk.Label(window, text='Bar charts',foreground="red",font=("Courier", 12, "bold"))
 # place widget with hover-over info
@@ -717,7 +769,7 @@ def changed_filename(tracedInputFile):
 
         for s in menu_values:
             m1.add_command(label=s, command=lambda value=s: csv_field_visualization_var.set(value))
-# X-axis
+# X-axis Excel
 
         m2 = X_axis_menu["menu"]
         m2.delete(0, "end")
@@ -748,6 +800,21 @@ def changed_filename(tracedInputFile):
         for s in menu_values:
             m5.add_command(label=s, command=lambda value=s: csv_field_boxplot_color_var.set(value))
 
+# bubble chart
+
+        m6 = X_axis_bubble_menu["menu"]
+        m6.delete(0, "end")
+
+        for s in menu_values:
+            m6.add_command(label=s, command=lambda value=s: X_axis_bubble_var.set(value))
+
+        # bubble category
+        m7 = category_bubble_menu["menu"]
+        m7.delete(0, "end")
+
+        for s in menu_values:
+            m7.add_command(label=s, command=lambda value=s: category_bubble_var.set(value))
+
     else:
         csv_files_list.clear()
         menu_values.clear()
@@ -768,6 +835,10 @@ def activate_all_options(*args):
     split_data_byCategory_checkbox.configure(state='disabled')
     csv_field_boxplot_menu.configure(state='disabled')
     csv_field_boxplot_color_menu.configure(state='disabled')
+
+    # bubble
+    X_axis_bubble_menu.configure(state='disabled')
+    category_bubble_menu.configure(state='disabled')
 
     # comparative bar charts
     add_file.configure(state='disabled')
@@ -793,6 +864,10 @@ def activate_all_options(*args):
         csv_field_boxplot_menu.configure(state='normal')
         csv_field_boxplot_color_menu.configure(state='normal')
 
+    if 'bubble' in visualizations_menu_var.get().lower():
+        X_axis_bubble_menu.configure(state='normal')
+        category_bubble_menu.configure(state='normal')
+
     if 'comparative' in visualizations_menu_var.get().lower():
         add_file.configure(state='normal')
         reset_file_button.configure(state='normal')
@@ -811,19 +886,27 @@ visualizations_menu_var.trace('w',activate_all_options)
 videos_lookup = {'No videos available':''}
 videos_options='No videos available'
 
-TIPS_lookup = {"Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf",
+TIPS_lookup = {
+               "Boxplots":"TIPS_NLP_Charts - Boxplots.pdf",
+               "Bubble chart":"TIPS_NLP_Charts - Bubble chart.pdf",
+               "Multiple bar charts":"TIPS_NLP_Charts - Multiple bar charts.pdf",
+               "Time mapper":"TIPS_NLP_Charts - Time mapper.pdf",
+               "Sankey chart":"TIPS_NLP_Charts - Sankey chart.pdf",
+               "Sunburst pie chart":"TIPS_NLP_Charts - Sunburst pie chart.pdf",
+               "Colormap chart":"",
+               "Treemap chart":"TIPS_NLP_Charts - Treemap chart.pdf",
+               "Word clouds":"TIPS_NLP_Wordclouds Visualizing word clouds.pdf",
                "Wordle":"TIPS_NLP_Wordclouds Wordle.pdf",
                "Tagxedo":"TIPS_NLP_Wordclouds Tagxedo.pdf",
                "Tagcrowd":"TIPS_NLP_Wordclouds Tagcrowd.pdf",
                'Excel charts': 'TIPS_NLP_Excel Charts.pdf',
                'Excel smoothing data series': 'TIPS_NLP_Excel smoothing data series.pdf',
                'Network Graphs (via Gephi)': 'TIPS_NLP_Gephi network graphs.pdf',
-               "Specialized visualization tools 1":"TIPS_NLP_Specialized visualization tools 1.pdf",
-               "Specialized visualization tools 2":"TIPS_NLP_Specialized visualization tools 2.pdf",
+               "Network Graphs (via Gephi)": "TIPS_NLP_Gephi network graphs.pdf",
                'csv files - Problems & solutions': 'TIPS_NLP_csv files - Problems & solutions.pdf',
                'Statistical measures': 'TIPS_NLP_Statistical measures.pdf'}
 
-TIPS_options='Specialized visualization tools 1', 'Specialized visualization tools 2', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle', 'Excel smoothing data series', 'Network Graphs (via Gephi)', 'csv files - Problems & solutions', 'Statistical measures'
+TIPS_options='Boxplots', 'Bubble chart', 'Multiple bar charts', 'Time mapper', 'Sankey chart', 'Sunburst pie chart','Colormap chart','Treemap chart', 'Word clouds', 'Tagcrowd', 'Tagxedo', 'Wordle', 'Excel smoothing data series', 'Network Graphs (via Gephi)', 'csv files - Problems & solutions', 'Statistical measures'
 
 # add all the lines to the end to every special GUI
 # change the last item (message displayed) of each line of the function y_multiplier_integer = help_buttons
@@ -843,6 +926,7 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",
                                                          'Please, tick the \'GUIs available\' checkbox if you wish to see and select the range of other available tools suitable for data visualization.')
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select the csv file field to be used for visualization.\n\nA NUMERIC field is required for the 'Boxplot' option and a CATEGORICAL field for the 'Comparative bar charts' option.")
+    # y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, select the csv file field to be used for visualization.\n\nA NUMERIC field is required for the 'Bubble chart' option and a CATEGORICAL field for the 'Comparative bar charts' option.")
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Please, using the dropdown menu, select type of visual chart to be used for visualization.")
     # Excel/Plotly
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Use the widgets in this line to set the parameters required by The Excel/Plotly charts option." \
@@ -850,12 +934,15 @@ def help_buttons(window,help_button_x_coordinate,y_multiplier_integer):
     # boxplot
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Use the widgets in this line to set the parameters required by the 'Boxplot' option." \
                             "\n\nUse the dropdown menu to select the type of data points to be processed. Tick the 'Split data by category' checkbox if you want to use a file field to split and/or color the charts by the value of a csv file field.")
+    # bubble chart
+    y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Use the widgets in this line to set the parameters required by the 'Bubble chart' option." \
+                            "\n\nUse the dropdown menu to select the type of data points to be processed. Tick the 'Split data by category' checkbox if you want to use a file field to split and/or color the charts by the value of a csv file field.")
     # comparative bar charts
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Use the widgets in this line to set the parameters required by the 'Comparative bar charts' option." \
                             "\n\nAT LEAST TWO CSV FILES ARE REQUIRED FOR THE COMPARATIVE BAR CHARTS OPTION.\n\nClick on the + button to add a new csv file (in addition to either the input csv file displayed in the I/O configuration or any other files already added).\nClick on the Reset button to clear the current selection and start over.\nUse the dropdown menu to select a specific csv file that you can then open with the Open button.")
     # time mapper
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help","Use the widgets in this line to set the parameters required by the 'Time mapper' option.\n\nYou can use the Time mapper to analyze time-dependent data in an interactive bar chart." \
-            "\n\nTHE TIME MAPPER ALGORITHM REQUIRES A DATE FIELD EMBEDDED IN THE FILENAME. YOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE 'Setup INPUT/OUTPUT configuration' WIDGET AT THE TOP OF THE ALGORITHM GUI THAT HAS PRODUCED THE CSV FILE USED HERE IN INPUT AND THEN TICKING THE CHECKBOXS 'Filename embeds multiple items' AND 'Filename embeds date' WHEN THE NLP_setup_IO_main GUI OPENS." \
+            "\n\nTHE TIME MAPPER ALGORITHM REQUIRES A DATE FIELD EMBEDDED IN THE FILENAME.\n\nIN A CSV FILE, THE FILENAME WOULD BE IN THE FIELD DOCUMENT (AND THIS MUST CONTAIN A DATE) FOR THE TIME MAPPER TO WORK.\n\nYOU CAN SETUP DATES EMBEDDED IN FILENAMES BY CLICKING THE 'Setup INPUT/OUTPUT configuration' WIDGET AT THE TOP OF THE ALGORITHM GUI THAT HAS PRODUCED THE CSV FILE USED HERE IN INPUT AND THEN TICKING THE CHECKBOXS 'Filename embeds multiple items' AND 'Filename embeds date' WHEN THE NLP_setup_IO_main GUI OPENS.\n\nIf the csv file does not contain a Docuument field with a date embedded in the filename but a Date field is present, the algorithm will use this date field." \
             "\n\nUse the dropdown menu to select the 'Date format' of the date embedded in the filenames (the filenames are listed in the csv file under the field 'Document').\nUse the dropdown menu to select the preferred 'Timeline' (daily, monthly, or yearly).\nClick on the 'Cumulative' checkbox to visualize data cumulatively.")
     # Cumulative, for a time chart showing the frequency of the chosen variable up until a current day rather than visualizing the frequency day by day" \
     y_multiplier_integer = GUI_IO_util.place_help_button(window,help_button_x_coordinate,y_multiplier_integer,"NLP Suite Help",GUI_IO_util.msg_openOutputFiles)

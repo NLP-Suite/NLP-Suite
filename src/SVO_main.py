@@ -4,6 +4,8 @@
 # Modified by Roberto Franzosi (Spring-Fall 2021, Fall 2022)
 # Modified by Cynthia Dong (Fall 2021)
 
+# https://stackoverflow.com/questions/61121239/how-to-extract-subject-verb-object-using-nlp-java-for-every-sentence
+
 import sys
 import GUI_util
 import IO_libraries_util
@@ -510,17 +512,17 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                             if gexf_file != None and gexf_file != '':
                                 filesToOpen.append(gexf_file)
 
-                    Sankey_limit1_var = 12
-                    Sankey_limit2_var = 12
-                    Sankey_limit3_var = 12
-                    three_way_Sankey = False
+                    Sankey_limit1_var = 5
+                    Sankey_limit2_var = 10
+                    Sankey_limit3_var = 20
+                    three_way_Sankey = True
 
                     output_label = 'sankey'
                     outputFilename_sankey = IO_files_util.generate_output_file_name(inputFilename, inputDir, tempOutputDir,
                                                                                     '.html', output_label)
                     outputFiles = charts_util.Sankey(inputFilename, outputFilename_sankey,
                                                      'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var,
-                                                     three_way_Sankey, None, Sankey_limit3_var)
+                                                     three_way_Sankey, 'Object (O)', Sankey_limit3_var)
 
                     if outputFiles != None:
                         if isinstance(outputFiles, str):
@@ -560,16 +562,16 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
                                         os.remove(f)
 
                             output_label = 'sankey'
-                            Sankey_limit1_var = 12
-                            Sankey_limit2_var = 12
-                            Sankey_limit3_var = 12
-                            three_way_Sankey = False
+                            Sankey_limit1_var = 5
+                            Sankey_limit2_var = 10
+                            Sankey_limit3_var = 20
+                            three_way_Sankey = True
 
                             outputFilename_sankey = IO_files_util.generate_output_file_name(f, inputDir, tempOutputDir,
                                                                                             '.html', output_label)
                             outputFiles = charts_util.Sankey(f, outputFilename_sankey,
                                                              'Subject (S)', Sankey_limit1_var, 'Verb (V)', Sankey_limit2_var,
-                                                             three_way_Sankey, None, Sankey_limit3_var)
+                                                             three_way_Sankey, 'Object (O)', Sankey_limit3_var)
 
                             if outputFiles != None:
                                 if isinstance(outputFiles, str):
@@ -1096,7 +1098,7 @@ gephi_checkbox = tk.Checkbutton(window, text='Visualize SVO relations in network
 y_multiplier_integer = GUI_IO_util.placeWidget(window,GUI_IO_util.labels_x_coordinate, y_multiplier_integer,
                                    gephi_checkbox,
                                    True, False, True, False, 90, GUI_IO_util.labels_x_coordinate,
-                                   "When filtering subjects/verbs/objects, network graphs will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO_filtered subdirectories.\n"                                  
+                                   "When filtering subjects/verbs/objects, network graphs will be produced for both unfiltered and filtered SVOs and saved respectively in the SVO and SVO_filtered subdirectories.\nSankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O).\n"
                                    "When lemmatizing, network graphs will also be produced for lemmatized unfiltered and filtered SVOs and saved in the WordNet subdirectory.")
 
 wordcloud_var.set(1)
@@ -1234,7 +1236,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "Please, using the dropdown menu, select the NLP package to be used to extract SVOs from your corpus."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the 'Lemmatize' checkboxes to produce lemmatized subjects, verbs, or objects. When SVOs are lemmatized, the algorithm will aggregate the Subjects and Objects (nouns) and Verbs (verbs) into WordNet top synset categories (e.g., 'run' into 'motion').\n\nTick the 'Filter' checkboxes to filter all SVO extracted triplets for Subjects, Verbs, and Objects via dictionary filter files.\n\nFor instance, you can filter SVO by social actors and social action. In fact, the file \'social-actor-list.csv\', created via WordNet with keyword person and saved in the \'lib/wordLists\' subfolder, will be automatically loaded as the DEFAULT dictionary file (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly automatically loaded as the DEFAULT dictionary file for verbs.\n\nDictionary filter files can be created via WordNet and saved in the \'lib/wordLists\' subfolder. You can edit that list, adding and deleting entries at any time, using any text editor.\n\nWordNet produces thousands of entries for nouns and verbs. For more limited domains, you way want to pair down the number to a few hundred entries.\n\nFILTER FILES MUST CONTAIN LEMMATIZED ENTRIES, SINCE WordNet IS BASED ON LEMMATIZED ENTRIES."+GUI_IO_util.msg_Esc)
+                                  "Please, tick the 'Lemmatize' checkboxes to produce lemmatized subjects, verbs, or objects. When SVOs are lemmatized, the algorithm will aggregate the Subjects and Objects (nouns) and Verbs (verbs) into WordNet top synset categories (e.g., 'run' into 'motion').\n\nTick the 'Filter' checkboxes to filter all SVO extracted triplets for Subjects, Verbs, and Objects via dictionary filter files.\n\nFor instance, you can filter SVO by social actors and social action. In fact, the file \'social-actor-list.csv\', created via WordNet with keyword person and saved in the \'lib/wordLists\' subfolder, will be automatically loaded as the DEFAULT dictionary file (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly created via WordNet using different keywords (change, cognition, communication, contact, emotion, motion, social), saved in the \'lib/wordLists\' subfolder, and automatically loaded as the DEFAULT dictionary file for verbs.\n\nDictionary filter files can be created via WordNet and saved in the \'lib/wordLists\' subfolder. You can edit that list, adding and deleting entries at any time, using any text editor.\n\nWordNet produces thousands of entries for nouns and verbs. For more limited domains, you way want to pair down the number to a few hundred entries.\n\nFILTER FILES MUST CONTAIN LEMMATIZED ENTRIES, SINCE WordNet IS BASED ON LEMMATIZED ENTRIES."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   "The three widgets display the currently selected dictionary filter files for Subjects, Verbs, and Objects (Objects share the same file as Subjects and you may wish to change that).\n\nThe filter file social-actor-list, created via WordNet with person as keyword and saved in the \'lib/wordLists\' subfolder, will be automatically set as the DEFAULT filter for subjects (Press ESCape to clear selection); the file \'social-action-list.csv\' is similarly set as the DEFAULT dictionary file for verbs.\n\nThe widgets are disabled because you are not allowed to tamper with these values. If you wish to change a selected file, please tick the appropriate checkbox in the line above (e.g., Filter Subject) and you will be prompted to select a new file."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
@@ -1243,7 +1245,7 @@ def help_buttons(window, help_button_x_coordinate, y_multiplier_integer):
                                   "THE GENDER AND QUOTE/SPEAKER ANNOTATORS ARE AVAILABLE FOR STANFORD CORENLP AND ENGLISH LANGUAGE ONLY.\n\n"
                                   "Tick the SRL checkbox if you wish to run Jinho Choi's SRL (Semantic Role Labeling) algorithm (https://github.com/emorynlp/elit/blob/main/docs/semantic_role_labeling.md). THE OPTION IS CURRENTLY DISABLED."+GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
-                                  "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi & Sankey charts;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.."+GUI_IO_util.msg_Esc)
+                                  "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi & Sankey charts (Sankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O)); to change these default values, use the Sankey graph option in the data_visualization_1 GUI;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.."+GUI_IO_util.msg_Esc)
                                    # "Please, tick the checkboxes:\n\n  1. to visualize SVO relations in network graphs via Gephi;\n\n  2. to visualize SVO relations in a wordcloud (Subjects in red; Verbs in blue; Objects in green);\n\n  3. to use the NER location values to extract the WHERE part of the 5 Ws of narrative (Who, What, When, Where, Why); locations will be automatically geocoded (i.e., assigned latitude and longitude values) and visualized as maps via Google Earth Pro (as point map) and Google Maps (as heat map). ONLY THE LOCATIONS FOUND IN THE EXTRACTED SVO WILL BE DISPLAYED, NOT ALL THE LOCATIONS PRESENT IN THE TEXT.\n\nThe GIS algorithm uses Nominatim, rather than Google, as the default geocoder tool. If you wish to use Google for geocoding, please, use the GIS_main script.\n\nThe GIS mapping option is not available for SENNA or CoreNLP OpenIE." + GUI_IO_util.msg_Esc)
     y_multiplier_integer = GUI_IO_util.place_help_button(window, help_button_x_coordinate, y_multiplier_integer, "NLP Suite Help",
                                   GUI_IO_util.msg_openOutputFiles)
@@ -1256,7 +1258,7 @@ readMe_message = "This set of Python 3 scripts extract automatically most of the
                  "\n\nThe set of scripts assembled here for this purpose ranges from testing for utf-8 compliance of the input text, to resolution for pronominal coreference, extraction of normalized NER dates (WHEN), visualized in various Excel charts, extraction, geocoding, and mapping in Google Earth Pro of NER locations." \
                  "\n\nAt the heart of the SVO approach are several NLP packages to choose from. For passive sentences, the pipeline swaps S and O to transform the triplet into active voice. " \
                  "Thus, the WHO, WHAT (WHOM) are extracted from a text. Each component of the SVO triplet can be filtered via specific dictionaries (e.g., filtering for social actors and social actions, only). " \
-                 "The set of SVO triplets are then visualized in dynamic network graphs (via Gephi & Sankey)." \
+                 "The set of SVO triplets are then visualized in dynamic network graphs (via Gephi & Sankey; Sankey graphs display only top 10 Subject (S), 20 Verb (V), 20 Object (O); to change these default values, use the Sankey graph option in the data_visualization_1 GUI)." \
                  "\n\nThe WHY and HOW of narrative are still beyond the reach of the current set of SVO scripts." \
                  "\n\nIn INPUT the scripts expect either a single txt file or a set of txt files in a directory (the corpus). " \
                  "You can also enter a csv file, the output of a previous run with any of the NLP packages (_svo.csv/_SVO_Result) marked file) if all you want to do is to visualize results." \

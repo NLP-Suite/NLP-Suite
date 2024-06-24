@@ -10,7 +10,7 @@ try:
     stanza.download('en')
 except:
     import IO_internet_util
-    IO_internet_util.check_internet_availability_warning("Stanza_functions_util.py","stanza","json","re","tkinter","warnings")
+    # IO_internet_util.check_internet_availability_warning("Stanza_functions_util.py","stanza","json","re","tkinter","warnings")
 
 from stanza.pipeline.multilingual import MultilingualPipeline
 
@@ -561,9 +561,13 @@ def convertStanzaDoctoDf(stanza_doc, inputFilename, inputDir, tail, docID, annot
                 sidx+=1
             out_df.at[i, 'Record ID'] = i+1
             out_df.at[i, 'Sentence ID'] = sidx
-            if "NER" in annotator_params or "depparse" in annotator_params:
+            if "NER" in annotator_params and language == 'la':
+                open_Stanza_website(
+                    'Stanza does not currently support the NER annotator for Latin.' + \
+                    '\n\nYou can change the selected language using the Setup dropdown menu at the bottom of this GUI, select the "Setup NLP package and corpus language" to open the GUI where you can change the language option.')
+            if ("NER" in annotator_params or "depparse" in str(annotator_params)) and language != 'la':
                 curr_ner = str(out_df.at[i, 'NER'])
-                # process each NER tag based on BIOES representation
+                # process each  NER tag based on BIOES representation
                 if curr_ner.startswith('S'):
                     # print(out_df.at[i, 'Form'])
                     out_df.at[i, 'Multi-Word Expression'] = out_df.at[i, 'Form']

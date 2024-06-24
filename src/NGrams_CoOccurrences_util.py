@@ -20,18 +20,29 @@ import constants_util
 """
 NGramsCoOccurrences implements the ability to generate NGram and CoOccurrences data
 """
-import hashfile
+# import hashfile
 from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-def is_subset(A, B):
-    A = ' '.join(A).split(' ')
-    return all(element in B for element in A)
+# both A and B are lists []
+def keywords_co_occurr(A, B):
+    A = ','.join(A).split(',')
+    keywords_co_occurr=all(element in B for element in A)
+    return keywords_co_occurr
 
-def one_text_res(sentences, targets, doc_index, doc_name):
+def one_text_res(sentences, search_keywords_list, doc_index, doc_name, lemmatize= False, case_sensitive=True, exact_word_match=True):
     results = []
-    for sent in sentences:
-        if is_subset(targets, word_tokenize_stanza(stanzaPipeLine(sent))):
-            results.append((sent, sentences.index(sent), doc_index, doc_name))
-    return pd.DataFrame(results, columns=['Sentence', 'Sentence ID',
+    sentIndex=0
+    search_keywords_str=str(', '.join(search_keywords_list))
+    for sentence in sentences:
+        co_occurring = False
+        sentIndex+=1
+        for search_word in search_keywords_list:
+            search_word_frequency = get_search_word_from_text(sentences, search_word,
+                                                lemmatize, sentence, case_sensitive, exact_word_match)
+
+            if keywords_co_occurr(search_keywords_list, sentence):
+                co_occurring=True
+        results.append((search_keywords_str, co_occurring, sentIndex, sentence, doc_index, doc_name))
+    return pd.DataFrame(results, columns=['Search word(s)', 'Co-Occurring in Sentence', 'Sentence ID', 'Sentence',
                                           'Document ID', 'Document'])
 
 def readfile(doc):
@@ -39,30 +50,62 @@ def readfile(doc):
         fullText = f.read()
         fullText = fullText.replace('\n', ' ')
     return fullText
-def get_all_dataframe_for_sentence_cooccur(inputFilename, inputDir, targets,
-                                           configFileName, outputDir):
+
+# search_keywords_list is the list of search words; search words will be processed individually;
+# multi-word expressions (e.g., 'peaceful reunification of the motherland') will not be processed as a single item
+# to process multi-word expressions as a single search word, separate each word by a comma
+#   e.g., 'peaceful, reunification, of, the, motherland'
+
+# currently not used
+def search_within_sentence_coOccurences(inputFilename, inputDir, search_keywords_list,
+                                               configFileName, outputDir, lemmatize=False, case_sensitive=True, exact_word_match=True):
     outputFilename = IO_files_util.generate_output_file_name(inputFilename, inputDir, outputDir, '.csv', 'Stanza',
                                                              'Co-occurrence_within_sentence')
     files = IO_files_util.getFileList(inputFilename, inputDir,
                                       '.txt', silent=False, configFileName=configFileName)
-    o2 = os.path.dirname(outputDir+"Sentence")
-    hashmap = hashfile.getcache(o2) if hashfile.checkOut(o2) else {}
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Within-sentence Co-Occurrences VIEWER start',
+                                                   'Started running within-sentence Co-Occurrences VIEWER at',
+                                                   True, '', True, '', False)
+    results = []
+    sentIndex = 0
+    import re
+
+    hashOutputDir = os.path.dirname(outputDir+"_sentence")
+    # SIMON cache
+    # hashmap = hashfile.getcache(hashOutputDir) if hashfile.checkOut(hashOutputDir) else {}
     all_results = pd.DataFrame() # Initialize an empty DataFrame to store all results
-    for index, file in enumerate(files):
-        checksum = hashfile.calculate_checksum(file)
-        head, tail = os.path.split(file)
-        if checksum in hashmap:
-            sentences = hashmap[checksum]
-            print(f" cache auto:  Processing file {index + 1}/{len(files)} {tail}")
-        else:
-            print(f" producing cache:  Processing file {index + 1}/{len(files)} {tail}")
-            sentences = sent_tokenize_stanza(stanzaPipeLine(readfile(file)))
-            hashfile.storehash(hashmap, checksum, sentences)
-            hashfile.writehash(hashmap, o2)
-        df = one_text_res(sentences, targets, index, IO_csv_util.dressFilenameForCSVHyperlink(file))
+    for doc_index, file in enumerate(files):
+        # checksum = hashfile.calculate_checksum(file)
+        # head, tail = os.path.split(file)
+        # # SIMON cache
+        # if checksum in hashmap:
+        #     sentences = hashmap[checksum]
+        #     print(f" Using cache :  Processing file {doc_index + 1}/{len(files)} {tail}")
+        # else:
+        #     print(f" Building cache:  Processing file {doc_index + 1}/{len(files)} {tail}")
+        sentences = sent_tokenize_stanza(stanzaPipeLine(readfile(file)))
+            # # SIMON cache
+            # hashfile.storehash(hashmap, checksum, sentences)
+            # hashfile.writehash(hashmap, hashOutputDir)
+        for sentence in sentences:
+            co_occurring = False
+            sentIndex += 1
+            for search_word in search_keywords_list:
+                search_word_frequency = get_search_word_from_text(sentence, search_word, lemmatize, case_sensitive, exact_word_match)
+                if keywords_co_occurr(search_keywords_list, sentence):
+                    co_occurring = True
+            search_keywords_str = str(', '.join(search_keywords_list))
+            results.append((search_keywords_str, co_occurring, sentIndex, sentence, doc_index, file))
+        df = pd.DataFrame(results, columns=['Search word(s)', 'Co-Occurring in Sentence', 'Sentence ID', 'Sentence',
+                                              'Document ID', 'Document'])
+
+        # df = one_text_res(sentences, search_keywords_list, index+1, IO_csv_util.dressFilenameForCSVHyperlink(file))
         all_results = pd.concat([all_results, df]) # Append the results to the all_results DataFrame
     all_results.to_csv(outputFilename,index=False)
-    # print("Generation complete. Done!")
+
+    IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+                                                   'Finished running within-sentence Co-Occurrences VIEWER at',
+                                                   True, '', True, startTime, False)
     return outputFilename
 
 def processSearchWords(inputStr):
@@ -89,13 +132,13 @@ def processSearchWords(inputStr):
     return word_list
 
 
-def process_date(search_wordsLists, temporal_aggregation):
+def process_date(search_keywords_str, temporal_aggregation):
     # it will iterate through i = 0, 1, 2, …., n-1
     # this assumes the data are in this format: temporal_aggregation, frequency of search-word_1, frequency of search-word_2, ...
     i = 0
     j = 0
     columns_to_be_plotted_yAxis = []
-    ngram_list = processSearchWords(search_wordsLists)
+    ngram_list = processSearchWords(search_keywords_str)
     ngram_list = ['-checkNGrams'] + ngram_list
     while i < (len(ngram_list) - 1):
         if temporal_aggregation == "quarter" or temporal_aggregation == "month":
@@ -109,7 +152,7 @@ def process_date(search_wordsLists, temporal_aggregation):
     return columns_to_be_plotted_yAxis
 
 
-def aggregate_by_number_of_years(yearList, byNumberOfYears, search_word_list):
+def aggregate_by_number_of_years(yearList, byNumberOfYears, search_keywords_list):
     # pprint.pprint(ngram_results)
     curYear = yearList[0]
     newYear = curYear + byNumberOfYears - 1
@@ -124,7 +167,7 @@ def aggregate_by_number_of_years(yearList, byNumberOfYears, search_word_list):
         curYear = newYear + 1
         newYear = curYear + byNumberOfYears - 1
     aggregated_ngram_results = {}
-    for word in search_word_list:
+    for word in search_keywords_list:
         aggregated_ngram_results[word] = {}
         for y in newYearStringList:
             aggregated_ngram_results[word][y] = {"Search Word(s)": word,
@@ -170,225 +213,115 @@ def process_n_grams(search_word, ngram_results, quarter_ngram_results, year, mon
     return ngram_results, quarter_ngram_results
 
 
-# def process_coOcc(file, search_word, search_word_list, coOcc_results):
-#     return
-   # co_occurrence_checker = True
-   # co_occurrence_checker = True
-   # for word in search_word_list:
-   #     if word not in list(coOcc_results.items())[0][1]['Search Word(s)']:  # list(coOcc_results.items())[1]:
-   #         co_occurrence_checker = False
-    #        break
-   # if co_occurrence_checker:
-   #     coOcc_results[search_word] = 1
-   #     co_occurrence_checker = True
-   #     coOcc_results[file]["Co-Occurrence"] = "YES"
+def lemmatize_search_words(search_words_str):
+    if isinstance(search_words_str,str):
+        # convert string to list
+        search_keywords_list = search_words_str.split(' ')
+    else:
+        search_keywords_list = search_words_str
+    lemmatized_search_keywords_list=[]
+    for word in search_keywords_list:
+        lemmatized_word = lemmatize_stanza(stanzaPipeLine(word))
+        lemmatized_search_keywords_list.append(lemmatized_word)
+    lemmatized_search_word_str= ", ".join(str(element) for element in lemmatized_search_keywords_list)
+    return lemmatized_search_keywords_list, lemmatized_search_word_str
+def prepare_text_with_options(text_to_process, case_sensitive, exact_word_match, lemmatize, lang='en'):
+    if lemmatize:
+        import Stanza_functions_util
+        text_to_process = Stanza_functions_util.lemmatize_stanza_doc(text_to_process, lang)
+    if not case_sensitive:
+        text_to_process = text_to_process.lower()
+    return text_to_process
 
-    # return coOcc_results, co_occurrence_checker
+
+def get_search_word_from_text(text_to_process, search_word, lemmatize, case_sensitive, exact_word_match):
+    if lemmatize:
+        search_word = search_word.lower()
+    if exact_word_match:
+        # multi-word expressions (e.g., good programmer) would not be found if the text is split into separate tokens
+        if len(search_word.split())==1:
+            import re
+            # remove all punctuation and returns a list
+            text_to_process = re.findall(r'\b\w+\b', text_to_process)
+        # count is case-sensitive
+        search_word_frequency = text_to_process.count(search_word)
+    else:
+        # count is case-sensitive
+        search_word_frequency = text_to_process.count(search_word)
+    return search_word_frequency
 
 
-def process_word_search(file, n_grams_viewer, CoOcc_Viewer, tokens_, search_word_list,
+def process_word_search(text_to_process, docIndex_sentIndex, case_sensitive, exact_word_match, lemmatize, n_grams_viewer, CoOcc_Viewer, search_keywords_list,
                         ngram_results, quarter_ngram_results, coOcc_results, year, month,
-                        byNumberOfYears, byYear, byMonth, byQuarter, yearList):
-    for collocationIndex in range(len(tokens_)):
-        token = tokens_[collocationIndex]
-        for search_word in search_word_list:
-            # splitting searched multi-word expressions, such as Hong Kong, Australian author, beautiful young princess
+                        byNumberOfYears, byYear, byMonth, byQuarter, yearList, within_sentence_co_occurrence_search_var=True):
 
-            iterations = search_word.count(' ')
-            split_search_word = search_word.split(' ')
-            length_of_search_list = len(split_search_word)
-            checker = False
-            if iterations > 0:
-                for i in range(length_of_search_list):
-                    if i == 0:
-                        if split_search_word[i] == token:
-                            checker = True
-                    else:
-                        if checker and (collocationIndex + i) < len(tokens_):
-                            if split_search_word[i] == tokens_[collocationIndex + i]:
-                                checker = True
-                            else:
-                                checker = False
-                                break
-                if checker and CoOcc_Viewer:
-                    coOcc_results[file]['Co-Occurrence'][search_word] += 1
-                if n_grams_viewer and checker:
-                    ngram_results, quarter_ngram_results = process_n_grams(search_word, ngram_results,
-                                                                           quarter_ngram_results, year, month,
-                                                                           byNumberOfYears, byYear, byMonth, byQuarter,
-                                                                           yearList)
-
+    if CoOcc_Viewer:
+        co_occ_sent = True
+        co_occ_doc = True
+        freq_doc=0
+        for search_word in search_keywords_list:
+            search_word_frequency = get_search_word_from_text(text_to_process, search_word, lemmatize, case_sensitive, exact_word_match)
+            if within_sentence_co_occurrence_search_var:
+                coOcc_results[docIndex_sentIndex]['Co-Occurrence in Sentence'][search_word] = search_word_frequency
+                valuescheck_sent = coOcc_results[docIndex_sentIndex]['Co-Occurrence in Sentence'].values()
+                if 0 in valuescheck_sent:
+                    coOcc_results[docIndex_sentIndex]['Co-Occurrence_inSentence_bool'] = "NO"
+                else:
+                    coOcc_results[docIndex_sentIndex]['Co-Occurrence_inSentence_bool'] = "YES"
             else:
-                if search_word == token:
-                    # for now the date option only applies to n-grams but there is no reason to exclude co-occurrences
-                    # if dateOption:
-                    if n_grams_viewer:
-                        ngram_results, quarter_ngram_results = process_n_grams(search_word, ngram_results,
-                                                                               quarter_ngram_results, year, month,
-                                                                               byNumberOfYears, byYear, byMonth,
-                                                                               byQuarter, yearList)
+                coOcc_results[docIndex_sentIndex]['Co-Occurrence in Document'][search_word] = search_word_frequency
+                valuescheck_doc = coOcc_results[docIndex_sentIndex]['Co-Occurrence in Document'].values()
+                if 0 in valuescheck_doc:
+                    coOcc_results[docIndex_sentIndex]['Co-Occurrence_inDocument_bool'] = "NO"
+                else:
+                    coOcc_results[docIndex_sentIndex]['Co-Occurrence_inDocument_bool'] = "YES"
 
-                    if CoOcc_Viewer:
-                        coOcc_results[file]['Co-Occurrence'][search_word]+=1
-                        #coOcc_results, co_occurrence_checker = process_coOcc(file, search_word, search_word_list,
-                        #                                                     coOcc_results)
-                        # do not skip the next record when running both n-grams and coOcc
-                        #if co_occurrence_checker and not n_grams_viewer:
-                        #    break
-    if CoOcc_Viewer: #failed to consider this fact.... let's first make it work...
-        valuescheck = coOcc_results[file]['Co-Occurrence'].values()
-        if 0 in valuescheck:
-            coOcc_results[file]['Co-Occurrence-bool']="NO"
-        else:
-            coOcc_results[file]['Co-Occurrence-bool'] = "YES"
+    # if n_grams_viewer:
+    #     ngram_results, quarter_ngram_results = process_n_grams(search_word, ngram_results,
+    #                                                            quarter_ngram_results, year, month,
+    #                                                            byNumberOfYears, byYear, byMonth, byQuarter,
+    #                                                            yearList)
+
     return ngram_results, quarter_ngram_results, coOcc_results
 
-
-def NGrams_search_VIEWER(inputDir="relative_path_here",
-        outputDir="relative_path_here",
-        configFileName='',
-         chartPackage='Excel', dataTransformation='No transformation',
-        n_grams_viewer=False,
-        CoOcc_Viewer=True,
-        search_wordsLists=None,
-        minus_K_words_var=0,
-        plus_K_words_var=0,
-        language_list=['English'],
-        useLemma=False,
-        dateOption=False,
-        temporal_aggregation='year',
-        number_of_years=0,
-        dateFormat="mm-dd-yyyy",
-        itemsDelimiter="_",
-        datePos=2,
-        viewer_options_list=[],ngrams_size=1,Ngrams_search_var=False,csv_file_var=None):
-
-    if n_grams_viewer or CoOcc_Viewer:
-        # create a subdirectory of the output directory
-        outputDir = IO_files_util.make_output_subdirectory('', inputDir, outputDir, label='N-grams VIEWER',
-                                                           silent=False)
-        if outputDir == '':
-            return
-    else:
-        # create a subdirectory of the output directory
-        outputDir = IO_files_util.make_output_subdirectory(csv_file_var, inputDir, outputDir, label='search_N-grams',
-                                                           silent=False)
-        if outputDir == '':
-            return
-
-
-    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
-                                                   'Started running Words/Characters N-Grams at',
-                                                   True, '', True, '', False)
-
-    from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-
-    if search_wordsLists is None:
-        search_wordsLists = []
-    checkCoOccList = False
-
-    lang_dict = dict(constants_util.languages)
-    lang = ''
-    lang_list = []
-    for k, v in lang_dict.items():
-        if v == language_list[0]:
-            lang = k
-            lang_list.append(lang)
-            break
-    try:
-        if useLemma:
-            stanzaPipeLine = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
-        else:
-            stanzaPipeLine = stanza.Pipeline(lang=lang, processors='tokenize')
-    except:
-        mb.showwarning(title='Warning',
-                       message='You must enter an integer value. The value ' + str(result[0]) + ' is not an integer.')
-        return
-    case_sensitive = False
-    normalize = False
-    scaleData = False
-    useLemma = False
-    fullInfo = False
-    # print(str(viewer_options_list))
-    if 'sensitive' in str(viewer_options_list):
-        case_sensitive = True
-    if 'insensitive' in str(viewer_options_list):
-        case_sensitive = False
-    if 'Normalize' in str(viewer_options_list):
-        normalize = True
-    if 'Scale' in str(viewer_options_list):
-        scaleData = True
-    if 'Lemmatize' in str(viewer_options_list):
-        useLemma = True
-
-    byNumberOfYears = 0
-    byYear = False
-    byQuarter = False
-    byMonth = False
-
-    if dateOption:
-        if temporal_aggregation == 'group of years':
-            byNumberOfYears = number_of_years  # number of years in one aggregated chunk
-            byYear = True  # set to True if aggregating by years
-            aggregateBy = 'year'
-        elif temporal_aggregation == 'year':
-            byYear = True  # set to True if aggregating by years
-            aggregateBy = 'year'
-        elif temporal_aggregation == 'quarter':
-            byQuarter = True  # set to True if aggregating by years
-            aggregateBy = 'quarter'
-        elif temporal_aggregation == 'month':
-            byMonth = True  # set to True if aggregating by years
-            aggregateBy = 'month'
-    else:
-        aggregateBy = ''
-        temporal_aggregation = ''
-
-    inputDocs = IO_files_util.getFileList('', inputDir, ".txt", silent=False,
-                                      configFileName=configFileName)  # get all input files
-    nDocs=len(inputDocs)
-    if nDocs==0:
-        return
+    #     else:
+    #         if search_word == token:
+    #             # for now the date option only applies to n-grams but there is no reason to exclude co-occurrences
+    #             # if dateOption:
+    #             if n_grams_viewer:
+    #                 ngram_results, quarter_ngram_results = process_n_grams(search_word, ngram_results,
+    #                                                                        quarter_ngram_results, year, month,
+    #                                                                        byNumberOfYears, byYear, byMonth,
+    #                                                                        byQuarter, yearList)
+    #
+    # if CoOcc_Viewer:
+    #     # @@@
+    #     if within_sentence_co_occurrence_search_var:
+    #         # coOcc_results[docIndex_sentIndex]['Co-Occurrence in Sentence'][search_word]+=1
+    #         valuescheck_sent = coOcc_results[docIndex_sentIndex]['Co-Occurrence in Sentence'].values()
+    #         if 0 in valuescheck_sent:
+    #             coOcc_results[docIndex_sentIndex]['Co-Occurrence_inSentence_bool'] = "NO"
+    #         else:
+    #             coOcc_results[docIndex_sentIndex]['Co-Occurrence_inSentence_bool'] = "YES"
+    #
+    #         # coOcc_results[docIndex_sentIndex]['Co-Occurrence in Document'][search_word]+=1
+    #         valuescheck_doc = coOcc_results[docIndex_sentIndex]['Co-Occurrence in Document'].values()
+    #         if 0 in valuescheck_doc:
+    #             coOcc_results[docIndex_sentIndex]['Co-Occurrence_inDocument_bool'] = "NO"
+    #         else:
+    #             coOcc_results[docIndex_sentIndex]['Co-Occurrence_inDocument_bool'] = "YES"
+    #     else:
+    #         coOcc_results[docIndex_sentIndex]['Co-Occurrence in Document'][search_word]+=1
+    #         valuescheck_doc = coOcc_results[docIndex_sentIndex]['Co-Occurrence in Document'].values()
+    #         if 0 in valuescheck_doc:
+    #             coOcc_results[docIndex_sentIndex]['Co-Occurrence_inDocument_bool'] = "NO"
+    #         else:
+    #             coOcc_results[docIndex_sentIndex]['Co-Occurrence_inDocument_bool'] = "YES"
+    #
+    # return ngram_results, quarter_ngram_results, coOcc_results
 
 
-    import IO_string_util
-    search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_string_list(search_wordsLists,
-                                                                                                   case_sensitive)
-
-    original_search_word = search_keywords_str
-    _results = {}
-    yearList = []
-    docIndex = 1
-
-    # collect date info
-    if dateOption:
-        print("\nProcessing files collecting date information\n")
-        for file in inputDocs:  # iterate over each file
-            head, tail = os.path.split(file)
-            print("Processing file " + str(docIndex) + "/" + str(nDocs) + ' ' + tail)
-            docIndex += 1
-            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter,
-                                                                                datePos)
-            yearList.append(year)
-            yearList = sorted(np.unique(yearList))
-
-    # coOcc_results are initialized below because this dictionary needs the filename
-    ngram_results = {}
-    quarter_ngram_results = {}
-    coOcc_results = {}
-
-
-    # iterate over each file, searching for words
-    print("\nProcessing files for search words\n")
-    docIndex = 0
-
-    #########NEW FILE##########
-    import hashfile
-    if hashfile.checkOut(outputDir):
-        hashmap = hashfile.getcache(outputDir)
-    else:
-        hashmap = {}
-
+def process_ngrams(data, word, minus_K_words_var, plus_K_words_var):
     def transform(ngram):
         return ' '.join(ngram.split(' ')[:-1])
 
@@ -429,224 +362,405 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
         subrange = words[start_index:end_index]  # Extract the subrange
         return word in ' '.join(subrange) # Check if the word is within the subrange.
 
-    def process_ngrams(data, word, minus_K_words_var, plus_K_words_var):
-        column_name = data.columns[0]
-        ngram_size = int(column_name.split('-')[0])  # Extracting the size of the n-gram from the column name
-        filtered_data = data[data[column_name].apply(lambda x: is_word_in_custom_range(x, word, minus_K_words_var, plus_K_words_var))].copy()
-        initial_filter_data = filtered_data.copy()
-        if filtered_data.empty:
-            print("No data rows with the specified conditions.")
-            return None  # or handle it as appropriate for your use case
-        if ngram_size in [1, 2]:
-            filtered_data['Search word'] = filtered_data[column_name].apply(transform)
-            filtered_data['Co-Occurring word'] = word
-        else:
-            filtered_data['Words to the left'], filtered_data['Words to the right'] = zip(
-                *filtered_data[column_name].apply(
-                    lambda x: extract_context(x, word, minus_K_words_var, plus_K_words_var)))
-            filtered_data['Search word'] = word
-        return initial_filter_data,filtered_data
+    column_name = data.columns[0]
+    ngram_size = int(column_name.split('-')[0])  # Extracting the size of the n-gram from the column name
+    filtered_data = data[data[column_name].apply(lambda x: is_word_in_custom_range(x, word, minus_K_words_var, plus_K_words_var))].copy()
+    initial_filter_data = filtered_data.copy()
+    if filtered_data.empty:
+        print("No data rows with the specified conditions.")
+        return None  # or handle it as appropriate for your use case
+    if ngram_size in [1, 2]:
+        filtered_data['Search word'] = filtered_data[column_name].apply(transform)
+        filtered_data['Co-Occurring word'] = word
+    else:
+        filtered_data['Words to the left'], filtered_data['Words to the right'] = zip(
+            *filtered_data[column_name].apply(
+                lambda x: extract_context(x, word, minus_K_words_var, plus_K_words_var)))
+        filtered_data['Search word'] = word
+    return initial_filter_data,filtered_data
 
-    # search n-gram file --------------------------------------------------------------------
+
+def search_ngrams_csv_file(csv_file_var, inputDir, outputDir, configFileName, search_keywords_list,
+                           plus_K_words_var, minus_K_words_var, chartPackage, dataTransformation):
+
+    startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams start',
+                                                   'Started running Words/Characters N-Grams csv file SEARCH at',
+                                                   True, '', True, '', False)
+
+    # create a subdirectory of the output directory
+    outputDir = IO_files_util.make_output_subdirectory(csv_file_var, inputDir, outputDir, label='search_N-grams',
+                                                       silent=False)
+    if outputDir == '':
+        return
+
+    filesToOpen = []
+    if csv_file_var is None:
+        print("empty csv file, do again, this ought not to happen?!")
+        return
+    data = pd.read_csv(csv_file_var)
+    if 'gram' not in data.columns[0]:
+        mb.showwarning(title='Input file error',
+                       message='The selected csv file is not the expected csv N-grams file.\n\nThis file should contain a header with the word "gram".\n\nPlease, select the expected csv file and try again.')
+        return
+
+    # Check the input parameters, i comment it out for now because we don't know the design
+    if minus_K_words_var < 0 or plus_K_words_var < 0 or (minus_K_words_var + plus_K_words_var) > int(
+            data.columns[0][0]) - 1:
+        mb.showwarning(title='Warning',
+                       message='The sum of -K and +K values should be < than the n-grams value (so, a 4-ngrams can only have a combination of -K + K values less or equal to 3).\n\nThe n-grams value in your input csv file is ' + str(
+                           data.columns[0][0]) + '.')
+        return
+
+    words = search_keywords_list
+    l = []
+    l_sankey = []
+    for word in words:
+        try:
+            b, df2 = process_ngrams(data, word, minus_K_words_var, plus_K_words_var)
+        except:
+            mb.showwarning(title='Warning', message='The selected input file does not contain the word "' + word + '".')
+            return
+        expanded_rows = []
+        for _, row in df2.iterrows():
+            new_row = row.copy()
+            num_repetitions = int(row['Frequency in Document'])
+            for _ in range(num_repetitions):
+                expanded_rows.append(new_row)
+        expanded_df = pd.DataFrame(expanded_rows)
+        l_sankey.append(expanded_df)
+        pivot_df = b.pivot_table(
+            values='Frequency in Document',  # fill with frequencies
+            index='Document ID',  # rows are documents
+            columns=data.columns[0],  # columns are 2-grams
+            fill_value=0,  # fill missing values with 0
+            aggfunc='sum')  # use sum to aggregate entries
+        all_document_ids = range(min(data['Document ID']), max(
+            data['Document ID']) + 1)  # Replace with the actual range or list of your document IDs
+        pivot_df = pivot_df.reindex(all_document_ids, fill_value=0)
+        l.append(pivot_df)
+    combined_pivot_df = pd.concat(l, axis=1)
+    combined_saneky_df = pd.concat(l_sankey)
+    a_to_b_mapping = data.drop_duplicates(subset='Document ID').set_index('Document ID')['Document'].to_dict()
+    combined_pivot_df['Document ID'] = combined_pivot_df.index
+    combined_pivot_df['Document'] = combined_pivot_df.index.map(a_to_b_mapping)
+    # combined_pivot_df.insert(len(combined_pivot_df.columns)-1, 'Document ID', combined_pivot_df['Document ID'])
+    NgramsSearchFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
+                                                                   'N-grams_search')
+
+    # Check if the combined DataFrame is empty
+    if l_sankey[0].empty:
+        mb.showwarning(title='Warning',
+                       message='There are no instances of your search word(s) in the selected input file')
+        return
+    combined_pivot_df.to_csv(NgramsSearchFileName, index=False)
+
+    if chartPackage != 'No charts':
+        inputFilename = NgramsSearchFileName
+        ngram_size = int(data.columns[0].split('-')[0])
+        if ngram_size == 1:
+            # inputFilename=outputFilename_byDocument
+            # these variables are used in charts_util.visualize_chart
+            headers = IO_csv_util.get_csvfile_headers(inputFilename)
+            groupBy = []
+            X_axis_label = ''
+            if 'Date' in headers:
+                X_axis_label = 'Date'
+                groupBy = ['Date']
+            else:
+                if 'Document' in headers:
+                    X_axis_label = 'Document'
+                    groupBy = ['Document']
+            doc_pos = IO_csv_util.get_columnNumber_from_headerValue(headers, X_axis_label, inputFilename)
+
+            columns_to_be_plotted_yAxis = []
+            title_string = ''
+            for word in words:
+                title_string = title_string + word + ', '
+                word_pos = IO_csv_util.get_columnNumber_from_headerValue(headers, word, inputFilename)
+                columns_to_be_plotted_yAxis.append([doc_pos, word_pos])
+            # remove last ,
+            title_string = title_string.rstrip()[:-1]
+            import charts_util
+            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
+                                              outputFileLabel='search',
+                                              chartPackage=chartPackage,
+                                              dataTransformation=dataTransformation,
+                                              chart_type_list=['line'],
+                                              chart_title='Frequency Distribution of Search Word(s) by ' + X_axis_label + '\n' + title_string,
+                                              hover_info_column_list=[],
+                                              column_xAxis_label_var=X_axis_label,
+                                              count_var=0)
+
+            if outputFiles != None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+            return filesToOpen
+
+        else:
+            NgramsSearchFileName_Sankey = IO_files_util.generate_output_file_name('', inputDir, outputDir,
+                                                                                  '_Sankey.csv',
+                                                                                  'N-grams_search')
+            NgramsSearchFileName_txt = IO_files_util.generate_output_file_name('', inputDir, outputDir,
+                                                                               '_frequencies.txt',
+                                                                               'N-grams_search')
+            combined_saneky_df.to_csv(NgramsSearchFileName_Sankey, index=False)
+            combined_saneky_df[combined_saneky_df.columns[0]].to_csv(NgramsSearchFileName_txt, index=False)
+
+            with open(NgramsSearchFileName_txt, 'r', encoding='utf-8', errors='ignore') as f:
+                q = f.read()
+            for word in search_keywords_list:
+                q = q.replace(word, '')
+                print(q, word)
+            with open(NgramsSearchFileName_txt, 'w', encoding='utf-8') as f:
+                f.write(q)
+
+            use_contour_only = False
+            max_words = 100
+            font = 'Default'
+            prefer_horizontal = .9
+            lemmatize = False
+            exclude_stopwords = True
+            exclude_punctuation = True
+            lowercase = False
+
+            differentPOS_differentColors = False
+            differentColumns_differentColors = False
+            csvField_color_list = []
+            doNotListIndividualFiles = True
+            collocation = False
+            import wordclouds_util
+            outputFiles2 = wordclouds_util.python_wordCloud(NgramsSearchFileName_txt, '', outputDir, configFileName,
+                                                            selectedImage="",
+                                                            use_contour_only=use_contour_only,
+                                                            prefer_horizontal=prefer_horizontal, font=font,
+                                                            max_words=max_words,
+                                                            lemmatize=lemmatize,
+                                                            exclude_stopwords=exclude_stopwords,
+                                                            exclude_punctuation=exclude_punctuation,
+                                                            lowercase=lowercase,
+                                                            differentPOS_differentColors=differentPOS_differentColors,
+                                                            differentColumns_differentColors=differentColumns_differentColors,
+                                                            csvField_color_list=csvField_color_list,
+                                                            doNotListIndividualFiles=doNotListIndividualFiles,
+                                                            openOutputFiles=False, collocation=collocation)
+            filesToOpen.extend(outputFiles2)
+            import charts_util
+            headers = IO_csv_util.get_csvfile_headers(NgramsSearchFileName_Sankey)
+            Sankey_limit1_var = 30
+            Sankey_limit2_var = 30
+            Sankey_limit3_var = 30
+            output_label = ''
+
+            outputFilename = IO_files_util.generate_output_file_name(NgramsSearchFileName_Sankey, inputDir, outputDir,
+                                                                     '.html', output_label)
+            if ngram_size == 2:
+                three_way_Sankey = False
+                var3 = None
+                Sankey_limit3_var = None
+                Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
+                                                  'Search word', Sankey_limit1_var, 'Co-Occurring word',
+                                                  Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
+                filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
+            elif plus_K_words_var == 0:
+                three_way_Sankey = False
+                var3 = None
+                Sankey_limit3_var = None
+                Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
+                                                  'Search word', Sankey_limit1_var, 'Words to the left',
+                                                  Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
+                filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
+            elif minus_K_words_var == 0:
+                three_way_Sankey = False
+                var3 = None
+                Sankey_limit3_var = None
+                Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
+                                                  'Search word', Sankey_limit1_var, 'Words to the right',
+                                                  Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
+                filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
+            else:
+                three_way_Sankey = True
+                Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
+                                                  'Words to the left', Sankey_limit1_var, 'Words to the right',
+                                                  Sankey_limit2_var, 0, "Search word", Sankey_limit3_var)
+                filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
+                pass
+    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
+                                       'Finished running Words/Characters N-Grams csv file SEARCH at',
+                                       True, '', True, startTime, False)
+
+    return filesToOpen
+
+def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
+        outputDir="relative_path_here",
+        configFileName='',
+        chartPackage='Excel', dataTransformation='No transformation',
+        n_grams_viewer=False,
+        CoOcc_Viewer=True,
+        search_keywords_list=None,
+        minus_K_words_var=0,
+        plus_K_words_var=0,
+        language_list=['English'],
+        useLemma=False,
+        dateOption=False,
+        temporal_aggregation='year',
+        number_of_years=0,
+        dateFormat="mm-dd-yyyy",
+        itemsDelimiter="_",
+        datePos=2,
+        viewer_options_list=[],ngrams_size=1,Ngrams_search_var=False,csv_file_var=None, within_sentence_co_occurrence_search_var=True):
+
+    from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+
+    if search_keywords_list is None:
+        search_keywords_list = []
+    checkCoOccList = False
+
+    lang_dict = dict(constants_util.languages)
+    lang = ''
+    lang_list = []
+    for k, v in lang_dict.items():
+        if v == language_list[0]:
+            lang = k
+            lang_list.append(lang)
+            break
+    try:
+        if useLemma:
+            nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
+        else:
+            nlp = stanza.Pipeline(lang=lang, processors='tokenize')
+    except:
+        mb.showwarning(title='Warning',
+                       # message='You must enter an integer value. The value ' + str(result[0]) + ' is not an integer.')
+                    message = 'You must enter an integer value. The value is not an integer.')
+        return
+    case_sensitive = False
+    normalize = False
+    scaleData = False
+    useLemma = False
+    fullInfo = False
+    exact_word_match = True
+
+    # print(str(viewer_options_list))
+    if 'sensitive' in str(viewer_options_list):
+        case_sensitive = True
+    if 'insensitive' in str(viewer_options_list):
+        case_sensitive = False
+    if 'Partial' in str(viewer_options_list):
+        exact_word_match = False
+    if 'Normalize' in str(viewer_options_list):
+        normalize = True
+    if 'Scale' in str(viewer_options_list):
+        scaleData = True
+    if 'Lemmatize' in str(viewer_options_list):
+        useLemma = True
+
+    # print('TOP case_sensitive',case_sensitive)
+
+    byNumberOfYears = 0
+    byYear = False
+    byQuarter = False
+    byMonth = False
+
+    # dataOption is required for Ngrams and optional for Co-occ
+    if dateOption:
+        if temporal_aggregation == 'group of years':
+            byNumberOfYears = number_of_years  # number of years in one aggregated chunk
+            byYear = True  # set to True if aggregating by years
+            aggregateBy = 'year'
+        elif temporal_aggregation == 'year':
+            byYear = True  # set to True if aggregating by years
+            aggregateBy = 'year'
+        elif temporal_aggregation == 'quarter':
+            byQuarter = True  # set to True if aggregating by years
+            aggregateBy = 'quarter'
+        elif temporal_aggregation == 'month':
+            byMonth = True  # set to True if aggregating by years
+            aggregateBy = 'month'
+    else:
+        aggregateBy = ''
+        temporal_aggregation = ''
+
+    inputDocs = IO_files_util.getFileList('', inputDir, ".txt", silent=False,
+                                      configFileName=configFileName)  # get all input files
+    nDocs=len(inputDocs)
+    if nDocs==0:
+        return
+
+
+    import IO_string_util
+    search_keywords_str, search_keywords_list = IO_string_util.process_comma_separated_string_list(search_keywords_list,
+                                                                                                   case_sensitive)
+
+    original_search_word = search_keywords_str
+    _results = {}
+    yearList = []
+    docIndex = 1
+
+    # collect date info
+    if dateOption:
+        print("\nProcessing files collecting date information\n")
+        for file in inputDocs:  # iterate over each file
+            head, tail = os.path.split(file)
+            print("Processing file " + str(docIndex) + "/" + str(nDocs) + ' ' + tail)
+            docIndex += 1
+            date, dateStr, month, day, year = IO_files_util.getDateFromFileName(file, dateFormat, itemsDelimiter,
+                                                                                datePos)
+            yearList.append(year)
+            yearList = sorted(np.unique(yearList))
+
+    # coOcc_results are initialized below because this dictionary needs the filename
+    ngram_results = {}
+    quarter_ngram_results = {}
+    coOcc_results = {}
+
+    # iterate over each file, searching for words
+    print("\nProcessing files for search words\n")
+    docIndex = 0
+
+    #########NEW FILE##########
+    # # SIMON cache
+    # import hashfile
+    # if hashfile.checkOut(outputDir):
+    #     hashmap = hashfile.getcache(outputDir)
+    # else:
+    #     hashmap = {}
+    #
+
+# search n-gram csv file --------------------------------------------------------------------
 
     search_words = []
     if Ngrams_search_var:
-        filesToOpen=[]
-        if csv_file_var is None:
-            print("empty csv file, do again, this ought not to happen?!")
-            return
-        data = pd.read_csv(csv_file_var)
-        if 'gram' not in data.columns[0]:
-            mb.showwarning(title='Input file error',
-                           message='The selected csv file is not the expected csv N-grams file.\n\nThis file should contain a header with the word "gram".\n\nPlease, select the expected csv file and try again.')
-            return
+        filestoOpen = search_ngrams_csv_file(csv_file_var, inputDir, outputDir, configFileName, search_keywords_list,
+                                   plus_K_words_var, minus_K_words_var, chartPackage, dataTransformation)
 
-        # Check the input parameters, i comment it out for now because we don't know the design
-        if minus_K_words_var < 0 or plus_K_words_var < 0 or (minus_K_words_var + plus_K_words_var) > int(data.columns[0][0]) - 1:
-            mb.showwarning(title='Warning',
-                           message='The sum of -K and +K values should be < than the n-grams value (so, a 4-ngrams can only have a combination of -K + K values less or equal to 3).\n\nThe n-grams value in your input csv file is ' + str(data.columns[0][0]) + '.')
-            return
+# N-grams/Co-Occ VIEWER ----------------------------------------------------------------------------
 
-        words = search_keywords_list
-        l = []
-        l_sankey = []
-        for word in words:
-            try:
-                b, df2 = process_ngrams(data, word, minus_K_words_var, plus_K_words_var)
-            except:
-                mb.showwarning(title='Warning',message='The selected input file does not contain the word "' + word +'".')
-                return
-            expanded_rows = []
-            for _, row in df2.iterrows():
-                new_row = row.copy()
-                num_repetitions = int(row['Frequency in Document'])
-                for _ in range(num_repetitions):
-                    expanded_rows.append(new_row)
-            expanded_df = pd.DataFrame(expanded_rows)
-            l_sankey.append(expanded_df)
-            pivot_df = b.pivot_table(
-                values='Frequency in Document',  # fill with frequencies
-                index='Document ID',  # rows are documents
-                columns=data.columns[0],  # columns are 2-grams
-                fill_value=0,  # fill missing values with 0
-                aggfunc='sum')  # use sum to aggregate entries
-            all_document_ids = range(min(data['Document ID']), max(
-                data['Document ID']) + 1)  # Replace with the actual range or list of your document IDs
-            pivot_df = pivot_df.reindex(all_document_ids, fill_value=0)
-            l.append(pivot_df)
-        combined_pivot_df = pd.concat(l, axis=1)
-        combined_saneky_df = pd.concat(l_sankey)
-        a_to_b_mapping = data.drop_duplicates(subset='Document ID').set_index('Document ID')['Document'].to_dict()
-        combined_pivot_df['Document ID'] = combined_pivot_df.index
-        combined_pivot_df['Document'] = combined_pivot_df.index.map(a_to_b_mapping)
-        # combined_pivot_df.insert(len(combined_pivot_df.columns)-1, 'Document ID', combined_pivot_df['Document ID'])
-        NgramsSearchFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
-                                                                 'N-grams_search')
-
-        # Check if the combined DataFrame is empty
-        if l_sankey[0].empty:
-            mb.showwarning(title='Warning',
-                           message='There are no instances of your search word(s) in the selected input file')
-            return
-        combined_pivot_df.to_csv(NgramsSearchFileName, index=False)
-
-        if chartPackage!='No charts':
-            inputFilename = NgramsSearchFileName
-            ngram_size = int(data.columns[0].split('-')[0])
-            if ngram_size==1:
-                # inputFilename=outputFilename_byDocument
-                # these variables are used in charts_util.visualize_chart
-                headers = IO_csv_util.get_csvfile_headers(inputFilename)
-                groupBy = []
-                X_axis_label = ''
-                if 'Date' in headers:
-                    X_axis_label = 'Date'
-                    groupBy = ['Date']
-                else:
-                    if 'Document' in headers:
-                        X_axis_label = 'Document'
-                        groupBy = ['Document']
-                doc_pos = IO_csv_util.get_columnNumber_from_headerValue(headers, X_axis_label, inputFilename)
-
-                columns_to_be_plotted_yAxis=[]
-                title_string=''
-                for word in words:
-                    title_string = title_string + word + ', '
-                    word_pos = IO_csv_util.get_columnNumber_from_headerValue(headers, word, inputFilename)
-                    columns_to_be_plotted_yAxis.append([doc_pos, word_pos])
-                # remove last ,
-                title_string=title_string.rstrip()[:-1]
-                import charts_util
-                outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, inputFilename, outputDir,
-                                                  outputFileLabel='search',
-                                                  chartPackage=chartPackage,
-                                                  dataTransformation=dataTransformation,
-                                                  chart_type_list=['line'],
-                                                  chart_title='Frequency Distribution of Search Word(s) by ' + X_axis_label + '\n' + title_string,
-                                                  hover_info_column_list=[],
-                                                  column_xAxis_label_var=X_axis_label,
-                                                  count_var=0)
-
-                if outputFiles != None:
-                    if isinstance(outputFiles, str):
-                        filesToOpen.append(outputFiles)
-                    else:
-                        filesToOpen.extend(outputFiles)
-
-                return filesToOpen
-
+    if n_grams_viewer or CoOcc_Viewer:
+        # create a subdirectory of the output directory
+        if n_grams_viewer:
+            outputDir = IO_files_util.make_output_subdirectory('', inputDir, outputDir, label='N-grams VIEWER',
+                                                               silent=False)
+        elif CoOcc_Viewer:
+            if within_sentence_co_occurrence_search_var:
+                label='Co-occ_sent_VIEWER'
             else:
-                NgramsSearchFileName_Sankey = IO_files_util.generate_output_file_name('', inputDir, outputDir,
-                                                                                      '_Sankey.csv',
-                                                                                      'N-grams_search')
-                NgramsSearchFileName_txt = IO_files_util.generate_output_file_name('', inputDir, outputDir,
-                                                                                      '_frequencies.txt',
-                                                                                      'N-grams_search')
-                combined_saneky_df.to_csv(NgramsSearchFileName_Sankey, index=False)
-                combined_saneky_df[combined_saneky_df.columns[0]].to_csv(NgramsSearchFileName_txt,index = False)
+                label = 'Co-occ_doc_VIEWER'
+            outputDir = IO_files_util.make_output_subdirectory('', inputDir, outputDir, label=label,
+                                                               silent=False)
+        if outputDir == '':
+            return
 
-                with open(NgramsSearchFileName_txt, 'r', encoding='utf-8', errors='ignore') as f:
-                    q = f.read()
-                for word in search_keywords_list:
-                    q = q.replace(word, '')
-                    print(q, word)
-                with open(NgramsSearchFileName_txt, 'w', encoding='utf-8') as f:
-                    f.write(q)
+        startTime = IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'N-Grams-Co-Occurrences VIEWER start',
+                                                       'Started running N-Grams-Co-Occurrences VIEWER at',
+                                                       True, '', True, '', False)
 
-                use_contour_only = False
-                max_words = 100
-                font = 'Default'
-                prefer_horizontal = .9
-                lemmatize = False
-                exclude_stopwords = True
-                exclude_punctuation = True
-                lowercase = False
-                differentPOS_differentColors = False
-                differentColumns_differentColors = False
-                csvField_color_list = []
-                doNotListIndividualFiles = True
-                collocation = False
-                import wordclouds_util
-                outputFiles2 = wordclouds_util.python_wordCloud(NgramsSearchFileName_txt, '', outputDir, configFileName,
-                                                                selectedImage="",
-                                                                use_contour_only=use_contour_only,
-                                                                prefer_horizontal=prefer_horizontal, font=font,
-                                                                max_words=max_words,
-                                                                lemmatize=lemmatize,
-                                                                exclude_stopwords=exclude_stopwords,
-                                                                exclude_punctuation=exclude_punctuation,
-                                                                lowercase=lowercase,
-                                                                differentPOS_differentColors=differentPOS_differentColors,
-                                                                differentColumns_differentColors=differentColumns_differentColors,
-                                                                csvField_color_list=csvField_color_list,
-                                                                doNotListIndividualFiles=doNotListIndividualFiles,
-                                                                openOutputFiles=False, collocation=collocation)
-                filesToOpen.extend(outputFiles2)
-                import charts_util
-                headers=IO_csv_util.get_csvfile_headers(NgramsSearchFileName_Sankey)
-                Sankey_limit1_var=30
-                Sankey_limit2_var=30
-                Sankey_limit3_var=30
-                output_label = ''
-
-                outputFilename = IO_files_util.generate_output_file_name(NgramsSearchFileName_Sankey, inputDir, outputDir,
-                                                                         '.html', output_label)
-                if ngram_size==2:
-                    three_way_Sankey = False
-                    var3 = None
-                    Sankey_limit3_var = None
-                    Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
-                                                      'Search word', Sankey_limit1_var, 'Co-Occurring word',
-                                                      Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
-                    filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
-                elif plus_K_words_var==0:
-                    three_way_Sankey = False
-                    var3 = None
-                    Sankey_limit3_var = None
-                    Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
-                                                      'Search word', Sankey_limit1_var, 'Words to the left',
-                                                      Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
-                    filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
-                elif minus_K_words_var==0:
-                    three_way_Sankey = False
-                    var3 = None
-                    Sankey_limit3_var = None
-                    Sankey_chart = charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
-                                                      'Search word', Sankey_limit1_var, 'Words to the right',
-                                                      Sankey_limit2_var, three_way_Sankey, var3, Sankey_limit3_var)
-                    filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
-                else:
-                    three_way_Sankey = True
-                    Sankey_chart=charts_util.Sankey(NgramsSearchFileName_Sankey, outputFilename,
-                                       'Words to the left', Sankey_limit1_var, 'Words to the right',
-                                       Sankey_limit2_var, 0, "Search word", Sankey_limit3_var)
-                    filesToOpen.extend([NgramsSearchFileName, NgramsSearchFileName_Sankey, Sankey_chart])
-                    pass
-
-        return filesToOpen
+# N-grams VIEWER (initialize the ngram_results dictionary) ------------------------------------------------------------------------------
 
     if n_grams_viewer:
-        # initialize the ngram_results dictionary ------------------------------------------------------
+        # initialize the ngram_results dictionary
         quarter_ngram_results = {}
         for word in search_keywords_list:
             ngram_results[word] = {}
@@ -675,17 +789,15 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
                                                           "Frequency": 0}
 
 
+# process files ------------------------------------------------------------------------------
+
+    if useLemma:
+        lemmatized_search_keywords_list, lemmatized_search_word_str = lemmatize_search_words(search_keywords_list)
+        search_keywords_list=lemmatized_search_keywords_list
+        search_keywords_str=lemmatized_search_word_str
 
     for file in inputDocs:
         docIndex += 1
-        # initialize the CoOcc_results dictionary
-        if CoOcc_Viewer:
-            mps = {}
-            for x in search_keywords_list:
-                mps[x] = 0
-            coOcc_results[file] = {"Search Word(s)": original_search_word, "Co-Occurrence-bool": "", "Co-Occurrence": mps,
-                                   "Document ID": docIndex,
-                                   "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
         head, tail = os.path.split(file)
         print("Processing file " + str(docIndex) + "/" + str(nDocs) + ' ' + tail)
         # extract the date from the file name
@@ -693,30 +805,88 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
         if date == '':
             pass# TODO: getDate warns user is this file has a bad date
 
-###########################################################
-        if hashfile.calculate_checksum(file) in hashmap:
-            tokens_ = hashmap[hashfile.calculate_checksum(file)]
-        else:
-            f = open(file, "r", encoding='utf-8', errors='ignore')
-            docText = f.read()
-            f.close()
-            if not case_sensitive:
-                docText = docText.lower()
-            tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
-            hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)
-            hashfile.writehash(hashmap, outputDir)
-############################################################
-        ngram_results, quarter_ngram_results, coOcc_results = process_word_search(file,
-                                                                                  n_grams_viewer, CoOcc_Viewer,
-                                                                                  tokens_, search_keywords_list,
-                                                                                  ngram_results, quarter_ngram_results,
-                                                                                  coOcc_results,
-                                                                                  year, month,
-                                                                                  byNumberOfYears, byYear, byMonth,
-                                                                                  byQuarter, yearList)
+        # if hashfile.calculate_checksum(file) in hashmap:
+        #     tokens_ = hashmap[hashfile.calculate_checksum(file)]
+        # else:
+        f = open(file, "r", encoding='utf-8', errors='ignore')
+        docText = f.read()
+        f.close()
+
+        docText = prepare_text_with_options(docText, case_sensitive, exact_word_match, useLemma, lang)
+
+        # https://stackoverflow.com/questions/66342227/efficiently-searching-a-body-of-text-for-a-large-number-of-keywords-1000s
+        # DOES NOT WORK
+        # import re
+        # c = re.compile(r"China") # c = re.compile(r"STOCK|GOOG|MICR")
+        # r = c.findall(docText, re.M)
+        # print('using re to search for China: ',r)
+
+        if within_sentence_co_occurrence_search_var:
+            results = []
+            sentIndex=0
+            sentences = sent_tokenize_stanza(stanzaPipeLine(docText))
+            len_sentences = len(sentences)
+
+            # SIMON cache
+            # hashfile.storehash(hashmap, checksum, sentences)
+            # hashfile.writehash(hashmap, hashOutputDir)
+
+            for sentIndex, sentence in enumerate(sentences):
+                sentIndex+=1 # to avoid starting at 0
+                docIndex_sentIndex = str(docIndex)+"_"+str(sentIndex)
+                co_occurring = False
+                # @@@
+                # initialize the dictionary
+                coOcc_results[docIndex_sentIndex] = {"Search Word(s)": search_keywords_list,
+                                       "Co-Occurrence_inSentence_bool": "NO", "Co-Occurrence in Sentence": {},
+                                       "Co-Occurrence_inDocument_bool": "NO", "Co-Occurrence in Document": {},
+                                       "Sentence ID": sentIndex,
+                                       "Sentence": sentence,
+                                       "Document ID": docIndex,
+                                       "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
+
+                document_percent_position = round((sentIndex / len_sentences), 2)
+
+                ngram_results, quarter_ngram_results, coOcc_results = process_word_search(sentence, docIndex_sentIndex,
+                                                                                          case_sensitive, exact_word_match, useLemma,
+                                                                                          n_grams_viewer,
+                                                                                          CoOcc_Viewer,
+                                                                                          search_keywords_list,
+                                                                                          ngram_results,
+                                                                                          quarter_ngram_results,
+                                                                                          coOcc_results,
+                                                                                          year, month,
+                                                                                          byNumberOfYears, byYear,
+                                                                                          byMonth,
+                                                                                          byQuarter, yearList, within_sentence_co_occurrence_search_var)
+
+        else: # processing document
+            docIndex_sentIndex = docIndex # since there are no sentences to process
+            # initialize the dictionary
+            coOcc_results[docIndex_sentIndex] = {"Search Word(s)": search_keywords_list,
+                                                 "Co-Occurrence_inDocument_bool": "NO",
+                                                 "Co-Occurrence in Document": {},
+                                                 "Document ID": docIndex,
+                                                 "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
+            # tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
+            # SIMON cache
+            # hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)
+            # hashfile.writehash(hashmap, outputDir)
+            ngram_results, quarter_ngram_results, coOcc_results = process_word_search(docText, docIndex_sentIndex,
+                                                                                      case_sensitive, exact_word_match, useLemma,
+                                                                                      n_grams_viewer, CoOcc_Viewer,
+                                                                                      search_keywords_list,
+                                                                                      ngram_results, quarter_ngram_results,
+                                                                                      coOcc_results,
+                                                                                      year, month,
+                                                                                      byNumberOfYears, byYear, byMonth,
+                                                                                      byQuarter, yearList, within_sentence_co_occurrence_search_var)
 
     NgramsFileName = ''
     coOccFileName = ''
+
+    # coOcc_results = coOcc_sentence_results
+    import charts_util
 
     if n_grams_viewer:
         if byQuarter:
@@ -728,19 +898,10 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
             label = temporal_aggregation
         NgramsFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv',
                                                                  'N-grams_' + label)
+        filesToOpen = save_ngrams(NgramsFileName, ngram_results, aggregateBy, temporal_aggregation)
 
-    if CoOcc_Viewer:
-        coOccFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'Co-Occ')
-
-    # save the N-grams/Co-occurrence output files
-    # pprint.pprint(coOcc_results)
-    filesToOpen = save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateBy, temporal_aggregation)
-
-    # plot Ngrams --------------------------------------------------------------------------
-
-    if n_grams_viewer:
-        import charts_util
-        if chartPackage!='No charts' and NgramsFileName != '':
+        # plot Ngrams --------------------------------------------------------------------------
+        if chartPackage != 'No charts' and NgramsFileName != '':
             xlsxFilename = NgramsFileName
             xAxis = temporal_aggregation
             chart_title = 'N-Grams Viewer'
@@ -750,7 +911,7 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
             # this assumes the data are in this format: temporal_aggregation, frequency of search-word_1, frequency of search-word_2, ...
             i = 0
             j = 0
-            columns_to_be_plotted_yAxis = process_date(search_wordsLists, temporal_aggregation)
+            columns_to_be_plotted_yAxis = process_date(search_keywords_str, temporal_aggregation)
             hover_label = []
             outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
                                               'n-grams_viewer',
@@ -765,21 +926,78 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
                 else:
                     filesToOpen.extend(outputFiles)
 
-    # plot co-occurrences -----------------------------------------------------------------------------
+# Co-occurrences VIEWER -------------------------------------------------------------------------------
 
     if CoOcc_Viewer:
-        if chartPackage!='No charts' and coOccFileName != '':
+        if within_sentence_co_occurrence_search_var:
+            label = '_sent'
+        else:
+            label='_doc'
+        coOccFileName = IO_files_util.generate_output_file_name('', inputDir, outputDir, '.csv', 'Co-Occ'+label)
+
+
+    # save the Co-occurrence output files ------------------------------------------------------------------------------
+    # pprint.pprint(coOcc_results)
+        filesToOpen = save_co_occurrences(coOccFileName, coOcc_results, aggregateBy, temporal_aggregation, useLemma, within_sentence_co_occurrence_search_var)
+
+    # plot co-occurrences -----------------------------------------------------------------------------
+
+        if chartPackage != 'No charts' and coOccFileName != '':
             import charts_util
             xlsxFilename = coOccFileName
-            chart_title = 'Co-Occurring Words: ' + search_wordsLists
+            if within_sentence_co_occurrence_search_var:
+                chart_title = 'Frequency Distribution of Co-Occurrences in Sentence & Document' # + search_keywords_list
+                columns_to_be_plotted_yAxis = ['Co-Occurrence in Sentence', 'Co-Occurrence in Document'],
+            else:
+                chart_title = 'Frequency Distribution of Co-Occurrences in Document'  # + search_keywords_list
+                columns_to_be_plotted_yAxis = ['Co-Occurrence in Document'],
             if dateOption == 0:
                 xAxis = 'Document'
             else:
                 xAxis = temporal_aggregation
             hover_label = []
-            columns_to_be_plotted_byDoc = [[1, 2]]
-            freq_file = aggregate_YES_NO(xlsxFilename, ["Co-Occurrence"])
-            outputFiles = charts_util.run_all(columns_to_be_plotted_byDoc, freq_file, outputDir,
+
+            count_var=1
+            # outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+            #                                        coOccFileName, outputDir,
+            #                                        columns_to_be_plotted_xAxis=[],
+            #                                        columns_to_be_plotted_yAxis=columns_to_be_plotted_yAxis,
+            #                                        chart_title=chart_title,
+            #                                        count_var=count_var,  # 1 for alphabetic fields that need to be coounted;  1 for numeric fields (e.g., frequencies, scorers)
+            #                                        hover_label=[],
+            #                                        outputFileNameType='co-occ-words',
+            #                                        column_xAxis_label='Co-Occurring Words: ' + search_keywords_str,
+            #                                        groupByList=[], #['Document']
+            #                                        plotList=[], #'Co-Occurrence in Sentence','Co-Occurrence in Document'],
+            #                                        chart_title_label='')
+
+            columns_to_be_plotted_yAxis=[[1,1],[2,2]]
+            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, coOccFileName, outputDir,
+                                                            outputFileLabel='co-occ-words',
+                                                            chartPackage=chartPackage,
+                                                            dataTransformation=dataTransformation,
+                                                            chart_type_list=['bar'],
+                                                            chart_title=chart_title,
+                                                            column_xAxis_label_var='Co-Occurring Words: ' + search_keywords_str,
+                                                            hover_info_column_list=[],
+                                                            count_var=count_var,
+                                                            complete_sid=False)  # TODO to be changed
+
+            # run_all returns a string; must use append
+            if outputFiles!=None:
+                if isinstance(outputFiles, str):
+                    filesToOpen.append(outputFiles)
+                else:
+                    filesToOpen.extend(outputFiles)
+
+
+            data, headers = IO_csv_util.get_csv_data(coOccFileName, True)
+
+            documentColumnNumber = IO_csv_util.get_columnNumber_from_headerValue(headers, "Document", coOccFileName)
+
+            columns_to_be_plotted_byDoc = [[documentColumnNumber, 1]] # doc & frequency of first search word
+
+            outputFiles = charts_util.run_all(columns_to_be_plotted_byDoc, coOccFileName, outputDir,
                                               outputFileLabel='byDoc',
                                               # outputFileNameType + 'byDoc', #outputFileLabel,
                                               chartPackage=chartPackage,
@@ -800,28 +1018,10 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
                 else:
                     filesToOpen.extend(outputFiles)
 
-            # chart_title = 'Co-occurrence Viewer'
-            # columns_to_be_plotted_yAxis = process_date(search_wordsLists, temporal_aggregation)
-            # hover_label = []
-            # chart_title = 'Frequency Distribution of Co-Occurring Words'
-            # outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, xlsxFilename, outputDir,
-            #                                            'co-occ_viewer',
-            #                                            chartPackage=chartPackage,
-            #                                            dataTransformation=dataTransformation,
-            #                                            chart_type_list=["bar"],
-            #                                            count_var=1,
-            #                                            chart_title=chart_title,
-            #                                            column_xAxis_label_var='Word list: ' + search_wordsLists,
-            #                                            hover_info_column_list=hover_label)
-            # if outputFiles!=None:
-            #     if isinstance(outputFiles, str):
-            #         filesToOpen.append(outputFiles)
-            #     else:
-            #         filesToOpen.extend(outputFiles)
-
-    IO_user_interface_util.timed_alert(GUI_util.window, 2000, 'Analysis end',
-                                       'Finished running Words/Characters N-Grams at', True, '', True, startTime,
-                                       False)
+    if n_grams_viewer or CoOcc_Viewer:
+        IO_user_interface_util.timed_alert(GUI_util.window, 3000, 'Analysis end',
+                                                       'Finished running N-Grams-Co-Occurrences VIEWER at',
+                                                       True, '', True, startTime, False)
 
     return filesToOpen
 
@@ -831,13 +1031,21 @@ def NGrams_search_VIEWER(inputDir="relative_path_here",
 """
 
 
-def aggregate_YES_NO(inputFilename, column):
-    cols = ["Document ID", "Document"] + column
+def aggregate_YES_NO(inputFilename, column, within_sentence_co_occurrence_search_var=True):
+    # @@@
+    if within_sentence_co_occurrence_search_var:
+        cols = ["Sentence ID", "Sentence", "Document ID", "Document"] + column
+    else:
+        cols = ["Document ID", "Document"] + column
     df = pd.read_csv(inputFilename, encoding='utf-8', on_bad_lines='skip')
     df = df.replace('YES', 1)
     df = df.replace('NO', 0)
     # create a new data frame with Document ID, Document, and the sum of the column
-    df = df[cols].groupby(["Document ID", "Document"]).sum()
+    # @@@
+    if within_sentence_co_occurrence_search_var:
+        df = df[cols].groupby(["Sentence ID", "Sentence", "Document ID", "Document"]).sum()
+    else:
+        df = df[cols].groupby(["Document ID", "Document"]).sum()
     # rename 'column' to Frequency
     df = df.rename(columns={column[0]: "Frequency"})
     df = df.reset_index()
@@ -859,7 +1067,8 @@ def aggregate_YES_NO(inputFilename, column):
 """
 
 
-def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateBy, temporal_aggregation):
+# ngrams ----------------------------------------------------------------------------------------
+def save_ngrams(NgramsFileName, ngram_results, aggregateBy, temporal_aggregation):
     filesToOpen = []
     if len(ngram_results) > 0:
         dfList = []  # create a list of dataframes: one df for one search word
@@ -916,23 +1125,66 @@ def save(NgramsFileName, coOccFileName, ngram_results, coOcc_results, aggregateB
         if NgramsFileName != '':
             newdf.to_csv(NgramsFileName, encoding='utf-8', index=False)
             filesToOpen.append(NgramsFileName)
-
+    return filesToOpen
+def save_co_occurrences(coOccFileName, coOcc_results, aggregateBy, temporal_aggregation, lemmatize = False, within_sentence_co_occurrence_search_var = True):
+    filesToOpen = []
     if len(coOcc_results) > 0:
-        # with open(os.path.join(WCOFileName, outputDir), 'w', encoding='utf-8') as f:
         with open(coOccFileName, 'w', newline='', encoding='utf-8', errors='ignore') as f:
             writer = csv.writer(f)
-            line = ["Search Word(s)", "Co-Occurrence"]
+            if within_sentence_co_occurrence_search_var:
+                if lemmatize:
+                    line = ["Search Word(s)_lemmatized", "Co-Occurrence in Sentence", "Co-Occurrence in Document"]
+                else:
+                    line = ["Search Word(s)", "Co-Occurrence in Sentence", "Co-Occurrence in Document"]
+            else:
+                if lemmatize:
+                    line = ["Search Word(s)_lemmatized", "Co-Occurrence in Document"]
+                else:
+                    line = ["Search Word(s)", "Co-Occurrence in Document"]
             import re
-            words = next(iter(coOcc_results.items()))[1]['Search Word(s)']
-            line.extend([element + '_Frequency' for element in re.findall(r'[^,]+', words)])
+            search_words_list = next(iter(coOcc_results.items()))[1]['Search Word(s)']
+            line.extend([element + '_Frequency' for element in search_words_list])
+            if within_sentence_co_occurrence_search_var:
+                if lemmatize:
+                    line.extend(["Sentence ID", "Sentence_lemmatized"])
+                else:
+                    line.extend(["Sentence ID", "Sentence"])
             line.extend(["Document ID", "Document"])
             writer.writerow(line)
-            for label, res in coOcc_results.items():
-                if isinstance(res, dict):
-                    line = [res["Search Word(s)"], res["Co-Occurrence-bool"]]
-                    line.extend(list(res['Co-Occurrence'].values()))
-                    line.extend([res["Document ID"],IO_csv_util.dressFilenameForCSVHyperlink(res["Document"])])
-                    writer.writerow(line)
-        filesToOpen.append(coOccFileName)
+            # write actual values under each column header for each row of sentences or documents
 
+            if within_sentence_co_occurrence_search_var:
+                # loop through documents to update the co-occurrence in document field for the same document key
+                for key, res in coOcc_results.items():
+                    doc_coocc = False
+                    if isinstance(res, dict):
+                        valuescheck_sent = coOcc_results[key]['Co-Occurrence in Sentence'].values()
+                        for freq in range(len(valuescheck_sent)):
+                            if list(valuescheck_sent)[freq]>0:
+                                doc_coocc=True
+                    if not doc_coocc:
+                        coOcc_results[key]['Co-Occurrence_inDocument_bool'] = "NO"
+                    else:
+                        coOcc_results[key]['Co-Occurrence_inDocument_bool'] = "YES"
+
+                for key, res in coOcc_results.items():
+                    if isinstance(res, dict):
+                        # convert list to string
+                        search_words_str = ', '.join(res["Search Word(s)"])
+                        line = [search_words_str, res["Co-Occurrence_inSentence_bool"], res["Co-Occurrence_inDocument_bool"]]
+                        line.extend(list(res['Co-Occurrence in Sentence'].values()))
+                        line.extend(list(res['Co-Occurrence in Document'].values()))
+                        line.extend([res["Sentence ID"], res["Sentence"]])
+                        line.extend([res["Document ID"], IO_csv_util.dressFilenameForCSVHyperlink(res["Document"])])
+                        writer.writerow(line)
+            else:
+                for key, res in coOcc_results.items():
+                    if isinstance(res, dict):
+                        # convert list to string
+                        search_words_str = ', '.join(res["Search Word(s)"])
+                        line = [search_words_str, res["Co-Occurrence_inDocument_bool"]]
+                        line.extend(list(res['Co-Occurrence in Document'].values()))
+                        line.extend([res["Document ID"],IO_csv_util.dressFilenameForCSVHyperlink(res["Document"])])
+                        writer.writerow(line)
+        filesToOpen.append(coOccFileName)
     return filesToOpen
