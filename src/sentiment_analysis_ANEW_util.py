@@ -39,7 +39,6 @@ import numpy as np #np
 import time
 import argparse
 
-# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
 import pandas as pd
 import tkinter.messagebox as mb
 
@@ -84,10 +83,10 @@ def analyzefile(inputFilename, outputDir, outputFilename, csvfile, mode, Documen
         print('Empty file ', inputFilename)
         return
 
-    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
     # otherwise, split into sentences
     # sentences = tokenize.sent_tokenize(fulltext)
-    sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
+    sentences = sentence_split_stanza_text(stanzaPipeLine(fulltext))
     # # check each word in sentence for sentiment and write to outputFilename
 
     # analyze each sentence for sentiment
@@ -102,7 +101,7 @@ def analyzefile(inputFilename, outputDir, outputFilename, csvfile, mode, Documen
 
         # search for each valid word's sentiment in ANEW
         # words = word_tokenize(s.lower())
-        words = word_tokenize_stanza(stanzaPipeLine(s.lower()))
+        words = tokenize_stanza_text(stanzaPipeLine(s.lower()))
         filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
         for index, w in enumerate(filtered_words):
             # don't process stops
@@ -122,7 +121,7 @@ def analyzefile(inputFilename, outputDir, outputFilename, csvfile, mode, Documen
             # lemma = lmtzr.lemmatize(w, pos='v')
             # if lemma == w:
             #     lemma = lmtzr.lemmatize(w, pos='n')
-            lemma = lemmatize_stanza(stanzaPipeLine(w))
+            lemma = lemmatize_stanza_word(stanzaPipeLine(w))
 
             total_words += 1
 

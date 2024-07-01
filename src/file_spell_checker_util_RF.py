@@ -18,7 +18,7 @@ import os
 #from nltk.stem import WordNetLemmatizer
 from tkinter import filedialog
 #from nltk import tokenize
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 import nltk
 # IO_libraries_util.import_nltk_resource(GUI_util.window,'tokenizers/punkt','punkt')
 import pandas
@@ -57,7 +57,7 @@ def lemmatizing(word):#edited by Claude Hu 08/2020
         # that lemmatization is returned as #
         # lemmatizer = WordNetLemmatizer()
         # lemma = lemmatizer.lemmatize(word, p)
-        lemma = lemmatize_stanza(stanzaPipeLine(word))
+        lemma = lemmatize_stanza_word(stanzaPipeLine(word))
         if lemma != word:
             result = lemma
             break
@@ -278,7 +278,7 @@ def check_for_typo(inputDir, outputDir, openOutputFiles, chartPackage, dataTrans
                 text = src.read().replace("\n", " ")
                 NLP = StanfordCoreNLP('http://localhost', port=9000)
             # sentences = tokenize.sent_tokenize(text)
-            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+            sentences = tokenize_stanza_text(stanzaPipeLine(text))
             documents.append([sentences,filename, dir_path])
 
     # IO_util.timed_alert(GUI_util.window, 5000, 'Word similarity', 'Finished preparing data...\n\nProcessed '+str(folderID)+' subfolders and '+str(fileID)+' files.\n\nNow running Stanford CoreNLP to get NER values on every file processed... PLEASE, be patient. This may take a while...')
@@ -499,7 +499,7 @@ def spellchecking_autocorrect(text: str, inputFilename) -> (str, DataFrame):
     new_str_list = []
     speller = Speller()
     # for word in nltk.word_tokenize(text):
-    for word in word_tokenize_stanza(stanzaPipeLine(text)):
+    for word in tokenize_stanza_text(stanzaPipeLine(text)):
         if word.isalnum():
             original_str_list.append(word)
             respelled_word = speller(word)
@@ -561,7 +561,7 @@ def spellchecking_pyspellchecker(text: str, inputFilename) -> (str, DataFrame):
     treebank = nltk.tokenize.treebank.TreebankWordDetokenizer()
     speller = SpellChecker()
     # for word in nltk.word_tokenize(text):
-    for word in word_tokenize_stanza(stanzaPipeLine(text)):
+    for word in tokenize_stanza_text(stanzaPipeLine(text)):
         if word.isalnum():
             original_str_list.append(word)
             respelled_word = speller.correction(word)
@@ -585,7 +585,7 @@ def spellchecking_text_blob(text: str, inputFilename) -> (str, DataFrame):
     original_str_list = []
     treebank = nltk.tokenize.treebank.TreebankWordDetokenizer()
     # for word in nltk.word_tokenize(text):
-    for word in word_tokenize_stanza(stanzaPipeLine(text)):
+    for word in tokenize_stanza_text(stanzaPipeLine(text)):
         if word.isalnum():
             original_str_list.append(word)
             respelled_word = Word(word).spellcheck()[0][0]

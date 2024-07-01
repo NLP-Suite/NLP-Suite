@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+# from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 import os
 
 import IO_files_util
@@ -40,10 +40,10 @@ import IO_csv_util
 #             continue
 #         # check if the triple needs to be included
 #
-#         if svo[2] == "inferred_subject_passive" and (svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]) not in added:
+#         if svo[2] == "Inferred_Subject_Passive" and (svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]) not in added:
 #             notSure.add((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
 #             continue
-#         if svo[2] != "inferred_subject_passive":
+#         if svo[2] != "Inferred_Subject_Passive":
 #             if (svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]) in notSure:
 #                 notSure.remove((svo[0], svo[3], svo[4], svo[6], svo[5], svo[7], svo[8], svo[1]))
 #             # before writing row, split location
@@ -300,7 +300,7 @@ def visualize_SVOs(fileName, outputDir, chartPackage, dataTransformation, filesT
 def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, filter_s_fileName, filter_v_fileName, filter_o_fileName,
                lemmatize_s, lemmatize_v, lemmatize_o, outputSVODir,  chartPackage='Excel', dataTransformation='No transformation'):
     filesToOpen = []
-    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 
     startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
                                                    'Started running the lemma/filter algorithm for Subject-Verb-Object (SVO) at',
@@ -329,36 +329,87 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
     s_filtered_set = set(open(filter_s_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_s else set()
     v_filtered_set = set(open(filter_v_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_v else set()
     o_filtered_set = set(open(filter_o_fileName, 'r', encoding='utf-8-sig', errors='ignore').read().split('\n')) if filter_o else set()
-    # should add any PERSON or ORGANIZATION to the list, if these PERSON or ORGANIZATION values are not in the WordNet social-actor-list
+    # should add any PERSON or ORGANIZATION or LOCATION to the list, if these PERSON or ORGANIZATION or LOCATION values are not in the WordNet social-actor-list
     # multi name S & O (e.g., Mao Zedong) in WordNet are listed with underscores (Mao_Zedong); we must do the same for multi-word names
-
+    # to recognize mwe expressions that are tagged as PERSON or ORGANIZATION or LOCATION '@#'
     # Create DataFrames for lemmatized and filtered SVOs
     lemmatized_svo = df.copy()
     filtered_svo = df.copy()
 
+    lemmatize_s_SV = lemmatize_s
     for idx, row in df.iterrows():
+        if lemmatize_s_SV == True:
+            lemmatize_s = True
+        # the tag suffix @# will have been added in the Stanford_CoreNLP_util function process_json_SVO_enhanced_dependencies
+        #   to identify any mwe (multi-word expression) that is a NER PERSON, ORGANIZATION, or LOCATION
+        #   (e.g., Christopher Columbus, United States of America) which should always be treated as social actors independently of the WordNet list
+        if '@#' in row['Subject (S)']:
+            lemmatize_s = False
+            keep_record = True
         if lemmatize_s:
-            # do not lemmatize multi-word expressions or only the first term will be returned
             if row['Subject (S)'].count(' ')==0:
-                row['Subject (S)'] = lemmatize_stanza(stanzaPipeLine(row['Subject (S)']))
+                row['Subject (S)'] = lemmatize_stanza_word(stanzaPipeLine(row['Subject (S)']))
+            else:
+                if filter_s:
+                    # WordNet multi-word expressions are all _ separated (e.g., Christopher_Columbus)
+                    # convert string to list
+                    # if '@#' in row['Subject (S)']:
+                    #     row['Subject (S)'] = row['Subject (S)'].replace('@#','')
+                    # else:
+                    if not '@#' in row['Subject (S)']:
+                        temp_list = row['Subject (S)'].split(' ')
+                        temp_lemma = ''
+                        for i in range(len(temp_list)):
+                            if temp_lemma=='':
+                                temp_lemma = lemmatize_stanza_word(stanzaPipeLine(temp_list[i]))
+                            else:
+                                temp_lemma = temp_lemma + ' ' + lemmatize_stanza_word(stanzaPipeLine(temp_list[i]))
+                        row['Subject (S)'] = temp_lemma.replace('  ', ' ') # temp_lemma will have 2 blanks when lemmatizing  a blank token
+                        row['Subject (S)'] = temp_lemma.replace(' ', '_')
         if lemmatize_v:
-            row['Verb (V)'] = lemmatize_stanza(stanzaPipeLine(row['Verb (V)']))
+            if row['Verb (V)'].count(' ')==0:
+                row['Verb (V)'] = lemmatize_stanza_word(stanzaPipeLine(row['Verb (V)']))
+            else:
+                if filter_v:
+                    # WordNet multi-word expressions are all _ separated (e.g., add_on)
+                    # convert string to list
+                    temp_list = row['Verb (V)'].split(' ')
+                    temp_lemma = ''
+                    for i in range(len(temp_list)):
+                        if temp_lemma=='':
+                            temp_lemma = lemmatize_stanza_word(stanzaPipeLine(temp_list[i]))
+                        else:
+                            temp_lemma = temp_lemma + ' ' + lemmatize_stanza_word(stanzaPipeLine(temp_list[i]))
+                    row['Verb (V)'] = temp_lemma.replace('  ', ' ') # temp_lemma will have 2 blanks when lemmatizing  a blank token
+                    row['Verb (V)'] = temp_lemma.replace(' ', '_')
         if lemmatize_o:
-            # do not lemmatize multi-word expressions or only the first term will be returned
             if row['Object (O)'].count(' ')==0:
-                row['Object (O)'] = lemmatize_stanza(stanzaPipeLine(row['Object (O)']))
+                row['Object (O)'] = lemmatize_stanza_word(stanzaPipeLine(row['Object (O)']))
+            else:
+                if filter_o:
+                    # WordNet multi-word expressions are all _ separated (e.g., Christopher_Columbus)
+                    # convert string to list
+                    temp_list = row['Object (O)'].split(' ')
+                    temp_lemma = ''
+                    for i in range(len(temp_list)):
+                        if temp_lemma=='':
+                            temp_lemma = lemmatize_stanza_word(stanzaPipeLine(temp_list[i]))
+                        else:
+                            temp_lemma = temp_lemma + ' ' + lemmatize_stanza_word(stanzaPipeLine(temp_list[i]))
+                    row['Object (O)'] = temp_lemma.replace('  ', ' ') # temp_lemma will have 2 blanks when lemmatizing  a blank token
+                    row['Object (O)'] = temp_lemma.replace(' ', '_')
 
-        # Assign lemmatized rows back to the lemmatized_svo DataFrame
-        lemmatized_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
-            ['Subject (S)', 'Verb (V)', 'Object (O)']]
+        # # Assign lemmatized rows back to the lemmatized_svo DataFrame
+        # lemmatized_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
+        #     ['Subject (S)', 'Verb (V)', 'Object (O)']]
 
-        filter_byNER = set([row['Person']]).union(set([row['Organization']]))
-        # add unstated passive subjects as inferred_subject_passive
-        filter_byNER.add('inferred_subject_passive')
+        filter_byNER = set([row['Person']]).union(set([row['Organization']]).union(set([row['Location']])))
+        # add unstated passive subjects as Inferred_Subject_Passive
+        filter_byNER.add('Inferred_Subject_Passive')
 
         keep_record = False
 
-# S-V-O filter
+# S-V-O filter ALL -----------------------------------------------------------------------------------
         if filter_s and filter_v and filter_o:
             if ((row['Subject (S)'] in s_filtered_set) or \
                 (str(row['Subject (S)']).lower() in filter_byNER)) and \
@@ -366,29 +417,54 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
                 ((row['Object (O)'] in o_filtered_set) and \
                 (row['Object (O)'] in filter_byNER)):
                 keep_record=True
+            # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
+            #   which can be social actors that should not be lemmatized (e.g., 'Christopher Columbus discovered America')
+            if '@#' in row['Subject (S)']:
+                keep_record = True
 
-# S-V filter
+# S-V filter ONLY NO O -----------------------------------------------------------------------------------
         if filter_s and filter_v and not filter_o:
             if ((row['Subject (S)'] in s_filtered_set) or \
                 (str(row['Subject (S)']).lower() in filter_byNER)) and \
                 (row['Verb (V)'] in v_filtered_set):
                 keep_record = True
-# S filter
+            # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
+            #   which can be social actors that should not be lemmatized (e.g., 'Christopher Columbus discovered America')
+            if '@#' in row['Subject (S)']:
+                keep_record = True
+
+# S filter ONLY NO V & O -----------------------------------------------------------------------------------
         if filter_s and not filter_v and not filter_o:
             if ((row['Subject (S)'] in s_filtered_set) or \
                 (str(row['Subject (S)']) in filter_byNER)):
                 keep_record = True
-# V filter
+            # the tag @# is added to mwe that are classified in NER as PERSON, ORGANIZATION, or LOCATION
+            #   which can be social actors that should not be lemmatized (e.g., 'Christopher Columbus discovered America')
+            if '@#' in row['Subject (S)']:
+                keep_record = True
+
+# V filter ONLY NO S & O -----------------------------------------------------------------------------------
         if filter_v and not filter_s and not filter_o:
             if (row['Verb (V)'] in v_filtered_set):
                 keep_record = True
 
-# O filter
+# O filter ONLY NO S & V -----------------------------------------------------------------------------------
         if filter_o and not filter_s and not filter_v:
             if ((row['Object (O)'] in o_filtered_set) or \
                 (str(row['Object (O)']) in filter_byNER)):
                 keep_record = True
 
+# ----------------------------------------------------------------------------------------------------------
+        # rewrite the original df record if @# was added as a tag to recognize the record as a
+        #   PERSON, ORGANIZATION, or LOCATION
+        #   which can be social actors that should not be lemmatized
+        #   this would keep such mwe as 'United States of America' and preserve such sentences as 'United States of America fought Germany in WWII'
+
+        if '@#' in row['Subject (S)']:
+            row['Subject (S)'] = row['Subject (S)'].replace('@#', '')
+            # update the original df dataframe with @# tags with the new cleaned values
+            df.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
+                ['Subject (S)', 'Verb (V)', 'Object (O)']]
         if keep_record:
             filtered_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
                 ['Subject (S)', 'Verb (V)', 'Object (O)']]
@@ -396,6 +472,10 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
         else:
             # Drop rows from filtered_svo DataFrame that do not meet the filter condition
             filtered_svo.drop(idx, inplace=True)
+
+        # Assign lemmatized rows back to the lemmatized_svo DataFrame
+        lemmatized_svo.loc[idx, ['Subject (S)', 'Verb (V)', 'Object (O)']] = row[
+            ['Subject (S)', 'Verb (V)', 'Object (O)']]
 
     # print(lemmatized_svo,filtered_svo)
     # Continue with your code, now working with filtered and lemmatized DataFrames
@@ -436,12 +516,10 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
             #                                                      silent=True)
             outputDir, tail = os.path.split(svo_lemma_file_name)
             tail = tail.replace('NLP_SVO_lemma_', 'NLP_SVO_filter_'+ label)
-            # svo_filtered_file_name = os.path.join(outputWNDir, tail)
             svo_filter_file_name = os.path.join(outputSVOFilterDir, tail)
             # save filtered file
             filesToOpen.append(svo_filter_file_name)
-            # pd.DataFrame.from_dict(lemmatized_filtered_svo, orient='index').to_csv(svo_filter_file_name, encoding='utf-8',
-            #                                                               index=False)
+
             # save filtered file
             filtered_svo.to_csv(svo_filter_file_name, encoding='utf-8', index=False)
 
@@ -452,14 +530,9 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
             filtered_records = num_rows - nRecords_filter
             IO_user_interface_util.timed_alert(window,6000,'Filtered records', 'The filter algorithms have filtered out ' + str(filtered_records) + \
                 ' records.\n\nNumber of original SVO records: ' + str(num_rows) + '\nNumber of filtered SVO records: ' + str(nRecords_filter))
-        # else:
-        #     svo_filter_file_name=''
-        #     nRecords = 0
 
     else:
         svo_lemma_file_name= ''
-        svo_filtered_file_name = ''
-        # nRecords = 0
 
     IO_user_interface_util.timed_alert(window, 2000, 'Analysis end', 'Finished running the lemma/filter algorithm for Subject-Verb-Object (SVO) at', True, '', True,
                                        startTime, True)
@@ -470,6 +543,9 @@ def lemmatize_filter_svo(window, svo_file_name, filter_s, filter_v, filter_o, fi
             filesToOpen = visualize_SVOs(svo_lemma_file_name, outputSVOLemmaDir, chartPackage, dataTransformation,filesToOpen, openFiles)
         if filter_s or filter_v or filter_o:
             filesToOpen = visualize_SVOs(svo_filter_file_name, outputSVOFilterDir, chartPackage, dataTransformation,filesToOpen, openFiles)
+
+    # rewrite the original df file in case @# were added as a tag to recognize the record as a PERSON, ORGANIZATION, or LOCATION
+    df.to_csv(svo_file_name, encoding='utf-8', index=False)
 
     return filesToOpen
 
@@ -489,7 +565,7 @@ def lemmatize_filter_svo_old(window,svo_file_name, filter_s, filter_v, filter_o,
     v_filtered_set = {}
     o_filtered_set = {}
 
-    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 
     startTime = IO_user_interface_util.timed_alert(window, 2000, 'Analysis start',
                                                    'Started running the lemma/filter algorithm for Subject-Verb-Object (SVO) at',
@@ -543,8 +619,8 @@ def lemmatize_filter_svo_old(window,svo_file_name, filter_s, filter_v, filter_o,
         deleted = False
         if not pd.isna(unfiltered_svo[i]['Subject (S)']):
             if lemmatize_s:
-                lemmatized_svo[i]['Subject (S)'] = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['Subject (S)']))
-                # lemmatized_svo.add(i,lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['Subject (S)'])))
+                lemmatized_svo[i]['Subject (S)'] = lemmatize_stanza_word(stanzaPipeLine(unfiltered_svo[i]['Subject (S)']))
+                # lemmatized_svo.add(i,lemmatize_stanza_word(stanzaPipeLine(unfiltered_svo[i]['Subject (S)'])))
                 if (filter_s and filter_s_fileName!='') and (not unfiltered_svo[i]['Subject (S)'] in s_filtered_set):
                     del filtered_svo[i]
                     # del lemmatized_filtered_svo[i]
@@ -552,15 +628,15 @@ def lemmatize_filter_svo_old(window,svo_file_name, filter_s, filter_v, filter_o,
                 else:
                     # if lemmatize_s and lemmatized_filtered_svo != {}:
                     # if lemmatize_s and lemmatized_filtered_svo != {}:
-                    #     lemmatized_filtered_svo[i]['Subject (S)'] = lemmatize_stanza(
+                    #     lemmatized_filtered_svo[i]['Subject (S)'] = lemmatize_stanza_word(
                     #         stanzaPipeLine(filtered_svo[i]['Subject (S)']))
                     if lemmatize_s and filtered_svo != {}:
-                        filtered_svo[i]['Subject (S)'] = lemmatize_stanza(
+                        filtered_svo[i]['Subject (S)'] = lemmatize_stanza_word(
                             stanzaPipeLine(filtered_svo[i]['Subject (S)']))
 
         if not pd.isna(unfiltered_svo[i]['Verb (V)']):
             if lemmatize_v:
-                lemmatized_svo[i]['Verb (V)'] = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['Verb (V)']))
+                lemmatized_svo[i]['Verb (V)'] = lemmatize_stanza_word(stanzaPipeLine(unfiltered_svo[i]['Verb (V)']))
                 if (filter_v and filter_v_fileName!='') and (not unfiltered_svo[i]['Verb (V)'] in v_filtered_set):
                     if not deleted:
                         del filtered_svo[i]
@@ -568,22 +644,22 @@ def lemmatize_filter_svo_old(window,svo_file_name, filter_s, filter_v, filter_o,
                         deleted = True
                 else:
                     # if not deleted and lemmatize_v and lemmatized_filtered_svo!={}:
-                    #     lemmatized_filtered_svo[i]['Verb (V)'] = lemmatize_stanza(stanzaPipeLine(filtered_svo[i]['Verb (V)']))
+                    #     lemmatized_filtered_svo[i]['Verb (V)'] = lemmatize_stanza_word(stanzaPipeLine(filtered_svo[i]['Verb (V)']))
                     if not deleted and lemmatize_v and filtered_svo!={}:
-                        filtered_svo[i]['Verb (V)'] = lemmatize_stanza(stanzaPipeLine(filtered_svo[i]['Verb (V)']))
+                        filtered_svo[i]['Verb (V)'] = lemmatize_stanza_word(stanzaPipeLine(filtered_svo[i]['Verb (V)']))
 
         if not pd.isna(unfiltered_svo[i]['Object (O)']):
             if lemmatize_o:
-                lemmatized_svo[i]['Object (O)'] = lemmatize_stanza(stanzaPipeLine(unfiltered_svo[i]['Object (O)']))
+                lemmatized_svo[i]['Object (O)'] = lemmatize_stanza_word(stanzaPipeLine(unfiltered_svo[i]['Object (O)']))
                 if (filter_o and filter_o_fileName!='') and (not unfiltered_svo[i]['Object (O)'] in o_filtered_set):
                     if not deleted:
                         del filtered_svo[i]
                         # del lemmatized_filtered_svo[i]
                 else:
                     # if not deleted and lemmatize_o and lemmatized_filtered_svo!={}:
-                    #     lemmatized_filtered_svo[i]['Object (O)'] = lemmatize_stanza(stanzaPipeLine(filtered_svo[i]['Object (O)']))
+                    #     lemmatized_filtered_svo[i]['Object (O)'] = lemmatize_stanza_word(stanzaPipeLine(filtered_svo[i]['Object (O)']))
                     if not deleted and lemmatize_o and filtered_svo!={}:
-                        filtered_svo[i]['Object (O)'] = lemmatize_stanza(stanzaPipeLine(filtered_svo[i]['Object (O)']))
+                        filtered_svo[i]['Object (O)'] = lemmatize_stanza_word(stanzaPipeLine(filtered_svo[i]['Object (O)']))
     # print(filter_s,filter_v,filtered_svo)
 
     # filtering for WordNet social actors/actions requires lemmatizing

@@ -13,7 +13,7 @@ import math
 import gensim
 from gensim.models import Word2Vec
 # Stanza for tokenization and lemmatization
-# from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
+# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
 import stanza
 # for calculating the distance
 import itertools
@@ -254,11 +254,11 @@ def sent_to_words(sent):
     return (gensim.utils.simple_preprocess(sent, deacc=True))
 
 def make_sentences(all_input_docs):
-    from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
     all_txt = []
     for doc in all_input_docs:
         # sentences = sent_tokenize(doc)
-        sentences = sent_tokenize_stanza(stanzaPipeLine(doc))
+        sentences = sentence_split_stanza_text(stanzaPipeLine(doc))
         sentences = [list(sent_to_words(sent)) for sent in sentences]
         all_txt += sentences
     return all_txt

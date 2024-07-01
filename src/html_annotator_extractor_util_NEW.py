@@ -21,7 +21,7 @@ import re
 import os
 import csv
 import ntpath
-from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
+from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
 
 import GUI_util
 
@@ -46,7 +46,7 @@ def gatherAnnotations(inputFile, tags, mustInclude='<p>', cleanMultiples=True):
     text = (open(inputFile, "r", encoding="utf-8", errors='ignore').read())
     # split into sentences
     # sentences = nltk.sent_tokenize(text)
-    sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+    sentences = tokenize_stanza_text(stanzaPipeLine(text))
     #for each_sentence in sentences:
     Sentence_ID = 0
     sentence_cleaned=''

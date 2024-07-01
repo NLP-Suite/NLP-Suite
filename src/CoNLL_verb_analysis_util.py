@@ -183,28 +183,37 @@ def verb_voice_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	# NVA Noun Verb Analysis
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Voice',
 																'list')
-	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
+	verb_voice_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
 																	'Verb Voice')
 
 	# convert list to dataframe and save
-	df = pd.DataFrame(voice_stats)
-	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
+	df = pd.DataFrame(verb_voice_list)
+	df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+				  "Sentence ID", "Document ID", "Document", "Verb Voice"]
+	headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID",
+			   "Document ID", "Document", "Verb Voice"]
+
+	IO_csv_util.df_to_csv(GUI_util.window, df, verb_voice_file_name, headers=headers, index=False,
 						  language_encoding='utf-8')
+
 	if chartPackage!='No charts':
 
-		columns_to_be_plotted_xAxis=[]
-		columns_to_be_plotted_yAxis=[[0, 1]]
-		count_var = 0
-		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
-												   outputFileLabel='verb',
-												   chartPackage=chartPackage,
-										           dataTransformation=dataTransformation,
-												   chart_type_list=['bar'],
-												   chart_title="Frequency Distribution of Verb Voice",
-												   column_xAxis_label_var='Verb voice',
-												   hover_info_column_list=[],
-												   count_var=count_var)
-		# run_all returns a string; must use append
+		columns_to_be_plotted_xAxis = []
+		columns_to_be_plotted_yAxis = ['Verb Voice']
+		count_var = 1
+
+		outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+												  verb_voice_file_name, outputDir,
+												  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+												  chart_title="Frequency Distribution of Verb Voice",
+												  outputFileNameType='verb_voice',
+												  column_xAxis_label='Verb voice',
+												  count_var=count_var,
+												  hover_label=[],
+												  groupByList=['Document'],
+												  plotList=[],
+												  chart_title_label='')
+
 		if outputFiles!=None:
 			if isinstance(outputFiles, str):
 				filesToOpen.append(outputFiles)
@@ -315,57 +324,74 @@ def verb_modality_stats(config_filename, inputFilename, outputDir, data, data_di
 	# NVA Noun Verb Analysis
 	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
 															 'Verb Modality list')
-	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
+	verb_modality_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
 																   'Verb Modality')
 	verb_modality_value_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
 																   'Verb Modality Value')
 
+	# convert list to dataframe and save
 	df = pd.DataFrame(verb_modality_list)
-	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
+	df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+				  "Sentence ID", "Document ID", "Document", "Verb Modality"]
+	headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID",
+			   "Document ID", "Document", "Verb Modality"]
+
+	IO_csv_util.df_to_csv(GUI_util.window, df, verb_modality_file_name, headers=headers, index=False,
 						  language_encoding='utf-8')
 
 	if chartPackage!='No charts':
-		columns_to_be_plotted_xAxis=[]
-		columns_to_be_plotted_yAxis=[[0, 1]]
+
+		columns_to_be_plotted_xAxis = []
+		columns_to_be_plotted_yAxis = ['Verb Modality']
 		count_var = 1
-		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
-												   outputFileLabel='verb_mod',
-												   chartPackage=chartPackage,
-										           dataTransformation=dataTransformation,
-												   chart_type_list=['bar'],
-												   chart_title="Frequency Distribution of Verb Modality",
-												   column_xAxis_label_var='Verb modality',
-												   hover_info_column_list=[],
-												   count_var=count_var,
-												   complete_sid=False)  # TODO to be changed
-		# run_all returns a string; must use append
+
+		outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+												  verb_modality_file_name, outputDir,
+												  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+												  chart_title="Frequency Distribution of Verb Modality",
+												  outputFileNameType='verb_mod',
+												  column_xAxis_label='Verb Modality',
+												  count_var=count_var,
+												  hover_label=[],
+												  groupByList=['Document'],
+												  plotList=[],
+												  chart_title_label='')
+
+
 		if outputFiles!=None:
 			if isinstance(outputFiles, str):
 				filesToOpen.append(outputFiles)
 			else:
 				filesToOpen.extend(outputFiles)
-		# header = ['ID', 'Form', 'Lemma', 'POS', 'NER', '?', 'Deprel', 'Deps', '?', '??', '???', 'Document ID', 'Document', 'Year', 'Modality Value']
-		# verb_modality_value_list.insert(0, header)
-		df = pd.DataFrame(verb_modality_value_list)
-		IO_csv_util.df_to_csv(GUI_util.window, df, verb_modality_value_stats_file_name, headers=None, index=False,
-							  language_encoding='utf-8')
-		columns_to_be_plotted_xAxis=[]
-		# col_num = IO_csv_util.get_columnNumber_from_headerValue(header,'Modality Value')
-		# columns_to_be_plotted_yAxis=[[0, col_num]]
-		columns_to_be_plotted_yAxis = [[0, len(verb_modality_value_list[0])-1]]
 
+		# convert list to dataframe and save
+		df = pd.DataFrame(verb_modality_value_list)
+		df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+					  "Sentence ID", "Document ID", "Document", "Modality Value"]
+		headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+				   "Sentence ID",
+				   "Document ID", "Document", "Modality Value"]
+
+		IO_csv_util.df_to_csv(GUI_util.window, df, verb_modality_value_stats_file_name, headers=headers, index=False,
+							  language_encoding='utf-8')
+
+		columns_to_be_plotted_xAxis = []
+		columns_to_be_plotted_yAxis = ['Modality Value']
 		count_var = 1
-		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_modality_value_stats_file_name, outputDir,
-												   outputFileLabel='verb_mod_val',
-												   chartPackage=chartPackage,
-										           dataTransformation=dataTransformation,
-												   chart_type_list=['bar'],
-												   chart_title="Frequency Distribution of Halliday's Verb Modality Values",
-												   column_xAxis_label_var='Verb modality value',
-												   hover_info_column_list=[],
-												   count_var=count_var,
-												   complete_sid=False)  # TODO to be changed
-		# run_all returns a string; must use append
+
+		outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+												  verb_modality_value_stats_file_name, outputDir,
+												  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+												  chart_title="Frequency Distribution of Modality Value",
+												  outputFileNameType='verb_mod_value',
+												  column_xAxis_label='Modality value',
+												  count_var=count_var,
+												  hover_label=[],
+												  groupByList=['Document'],
+												  plotList=[],
+												  chart_title_label='')
+
+
 		if outputFiles!=None:
 			if isinstance(outputFiles, str):
 				filesToOpen.append(outputFiles)
@@ -504,46 +530,44 @@ def verb_tense_stats(inputFilename, outputDir, data, data_divided_sents, openOut
 	global postag_counter
 	filesToOpen = []  # Store all files that are to be opened once finished
 
-	# inputFilename = GUI_util.inputFilename.get()
-	# outputDir = GUI_util.outputFilename.get()
-	# form_list, postag_list, postag_counter, deprel_list, deprel_counter = compute_stats(data)
-	# verb_tense_stats = [['Verb Tense', 'Frequencies'],
-	# 			   # ['Future', postag_counter['VBD']],
-	# 			   ['Gerund', postag_counter['VBG']],
-	# 			   ['Infinitive', postag_counter['VB']],
-	# 			   ['Past', postag_counter['VBD']],
-	# 			   ['Past Principle/Passive', postag_counter['VBN']],
-	# 			   ['Present', postag_counter['VBP']]]
-
 	verb_tense_list, verb_tense_stats = verb_tense_data_preparation(data)
 
 	# output file names
 	# NVA Noun Verb Analysis
-	verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Tense',
-															 'list')
-	verb_stats_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
+	# verb_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA', 'Verb Tense',
+	# 														 'list')
+	verb_tense_file_name = IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'NVA',
 																   'Verb Tense')
 
-	df = pd.DataFrame(verb_tense_stats)
-	IO_csv_util.df_to_csv(GUI_util.window, df, verb_stats_file_name, headers=None, index=False,
+	# convert list to dataframe and save
+	df = pd.DataFrame(verb_tense_list)
+	df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+				  "Sentence ID", "Document ID", "Document", "Verb Tense"]
+	headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+			   "Sentence ID",
+			   "Document ID", "Document", "Verb Tense"]
+
+	IO_csv_util.df_to_csv(GUI_util.window, df, verb_tense_file_name, headers=headers, index=False,
 						  language_encoding='utf-8')
 
 	if chartPackage!='No charts':
-		columns_to_be_plotted_xAxis=[]
-		columns_to_be_plotted_yAxis=[[0,1]]
-		count_var=0
-		outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, verb_stats_file_name, outputDir,
-														 outputFileLabel='verb_tense',
-														 chartPackage=chartPackage,
-										  				 dataTransformation=dataTransformation,
-														 chart_type_list=['bar'],
-														 chart_title="Frequency Distribution of Verb Tense",
-														 column_xAxis_label_var='Verb tense',
-														 hover_info_column_list=[],
-														 count_var=count_var,
-												   		 complete_sid=False)  # TODO to be changed
 
-		# run_all returns a string; must use append
+		columns_to_be_plotted_xAxis = []
+		columns_to_be_plotted_yAxis = ['Verb Tense']
+		count_var = 1
+
+		outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+												  verb_tense_file_name, outputDir,
+												  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+												  chart_title="Frequency Distribution of Verb Tense Value",
+												  outputFileNameType='verb_tense',
+												  column_xAxis_label='Verb tense',
+												  count_var=count_var,
+												  hover_label=[],
+												  groupByList=['Document'],
+												  plotList=[],
+												  chart_title_label='')
+
 		if outputFiles!=None:
 			if isinstance(outputFiles, str):
 				filesToOpen.append(outputFiles)

@@ -8,7 +8,6 @@ if not IO_libraries_util.install_all_Python_packages(GUI_util.window,"html_annot
 import os
 import pandas as pd
 from tkinter import messagebox as mb
-# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
 import csv
 
 import GUI_IO_util
@@ -20,7 +19,7 @@ import Stanford_CoreNLP_util
 
 
 def text_generate(inputFilename, inputDir):
-    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text
     articles = []
     if inputFilename == '':
         for folder, subs, files in os.walk(inputDir):
@@ -32,7 +31,7 @@ def text_generate(inputFilename, inputDir):
                 with open(os.path.join(folder, filename), 'r', encoding='utf-8', errors='ignore') as src:
                     text = src.read().replace("\n", " ")
                 # sentences = tokenize.sent_tokenize(text)
-                sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+                sentences = sentence_split_stanza_text(stanzaPipeLine(text))
                 # articles.append([sentences, filename])
                 articles.append([sentences, IO_csv_util.dressFilenameForCSVHyperlink(filename)])
                 # name, sentence, sentenceID, documentID, documentName
@@ -45,7 +44,7 @@ def text_generate(inputFilename, inputDir):
             with open(inputFilename,  'r', encoding='utf-8', errors='ignore') as src:
                 text = src.read().replace("\n", " ")
             # sentences = tokenize.sent_tokenize(text)
-            sentences = sent_tokenize_stanza(stanzaPipeLine(text))
+            sentences = sentence_split_stanza_text(stanzaPipeLine(text))
             articles.append([sentences, inputFilename])
     return articles, inputDir
 
@@ -59,7 +58,7 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
     items_separator_var = ''
     date_position_var = ''
 
-    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text
 
     tempOutputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir, outputDir,
                                                         openOutputFiles, chartPackage, dataTransformation,
@@ -95,7 +94,7 @@ def dictionary_annotate(config_filename, inputFilename, inputDir, outputDir, ope
                         people.append([ner[0], sentence, sentence_num + 1, article_num + 1, article[1]])
                 if personal_pronouns_var:
                     # tokens = word_tokenize(sentence)
-                    tokens = word_tokenize_stanza(stanzaPipeLine(sentence))
+                    tokens = tokenize_stanza_text(stanzaPipeLine(sentence))
                     for token in tokens:
                         if token in ['his','His','He','he','Him','him']:
                             people.append([token, 'Male', sentence, sentence_num+1,article_num+1,article[1]])

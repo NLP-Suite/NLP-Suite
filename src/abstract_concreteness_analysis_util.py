@@ -44,7 +44,7 @@ import tkinter.messagebox as mb
 import IO_user_interface_util
 import lib_util
 
-# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 
 import GUI_IO_util
 import IO_csv_util
@@ -88,8 +88,8 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 
 	# otherwise, split into sentences
 	# sentences = tokenize.sent_tokenize(fulltext)
-	from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-	sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
+	from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
+	sentences = tokenize_stanza_text(stanzaPipeLine(fulltext))
 
 	# check each word in sentence for concreteness and write to outputFilename
 	# analyze each sentence for concreteness
@@ -103,14 +103,14 @@ def analyzefile(inputFilename, outputDir, outputFilename,  documentID, documentN
 		score_list = []  # use the Conc.M as scores to calculate the concreteness
 
 		# search for each valid word's concreteness ratings
-		words = word_tokenize_stanza(stanzaPipeLine(s.lower()))
+		words = tokenize_stanza_text(stanzaPipeLine(s.lower()))
 
 		filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
 		for index, w in enumerate(filtered_words):
 			# don't process stopwords
 			if w in stops:
 				continue
-			lemma = lemmatize_stanza(stanzaPipeLine(w))
+			lemma = lemmatize_stanza_word(stanzaPipeLine(w))
 			all_words.append(str(lemma))
 			if lemma in data_dict['Word']:
 				index = data_dict['Word'].index(lemma)

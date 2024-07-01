@@ -50,7 +50,7 @@ IO_libraries_util.import_nltk_resource(GUI_util.window,'vader_lexicon','vader_le
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 # from nltk import tokenize
 # from nltk import word_tokenize
-# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 
 import GUI_IO_util
 import IO_csv_util
@@ -116,10 +116,10 @@ def analyzefile(inputFilename, outputDir, outputFilename, mode, Document_ID, Doc
         print('Empty file ', inputFilename)
         return
 
-    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 
     # sentences = tokenize.sent_tokenize(fulltext)  # split text into sentences
-    sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
+    sentences = sentence_split_stanza_text(stanzaPipeLine(fulltext))
     sid = SentimentIntensityAnalyzer()  # create sentiment analyzer
     i = 1  # to store sentence index
 
@@ -166,7 +166,7 @@ def analyzefile(inputFilename, outputDir, outputFilename, mode, Document_ID, Doc
 
         # search for each valid word's sentiment in VADER database
         # words = word_tokenize(s.lower())
-        words = word_tokenize_stanza(stanzaPipeLine(s.lower()))
+        words = tokenize_stanza_text(stanzaPipeLine(s.lower()))
         filtered_words = [word for word in words if word.isalpha()]  # strip out words with punctuation
         for index, w in enumerate(filtered_words):
             # don't process stops
@@ -187,7 +187,7 @@ def analyzefile(inputFilename, outputDir, outputFilename, mode, Document_ID, Doc
             # lemma = lmtzr.lemmatize(w, pos='v')
             # if lemma == w:
             #     lemma = lmtzr.lemmatize(w, pos='n')
-            lemma = lemmatize_stanza(stanzaPipeLine(w))
+            lemma = lemmatize_stanza_word(stanzaPipeLine(w))
 
         writer.writerow({
                          Sentiment_measure: sentiment,

@@ -50,7 +50,7 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
-    function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Pronouns', 'list')
+    pronouns_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Pronouns', 'list')
     function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename,'',  outputDir, '.csv', 'FW', 'Pronouns')
     # filesToOpen.append(function_words_list_file_name)
     # not necessary to open stats since these stats are included in the pie chart
@@ -70,29 +70,34 @@ def pronoun_stats(inputFilename,outputDir, data, data_divided_sents, openOutputF
         pronouns_list,pronouns_stats, pronouns_data = stats_pronouns_output(data,data_divided_sents)
         pronouns_list = pronouns_data
 
-        # convert list to dataframe
-        df = pd.DataFrame(pronouns_data)
-        IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
+        # convert list to dataframe and save
+        df = pd.DataFrame(pronouns_list)
+        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                      "Sentence ID", "Document ID", "Document", "PRONOUNS"]
+        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                   "Sentence ID",
+                   "Document ID", "Document", "PRONOUNS"]
+
+        IO_csv_util.df_to_csv(GUI_util.window, df, pronouns_list_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
-        # filesToOpen.append(function_words_stats_file_name)
 
-          # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-          #     "PRONOUNS"])
+        if chartPackage!='No charts':
 
-        if chartPackage!='No charts'==True:
-            columns_to_be_plotted_xAxis=[]
-            columns_to_be_plotted_yAxis=[[0,1]]
-            count_var=1
-            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
-                                                            outputFileLabel='FuncWords_pron',
-                                                            chartPackage=chartPackage,
-                                                            dataTransformation=dataTransformation,
-                                                            chart_type_list=['bar'],
-                                                            chart_title="Frequency Distribution of Pronouns",
-                                                            column_xAxis_label_var='Pronoun',
-                                                            hover_info_column_list=[],
-                                                            count_var=count_var,
-                                                            complete_sid=False)  # TODO to be changed
+            columns_to_be_plotted_xAxis = []
+            columns_to_be_plotted_yAxis = ['PRONOUNS']
+            count_var = 1
+
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                                      pronouns_list_file_name, outputDir,
+                                                      columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                                      chart_title="Frequency Distribution of Pronouns",
+                                                      outputFileNameType='FuncWords_pron',
+                                                      column_xAxis_label='Pronoun',
+                                                      count_var=count_var,
+                                                      hover_label=[],
+                                                      groupByList=['Document'],
+                                                      plotList=[],
+                                                      chart_title_label='')
 
             # run_all returns a string; must use append
             if outputFiles!=None:
@@ -108,7 +113,7 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
-    function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Prepositions', 'list')
+    function_words_prepositions_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Prepositions', 'list')
     function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Prepositions')
     # filesToOpen.append(function_words_list_file_name)
     # not necessary to open stats since these stats are included in the pie chart
@@ -128,30 +133,35 @@ def preposition_stats(inputFilename,outputDir,data, data_divided_sents, openOutp
         prepositions_list,prepositions_stats, prepositions_data = stats_prepositions_output(data,data_divided_sents)
         prepositions_list = prepositions_data
 
-        # convert list to dataframe
-        df = pd.DataFrame(prepositions_data)
-        IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
+        # convert list to dataframe and save
+        df = pd.DataFrame(prepositions_list)
+        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                      "Sentence ID", "Document ID", "Document", "PREPOSITIONS"]
+        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                   "Sentence ID",
+                   "Document ID", "Document", "PREPOSITIONS"]
+
+        IO_csv_util.df_to_csv(GUI_util.window, df, function_words_prepositions_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
 
-          # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-          #     "PREPOSITIONS"])
+        if chartPackage!='No charts':
 
-        if chartPackage!='No charts'==True:
-            columns_to_be_plotted_xAxis=[]
-            columns_to_be_plotted_yAxis=[[0,1]]
-            count_var=1
-            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
-                                                            outputFileLabel='FuncWords_prep',
-                                                            chartPackage=chartPackage,
-                                                            dataTransformation=dataTransformation,
-                                                            chart_type_list=['bar'],
-                                                            chart_title="Frequency Distribution of Prepositions",
-                                                            column_xAxis_label_var='Preposition',
-                                                            hover_info_column_list=[],
-                                                            count_var=count_var,
-                                                            complete_sid=False)  # TODO to be changed
+            columns_to_be_plotted_xAxis = []
+            columns_to_be_plotted_yAxis = ['PREPOSITIONS']
+            count_var = 1
 
-            # run_all returns a string; must use append
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                                      function_words_prepositions_file_name, outputDir,
+                                                      columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                                      chart_title="Frequency Distribution of Prepositions",
+                                                      outputFileNameType='FuncWords_prep',
+                                                      column_xAxis_label='Preposition',
+                                                      count_var=count_var,
+                                                      hover_label=[],
+                                                      groupByList=['Document'],
+                                                      plotList=[],
+                                                      chart_title_label='')
+
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
@@ -164,7 +174,7 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
-    function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Articles', 'list')
+    function_words_articles_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Articles', 'list')
     function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Articles')
     # filesToOpen.append(function_words_list_file_name)
     # not necessary to open stats since these stats are included in the pie chart
@@ -185,41 +195,48 @@ def article_stats(inputFilename,outputDir,data, data_divided_sents, openOutputFi
         # output files
         article_list,article_stats,article_data =  stats_determiners_articles_output(data,data_divided_sents)
         article_list = article_data
-          # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-          #     "ARTICLES"])
 
-        # convert list to dataframe
-        df = pd.DataFrame(article_data)
-        IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
+        # convert list to dataframe and save
+        df = pd.DataFrame(article_list)
+        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                      "Sentence ID", "Document ID", "Document", "ARTICLES"]
+        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                   "Sentence ID",
+                   "Document ID", "Document", "ARTICLES"]
+
+        IO_csv_util.df_to_csv(GUI_util.window, df, function_words_articles_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
 
-        if chartPackage!='No charts'==True:
-            columns_to_be_plotted_xAxis=[]
-            columns_to_be_plotted_yAxis=[[0,1]]
-            count_var=1
-            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
-                                                            outputFileLabel='FuncWords_article',
-                                                            chartPackage=chartPackage,
-                                                            dataTransformation=dataTransformation,
-                                                            chart_type_list=['bar'],
-                                                            chart_title="Frequency Distribution of Articles/Determiners",
-                                                            column_xAxis_label_var='Article/Determiner',
-                                                            hover_info_column_list=[],
-                                                            count_var=count_var,
-                                                            complete_sid=False)  # TODO to be changed
-            # run_all returns a string; must use append
+        if chartPackage!='No charts':
+
+            columns_to_be_plotted_xAxis = []
+            columns_to_be_plotted_yAxis = ['ARTICLES']
+            count_var = 1
+
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                                      function_words_articles_file_name, outputDir,
+                                                      columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                                      chart_title="Frequency Distribution of Articles",
+                                                      outputFileNameType='FuncWords_art',
+                                                      column_xAxis_label='Article',
+                                                      count_var=count_var,
+                                                      hover_label=[],
+                                                      groupByList=['Document'],
+                                                      plotList=[],
+                                                      chart_title_label='')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
                     filesToOpen.extend(outputFiles)
+
     return filesToOpen
 
 def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutputFiles,chartPackage, dataTransformation):
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
-    function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Conjunctions', 'list')
+    function_words_conjunctions_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Conjunctions', 'list')
     function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Conjunctions')
     # not necessary to open stats since these stats are included in the pie chart
     # filesToOpen.append(function_words_stats_file_name)
@@ -235,41 +252,43 @@ def conjunction_stats(inputFilename,outputDir, data, data_divided_sents,openOutp
             mb.showwarning(title='output file path error', message='Please check OUTPUT DIRECTORY PATH and try again')
             return filesToOpen
 
-        conjunction_list,conjunction_stats,conjunction_data =  stats_conjunctions_output(data,data_divided_sents)
+        conjunction_list,conjunction_stats,conjunction_data = stats_conjunctions_output(data,data_divided_sents)
         conjunction_list = conjunction_data
 
-        # convert list to dataframe
-        df = pd.DataFrame(conjunction_data)
-        IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
+
+        # convert list to dataframe and save
+        df = pd.DataFrame(conjunction_list)
+        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                      "Sentence ID", "Document ID", "Document", "CONJUNCTIONS"]
+        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                   "Sentence ID",
+                   "Document ID", "Document", "CONJUNCTIONS"]
+
+        IO_csv_util.df_to_csv(GUI_util.window, df, function_words_conjunctions_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
-        # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-          #     "CONJUNCTIONS"])
 
-        if chartPackage!='No charts'==True:
-            columns_to_be_plotted_xAxis=[]
-            columns_to_be_plotted_yAxis=[[0,1]]
-            count_var=1
-            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
-                                                            outputFileLabel='FuncWords_conjunction',
-                                                            chartPackage=chartPackage,
-                                                            dataTransformation=dataTransformation,
-                                                            chart_type_list=['bar'],
-                                                            chart_title="Frequency Distribution of Conjunctions",
-                                                            column_xAxis_label_var='Conjunctions',
-                                                            hover_info_column_list=[],
-                                                            count_var=count_var,
-                                                            complete_sid=False)  # TODO to be changed
+        if chartPackage!='No charts':
 
-            # run_all returns a string; must use append
+            columns_to_be_plotted_xAxis = []
+            columns_to_be_plotted_yAxis = ['CONJUNCTIONS']
+            count_var = 1
+
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                                      function_words_conjunctions_file_name, outputDir,
+                                                      columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                                      chart_title="Frequency Distribution of Conjunctions",
+                                                      outputFileNameType='FuncWords_conj',
+                                                      column_xAxis_label='Conjunction',
+                                                      count_var=count_var,
+                                                      hover_label=[],
+                                                      groupByList=['Document'],
+                                                      plotList=[],
+                                                      chart_title_label='')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)
                 else:
                     filesToOpen.extend(outputFiles)
-
-            # function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, outputDir, '.xlsx', 'FW', 'Conjunctions', 'stats_pie_chart')
-            # filesToOpen.append(function_words_stats_file_name)
-            # outputFiles =charts_Excel_util.create_excel_chart(GUI_util.window,[conjunction_stats],function_words_stats_file_name,"Conjunction Analysis",["pie"])
 
     return filesToOpen
 
@@ -277,7 +296,7 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
     filesToOpen = []  # Store all files that are to be opened once finished
 
     #output file names
-    function_words_list_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Auxiliaries', 'list')
+    function_words_auxiliaries_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Auxiliaries', 'list')
     function_words_stats_file_name=IO_files_util.generate_output_file_name(inputFilename, '', outputDir, '.csv', 'FW', 'Auxiliaries')
     # filesToOpen.append(function_words_list_file_name)
     # not necessary to open stats since these stats are included in the pie chart
@@ -293,32 +312,37 @@ def auxiliary_stats(inputFilename,outputDir,data, data_divided_sents, openOutput
         if not os.path.isdir(outputDir):
             mb.showwarning(title='output file path error', message='Please check OUTPUT DIRECTORY PATH and try again')
             return filesToOpen
-        auxiliary_list,auxiliary_stats,auxiliary_data =  stats_auxiliaries_output(data,data_divided_sents)
+        auxiliary_list,auxiliary_stats,auxiliary_data = stats_auxiliaries_output(data,data_divided_sents)
         auxiliary_list = auxiliary_data
-          # header=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document",
-          #     "AUXILIARIES"])
 
-        # convert list to dataframe
-        df = pd.DataFrame(auxiliary_data)
-        IO_csv_util.df_to_csv(GUI_util.window, df, function_words_stats_file_name, headers=None, index=False,
+        # convert list to dataframe and save
+        df = pd.DataFrame(auxiliary_list)
+        df.columns = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                      "Sentence ID", "Document ID", "Document", "AUXILIARIES"]
+        headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID",
+                   "Sentence ID",
+                   "Document ID", "Document", "AUXILIARIES"]
+
+        IO_csv_util.df_to_csv(GUI_util.window, df, function_words_auxiliaries_file_name, headers=headers, index=False,
                               language_encoding='utf-8')
 
-        if chartPackage!='No charts'==True:
-            columns_to_be_plotted_xAxis=[]
-            columns_to_be_plotted_yAxis=[[0,1]]
-            count_var=1
-            outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, function_words_stats_file_name, outputDir,
-                                                            outputFileLabel='FuncWords_auxiliary',
-                                                            chartPackage=chartPackage,
-                                                            dataTransformation=dataTransformation,
-                                                            chart_type_list=['bar'],
-                                                            chart_title="Frequency Distribution of Auxiliary Verbs",
-                                                            column_xAxis_label_var='Auxiliary Verbs',
-                                                            hover_info_column_list=[],
-                                                            count_var=count_var,
-                                                            complete_sid=False)  # TODO to be changed
+        if chartPackage!='No charts':
 
-            # run_all returns a string; must use append
+            columns_to_be_plotted_xAxis = []
+            columns_to_be_plotted_yAxis = ['AUXILIARIES']
+            count_var = 1
+
+            outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                                      function_words_auxiliaries_file_name, outputDir,
+                                                      columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                                      chart_title="Frequency Distribution of Auxiliaries",
+                                                      outputFileNameType='FuncWords_aux',
+                                                      column_xAxis_label='Auxiliary verb',
+                                                      count_var=count_var,
+                                                      hover_label=[],
+                                                      groupByList=['Document'],
+                                                      plotList=[],
+                                                      chart_title_label='')
             if outputFiles!=None:
                 if isinstance(outputFiles, str):
                     filesToOpen.append(outputFiles)

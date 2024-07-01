@@ -8,8 +8,6 @@ import pandas as pd
 import csv
 import numpy as np
 import pprint
-# from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-import stanza
 
 import GUI_util
 import IO_files_util
@@ -21,7 +19,8 @@ import constants_util
 NGramsCoOccurrences implements the ability to generate NGram and CoOccurrences data
 """
 # import hashfile
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+
+from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, lemmatize_stanza_doc, lemmatize_stanza_word
 # both A and B are lists []
 def keywords_co_occurr(A, B):
     A = ','.join(A).split(',')
@@ -51,10 +50,7 @@ def readfile(doc):
         fullText = fullText.replace('\n', ' ')
     return fullText
 
-# search_keywords_list is the list of search words; search words will be processed individually;
-# multi-word expressions (e.g., 'peaceful reunification of the motherland') will not be processed as a single item
-# to process multi-word expressions as a single search word, separate each word by a comma
-#   e.g., 'peaceful, reunification, of, the, motherland'
+# search_keywords_list is the list of search words
 
 # currently not used
 def search_within_sentence_coOccurences(inputFilename, inputDir, search_keywords_list,
@@ -83,7 +79,7 @@ def search_within_sentence_coOccurences(inputFilename, inputDir, search_keywords
         #     print(f" Using cache :  Processing file {doc_index + 1}/{len(files)} {tail}")
         # else:
         #     print(f" Building cache:  Processing file {doc_index + 1}/{len(files)} {tail}")
-        sentences = sent_tokenize_stanza(stanzaPipeLine(readfile(file)))
+        sentences = sentence_split_stanza_text(stanzaPipeLine(readfile(file)))
             # # SIMON cache
             # hashfile.storehash(hashmap, checksum, sentences)
             # hashfile.writehash(hashmap, hashOutputDir)
@@ -214,28 +210,45 @@ def process_n_grams(search_word, ngram_results, quarter_ngram_results, year, mon
 
 
 def lemmatize_search_words(search_words_str):
+    lemmatized_word=''
     if isinstance(search_words_str,str):
         # convert string to list
-        search_keywords_list = search_words_str.split(' ')
+        search_keywords_list = search_words_str.split(',')
     else:
         search_keywords_list = search_words_str
     lemmatized_search_keywords_list=[]
     for word in search_keywords_list:
-        lemmatized_word = lemmatize_stanza(stanzaPipeLine(word))
+        word = word.rstrip()
+        word = word.lstrip()
+        # check for multi-word expressions (e.g. lousy programmer)
+        #   each word in the mwe needs to be lemmatized
+        word_frequency = word.count(' ')
+        if word_frequency>0:
+            mwe_words = word.split(' ')
+            for mwe_word in enumerate(mwe_words):
+                lemmatized_mwe = lemmatize_stanza_word(stanzaPipeLine(mwe_word[1]),False)
+                lemmatized_word=lemmatized_word + lemmatized_mwe + ' '
+            lemmatized_word = lemmatized_word.rstrip() # strip extra blank to the right
+        else:
+            lemmatized_word = lemmatize_stanza_word(stanzaPipeLine(word),False)
         lemmatized_search_keywords_list.append(lemmatized_word)
     lemmatized_search_word_str= ", ".join(str(element) for element in lemmatized_search_keywords_list)
     return lemmatized_search_keywords_list, lemmatized_search_word_str
+
+# text_to_process is the document text being processed
 def prepare_text_with_options(text_to_process, case_sensitive, exact_word_match, lemmatize, lang='en'):
-    if lemmatize:
-        import Stanza_functions_util
-        text_to_process = Stanza_functions_util.lemmatize_stanza_doc(text_to_process, lang)
+    return_string = True
     if not case_sensitive:
         text_to_process = text_to_process.lower()
+    if lemmatize:
+        # text_to_process = 'Robert Bingman, a single man, ate shit and got sick.'
+        text_to_process = lemmatize_stanza_doc(stanzaPipeLine(text_to_process), return_string, exact_word_match)
+
     return text_to_process
 
 
 def get_search_word_from_text(text_to_process, search_word, lemmatize, case_sensitive, exact_word_match):
-    if lemmatize:
+    if lemmatize: # all lemmatized words (except proper names) are returned by Stanza as lower case
         search_word = search_word.lower()
     if exact_word_match:
         # multi-word expressions (e.g., good programmer) would not be found if the text is split into separate tokens
@@ -243,11 +256,7 @@ def get_search_word_from_text(text_to_process, search_word, lemmatize, case_sens
             import re
             # remove all punctuation and returns a list
             text_to_process = re.findall(r'\b\w+\b', text_to_process)
-        # count is case-sensitive
-        search_word_frequency = text_to_process.count(search_word)
-    else:
-        # count is case-sensitive
-        search_word_frequency = text_to_process.count(search_word)
+    search_word_frequency = text_to_process.count(search_word)
     return search_word_frequency
 
 
@@ -612,7 +621,7 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
         datePos=2,
         viewer_options_list=[],ngrams_size=1,Ngrams_search_var=False,csv_file_var=None, within_sentence_co_occurrence_search_var=True):
 
-    from Stanza_functions_util import word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text
 
     if search_keywords_list is None:
         search_keywords_list = []
@@ -626,16 +635,16 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
             lang = k
             lang_list.append(lang)
             break
-    try:
-        if useLemma:
-            nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
-        else:
-            nlp = stanza.Pipeline(lang=lang, processors='tokenize')
-    except:
-        mb.showwarning(title='Warning',
-                       # message='You must enter an integer value. The value ' + str(result[0]) + ' is not an integer.')
-                    message = 'You must enter an integer value. The value is not an integer.')
-        return
+    # try:
+    #     if useLemma:
+    #         nlp = stanza.Pipeline(lang=lang, processors='tokenize, lemma')
+    #     else:
+    #         nlp = stanza.Pipeline(lang=lang, processors='tokenize')
+    # except:
+    #     mb.showwarning(title='Warning',
+    #                    # message='You must enter an integer value. The value ' + str(result[0]) + ' is not an integer.')
+    #                 message = 'You must enter an integer value. The value is not an integer.')
+    #     return
     case_sensitive = False
     normalize = False
     scaleData = False
@@ -812,6 +821,7 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
         docText = f.read()
         f.close()
 
+
         docText = prepare_text_with_options(docText, case_sensitive, exact_word_match, useLemma, lang)
 
         # https://stackoverflow.com/questions/66342227/efficiently-searching-a-body-of-text-for-a-large-number-of-keywords-1000s
@@ -824,7 +834,7 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
         if within_sentence_co_occurrence_search_var:
             results = []
             sentIndex=0
-            sentences = sent_tokenize_stanza(stanzaPipeLine(docText))
+            sentences = sentence_split_stanza_text(stanzaPipeLine(docText))
             len_sentences = len(sentences)
 
             # SIMON cache
@@ -868,7 +878,7 @@ def NGrams_coOccurrences_VIEWER(inputDir="relative_path_here",
                                                  "Co-Occurrence in Document": {},
                                                  "Document ID": docIndex,
                                                  "Document": IO_csv_util.undressFilenameForCSVHyperlink(file)}
-            # tokens_ = word_tokenize_stanza(stanzaPipeLine(docText))
+            # tokens_ = tokenize_stanza_text(stanzaPipeLine(docText))
             # SIMON cache
             # hashfile.storehash(hashmap, hashfile.calculate_checksum(file), tokens_)
             # hashfile.writehash(hashmap, outputDir)

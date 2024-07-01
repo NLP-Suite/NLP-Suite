@@ -149,22 +149,27 @@ def clause_stats(inputFilename,inputDir, outputDir,data, data_divided_sents,open
     # convert list to dataframe and save
     # headers=['Clause Tags','Frequencies']
     df = pd.DataFrame(clausal_list)
-    IO_csv_util.df_to_csv(GUI_util.window, df, clausal_analysis_stats_file_name, headers=None, index=False, language_encoding='utf-8')
+    df.columns=["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document", "Tag"]
+    headers = ["ID", "FORM", "Lemma", "POS", "NER", "Head", "DepRel", "Deps", "Clause Tag", "Record ID", "Sentence ID", "Document ID", "Document", "Tag"]
+    IO_csv_util.df_to_csv(GUI_util.window, df, clausal_analysis_stats_file_name, headers=headers, index=False, language_encoding='utf-8')
 
-    if chartPackage!='No charts'==True:
+    if chartPackage!='No charts':
         columns_to_be_plotted_xAxis=[]
-        columns_to_be_plotted_yAxis=[[0,1]]
+        columns_to_be_plotted_yAxis=['Clause Tag']
         count_var=1
-        outputFiles = charts_util.run_all(columns_to_be_plotted_yAxis, clausal_analysis_stats_file_name, outputDir,
-                                                        outputFileLabel='clausal_stats',
-                                                        chartPackage=chartPackage,
-                                                        dataTransformation=dataTransformation,
-                                                        chart_type_list=['bar'],
-                                                        chart_title="Frequency Distribution of Clause Types",
-                                                        column_xAxis_label_var='Clause Type',
-                                                        hover_info_column_list=[],
-                                                        count_var=count_var,
-                                                        complete_sid=False)  # TODO to be changed
+
+        outputFiles = charts_util.visualize_chart(chartPackage, dataTransformation,
+                                                  clausal_analysis_stats_file_name, outputDir,
+                                                  columns_to_be_plotted_xAxis, columns_to_be_plotted_yAxis,
+                                                  chart_title="Frequency Distribution of Clause Types",
+                                                  outputFileNameType='clausal_stats',
+                                                  column_xAxis_label='Clause Type',
+                                                  count_var=count_var,
+                                                  hover_label=[],
+                                                  groupByList=['Document'],
+                                                  plotList=[],
+                                                  chart_title_label='')
+
         if outputFiles!=None:
             if isinstance(outputFiles, str):
                 filesToOpen.append(outputFiles)

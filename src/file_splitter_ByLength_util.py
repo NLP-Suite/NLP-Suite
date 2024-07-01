@@ -19,7 +19,7 @@ import ntpath
 import shutil
 
 import GUI_util
-# from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
 
 import IO_user_interface_util
 import reminders_util
@@ -130,15 +130,17 @@ def splitDocument_byLength(window, config_filename, filename_path,output_path=''
 #   making the split_files subdirectory, for this function
 #   the creation of the directory is carried out in the calling script
 def split_byLength(window,input_path,filename,output_path, maxLength, inSentence=False):
-    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
     #inSentence: no incomplete sentence in subfiles
     docname = os.path.split(filename)[1]
     title = docname.partition('.')[0]#get the title of the file(without path and .txt)
+    len_sentences = 0
     with open(filename, 'r',encoding='utf-8',errors='ignore') as F:
         text = F.read()
-        sentences = sent_tokenize_stanza(stanzaPipeLine(text)) #sentnece list of the input txt
+        sentences = sentence_split_stanza_text(stanzaPipeLine(text)) #sentnece list of the input txt
+        len_sentences=len(sentences)
     F.close()
-    if maxLength > len(word_tokenize_stanza(stanzaPipeLine(text))):
+    if maxLength > len_sentences:
         IO_user_interface_util.timed_alert(window, 2000, 'File split warning', 'The length of file ' + filename + ' is less than ' + str(maxLength))
         subfile = open(output_path+"/"+title+"_1"+".txt", 'w',encoding='utf-8',errors='ignore')
         subfile.write(text)
@@ -147,7 +149,7 @@ def split_byLength(window,input_path,filename,output_path, maxLength, inSentence
     subfileIndex = 1
     l = 0
     for sent in sentences:
-        words = word_tokenize_stanza(stanzaPipeLine(sent))
+        words = tokenize_stanza_text(stanzaPipeLine(sent))
         if l + len(words) < maxLength:
             splitText += sent + " "
             l += len(words)
@@ -177,14 +179,14 @@ def split_byLength(window,input_path,filename,output_path, maxLength, inSentence
                 else:
                     subsent = ''
                     restsent = sent
-                    while len(word_tokenize_stanza(stanzaPipeLine(text))) <= diff:#check each same word until the previous text reached the maxLength
+                    while len(tokenize_stanza_text(stanzaPipeLine(text))) <= diff:#check each same word until the previous text reached the maxLength
                         subsent += restsent.partition(words[diff-1])[0]+restsent.partition(words[diff-1])[1]
                         restsent = restsent.partition(words[diff-1])[2]
                     subfile = open(output_path+"/"+title+"_"+str(subfileIndex)+".txt", 'w',encoding='utf-8',errors='ignore')
                     subfile.write(splitText + subsent)
                     subfileIndex += 1
                     splitText = restsent + " "
-                    l = len(word_tokenize_stanza(stanzaPipeLine(restsent)))
+                    l = len(tokenize_stanza_text(stanzaPipeLine(restsent)))
 
     if len(splitText) > 0:
         subfile = open(output_path+"/"+title+"_"+str(subfileIndex)+".txt", 'w',encoding='utf-8',errors='ignore')

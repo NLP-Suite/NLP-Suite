@@ -11,7 +11,7 @@ if IO_libraries_util.install_all_Python_packages(GUI_util.window,"Newspaper titl
 
 import glob
 import os
-# from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
+# from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
 import string
 import tkinter as tk
 import tkinter.messagebox as mb
@@ -304,7 +304,7 @@ def isTitle(sentence,Title_length_limit):
         return True
 
 def newspaper_titles(window,inputFilename,inputDir,outputDir, configFileName, openOutputFiles,chartPackage, dataTransformation):
-    from Stanza_functions_util import stanzaPipeLine, sent_tokenize_stanza
+    from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
 
     if inputDir=='' and inputFilename!='':
         NUM_DOCUMENT=1
@@ -371,7 +371,7 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir, configFileName, op
                             out.write(paragraph)
                     else:
                         # for one in sent_tokenize(paragraph):#.decode('utf-8')):
-                        for one in sent_tokenize_stanza(stanzaPipeLine(paragraph)):
+                        for one in tokenize_stanza_text(stanzaPipeLine(paragraph)):
                             out.write(one)#.encode('utf-8'))
                             out.write(' ')
                         out.write('\n')
@@ -408,7 +408,7 @@ def newspaper_titles(window,inputFilename,inputDir,outputDir, configFileName, op
                         title.append(paragraph)
                     else:
                         # for one in sent_tokenize(paragraph):#.decode('utf-8')):
-                        for one in sent_tokenize_stanza(stanzaPipeLine(paragraph)):
+                        for one in tokenize_stanza_text(stanzaPipeLine(paragraph)):
                             out.write(one)
                             out.write(' ')
                         out.write('\n')

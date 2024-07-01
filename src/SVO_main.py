@@ -266,11 +266,11 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
         # they can be passed independently, but it is useful to have both arguments
         outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                    outputSVODir, openOutputFiles,
-                                   
                                    chartPackage,
                                    dataTransformation,
                                    annotator, False,
                                    language_var, export_json_var, memory_var, document_length_var, limit_sentence_length_var,
+                                   filter_subjects=filter_subjects,
                                    extract_date_from_text_var=extract_date_from_text_var,
                                    filename_embeds_date_var=filename_embeds_date_var,
                                    date_format=date_format_var,
@@ -309,7 +309,6 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
 
         outputFiles = Stanford_CoreNLP_util.CoreNLP_annotate(config_filename, inputFilename, inputDir,
                                                                            outputSVODir, openOutputFiles,
-                                                                           
                                                                            chartPackage,
                                                                            dataTransformation,
                                                                            'OpenIE',
@@ -477,8 +476,8 @@ def run(inputFilename, inputDir, outputDir, openOutputFiles, chartPackage, dataT
             reminders_util.checkReminder(scriptName, reminders_util.title_options_no_SVO_records,
                                          reminders_util.message_no_SVO_records, True)
 
-    reminders_util.checkReminder(scriptName, reminders_util.title_options_SVO_inferred_subject_passive,
-                                 reminders_util.message_SVO_inferred_subject_passive, True)
+    reminders_util.checkReminder(scriptName, reminders_util.title_options_SVO_Inferred_Subject_Passive,
+                                 reminders_util.message_SVO_Inferred_Subject_Passive, True)
     # the SVO script can take in input a csv SVO file previously computed (in which case the filename will contain SVO_): inputFilename
     # results currently produced are in svo_result_list
 

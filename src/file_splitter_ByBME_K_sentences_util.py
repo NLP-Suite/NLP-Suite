@@ -1,5 +1,5 @@
 import os
-from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
+from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, lemmatize_stanza_word
 
 import IO_files_util
 import IO_csv_util
@@ -34,7 +34,7 @@ def sample_doc_beginning_middle_end(window, config_filename, inputFilename,input
             fullText = f.read()
             fullText = fullText.replace('\n', ' ')
             name = os.path.basename(doc)
-        sentences = sent_tokenize_stanza(stanzaPipeLine(fullText))
+        sentences = sentence_split_stanza_text(stanzaPipeLine(fullText))
 
         sentenceID = 0  # to store sentence index
 
@@ -87,9 +87,4 @@ def sample_doc_beginning_middle_end(window, config_filename, inputFilename,input
     IO_error=IO_csv_util.list_to_csv(window, result_middle, outputFilename)
     if not IO_error:
         filesToOpen.append(outputFilename)
-
-
-
-
-
     return filesToOpen

@@ -21,7 +21,7 @@ import IO_csv_util
 import IO_user_interface_util
 import charts_util
 
-# from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza
+# from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_word
 
 #This fuction reads the social actor list from the same directory
 #and save that into a set called "my_soc_actors"
@@ -41,7 +41,7 @@ def load_soc_actors():
 #CM soc_acts is the input. I filtered out all social actors in dir_path
 # Version 2: when we need to filter out NERs.
 def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, printing):
-    from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza
+    from Stanza_functions_util import stanzaPipeLine, lemmatize_stanza_word
     my_files = glob(dir_path+'*.txt')
     num_doc = 0
     for file in my_files:
@@ -59,7 +59,7 @@ def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, printing):
             if (pos == 'NN' or pos == 'NNS' ):
                 # lemma_word to check if is social actor
                 # lemma_word = lemmatizer.lemmatize(word.lower())
-                lemma_word = lemmatize_stanza(stanzaPipeLine(word.lower()))
+                lemma_word = lemmatize_stanza_word(stanzaPipeLine(word.lower()))
                 if lemma_word in soc_acts:
                     #add into the list.
                     if lemma_word in keywords[fileName]:
@@ -71,7 +71,7 @@ def get_article_soc_actors_NER(dir_path, soc_acts, nlp, keywords, printing):
         for wordNER, pos in nlp.ner(fcontent):
             if (pos == 'LOCATION' or pos == 'DATE' or pos == 'ORGANIZATION' or pos == 'PERSON'):
                 # lemma_NER = lemmatizer.lemmatize(wordNER.lower())
-                lemma_NER = lemmatize_stanza(stanzaPipeLine(wordNER.lower()))
+                lemma_NER = lemmatize_stanza_word(stanzaPipeLine(wordNER.lower()))
                 if lemma_NER not in postag_seen:
                     if lemma_NER in keywords[fileName]:
                         keywords[fileName][lemma_NER] = keywords[fileName][lemma_NER] + 1

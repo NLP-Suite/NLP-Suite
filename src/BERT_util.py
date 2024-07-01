@@ -82,8 +82,8 @@ def NER_tags_BERT(window, inputFilename, inputDir, outputDir, configFileName, mo
             fullText = f.read()
             fullText = fullText.replace('\n', ' ')
 
-        from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-        sentences = sent_tokenize_stanza(stanzaPipeLine(fullText))
+        from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
+        sentences = sentence_split_stanza_text(stanzaPipeLine(fullText))
         sentenceID = 0
 
         for s in sentences:
@@ -229,8 +229,8 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
         sentences = split_into_sentences(fullText)
         for s in sentences:
              #add all the words from the docs into a list
-            from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza
-            all_words.extend(word_tokenize_stanza(stanzaPipeLine(s)))
+            from Stanza_functions_util import stanzaPipeLine, tokenize_stanza_text
+            all_words.extend(tokenize_stanza_text(stanzaPipeLine(s)))
 
     #remove stop words from all_words list if that option has been selected in the GUI
     if remove_stopwords_var:
@@ -310,7 +310,7 @@ def word_embeddings_BERT(window, inputFilename, inputDir, outputDir, openOutputF
 
             #need to tokenize each sentence again here so that the words we add and check for a sentence are actually words from
             # that sentence only, and not one that comes later
-            words = word_tokenize_stanza(stanzaPipeLine(s))
+            words = tokenize_stanza_text(stanzaPipeLine(s))
 
             if remove_stopwords_var:
                 words = statistics_txt_util.excludeStopWords_list(words)
@@ -496,8 +496,8 @@ def sentiment_analysis_BERT(inputFilename, outputDir, outputFilename, mode, Docu
         print('Empty file ', inputFilename)
         return
 
-    from Stanza_functions_util import stanzaPipeLine, word_tokenize_stanza, sent_tokenize_stanza, lemmatize_stanza
-    sentences = sent_tokenize_stanza(stanzaPipeLine(fulltext))
+    from Stanza_functions_util import stanzaPipeLine, sentence_split_stanza_text, tokenize_stanza_text, lemmatize_stanza_word
+    sentences = sentence_split_stanza_text(stanzaPipeLine(fulltext))
 
     i = 1
 
